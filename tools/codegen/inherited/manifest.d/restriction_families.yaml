@@ -401,7 +401,7 @@ restriction_families:
   file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
   reference: true
   begin: "\n * Restrictions\n"
-  end: "\n * Spatial relationships (tpcpatch"
+  end: "\n * Per-point access (SRF)"
   blocks:
   - lit: "/******************************************************************************\n * Restrictions\n ******************************************************************************/\n\n"
   - fns:

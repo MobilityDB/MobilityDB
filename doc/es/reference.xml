@@ -3695,7 +3695,7 @@
 				<title>Relaciones espaciales</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_eIntersects"><varname>eIntersects</varname></link>: Devolver verdadero si y solo si al menos un punto de alguno de los instantes del tpcpatch intersecta la geometría (solo XY).</para>
+						<para><link linkend="tpcpatch_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eTouches</varname>, <varname>aTouches</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Devolver verdadero si y solo si al menos un punto de alguno de los instantes del tpcpatch intersecta la geometría (solo XY).</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3711,7 +3711,7 @@
 				<title>Relaciones espaciales temporales</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_tspatialrels"><varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname></link>: Disjunto temporal, a distancia temporal e intersecta temporal</para>
+						<para><link linkend="tpcpatch_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Relaciones espaciales temporales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

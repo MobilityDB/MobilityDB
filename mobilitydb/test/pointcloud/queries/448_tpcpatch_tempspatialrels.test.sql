@@ -63,3 +63,58 @@ SELECT asText(tDwithin(:inside, :inside, 0.0));
 SELECT asText(tIntersects(tpcpatchSeq(ARRAY[:inside, :far]), :square));
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The matrix of the cast target
+--
+-- A patch reaches the engine as the multipoint of the positions its points
+-- occupy, so the temporal geometry is its cast target and the family declares
+-- every predicate in every direction. Z is one dimension a schema states by
+-- name: a schema declaring X and Y alone answers the planar relationships,
+-- while one carrying Z meets the engine's refusal.
+-------------------------------------------------------------------------------
+
+INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (8, 0,
+'<?xml version="1.0" encoding="UTF-8"?>
+<pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <pc:dimension>
+    <pc:position>1</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>X coordinate</pc:description>
+    <pc:name>X</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>2</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>Y coordinate</pc:description>
+    <pc:name>Y</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:metadata>
+    <Metadata name="srid">0</Metadata>
+  </pc:metadata>
+</pc:PointCloudSchema>')
+  ON CONFLICT (pcid) DO NOTHING;
+
+\set flatpatch 'tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), ''2001-01-01''::timestamptz)'
+
+SELECT asText(tContains(:square, :flatpatch));
+SELECT asText(tCovers(:square, :flatpatch));
+SELECT asText(tTouches(:square, :flatpatch));
+SELECT asText(tTouches(:flatpatch, :square));
+SELECT asText(tContains(:flatpatch, :square));
+
+-- Every new cell agrees with the cast written out by hand
+SELECT tContains(:square, :flatpatch) = tContains(:square, (:flatpatch)::tgeometry) AS tc_agrees,
+       tCovers(:square, :flatpatch) = tCovers(:square, (:flatpatch)::tgeometry) AS tcv_agrees,
+       tTouches(:flatpatch, :square) = tTouches((:flatpatch)::tgeometry, :square) AS ttc_agrees,
+       tContains(:flatpatch, :square) = tContains((:flatpatch)::tgeometry, :square) AS tc_rev_agrees;
+
+/* Errors: a schema carrying Z in a planar relationship */
+SELECT tContains(:square, :inside);
+
+-------------------------------------------------------------------------------

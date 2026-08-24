@@ -1769,8 +1769,20 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_eIntersects">
 					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
 					<para>Devolver verdadero si y solo si al menos un punto de alguno de los instantes del tpcpatch intersecta la geometría (solo XY).</para>
 					<para><varname>eIntersects(tpcpatch,geometry) → boolean</varname></para>
+					<para>Las relaciones alguna vez y siempre cubren la misma matriz: <varname>eContains</varname>, <varname>eCovers</varname>, <varname>eDisjoint</varname>, <varname>eIntersects</varname>, <varname>eTouches</varname> y <varname>eDwithin</varname>, cada una en los tres órdenes de argumentos, y sus gemelas siempre. <varname>eIntersects(tpcpatch,geometry)</varname> es la que el tipo responde de forma nativa, recorriendo los puntos de cada instante y deteniéndose en el primer acierto; las demás convierten el parche a la geometría temporal de sus multipuntos.</para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1804,13 +1816,20 @@ SELECT asText(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
 			<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Un parche llega al motor de geometría a través de la conversión a <varname>tgeometry</varname> anterior, por lo que basta con que un punto del parche esté dentro del argumento para que el parche lo intersecte. Un tpcpatch lleva la Z que declara su esquema, y <varname>tContains</varname>, <varname>tCovers</varname> y <varname>tTouches</varname> son relaciones planas que rechazan una dimensión Z, de modo que el tipo responde las tres que un valor con Z puede responder.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_tspatialrels">
+					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
-					<para>Disjunto temporal, a distancia temporal e intersecta temporal</para>
+					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+					<para>Relaciones espaciales temporales</para>
 					<para><varname>tDisjoint({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
 					<para><varname>tDwithin({geometry,tpcpatch},{geometry,tpcpatch},float) &#8594; tbool</varname></para>
 					<para><varname>tIntersects({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
+					<para><varname>tContains({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
+					<para><varname>tCovers({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
+					<para><varname>tTouches({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
+					<para>Un parche llega al motor de geometría como el multipunto de las posiciones que ocupan sus puntos, de modo que declara la matriz que declara la geometría temporal: cada predicado en cada dirección. Las planares responden para un esquema cuyas dimensiones no incluyen Z, y un esquema que lleva Z encuentra el rechazo <varname>The tgeometry cannot have Z dimension</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)),
   '2001-01-01'::timestamptz), geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');

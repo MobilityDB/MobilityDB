@@ -635,8 +635,8 @@ tpcpatch_any_point_matches(const Temporal *temp,
   return found;
 }
 
-PGDLLEXPORT Datum Tpcpatch_eIntersects_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcpatch_eIntersects_geo);
+PGDLLEXPORT Datum Eintersects_tpcpatch_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Eintersects_tpcpatch_geo);
 /**
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Return true iff at least one point in any of the tpcpatch's
@@ -647,7 +647,7 @@ PG_FUNCTION_INFO_V1(Tpcpatch_eIntersects_geo);
  * @sqlfn eIntersects()
  */
 Datum
-Tpcpatch_eIntersects_geo(PG_FUNCTION_ARGS)
+Eintersects_tpcpatch_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);

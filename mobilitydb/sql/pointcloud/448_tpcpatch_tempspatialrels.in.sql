@@ -36,6 +36,34 @@
  * @brief Temporal spatial relationships for temporal pgpointcloud patches
  */
 
+CREATE FUNCTION tContains(geometry, tpcpatch)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tContains($1, $2::@extschema@.tgeometry) $$;
+CREATE FUNCTION tContains(tpcpatch, geometry)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tContains($1::@extschema@.tgeometry, $2) $$;
+CREATE FUNCTION tContains(tpcpatch, tpcpatch)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tContains($1::@extschema@.tgeometry,
+                          $2::@extschema@.tgeometry) $$;
+
+CREATE FUNCTION tCovers(geometry, tpcpatch)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tCovers($1, $2::@extschema@.tgeometry) $$;
+CREATE FUNCTION tCovers(tpcpatch, geometry)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tCovers($1::@extschema@.tgeometry, $2) $$;
+CREATE FUNCTION tCovers(tpcpatch, tpcpatch)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tCovers($1::@extschema@.tgeometry,
+                        $2::@extschema@.tgeometry) $$;
+
 CREATE FUNCTION tDisjoint(geometry, tpcpatch)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -63,6 +91,20 @@ CREATE FUNCTION tIntersects(tpcpatch, tpcpatch)
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tIntersects($1::@extschema@.tgeometry,
                             $2::@extschema@.tgeometry) $$;
+
+CREATE FUNCTION tTouches(geometry, tpcpatch)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tTouches($1, $2::@extschema@.tgeometry) $$;
+CREATE FUNCTION tTouches(tpcpatch, geometry)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tTouches($1::@extschema@.tgeometry, $2) $$;
+CREATE FUNCTION tTouches(tpcpatch, tpcpatch)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tTouches($1::@extschema@.tgeometry,
+                         $2::@extschema@.tgeometry) $$;
 
 CREATE FUNCTION tDwithin(geometry, tpcpatch, dist float)
   RETURNS tbool

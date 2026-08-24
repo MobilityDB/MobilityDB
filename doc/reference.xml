@@ -3704,7 +3704,7 @@
 				<title>Spatial relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_eIntersects"><varname>eIntersects</varname></link>: Return true iff at least one point in any of the tpcpatch's instants intersects the geometry (XY only).</para>
+						<para><link linkend="tpcpatch_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eTouches</varname>, <varname>aTouches</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Return true iff at least one point in any of the tpcpatch's instants intersects the geometry (XY only).</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3720,7 +3720,7 @@
 				<title>Temporal Spatial Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_tspatialrels"><varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname></link>: Temporal disjoint, within distance, and intersects</para>
+						<para><link linkend="tpcpatch_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Temporal spatial relationships</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
