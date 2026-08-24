@@ -339,3 +339,15 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT splitEachNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 
 -------------------------------------------------------------------------------
+-- A value whose pcid names no schema
+-- The extent of a patch is in its own serialized header, but the reference
+-- system that extent is expressed in is the schema's, so a patch naming a
+-- pcid no pointcloud_formats row declares reads and writes without one and
+-- reports it where a bounding box is asked for.
+-------------------------------------------------------------------------------
+
+SELECT tpcpatch '4F000000630000000000000002000000000000000000F03F000000000000F03F000000000000F03F0000000000000040000000000000004000000000000000400000000000000000000000000000@2024-01-01';
+SELECT tpcpatch '4F000000630000000000000002000000000000000000F03F000000000000F03F000000000000F03F0000000000000040000000000000004000000000000000400000000000000000000000000000@2024-01-01' &&
+  tpcbox_xt(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 99, 0);
+
+-------------------------------------------------------------------------------

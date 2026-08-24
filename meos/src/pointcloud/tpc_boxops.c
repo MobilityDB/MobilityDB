@@ -53,6 +53,17 @@ pcpoint_fill_tpcbox_spatial(const Pcpoint *pt, TPCBox *box)
 {
   assert(pt); assert(box);
   PCSCHEMA *schema = meos_pc_schema(pt->pcid);
+  /* Which dimensions the point holds, and in what reference system, is what
+   * the schema states, so an unresolved one leaves the box with no spatial
+   * extent rather than one read through a schema that is not there. The
+   * handler a binding installs returns from an error instead of ending the
+   * process, and what it returns to is this reader */
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pt->pcid);
+    return;
+  }
   PCPOINT pcpt;
   pcpt.readonly = 1;
   pcpt.schema = schema;
@@ -84,6 +95,15 @@ pcpatch_fill_tpcbox_spatial(const Pcpatch *pa, TPCBox *box)
 {
   assert(pa); assert(box);
   PCSCHEMA *schema = meos_pc_schema(pa->pcid);
+  /* The extent is in the patch's own header, but the reference system it is
+   * expressed in is the schema's, so an unresolved schema leaves the box
+   * without the spatial part rather than reading one through it */
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pa->pcid);
+    return;
+  }
   /* PCBOUNDS field order is {xmin, xmax, ymin, ymax} — see
    * pointcloud-pg/lib/pc_api.h. Read by index, not by guess. */
   box->xmin = pa->bounds[0];

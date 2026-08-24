@@ -200,8 +200,10 @@ meos_pc_schema_get_srid(uint32_t pcid)
     if (cache_buf[i].pcid == pcid)
       return cache_buf[i].srid;
   }
-  /* Trigger hook so the schema is registered; then retry. */
-  PCSCHEMA *s = meos_pc_schema(pcid);
+  /* Trigger hook so the schema is registered; then retry.  The quiet
+   * resolution is what states a miss as SRID_INVALID, which is the answer
+   * this function documents. */
+  const PCSCHEMA *s = meos_pc_schema_lookup(pcid);
   if (s)
   {
     for (int i = 0; i < cache_count; i++)
@@ -215,10 +217,15 @@ meos_pc_schema_get_srid(uint32_t pcid)
 
 /**
  * @ingroup meos_pointcloud_schema_cache
- * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback.
+ * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback, answering
+ *   @p NULL where neither the cache nor a hook holds one.
+ *
+ * A caller that cannot answer without the schema asks through
+ * @ref meos_pc_schema, which states the miss as an error; a caller reading a
+ * property it can answer without one asks here and reads the miss itself.
  */
 PCSCHEMA *
-meos_pc_schema(uint32_t pcid)
+meos_pc_schema_lookup(uint32_t pcid)
 {
   /* (1) Cache hit */
   for (int i = 0; i < cache_count; i++)
@@ -235,11 +242,28 @@ meos_pc_schema(uint32_t pcid)
       meos_pc_schema_register(pcid, s);
     return s;
   }
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "PCSCHEMA for pcid %u not registered and no fallback hook "
-    "installed — pre-populate via meos_pc_schema_register, or "
-    "(in a PG backend) ensure mobilitydb_init has run", pcid);
   return NULL;
+}
+
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback, stating the
+ *   absence of any facility that could resolve one as an error.
+ *
+ * A hook that answers @p NULL has looked the pcid up and not found it, which
+ * the caller reads as the miss it is; no hook at all means the pcid could not
+ * be looked up at all, and a caller needing the schema is stuck.
+ */
+PCSCHEMA *
+meos_pc_schema(uint32_t pcid)
+{
+  PCSCHEMA *result = meos_pc_schema_lookup(pcid);
+  if (! result && ! meos_pc_schema_fn)
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "PCSCHEMA for pcid %u not registered and no fallback hook "
+      "installed — pre-populate via meos_pc_schema_register, or "
+      "(in a PG backend) ensure mobilitydb_init has run", pcid);
+  return result;
 }
 
 /**

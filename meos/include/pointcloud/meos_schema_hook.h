@@ -71,9 +71,24 @@ extern meos_pc_parse_xml_fn_t meos_pc_parse_xml_fn;
  * @brief Resolve a parsed PCSCHEMA by pcid.
  *
  * Lookup order: (1) MEOS-layer cache, (2) installed hook (which may
- * lazily register on hit).  Returns @p NULL only if both miss.
+ * lazily register on hit).  Returns @p NULL only if both miss, and
+ * raises an error when no hook is installed at all — a caller reaching
+ * here needs the schema, and with no facility to resolve one there is
+ * nothing to report but the absence.
  */
 extern PCSCHEMA *meos_pc_schema(uint32_t pcid);
+
+/**
+ * @brief Resolve a parsed PCSCHEMA by pcid, answering @p NULL on a miss
+ *   whatever the reason.
+ *
+ * The same lookup as @ref meos_pc_schema, without its error: this is what
+ * a caller asks when it can answer without the schema, and reads the miss
+ * itself.  A value's dimensions live in its schema, so a property derived
+ * from them stays at its default where none resolves, while every question
+ * that must decode a coordinate keeps asking through @ref meos_pc_schema.
+ */
+extern PCSCHEMA *meos_pc_schema_lookup(uint32_t pcid);
 
 /**
  * @brief Register a parsed PCSCHEMA against a pcid in the MEOS cache.

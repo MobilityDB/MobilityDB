@@ -394,16 +394,20 @@ quadbin_flags(void)
  * meos_pointcloud.h), so its flags byte IS the value's MEOS spatial flags;
  * this reads the flags off the pcpoint's bounding box rather than deriving
  * them independently
+ * @note Which dimensions a pcpoint holds is stated by the schema its pcid
+ * names, so where none resolves the value declares the one property that does
+ * not depend on it: that it has coordinates. Every question that must decode
+ * one asks through @ref meos_pc_schema, which states the miss there
  */
 static int16
 pcpoint_flags(const Pcpoint *pt)
 {
-  PCSCHEMA *schema = meos_pc_schema(pcpoint_get_pcid(pt));
+  PCSCHEMA *schema = meos_pc_schema_lookup(pcpoint_get_pcid(pt));
   if (! schema)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Could not find the point cloud schema of a pcpoint");
-    return -1;
+    int16 result = 0;
+    MEOS_FLAGS_SET_X(result, true);
+    return result;
   }
   TPCBox *box = pcpoint_to_tpcbox(pt, schema);
   if (! box)

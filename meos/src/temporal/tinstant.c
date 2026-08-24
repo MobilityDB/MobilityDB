@@ -221,11 +221,17 @@ tinstant_make(Datum value, MeosType temptype, TimestampTz t)
   if (tspatial_type(temptype) && temptype != T_TNPOINT)
   {
     MeosType basetype = temptype_basetype(temptype);
-    int32_t srid = spatial_srid(value, basetype);
-    /* Ensure that the SRID is geodetic for geography */
-    if (tgeodetic_type(temptype) && srid != SRID_UNKNOWN &&
-        ! ensure_srid_is_latlong(srid))
-      return NULL;
+    /* Ensure that the SRID is geodetic for geography. The SRID is read inside
+     * the test that consumes it: a value holding its reference system by
+     * reference resolves it through a facility the caller may not have, and
+     * reading one the test never looks at makes that resolution a
+     * precondition of construction */
+    if (tgeodetic_type(temptype))
+    {
+      int32_t srid = spatial_srid(value, basetype);
+      if (srid != SRID_UNKNOWN && ! ensure_srid_is_latlong(srid))
+        return NULL;
+    }
     /* Ensure that a geometry/geography is not empty */
     if (tgeo_type_all(temptype) && 
         ! ensure_not_empty(DatumGetGserializedP(value)))
