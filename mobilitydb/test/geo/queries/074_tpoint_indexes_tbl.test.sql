@@ -334,4 +334,52 @@ RESET enable_seqscan;
 
 DROP TABLE tbl_tgeompoint_allthesame;
 
+--------------------------------------------------------------------------------
+-- A node key must keep the inclusivity of the bound it is expanded to, and
+-- two keys that differ only in that inclusivity are not the same key. Every
+-- value below ends on an EXCLUSIVE upper bound and the last one is an instant
+-- sitting exactly on the largest of them, so a key that takes the bound value
+-- while keeping the exclusivity of the entry it starts from excludes that
+-- instant and the scan prunes the page that holds it. Several sizes are built
+-- because which node ends on that bound follows from how the pages split.
+
+CREATE FUNCTION gist_bound_inc_disagreements() RETURNS bigint AS $$
+DECLARE n int; s bigint; i bigint; bad bigint := 0;
+BEGIN
+  FOREACH n IN ARRAY ARRAY[200, 300, 400, 800, 1200] LOOP
+    DROP TABLE IF EXISTS tbl_gist_bound_inc;
+    EXECUTE format($f$CREATE TABLE tbl_gist_bound_inc AS
+      SELECT i AS k, tgeompoint(format('[Point(%%s %%s)@%%s, Point(%%s %%s)@%%s)',
+        i %% 97, (i * 7) %% 89,
+        timestamptz '2001-01-01' + (i || ' minutes')::interval,
+        (i + 1) %% 97, (i * 7 + 3) %% 89,
+        timestamptz '2001-01-01' + ((i + 300) || ' minutes')::interval)) AS temp
+      FROM generate_series(1, %s) AS i$f$, n);
+    INSERT INTO tbl_gist_bound_inc
+    SELECT 0, tgeompoint(format('Point(50 50)@%s',
+      (SELECT max(endTimestamp(temp)) FROM tbl_gist_bound_inc)));
+    CREATE INDEX tbl_gist_bound_inc_rtree_idx
+      ON tbl_gist_bound_inc USING gist(temp);
+    ANALYZE tbl_gist_bound_inc;
+    SET LOCAL enable_seqscan = on;
+    SET LOCAL enable_bitmapscan = off;
+    SET LOCAL enable_indexscan = off;
+    SELECT COUNT(*) INTO s FROM tbl_gist_bound_inc
+    WHERE temp #&> (SELECT temp FROM tbl_gist_bound_inc WHERE k = 0);
+    SET LOCAL enable_seqscan = off;
+    SET LOCAL enable_bitmapscan = on;
+    SET LOCAL enable_indexscan = on;
+    SELECT COUNT(*) INTO i FROM tbl_gist_bound_inc
+    WHERE temp #&> (SELECT temp FROM tbl_gist_bound_inc WHERE k = 0);
+    IF s <> i THEN bad := bad + 1; END IF;
+  END LOOP;
+  RETURN bad;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT gist_bound_inc_disagreements() AS sizes_where_the_index_disagrees;
+
+DROP FUNCTION gist_bound_inc_disagreements();
+DROP TABLE tbl_gist_bound_inc;
+
 -------------------------------------------------------------------------------
