@@ -284,6 +284,19 @@ SELECT relate(geometry 'Tin Z (((0 0 0,0 1 0,1 1 0,0 0 0)),((0 0 0,1 1 0,1 0 0,0
  1F2001102
 (1 row)
 
+SELECT relate(geometry 'Polyhedralsurface Z (
+  ((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),
+  ((0 0 0,0 0 1,0 1 1,0 1 0,0 0 0)),
+  ((0 0 0,1 0 0,1 0 1,0 0 1,0 0 0)),
+  ((1 1 1,1 0 1,0 0 1,0 1 1,1 1 1)),
+  ((1 1 1,1 1 0,1 0 0,1 0 1,1 1 1)),
+  ((1 1 1,0 1 1,0 1 0,1 1 0,1 1 1)))',
+  geometry 'Linestring(0 0,2 2)');
+  relate   
+-----------
+ 1F2001102
+(1 row)
+
 SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
  st_relate 
 -----------

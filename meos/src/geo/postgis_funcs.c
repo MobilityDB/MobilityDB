@@ -1791,8 +1791,8 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 
 /**
  * @brief Return the type that keeps a pair of geometries from the native engine
- * @details The native engine answers every type #geom_meos_supported() accepts;
- * a polyhedral surface and a TIN fall outside it.
+ * @details The native engine answers every type #geom_meos_supported() accepts,
+ * which is every type the edge decomposition reaches.
  * @param[in] geom1,geom2 Geometries the operation is asked about
  */
 static uint8_t
