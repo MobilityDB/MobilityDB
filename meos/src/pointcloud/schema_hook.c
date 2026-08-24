@@ -21,6 +21,7 @@
 /* pgPointcloud */
 #include "pc_api.h"
 #include "pc_api_internal.h"
+#include "stringbuffer.h"
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
@@ -285,17 +286,91 @@ meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
 }
 
 /**
+ * @brief Return the pgPointCloud document describing a schema
+ * @details The element set is the one @c pc_schema_from_xml reads and the
+ *   layout is the one the library's own documents carry: a @c pc:dimension
+ *   per dimension holding its position, size, name, interpretation, scale,
+ *   offset and active flag, and a @c pc:metadata naming the compression.
+ *   @c pc_interpretation_string and @c pc_compression_number are the
+ *   library's, so the spelling of an interpretation and of a compression is
+ *   the library's too.
+ * @note The document is what the library parses, so the only proof that it is
+ *   right is the library reading it back: the test registers a schema as rows
+ *   and compares the schema this document parses to the schema the rows build.
+ */
+static char *
+pc_schema_as_xml(const PCSCHEMA *schema)
+{
+  assert(schema);
+  const char *comp = "none";
+  if (schema->compression == PC_DIMENSIONAL)
+    comp = "dimensional";
+  else if (schema->compression == PC_LAZPERF)
+    comp = "laz";
+
+  stringbuffer_t *sb = stringbuffer_create();
+  stringbuffer_append(sb,
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+    "<pc:PointCloudSchema xmlns:pc=\"http://pointcloud.org/schemas/PC/1.1\"\n"
+    "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
+  for (int i = 0; i < (int) schema->ndims; i++)
+  {
+    const PCDIMENSION *d = schema->dims[i];
+    if (! d)
+      continue;
+    stringbuffer_append(sb, "  <pc:dimension>\n");
+    /* The parser reads a position counting from one and subtracts one */
+    stringbuffer_aprintf(sb, "    <pc:position>%u</pc:position>\n",
+      d->position + 1);
+    stringbuffer_aprintf(sb, "    <pc:size>%u</pc:size>\n", d->size);
+    stringbuffer_aprintf(sb, "    <pc:name>%s</pc:name>\n", d->name);
+    stringbuffer_aprintf(sb,
+      "    <pc:interpretation>%s</pc:interpretation>\n",
+      pc_interpretation_string(d->interpretation));
+    stringbuffer_aprintf(sb, "    <pc:scale>%.17g</pc:scale>\n", d->scale);
+    stringbuffer_aprintf(sb, "    <pc:offset>%.17g</pc:offset>\n", d->offset);
+    /* The parser reads the flag with atoi, so it is a number, not a word */
+    stringbuffer_aprintf(sb, "    <pc:active>%u</pc:active>\n",
+      (uint32_t) d->active);
+    stringbuffer_append(sb, "  </pc:dimension>\n");
+  }
+  stringbuffer_append(sb, "  <pc:metadata>\n");
+  stringbuffer_aprintf(sb,
+    "    <Metadata name=\"compression\">%s</Metadata>\n", comp);
+  stringbuffer_append(sb, "  </pc:metadata>\n"
+    "</pc:PointCloudSchema>\n");
+  char *result = stringbuffer_getstringcopy(sb);
+  stringbuffer_destroy(sb);
+  return result;
+}
+
+/**
  * @ingroup meos_pointcloud_schema_cache
- * @brief Return the cached XML text for a registered pcid (NULL on miss
- *   or parse-only registration).
+ * @brief Return the pgPointCloud document of a registered pcid
+ * @details A schema parsed from a document keeps the document it came from. A
+ *   schema stated as dimensions has none, so one describing it is rendered on
+ *   the first call and kept, which is what lets a schema stated either way
+ *   reach a reader that takes a document.
+ * @return On a pcid no schema is registered for return @p NULL
  */
 const char *
 meos_pc_schema_xml(uint32_t pcid)
 {
   for (int i = 0; i < cache_count; i++)
   {
-    if (cache_buf[i].pcid == pcid)
-      return cache_buf[i].xml_text;
+    if (cache_buf[i].pcid != pcid)
+      continue;
+    if (! cache_buf[i].xml_text && cache_buf[i].schema)
+    {
+      char *rendered = pc_schema_as_xml(cache_buf[i].schema);
+      /* The cache outlives the call, so the document is copied the way a
+       * parsed one is. ⛔ The stringbuffer symbols the link resolves are
+       * PostGIS's, not pgPointCloud's (see pc_stringbuffer_shim.c), so the
+       * buffer comes from lwalloc and is released with pfree, never free */
+      cache_buf[i].xml_text = copy_xml_long_lived(rendered);
+      pfree(rendered);
+    }
+    return cache_buf[i].xml_text;
   }
   return NULL;
 }
