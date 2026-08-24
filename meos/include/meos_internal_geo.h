@@ -155,6 +155,34 @@ extern bool stbox_expand_space_set(const STBox *box, double d, STBox *result);
 
 /*****************************************************************************/
 
+/*****************************************************************************/
+
+/* Bounding box operators for spatiotemporal box types */
+
+extern bool stbox_contains(const STBox *box1, const STBox *box2);
+extern bool stbox_contained(const STBox *box1, const STBox *box2);
+extern bool stbox_overlaps(const STBox *box1, const STBox *box2);
+extern bool stbox_same(const STBox *box1, const STBox *box2);
+extern bool stbox_adjacent(const STBox *box1, const STBox *box2);
+extern bool stbox_left(const STBox *box1, const STBox *box2);
+extern bool stbox_right(const STBox *box1, const STBox *box2);
+extern bool stbox_overleft(const STBox *box1, const STBox *box2);
+extern bool stbox_overright(const STBox *box1, const STBox *box2);
+extern bool stbox_below(const STBox *box1, const STBox *box2);
+extern bool stbox_above(const STBox *box1, const STBox *box2);
+extern bool stbox_overbelow(const STBox *box1, const STBox *box2);
+extern bool stbox_overabove(const STBox *box1, const STBox *box2);
+extern bool stbox_front(const STBox *box1, const STBox *box2);
+extern bool stbox_back(const STBox *box1, const STBox *box2);
+extern bool stbox_overfront(const STBox *box1, const STBox *box2);
+extern bool stbox_overback(const STBox *box1, const STBox *box2);
+extern bool stbox_before(const STBox *box1, const STBox *box2);
+extern bool stbox_after(const STBox *box1, const STBox *box2);
+extern bool stbox_overbefore(const STBox *box1, const STBox *box2);
+extern bool stbox_overafter(const STBox *box1, const STBox *box2);
+
+/*****************************************************************************/
+
 /* Set functions for box types */
 
 extern bool inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result);

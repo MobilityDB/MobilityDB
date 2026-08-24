@@ -1854,11 +1854,36 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
   VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_common_dimension(box1->flags, box2->flags))
     return false;
+  /* Both boxes carry X here, so reading the SRID through the validating
+   * accessor would only repeat the test the condition has just made */
   if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
      (! ensure_same_geodetic(box1->flags, box2->flags) ||
-      ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2))))
+      ! ensure_same_srid(box1->srid, box2->srid)))
     return false;
   stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
+  return true;
+}
+
+/**
+ * @ingroup meos_internal_geo_box_topo
+ * @brief Return true if the first spatiotemporal box contains the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_contains(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  bool hasx, hasz, hast, geodetic;
+  stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
+  if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
+    box2->ymin < box1->ymin || box2->ymax > box1->ymax))
+      return false;
+  if (hasz && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
+      return false;
+  if (hast && (
+    datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
+    datum_gt(box2->period.upper, box1->period.upper, T_TIMESTAMPTZ)))
+      return false;
   return true;
 }
 
@@ -1875,17 +1900,21 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
   bool hasx, hasz, hast, geodetic;
   if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
+  return stbox_contains(box1, box2);
+}
 
-  if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
-    box2->ymin < box1->ymin || box2->ymax > box1->ymax))
-      return false;
-  if (hasz && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
-      return false;
-  if (hast && (
-    datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box2->period.upper, box1->period.upper, T_TIMESTAMPTZ)))
-      return false;
-  return true;
+
+/**
+ * @ingroup meos_internal_geo_box_topo
+ * @brief Return true if the first spatiotemporal box is contained in the
+ * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_contained(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  return stbox_contains(box2, box1);
 }
 
 /**
@@ -1898,7 +1927,34 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 contained_stbox_stbox(const STBox *box1, const STBox *box2)
 {
-  return contains_stbox_stbox(box2, box1);
+  /* Ensure the validity of the arguments */
+  bool hasx, hasz, hast, geodetic;
+  if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
+    return false;
+  return stbox_contained(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_topo
+ * @brief Return true if the spatiotemporal boxes overlap
+ */
+bool
+stbox_overlaps(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  bool hasx, hasz, hast, geodetic;
+  stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
+  if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
+    box1->ymax < box2->ymin || box1->ymin > box2->ymax))
+    return false;
+  if (hasz && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
+    return false;
+  if (hast && (
+    datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
+    datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ)))
+    return false;
+  return true;
 }
 
 /**
@@ -1913,15 +1969,29 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
   bool hasx, hasz, hast, geodetic;
   if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
+  return stbox_overlaps(box1, box2);
+}
 
-  if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
-    box1->ymax < box2->ymin || box1->ymin > box2->ymax))
+
+/**
+ * @ingroup meos_internal_geo_box_topo
+ * @brief Return true if the spatiotemporal boxes are equal in the common
+ * dimensions
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_same(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  bool hasx, hasz, hast, geodetic;
+  stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
+  if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
+    box1->ymin != box2->ymin || box1->ymax != box2->ymax))
     return false;
-  if (hasz && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
+  if (hasz && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
     return false;
-  if (hast && (
-    datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ)))
+  if (hast && (box1->period.lower != box2->period.lower ||
+               box1->period.upper != box2->period.upper))
     return false;
   return true;
 }
@@ -1940,17 +2010,9 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
   bool hasx, hasz, hast, geodetic;
   if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
-
-  if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
-    box1->ymin != box2->ymin || box1->ymax != box2->ymax))
-    return false;
-  if (hasz && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
-    return false;
-  if (hast && (box1->period.lower != box2->period.lower ||
-               box1->period.upper != box2->period.upper))
-    return false;
-  return true;
+  return stbox_same(box1, box2);
 }
+
 
 /**
  * @brief Return true if two spatial extents meet, that is, if they overlap or
@@ -1971,19 +2033,16 @@ meet_extent_extent(double min1, double max1, double min2, double max2,
 }
 
 /**
- * @ingroup meos_geo_box_topo
+ * @ingroup meos_internal_geo_box_topo
  * @brief Return true if the spatiotemporal boxes are adjacent
  * @param[in] box1,box2 Spatiotemporal boxes
- * @csqlfn #Adjacent_stbox_stbox()
  */
 bool
-adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
+stbox_adjacent(const STBox *box1, const STBox *box2)
 {
-  /* Ensure the validity of the arguments */
+  assert(box1); assert(box2);
   bool hasx, hasz, hast, geodetic;
-  if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
-    return false;
-
+  stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
   /* Boxes are adjacent if they meet in every common dimension and touch in at
    * least one of them. The test is made dimension by dimension so that periods
    * meeting at an excluded bound are kept: they are adjacent although they do
@@ -2003,13 +2062,30 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
   }
   if (hast)
   {
-    if (adjacent_span_span(&box1->period, &box2->period))
+    if (span_adjacent(&box1->period, &box2->period))
       touch = true;
-    else if (! overlaps_span_span(&box1->period, &box2->period))
+    else if (! span_overlaps(&box1->period, &box2->period))
       return false;
   }
   return touch;
 }
+
+/**
+ * @ingroup meos_geo_box_topo
+ * @brief Return true if the spatiotemporal boxes are adjacent
+ * @param[in] box1,box2 Spatiotemporal boxes
+ * @csqlfn #Adjacent_stbox_stbox()
+ */
+bool
+adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
+{
+  /* Ensure the validity of the arguments */
+  bool hasx, hasz, hast, geodetic;
+  if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
+    return false;
+  return stbox_adjacent(box1, box2);
+}
+
 
 /*****************************************************************************
  * Position operators
@@ -2024,11 +2100,28 @@ ensure_valid_pos_stbox_stbox_x(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
+  /* Both boxes carry X here, so reading the SRID through the validating
+   * accessor would only repeat the test the condition has just made */
   if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) && (
-       ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)) ||
+       ! ensure_same_srid(box1->srid, box2->srid) ||
        ! ensure_same_geodetic(box1->flags, box2->flags)))
     return false;
   return true;
+}
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is to the left of the
+ * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_left(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return (box1->xmax < box2->xmin);
 }
 
 /**
@@ -2046,7 +2139,23 @@ left_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
-  return (box1->xmax < box2->xmin);
+  return stbox_left(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box does not extend to the
+ * right of the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_overleft(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return (box1->xmax <= box2->xmax);
 }
 
 /**
@@ -2064,7 +2173,23 @@ overleft_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
-  return (box1->xmax <= box2->xmax);
+  return stbox_overleft(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is to the right of the
+ * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_right(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return (box1->xmin > box2->xmax);
 }
 
 /**
@@ -2082,7 +2207,23 @@ right_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
-  return (box1->xmin > box2->xmax);
+  return stbox_right(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box does not extend to the
+ * left of the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_overright(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return (box1->xmin >= box2->xmin);
 }
 
 /**
@@ -2100,7 +2241,22 @@ overright_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
-  return (box1->xmin >= box2->xmin);
+  return stbox_overright(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is below the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_below(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return (box1->ymax < box2->ymin);
 }
 
 /**
@@ -2117,7 +2273,23 @@ below_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
-  return (box1->ymax < box2->ymin);
+  return stbox_below(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box does not extend above the
+ * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_overbelow(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return (box1->ymax <= box2->ymax);
 }
 
 /**
@@ -2135,7 +2307,22 @@ overbelow_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
-  return (box1->ymax <= box2->ymax);
+  return stbox_overbelow(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is above the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_above(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return (box1->ymin > box2->ymax);
 }
 
 /**
@@ -2152,7 +2339,23 @@ above_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
-  return (box1->ymin > box2->ymax);
+  return stbox_above(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box does not extend below the
+ * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_overabove(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return (box1->ymin >= box2->ymin);
 }
 
 /**
@@ -2170,7 +2373,23 @@ overabove_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
-  return (box1->ymin >= box2->ymin);
+  return stbox_overabove(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is in front of the
+ * the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_front(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_Z(box1->flags));
+  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  return (box1->zmax < box2->zmin);
 }
 
 /**
@@ -2188,7 +2407,23 @@ front_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
-  return (box1->zmax < box2->zmin);
+  return stbox_front(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box does not extend to the
+ * back of the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_overfront(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_Z(box1->flags));
+  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  return (box1->zmax <= box2->zmax);
 }
 
 /**
@@ -2206,7 +2441,23 @@ overfront_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
-  return (box1->zmax <= box2->zmax);
+  return stbox_overfront(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is at the back of the
+ * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_back(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_Z(box1->flags));
+  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  return (box1->zmin > box2->zmax);
 }
 
 /**
@@ -2224,7 +2475,23 @@ back_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
-  return (box1->zmin > box2->zmax);
+  return stbox_back(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box does not extend to the
+ * front of the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_overback(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_Z(box1->flags));
+  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  return (box1->zmin >= box2->zmin);
 }
 
 /**
@@ -2242,10 +2509,25 @@ overback_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
-  return (box1->zmin >= box2->zmin);
+  return stbox_overback(box1, box2);
 }
 
+
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is before the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_before(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return span_left(&box1->period, &box2->period);
+}
 
 /**
  * @ingroup meos_geo_box_pos
@@ -2261,7 +2543,23 @@ before_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
-  return left_span_span(&box1->period, &box2->period);
+  return stbox_before(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is not after the second
+ * one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_overbefore(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return span_overleft(&box1->period, &box2->period);
 }
 
 /**
@@ -2279,7 +2577,22 @@ overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
-  return overleft_span_span(&box1->period, &box2->period);
+  return stbox_overbefore(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is after the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_after(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return span_right(&box1->period, &box2->period);
 }
 
 /**
@@ -2296,7 +2609,23 @@ after_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
-  return right_span_span(&box1->period, &box2->period);
+  return stbox_after(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_geo_box_pos
+ * @brief Return true if the first spatiotemporal box is not before the second
+ * one
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
+stbox_overafter(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return span_overright(&box1->period, &box2->period);
 }
 
 /**
@@ -2314,8 +2643,9 @@ overafter_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
-  return overright_span_span(&box1->period, &box2->period);
+  return stbox_overafter(box1, box2);
 }
+
 
 /*****************************************************************************
  * Set operators

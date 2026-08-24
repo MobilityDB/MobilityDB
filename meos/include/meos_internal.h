@@ -954,6 +954,22 @@ extern bool ensure_index_join_op(IndexSearchOp op);
 extern void *bbox_temporal_split_boxes(MeosType bboxtype, size_t boxsize,
   const Temporal *temp, int maxboxes, int *count);
 
+/*****************************************************************************/
+
+/* Bounding box operators for span types */
+
+extern bool span_contains(const Span *s1, const Span *s2);
+extern bool span_contained(const Span *s1, const Span *s2);
+extern bool span_overlaps(const Span *s1, const Span *s2);
+extern bool span_same(const Span *s1, const Span *s2);
+extern bool span_adjacent(const Span *s1, const Span *s2);
+extern bool span_left(const Span *s1, const Span *s2);
+extern bool span_right(const Span *s1, const Span *s2);
+extern bool span_overleft(const Span *s1, const Span *s2);
+extern bool span_overright(const Span *s1, const Span *s2);
+
+/*****************************************************************************/
+
 /* Set functions for set and span types */
 
 extern void bbox_union_span_span(const Span *s1, const Span *s2, Span *result);
@@ -1033,6 +1049,26 @@ extern void tstzspan_set_tbox(const Span *s, TBox *box);
 
 extern TBox *tbox_shift_scale_value(const TBox *box, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern void tbox_expand(const TBox *box1, TBox *box2);
+
+/*****************************************************************************/
+
+/*****************************************************************************/
+
+/* Bounding box operators for temporal box types */
+
+extern bool tbox_contains(const TBox *box1, const TBox *box2);
+extern bool tbox_contained(const TBox *box1, const TBox *box2);
+extern bool tbox_overlaps(const TBox *box1, const TBox *box2);
+extern bool tbox_same(const TBox *box1, const TBox *box2);
+extern bool tbox_adjacent(const TBox *box1, const TBox *box2);
+extern bool tbox_left(const TBox *box1, const TBox *box2);
+extern bool tbox_right(const TBox *box1, const TBox *box2);
+extern bool tbox_overleft(const TBox *box1, const TBox *box2);
+extern bool tbox_overright(const TBox *box1, const TBox *box2);
+extern bool tbox_before(const TBox *box1, const TBox *box2);
+extern bool tbox_after(const TBox *box1, const TBox *box2);
+extern bool tbox_overbefore(const TBox *box1, const TBox *box2);
+extern bool tbox_overafter(const TBox *box1, const TBox *box2);
 
 /*****************************************************************************/
 
