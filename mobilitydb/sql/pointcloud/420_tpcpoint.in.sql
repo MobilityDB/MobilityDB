@@ -155,28 +155,28 @@ CREATE CAST (tpcpoint AS text) WITH FUNCTION asText(tpcpoint);
 -- GENERATED-REPRESENTATIONS-END pointcloud
 
 /******************************************************************************
- * Ergonomic pcpoint constructors
+ * pcpoint constructors
  *
- * pgPointCloud's `pcpoint_in` only accepts hex-WKB; the canonical
- * builder is `PC_MakePoint(pcid, ARRAY[…]::float[])` whose argument
- * shape is verbose at the test-literal level. These two-/three-arg
- * overloads wrap that builder so tests and ad-hoc queries can write
- * `pcpoint(1, 1.0, 1.0, 1.0)`. Pure SQL; no new C code.
+ * pgPointCloud's `pcpoint_in` only accepts hex-WKB, so a coordinate is given
+ * to a constructor instead. The schema the pcid names is resolved through the
+ * MEOS cache, which reads the pointcloud_schemas and pointcloud_dimensions
+ * tables and falls back to the XML document pgPointCloud's own catalog
+ * carries, so a schema stated either way builds a value.
  *
- * The schema dimension count is enforced downstream by PC_MakePoint
- * — these wrappers inherit that behaviour.
+ * The number of coordinates must be the number of dimensions the schema
+ * states, which the constructor enforces.
  ******************************************************************************/
 
 CREATE FUNCTION pcpoint(pcid integer, x double precision, y double precision)
   RETURNS pcpoint
-  AS $$ SELECT PC_MakePoint($1, ARRAY[$2, $3]::float[]) $$
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Pcpoint_make'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION pcpoint(pcid integer, x double precision, y double precision,
     z double precision)
   RETURNS pcpoint
-  AS $$ SELECT PC_MakePoint($1, ARRAY[$2, $3, $4]::float[]) $$
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Pcpoint_make'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Constructors

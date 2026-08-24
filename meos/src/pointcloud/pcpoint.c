@@ -44,6 +44,7 @@
 #include <meos_pointcloud.h>
 #include "temporal/temporal.h"
 #include "pointcloud/meos_schema_hook.h"
+#include "pointcloud/pgsql_compat.h"
 
 /*****************************************************************************
  * Struct-tail padding
@@ -280,6 +281,56 @@ pcpoint_as_hexwkb(const Pcpoint *pt)
 /*****************************************************************************
  * Constructor
  *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_base_constructor
+ * @brief Return a pcpoint from the coordinates of the dimensions of the
+ *   schema a point cloud identifier names
+ * @param[in] pcid Point cloud identifier naming the schema
+ * @param[in] values Coordinate of each dimension, in the order the schema
+ *   states the dimensions
+ * @param[in] count Number of coordinates
+ * @return On error return @p NULL
+ * @note The schema is resolved through the MEOS cache, so a schema stated in
+ *   SQL and one parsed from an XML document build a value alike.
+ * @csqlfn #Pcpoint_make()
+ */
+Pcpoint *
+pcpoint_make(uint32_t pcid, const double *values, int count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  const PCSCHEMA *schema = meos_pc_schema(pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pcid);
+    return NULL;
+  }
+  if (count != (int) schema->ndims)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The number of coordinates must be the number of dimensions of the "
+      "schema %u: %d vs %u", pcid, count, schema->ndims);
+    return NULL;
+  }
+
+  PCPOINT *pcpt = pc_point_from_double_array(schema, (double *) values, 0,
+    (uint32_t) count);
+  if (! pcpt)
+    return NULL;
+  Pcpoint *result = (Pcpoint *) meos_pc_point_serialize(pcpt);
+  pc_point_free(pcpt);
+  /* The bytes past the meaningful prefix are pgpointcloud's struct-tail
+   * padding, which the serialization leaves uninitialized. They are zeroed
+   * so that two pcpoints holding the same point hold the same bytes, as
+   * pcpoint_hex_out prints them (see the file header) */
+  size_t meaningful = pcpoint_meaningful_size(result);
+  memset(((uint8_t *) result) + meaningful, 0, VARSIZE(result) - meaningful);
+  return result;
+}
 
 /**
  * @ingroup meos_pointcloud_base_constructor
