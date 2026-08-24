@@ -187,8 +187,30 @@ extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
  * @c pointcloud_formats).  In standalone-MEOS programs, the application
  * registers schemas explicitly before calling schema-aware helpers. */
 
+/**
+ * @brief One dimension of a point cloud schema, as it is stated
+ *
+ * The fields are the ones a schema states; @p size and @p byteoffset are
+ * absent because the engine computes them from @p interpretation and from
+ * the dimensions before this one.
+ */
+typedef struct
+{
+  const char *name;           /**< Dimension name, unique within the schema */
+  const char *description;    /**< Dimension description, may be @p NULL */
+  int32_t position;           /**< Position within the schema, from 1 */
+  const char *interpretation; /**< Name of the numeric type stored */
+  double scale;               /**< Factor a stored value is multiplied by */
+  double offset;              /**< Value added to a scaled stored value */
+  bool active;                /**< True when the dimension holds values */
+} PCDimensionSpec;
+
 extern PCSCHEMA *meos_pc_schema(uint32_t pcid);
 extern void meos_pc_schema_register(uint32_t pcid, PCSCHEMA *schema);
+extern PCSCHEMA *meos_pc_schema_from_dims(uint32_t pcid, int32_t srid,
+  const char *compression, const PCDimensionSpec *dims, int ndims);
+extern bool meos_pc_schema_register_dims(uint32_t pcid, int32_t srid,
+  const char *compression, const PCDimensionSpec *dims, int ndims);
 extern void meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
   const char *xml_text);
 extern const char *meos_pc_schema_xml(uint32_t pcid);

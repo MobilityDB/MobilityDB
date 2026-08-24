@@ -188,9 +188,124 @@ mobilitydb_pc_parse_xml(uint32_t pcid, const char *xml)
   return schema;
 }
 
+/**
+ * @brief Return the install namespace of the mobilitydb extension, or
+ *   @c InvalidOid where it cannot be determined
+ */
+static Oid
+mobilitydb_schema_namespace_oid(void)
+{
+  Oid ext_oid = get_extension_oid("mobilitydb", /* missing_ok */ true);
+  if (ext_oid == InvalidOid)
+    return InvalidOid;
+  return get_extension_schema(ext_oid);
+}
+
+/**
+ * @brief Build the schema that @p pcid names from the rows stating it
+ * @details Reads @c pointcloud_schemas and @c pointcloud_dimensions by direct
+ *   heap scan, the way the XML path reads @c pointcloud_formats. The schema is
+ *   built in @c TopMemoryContext so that it outlives the current query, as the
+ *   MEOS cache holds the pointer for the lifetime of the backend.
+ * @param[in] pcid Identifier the rows state the schema of
+ * @return The schema, or @c NULL where no row states it, which is what sends
+ *   the caller to the XML path
+ */
+static PCSCHEMA *
+fetch_schema_dims(uint32_t pcid)
+{
+  Oid nsp_oid = mobilitydb_schema_namespace_oid();
+  if (nsp_oid == InvalidOid)
+    return NULL;
+  Oid rel_oid = get_relname_relid("pointcloud_schemas", nsp_oid);
+  Oid dim_oid = get_relname_relid("pointcloud_dimensions", nsp_oid);
+  if (rel_oid == InvalidOid || dim_oid == InvalidOid)
+    return NULL;
+
+  /* Column layout: (pcid int4, srid int4, compression text, description text) */
+  Relation rel = table_open(rel_oid, AccessShareLock);
+  TupleDesc tup_desc = RelationGetDescr(rel);
+  ScanKeyData key[1];
+  ScanKeyInit(&key[0], 1, BTEqualStrategyNumber, F_INT4EQ,
+    Int32GetDatum((int32) pcid));
+  SysScanDesc scan = systable_beginscan(rel, InvalidOid, false, NULL, 1, key);
+
+  bool found = false, isnull;
+  int32 srid = 0;
+  char *compression = NULL;
+  HeapTuple tuple = systable_getnext(scan);
+  if (HeapTupleIsValid(tuple))
+  {
+    found = true;
+    Datum datum = heap_getattr(tuple, 2, tup_desc, &isnull);
+    if (! isnull)
+      srid = DatumGetInt32(datum);
+    datum = heap_getattr(tuple, 3, tup_desc, &isnull);
+    if (! isnull)
+      compression = text_to_cstring(DatumGetTextPP(datum));
+  }
+  systable_endscan(scan);
+  table_close(rel, AccessShareLock);
+  if (! found)
+    return NULL;
+
+  /* Column layout: (pcid int4, position int4, name text, interpretation text,
+   * scale float8, offset float8, active bool, description text) */
+  rel = table_open(dim_oid, AccessShareLock);
+  tup_desc = RelationGetDescr(rel);
+  ScanKeyInit(&key[0], 1, BTEqualStrategyNumber, F_INT4EQ,
+    Int32GetDatum((int32) pcid));
+  scan = systable_beginscan(rel, InvalidOid, false, NULL, 1, key);
+
+  int ndims = 0, capacity = 8;
+  PCDimensionSpec *dims = palloc0(sizeof(PCDimensionSpec) * capacity);
+  while (HeapTupleIsValid(tuple = systable_getnext(scan)))
+  {
+    if (ndims == capacity)
+    {
+      capacity *= 2;
+      dims = repalloc(dims, sizeof(PCDimensionSpec) * capacity);
+    }
+    PCDimensionSpec *spec = &dims[ndims++];
+    Datum datum = heap_getattr(tuple, 2, tup_desc, &isnull);
+    spec->position = isnull ? 0 : DatumGetInt32(datum);
+    datum = heap_getattr(tuple, 3, tup_desc, &isnull);
+    spec->name = isnull ? NULL : text_to_cstring(DatumGetTextPP(datum));
+    datum = heap_getattr(tuple, 4, tup_desc, &isnull);
+    spec->interpretation = isnull ? NULL :
+      text_to_cstring(DatumGetTextPP(datum));
+    datum = heap_getattr(tuple, 5, tup_desc, &isnull);
+    spec->scale = isnull ? 1.0 : DatumGetFloat8(datum);
+    datum = heap_getattr(tuple, 6, tup_desc, &isnull);
+    spec->offset = isnull ? 0.0 : DatumGetFloat8(datum);
+    datum = heap_getattr(tuple, 7, tup_desc, &isnull);
+    spec->active = isnull ? true : DatumGetBool(datum);
+    datum = heap_getattr(tuple, 8, tup_desc, &isnull);
+    spec->description = isnull ? NULL : text_to_cstring(DatumGetTextPP(datum));
+  }
+  systable_endscan(scan);
+  table_close(rel, AccessShareLock);
+
+  if (ndims == 0)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The point cloud schema of pcid %u states no dimension", pcid)));
+
+  MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+  PCSCHEMA *result = meos_pc_schema_from_dims(pcid, srid, compression, dims,
+    ndims);
+  MemoryContextSwitchTo(old_ctx);
+  return result;
+}
+
 PCSCHEMA *
 mobilitydb_pc_schema(uint32_t pcid)
 {
+  /* The rows state the schema without an XML document, and the path below
+   * errors where pgpointcloud is not installed, so they are read first */
+  PCSCHEMA *stated = fetch_schema_dims(pcid);
+  if (stated)
+    return stated;
+
   int32 srid;
   char *xml = fetch_schema_row(pcid, &srid);
   if (xml == NULL)

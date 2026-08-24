@@ -20,10 +20,14 @@
 #endif
 /* pgPointcloud */
 #include "pc_api.h"
+#include "pc_api_internal.h"
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
+#include <meos_pointcloud.h>
+#include "temporal/temporal.h"
 #include "pointcloud/meos_schema_hook.h"
 
 /*****************************************************************************
@@ -108,6 +112,140 @@ void
 meos_pc_schema_register(uint32_t pcid, PCSCHEMA *schema)
 {
   meos_pc_schema_register_xml(pcid, schema, NULL);
+}
+
+/**
+ * @brief Return a copy of a string allocated by the point cloud library, so
+ * that freeing the schema releases it
+ */
+static char *
+pcschema_string_copy(const char *str)
+{
+  size_t size = strlen(str) + 1;
+  char *result = pcalloc(size);
+  memcpy(result, str, size);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Register the schema that a point cloud identifier names, stated as
+ *   its dimensions
+ * @param[in] pcid Identifier the schema is registered under
+ * @param[in] srid Spatial reference identifier every value of the schema
+ *   carries
+ * @param[in] compression Name of the compression applied to the data,
+ *   @p NULL for none
+ * @param[in] dims Dimensions the schema states, in any order
+ * @param[in] ndims Number of dimensions
+ * @return A newly allocated schema, @p NULL on error
+ * @note The schema is built through the constructor of the point cloud
+ *   library, so the size of a dimension, the offset of a dimension within a
+ *   point and the width of a point are the ones that library computes
+ */
+PCSCHEMA *
+meos_pc_schema_from_dims(uint32_t pcid, int32_t srid,
+  const char *compression, const PCDimensionSpec *dims, int ndims)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_null((void *) dims))
+    return NULL;
+  if (ndims < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The point cloud schema of pcid %u must state at least one dimension",
+      pcid);
+    return NULL;
+  }
+
+  int comp = pc_compression_number(compression);
+  PCSCHEMA *schema = pc_schema_new((uint32_t) ndims);
+  schema->pcid = pcid;
+  schema->srid = (uint32_t) srid;
+  schema->compression = (uint32_t) comp;
+
+  for (int i = 0; i < ndims; i++)
+  {
+    const PCDimensionSpec *spec = &dims[i];
+    /* A position is stated from 1 while the schema holds it from 0 */
+    if (spec->position < 1 || spec->position > ndims)
+    {
+      pc_schema_free(schema);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The point cloud schema of pcid %u states position %d, which is "
+        "outside the %d dimensions it declares", pcid, spec->position, ndims);
+      return NULL;
+    }
+    if (! spec->name || ! *spec->name)
+    {
+      pc_schema_free(schema);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The point cloud schema of pcid %u states a dimension with no name "
+        "at position %d", pcid, spec->position);
+      return NULL;
+    }
+    int interp = pc_interpretation_number(spec->interpretation);
+    if (interp == PC_UNKNOWN)
+    {
+      pc_schema_free(schema);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The point cloud schema of pcid %u states the unknown interpretation "
+        "\"%s\" for dimension \"%s\"", pcid,
+        spec->interpretation ? spec->interpretation : "", spec->name);
+      return NULL;
+    }
+    if (schema->dims[spec->position - 1])
+    {
+      pc_schema_free(schema);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The point cloud schema of pcid %u states position %d twice",
+        pcid, spec->position);
+      return NULL;
+    }
+
+    PCDIMENSION *dim = pcalloc(sizeof(PCDIMENSION));
+    dim->position = (uint32_t) spec->position - 1;
+    dim->name = pcschema_string_copy(spec->name);
+    dim->description = spec->description ?
+      pcschema_string_copy(spec->description) : NULL;
+    dim->interpretation = (uint32_t) interp;
+    dim->scale = spec->scale;
+    dim->offset = spec->offset;
+    dim->active = spec->active ? 1 : 0;
+    /* Sets the dimension, its name in the hash table of the schema, and the
+     * size and the byte offset of every dimension */
+    pc_schema_set_dimension(schema, dim);
+  }
+
+  /* Resolve the X, Y, Z and M dimensions from the names */
+  pc_schema_check_xyzm(schema);
+  return schema;
+}
+
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Register the schema that a point cloud identifier names, stated as
+ *   its dimensions
+ * @param[in] pcid Identifier the schema is registered under
+ * @param[in] srid Spatial reference identifier every value of the schema
+ *   carries
+ * @param[in] compression Name of the compression applied to the data,
+ *   @p NULL for none
+ * @param[in] dims Dimensions the schema states, in any order
+ * @param[in] ndims Number of dimensions
+ * @return True on success, false on error
+ * @csqlfn #Pointcloud_schema_register_dims()
+ */
+bool
+meos_pc_schema_register_dims(uint32_t pcid, int32_t srid,
+  const char *compression, const PCDimensionSpec *dims, int ndims)
+{
+  PCSCHEMA *schema = meos_pc_schema_from_dims(pcid, srid, compression, dims,
+    ndims);
+  if (! schema)
+    return false;
+  meos_pc_schema_register(pcid, schema);
+  return true;
 }
 
 /**

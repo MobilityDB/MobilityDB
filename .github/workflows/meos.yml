@@ -80,6 +80,9 @@ jobs:
           ./allocator_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o bool_test bool_test.c -L/usr/local/lib -lmeos
           ./bool_test
+          # SIBLING-FROM bool_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o pcschema_dims_test pcschema_dims_test.c -L/usr/local/lib -lmeos
+          ./pcschema_dims_test
           # The tcbuffer test program is generated from the installed headers
           # (gen_smoketest.py introspects meos_cbuffer.h) so it tracks the current
           # API. Regenerate and compile it here; the CBUFFER family is built and

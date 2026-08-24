@@ -466,6 +466,15 @@ if(MEOS)
     install(
       FILES "${CMAKE_SOURCE_DIR}/meos/include/pointcloud/pgsql_compat.h"
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pointcloud")
+    # pgsql_compat.h includes pc_api.h, which states PCSCHEMA and PCDIMENSION,
+    # the structures the public point-cloud surface answers with. The three
+    # travel beside it so that the surface compiles from the install prefix
+    # alone, each reaching the next as a quoted include of the same directory.
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/pc_api.h"
+            "${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/hashtable.h"
+            "${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/pc_config.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pointcloud")
   endif()
   if(RASTER)
     install(

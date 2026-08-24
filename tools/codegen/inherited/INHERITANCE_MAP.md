@@ -83,8 +83,15 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
   | where the SRID lives | families | `SRID` | `setSRID` | `transform` |
   |---|---|---|---|---|
   | stored in the value | tgeo, tcbuffer, tpose, tposechain | ✓ | ✓ | ✓ |
-  | inherited from a table | tnpoint (`ways`), tpcpoint/tpcpatch (`pointcloud_formats`) | ✓ | — | — |
+  | inherited from a table | tnpoint (`ways`), tpcpoint/tpcpatch (`pointcloud_schemas`) | ✓ | — | — |
   | imposed by the specification | th3index, tquadbin | — | — | — |
+
+  ⭐ **The pointcloud table is `pointcloud_schemas`, stated in SQL.** `mobilitydb/sql/pointcloud/399_pointcloud_schemas.in.sql`
+  states the schema a `pcid` names as rows of `pointcloud_schemas` (which carries the SRID)
+  and `pointcloud_dimensions`, both hand-written and so listed in `coverage_exceptions.txt`,
+  both marked `pg_extension_config_dump` so a registered schema survives a dump — the shape
+  `mobilitydb/sql/pose/120_geopose_frames.in.sql` already carries. The `pointcloud_formats`
+  catalog of pgPointCloud is read after them and stays for data written by other tools.
 
   ⛔ So an absent `setSRID`/`transform` is the PROPERTY of an inherited or imposed reference
   system, never a parity gap: nothing per value can be set or transformed when the value
