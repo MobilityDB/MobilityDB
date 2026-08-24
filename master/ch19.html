@@ -2,21 +2,16 @@
 CREATE EXTENSION mobilitydb CASCADE;
 -- NOTICE:  installing required extension "postgis"
 -- NOTICE:  installing required extension "pointcloud"
-</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpointcloud_quickstart"></a>Quickstart</h2></div></div></div><p>This section walks through a minimal end-to-end example: registering a schema, building values, lifting to a temporal type, querying with the bbox surface, and indexing. The goal is to make every later section in this chapter pin to a concrete usage. Follow the steps in order against a fresh database.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpointcloud_quickstart_setup"></a>Register a schema</h3></div></div></div><p>Every <code class="varname">pcpoint</code> and <code class="varname">pcpatch</code> value carries a <code class="varname">pcid</code> that resolves through <code class="varname">pointcloud_formats</code> to an XML schema. The schema declares the dimensions (X, Y, Z, …), their on-disk numeric type, and per-dimension scale. A minimal 3D schema with all dimensions stored as <code class="varname">int32</code> at unit scale:</p><pre class="programlisting">
-INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (1, 4326, '
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"&gt;
-  &lt;pc:dimension&gt;&lt;pc:position&gt;1&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
-    &lt;pc:name&gt;X&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
-    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
-  &lt;pc:dimension&gt;&lt;pc:position&gt;2&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
-    &lt;pc:name&gt;Y&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
-    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
-  &lt;pc:dimension&gt;&lt;pc:position&gt;3&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
-    &lt;pc:name&gt;Z&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
-    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
-&lt;/pc:PointCloudSchema&gt;');
-</pre><p>Schemas are global to the database; you usually register them once at fixture-load time. SRID is per-schema and inherited by every value with that <code class="varname">pcid</code>.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpointcloud_quickstart_construct"></a>Build base and temporal values</h3></div></div></div><p>MobilityDB ships ergonomic constructors over pgPointCloud's <code class="varname">PC_MakePoint</code> / <code class="varname">PC_Patch</code>:</p><pre class="programlisting">
+</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpointcloud_quickstart"></a>Quickstart</h2></div></div></div><p>This section walks through a minimal end-to-end example: registering a schema, building values, lifting to a temporal type, querying with the bbox surface, and indexing. The goal is to make every later section in this chapter pin to a concrete usage. Follow the steps in order against a fresh database.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpointcloud_quickstart_setup"></a>Register a schema</h3></div></div></div><p>Every <code class="varname">pcpoint</code> and <code class="varname">pcpatch</code> value carries a <code class="varname">pcid</code> that resolves to a <span class="emphasis"><em>schema</em></span>, which states the dimensions the value holds (X, Y, Z, …), the numeric type each is stored as, and its scale and offset. The schema is stated in SQL, in two tables: <code class="varname">pointcloud_schemas</code> holds what a schema states as a whole, and <code class="varname">pointcloud_dimensions</code> one row per dimension. A minimal 3D schema, every dimension stored as <code class="varname">int32_t</code> at unit scale:</p><pre class="programlisting">
+INSERT INTO pointcloud_schemas (pcid, srid, compression, description) VALUES
+  (1, 4326, 'none', 'Minimal 3D schema');
+
+INSERT INTO pointcloud_dimensions
+    (pcid, position, name, interpretation, scale, "offset", active, description) VALUES
+  (1, 1, 'X', 'int32_t', 1, 0, true, 'Easting'),
+  (1, 2, 'Y', 'int32_t', 1, 0, true, 'Northing'),
+  (1, 3, 'Z', 'int32_t', 1, 0, true, 'Elevation');
+</pre><p>The size of each dimension and its offset within a point are absent because they follow from the interpretation, and the X, Y, Z and M dimensions are absent because they resolve from the names. The <code class="varname">position</code> column states the order the dimensions are stored in, so it does not depend on the order the rows are inserted in. A schema is global to the database and usually registered once, at fixture-load time; the SRID is per schema and is inherited by every value carrying that <code class="varname">pcid</code>.</p><p>A database whose schemas are already registered in the <code class="varname">pointcloud_formats</code> catalog of pgPointCloud, as an XML document, keeps working: that catalog is read for a <code class="varname">pcid</code> that the two tables above do not state.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpointcloud_quickstart_construct"></a>Build base and temporal values</h3></div></div></div><p>MobilityDB ships ergonomic constructors over pgPointCloud's <code class="varname">PC_MakePoint</code> / <code class="varname">PC_Patch</code>:</p><pre class="programlisting">
 -- a single point at (1, 2, 3) under pcid=1
 SELECT pcpoint(1, 1.0, 2.0, 3.0);
 

@@ -2,21 +2,16 @@
 CREATE EXTENSION mobilitydb CASCADE;
 -- NOTICE:  installing required extension "postgis"
 -- NOTICE:  installing required extension "pointcloud"
-</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpointcloud_quickstart"></a>Inicio rápido</h2></div></div></div><p>Esta sección recorre un ejemplo mínimo de extremo a extremo: registrar un esquema, construir valores, elevar al tipo temporal, consultar con la superficie bbox e indexar. El objetivo es que cada sección posterior de este capítulo esté anclada a un uso concreto. Siga los pasos en orden sobre una base de datos nueva.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpointcloud_quickstart_setup"></a>Registrar un esquema</h3></div></div></div><p>Cada valor <code class="varname">pcpoint</code> y <code class="varname">pcpatch</code> lleva un <code class="varname">pcid</code> que se resuelve a través de <code class="varname">pointcloud_formats</code> en un esquema XML. El esquema declara las dimensiones (X, Y, Z, …), su tipo numérico en disco y la escala por dimensión. Un esquema 3D mínimo con todas las dimensiones almacenadas como <code class="varname">int32</code> con escala unitaria:</p><pre class="programlisting">
-INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (1, 4326, '
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"&gt;
-  &lt;pc:dimension&gt;&lt;pc:position&gt;1&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
-    &lt;pc:name&gt;X&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
-    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
-  &lt;pc:dimension&gt;&lt;pc:position&gt;2&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
-    &lt;pc:name&gt;Y&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
-    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
-  &lt;pc:dimension&gt;&lt;pc:position&gt;3&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
-    &lt;pc:name&gt;Z&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
-    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
-&lt;/pc:PointCloudSchema&gt;');
-</pre><p>Los esquemas son globales a la base de datos; normalmente se registran una sola vez durante la carga inicial de datos. El SRID es por esquema y es heredado por cada valor con ese <code class="varname">pcid</code>.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpointcloud_quickstart_construct"></a>Construir valores base y temporales</h3></div></div></div><p>MobilityDB incluye constructores ergonómicos sobre los <code class="varname">PC_MakePoint</code> / <code class="varname">PC_Patch</code> de pgPointCloud:</p><pre class="programlisting">
+</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpointcloud_quickstart"></a>Inicio rápido</h2></div></div></div><p>Esta sección recorre un ejemplo mínimo de extremo a extremo: registrar un esquema, construir valores, elevar al tipo temporal, consultar con la superficie bbox e indexar. El objetivo es que cada sección posterior de este capítulo esté anclada a un uso concreto. Siga los pasos en orden sobre una base de datos nueva.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpointcloud_quickstart_setup"></a>Registrar un esquema</h3></div></div></div><p>Cada valor <code class="varname">pcpoint</code> y <code class="varname">pcpatch</code> lleva un <code class="varname">pcid</code> que se resuelve en un <span class="emphasis"><em>esquema</em></span>, que declara las dimensiones que contiene el valor (X, Y, Z, …), el tipo numérico con el que se almacena cada una, y su escala y desplazamiento. El esquema se declara en SQL, en dos tablas: <code class="varname">pointcloud_schemas</code> contiene lo que declara un esquema en conjunto, y <code class="varname">pointcloud_dimensions</code> una fila por dimensión. Un esquema 3D mínimo, con cada dimensión almacenada como <code class="varname">int32_t</code> con escala unitaria:</p><pre class="programlisting">
+INSERT INTO pointcloud_schemas (pcid, srid, compression, description) VALUES
+  (1, 4326, 'none', 'Esquema 3D mínimo');
+
+INSERT INTO pointcloud_dimensions
+    (pcid, position, name, interpretation, scale, "offset", active, description) VALUES
+  (1, 1, 'X', 'int32_t', 1, 0, true, 'Este'),
+  (1, 2, 'Y', 'int32_t', 1, 0, true, 'Norte'),
+  (1, 3, 'Z', 'int32_t', 1, 0, true, 'Elevación');
+</pre><p>El tamaño de cada dimensión y su desplazamiento dentro de un punto no aparecen porque se derivan de la interpretación, y las dimensiones X, Y, Z y M tampoco porque se resuelven a partir de los nombres. La columna <code class="varname">position</code> declara el orden en el que se almacenan las dimensiones, de modo que no depende del orden en el que se insertan las filas. Un esquema es global a la base de datos y suele registrarse una sola vez, al cargar los datos; el SRID es por esquema y lo heredan todos los valores que llevan ese <code class="varname">pcid</code>.</p><p>Una base de datos cuyos esquemas ya están registrados en el catálogo <code class="varname">pointcloud_formats</code> de pgPointCloud, como documento XML, sigue funcionando: ese catálogo se lee para un <code class="varname">pcid</code> que las dos tablas anteriores no declaren.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpointcloud_quickstart_construct"></a>Construir valores base y temporales</h3></div></div></div><p>MobilityDB incluye constructores ergonómicos sobre los <code class="varname">PC_MakePoint</code> / <code class="varname">PC_Patch</code> de pgPointCloud:</p><pre class="programlisting">
 -- a single point at (1, 2, 3) under pcid=1
 SELECT pcpoint(1, 1.0, 2.0, 3.0);
 
