@@ -222,9 +222,11 @@ SELECT geometry 'SRID=5676;LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 SELECT stbox(npoint 'NPoint(1,0.3)');
 -- SRID=5676;STBOX X((62.786633,80.143556),(62.786633,80.143556))
 SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2001-01-01');
--- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01, 2001-01-01])
+-- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
+-- 2001-01-01])
 SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2001-01-01,2001-01-02]');
--- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01, 2001-01-02])
+-- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
+-- 2001-01-02])
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -646,9 +648,11 @@ SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-
 				<para><varname>appendInstant(tnpoint,tnpointInst) → tnpoint</varname></para>
 				<para><varname>appendSequence(tnpoint,tnpointSeq) → tnpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(appendInstant(tnpoint 'Npoint(1, 0.1)@2001-01-01', 'Npoint(1, 0.2)@2001-01-02'));
+SELECT asText(appendInstant(tnpoint 'Npoint(1, 0.1)@2001-01-01',
+  'Npoint(1, 0.2)@2001-01-02'));
 -- [NPoint(1,0.1)@2001-01-01, NPoint(1,0.2)@2001-01-02]
-SELECT asText(appendSequence(tnpoint '[Npoint(1, 0.1)@2001-01-01]', '[Npoint(1, 0.2)@2001-01-02]'));
+SELECT asText(appendSequence(tnpoint '[Npoint(1, 0.1)@2001-01-01]',
+  '[Npoint(1, 0.2)@2001-01-02]'));
 -- {[NPoint(1,0.1)@2001-01-01], [NPoint(1,0.2)@2001-01-02]}
 </programlisting>
 			</listitem>
@@ -664,7 +668,8 @@ SELECT asText(appendSequence(tnpoint '[Npoint(1, 0.1)@2001-01-01]', '[Npoint(1, 
 SELECT asText(merge(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
   '[Npoint(1, 0.3)@2001-01-03, Npoint(1, 0.5)@2001-01-05]'));
 -- [NPoint(1,0.1)@2001-01-01, NPoint(1,0.5)@2001-01-05]
-SELECT asText(merge(ARRAY[tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.2)@2001-01-02]',
+SELECT asText(merge(ARRAY[tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1,
+  0.2)@2001-01-02]',
   '[Npoint(1, 0.2)@2001-01-02, Npoint(1, 0.3)@2001-01-03]']));
 -- [NPoint(1,0.1)@2001-01-01, NPoint(1,0.3)@2001-01-03]
 WITH temp(inst) AS (

@@ -318,14 +318,17 @@ SELECT posechain 'PoseChain(Pose(Point(0 0),0))' ~=
 		<title>Cadenas de poses temporales</title>
 		<para>El tipo de cadena de poses temporal <varname>tposechain</varname> representa la evolución en el tiempo de una cadena de marcos anidados, es decir, de un objeto articulado cuyas articulaciones se mueven unas respecto de otras. Como todos los tipos temporales, tiene tres subtipos, a saber, instante, secuencia y conjunto de secuencias. A continuación se dan ejemplos de valores <varname>tposechain</varname> en estos subtipos.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 1), 0.5), Pose(Point(2 0), 0))@2001-01-01');
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 1), 0.5), Pose(Point(2 0),
+  0))@2001-01-01');
 -- PoseChain(Pose(POINT(1 1),0.5),Pose(POINT(2 0),0))@2001-01-01
 SELECT asEWKT(tposechain '{PoseChain(Pose(Point(1 1), 0.3))@2001-01-01,
   PoseChain(Pose(Point(1 1), 0.5))@2001-01-02}');
--- {PoseChain(Pose(POINT(1 1),0.3))@2001-01-01, PoseChain(Pose(POINT(1 1),0.5))@2001-01-02}
+-- {PoseChain(Pose(POINT(1 1),0.3))@2001-01-01,
+-- PoseChain(Pose(POINT(1 1),0.5))@2001-01-02}
 SELECT asEWKT(tposechain '[PoseChain(Pose(Point(1 1), 0.2))@2001-01-01,
   PoseChain(Pose(Point(1 1), 0.5))@2001-01-03]');
--- [PoseChain(Pose(POINT(1 1),0.2))@2001-01-01, PoseChain(Pose(POINT(1 1),0.5))@2001-01-03]
+-- [PoseChain(Pose(POINT(1 1),0.2))@2001-01-01,
+-- PoseChain(Pose(POINT(1 1),0.5))@2001-01-03]
 SELECT asEWKT(tposechain '{[PoseChain(Pose(Point(1 1), 1))@2001-01-01,
   PoseChain(Pose(Point(2 2), 1))@2001-01-02],
   [PoseChain(Pose(Point(2 2), 2))@2001-01-04]}');
@@ -351,7 +354,8 @@ SELECT asEWKT(round(valueAtTimestamp(tposechain
 
 		<para>Como para los demás tipos espaciotemporales, el tipo de cadena de poses temporal acepta modificadores de tipo (o <varname>typmod</varname> en la terminología de PostgreSQL) para especificar el subtipo, la dimensionalidad y/o el identificador de referencia espacial (SRID).</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(tposechain(Sequence,5676) 'SRID=5676;[PoseChain(Pose(Point(1 1), 0.2))@2001-01-01,
+SELECT asEWKT(tposechain(Sequence,5676) 'SRID=5676;[PoseChain(Pose(Point(1 1),
+  0.2))@2001-01-01,
   PoseChain(Pose(Point(1 1), 0.5))@2001-01-03]');
 /* SRID=5676;[PoseChain(Pose(POINT(1 1),0.2))@2001-01-01,
    PoseChain(Pose(POINT(1 1),0.5))@2001-01-03] */
@@ -429,10 +433,12 @@ SELECT asEWKT(tposechain(posechain 'PoseChain(Pose(Point(1 1), 0.5))',
 -- PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
 SELECT asEWKT(tposechain(posechain 'PoseChain(Pose(Point(1 1), 0.5))',
   tstzset '{2001-01-01, 2001-01-02}'));
--- {PoseChain(Pose(POINT(1 1),0.5))@2001-01-01, PoseChain(Pose(POINT(1 1),0.5))@2001-01-02}
+-- {PoseChain(Pose(POINT(1 1),0.5))@2001-01-01,
+-- PoseChain(Pose(POINT(1 1),0.5))@2001-01-02}
 SELECT asEWKT(tposechain(posechain 'PoseChain(Pose(Point(1 1), 0.5))',
   tstzspan '[2001-01-01, 2001-01-02]'));
--- [PoseChain(Pose(POINT(1 1),0.5))@2001-01-01, PoseChain(Pose(POINT(1 1),0.5))@2001-01-02]
+-- [PoseChain(Pose(POINT(1 1),0.5))@2001-01-01,
+-- PoseChain(Pose(POINT(1 1),0.5))@2001-01-02]
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -452,7 +458,8 @@ SELECT asEWKT(round(tpose(tposechain
 -- Pose(POINT(10 0),0)@2001-01-01
 SELECT asEWKT(round((tposechain
   '[PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01,
-    PoseChain(Pose(Point(0 0), 1.5707963267948966), Pose(Point(10 0), 0))@2001-01-03]')::tpose, 6));
+    PoseChain(Pose(Point(0 0), 1.5707963267948966), Pose(Point(10 0),
+  0))@2001-01-03]')::tpose, 6));
 /* Interp=Step;[Pose(POINT(10 0),0)@2001-01-01,
    Pose(POINT(0 10),1.570796)@2001-01-03] */
 </programlisting>

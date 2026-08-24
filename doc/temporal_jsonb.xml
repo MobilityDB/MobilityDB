@@ -203,7 +203,8 @@ SELECT minusValues(jsonbset '[["Grand Place", "La Bourse"],
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
-SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}' ? text 'units';
 -- {t,f}
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}'
   ?| ARRAY[text 'units', text 'lights'];
@@ -307,9 +308,11 @@ SELECT minusValues(textset '[{"speed": 10}, null,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
-SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}' @? '$.units';
 -- {t,f}
-SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}',
   '$.speed ? (@ &gt; $min)', '{"min": 15}');
 -- {t,f}
 </programlisting>
@@ -328,9 +331,11 @@ SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
-SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
 -- {t,f}
-SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}',
   '$.speed &gt; $min', '{"min": 15}');
 -- {t,f}
 </programlisting>
@@ -715,7 +720,8 @@ SELECT tjsonbSeqSet(tjsonb '"{\"vehicleId\": 1,\"location\":\"Point(1 1)\"}"@200
 				<para>Transform a temporal JSONB value to another interpolation</para>
 				<para><varname>setInterp(tjsonb,interp) → tjsonb</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT setInterp(tjsonb '"{\"vehicleId\": 1,\"location\": \"Point(1 1)\"}"@2001-01-01','step');
+SELECT setInterp(tjsonb
+  '"{\"vehicleId\": 1,\"location\": \"Point(1 1)\"}"@2001-01-01','step');
 -- [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01]
 SELECT setInterp(tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01],
   [{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02]}', 'discrete');
@@ -810,7 +816,8 @@ SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 SELECT ttext '[{"speed": {"unit": "km", "value": 10}}@2001-01-01, 
   {"speed": {"unit": "km", "value": 20}}@2001-01-02]' #> ARRAY[text 'speed', 'value'];
 -- {["10"@2001-01-01, "20"@2001-01-02]}
-SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}@2001-01-01, 
+SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place",
+  "La Bourse"]}@2001-01-01, 
   {"position":"Point(2 2)", "PoIs":["Palais Royal", "Manneken Pis"]}@2001-01-03]' #>>
   ARRAY[text 'PoIs', '1'];
 -- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-03]

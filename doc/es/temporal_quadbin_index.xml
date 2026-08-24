@@ -31,7 +31,8 @@ SELECT tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02],
 		<para>El tipo acepta modificadores de tipo (<varname>typmod</varname>) para restringir una columna a un subtipo específico: <varname>Instant</varname>, <varname>Sequence</varname>, o <varname>SequenceSet</varname>.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
-SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
+SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01,
+  48427fffffffffff@2001-01-02]}';
 -- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
 </programlisting>

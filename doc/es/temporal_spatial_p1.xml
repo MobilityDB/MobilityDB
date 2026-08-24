@@ -98,9 +98,11 @@ SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(10 0,10 10))');
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 1), 6));
 -- CURVEPOLYGON(CIRCULARSTRING(-1 0,1 0,-1 0))
-SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1, 'join=mitre'), 6));
+SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
+  'join=mitre'), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE((1 1,9 1),(9 1,9 9),(9 9,1 9),(1 9,1 1)))
-SELECT ST_AsText(round(Buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
+SELECT ST_AsText(round(Buffer(geometry
+  'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
 </programlisting>
 			</listitem>
@@ -613,7 +615,8 @@ SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));
 /* {POINT Z (1.12 1.12 1.12)@2001-01-01, POINT Z (2 2 2)@2001-01-02,
    POINT Z (1.12 1.12 1.12)@2001-01-03} */
-SELECT asText(round(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001-01-01', 2));
+SELECT asText(round(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001-01-01',
+  2));
 -- LINESTRING(1.12 1.12,2.12 2.12)@2001-01-01
 </programlisting>
 			</listitem>

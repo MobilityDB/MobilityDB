@@ -31,7 +31,8 @@ SELECT tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02],
 		<para>The type accepts type modifiers (<varname>typmod</varname>) to constrain a column to a specific subtype: <varname>Instant</varname>, <varname>Sequence</varname>, or <varname>SequenceSet</varname>.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
-SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
+SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01,
+  48427fffffffffff@2001-01-02]}';
 -- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
 </programlisting>
