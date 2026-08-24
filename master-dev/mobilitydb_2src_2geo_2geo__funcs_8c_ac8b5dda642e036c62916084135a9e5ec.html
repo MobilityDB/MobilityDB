@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Geom_is_simple</title>
+<title>MobilityDB: Geom_relate</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,21 +81,21 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2geo_2geo__funcs_8c_af6b388c34bcd2b3e7ea17ae8e49ebcf9.html#af6b388c34bcd2b3e7ea17ae8e49ebcf9">Geom_buffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2geo_2geo__funcs_8c_a4da25e15ad69daacb7bf4b03bc16f633.html#a4da25e15ad69daacb7bf4b03bc16f633">Geom_convex_hull</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2geo_2geo__funcs_8c_aed5242e43255807c9cf58897f3f03f00.html#aed5242e43255807c9cf58897f3f03f00">Geom_is_simple</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2geo_2geo__funcs_8c_aed5242e43255807c9cf58897f3f03f00.html#aed5242e43255807c9cf58897f3f03f00">Geom_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2geo_2geo__funcs_8c_afe90b42b8db56ac47e7e467b929f8ab5.html#afe90b42b8db56ac47e7e467b929f8ab5">Geom_oriented_envelope</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2geo_2geo__funcs_8c_ac8b5dda642e036c62916084135a9e5ec.html#ac8b5dda642e036c62916084135a9e5ec">Geom_relate</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2geo_2geo__funcs_8c_ac8b5dda642e036c62916084135a9e5ec.html#ac8b5dda642e036c62916084135a9e5ec">Geom_relate</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aed5242e43255807c9cf58897f3f03f00" name="aed5242e43255807c9cf58897f3f03f00"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed5242e43255807c9cf58897f3f03f00">&#9670;&#160;</a></span>Geom_is_simple()</h2>
+<a id="ac8b5dda642e036c62916084135a9e5ec" name="ac8b5dda642e036c62916084135a9e5ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8b5dda642e036c62916084135a9e5ec">&#9670;&#160;</a></span>Geom_relate()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Geom_is_simple </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Geom_relate </td>
           <td>(</td>
           <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -104,7 +104,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a geometry has no anomalous point, which is a point at which it crosses or touches itself @sqlfn isSimple() </p>
+<p>Return the DE-9IM intersection matrix of two geometries @sqlfn relate() </p>
 
 </div>
 </div>

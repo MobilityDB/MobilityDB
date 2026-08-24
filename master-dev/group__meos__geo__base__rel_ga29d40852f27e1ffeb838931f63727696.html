@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geom_disjoint2d</title>
+<title>MobilityDB: geom_relate</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -83,28 +83,28 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga2d318481a308c8a7f92709c21480118f.html#ga2d318481a308c8a7f92709c21480118f">geog_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gabdddabbac6830ffdc98a4fd98a79075d.html#gabdddabbac6830ffdc98a4fd98a79075d">geom_contains</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga2448e79006b40a02efcfcf151343303e.html#ga2448e79006b40a02efcfcf151343303e">geom_covers</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__rel_gaf36cfbd72f603112f8782375b46c1a69.html#gaf36cfbd72f603112f8782375b46c1a69">geom_disjoint2d</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gaf36cfbd72f603112f8782375b46c1a69.html#gaf36cfbd72f603112f8782375b46c1a69">geom_disjoint2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga4e370d139ce7131490d898a6d8f619ea.html#ga4e370d139ce7131490d898a6d8f619ea">geom_dwithin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga3f306b295cbca018ce74fa93f9e95c81.html#ga3f306b295cbca018ce74fa93f9e95c81">geom_dwithin2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gaada21edfdb5feded6b20d0c044c881c9.html#gaada21edfdb5feded6b20d0c044c881c9">geom_dwithin3d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga1c91cbc35b697ebfecea28149a2d469f.html#ga1c91cbc35b697ebfecea28149a2d469f">geom_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gaa785f0800293d68a7883434ba9684544.html#gaa785f0800293d68a7883434ba9684544">geom_intersects2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga92ee6e2f8934c05d5c25127ea0213f8b.html#ga92ee6e2f8934c05d5c25127ea0213f8b">geom_intersects3d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga29d40852f27e1ffeb838931f63727696.html#ga29d40852f27e1ffeb838931f63727696">geom_relate</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__rel_ga29d40852f27e1ffeb838931f63727696.html#ga29d40852f27e1ffeb838931f63727696">geom_relate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga03c25b0533ce2ec1c3676d3a31a52834.html#ga03c25b0533ce2ec1c3676d3a31a52834">geom_relate_pattern</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga13458da7bc846a1cb07c7218a5f21bd8.html#ga13458da7bc846a1cb07c7218a5f21bd8">geom_touches</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaf36cfbd72f603112f8782375b46c1a69" name="gaf36cfbd72f603112f8782375b46c1a69"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaf36cfbd72f603112f8782375b46c1a69">&#9670;&#160;</a></span>geom_disjoint2d()</h2>
+<a id="ga29d40852f27e1ffeb838931f63727696" name="ga29d40852f27e1ffeb838931f63727696"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga29d40852f27e1ffeb838931f63727696">&#9670;&#160;</a></span>geom_relate()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool geom_disjoint2d </td>
+          <td class="memname">char * geom_relate </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
           <td class="paramname"><em>gs1</em>, </td>
@@ -123,14 +123,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if two geometries are disjoint in 2D. </p>
+<p>Return the DE-9IM intersection matrix of two geometries. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_Disjoint(PG_FUNCTION_ARGS)</code> </dd></dl>
+<p>The matrix is the native one, so a circular arc is met on its own circle rather than on the chords a linearization would put in its place. <a class="el" href="group__meos__geo__base__rel_ga03c25b0533ce2ec1c3676d3a31a52834.html#ga03c25b0533ce2ec1c3676d3a31a52834">geom_relate_pattern()</a> answers whether a pattern matches it, which is the question a caller holding a pattern asks; this entry answers the matrix itself, which is what a caller without one needs </p><dl class="section return"><dt>Returns</dt><dd>A newly allocated string of nine characters, <code>NULL</code> on error </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_Relate(geometry, geometry)</code> @csqlfn <a class="el" href="mobilitydb_2src_2geo_2geo__funcs_8c_ac8b5dda642e036c62916084135a9e5ec.html#ac8b5dda642e036c62916084135a9e5ec" title="Return the DE-9IM intersection matrix of two geometries @sqlfn relate()">Geom_relate()</a> </dd></dl>
 
 </div>
 </div>

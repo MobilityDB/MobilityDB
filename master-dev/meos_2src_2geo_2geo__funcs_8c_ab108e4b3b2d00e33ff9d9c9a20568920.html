@@ -311,7 +311,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the edges a DE-9IM cell is computed on. </p>
-<p >Every geometry answers with its own edges, except a collection, whose topology is that of the union of its components </p>
+<p >Every geometry answers with its own edges, except a value holding several components, whose topology is that of their union. Two members of a multipolygon may share a boundary edge &ndash; edge-adjacent polygons are a valid multipolygon &ndash; and that edge lies in the interior of what they cover together, so reading the members' own edges reports it as boundary </p>
 
 </div>
 </div>
