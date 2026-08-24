@@ -107,7 +107,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Install the pgPointCloud library handlers for standalone MEOS. </p>
-<p >The bundled libpc.a leaves its allocator, deallocator and message handlers as NULL function pointers until a host installs them. The PG backend does this in <code>mobilitydb_init</code> via <code>pc_set_handlers</code> (palloc-based). A standalone MEOS program has no such entry point, so the first libpc call that allocates or reports (<code>pc_schema_from_xml</code>, <code>pc_point_get_x</code>, …) dereferences a NULL handler and crashes. Installing the default system allocator/message handlers here makes a standalone MEOS process symmetric with the PG backend. Called from <code>meos_initialize</code> under <code><a class="el" href="meos_2src_2pointcloud_2CMakeLists_8txt_a341d660ed55d377b2f683badc2e8b87e.html#a341d660ed55d377b2f683badc2e8b87e">if</a></code> POINTCLOUD. </p>
+<p >The bundled libpc.a leaves its allocator, deallocator and message handlers as NULL function pointers until a host installs them. The PG backend does this in <code>mobilitydb_init</code> via <code>pc_set_handlers</code> (palloc-based). A standalone MEOS program has no such entry point, so the first libpc call that allocates or reports (<code>pc_schema_from_xml</code>, <code>pc_point_get_x</code>, …) dereferences a NULL handler and crashes. Installing the default system allocator/message handlers here makes a standalone MEOS process symmetric with the PG backend. Called from <code>meos_initialize</code> under <code><a class="el" href="meos_2src_2pointcloud_2CMakeLists_8txt_aa6a43ac9baecd234ffb5ffcdd2246831.html#aa6a43ac9baecd234ffb5ffcdd2246831">if</a></code> POINTCLOUD. </p>
 
 </div>
 </div>
