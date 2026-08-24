@@ -43,6 +43,7 @@ CREATE FUNCTION aContains(geometry, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aContains($1, {CV2}) $$;
+-- @IFNOT point_target
 
 CREATE FUNCTION eContains({TEMP}, geometry)
   RETURNS boolean
@@ -52,6 +53,8 @@ CREATE FUNCTION aContains({TEMP}, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aContains({CV1}, $2) $$;
+-- @ENDIF
+-- @IFNOT point_target
 
 CREATE FUNCTION eContains({TEMP}, {TEMP})
   RETURNS boolean
@@ -63,6 +66,7 @@ CREATE FUNCTION aContains({TEMP}, {TEMP})
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aContains({CV1},
                           {CV2}) $$;
+-- @ENDIF
 
 /*****************************************************************************
  * Ever/always covers
@@ -76,6 +80,7 @@ CREATE FUNCTION aCovers(geometry, {TEMP})
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aCovers($1, {CV2}) $$;
+-- @IFNOT point_target
 
 CREATE FUNCTION eCovers({TEMP}, geometry)
   RETURNS boolean
@@ -85,6 +90,8 @@ CREATE FUNCTION aCovers({TEMP}, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aCovers({CV1}, $2) $$;
+-- @ENDIF
+-- @IFNOT point_target
 
 CREATE FUNCTION eCovers({TEMP}, {TEMP})
   RETURNS boolean
@@ -96,6 +103,7 @@ CREATE FUNCTION aCovers({TEMP}, {TEMP})
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aCovers({CV1},
                         {CV2}) $$;
+-- @ENDIF
 
 /*****************************************************************************
  * Ever/always disjoint
@@ -211,6 +219,7 @@ CREATE FUNCTION aTouches({TEMP}, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aTouches({CV1}, $2) $$;
+-- @IFNOT point_target
 
 CREATE FUNCTION eTouches({TEMP}, {TEMP})
   RETURNS boolean
@@ -222,6 +231,7 @@ CREATE FUNCTION aTouches({TEMP}, {TEMP})
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aTouches({CV1},
                          {CV2}) $$;
+-- @ENDIF
 
 /*****************************************************************************
  * Ever/always dwithin

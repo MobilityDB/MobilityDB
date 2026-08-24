@@ -1,0 +1,139 @@
+SELECT eContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.1)@2000-01-01');
+ econtains 
+-----------
+ 
+(1 row)
+
+SELECT eContains(geometry 'Point(1 1)', NULL::tpose);
+ econtains 
+-----------
+ 
+(1 row)
+
+SELECT aDwithin(NULL::tpose, geometry 'Point(1 1)', 1.0);
+ adwithin 
+----------
+ 
+(1 row)
+
+SELECT eDwithin(tpose 'Pose(Point(1 1), 0.1)@2000-01-01', NULL::geometry, 1.0);
+ edwithin 
+----------
+ 
+(1 row)
+
+WITH t AS (
+  SELECT tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(3 3), 0.1)@2001-01-03]' AS seq1,
+         tpose '[Pose(Point(5 5), 0.2)@2001-01-01, Pose(Point(7 7), 0.2)@2001-01-03]' AS seq2,
+         geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))' AS region,
+         geometry 'Point(9 9)' AS far_point
+)
+SELECT
+  eContains(region, seq1) = eContains(region, seq1::tgeompoint) AS ec_geo_ps,
+  eCovers(region, seq1) = eCovers(region, seq1::tgeompoint) AS ecv_geo_ps,
+  eDisjoint(far_point, seq1) = eDisjoint(far_point, seq1::tgeompoint) AS edj_geo_ps,
+  eDisjoint(seq1, far_point) = eDisjoint(seq1::tgeompoint, far_point) AS edj_ps_geo,
+  eDisjoint(seq1, seq2) = eDisjoint(seq1::tgeompoint, seq2::tgeompoint) AS edj_ps_ps,
+  eIntersects(region, seq1) = eIntersects(region, seq1::tgeompoint) AS ei_geo_ps,
+  eIntersects(seq1, region) = eIntersects(seq1::tgeompoint, region) AS ei_ps_geo,
+  eIntersects(seq1, seq2) = eIntersects(seq1::tgeompoint, seq2::tgeompoint) AS ei_ps_ps,
+  eTouches(region, seq1) = eTouches(region, seq1::tgeompoint) AS etc_geo_ps,
+  eTouches(seq1, region) = eTouches(seq1::tgeompoint, region) AS etc_ps_geo,
+  eDwithin(region, seq1, 1.0) = eDwithin(region, seq1::tgeompoint, 1.0) AS edw_geo_ps,
+  eDwithin(seq1, region, 1.0) = eDwithin(seq1::tgeompoint, region, 1.0) AS edw_ps_geo,
+  eDwithin(seq1, seq2, 1.0) = eDwithin(seq1::tgeompoint, seq2::tgeompoint, 1.0) AS edw_ps_ps
+FROM t;
+ ec_geo_ps | ecv_geo_ps | edj_geo_ps | edj_ps_geo | edj_ps_ps | ei_geo_ps | ei_ps_geo | ei_ps_ps | etc_geo_ps | etc_ps_geo | edw_geo_ps | edw_ps_geo | edw_ps_ps 
+-----------+------------+------------+------------+-----------+-----------+-----------+----------+------------+------------+------------+------------+-----------
+ t         | t          | t          | t          | t         | t         | t         | t        | t          | t          | t          | t          | t
+(1 row)
+
+WITH t AS (
+  SELECT tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(3 3), 0.1)@2001-01-03]' AS seq1,
+         tpose '[Pose(Point(5 5), 0.2)@2001-01-01, Pose(Point(7 7), 0.2)@2001-01-03]' AS seq2,
+         geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))' AS region,
+         geometry 'Point(9 9)' AS far_point
+)
+SELECT
+  aContains(region, seq1) = aContains(region, seq1::tgeompoint) AS ac_geo_ps,
+  aCovers(region, seq1) = aCovers(region, seq1::tgeompoint) AS acv_geo_ps,
+  aDisjoint(far_point, seq1) = aDisjoint(far_point, seq1::tgeompoint) AS adj_geo_ps,
+  aDisjoint(seq1, far_point) = aDisjoint(seq1::tgeompoint, far_point) AS adj_ps_geo,
+  aDisjoint(seq1, seq2) = aDisjoint(seq1::tgeompoint, seq2::tgeompoint) AS adj_ps_ps,
+  aIntersects(region, seq1) = aIntersects(region, seq1::tgeompoint) AS ai_geo_ps,
+  aIntersects(seq1, region) = aIntersects(seq1::tgeompoint, region) AS ai_ps_geo,
+  aIntersects(seq1, seq2) = aIntersects(seq1::tgeompoint, seq2::tgeompoint) AS ai_ps_ps,
+  aTouches(region, seq1) = aTouches(region, seq1::tgeompoint) AS atc_geo_ps,
+  aTouches(seq1, region) = aTouches(seq1::tgeompoint, region) AS atc_ps_geo,
+  aDwithin(region, seq1, 1.0) = aDwithin(region, seq1::tgeompoint, 1.0) AS adw_geo_ps,
+  aDwithin(seq1, region, 1.0) = aDwithin(seq1::tgeompoint, region, 1.0) AS adw_ps_geo,
+  aDwithin(seq1, seq2, 1.0) = aDwithin(seq1::tgeompoint, seq2::tgeompoint, 1.0) AS adw_ps_ps
+FROM t;
+ ac_geo_ps | acv_geo_ps | adj_geo_ps | adj_ps_geo | adj_ps_ps | ai_geo_ps | ai_ps_geo | ai_ps_ps | atc_geo_ps | atc_ps_geo | adw_geo_ps | adw_ps_geo | adw_ps_ps 
+-----------+------------+------------+------------+-----------+-----------+-----------+----------+------------+------------+------------+------------+-----------
+ t         | t          | t          | t          | t         | t         | t         | t        | t          | t          | t          | t          | t
+(1 row)
+
+SELECT eIntersects(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(3 3), 0.1)@2001-01-03]',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(tpose '{Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(3 3), 0.1)@2001-01-03}',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aDisjoint(geometry 'Point(9 9)',
+  tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(3 3), 0.1)@2001-01-03]');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDwithin(tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(3 3), 0.1)@2001-01-03]',
+  geometry 'Point(9 9)', 1.0);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT eContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tpose 'Pose(Point(0 0), 0.1)@2001-01-01');
+ econtains 
+-----------
+ f
+(1 row)
+
+SELECT eCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tpose 'Pose(Point(0 0), 0.1)@2001-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eTouches(tpose 'Pose(Point(0 0), 0.1)@2001-01-01',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+ etouches 
+----------
+ t
+(1 row)
+
+SELECT eIntersects(tpose 'Pose(Point(1 1), 0.1)@2001-01-01',
+  tpose 'Pose(Point(1 1), 0.5)@2001-01-01');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eDwithin(tpose 'Pose(Point(1 1), 0.1)@2001-01-01',
+  tpose 'Pose(Point(1 2), 0.5)@2001-01-01', 2.0);
+ edwithin 
+----------
+ t
+(1 row)
+
