@@ -1746,6 +1746,7 @@ meos_point_in_polygon(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   return result;
 }
 
+#if GEOS
 /**
  * @brief Tranform a PostGIS geometry to a GEOS one
  */
@@ -1786,6 +1787,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
   lwgeom_free(lwgeom);
   return result;
 }
+#endif /* GEOS */
 
 /**
  * @brief Return the type that keeps a pair of geometries from the native engine

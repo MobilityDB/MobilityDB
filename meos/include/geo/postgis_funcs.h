@@ -88,8 +88,10 @@ extern LWGEOM *box3d_to_lwgeom(BOX3D *box);
 
 /* Functions adapted from lwgeom_geos.c */
 
+#if GEOS
 extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
 extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
+#endif /* GEOS */
 
 extern bool geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   spatialRel rel);
