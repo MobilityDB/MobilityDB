@@ -2,7 +2,7 @@ INSERT INTO pointcloud_schemas (pcid, srid, compression, description) VALUES
   (90, 4326, 'none', 'Three doubles');
 INSERT 0 1
 INSERT INTO pointcloud_dimensions
-    (pcid, position, name, interpretation, scale, "offset", active, description)
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset, active, description)
   VALUES
   (90, 1, 'X', 'double', 1, 0, true, 'Easting'),
   (90, 2, 'Y', 'double', 1, 0, true, 'Northing'),
@@ -40,30 +40,30 @@ SELECT pcpoint(999, 1, 2, 3);
 ERROR:  No schema registered for pcid 999
 INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (92, 4326, 'none');
 INSERT 0 1
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (92, 1, 'X', 'double'), (92, 2, 'Y', 'double'), (92, 3, 'Z', 'double');
 INSERT 0 3
 SELECT pcpatch(pcpoint(90, 1, 2, 3), pcpoint(92, 4, 5, 6));
 ERROR:  Operation on pcpoint values with different schemas: 90 vs 92
 DELETE FROM pointcloud_schemas WHERE pcid = 92;
 DELETE 1
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 1, 'W', 'double');
 ERROR:  duplicate key value violates unique constraint "pointcloud_dimensions_pkey"
-DETAIL:  Key (pcid, "position")=(90, 1) already exists.
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+DETAIL:  Key (pcid, dim_no)=(90, 1) already exists.
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 4, 'X', 'double');
-ERROR:  duplicate key value violates unique constraint "pointcloud_dimensions_pcid_name_key"
-DETAIL:  Key (pcid, name)=(90, X) already exists.
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+ERROR:  duplicate key value violates unique constraint "pointcloud_dimensions_pcid_dim_name_key"
+DETAIL:  Key (pcid, dim_name)=(90, X) already exists.
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 4, 'W', 'float128');
 ERROR:  new row for relation "pointcloud_dimensions" violates check constraint "pointcloud_dimensions_interpretation_check"
 DETAIL:  Failing row contains (90, 4, W, float128, 1, 0, t, null).
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 0, 'W', 'double');
-ERROR:  new row for relation "pointcloud_dimensions" violates check constraint "pointcloud_dimensions_position_check"
+ERROR:  new row for relation "pointcloud_dimensions" violates check constraint "pointcloud_dimensions_dim_no_check"
 DETAIL:  Failing row contains (90, 0, W, double, 1, 0, t, null).
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (91, 1, 'X', 'double');
 ERROR:  insert or update on table "pointcloud_dimensions" violates foreign key constraint "pointcloud_dimensions_pcid_fkey"
 DETAIL:  Key (pcid)=(91) is not present in table "pointcloud_schemas".
@@ -84,7 +84,7 @@ SELECT pointCloudSchemaCompression(90);
 
 UPDATE pointcloud_schemas SET compression = 'none' WHERE pcid = 90;
 UPDATE 1
-UPDATE pointcloud_dimensions SET active = false WHERE pcid = 90 AND position = 3;
+UPDATE pointcloud_dimensions SET active = false WHERE pcid = 90 AND dim_no = 3;
 UPDATE 1
 SELECT pointCloudSchemaNDims(90);
  pointcloudschemandims 
@@ -92,7 +92,7 @@ SELECT pointCloudSchemaNDims(90);
                      2
 (1 row)
 
-UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND position = 3;
+UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND dim_no = 3;
 UPDATE 1
 SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,
   pointCloudSchemaNDims(999) AS unknown_ndims;
