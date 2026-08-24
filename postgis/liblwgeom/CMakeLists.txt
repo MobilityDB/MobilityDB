@@ -100,3 +100,15 @@ set_property(TARGET liblwgeom PROPERTY POSITION_INDEPENDENT_CODE ON)
 # standard flags. /* MEOS */
 set_source_files_properties(lwin_wkt_parse.c lwin_wkt_lex.c
   PROPERTIES COMPILE_OPTIONS "-w")
+
+# A build carrying no GEOS reports the version of the library it does not have
+# as 0, which is below every version a guard in these files tests for, so the
+# bodies those guards choose are the ones that return at once and the arguments
+# they were given go unread. The files are vendored, so the parameters are not
+# ours to mark, and the suppression is confined to the build that turns the
+# bodies into stubs: with GEOS present the files are linted as the rest of
+# liblwgeom is. /* MEOS */
+if(NOT GEOS)
+  set_source_files_properties(lwgeom_geos.c lwgeom_geos_clean.c
+    PROPERTIES COMPILE_OPTIONS "-w")
+endif()
