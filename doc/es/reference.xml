@@ -1836,6 +1836,29 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+			<sect3>
+				<title>Agregaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_tCount"><varname>tCount</varname></link>: Conteo temporal</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_wCount"><varname>wCount</varname></link>: Conteo de ventana</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_extent"><varname>extent</varname></link>: Extensión del cuadro delimitador</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_mergeAgg"><varname>mergeAgg</varname></link>: Fusionar las cadenas de poses temporales agregadas. El nombre <varname>merge</varname> denota la misma agregación</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_appendInstantAgg"><varname>appendInstantAgg</varname></link>: Agregar los instantes agregados en una secuencia. El nombre <varname>appendInstant</varname> denota la misma agregación</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_appendSequenceAgg"><varname>appendSequenceAgg</varname></link>: Agregar las secuencias agregadas en un conjunto de secuencias. El nombre <varname>appendSequence</varname> denota la misma agregación</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 	</sect1>
 

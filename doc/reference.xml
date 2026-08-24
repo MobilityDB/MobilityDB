@@ -1839,6 +1839,29 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+			<sect3>
+				<title>Aggregations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_tCount"><varname>tCount</varname></link>: Temporal count</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_wCount"><varname>wCount</varname></link>: Window count</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_extent"><varname>extent</varname></link>: Bounding box extent</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_mergeAgg"><varname>mergeAgg</varname></link>: Merge the aggregated temporal pose chains. The name <varname>merge</varname> denotes the same aggregate</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_appendInstantAgg"><varname>appendInstantAgg</varname></link>: Append the aggregated instants into a sequence. The name <varname>appendInstant</varname> denotes the same aggregate</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_appendSequenceAgg"><varname>appendSequenceAgg</varname></link>: Append the aggregated sequences into a sequence set. The name <varname>appendSequence</varname> denotes the same aggregate</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 	</sect1>
 

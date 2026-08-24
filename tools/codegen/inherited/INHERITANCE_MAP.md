@@ -546,9 +546,9 @@ Reading the table:
   `subtypes:` `files:` track (§3): cbuffer, npoint, pose, rgeo (`[compops, topops,
   posops, indexes]`) and h3, quadbin (`[compops, posops, topops, spatialrels, gist,
   spgist]`).
-- **`aggfuncs` is generated for cbuffer, npoint, pose, rgeo, h3, quadbin** via the
-  whole-file `aggregate_families` axis (§4b), not the `subtypes:` track (`--gaps`:
-  `aggregate_families` 18/18, full coverage).
+- **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin**
+  via the whole-file `aggregate_families` axis (§4b), not the `subtypes:` track
+  (`--gaps`: `aggregate_families` 19/19, full coverage).
 - **`tempsp.rels` is generated for cbuffer, npoint, pose, rgeo, h3, quadbin** via
   `tempspatialrel_families` (§3/§5) — native for cbuffer, cast-delegated for the
   other five (`--gaps`: `tempspatialrel_families` 10/10, full `tspatial`-class
@@ -614,12 +614,12 @@ its last edit:
   B-tree / hash` for the canonical banner, `boolean`/`integer` for `bool`/`int4`,
   eq-first ordering, a one-line operator head, wider opclass spacing). Adding the
   divider gives each behaviour one owner and no transcription.
-- `aggregate_families`, **18/19**: `tposechain`. `tempspatialrel_families`,
-  **10/13**: `tposechain`, `tpcpoint`, `tpcpatch`.
-  ⛔ These two project onto a file the family does NOT have — `tpose` carries
-  `111_tpose_aggfuncs.in.sql` and `114_tpose_tempspatialrels.in.sql`, posechain
-  carries neither — so closing them ADDS SURFACE. That is a functional decision
-  for the owner, not a governance one.
+- `aggregate_families` is **19/19**: `561_tposechain_aggfuncs.in.sql` carries the
+  surface its siblings carry, every statement binding a generic transition or final
+  function, so the family needs no kernel of its own.
+  `tempspatialrel_families`, **10/13**: `tposechain`, `tpcpoint`, `tpcpatch`.
+  ⛔ That one projects onto a file the family does NOT have, so closing it ADDS
+  SURFACE. That is a functional decision for the owner, not a governance one.
 - `distance_families`, **10/15** of the value-domain types: `posechainset`,
   `h3indexset`, `quadbinset`, `pcpointset`, `pcpatchset`. `posechainset` is
   deliberate and `setfamilies.yaml` says so in place — a pose chain has no

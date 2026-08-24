@@ -4,6 +4,7 @@ SET(LOCAL_FILES
   552_tposechain
   553_tposechain_spatialfuncs
   554_tposechain_compops
+  561_tposechain_aggfuncs
   558_tposechain_topops
   559_tposechain_posops
   )
