@@ -275,12 +275,11 @@ int main(void)
    * root belongs to the rounding those coordinates carry instead, so the
    * scaled form bounds a node by 0.318 metres at a projected 6.4e6 and reads
    * two crossings a centimetre apart as one. The witness is a rectangle with
-   * a notch narrower than that, whose buffer comes back as a surface of a
-   * seventieth of the area it must have -- and a buffer that answers at all
-   * covers the geometry it is taken of. The SAME shape at the origin, where
-   * the two forms agree, is the control: it answers, and it answers a surface
-   * of 703.14, the rounded 32 by 22 rectangle the notch is too narrow to
-   * reach into */
+   * a notch narrower than that. A buffer is the same shape wherever the
+   * geometry sits, so the two copies below answer the SAME surface: the
+   * rounded 32 by 22 rectangle of area 703.14, the notch being too narrow for
+   * the offset to reach into. The copy at the origin, where every tolerance
+   * is far from its limits, is what the projected one is read against */
   const char *notched[] = {
     "Polygon((0 0,30 0,30 20,15.025 20,15.025 18,14.975 18,14.975 20,"
       "0 20,0 0))",
@@ -295,20 +294,15 @@ int main(void)
     assert(g != NULL);
     meos_errno_reset();
     GSERIALIZED *b = geom_buffer(g, 1.0, "");
-    /* A buffer that is not answered covers nothing and claims nothing */
-    bool covers = b ? geom_relate_pattern(b, g, notched_patt) : true;
     printf("geom_buffer(a notched rectangle %s the origin): answered %d, "
-      "covers %d\n", i ? "away from" : "at", b != NULL, b != NULL && covers);
-    /* At the origin the buffer exists, and wherever it exists it covers */
-    if (i == 0)
-    {
-      assert(b != NULL);
-      assert(meos_errno() == 0);
-    }
+      "errno %d\n", i ? "away from" : "at", b != NULL, meos_errno());
+    assert(b != NULL);
+    assert(meos_errno() == 0);
+    bool covers = geom_relate_pattern(b, g, notched_patt);
+    printf("  it covers the geometry it is taken of: %d\n", covers);
     assert(covers == true);
-    if (b)
-      free(b);
-    free(g);
+    assert(meos_errno() == 0);
+    free(b); free(g);
     meos_errno_reset();
   }
 
