@@ -47,6 +47,10 @@ extern bool geo_combine_clusters(UNIONFIND *uf, LWGEOM **geoms,
   uint32_t ngeoms, LWGEOM ***clusters, uint32_t *nclusters);
 extern bool geo_cluster_within_distance(LWGEOM **geoms, uint32_t ngeoms,
   double tolerance, LWGEOM ***clusters, uint32_t *nclusters);
+extern bool geo_union_intersecting(LWGEOM **geoms, uint32_t ngeoms,
+  UNIONFIND *uf);
+extern bool geo_cluster_intersecting_geoms(LWGEOM **geoms, uint32_t ngeoms,
+  LWGEOM ***clusters, uint32_t *nclusters);
 
 /*****************************************************************************/
 

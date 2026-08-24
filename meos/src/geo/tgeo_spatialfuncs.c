@@ -1646,12 +1646,46 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
   if (! ensure_positive(ngeoms))
     return NULL;
 
-  int is3d = 0;
-  uint32_t nclusters, i, j;
-  int32_t srid = SRID_UNKNOWN;
-  bool gotsrid = false;
+  uint32_t i;
 
   /* TODO short-circuit for one element? */
+
+#if ! GEOS
+  /* The clustering of liblwgeom reaches GEOS for the index narrowing the pairs
+   * whose intersection it asks about, and for the predicate itself. The
+   * bounding boxes answer the narrowing and the native engine answers the
+   * predicate, so a build carrying no GEOS clusters as well as one that does */
+  LWGEOM **lwgeoms = palloc(ngeoms * sizeof(LWGEOM *));
+  for (i = 0; i < ngeoms; i++)
+    lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
+  LWGEOM **lw_results;
+  uint32_t nclusters_n;
+  bool ok = geo_cluster_intersecting_geoms(lwgeoms, ngeoms, &lw_results,
+    &nclusters_n);
+  /* The collections take ownership of the geometries they are built from */
+  pfree(lwgeoms);
+  if (! ok)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The clustering of geometries the native engine does not cover is "
+      "answered by the GEOS library, which this build excludes: configure "
+      "with -DGEOS=ON");
+    return NULL;
+  }
+  GSERIALIZED **res_n = palloc(nclusters_n * sizeof(GSERIALIZED *));
+  for (i = 0; i < nclusters_n; i++)
+  {
+    res_n[i] = geo_serialize(lw_results[i]);
+    lwgeom_free(lw_results[i]);
+  }
+  lwfree(lw_results);
+  *count = (int) nclusters_n;
+  return res_n;
+#else
+  int is3d = 0;
+  uint32_t nclusters, j;
+  int32_t srid = SRID_UNKNOWN;
+  bool gotsrid = false;
 
   /* Ok, we really need geos now ;) */
   GEOSContextHandle_t ctx = geos_get_context();
@@ -1705,6 +1739,7 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
   lwfree(geos_results);
   *count = nclusters;
   return result;
+#endif /* ! GEOS */
 }
 
 /**
