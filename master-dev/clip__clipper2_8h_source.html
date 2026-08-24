@@ -96,33 +96,33 @@ $(function() {
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment"> *****************************************************************************/</span></div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#ifndef __CLIP_CLIPPER2_H__</span></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#define __CLIP_CLIPPER2_H__</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &lt;postgres.h&gt;</span></div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#include &lt;liblwgeom.h&gt;</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &lt;<a class="code" href="meos_8h.html">meos.h</a>&gt;</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a0bd6481f39344cbbb6301c9908132ae6.html#a0bd6481f39344cbbb6301c9908132ae6">   48</a></span><span class="preprocessor">#define MEOS_CLIP_INTERSECTION 0</span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a94f49a9b363fb6e0e5f9143a2355ad71.html#a94f49a9b363fb6e0e5f9143a2355ad71">   49</a></span><span class="preprocessor">#define MEOS_CLIP_UNION        1</span></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a02b304b9b9e97850a0453625d8f740e7.html#a02b304b9b9e97850a0453625d8f740e7">   50</a></span><span class="preprocessor">#define MEOS_CLIP_DIFFERENCE   2</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_ae377de65f46a0154bc97a7e7cf707727.html#ae377de65f46a0154bc97a7e7cf707727">   51</a></span><span class="preprocessor">#define MEOS_CLIP_XOR          3</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="keyword">extern</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *<a class="code hl_function" href="clip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d.html#a4672aa8de6f59e88dfc0abca023f7f4d">clipper2_clip_poly_poly</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *subj,</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  <span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *clip, <span class="keywordtype">int</span> op);</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="keyword">extern</span> <a class="code hl_struct" href="structSpan.html">Span</a> *<a class="code hl_function" href="clip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1.html#aa6d59bd316d790fecbbee91f1e297ca1">clipper2_traj_poly_periods</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structTSequence.html">TSequence</a> *seq,</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  <span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, <span class="keywordtype">int</span> *out_count);</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>}</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span><span class="preprocessor">#endif </span><span class="comment">/* __CLIP_CLIPPER2_H__ */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#ifndef __CLIP_CLIPPER2_H__</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#define __CLIP_CLIPPER2_H__</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#include &lt;postgres.h&gt;</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &lt;liblwgeom.h&gt;</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#include &lt;<a class="code" href="meos_8h.html">meos.h</a>&gt;</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a0bd6481f39344cbbb6301c9908132ae6.html#a0bd6481f39344cbbb6301c9908132ae6">   49</a></span><span class="preprocessor">#define MEOS_CLIP_INTERSECTION 0</span></div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a94f49a9b363fb6e0e5f9143a2355ad71.html#a94f49a9b363fb6e0e5f9143a2355ad71">   50</a></span><span class="preprocessor">#define MEOS_CLIP_UNION        1</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a02b304b9b9e97850a0453625d8f740e7.html#a02b304b9b9e97850a0453625d8f740e7">   51</a></span><span class="preprocessor">#define MEOS_CLIP_DIFFERENCE   2</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_ae377de65f46a0154bc97a7e7cf707727.html#ae377de65f46a0154bc97a7e7cf707727">   52</a></span><span class="preprocessor">#define MEOS_CLIP_XOR          3</span></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="keyword">extern</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *<a class="code hl_function" href="clip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d.html#a4672aa8de6f59e88dfc0abca023f7f4d">clipper2_clip_poly_poly</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *subj,</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *clip, <span class="keywordtype">int</span> op);</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="keyword">extern</span> <a class="code hl_struct" href="structSpan.html">Span</a> *<a class="code hl_function" href="clip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1.html#aa6d59bd316d790fecbbee91f1e297ca1">clipper2_traj_poly_periods</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structTSequence.html">TSequence</a> *seq,</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>  <span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, <span class="keywordtype">int</span> *out_count);</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>}</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="preprocessor">#endif </span><span class="comment">/* __CLIP_CLIPPER2_H__ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="aclip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d_html_a4672aa8de6f59e88dfc0abca023f7f4d"><div class="ttname"><a href="clip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d.html#a4672aa8de6f59e88dfc0abca023f7f4d">clipper2_clip_poly_poly</a></div><div class="ttdeci">GSERIALIZED * clipper2_clip_poly_poly(const GSERIALIZED *subj, const GSERIALIZED *clip, int op)</div><div class="ttdoc">Clip two polygonal geometries via Clipper2.</div><div class="ttdef"><b>Definition:</b> clip_clipper2.cpp:298</div></div>
 <div class="ttc" id="aclip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1_html_aa6d59bd316d790fecbbee91f1e297ca1"><div class="ttname"><a href="clip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1.html#aa6d59bd316d790fecbbee91f1e297ca1">clipper2_traj_poly_periods</a></div><div class="ttdeci">Span * clipper2_traj_poly_periods(const TSequence *seq, const GSERIALIZED *gs, int *out_count)</div><div class="ttdoc">Compute the time spans during which a temporal-point trajectory is inside a polygon,...</div><div class="ttdef"><b>Definition:</b> clip_clipper2.cpp:551</div></div>
 <div class="ttc" id="ameos_8h_html"><div class="ttname"><a href="meos_8h.html">meos.h</a></div><div class="ttdoc">External API of the Mobility Engine Open Source (MEOS) library.</div></div>
