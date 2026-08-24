@@ -139,8 +139,78 @@ the two paths therefore states `active` on both sides, or it compares a statemen
 - **`pointcloud_formats` is pgPointCloud's**, created by that extension and read by `schema_cache.c:107` through a heap scan that errors when the relation is absent. Nothing here modifies it, and a database already registering schemas that way keeps working.
 - **The XML path stays.** A WKB blob may carry an embedded schema document for a `pcid` the backend has not seen, which `meos_pc_parse_xml_fn` handles; data written by other pgPointCloud tools stays readable.
 - ⇒ the two are alternative ways to state the same schema, and the SQL one is what a binding without a PostgreSQL catalog can offer.
-- **A file carrying the same fact is refused.** A CSV or XML file read from a path resembles `meos_set_ways_csv` and `meos_set_spatial_ref_sys_csv` closely enough to look canonical, which is what makes it a trap: the two tables already state the schema, so a file-based lookup is a second mechanism for one fact, and two mechanisms for one fact is the defect. It is also the larger build — an embedded blob, a temporary file and an RFC 4180 parser against a single registration call.
+## Why this reaches the bindings: one fact, two front ends
 
-## Why this reaches the bindings
+A binding outside a PostgreSQL backend reaches no catalog at all, so it cannot resolve a `pcid` and
+cannot construct any value whose bounding box needs the schema. The entry therefore belongs in MEOS
+rather than in any one binding — but the entry alone does not settle *how a user states a schema*,
+and that answer differs by host, because the hosts differ in what a user can write.
 
-A binding outside a PostgreSQL backend — MobilityDuck, MobilitySpark — reaches no catalog at all, so it cannot resolve a `pcid` and cannot construct any value whose bounding box needs the schema. Both are blocked on the same thing, so the entry belongs in MEOS rather than in either of them: each binding then materialises these two tables in its own host and calls the one entry.
+⭐ **A HOST STATES THE CATALOG IN ITS OWN IDIOM, AND MEOS HOLDS THE ONE CACHE THEY ALL RESOLVE
+THROUGH.** Two front ends, one mechanism:
+
+| host | states a schema as | reaches MEOS through |
+|---|---|---|
+| PostgreSQL, MobilityDuck, MobilitySpark | rows of the two tables | `meos_pc_schema_register_dims` |
+| standalone MEOS, JMEOS, GoMEOS, PyMEOS | a vendored pgPointCloud document | the document loader |
+
+The tables exist **because a SQL programmer cannot reasonably be asked to paste an XML document into
+a query**, and that is their whole scope: the ergonomics of a SQL host. It is not an argument that
+XML is wrong for a host with no SQL, where there is no table to write into and a file is the only
+thing a user has.
+
+⛔ **THE ENCODING OF THE VENDORED FILE IS ACCIDENTAL.** What matters is that MEOS ships the catalog
+for hosts that have no catalog of their own, under a default path a `meos_set_…` entry overrides.
+XML is chosen for point cloud schemas only because `pc_schema_from_xml` already reads it, so the
+payload costs no parser and stays the vendor's format rather than one of ours.
+
+⭐ **THIS IS THE ESTABLISHED PATTERN, NOT A NEW ONE.** Two catalogs in this tree already have exactly
+these two front ends, which is the strongest argument that a third should not invent a third shape:
+
+| catalog | SQL host | non-SQL host |
+|---|---|---|
+| spatial reference systems | PostGIS `spatial_ref_sys` | `meos/src/geo/spatial_ref_sys.csv`, `meos_set_spatial_ref_sys_csv` |
+| road network (`npoint`) | `public.ways` | `meos/examples/data/ways1000.csv`, `meos_set_ways_csv` |
+| point cloud schemas | `pointcloud_schemas` / `pointcloud_dimensions` | a vendored document |
+
+`ways_meos.c:58` states the second row in the code itself — the entry is described there as
+`meos_set_ways_csv()`, *"mirroring `meos_set_spatial_ref_sys_csv()`"*, each holding a default path
+(`/usr/local/share/ways1000.csv`, `/usr/local/share/spatial_ref_sys.csv`) that the entry overrides.
+
+⛔ **THE TWO FRONT ENDS DESYNCHRONISE, AND THAT IS ACCEPTED RATHER THAN REPAIRED.** A vendored
+`spatial_ref_sys.csv` is a snapshot; the PostGIS table is whatever the database holds. Nothing
+reconciles them, and the same holds here. ⇒ A trigger keeping one front end in step with the other
+is NOT the answer: it would exist in PostgreSQL alone, where the other hosts have nothing to
+synchronise, which is a host-specific special case rather than a shared mechanism.
+
+⚠️ **WHERE THE ANALOGY WITH `spatial_ref_sys.csv` STOPS.** The EPSG registry is universal reference
+data — every user wants 4326 — whereas a point cloud schema describes one user's own instrument.
+A vendored schema document is therefore a starting set, and the path override is the primary route
+rather than a fallback.
+
+⛔ **THE DOCUMENT CARRIES NEITHER `pcid` NOR `srid`.** `pc_schema_from_xml` reads neither; both are
+columns of `pointcloud_formats`, which is precisely why a table exists on the PostgreSQL side at all.
+A file holding several schemas therefore needs an envelope carrying them, and libpc defines none:
+its own fixtures (`pointcloud-pg/lib/cunit/data/*.xml`) put the reference system in
+`<Metadata name="spatialreference" type="id">`, so only the identifier is genuinely without a home.
+
+## Why the frame registry is seeded and this one is not
+
+`geopose_frames` looks like the same shape and is filled the opposite way: `120_geopose_frames.in.sql`
+runs `INSERT INTO geopose_frames … SELECT … FROM geoPoseFrames()`, seeding the table from a static C
+registry in `meos/src/pose/pose_geopose.c`. Nothing seeds `pointcloud_schemas`.
+
+⭐ **THE ASYMMETRY FOLLOWS FROM THE DATA AND IS NOT A DEFECT.** GeoPose frames are a **closed set
+fixed by a specification**, so MEOS can hold all of them at compile time and the table is a
+projection. A point cloud schema describes a user's own instrument, so MEOS can never know it, and
+there is nothing to seed. ⇒ a static registry is right for a closed catalog and wrong for an open
+one; reading the two tables as "the same thing done inconsistently" inverts the design.
+
+## A sibling worth tracking
+
+`npoint` faces the neighbouring problem: an `rid` identifies a route inside one pgRouting graph, so
+its meaning is local to the network that built it, and the `ways` registry that resolves it is
+gigabytes rather than a few hundred bytes. Discussion #863 works through it and reasons from both
+analogies used here — the `pcid` catalog for *interpreting* bytes, and the SRID registry for
+*identity that is stable everywhere*. The two front ends above are the part that transfers; what a
+catalog entry should contain is the part that does not.

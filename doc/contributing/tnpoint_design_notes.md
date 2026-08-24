@@ -30,7 +30,7 @@ The position component of a `tnpoint` is recoverable as a `tgeompoint` via the s
 
 An `npoint` value does not carry its own SRID; it inherits the SRID of the route referenced by its `rid` field. The set of known routes &#x2014; the **ways** registry &#x2014; is loaded into a per-process cache (see `meos/src/npoint/ways_meos.c`) the first time a network function runs, and is keyed by route gid. Every `npoint` accessor that needs the route geometry (`npoint_to_geompoint`, `npoint_to_stbox`, all spatial predicates and distance functions) consults this cache.
 
-In the PostgreSQL extension the cache is populated automatically from the `public.ways` table. In standalone MEOS the application must call `meos_register_ways(...)` with the route table before any `npoint` operation; `meos_finalize_ways()` is idempotent and can be called multiple times safely. Cross-type operations between an `npoint` and a geometry validate that the route's SRID matches the geometry's SRID; mismatches raise an explicit error rather than silently re-projecting.
+In the PostgreSQL extension the cache is populated automatically from the `public.ways` table. In standalone MEOS the routes come from a CSV file, whose path `meos_set_ways_csv(...)` states before any `npoint` operation; `meos_finalize_ways()` is idempotent and can be called multiple times safely. Cross-type operations between an `npoint` and a geometry validate that the route's SRID matches the geometry's SRID; mismatches raise an explicit error rather than silently re-projecting.
 
 ## Numerical hazards
 
@@ -46,7 +46,7 @@ Four hazards reliably bite real network-constrained tracking workloads. The impl
 
 - **Route-not-registered**. An `npoint` referencing a route gid not present in the ways cache cannot resolve to a geometry.
 
-  **Mitigation**: `npoint_make` calls `ensure_route_exists` at construction; the WKT, WKB, MFJSON, and `npoint(...)` SQL constructors all flow through this check and raise "There is no route with gid value <n> in table ways" on miss. Standalone MEOS users who skip the `meos_register_ways(...)` bootstrap will see this error on the first network operation, not later as a silent zero-result query.
+  **Mitigation**: `npoint_make` calls `ensure_route_exists` at construction; the WKT, WKB, MFJSON, and `npoint(...)` SQL constructors all flow through this check and raise "There is no route with gid value <n> in table ways" on miss. Standalone MEOS users whose ways CSV does not carry the route will see this error on the first network operation, not later as a silent zero-result query.
 
 - **Cross-network operations**. Two `tnpoint` values whose routes belong to different networks (or different connected components of the same network) cannot be related through network distance.
 
