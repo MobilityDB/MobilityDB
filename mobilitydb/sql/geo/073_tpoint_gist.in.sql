@@ -124,7 +124,8 @@ CREATE OPERATOR CLASS stbox_rtree_ops
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal);
+  FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -228,7 +229,8 @@ CREATE OPERATOR CLASS tgeompoint_rtree_ops
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  tgeompoint_gist_distance(internal, tgeompoint, smallint, oid, internal);
+  FUNCTION  8  tgeompoint_gist_distance(internal, tgeompoint, smallint, oid, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
 
 CREATE FUNCTION tgeogpoint_gist_distance(internal, tgeogpoint, smallint, oid, internal)
   RETURNS float8
@@ -285,6 +287,7 @@ CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  tgeogpoint_gist_distance(internal, tgeogpoint, smallint, oid, internal);
+  FUNCTION  8  tgeogpoint_gist_distance(internal, tgeogpoint, smallint, oid, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
 
 /******************************************************************************/

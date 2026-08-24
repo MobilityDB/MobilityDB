@@ -120,7 +120,8 @@ CREATE OPERATOR CLASS tcbuffer_rtree_ops
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8 tcbuffer_gist_distance(internal, tcbuffer, smallint, oid, internal);
+  FUNCTION  8 tcbuffer_gist_distance(internal, tcbuffer, smallint, oid, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
 
 /******************************************************************************/
 

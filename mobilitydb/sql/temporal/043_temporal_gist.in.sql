@@ -58,6 +58,10 @@ CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
   RETURNS float8
   AS 'MODULE_PATHNAME', 'Tbox_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox_gist_sortsupport(internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME', 'Tbox_gist_sortsupport'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
@@ -186,7 +190,8 @@ CREATE OPERATOR CLASS tbox_rtree_ops
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
+  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal),
+  FUNCTION 11 tbox_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -226,7 +231,8 @@ CREATE OPERATOR CLASS tbool_rtree_ops
   FUNCTION  3  tbool_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
-  FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal);
+  FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal),
+  FUNCTION 11  span_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -305,7 +311,8 @@ CREATE OPERATOR CLASS tint_rtree_ops
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tint_gist_distance(internal, tint, smallint, oid, internal);
+  FUNCTION  8  tint_gist_distance(internal, tint, smallint, oid, internal),
+  FUNCTION 11 tbox_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -384,7 +391,8 @@ CREATE OPERATOR CLASS tbigint_rtree_ops
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbigint_gist_distance(internal, tbigint, smallint, oid, internal);
+  FUNCTION  8  tbigint_gist_distance(internal, tbigint, smallint, oid, internal),
+  FUNCTION 11 tbox_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -463,7 +471,8 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tfloat_gist_distance(internal, tfloat, smallint, oid, internal);
+  FUNCTION  8  tfloat_gist_distance(internal, tfloat, smallint, oid, internal),
+  FUNCTION 11 tbox_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -503,6 +512,7 @@ CREATE OPERATOR CLASS ttext_rtree_ops
   FUNCTION  3  ttext_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
-  FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal);
+  FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal),
+  FUNCTION 11  span_gist_sortsupport(internal);
 
 /******************************************************************************/

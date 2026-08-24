@@ -63,6 +63,10 @@ CREATE FUNCTION stbox_gist_distance(internal, stbox, smallint, oid, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Stbox_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stbox_gist_sortsupport(internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME', 'Stbox_gist_sortsupport'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tspatial_gist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tspatial_gist_compress'
@@ -161,7 +165,8 @@ CREATE OPERATOR CLASS tgeometry_rtree_ops
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  tgeometry_gist_distance(internal, tgeometry, smallint, oid, internal);
+  FUNCTION  8  tgeometry_gist_distance(internal, tgeometry, smallint, oid, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
 
 CREATE FUNCTION tgeography_gist_distance(internal, tgeography, smallint, oid, internal)
   RETURNS float8
@@ -218,6 +223,7 @@ CREATE OPERATOR CLASS tgeography_rtree_ops
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  tgeography_gist_distance(internal, tgeography, smallint, oid, internal);
+  FUNCTION  8  tgeography_gist_distance(internal, tgeography, smallint, oid, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
 
 /******************************************************************************/

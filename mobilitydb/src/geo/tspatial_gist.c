@@ -54,6 +54,7 @@
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/tnumber_gist.h"
+#include "pg_temporal/index_sortsupport.h"
 
 /*****************************************************************************
  * GiST consistent methods
@@ -444,6 +445,91 @@ Datum
 Tspatial_gist_distance(PG_FUNCTION_ARGS)
 {
   return stbox_gist_distance(fcinfo, false);
+}
+
+/*****************************************************************************
+ * GiST sort support method
+ *****************************************************************************/
+
+
+/**
+ * @brief Return the sort key of a spatiotemporal box
+ * @details The spatial half is the hash PostGIS sorts a geometry column by and
+ * the temporal half is the rank of the period, composed on a Hilbert curve so
+ * that neither of them leads the other.
+ */
+uint64
+stbox_sort_hash(const STBox *box)
+{
+  uint32 space = 0, time = 0;
+  if (MEOS_FLAGS_GET_X(box->flags))
+  {
+    GBOX gbox;
+    stbox_set_gbox(box, &gbox);
+    /* A geodetic spatiotemporal box keeps longitude and latitude in degrees
+     * while a geodetic GBOX keeps coordinates on the unit sphere, as
+     * #geo_set_stbox() states. The box is therefore hashed as a planar one,
+     * where the normalization PostGIS applies to the SRID it carries is the
+     * one that fits the degrees it holds */
+    FLAGS_SET_GEODETIC(gbox.flags, false);
+    space = (uint32) (gbox_get_sortable_hash(&gbox, box->srid) >> 32);
+  }
+  if (MEOS_FLAGS_GET_T(box->flags))
+    time = sortsupport_rank_span_center(&box->period);
+  return sortsupport_hilbert(space, time);
+}
+
+/**
+ * @brief Convert a spatiotemporal box into its abbreviated key
+ */
+static Datum
+Stbox_abbrev_convert(Datum original, SortSupport ssup)
+{
+  (void) ssup;
+  return UInt64GetDatum(stbox_sort_hash(DatumGetSTboxP(original)));
+}
+
+/**
+ * @brief Compare two spatiotemporal boxes for the sorted index build
+ */
+static int
+Stbox_cmp_full(Datum x, Datum y, SortSupport ssup)
+{
+  const STBox *box1 = DatumGetSTboxP(x);
+  const STBox *box2 = DatumGetSTboxP(y);
+  uint64 hash1 = stbox_sort_hash(box1);
+  uint64 hash2 = stbox_sort_hash(box2);
+  (void) ssup;
+  if (hash1 > hash2)
+    return 1;
+  if (hash1 < hash2)
+    return -1;
+  /* Boxes on the same point of the curve are ordered by their own comparison,
+   * so that the sort is deterministic */
+  return stbox_cmp(box1, box2);
+}
+
+PGDLLEXPORT Datum Stbox_gist_sortsupport(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_gist_sortsupport);
+/**
+ * @brief GiST sort support method for spatiotemporal values
+ */
+Datum
+Stbox_gist_sortsupport(PG_FUNCTION_ARGS)
+{
+  SortSupport ssup = (SortSupport) PG_GETARG_POINTER(0);
+  ssup->comparator = Stbox_cmp_full;
+  ssup->ssup_extra = NULL;
+  /* An abbreviated key is a whole Datum, so it is only available where a
+   * Datum is 64 bits wide */
+  if (ssup->abbreviate && sizeof(Datum) == 8)
+  {
+    ssup->comparator = sortsupport_abbrev_cmp;
+    ssup->abbrev_converter = Stbox_abbrev_convert;
+    ssup->abbrev_abort = sortsupport_abbrev_abort;
+    ssup->abbrev_full_comparator = Stbox_cmp_full;
+  }
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************/

@@ -59,6 +59,7 @@
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/temporal.h"
+#include "pg_temporal/index_sortsupport.h"
 #if POINTCLOUD
   #include <meos_pointcloud.h>
 #endif
@@ -1070,6 +1071,64 @@ Datum
 Tnumber_gist_distance(PG_FUNCTION_ARGS)
 {
   return tbox_gist_distance(fcinfo, false);
+}
+
+/*****************************************************************************
+ * GiST sort support method
+ *****************************************************************************/
+
+
+/**
+ * @brief Convert a temporal box into its abbreviated key
+ */
+static Datum
+Tbox_abbrev_convert(Datum original, SortSupport ssup)
+{
+  (void) ssup;
+  return UInt64GetDatum(tbox_sort_hash(DatumGetTboxP(original)));
+}
+
+/**
+ * @brief Compare two temporal boxes for the sorted index build
+ */
+static int
+Tbox_cmp_full(Datum x, Datum y, SortSupport ssup)
+{
+  const TBox *box1 = DatumGetTboxP(x);
+  const TBox *box2 = DatumGetTboxP(y);
+  uint64 hash1 = tbox_sort_hash(box1);
+  uint64 hash2 = tbox_sort_hash(box2);
+  (void) ssup;
+  if (hash1 > hash2)
+    return 1;
+  if (hash1 < hash2)
+    return -1;
+  /* Boxes on the same point of the curve are ordered by their own comparison,
+   * so that the sort is deterministic */
+  return tbox_cmp(box1, box2);
+}
+
+PGDLLEXPORT Datum Tbox_gist_sortsupport(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_gist_sortsupport);
+/**
+ * @brief GiST sort support method for temporal numbers
+ */
+Datum
+Tbox_gist_sortsupport(PG_FUNCTION_ARGS)
+{
+  SortSupport ssup = (SortSupport) PG_GETARG_POINTER(0);
+  ssup->comparator = Tbox_cmp_full;
+  ssup->ssup_extra = NULL;
+  /* An abbreviated key is a whole Datum, so it is only available where a
+   * Datum is 64 bits wide */
+  if (ssup->abbreviate && sizeof(Datum) == 8)
+  {
+    ssup->comparator = sortsupport_abbrev_cmp;
+    ssup->abbrev_converter = Tbox_abbrev_convert;
+    ssup->abbrev_abort = sortsupport_abbrev_abort;
+    ssup->abbrev_full_comparator = Tbox_cmp_full;
+  }
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************/

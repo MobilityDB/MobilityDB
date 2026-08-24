@@ -1,6 +1,7 @@
 add_library(pg_temporal OBJECT
   doublen.c
   geo_constructors.c
+  index_sortsupport.c
   meos_catalog.c
   set.c
   set_gin.c

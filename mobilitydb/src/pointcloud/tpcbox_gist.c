@@ -58,6 +58,7 @@
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/meos_catalog.h"  /* oid_meostype */
 #include "pg_temporal/tnumber_gist.h"
+#include "pg_temporal/index_sortsupport.h"
 
 /*****************************************************************************
  * GiST consistent
@@ -385,6 +386,69 @@ Tpcbox_gist_distance(PG_FUNCTION_ARGS)
   if (distance < 0)
     PG_RETURN_FLOAT8(DBL_MAX);
   PG_RETURN_FLOAT8(distance);
+}
+
+/*****************************************************************************
+ * GiST sort support method
+ *****************************************************************************/
+
+
+/**
+ * @brief Convert a point cloud box into its abbreviated key
+ * @details A `TPCBox` begins with a whole `STBox`, so it takes the
+ * spatiotemporal key; the schema identifier it carries beyond that is not a
+ * dimension and only settles the boxes the curve ties.
+ */
+static Datum
+Tpcbox_abbrev_convert(Datum original, SortSupport ssup)
+{
+  (void) ssup;
+  return UInt64GetDatum(stbox_sort_hash((const STBox *)
+    DatumGetTpcboxP(original)));
+}
+
+/**
+ * @brief Compare two point cloud boxes for the sorted index build
+ */
+static int
+Tpcbox_cmp_full(Datum x, Datum y, SortSupport ssup)
+{
+  const TPCBox *box1 = DatumGetTpcboxP(x);
+  const TPCBox *box2 = DatumGetTpcboxP(y);
+  uint64 hash1 = stbox_sort_hash((const STBox *) box1);
+  uint64 hash2 = stbox_sort_hash((const STBox *) box2);
+  (void) ssup;
+  if (hash1 > hash2)
+    return 1;
+  if (hash1 < hash2)
+    return -1;
+  /* Boxes on the same point of the curve are ordered by their own comparison,
+   * so that the sort is deterministic */
+  return tpcbox_cmp(box1, box2);
+}
+
+PGDLLEXPORT Datum Tpcbox_gist_sortsupport(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_gist_sortsupport);
+/**
+ * @ingroup mobilitydb_pointcloud_index
+ * @brief GiST sort support method for point cloud values
+ */
+Datum
+Tpcbox_gist_sortsupport(PG_FUNCTION_ARGS)
+{
+  SortSupport ssup = (SortSupport) PG_GETARG_POINTER(0);
+  ssup->comparator = Tpcbox_cmp_full;
+  ssup->ssup_extra = NULL;
+  /* An abbreviated key is a whole Datum, so it is only available where a
+   * Datum is 64 bits wide */
+  if (ssup->abbreviate && sizeof(Datum) == 8)
+  {
+    ssup->comparator = sortsupport_abbrev_cmp;
+    ssup->abbrev_converter = Tpcbox_abbrev_convert;
+    ssup->abbrev_abort = sortsupport_abbrev_abort;
+    ssup->abbrev_full_comparator = Tpcbox_cmp_full;
+  }
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************/
