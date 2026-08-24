@@ -416,7 +416,18 @@ tzloadbody(char const *name, char *canonname, struct state *sp, bool doextend,
     if (up->tzhead.tzh_version[0] == '\0')
       break;
     nread -= p - up->buf;
-    memmove(up->buf, p, nread);
+    /* MEOS: the destination sits below the source and the two overlap, so the
+     * copy has to run forward. Written as a loop because the compiler rewrites
+     * a memmove here as a memcpy, which is undefined over overlapping memory
+     * and which the C library may run backwards -- the direction that
+     * overwrites a source byte before reading it. A loop the compiler cannot
+     * prove non-overlapping is left alone. */
+    {
+      char *dst = up->buf;
+      const char *src = p;
+      for (int k = 0; k < nread; k++)
+        dst[k] = src[k];
+    }
   }
   if (doextend && nread > 2 &&
     up->buf[0] == '\n' && up->buf[nread - 1] == '\n' &&
