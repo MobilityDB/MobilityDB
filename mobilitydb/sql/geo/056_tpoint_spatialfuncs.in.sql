@@ -391,7 +391,7 @@ CREATE FUNCTION _mdb_internal_clip_difference(geometry, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION _mdb_internal_clip_sym_difference(geometry, geometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'cl_symDifference'
+  AS 'MODULE_PATHNAME', 'symDifference'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 

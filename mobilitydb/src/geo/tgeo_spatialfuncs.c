@@ -337,8 +337,8 @@ Tgeo_scale(PG_FUNCTION_ARGS)
  * Mapbox Vector Tile functions for temporal points
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tpoint_AsMVTGeom(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
+PGDLLEXPORT Datum AsMVTGeom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(AsMVTGeom);
 /**
  * @ingroup mobilitydb_geo_transf
  * @brief Return a temporal point transformed to the Mapbox Vector Tile
@@ -346,7 +346,7 @@ PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
  * @sqlfn asMVTGeom()
  */
 Datum
-Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
+AsMVTGeom(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *bounds = PG_GETARG_STBOX_P(1);
@@ -925,9 +925,9 @@ cl_difference(PG_FUNCTION_ARGS)
   return clip_ext(fcinfo, CL_DIFFERENCE);
 }
 
-PG_FUNCTION_INFO_V1(cl_symDifference);
+PG_FUNCTION_INFO_V1(symDifference);
 Datum
-cl_symDifference(PG_FUNCTION_ARGS)
+symDifference(PG_FUNCTION_ARGS)
 {
   return clip_ext(fcinfo, CL_XOR);
 }
