@@ -27,7 +27,7 @@ SELECT pcid(pcpoint(90, 1, 2, 3)), SRID(pcpoint(90, 1, 2, 3));
    90 | 4326
 (1 row)
 
-SELECT ST_AsText(geometry(pcpatch(90, pcpoint(90, 1, 2, 3),
+SELECT ST_AsText(geometry(pcpatch(pcpoint(90, 1, 2, 3),
   pcpoint(90, 4, 5, 6))));
            st_astext            
 --------------------------------
@@ -43,8 +43,8 @@ INSERT 0 1
 INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
   (92, 1, 'X', 'double'), (92, 2, 'Y', 'double'), (92, 3, 'Z', 'double');
 INSERT 0 3
-SELECT pcpatch(90, pcpoint(92, 1, 2, 3));
-ERROR:  The points must be of the schema the patch states: 92 vs 90
+SELECT pcpatch(pcpoint(90, 1, 2, 3), pcpoint(92, 4, 5, 6));
+ERROR:  Operation on pcpoint values with different schemas: 90 vs 92
 DELETE FROM pointcloud_schemas WHERE pcid = 92;
 DELETE 1
 INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES

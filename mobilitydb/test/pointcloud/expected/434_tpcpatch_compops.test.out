@@ -1,112 +1,112 @@
-SELECT (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) ?= (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz));
+SELECT (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) ?= (tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) ?= (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+SELECT (tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) ?= (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) ?= (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz));
+SELECT (tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) ?= (tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) ?= (pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)));
+SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) ?= (pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) ?= (pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)));
+SELECT (tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) ?= (pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)));
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) %= (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+SELECT (tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) %= (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) %= (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) %= (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)])) %= (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)])) %= (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)])) %= (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)]));
+SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)])) %= (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)]));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) ?<> (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)]));
+SELECT (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) ?<> (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)]));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) ?<> (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) ?<> (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) %<> (pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)));
+SELECT (tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) %<> (pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) ?<> (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)]));
+SELECT (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) ?<> (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)]));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT NOT ((tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) ?= (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) AND (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) %<> (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))));
+SELECT NOT ((tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) ?= (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) AND (tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) %<> (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT asText((pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) #= (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)));
+SELECT asText((pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) #= (tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText((tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) #= (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))));
+SELECT asText((tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) #= (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText((tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) #= (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))));
+SELECT asText((tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) #= (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))));
                               astext                              
 ------------------------------------------------------------------
  [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText((tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) #<> (pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))));
+SELECT asText((tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz)) #<> (pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText((tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) #<> (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)])));
+SELECT asText((tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)), '2001-01-02'::timestamptz)])) #<> (tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2001-01-02'::timestamptz)])));
                               astext                              
 ------------------------------------------------------------------
  [f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]

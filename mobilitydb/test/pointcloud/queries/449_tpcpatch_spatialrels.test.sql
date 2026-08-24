@@ -33,7 +33,7 @@
 -------------------------------------------------------------------------------
 
 \set square 'geometry ''SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))'''
-\set zpatch 'tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), ''2001-01-01''::timestamptz)'
+\set zpatch 'tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), ''2001-01-01''::timestamptz)'
 
 INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (8, 0,
 '<?xml version="1.0" encoding="UTF-8"?>

@@ -95,7 +95,7 @@ SELECT bool_and(pcid(unconstrained) IN (1, 2)) FROM tbl_typmod
 -------------------------------------------------------------------------------
 
 INSERT INTO tbl_typmod (pat1) VALUES
-  (tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+  (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
             '2024-01-01'::timestamptz));
 
 -- mismatch: pcid 2 into pat1 (typmod 1) raises

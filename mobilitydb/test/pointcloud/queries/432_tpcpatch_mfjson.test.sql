@@ -25,8 +25,8 @@
 -- 421_tpcpoint_mfjson.test.sql for the tpcpoint side. Every assertion
 -- collapses to a scalar so the diff stays diff-able.
 
-\set inst1 'tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), ''2024-01-01''::timestamptz)'
-\set inst2 'tpcpatch(pcpatch(1, pcpoint(1, 7.0, 8.0, 9.0)), ''2024-01-02''::timestamptz)'
+\set inst1 'tpcpatch(pcpatch(pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), ''2024-01-01''::timestamptz)'
+\set inst2 'tpcpatch(pcpatch(pcpoint(1, 7.0, 8.0, 9.0)), ''2024-01-02''::timestamptz)'
 
 -------------------------------------------------------------------------------
 -- type tag — MovingPCPatch on every subtype

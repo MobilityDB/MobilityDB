@@ -45,7 +45,7 @@ SELECT getX(pcpoint(90, 1, 2, 3)), getY(pcpoint(90, 1, 2, 3)),
 SELECT pcid(pcpoint(90, 1, 2, 3)), SRID(pcpoint(90, 1, 2, 3));
 
 -- A patch of that schema is built from the points of it
-SELECT ST_AsText(geometry(pcpatch(90, pcpoint(90, 1, 2, 3),
+SELECT ST_AsText(geometry(pcpatch(pcpoint(90, 1, 2, 3),
   pcpoint(90, 4, 5, 6))));
 
 -- The number of coordinates is the number of dimensions the schema states
@@ -54,13 +54,13 @@ SELECT pcpoint(90, 1, 2);
 -- A schema no row states and no XML document describes builds nothing
 SELECT pcpoint(999, 1, 2, 3);
 
--- A second schema, stated the same way, to read the points of a patch against
+-- A second schema, stated the same way, to build a point of another schema with
 INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (92, 4326, 'none');
 INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
   (92, 1, 'X', 'double'), (92, 2, 'Y', 'double'), (92, 3, 'Z', 'double');
 
--- Every point of a patch is of the schema the patch states
-SELECT pcpatch(90, pcpoint(92, 1, 2, 3));
+-- The points of a patch are of one schema, which is the schema of the patch
+SELECT pcpatch(pcpoint(90, 1, 2, 3), pcpoint(92, 4, 5, 6));
 DELETE FROM pointcloud_schemas WHERE pcid = 92;
 
 -- A position is stated once within a schema

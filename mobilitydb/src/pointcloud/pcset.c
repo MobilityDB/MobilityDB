@@ -94,32 +94,20 @@ PGDLLEXPORT Datum Pcpatch_make(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpatch_make);
 /**
  * @ingroup mobilitydb_pointcloud_base_constructor
- * @brief Return a pcpatch from a point cloud identifier and an array of
- *   pcpoints of the schema it names
+ * @brief Return a pcpatch from an array of pcpoints
+ * @details The points state the schema of the patch they form, so the patch
+ *   takes no identifier of its own
  * @sqlfn pcpatch()
  */
 Datum
 Pcpatch_make(PG_FUNCTION_ARGS)
 {
-  uint32_t pcid = (uint32_t) PG_GETARG_INT32(0);
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   int count;
   Pcpoint **points = (Pcpoint **) datumarr_extract(array, &count);
-  /* The points state the schema the patch is built from, so a pcid the points
-   * disagree with would state a schema the value does not carry. The points
-   * agreeing among themselves is what pcpatch_make ensures */
-  uint32_t pcid_pt = (count > 0) ? pcpoint_get_pcid(points[0]) : pcid;
-  if (pcid_pt != pcid)
-  {
-    pfree(points);
-    PG_FREE_IF_COPY(array, 1);
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The points must be of the schema the patch states: %u vs %u",
-        pcid_pt, pcid)));
-  }
   Pcpatch *result = pcpatch_make((const Pcpoint **) points, count);
   pfree(points);
-  PG_FREE_IF_COPY(array, 1);
+  PG_FREE_IF_COPY(array, 0);
   PG_RETURN_PCPATCH_P(result);
 }
 

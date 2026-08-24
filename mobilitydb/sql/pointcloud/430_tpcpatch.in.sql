@@ -147,16 +147,17 @@ CREATE CAST (tpcpatch AS text) WITH FUNCTION asText(tpcpatch);
 /******************************************************************************
  * pcpatch constructor
  *
- * The schema the pcid names is resolved through the MEOS cache, which reads
- * the pointcloud_schemas and pointcloud_dimensions tables and falls back to
- * the XML document pgPointCloud's own catalog carries, so a schema stated
- * either way builds a value.
+ * The points state the schema of the patch they form, so the patch takes no
+ * identifier of its own: one stated beside them could only contradict them.
+ * The schema is resolved through the MEOS cache, which reads the
+ * pointcloud_schemas and pointcloud_dimensions tables and falls back to the
+ * XML document pgPointCloud's own catalog carries, so a schema stated either
+ * way builds a value.
  *
- * Every point must be of the schema the pcid names, which the constructor
- * enforces.
+ * Every point is of one schema, which the constructor enforces.
  ******************************************************************************/
 
-CREATE FUNCTION pcpatch(pcid integer, VARIADIC points pcpoint[])
+CREATE FUNCTION pcpatch(VARIADIC points pcpoint[])
   RETURNS pcpatch
   AS 'MODULE_PATHNAME', 'Pcpatch_make'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

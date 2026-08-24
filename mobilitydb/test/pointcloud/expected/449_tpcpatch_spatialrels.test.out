@@ -97,6 +97,6 @@ SELECT eDwithin(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]
 (1 row)
 
 /* Errors: a schema carrying Z in a planar relationship */
-SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz));
+SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz));
 ERROR:  The tgeometry cannot have Z dimension
 CONTEXT:  SQL function "econtains" statement 1

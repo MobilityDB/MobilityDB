@@ -30,8 +30,8 @@
 -- deterministic. Patches: A holds (1,1,1) and (2,2,2), B holds (5,5,5) and
 -- (6,6,6).
 
-\set pA 'pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))'
-\set pB 'pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))'
+\set pA 'pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))'
+\set pB 'pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))'
 \set iA 'tpcpatch(:pA, ''2001-01-01''::timestamptz)'
 \set iB 'tpcpatch(:pB, ''2001-01-02''::timestamptz)'
 \set seqAB 'tpcpatchSeq(ARRAY[:iA, :iB])'
