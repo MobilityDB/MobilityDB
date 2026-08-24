@@ -475,12 +475,14 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
       break;
 
     /* A compound curve (chain of line/circular strings), a multicurve
-     * (collection of line/circular/compound curves) and a multisurface
-     * (collection of polygons/curve polygons) all share the collection memory
-     * layout, so their components are extracted the same way as a collection */
+     * (collection of line/circular/compound curves), a multisurface
+     * (collection of polygons/curve polygons) and a TIN (collection of
+     * triangles) all share the collection memory layout, so their components
+     * are extracted the same way as a collection */
     case COMPOUNDTYPE:
     case MULTICURVETYPE:
     case MULTISURFACETYPE:
+    case TINTYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
@@ -549,11 +551,12 @@ geom_meos_supported(const LWGEOM *geom)
     case COMPOUNDTYPE:
     case MULTICURVETYPE:
     case MULTISURFACETYPE:
+    case TINTYPE:
     case COLLECTIONTYPE:
     {
-      /* A multicurve/multisurface is supported when every component is: its
-       * components are line/circular/compound curves and polygons/curve
-       * polygons, each validated by the recursive call */
+      /* A multicurve/multisurface/TIN is supported when every component is:
+       * its components are line/circular/compound curves, polygons/curve
+       * polygons and triangles, each validated by the recursive call */
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
       for (uint32_t i = 0; i < col->ngeoms; i++)
         if (! geom_meos_supported(col->geoms[i]))
@@ -2451,6 +2454,7 @@ meos_is_simple(const LWGEOM *geom, bool *result)
       *result = true;
       return true;
     }
+    case TINTYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
@@ -3563,6 +3567,7 @@ relate_is_areal(const LWGEOM *geom)
     case TRIANGLETYPE:
     case CURVEPOLYTYPE:
     case MULTISURFACETYPE:
+    case TINTYPE:
       return true;
     case COLLECTIONTYPE:
     {
@@ -5815,6 +5820,7 @@ relate_area_comps_iter(const LWGEOM *geom, RelateComp **comps, int *ncomp,
   {
     case MULTIPOLYGONTYPE:
     case MULTISURFACETYPE:
+    case TINTYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
@@ -6121,6 +6127,7 @@ relate_extract_edges(const LWGEOM *geom)
   {
     case MULTIPOLYGONTYPE:
     case MULTISURFACETYPE:
+    case TINTYPE:
     case COLLECTIONTYPE:
       return relate_union_edges(geom);
     default:
@@ -6168,8 +6175,9 @@ relate_dim_mask(const LWGEOM *geom)
     case MULTISURFACETYPE:
       return 4;
     case MULTIPOLYGONTYPE:
+    case TINTYPE:
     {
-      /* A multipolygon carrying any surface is areal: a member enclosing no
+      /* A multipolygon or a TIN carrying any surface is areal: a member enclosing no
        * area draws linework the surfaces already account for, and reporting
        * both dimensions would send a value every member of which is a polygon
        * down the mixed-dimension path */
