@@ -4348,7 +4348,15 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
     POINT2D mid;
     if (! piece || ! buffer_piece_midpoint(piece, &mid))
       continue;
-    if (buffer_point_edges_distance(mid.x, mid.y, edges) >= radius - tol)
+    /* The midpoint carries the magnitude the rounding is proportional to. A
+     * piece kept here lies AT the buffer distance, and the distance deciding
+     * it is read from the coordinates, so what it is rounded to is the size of
+     * THEIR last bits and not of the radius. At a projected 6.4e6 a piece
+     * lying exactly on the offset reads about 1e-09 below the radius, past a
+     * bound of `radius * 1e-9` calibrated to a radius of 1, and the piece is
+     * dropped: the ring it belongs to then reaches a point nothing continues */
+    double mid_tol = Max(tol, coordinate_tolerance(mid.x, mid.y));
+    if (buffer_point_edges_distance(mid.x, mid.y, edges) >= radius - mid_tol)
       meos_array_add(keep, piece);
   }
 
