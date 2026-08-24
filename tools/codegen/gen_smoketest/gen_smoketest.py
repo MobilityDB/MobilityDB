@@ -667,6 +667,10 @@ TPOSE_CONFIG = dict(
     type_label="tpose       ",
     header="meos_pose.h",
     out="tpose_smoketest.c",
+    # Both read the static GeoPose frame registry and return a pointer into
+    # it, so the caller frees nothing, as for route_geom's view of the ways
+    # cache.
+    no_free={"geopose_frames", "geopose_frame"},
     extra_includes='#include <meos_pose.h>',
     arg_map={
         "Temporal *":          "tpose1",

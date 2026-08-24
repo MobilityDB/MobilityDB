@@ -36,6 +36,16 @@ SELECT geoPoseFrameSRID(1000), geoPoseFrameName(1000);
 DELETE FROM geopose_frames WHERE frame_id = 1000;
 SELECT count(*) FROM geopose_frames;
 
+-- Every frame MEOS states is in the table, so a host that materialises the
+-- registry from geoPoseFrames() states what this database states. The reverse
+-- direction is deliberately not asserted: a user registers further frames.
+SELECT count(*) AS meos_frames_absent_from_the_table FROM (
+  SELECT frame_id, authority, code, name, srid, is_geographic
+  FROM geoPoseFrames()
+  EXCEPT
+  SELECT frame_id, authority, code, name, srid, is_geographic
+  FROM geopose_frames) d;
+
 -- A frame is stated from one. (103_pose_geopose asserts that the registry
 -- states every authority and id pair the encoder emits.)
 INSERT INTO geopose_frames(frame_id, authority, name) VALUES (0, 'CUSTOM', 'Zero');
