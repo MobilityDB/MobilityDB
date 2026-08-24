@@ -1127,7 +1127,7 @@ SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
 	<sect1 xml:id="tpose_spatial_rels">
 		<title>Spatial Relationships</title>
 		<para>
-			The topological and distance relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> only consider the location of the geometries, not their orientation. To be able to apply these spatial relationships to the temporal poses, they must be transformed to temporal geometry points. This can be easily performed using the functions <varname>geometry</varname> and <varname>tgeompoint</varname> or using an explicit casting <varname>::</varname> as shown in the examples below.
+			The topological and distance relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> only consider the location of a value, not its orientation. A temporal pose accepts them directly and answers them at the position its pose occupies, which is the point the <varname>tgeompoint</varname> cast target names. The functions <varname>geometry</varname> and <varname>tgeompoint</varname> and the corresponding explicit casts <varname>::</varname> remain available wherever the geometry itself is wanted.
 		</para>
 
 		<itemizedlist>
@@ -1152,21 +1152,40 @@ SELECT eIntersects(
 
 			<listitem xml:id="tpose_tspatialrels">
 				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
-				<para>Spatiotemporal relationships</para>
+				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A temporal pose answers them at the position it occupies, so a value with linear interpolation is answered along its trajectory rather than at its instants alone. The temporal pose declares the relationships a moving point answers: <varname>tContains</varname> and <varname>tCovers</varname> take the geometry first only, and <varname>tTouches</varname> has no direction between two temporal poses, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
+				<para><varname>tContains(geometry,tpose) &#8594; tbool</varname></para>
+				<para><varname>tCovers(geometry,tpose) &#8594; tbool</varname></para>
+				<para><varname>tDisjoint({geometry,tpose},{geometry,tpose}) &#8594; tbool</varname></para>
+				<para><varname>tDwithin({geometry,tpose},{geometry,tpose},float) &#8594; tbool</varname></para>
+				<para><varname>tIntersects({geometry,tpose},{geometry,tpose}) &#8594; tbool</varname></para>
+				<para><varname>tTouches(geometry,tpose) &#8594; tbool</varname></para>
+				<para><varname>tTouches(tpose,geometry) &#8594; tbool</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
--- {[t@2001-01-01, t@2001-01-03)}
-SELECT tDisjoint(geometry(pose 'Pose(Point(2 2), 0.0)'),
-  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
--- [t@2001-01-01, t@2001-01-03)
-SELECT tDwithin(
- tpose '[Pose(Point(1 1),0.3)@2001-01-01,Pose(Point(1 1),0.5)@2001-01-03)'::tgeompoint, 
- tpose '[Pose(Point(1 1),0.5)@2001-01-01,Pose(Point(3 3),0.3)@2001-01-03)'::tgeompoint,1);
-/* {[t@2001-01-01 00:00:00+01, t@2001-01-01 16:58:14.025894+01],
-  (f@2001-01-01 16:58:14.025894+01, f@2001-01-03 00:00:00+01)} */
+SELECT tIntersects(tpose '[Pose(Point(1 1), 0.1)@2001-01-01,
+  Pose(Point(3 3), 0.1)@2001-01-03]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- {[t@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
+SELECT tDisjoint(tpose '[Pose(Point(1 1), 0.1)@2001-01-01,
+  Pose(Point(3 3), 0.1)@2001-01-03]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03]}
+SELECT tContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tpose 'Pose(Point(0 0), 0.1)@2001-01-01');
+-- f@2001-01-01
+SELECT tCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tpose 'Pose(Point(0 0), 0.1)@2001-01-01');
+-- t@2001-01-01
+SELECT tTouches(tpose 'Pose(Point(0 0), 0.1)@2001-01-01',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- t@2001-01-01
+SELECT tDwithin(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
+  Pose(Point(1 1),0.5)@2001-01-03)', tpose '[Pose(Point(1 1),0.5)@2001-01-01,
+  Pose(Point(3 3),0.3)@2001-01-03)', 1);
+/* {[t@2001-01-01, t@2001-01-01 16:58:14.025894+00],
+  (f@2001-01-01 16:58:14.025894+00, f@2001-01-03)} */
 </programlisting>
 			</listitem>
 		</itemizedlist>

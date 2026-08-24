@@ -1542,7 +1542,7 @@
 						<para><link linkend="tpose_espatialrels"><varname>eContains</varname>, <varname>eDisjoint</varname>, <varname>eIntersects</varname></link>: Ever and always relationships</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpose_tspatialrels"><varname>tContains</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname></link>: Spatiotemporal relationships</para>
+						<para><link linkend="tpose_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A temporal pose answers them at the position it occupies, so a value with linear interpolation is answered along its trajectory rather than at its instants alone. The temporal pose declares the relationships a moving point answers: <varname>tContains</varname> and <varname>tCovers</varname> take the geometry first only, and <varname>tTouches</varname> has no direction between two temporal poses, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2092,7 +2092,7 @@
 						<para><link linkend="tnpoint_espatialrels"><varname>eContains</varname>, <varname>eDisjoint</varname>, <varname>eIntersects</varname></link>: Ever and always spatial relationships</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tnpoint_tspatialrels"><varname>tContains</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname></link>: Spatiotemporal relationships</para>
+						<para><link linkend="tnpoint_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A temporal network point answers them at the position its route and fraction resolve to. The temporal network point declares the relationships a moving point answers: <varname>tContains</varname> and <varname>tCovers</varname> take the geometry first only, and <varname>tTouches</varname> has no direction between two temporal network points, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

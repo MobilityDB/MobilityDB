@@ -886,10 +886,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 	<sect1 xml:id="tnpoint_spatial_rels">
 		<title>Relaciones espaciales</title>
 		<para>
-			Las relaciones topológicas y de distancia descritas en <xref linkend="tgeo_spatial_rel"/>, como <varname>eIntersects</varname>, <varname>aDwithin</varname> o <varname>tContains</varname>, se definen en el espacio geográfico, mientras que los puntos de la red temporal se definen en el espacio de la red. Cada una de estas relaciones también acepta directamente un argumento <varname>tnpoint</varname>: internamente, cada operando de punto de red se convierte en un punto geométrico temporal mediante la conversión estándar <varname>tnpoint::tgeompoint</varname> (el punto resuelto a lo largo de su ruta) y luego en <varname>tgeometry</varname>, y la relación <varname>tgeometry</varname> correspondiente calcula el resultado, exactamente como si la conversión se hubiera escrito manualmente.
-		</para>
-		<para>
-			Dado que el objetivo de la delegación, <varname>tgeometry</varname>, solo admite interpolación escalonada, un argumento <varname>tnpoint</varname> de secuencia con varios instantes debe usar interpolación escalonada (<varname>Interp=Step;...</varname>); una secuencia con la interpolación lineal predeterminada produce un error en la conversión implícita, la misma restricción ya vigente al convertir un <varname>tgeompoint</varname>/<varname>tgeogpoint</varname> lineal en <varname>tgeometry</varname>/<varname>tgeography</varname>. Un único instante no tiene interpolación y no se ve afectado.
+			Las relaciones topológicas y de distancia descritas en <xref linkend="tgeo_spatial_rel"/>, como <varname>eIntersects</varname>, <varname>aDwithin</varname> o <varname>tContains</varname>, se definen en el espacio geográfico, mientras que los puntos de la red temporal se definen en el espacio de la red. Cada una de estas relaciones también acepta directamente un argumento <varname>tnpoint</varname>: cada operando de punto de red se convierte en un punto geométrico temporal mediante la conversión estándar <varname>tnpoint::tgeompoint</varname> (el punto resuelto a lo largo de su ruta) y la relación correspondiente del punto geométrico temporal calcula el resultado, exactamente como si la conversión se hubiera escrito manualmente. Una secuencia conserva la interpolación que lleva, de modo que una con la interpolación lineal predeterminada se responde a lo largo de su ruta y no solo en sus instantes.
 		</para>
 
 		<itemizedlist>
@@ -914,20 +911,40 @@ SELECT eIntersects(
 
 			<listitem xml:id="tnpoint_tspatialrels">
 				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
-				<para>Relaciones espaciotemporales</para>
+				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+				<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción. El punto de red temporal declara las relaciones que responde un punto en movimiento: <varname>tContains</varname> y <varname>tCovers</varname> toman la geometría en primer lugar únicamente, y <varname>tTouches</varname> no tiene dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</para>
+				<para><varname>tContains(geometry,tnpoint) → tbool</varname></para>
+				<para><varname>tCovers(geometry,tnpoint) → tbool</varname></para>
+				<para><varname>tDisjoint({geometry,tnpoint},{geometry,tnpoint}) → tbool</varname></para>
+				<para><varname>tDwithin({geometry,tnpoint},{geometry,tnpoint},float) → tbool</varname></para>
+				<para><varname>tIntersects({geometry,tnpoint},{geometry,tnpoint}) → tbool</varname></para>
+				<para><varname>tTouches(geometry,tnpoint) → tbool</varname></para>
+				<para><varname>tTouches(tnpoint,geometry) → tbool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
--- [f@2001-01-01, f@2001-01-03]
+  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
+-- {[f@2001-01-01, f@2001-01-03]}
+SELECT tCovers(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tnpoint 'Npoint(1, 0.1)@2001-01-01');
+-- f@2001-01-01
 SELECT tDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
-  tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
--- [t@2001-01-01, t@2001-01-03]
-SELECT tDwithin(
-  tnpoint 'Interp=Step;[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
-  tnpoint 'Interp=Step;[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
--- [f@2001-01-01, f@2001-01-03]
+  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
+-- {[t@2001-01-01, t@2001-01-03]}
+SELECT tTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01',
+  geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))');
+-- f@2001-01-01
+SELECT tIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
+  tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.1)@2001-01-03]');
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
+SELECT tDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
+  tnpoint '[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
+/* {[f@2001-01-01, t@2001-01-01 22:19:04.400634+00,
+  t@2001-01-02 01:40:55.599365+00], (f@2001-01-02 01:40:55.599365+00,
+  f@2001-01-03]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
