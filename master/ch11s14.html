@@ -2,7 +2,7 @@
 			The topological and distance relationships described in <a class="xref" href="ch08s05.html" title="Spatial Relationships">the section called “Spatial Relationships”</a> such as <code class="varname">eIntersects</code>, <code class="varname">aDwithin</code>, or <code class="varname">tContains</code> are defined over the geographical space while the temporal network points are defined over the network space. Every one of these relationships also accepts a <code class="varname">tnpoint</code> argument directly: internally, each network-point operand is converted to a temporal geometry point through the standard <code class="varname">tnpoint::tgeompoint</code> cast (the point resolved along its route) and then to <code class="varname">tgeometry</code>, and the corresponding <code class="varname">tgeometry</code> relationship computes the result, exactly as if the cast had been written out by hand.
 		</p><p>
 			Because the delegate target <code class="varname">tgeometry</code> only supports step interpolation, a multi-instant <code class="varname">tnpoint</code> sequence argument must use step interpolation (<code class="varname">Interp=Step;...</code>); a sequence with the default linear interpolation raises an error on the implicit conversion, the same restriction already in force when casting a linear <code class="varname">tgeompoint</code>/<code class="varname">tgeogpoint</code> to <code class="varname">tgeometry</code>/<code class="varname">tgeography</code>. A single instant has no interpolation and is unaffected.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_espatialrels"></a><a class="indexterm" name="id8887"></a><a class="indexterm" name="id8890"></a><a class="indexterm" name="id8893"></a><p>Ever and always spatial relationships</p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_espatialrels"></a><a class="indexterm" name="id8889"></a><a class="indexterm" name="id8892"></a><a class="indexterm" name="id8895"></a><p>Ever and always spatial relationships</p><pre class="programlisting">
 SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint 'Npoint(1, 0.1)@2001-01-01');
 -- false
@@ -13,7 +13,7 @@ SELECT eIntersects(
   tnpoint 'Npoint(1, 0.1)@2001-01-01',
   tnpoint 'Npoint(2, 0.0)@2001-01-01');
 -- false
-</pre></li><li class="listitem"><a name="tnpoint_tspatialrels"></a><a class="indexterm" name="id8899"></a><a class="indexterm" name="id8902"></a><a class="indexterm" name="id8905"></a><p>Spatiotemporal relationships</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_tspatialrels"></a><a class="indexterm" name="id8901"></a><a class="indexterm" name="id8904"></a><a class="indexterm" name="id8907"></a><p>Spatiotemporal relationships</p><pre class="programlisting">
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
 -- [f@2001-01-01, f@2001-01-03]
