@@ -3577,6 +3577,9 @@
 				<title>Relaciones espaciales</title>
 				<itemizedlist>
 					<listitem>
+						<para><link linkend="tpcpoint_planarrels"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Contiene, cubre y toca alguna vez / siempre</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpoint_intersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Alguna vez / siempre intersecta.</para>
 					</listitem>
 					<listitem>
@@ -3591,7 +3594,7 @@
 				<title>Relaciones espaciales temporales</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_tspatialrels"><varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname></link>: Disjunto temporal, a distancia temporal e intersecta temporal</para>
+						<para><link linkend="tpcpoint_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Relaciones espaciales temporales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

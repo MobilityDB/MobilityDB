@@ -67,3 +67,61 @@ SELECT eDwithin(:p1, :p1, 1e-9);
 SELECT eDwithin(:seq, geometry 'SRID=0;POINT(0 0)', 1.0);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The matrix of the cast target
+--
+-- A point cloud schema states its dimensions by name, so Z is one of them and
+-- not a property of the type: a schema declaring X and Y alone answers every
+-- planar relationship, while one carrying Z meets the engine's refusal of a Z
+-- value in a planar relationship, as a temporal geometry point does.
+-------------------------------------------------------------------------------
+
+INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (7, 0,
+'<?xml version="1.0" encoding="UTF-8"?>
+<pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <pc:dimension>
+    <pc:position>1</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>X coordinate</pc:description>
+    <pc:name>X</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>2</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>Y coordinate</pc:description>
+    <pc:name>Y</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:metadata>
+    <Metadata name="srid">0</Metadata>
+  </pc:metadata>
+</pc:PointCloudSchema>')
+  ON CONFLICT (pcid) DO NOTHING;
+
+\set flat 'tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), ''2024-01-01''::timestamptz)'
+\set square 'geometry ''SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))'''
+
+SELECT eContains(:square, :flat);
+SELECT aContains(:square, :flat);
+SELECT eCovers(:square, :flat);
+SELECT aCovers(:square, :flat);
+SELECT eTouches(:square, :flat);
+SELECT eTouches(:flat, :square);
+SELECT aTouches(:flat, :square);
+
+-- Every new cell agrees with the cast written out by hand
+SELECT eContains(:square, :flat) = eContains(:square, (:flat)::tgeompoint) AS ec_agrees,
+       eCovers(:square, :flat) = eCovers(:square, (:flat)::tgeompoint) AS ecv_agrees,
+       eTouches(:flat, :square) = eTouches((:flat)::tgeompoint, :square) AS etc_agrees,
+       aContains(:square, :flat) = aContains(:square, (:flat)::tgeompoint) AS ac_agrees;
+
+/* Errors: a schema carrying Z in a planar relationship */
+SELECT eContains(:square, :p1);
+SELECT eTouches(:p1, :square);
+
+-------------------------------------------------------------------------------

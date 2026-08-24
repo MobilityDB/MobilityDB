@@ -195,11 +195,32 @@ tempspatialrel_families:
   - family:  tpcpoint
     impl:    cast
     file:    mobilitydb/sql/pointcloud/444_tpcpoint_tempspatialrels.in.sql
-    predicates: [tDisjoint, tIntersects, tDwithin]
-    directions:
-      - {l: geometry, r: tpcpoint}
-      - {l: tpcpoint, r: geometry}
-      - {l: tpcpoint, r: tpcpoint}
+    predicates:
+      - name: tContains
+        directions:
+          - {l: geometry, r: tpcpoint}
+      - name: tCovers
+        directions:
+          - {l: geometry, r: tpcpoint}
+      - name: tDisjoint
+        directions:
+          - {l: geometry, r: tpcpoint}
+          - {l: tpcpoint, r: geometry}
+          - {l: tpcpoint, r: tpcpoint}
+      - name: tIntersects
+        directions:
+          - {l: geometry, r: tpcpoint}
+          - {l: tpcpoint, r: geometry}
+          - {l: tpcpoint, r: tpcpoint}
+      - name: tTouches
+        directions:
+          - {l: geometry, r: tpcpoint}
+          - {l: tpcpoint, r: geometry}
+      - name: tDwithin
+        directions:
+          - {l: geometry, r: tpcpoint}
+          - {l: tpcpoint, r: geometry}
+          - {l: tpcpoint, r: tpcpoint}
     convert: "@N@::@extschema@.tgeompoint"
     doc: |-
       /**

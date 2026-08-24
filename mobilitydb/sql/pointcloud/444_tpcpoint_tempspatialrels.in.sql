@@ -36,6 +36,16 @@
  * @brief Temporal spatial relationships for temporal pgpointcloud points
  */
 
+CREATE FUNCTION tContains(geometry, tpcpoint)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tContains($1, $2::@extschema@.tgeompoint) $$;
+
+CREATE FUNCTION tCovers(geometry, tpcpoint)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tCovers($1, $2::@extschema@.tgeompoint) $$;
+
 CREATE FUNCTION tDisjoint(geometry, tpcpoint)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -63,6 +73,15 @@ CREATE FUNCTION tIntersects(tpcpoint, tpcpoint)
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tIntersects($1::@extschema@.tgeompoint,
                             $2::@extschema@.tgeompoint) $$;
+
+CREATE FUNCTION tTouches(geometry, tpcpoint)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tTouches($1, $2::@extschema@.tgeompoint) $$;
+CREATE FUNCTION tTouches(tpcpoint, geometry)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tTouches($1::@extschema@.tgeompoint, $2) $$;
 
 CREATE FUNCTION tDwithin(geometry, tpcpoint, dist float)
   RETURNS tbool
