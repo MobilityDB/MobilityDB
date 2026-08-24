@@ -47,6 +47,7 @@
  * @endcode
  */
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -978,6 +979,65 @@ test_selective_stbox(SPTreeKind kind, const char *kindname)
   sptree_free(sptree);
 }
 
+
+/*****************************************************************************
+ * What a tree reports it holds
+ *
+ * A node partitions the space into as many child slots as the space has
+ * quadrants, and the nodes a tree ends in hold none of them. The size a tree
+ * reports therefore charges the slots to the nodes that hold them, which is
+ * asserted here without naming a byte count. The first entry of a tree costs
+ * the node it makes; the second costs a node AND the slots the root acquires
+ * to hold it. So the step from one entry to two exceeds the step from none to
+ * one, and comparing the two steps cancels whatever fixed size a tree carries
+ * before it holds anything.
+ *****************************************************************************/
+
+static void
+test_reported_size(SPTreeKind kind, const char *kindname)
+{
+  char name[128];
+
+  /* A tree holding nothing */
+  SPTree *none = sptree_create_stbox(kind);
+  MeosArray *result = meos_array_create(sizeof(int64));
+  STBox *query = random_stbox(200, 50);
+  int count = sptree_search(none, INDEX_OVERLAPS, query, result);
+  snprintf(name, sizeof(name), "%s empty answers 0, not the error sentinel",
+    kindname);
+  check(name, count == 0 && count != INT_MAX);
+  snprintf(name, sizeof(name), "%s empty holds no entry", kindname);
+  check(name, sptree_num_entries(none) == 0);
+
+  /* A tree of one entry: its only node never gains a child */
+  SPTree *one = sptree_create_stbox(kind);
+  STBox *a = random_stbox(200, 50);
+  sptree_insert(one, a, 0);
+  snprintf(name, sizeof(name), "%s one entry holds one", kindname);
+  check(name, sptree_num_entries(one) == 1);
+  snprintf(name, sizeof(name), "%s one entry reaches level 1", kindname);
+  check(name, sptree_height(one) == 1);
+  int64 size0 = sptree_mem_size(none);
+  int64 size1 = sptree_mem_size(one);
+
+  /* A second entry makes a node and gives the root its slots */
+  SPTree *two = sptree_create_stbox(kind);
+  sptree_insert(two, a, 0);
+  STBox *b = random_stbox(200, 50);
+  sptree_insert(two, b, 1);
+  int64 size2 = sptree_mem_size(two);
+  snprintf(name, sizeof(name), "%s two entries hold two", kindname);
+  check(name, sptree_num_entries(two) == 2);
+  snprintf(name, sizeof(name),
+    "%s the slots are charged to the node holding them", kindname);
+  check(name, size1 > size0 && (size2 - size1) > (size1 - size0));
+
+  free(query); free(a); free(b);
+  meos_array_destroy(result);
+  sptree_free(none); sptree_free(one); sptree_free(two);
+  return;
+}
+
 int
 main(void)
 {
@@ -1008,6 +1068,8 @@ main(void)
   test_nn_floatspan();
   test_nn_tbox();
   test_nn_stbox();
+  test_reported_size(SPTREE_QUADTREE, "quad-tree");
+  test_reported_size(SPTREE_KDTREE, "k-d tree");
 
   meos_finalize();
 
