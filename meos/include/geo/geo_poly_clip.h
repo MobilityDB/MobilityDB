@@ -37,8 +37,8 @@
 /**
  * @brief Boolean operation selector for #clip_poly_poly.
  *
- * Numeric values are part of the SQL ABI used by the four
- * @c _mdb_internal_clip_* SQL functions defined in
+ * Numeric values are part of the SQL ABI used by the intersection, geoUnion,
+ * difference and symDifference SQL functions defined in
  * @c mobilitydb/sql/geo/056_tpoint_spatialfuncs.in.sql; do not renumber.
  */
 typedef enum

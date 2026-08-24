@@ -368,30 +368,31 @@ CREATE FUNCTION minusElevation(tgeompoint, floatspan)
 /*****************************************************************************
  * Polygon clipping (Clipper2 backend)
  *
- * INTERNAL — these functions expose the in-process polygon Boolean engine
- * used by the temporal types whose values are 2D regions (trgeo, tcbuffer,
- * tgeometry, tgeography). They exist so the engine can be unit-tested and
- * benchmarked from SQL; end users should keep using PostGIS ST_Intersection
- * / ST_Union / ST_Difference / ST_SymDifference, which are more robust on
- * degenerate inputs and handle curves / geography / 3D. The `_mdb_internal_`
- * prefix marks them as not part of the public API.
+ * The in-process polygon Boolean engine over the geometries carried by the
+ * temporal types whose values are 2D regions (trgeo, tcbuffer, tgeometry,
+ * tgeography). Each function carries the name of the PostGIS function it
+ * answers for without the ST_ prefix, so a query reaches this engine by
+ * dropping the prefix and PostGIS by keeping it. UNION is a reserved word, so
+ * the union carries the name of the type it answers over, geoUnion, as
+ * setUnion and spanUnion do. The engine is planar and two-dimensional: it
+ * refuses a geography, a Z dimension and anything that is not a (multi)polygon.
  *****************************************************************************/
 
-CREATE FUNCTION _mdb_internal_clip_intersection(geometry, geometry)
+CREATE FUNCTION intersection(geometry, geometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'cl_intersection'
+  AS 'MODULE_PATHNAME', 'Geom_intersection'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION _mdb_internal_clip_union(geometry, geometry)
+CREATE FUNCTION geoUnion(geometry, geometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'cl_union'
+  AS 'MODULE_PATHNAME', 'Geom_union'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION _mdb_internal_clip_difference(geometry, geometry)
+CREATE FUNCTION difference(geometry, geometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'cl_difference'
+  AS 'MODULE_PATHNAME', 'Geom_difference'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION _mdb_internal_clip_sym_difference(geometry, geometry)
+CREATE FUNCTION symDifference(geometry, geometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'symDifference'
+  AS 'MODULE_PATHNAME', 'Geom_sym_difference'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 

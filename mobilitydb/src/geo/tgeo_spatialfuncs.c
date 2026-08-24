@@ -904,30 +904,50 @@ clip_ext(FunctionCallInfo fcinfo, ClipOper operation)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(cl_intersection);
+PG_FUNCTION_INFO_V1(Geom_intersection);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the region two geometries share
+ * @sqlfn intersection()
+ */
 Datum
-cl_intersection(PG_FUNCTION_ARGS)
+Geom_intersection(PG_FUNCTION_ARGS)
 {
   return clip_ext(fcinfo, CL_INTERSECTION);
 }
 
-PG_FUNCTION_INFO_V1(cl_union);
+PG_FUNCTION_INFO_V1(Geom_union);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the region two geometries cover together
+ * @sqlfn geoUnion()
+ */
 Datum
-cl_union(PG_FUNCTION_ARGS)
+Geom_union(PG_FUNCTION_ARGS)
 {
   return clip_ext(fcinfo, CL_UNION);
 }
 
-PG_FUNCTION_INFO_V1(cl_difference);
+PG_FUNCTION_INFO_V1(Geom_difference);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the region of the first geometry that the second does not cover
+ * @sqlfn difference()
+ */
 Datum
-cl_difference(PG_FUNCTION_ARGS)
+Geom_difference(PG_FUNCTION_ARGS)
 {
   return clip_ext(fcinfo, CL_DIFFERENCE);
 }
 
-PG_FUNCTION_INFO_V1(symDifference);
+PG_FUNCTION_INFO_V1(Geom_sym_difference);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the region exactly one of two geometries covers
+ * @sqlfn symDifference()
+ */
 Datum
-symDifference(PG_FUNCTION_ARGS)
+Geom_sym_difference(PG_FUNCTION_ARGS)
 {
   return clip_ext(fcinfo, CL_XOR);
 }
