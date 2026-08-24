@@ -1682,6 +1682,21 @@ always_ge_ttext_text(const Temporal *temp, const text *txt)
 
 /**
  * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #TEq_base_temporal()
+ */
+Temporal *
+teq_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_base_temporal(Int64GetDatum(i), temp, &datum2_eq);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal equality of a boolean and a temporal boolean
  * @param[in] b Value
  * @param[in] temp Temporal value
@@ -1741,6 +1756,21 @@ teq_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #TEq_temporal_base()
+ */
+Temporal *
+teq_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_temporal_base(temp, Int64GetDatum(i), &datum2_eq);
+}
 
 /**
  * @ingroup meos_temporal_comp_temp
@@ -1808,6 +1838,21 @@ teq_ttext_text(const Temporal *temp, const text *txt)
 
 /**
  * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal difference of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #TNe_base_temporal()
+ */
+Temporal *
+tne_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_base_temporal(Int64GetDatum(i), temp, &datum2_ne);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal inequality of a boolean and a temporal boolean
  * @param[in] b Value
  * @param[in] temp Temporal value
@@ -1867,6 +1912,21 @@ tne_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal difference of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #TNe_temporal_base()
+ */
+Temporal *
+tne_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_temporal_base(temp, Int64GetDatum(i), &datum2_ne);
+}
 
 /**
  * @ingroup meos_temporal_comp_temp
@@ -1949,6 +2009,21 @@ tlt_int_tint(int i, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #TLt_base_temporal()
+ */
+Temporal *
+tlt_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_base_temporal(Int64GetDatum(i), temp, &datum2_lt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than of a float and a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
@@ -1978,6 +2053,21 @@ tlt_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #TLt_temporal_base()
+ */
+Temporal *
+tlt_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_temporal_base(temp, Int64GetDatum(i), &datum2_lt);
+}
 
 /**
  * @ingroup meos_temporal_comp_temp
@@ -2048,6 +2138,21 @@ tle_int_tint(int i, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than or equal to of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #TLe_base_temporal()
+ */
+Temporal *
+tle_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_base_temporal(Int64GetDatum(i), temp, &datum2_le);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a float and a temporal
  * float
  * @param[in] d Value
@@ -2079,6 +2184,21 @@ tle_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than or equal to of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #TLe_temporal_base()
+ */
+Temporal *
+tle_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_temporal_base(temp, Int64GetDatum(i), &datum2_le);
+}
 
 /**
  * @ingroup meos_temporal_comp_temp
@@ -2151,6 +2271,21 @@ tgt_int_tint(int i, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #TGt_base_temporal()
+ */
+Temporal *
+tgt_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_base_temporal(Int64GetDatum(i), temp, &datum2_gt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than of a float and a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
@@ -2180,6 +2315,21 @@ tgt_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #TGt_temporal_base()
+ */
+Temporal *
+tgt_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_temporal_base(temp, Int64GetDatum(i), &datum2_gt);
+}
 
 /**
  * @ingroup meos_temporal_comp_temp
@@ -2250,6 +2400,21 @@ tge_int_tint(int i, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than or equal to of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #TGe_base_temporal()
+ */
+Temporal *
+tge_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_base_temporal(Int64GetDatum(i), temp, &datum2_ge);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a float and a
  * temporal float
  * @param[in] d Value
@@ -2281,6 +2446,21 @@ tge_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than or equal to of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #TGe_temporal_base()
+ */
+Temporal *
+tge_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tcomp_temporal_base(temp, Int64GetDatum(i), &datum2_ge);
+}
 
 /**
  * @ingroup meos_temporal_comp_temp
