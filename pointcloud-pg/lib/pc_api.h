@@ -251,6 +251,12 @@ const char *pc_compression_name(int num);
 
 /** Release the memory in a schema structure */
 void pc_schema_free(PCSCHEMA *pcs);
+/** Build an empty schema structure of @p ndims dimensions */
+PCSCHEMA *pc_schema_new(uint32_t ndims); /* MEOS */
+/** Convert a dimension interpretation name to its number */
+int pc_interpretation_number(const char *str); /* MEOS */
+/** Convert a compression name to its number */
+int pc_compression_number(const char *str); /* MEOS */
 /** Build a schema structure from the XML serialisation */
 PCSCHEMA *pc_schema_from_xml(const char *xmlstr);
 /** Print out JSON readable format of schema */

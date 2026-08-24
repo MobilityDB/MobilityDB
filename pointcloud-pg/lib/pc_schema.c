@@ -40,7 +40,7 @@ const char *pc_interpretation_string(uint32_t interp)
 }
 
 /** Convert XML string token to type interpretation number */
-static int pc_interpretation_number(const char *str)
+int pc_interpretation_number(const char *str) /* MEOS */
 {
   if (str[0] == 'i' || str[0] == 'I')
   {
@@ -93,7 +93,7 @@ const char *pc_compression_name(int num)
   }
 }
 
-static int pc_compression_number(const char *str)
+int pc_compression_number(const char *str) /* MEOS */
 {
   if (!str)
     return PC_NONE;
@@ -163,7 +163,7 @@ static void pc_dimension_free(PCDIMENSION *pcd)
   pcfree(pcd);
 }
 
-static PCSCHEMA *pc_schema_new(uint32_t ndims)
+PCSCHEMA *pc_schema_new(uint32_t ndims) /* MEOS */
 {
   PCSCHEMA *pcs = pcalloc(sizeof(PCSCHEMA));
   pcs->dims = pcalloc(sizeof(PCDIMENSION *) * ndims);
