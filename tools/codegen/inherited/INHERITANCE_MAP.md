@@ -549,10 +549,14 @@ Reading the table:
 - **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin**
   via the whole-file `aggregate_families` axis (§4b), not the `subtypes:` track
   (`--gaps`: `aggregate_families` 19/19, full coverage).
-- **`tempsp.rels` is generated for cbuffer, npoint, pose, rgeo, h3, quadbin** via
-  `tempspatialrel_families` (§3/§5) — native for cbuffer, cast-delegated for the
-  other five (`--gaps`: `tempspatialrel_families` 10/10, full `tspatial`-class
-  coverage).
+- **`tempsp.rels` is generated for cbuffer, npoint, pose, posechain, pointcloud,
+  rgeo, h3, quadbin** via `tempspatialrel_families` (§3/§5) — native for cbuffer,
+  cast-delegated for the other seven, every one of them converting to `tgeometry`
+  (`--gaps`: `tempspatialrel_families` 12/13, `tpcpatch` outstanding).
+  ⛔ A delegating family declares the predicates its VALUES can answer, not a fixed
+  six: `tpcpoint` carries the Z its schema declares and `tContains`, `tCovers` and
+  `tTouches` are planar DE-9IM relationships that refuse a Z dimension, so it
+  declares `tDisjoint`, `tIntersects` and `tDwithin` alone.
 - **`spatialrels` SQL** (the ever/always wrapper *file*) is generated for the
   **cast-delegated families** (h3 262, quadbin 362, npoint 320) via the `subtypes:`
   `spatialrels` behaviour — a cell-boundary→`tgeometry` cast for h3/quadbin, a
@@ -617,9 +621,11 @@ its last edit:
 - `aggregate_families` is **19/19**: `561_tposechain_aggfuncs.in.sql` carries the
   surface its siblings carry, every statement binding a generic transition or final
   function, so the family needs no kernel of its own.
-  `tempspatialrel_families`, **10/13**: `tposechain`, `tpcpoint`, `tpcpatch`.
-  ⛔ That one projects onto a file the family does NOT have, so closing it ADDS
-  SURFACE. That is a functional decision for the owner, not a governance one.
+- `tempspatialrel_families`, **12/13**: `tpcpatch`.
+  ⛔ It projects onto a conversion the family does NOT have: every delegating
+  family reaches `tgeometry`, and a `pcpatch` has no geometry conversion at all,
+  so closing it ADDS a MEOS entry rather than a manifest line. That is a
+  functional decision for the owner, not a governance one.
 - `distance_families`, **10/15** of the value-domain types: `posechainset`,
   `h3indexset`, `quadbinset`, `pcpointset`, `pcpatchset`. `posechainset` is
   deliberate and `setfamilies.yaml` says so in place — a pose chain has no

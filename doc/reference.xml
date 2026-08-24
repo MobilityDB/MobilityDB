@@ -1840,6 +1840,14 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
+				<title>Temporal Spatial Relationships</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A temporal pose chain answers them at the position its composed pose occupies.</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>Aggregations</title>
 				<itemizedlist>
 					<listitem>
@@ -3565,6 +3573,14 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_dwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Ever / always within distance.</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Temporal Spatial Relationships</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_tspatialrels"><varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname></link>: Temporal disjoint, within distance, and intersects</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

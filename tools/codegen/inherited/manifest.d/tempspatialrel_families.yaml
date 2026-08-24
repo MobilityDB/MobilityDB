@@ -157,6 +157,40 @@ tempspatialrel_families:
        * @brief Temporal spatial relationships for temporal poses
        */
 
+  # A tpcpoint carries the Z its schema declares, and tContains, tCovers and
+  # tTouches are planar DE-9IM relationships that refuse a Z dimension, so the
+  # family declares the three its values can answer rather than the six a
+  # planar family declares.
+  - family:  tpcpoint
+    impl:    cast
+    file:    mobilitydb/sql/pointcloud/444_tpcpoint_tempspatialrels.in.sql
+    predicates: [tDisjoint, tIntersects, tDwithin]
+    directions:
+      - {l: geometry, r: tpcpoint}
+      - {l: tpcpoint, r: geometry}
+      - {l: tpcpoint, r: tpcpoint}
+    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
+    doc: |-
+      /**
+       * @file
+       * @brief Temporal spatial relationships for temporal pgpointcloud points
+       */
+
+  - family:  tposechain
+    impl:    cast
+    file:    mobilitydb/sql/posechain/564_tposechain_tempspatialrels.in.sql
+    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    directions:
+      - {l: geometry,   r: tposechain}
+      - {l: tposechain, r: geometry}
+      - {l: tposechain, r: tposechain}
+    convert: "@N@::@extschema@.tpose::@extschema@.tgeompoint::@extschema@.tgeometry"
+    doc: |-
+      /**
+       * @file
+       * @brief Temporal spatial relationships for temporal pose chains
+       */
+
   - family:  trgeometry
     impl:    cast
     file:    mobilitydb/sql/rgeo/172_trgeo_tempspatialrels.in.sql

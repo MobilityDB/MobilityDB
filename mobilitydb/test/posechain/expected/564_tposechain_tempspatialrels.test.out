@@ -1,0 +1,90 @@
+SELECT asText(tIntersects(tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+                              astext                              
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(tIntersects(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}'));
+                              astext                              
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(tDisjoint(tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+                              astext                              
+------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(tDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}'));
+                              astext                              
+------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(tContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}'));
+                              astext                              
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(tCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}'));
+                              astext                              
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(tContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01'));
+             astext             
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01'));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tTouches(tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tTouches(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01'));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tTouches(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+             astext             
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', 0.0));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', geometry 'Point(1 5)', 2.0));
+             astext             
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', tposechain 'PoseChain(Pose(Point(1 2), 0.1))@2001-01-01', 2.0));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', tposechain 'PoseChain(Pose(Point(1 9), 0.1))@2001-01-01', 2.0));
+             astext             
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
