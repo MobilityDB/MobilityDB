@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: cache_count</title>
+<title>MobilityDB: pc_schema_as_xml</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,7 +81,7 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_ad942150eaddbe2485a456eac68aa1a9e.html#ad942150eaddbe2485a456eac68aa1a9e">cache_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a044338039b050601a02352cae7cdc2a5.html#a044338039b050601a02352cae7cdc2a5">cache_cap</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="schema__hook_8c_a48eecf707352ceeeabce1ef34b00479c.html#a48eecf707352ceeeabce1ef34b00479c">cache_count</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a48eecf707352ceeeabce1ef34b00479c.html#a48eecf707352ceeeabce1ef34b00479c">cache_count</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_adec57a58972a8f2aca37ecd8e83997a8.html#adec57a58972a8f2aca37ecd8e83997a8">copy_xml_long_lived</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a74f63426f55ee730048ab06548aca809.html#a74f63426f55ee730048ab06548aca809">ensure_cache_capacity</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_gad830b0cfc84d3a74293b26bca97f7083.html#gad830b0cfc84d3a74293b26bca97f7083">meos_initialize_pointcloud</a></td></tr>
@@ -96,15 +96,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga228e4999e6b8c63907e9f74675da28f3.html#ga228e4999e6b8c63907e9f74675da28f3">meos_pc_schema_register_dims</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga1e0d2ff7c6b0905c2f75643de9953ebc.html#ga1e0d2ff7c6b0905c2f75643de9953ebc">meos_pc_schema_register_xml</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_gaa65dec42a587dd71844da01153212963.html#gaa65dec42a587dd71844da01153212963">meos_pc_schema_xml</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_adf32ecc82db689b08a7c8fa6de00e751.html#adf32ecc82db689b08a7c8fa6de00e751">pc_schema_as_xml</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="schema__hook_8c_adf32ecc82db689b08a7c8fa6de00e751.html#adf32ecc82db689b08a7c8fa6de00e751">pc_schema_as_xml</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a90a1243bd6b6042746246d29566eadef.html#a90a1243bd6b6042746246d29566eadef">pcschema_string_copy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a22da830b30ce894f875c9c28f452a193.html#a22da830b30ce894f875c9c28f452a193">schema_entry</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a48eecf707352ceeeabce1ef34b00479c" name="a48eecf707352ceeeabce1ef34b00479c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a48eecf707352ceeeabce1ef34b00479c">&#9670;&#160;</a></span>cache_count</h2>
+<a id="adf32ecc82db689b08a7c8fa6de00e751" name="adf32ecc82db689b08a7c8fa6de00e751"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf32ecc82db689b08a7c8fa6de00e751">&#9670;&#160;</a></span>pc_schema_as_xml()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -113,7 +113,11 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int cache_count = 0</td>
+          <td class="memname">static char * pc_schema_as_xml </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *&#160;</td>
+          <td class="paramname"><em>schema</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>
@@ -122,6 +126,9 @@ $(function() {
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Return the pgPointCloud document describing a schema. </p>
+<p >The element set is the one <code>pc_schema_from_xml</code> reads and the layout is the one the library's own documents carry: a <code>pc:dimension</code> per dimension holding its position, size, name, interpretation, scale, offset and active flag, and a <code>pc:metadata</code> naming the compression. <code>pc_interpretation_string</code> and <code>pc_compression_number</code> are the library's, so the spelling of an interpretation and of a compression is the library's too. </p><dl class="section note"><dt>Note</dt><dd>The document is what the library parses, so the only proof that it is right is the library reading it back: the test registers a schema as rows and compares the schema this document parses to the schema the rows build. </dd></dl>
 
 </div>
 </div>

@@ -109,8 +109,9 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the cached XML text for a registered pcid (NULL on miss or parse-only registration). </p>
-<p >Return the cached XML text for a registered pcid, or <code>NULL</code> if no XML was registered with this pcid (cache miss, or registered without XML via the older <a class="el" href="group__meos__pointcloud__schema__cache_ga4abdb06a1b50391cc7189d1578bfeb60.html#ga4abdb06a1b50391cc7189d1578bfeb60">meos_pc_schema_register</a>). </p>
+<p>Return the pgPointCloud document of a registered pcid. </p>
+<p >Return the cached XML text for a registered pcid, or <code>NULL</code> if no XML was registered with this pcid (cache miss, or registered without XML via the older <a class="el" href="group__meos__pointcloud__schema__cache_ga4abdb06a1b50391cc7189d1578bfeb60.html#ga4abdb06a1b50391cc7189d1578bfeb60">meos_pc_schema_register</a>).</p>
+<p >A schema parsed from a document keeps the document it came from. A schema stated as dimensions has none, so one describing it is rendered on the first call and kept, which is what lets a schema stated either way reach a reader that takes a document. </p><dl class="section return"><dt>Returns</dt><dd>On a pcid no schema is registered for return <code>NULL</code> </dd></dl>
 
 </div>
 </div>
