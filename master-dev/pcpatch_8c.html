@@ -93,9 +93,14 @@ $(function() {
 <code>#include &lt;varatt.h&gt;</code><br />
 <code>#include &lt;common/hashfn.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
+<code>#include &quot;pc_api.h&quot;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__pointcloud_8h_source.html">meos_pointcloud.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="pcpoint_8h_source.html">pointcloud/pcpoint.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="meos__schema__hook_8h_source.html">pointcloud/meos_schema_hook.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="pgsql__compat_8h_source.html">pointcloud/pgsql_compat.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
@@ -118,8 +123,8 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa5b45963691aadaaa610453c37c6efe6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__base__comp_gaa5b45963691aadaaa610453c37c6efe6.html#gaa5b45963691aadaaa610453c37c6efe6">pcpatch_cmp</a> (const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa1, const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa2)</td></tr>
 <tr class="memdesc:gaa5b45963691aadaaa610453c37c6efe6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare two pcpatch values byte-wise.  <a href="group__meos__pointcloud__base__comp_gaa5b45963691aadaaa610453c37c6efe6.html#gaa5b45963691aadaaa610453c37c6efe6">More...</a><br /></td></tr>
 <tr class="separator:gaa5b45963691aadaaa610453c37c6efe6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga56e99ae387361716aacee68d58e78669"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structPcpatch.html">Pcpatch</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__constructor_ga56e99ae387361716aacee68d58e78669.html#ga56e99ae387361716aacee68d58e78669">pcpatch_copy</a> (const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa)</td></tr>
-<tr class="memdesc:ga56e99ae387361716aacee68d58e78669"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a palloc'd copy of a pcpatch.  <a href="group__meos__pointcloud__constructor_ga56e99ae387361716aacee68d58e78669.html#ga56e99ae387361716aacee68d58e78669">More...</a><br /></td></tr>
+<tr class="memitem:ga56e99ae387361716aacee68d58e78669"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structPcpatch.html">Pcpatch</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__base__constructor_ga56e99ae387361716aacee68d58e78669.html#ga56e99ae387361716aacee68d58e78669">pcpatch_copy</a> (const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa)</td></tr>
+<tr class="memdesc:ga56e99ae387361716aacee68d58e78669"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a palloc'd copy of a pcpatch.  <a href="group__meos__pointcloud__base__constructor_ga56e99ae387361716aacee68d58e78669.html#ga56e99ae387361716aacee68d58e78669">More...</a><br /></td></tr>
 <tr class="separator:ga56e99ae387361716aacee68d58e78669"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga764631fd44f2b0db034408ca41f801e3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__base__comp_ga764631fd44f2b0db034408ca41f801e3.html#ga764631fd44f2b0db034408ca41f801e3">pcpatch_eq</a> (const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa1, const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa2)</td></tr>
 <tr class="memdesc:ga764631fd44f2b0db034408ca41f801e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two pcpatch values are equal.  <a href="group__meos__pointcloud__base__comp_ga764631fd44f2b0db034408ca41f801e3.html#ga764631fd44f2b0db034408ca41f801e3">More...</a><br /></td></tr>
@@ -154,6 +159,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga11057cbedca6ecc2c2e92dce7dfa5600"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__base__comp_ga11057cbedca6ecc2c2e92dce7dfa5600.html#ga11057cbedca6ecc2c2e92dce7dfa5600">pcpatch_lt</a> (const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa1, const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa2)</td></tr>
 <tr class="memdesc:ga11057cbedca6ecc2c2e92dce7dfa5600"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first pcpatch precedes the second in total order.  <a href="group__meos__pointcloud__base__comp_ga11057cbedca6ecc2c2e92dce7dfa5600.html#ga11057cbedca6ecc2c2e92dce7dfa5600">More...</a><br /></td></tr>
 <tr class="separator:ga11057cbedca6ecc2c2e92dce7dfa5600"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab6e3403f3fd1ac2bd51f67fab614bc61"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structPcpatch.html">Pcpatch</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__base__constructor_gab6e3403f3fd1ac2bd51f67fab614bc61.html#gab6e3403f3fd1ac2bd51f67fab614bc61">pcpatch_make</a> (const <a class="el" href="structPcpoint.html">Pcpoint</a> **points, int count)</td></tr>
+<tr class="memdesc:gab6e3403f3fd1ac2bd51f67fab614bc61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pcpatch from an array of pcpoints.  <a href="group__meos__pointcloud__base__constructor_gab6e3403f3fd1ac2bd51f67fab614bc61.html#gab6e3403f3fd1ac2bd51f67fab614bc61">More...</a><br /></td></tr>
+<tr class="separator:gab6e3403f3fd1ac2bd51f67fab614bc61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9068bc0060475a35c2dd1ac942ad3fe2"><td class="memItemLeft" align="right" valign="top">static size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pcpatch_8c_a9068bc0060475a35c2dd1ac942ad3fe2.html#a9068bc0060475a35c2dd1ac942ad3fe2">pcpatch_meaningful_size</a> (const <a class="el" href="structPcpatch.html">Pcpatch</a> *pa)</td></tr>
 <tr class="memdesc:a9068bc0060475a35c2dd1ac942ad3fe2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the comparable byte length of a pcpatch.  <a href="pcpatch_8c_a9068bc0060475a35c2dd1ac942ad3fe2.html#a9068bc0060475a35c2dd1ac942ad3fe2">More...</a><br /></td></tr>
 <tr class="separator:a9068bc0060475a35c2dd1ac942ad3fe2"><td class="memSeparator" colspan="2">&#160;</td></tr>

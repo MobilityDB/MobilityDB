@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">pcset.c File Reference</div></div>
 </div><!--header-->
@@ -82,8 +83,10 @@ $(function() {
 
 <p>PG wrappers for per-type pcpoint / pcpatch accessors.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
+<code>#include &lt;utils/array.h&gt;</code><br />
 <code>#include &quot;pc_api.h&quot;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;pgtypes.h&gt;</code><br />
@@ -92,8 +95,15 @@ $(function() {
 <code>#include &quot;<a class="el" href="pcpatch_8h_source.html">pointcloud/pcpatch.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="meos__schema__hook_8h_source.html">pointcloud/meos_schema_hook.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="postgis_8h_source.html">pg_geo/postgis.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2type__util_8h_source.html">pg_temporal/type_util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="schema__cache_8h_source.html">pg_pointcloud/schema_cache.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a3c40ed8ff8d3b3a3874794eca6acae4a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pcset_8c_a3c40ed8ff8d3b3a3874794eca6acae4a.html#a3c40ed8ff8d3b3a3874794eca6acae4a">PCPOINT_MAX_COORDS</a>&#160;&#160;&#160;3</td></tr>
+<tr class="memdesc:a3c40ed8ff8d3b3a3874794eca6acae4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of coordinates a pcpoint constructor call carries, which is the number of arguments of its widest SQL signature.  <a href="pcset_8c_a3c40ed8ff8d3b3a3874794eca6acae4a.html#a3c40ed8ff8d3b3a3874794eca6acae4a">More...</a><br /></td></tr>
+<tr class="separator:a3c40ed8ff8d3b3a3874794eca6acae4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:gaee081ef16d50480cdd7e4b4d4df5e0b1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__comp_gaee081ef16d50480cdd7e4b4d4df5e0b1.html#gaee081ef16d50480cdd7e4b4d4df5e0b1">Pcpatch_cmp</a> (PG_FUNCTION_ARGS)</td></tr>
@@ -120,6 +130,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gab3eb22c5da020ea2ad4946ce16427f96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__comp_gab3eb22c5da020ea2ad4946ce16427f96.html#gab3eb22c5da020ea2ad4946ce16427f96">Pcpatch_lt</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gab3eb22c5da020ea2ad4946ce16427f96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first pcpatch is less than the second one @sqlfn lt()  <a href="group__mobilitydb__pointcloud__base__comp_gab3eb22c5da020ea2ad4946ce16427f96.html#gab3eb22c5da020ea2ad4946ce16427f96">More...</a><br /></td></tr>
 <tr class="separator:gab3eb22c5da020ea2ad4946ce16427f96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac4168e0929d8d82fbddc7f9537ee2ba9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__constructor_gac4168e0929d8d82fbddc7f9537ee2ba9.html#gac4168e0929d8d82fbddc7f9537ee2ba9">Pcpatch_make</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:gac4168e0929d8d82fbddc7f9537ee2ba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pcpatch from a point cloud identifier and an array of pcpoints of the schema it names @sqlfn pcpatch()  <a href="group__mobilitydb__pointcloud__base__constructor_gac4168e0929d8d82fbddc7f9537ee2ba9.html#gac4168e0929d8d82fbddc7f9537ee2ba9">More...</a><br /></td></tr>
+<tr class="separator:gac4168e0929d8d82fbddc7f9537ee2ba9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gadedcbf83e0a80d1f3368c19f65e54f4e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__comp_gadedcbf83e0a80d1f3368c19f65e54f4e.html#gadedcbf83e0a80d1f3368c19f65e54f4e">Pcpatch_ne</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gadedcbf83e0a80d1f3368c19f65e54f4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first pcpatch is different from the second one @sqlfn ne()  <a href="group__mobilitydb__pointcloud__base__comp_gadedcbf83e0a80d1f3368c19f65e54f4e.html#gadedcbf83e0a80d1f3368c19f65e54f4e">More...</a><br /></td></tr>
 <tr class="separator:gadedcbf83e0a80d1f3368c19f65e54f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,6 +181,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga868ecd38369704015b0183d46bf307a8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__comp_ga868ecd38369704015b0183d46bf307a8.html#ga868ecd38369704015b0183d46bf307a8">Pcpoint_lt</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga868ecd38369704015b0183d46bf307a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first pcpoint is less than the second one @sqlfn lt()  <a href="group__mobilitydb__pointcloud__base__comp_ga868ecd38369704015b0183d46bf307a8.html#ga868ecd38369704015b0183d46bf307a8">More...</a><br /></td></tr>
 <tr class="separator:ga868ecd38369704015b0183d46bf307a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga52382d24fd10f1b08b584f2eaec2250e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__constructor_ga52382d24fd10f1b08b584f2eaec2250e.html#ga52382d24fd10f1b08b584f2eaec2250e">Pcpoint_make</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga52382d24fd10f1b08b584f2eaec2250e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pcpoint from a point cloud identifier and the coordinates of the dimensions of the schema it names @sqlfn pcpoint()  <a href="group__mobilitydb__pointcloud__base__constructor_ga52382d24fd10f1b08b584f2eaec2250e.html#ga52382d24fd10f1b08b584f2eaec2250e">More...</a><br /></td></tr>
+<tr class="separator:ga52382d24fd10f1b08b584f2eaec2250e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1b6c809bcb99b59c533d50568421f1da"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__base__comp_ga1b6c809bcb99b59c533d50568421f1da.html#ga1b6c809bcb99b59c533d50568421f1da">Pcpoint_ne</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga1b6c809bcb99b59c533d50568421f1da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first pcpoint is different from the second one @sqlfn ne()  <a href="group__mobilitydb__pointcloud__base__comp_ga1b6c809bcb99b59c533d50568421f1da.html#ga1b6c809bcb99b59c533d50568421f1da">More...</a><br /></td></tr>
 <tr class="separator:ga1b6c809bcb99b59c533d50568421f1da"><td class="memSeparator" colspan="2">&#160;</td></tr>
