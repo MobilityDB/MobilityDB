@@ -5788,8 +5788,14 @@ meos_buffer(const LWGEOM *geom, double radius, JoinStyle join_style,
     case CURVEPOLYTYPE:
       return meos_buffer_curvepoly((const LWCURVEPOLY *) geom, radius,
         join_style, mitre_limit, false);
+    /* A TIN (collection of triangles) and a polyhedral surface (collection of
+     * polygonal faces) share the collection memory layout, and the collection
+     * branch buffers each component through this same dispatch, so a triangle
+     * and a face are each buffered by the entry that owns them */
     case MULTICURVETYPE:
     case MULTISURFACETYPE:
+    case TINTYPE:
+    case POLYHEDRALSURFACETYPE:
     case COLLECTIONTYPE:
       return meos_buffer_collection((const LWCOLLECTION *) geom, radius,
         join_style, cap_style, mitre_limit);
