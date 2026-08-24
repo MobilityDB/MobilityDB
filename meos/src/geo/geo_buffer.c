@@ -5402,6 +5402,17 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
    */
   for (uint32_t i = 1; i < poly->nrings; i++)
   {
+    /* A positive buffer erodes a hole, and what is left of one is non-empty
+     * only where the hole holds a disc of the buffer distance, so a hole
+     * enclosing less area than that disc holds none of it and closes
+     * completely. What this reaches on real data is a ring enclosing NO area
+     * at all, a slit that runs out to a point and back: offsetting one sweeps
+     * a band of the buffer distance about the slit and punches that band out
+     * of the answer, which is a hole the geometry never had. An erosion
+     * widens a hole rather than closing it, so this reads the outward case */
+    if (! inward &&
+        fabs(buffer_ring_area(poly->rings[i])) < M_PI * radius * radius)
+      continue;
     bool hole_left = ! buffer_ring_outward_left(poly->rings[i]);
     if (inward)
       hole_left = ! hole_left;

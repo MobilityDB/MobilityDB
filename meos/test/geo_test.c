@@ -306,6 +306,32 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* A ring of a polygon can enclose no area at all -- a slit that runs out to
+   * a point and comes back along itself -- and real survey data carries them.
+   * A hole is what a positive buffer ERODES, and a slit holds no disc of any
+   * radius, so it closes completely and the answer is the buffer of the
+   * rectangle alone: the rounded 32 by 22 of area 703.14. Offsetting the slit
+   * instead sweeps a band of the buffer distance about it and punches that
+   * band out, leaving a hole the geometry never had and 26.9 of the 600 the
+   * rectangle covers outside its own buffer */
+  const char *slit =
+    "Polygon((0 0,30 0,30 20,0 20,0 0),(10 10,20 10,20 12,20 10,10 10))";
+  char slit_patt[10] = "T*****FF*";
+  GSERIALIZED *slit_geo = geom_in(slit, -1);
+  assert(slit_geo != NULL);
+  meos_errno_reset();
+  GSERIALIZED *slit_buf = geom_buffer(slit_geo, 1.0, "");
+  printf("geom_buffer(a rectangle whose hole encloses no area): %d, errno %d\n",
+    slit_buf != NULL, meos_errno());
+  assert(slit_buf != NULL);
+  assert(meos_errno() == 0);
+  bool slit_covers = geom_relate_pattern(slit_buf, slit_geo, slit_patt);
+  printf("  it covers the geometry it is taken of: %d\n", slit_covers);
+  assert(slit_covers == true);
+  assert(meos_errno() == 0);
+  free(slit_geo); free(slit_buf);
+  meos_errno_reset();
+
   /* An offset that degenerates at one exact radius: the two offsets of a U
    * meet with no width left where the radius is half the gap between its arms,
    * and the inward offset of an arc lands on the centre where the radius
