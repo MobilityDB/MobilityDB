@@ -18,6 +18,7 @@ SELECT getDim(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), 'X');
 </pre></li><li class="listitem"><a name="pcpoint_SRID"></a><a class="indexterm" name="id15005"></a><p>Return the spatial reference identifier (inherited from the schema)</p><p><code class="varname">SRID(pcpoint) → integer</code></p><p><code class="varname">SRID(pcpatch) → integer</code></p><pre class="programlisting">
 SELECT SRID(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 -- 0
-SELECT SRID(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), PC_MakePoint(1, ARRAY[11.0, 21.0, 31.0])]));
+SELECT SRID(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), PC_MakePoint(1,
+  ARRAY[11.0, 21.0, 31.0])]));
 -- 0
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch19.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch19.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch19s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 19. Temporal Point Clouds </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Set Types <code class="varname">pcpointset</code> and <code class="varname">pcpatchset</code></td></tr></table></div></body></html>

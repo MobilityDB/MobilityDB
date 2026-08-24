@@ -10,6 +10,7 @@ WHERE temp &amp;&amp; stbox 'STBOX XT(((0, 0), (10, 10)),[2001-01-01, 2001-01-02
 -- KNN (ordered scan)
 SELECT mmsi
 FROM tbl_trgeometry
-ORDER BY temp &lt;-&gt; trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(100 100), 0.0)@2001-01-01'
+ORDER BY temp &lt;-&gt; trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(100 100),
+  0.0)@2001-01-01'
 LIMIT 10;
 </pre><p>The kd-tree variant typically wins on workloads dominated by KNN queries with a tight ordering bound; the quad-tree variant is more uniform. The R-tree GiST is the safe default for mixed read/write workloads.</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s16.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Aggregations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 16. JSON Types in MobilityDB</td></tr></table></div></body></html>

@@ -1,8 +1,10 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Búferes circulares temporales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch12.html" title="Capítulo 12. Búferes circulares temporales"><link rel="prev" href="ch12.html" title="Capítulo 12. Búferes circulares temporales"><link rel="next" href="ch12s03.html" title="Validez de los búferes circulares temporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Búferes circulares temporales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12.html">Anterior</a> </td><th width="60%" align="center">Capítulo 12. Búferes circulares temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch12s03.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temp_circular_buffers"></a>Búferes circulares temporales</h2></div></div></div><p>El tipo de búfer circular temporal <code class="varname">tcbuffer</code> permite representar el movimiento de objetos junto con un radio circular alrededor de ellos. Como todos los tipos temporales, se presenta en tres subtipos, a saber, instante, secuencia y conjunto de secuencias. A continuación se dan ejemplos de valores de <code class="varname">tcbuffer</code> en estos subtipos.</p><pre class="programlisting">
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
-SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02,
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1),
+  0.5)@2001-01-02,
   Cbuffer(Point(1 1), 0.5)@2001-01-03}';
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02,
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1),
+  0.4)@2001-01-02,
   Cbuffer(Point(1 1), 0.5)@2001-01-03]';
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 1)@2001-01-01, Cbuffer(Point(2 2), 1)@2001-01-02],
   [Cbuffer(Point(2 2), 2)@2001-01-04, Cbuffer(Point(2 2), 3)@2001-01-05]}';

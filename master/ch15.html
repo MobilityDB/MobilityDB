@@ -1,33 +1,47 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Chapter 15. Temporal Rigid Geometries</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="prev" href="ch14s02.html" title="Temporal Pose Chains"><link rel="next" href="ch15s02.html" title="Constructors"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 15. Temporal Rigid Geometries</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s02.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch15s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="trgeometry"></a>Chapter 15. Temporal Rigid Geometries</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="sect1"><a href="ch15.html#trgeometry_inout">Input and Output</a></span></dt><dt><span class="sect1"><a href="ch15s02.html">Constructors</a></span></dt><dt><span class="sect1"><a href="ch15s03.html">Conversions</a></span></dt><dt><span class="sect1"><a href="ch15s04.html">Accessors</a></span></dt><dt><span class="sect1"><a href="ch15s05.html">Traversed Area</a></span></dt><dt><span class="sect1"><a href="ch15s06.html">Spatial Functions</a></span></dt><dt><span class="sect1"><a href="ch15s07.html">Motion Metrics</a></span></dt><dt><span class="sect1"><a href="ch15s08.html">Modifications</a></span></dt><dt><span class="sect1"><a href="ch15s09.html">Spatial Restrictions</a></span></dt><dt><span class="sect1"><a href="ch15s10.html">Distance Operations</a></span></dt><dt><span class="sect1"><a href="ch15s11.html">Similarity</a></span></dt><dt><span class="sect1"><a href="ch15s12.html">Comparisons</a></span></dt><dt><span class="sect1"><a href="ch15s13.html">Bounding-Box Operators</a></span></dt><dt><span class="sect1"><a href="ch15s14.html">Tiles</a></span></dt><dt><span class="sect1"><a href="ch15s15.html">Bounding Boxes</a></span></dt><dt><span class="sect1"><a href="ch15s16.html">Aggregations</a></span></dt><dt><span class="sect1"><a href="ch15s17.html">Indexing</a></span></dt></dl></div><p>A temporal rigid geometry (<code class="varname">trgeometry</code>) is a static 2D reference geometry, typically a polygon describing the shape of a moving body, paired with a temporal pose (<code class="varname">tpose</code>) describing how that geometry translates and rotates over time. The materialised geometry at time <code class="varname">t</code> is the reference geometry rotated and translated according to the pose interpolated at <code class="varname">t</code>.</p><p>This is the natural representation for moving objects whose <span class="emphasis"><em>shape</em></span> matters, not just their position. The motivating example is AIS maritime traffic, where each ship's hull (a pentagon derived from the antenna offsets <code class="varname">A</code>, <code class="varname">B</code>, <code class="varname">C</code>, <code class="varname">D</code>) follows a pose path defined by lat/lon and heading reports. The materialised geometry at any instant is the actual ship outline at that moment.</p><p>The <code class="varname">trgeometry</code> type builds on <a class="xref" href="ch13.html" title="Chapter 13. Temporal Poses">Chapter 13, <i>Temporal Poses</i></a>. Most accessor, comparison, topological, position, and indexing operators have the same shape as the corresponding <code class="varname">tpose</code> functions; this chapter covers the trgeometry-specific surface, pose-to-shape materialisation, traversed area, materialised distance, and spatial restrictions on the centroid trajectory.</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_inout"></a>Input and Output</h2></div></div></div><p>A <code class="varname">trgeometry</code> literal pairs a reference geometry with a temporal pose. The reference geometry comes first, separated from the pose by a semicolon; the pose follows the standard <code class="varname">tpose</code> syntax (instant, sequence, or sequence set).</p><pre class="programlisting">
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.5)@2001-01-01';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.5)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 1.5)@2001-01-02]';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02], [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(2 0), 0.0)@2001-01-05]}';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(5 0), 0.5)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(10 0), 1.5)@2001-01-02]';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{[Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(5 0), 0.0)@2001-01-02], [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(2 0),
+  0.0)@2001-01-05]}';
 </pre><p>The reference geometry can be any 2D polygon or polyhedral surface. The pose interpolation is linear in translation and angular-shortest-path in rotation. SRIDs are inherited from the reference geometry and the pose; they must agree.</p><p>An SRID can be specified for a trgeometry either at the begining of the literal or before the reference geometry as shown below.</p><pre class="programlisting">
-SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.5)@2001-01-01';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));SRID=25832;Pose(Point(0 0), 0.5)@2001-01-01';
+SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),
+  0.5)@2001-01-01';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));SRID=25832;Pose(Point(0 0),
+  0.5)@2001-01-01';
 </pre><p>Step interpolation can also be specified in the same way as for other temporal types:</p><pre class="programlisting">
-SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
+SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
+  0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
 </pre><p>The standard wire formats are supported.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_asText"></a><a class="indexterm" name="id11893"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text</code></p><pre class="programlisting">
-SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.123456789), 0.5)@2000-01-01', 6);
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.123456789),
+  0.5)@2000-01-01', 6);
 -- POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1.123457 1.123457),0.5)@2000-01-01
 </pre></li><li class="listitem"><a name="trgeometry_asEWKT"></a><a class="indexterm" name="id11901"></a><p>Return the Extended Well-Known Text (EWKT) representation, prefixed with the SRID</p><p><code class="varname">asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text</code></p><pre class="programlisting">
-SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+SELECT asEWKT(trgeometry
+  'SRID=25832;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
 -- SRID=25832;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@2000-01-01
 </pre></li><li class="listitem"><a name="trgeometry_asMFJSON"></a><a class="indexterm" name="id11909"></a><p>Return the Moving Features JSON representation</p><p><code class="varname">asMFJSON(trgeometry [, options int=0 [, flags int=0 [, maxdecimaldigits int=15]]]) → text</code></p><pre class="programlisting">
-SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01');
+SELECT asMFJSON(trgeometry
+  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01');
 </pre></li><li class="listitem"><a name="trgeometry_asEWKB"></a><a class="indexterm" name="id11917"></a><a class="indexterm" name="id11920"></a><a class="indexterm" name="id11923"></a><p>Return the Extended Well-Known Binary (EWKB) representation</p><p><code class="varname">asEWKB(trgeometry [, endian text]) → bytea</code></p><p><code class="varname">asHexWKB(trgeometry [, endian text]) → text</code></p><p><code class="varname">asHexEWKB(trgeometry [, endian text]) → text</code></p><p>Companion <code class="varname">asHexWKB</code> and <code class="varname">asHexEWKB</code> return the hex-encoded text of, respectively, the plain and the SRID-carrying representation; the two coincide only when the value has no SRID, as in the example below.</p><pre class="programlisting">
-SELECT length(asEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01'));
+SELECT length(asEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1),
+  0.5)@2001-01-01'));
 -- 130
 -- The bytes round-trip through the matching input function.
-SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
+SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry
+  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
-SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry
+  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
 </pre></li><li class="listitem"><a name="trgeometry_fromText"></a><a class="indexterm" name="id11938"></a><a class="indexterm" name="id11941"></a><a class="indexterm" name="id11944"></a><a class="indexterm" name="id11947"></a><a class="indexterm" name="id11950"></a><p>Each output format has a companion parser:</p><p><code class="varname">trgeometryFromText(text) → trgeometry</code></p><p><code class="varname">trgeometryFromEWKT(text) → trgeometry</code></p><p><code class="varname">trgeometryFromMFJSON(text) → trgeometry</code></p><p><code class="varname">trgeometryFromEWKB(bytea) → trgeometry</code></p><p><code class="varname">trgeometryFromHexEWKB(text) → trgeometry</code></p><pre class="programlisting">
 SELECT asText(trgeometryFromEWKT('SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(1 1), 0.5)@2001-01-01'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
-SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
+SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry
+  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s02.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch15s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Temporal Pose Chains </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>

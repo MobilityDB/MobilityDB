@@ -22,8 +22,10 @@ SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(10 0,10 10))');
 </pre></li><li class="listitem"><a name="geo_buffer"></a><a class="indexterm" name="id5632"></a><p>Return the geometry holding every point within a distance of a geometry</p><p><code class="varname">Buffer(geometry,float,options text='') → geometry</code></p><p>The boundary of the result is made of the two offsets of the geometry at the given distance, of the join filling the outer side of each turn, and of the cap closing each end of an open line. A negative distance shrinks an areal geometry and answers an empty geometry for one of any other dimension.</p><p>The <code class="varname">options</code> string carries the styles as space-separated <code class="varname">key=value</code> pairs: <code class="varname">endcap</code> is one of <code class="varname">round</code>, <code class="varname">flat</code> or <code class="varname">square</code>, <code class="varname">join</code> one of <code class="varname">round</code>, <code class="varname">mitre</code> or <code class="varname">bevel</code>, and <code class="varname">mitre_limit</code> the ratio at which a mitre join falls back to a bevel.</p><pre class="programlisting">
 SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 1), 6));
 -- CURVEPOLYGON(CIRCULARSTRING(-1 0,1 0,-1 0))
-SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1, 'join=mitre'), 6));
+SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
+  'join=mitre'), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE((1 1,9 1),(9 1,9 9),(9 9,1 9),(1 9,1 1)))
-SELECT ST_AsText(round(Buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
+SELECT ST_AsText(round(Buffer(geometry
+  'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch07.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch07s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 7. Temporal Geometry Types (Part 1) </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Notation</td></tr></table></div></body></html>

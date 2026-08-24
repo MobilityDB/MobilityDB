@@ -14,10 +14,12 @@ SELECT isValidDirectedEdge(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001
 SELECT isValidDirectedEdge(th3index '871fa44a8ffffff@2001-01-01');
 -- f@2001-01-01
 </pre></li><li class="listitem"><a name="th3_h3_get_directed_edge_origin"></a><a class="indexterm" name="id13313"></a><a class="indexterm" name="id13316"></a><p>Devolver la celda origen o destino temporal de una arista dirigida temporal</p><p><code class="varname">th3GetDirectedEdgeOrigin(th3index) → th3index</code></p><p><code class="varname">th3GetDirectedEdgeDestination(th3index) → th3index</code></p><pre class="programlisting">
-SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(th3index
+  '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01'));
 -- 871fa44a8ffffff@2001-01-01
-SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(th3index
+  '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01'));
 -- 871fa44aeffffff@2001-01-01
 </pre></li><li class="listitem"><a name="th3_h3_directed_edge_to_boundary"></a><a class="indexterm" name="id13326"></a><p>Devolver el límite poligonal temporal de cada arista dirigida en una trayectoria, como una geografía temporal</p><p><code class="varname">th3DirectedEdgeToBoundary(th3index) → tgeography</code></p><pre class="programlisting">

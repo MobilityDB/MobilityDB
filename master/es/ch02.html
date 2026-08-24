@@ -76,7 +76,8 @@ SELECT intspanset '{[1,2],[3,4]}';
 SELECT floatspanset '{[1.5,2.5],(2.5,4.5]}';
 -- {[1.5, 4.5]}
 SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
-  [2001-01-01 08:10:00, 2001-01-01 08:10:00], (2001-01-01 08:10:00, 2001-01-01 08:20:00]}';
+  [2001-01-01 08:10:00, 2001-01-01 08:10:00], (2001-01-01 08:10:00,
+  2001-01-01 08:20:00]}';
 -- {[2001-01-01 08:00:00+00,2001-01-01 08:20:00+00]}
 </pre><p>
 			Damos a continuación las funciones de entrada y salida de tipos de conjunto y de rango en formato textual (Well-Known Text o WKT) y binario (Well-Known Binary o WKB). El formato de salida predeterminado de todos los tipos de conjuntos y de rango es el formato de texto conocido. La función <code class="varname">asText</code> que se da a continuación permite determinar la salida de valores de punto flotante.

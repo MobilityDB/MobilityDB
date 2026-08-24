@@ -5,7 +5,8 @@ SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));
 /* {POINT Z (1.12 1.12 1.12)@2001-01-01, POINT Z (2 2 2)@2001-01-02,
    POINT Z (1.12 1.12 1.12)@2001-01-03} */
-SELECT asText(round(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001-01-01', 2));
+SELECT asText(round(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001-01-01',
+  2));
 -- LINESTRING(1.12 1.12,2.12 2.12)@2001-01-01
 </pre></li><li class="listitem"><a name="tpoint_makeSimple"></a><a class="indexterm" name="id5754"></a><p>Devuelve una matriz de fragmentos del punto temporal que son simples <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><p><code class="varname">makeSimple(tpoint) → tgeompoint[]</code></p><pre class="programlisting">

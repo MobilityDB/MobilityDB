@@ -12,7 +12,8 @@ SELECT tfloat '17@2018-01-01 08:00:00';
 		Un valor temporal de subtipo <span class="emphasis"><em>secuencia</em></span> (brevemente, un <span class="emphasis"><em>valor de secuencia</em></span>) representa la evolución del valor durante una secuencia de instantes de tiempo, donde los valores entre estos instantes se interpolan usando una función discreta, escalonada, o lineal (ver arriba). Un ejemplo es el siguiente:
 	</p><pre class="programlisting">
 -- Interpolación discreta
-SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}';
+SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00,
+  18@2018-01-01 08:10:00}';
 -- Interpolación escalonada
 SELECT tfloat 'Interp=Step;(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00,
   15@2018-01-01 08:10:00]';
@@ -64,10 +65,12 @@ SELECT asText(tgeompoint '{[Point(0 0)@2001-01-01 08:00:00,
   [Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)}');
 /* {[[Point(0 0)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
    Point(1 1)@2001-01-01 08:15:00)} */
-SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00),
+SELECT asText(tgeompoint
+  '{[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00),
   [Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:10:00]}');
 -- {[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}
-SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00,Point(3 3)@2001-01-01 08:10:00),
+SELECT asText(tgeompoint
+  '{[Point(1 1)@2001-01-01 08:00:00,Point(3 3)@2001-01-01 08:10:00),
   [Point(3 3)@2001-01-01 08:10:00]}');
 -- {[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}
 </pre><p>

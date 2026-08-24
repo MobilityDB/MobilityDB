@@ -12,6 +12,7 @@ SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01');
 SELECT th3CellToChildPos(th3index '871fa44a8ffffff@2001-01-01', 6);
 -- 0@2001-01-01
 </pre></li><li class="listitem"><a name="th3_h3_child_pos_to_cell"></a><a class="indexterm" name="id13819"></a><p>Return the temporal child cell at a given ordinal position of the given parent, at the given child resolution. The two temporal operands are synchronised over their shared time axis.</p><p><code class="varname">th3ChildPosToCell(tbigint,th3index,integer) → th3index</code></p><pre class="programlisting">
-SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01', 8);
+SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01',
+  8);
 -- 881fa44a81fffff@2001-01-01
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17s05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch17s07.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Index Inspection </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Lat/Lng Conversions</td></tr></table></div></body></html>

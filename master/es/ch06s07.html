@@ -57,7 +57,8 @@ SELECT deltaValue(tfloat '{[1.5@2001-01-01, 2@2001-01-02, 1@2001-01-03],
 /* Interp=Step;{[0.5@2001-01-01, -1@2001-01-02, -1@2001-01-03),
   [0@2001-01-04, 0@2001-01-05)} */
 </pre></li><li class="listitem"><a name="tfloat_trend"></a><a class="indexterm" name="id4935"></a><p>Devuelve la tendencia de un flotante temporal con interpolación lineal, que indica si su valor es creciente, constante o decreciente, representado, respectivamente, por 1, 0 y -1.</p><p><code class="varname">trend(tfloat) → tint</code></p><p>Nótese que la tendencia es NULL para secuencias instantáneas.</p><pre class="programlisting">
-SELECT trend(tfloat '[1@2001-01-01, 2@2001-01-02, 4@2001-01-03, 4@2001-01-04, 3@2001-01-05, 2@2001-01-06]');
+SELECT trend(tfloat '[1@2001-01-01, 2@2001-01-02, 4@2001-01-03, 4@2001-01-04,
+  3@2001-01-05, 2@2001-01-06]');
 -- [1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]
 SELECT trend(tfloat '[1@2001-01-01]');
 -- NULL

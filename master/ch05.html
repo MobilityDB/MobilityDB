@@ -136,7 +136,8 @@ SELECT asText(appendSequence(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001
 </pre></li><li class="listitem"><a name="ttype_merge"></a><a class="indexterm" name="id4778"></a><p>Merge the temporal values</p><p><code class="varname">merge(ttype,ttype) → ttype</code></p><p><code class="varname">merge(ttype[]) → ttype</code></p><p><code class="varname">merge(ttype) → ttype</code></p><p>The temporal values may only intersect at their boundary. In that case, for all temporal types excepted <code class="varname">tgeometry</code> and <code class="varname">tgeography</code>, their base values at the common timestamps must be the same, otherwise an error is raised. For the <code class="varname">tgeometry</code> and <code class="varname">tgeography</code> types, if the value at their common timestamps is different, the resulting value after the <code class="varname">merge</code> will be the spatial union of the values. The reason for a different behaviour for these types is that they are the only temporal types that are not <span class="emphasis"><em>scalar</em></span> types, that is, their value at a given timestamp is not a single element of the domain of the base type, but rather a subset of their domain.</p><p>The third version of the function above is an <span class="emphasis"><em>aggregate</em></span> function that returns the result of successively appending a set of rows of temporal values. This means that it operates in the same way the <code class="varname">SUM()</code> and <code class="varname">AVG()</code> functions do and like most aggregates, it also ignores NULL values.</p><pre class="programlisting">
 SELECT merge(tint '1@2001-01-01', tint '1@2001-01-02');
 -- {1@2001-01-01, 1@2001-01-02}
-SELECT merge(tbigint '[1@2001-01-01, 2@2001-01-02]', tbigint '[2@2001-01-02, 1@2001-01-03]');
+SELECT merge(tbigint '[1@2001-01-01, 2@2001-01-02]',
+  tbigint '[2@2001-01-02, 1@2001-01-03]');
 -- [1@2001-01-01, 2@2001-01-02, 1@2001-01-03]
 SELECT merge(tint '[1@2001-01-01, 2@2001-01-02]', tint '[3@2001-01-03, 1@2001-01-04]');
 -- {[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 1@2001-01-04]}
@@ -158,9 +159,11 @@ SELECT merge(ARRAY[tint '{1@2001-01-01, 2@2001-01-02}', '{2@2001-01-02, 3@2001-0
 -- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03}
 SELECT merge(ARRAY[tint '{1@2001-01-01, 2@2001-01-02}', '{3@2001-01-03, 4@2001-01-04}']);
 -- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 4@2001-01-04}
-SELECT merge(ARRAY[tbigint '[1@2001-01-01, 2@2001-01-02]', '[2@2001-01-02, 1@2001-01-03]']);
+SELECT merge(ARRAY[tbigint '[1@2001-01-01, 2@2001-01-02]',
+  '[2@2001-01-02, 1@2001-01-03]']);
 -- [1@2001-01-01, 2@2001-01-02, 1@2001-01-03]
-SELECT merge(ARRAY[tbigint '[1@2001-01-01, 2@2001-01-02]', '[3@2001-01-03, 4@2001-01-04]']);
+SELECT merge(ARRAY[tbigint '[1@2001-01-01, 2@2001-01-02]',
+  '[3@2001-01-03, 4@2001-01-04]']);
 -- {[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}
 SELECT asText(merge(ARRAY[tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
   [Point(3 3)@2001-01-03, Point(4 4)@2001-01-04]}', '{[Point(4 4)@2001-01-04,

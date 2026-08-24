@@ -102,7 +102,8 @@ SELECT minusValues(jsonbset '[["Grand Place", "La Bourse"],
 </pre></li><li class="listitem"><a name="jsonbset_exists"></a><a class="indexterm" name="id12774"></a><p>JSONB set exists</p><p><code class="varname">jsonbset ? text → boolean[]</code></p><p><code class="varname">jsonbset ?| text[] → boolean[]</code></p><p><code class="varname">jsonbset ?&amp; text[] → boolean[]</code></p><p>As in PostgreSQL, the operators <code class="varname">?|</code> and <code class="varname">?&amp;</code> test, respectively, whether <span class="emphasis"><em>any</em></span> or <span class="emphasis"><em>all</em></span> of the strings in the text array exist as top-level keys or array elements.</p><p>The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
-SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}' ? text 'units';
 -- {t,f}
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}'
   ?| ARRAY[text 'units', text 'lights'];
@@ -162,17 +163,21 @@ SELECT minusValues(textset '[{"speed": 10}, null,
 </pre></li><li class="listitem"><a name="jsonbset_path_exists"></a><a class="indexterm" name="id12844"></a><a class="indexterm" name="id12847"></a><a class="indexterm" name="id12850"></a><p>Does the JSON path return any item for the specified JSONB set?</p><p><code class="varname">jsonbset @? jsonpath → boolean[]</code></p><p><code class="varname">jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p><code class="varname">jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p>The operator <code class="varname">@?</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</p><p>The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
-SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}' @? '$.units';
 -- {t,f}
-SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}',
   '$.speed ? (@ &gt; $min)', '{"min": 15}');
 -- {t,f}
 </pre></li><li class="listitem"><a name="jsonbset_path_match"></a><a class="indexterm" name="id12865"></a><a class="indexterm" name="id12868"></a><a class="indexterm" name="id12871"></a><p>Return the result of a JSON path predicate check for a JSONB set</p><p><code class="varname">jsonbset @@ jsonpath → boolean[]</code></p><p><code class="varname">jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p><code class="varname">jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p>The operator <code class="varname">@@</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</p><p>The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
-SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
 -- {t,f}
-SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}',
   '$.speed &gt; $min', '{"min": 15}');
 -- {t,f}
 </pre></li><li class="listitem"><a name="jsonbset_path_query_array"></a><a class="indexterm" name="id12886"></a><a class="indexterm" name="id12889"></a><p>Return all items returned by a JSON path from a JSONB set, as a JSON array</p><p><code class="varname">jsonbsetPathQueryArray(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p><code class="varname">jsonbsetPathQueryArrayTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p>The above function can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">

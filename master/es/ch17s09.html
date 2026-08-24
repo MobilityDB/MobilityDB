@@ -2,7 +2,8 @@
 SELECT th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0);
 -- 2071fa44a8ffffff@2001-01-01
 </pre></li><li class="listitem"><a name="th3_h3_vertex_to_latlng"></a><a class="indexterm" name="id13345"></a><p>Devolver las coordenadas geodésicas temporales de cada vértice en una trayectoria</p><p><code class="varname">th3VertexToLatlng(th3index) → tgeogpoint</code></p><pre class="programlisting">
-SELECT asText(th3VertexToLatlng(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0)), 6);
+SELECT asText(th3VertexToLatlng(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
+  0)), 6);
 -- POINT(4.280027 50.807655)@2001-01-01
 </pre></li><li class="listitem"><a name="th3_h3_is_valid_vertex"></a><a class="indexterm" name="id13353"></a><p>Devolver un booleano temporal que indica en cada instante si el valor es un vértice H3 válido</p><p><code class="varname">isValidVertex(th3index) → tbool</code></p><pre class="programlisting">
 SELECT isValidVertex(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0));

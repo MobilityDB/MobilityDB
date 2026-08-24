@@ -6,7 +6,8 @@ SELECT tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02],
   [48a6227affffffff@2001-01-03, 485623ffffffffff@2001-01-04]}';
 </pre><p>The type accepts type modifiers (<code class="varname">typmod</code>) to constrain a column to a specific subtype: <code class="varname">Instant</code>, <code class="varname">Sequence</code>, or <code class="varname">SequenceSet</code>.</p><pre class="programlisting">
 SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
-SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
+SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01,
+  48427fffffffffff@2001-01-02]}';
 -- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
 </pre><p>The functions <code class="varname">asText</code>, <code class="varname">asBinary</code>, and <code class="varname">asHexWKB</code> serialize a <code class="varname">tquadbin</code> value, and <code class="varname">tquadbinFromBinary</code> and <code class="varname">tquadbinFromHexWKB</code> reconstruct it. The hexadecimal WKB form lets a temporal QUADBIN index column round-trip through a text-based <code class="varname">COPY</code>.</p><pre class="programlisting">

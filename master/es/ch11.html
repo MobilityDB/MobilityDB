@@ -76,9 +76,11 @@ SELECT geometry 'SRID=5676;LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 SELECT stbox(npoint 'NPoint(1,0.3)');
 -- SRID=5676;STBOX X((62.786633,80.143556),(62.786633,80.143556))
 SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2001-01-01');
--- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01, 2001-01-01])
+-- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
+-- 2001-01-01])
 SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2001-01-01,2001-01-02]');
--- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01, 2001-01-02])
+-- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
+-- 2001-01-02])
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="accessor_functions"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_route"></a><a class="indexterm" name="id7860"></a><p>Devuelve el identificador de ruta</p><p><code class="varname">route({npoint,nsegment}) → bigint</code></p><pre class="programlisting">
 SELECT route(npoint 'Npoint(63, 0.3)');
 -- 63

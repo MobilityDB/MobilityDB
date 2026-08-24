@@ -5,17 +5,22 @@ SELECT round(maxValue(tDistance(
 -- 4
 
 SELECT asText(tDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 0.0)@2001-01-02]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(0 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0), 0.0)@2001-01-01,
+  Pose(Point(10 0), 0.0)@2001-01-02]'));
 -- [1@2001-01-01 ..., 9@2001-01-02 ...]
 </pre><p>El despachador cubre cada combinación de subtipos: TINSTANT × TINSTANT, TINSTANT × TSEQUENCE asimétrica, TSEQUENCE × TSEQUENCE, TSEQUENCE × TSEQUENCESET, TSEQUENCESET × TSEQUENCESET. El núcleo de submuestreo adaptativo subyace a cada combinación continua; las combinaciones de instantes se materializan una vez. Los segmentos de traslación pura convergen en profundidad 0 (dos marcas extremas); los segmentos con mucha rotación emiten hasta 32 marcas por intervalo entre instantes. La cota sobre la aproximación interpolada LINEAL entre marcas es <code class="varname">1e-3</code> por construcción.</p></li><li class="listitem"><a name="trgeometry_nad"></a><a class="indexterm" name="id11743"></a><a class="indexterm" name="id11746"></a><p>Devuelve la distancia más pequeña entre dos geometrías rígidas temporales sobre su dominio temporal compartido</p><p><code class="varname">{geometry,trgeometry,stbox} |=| {geometry,trgeometry,stbox} → float</code></p><p><code class="varname">nearestApproachDistance({geometry,trgeometry,stbox}, {geometry,trgeometry,stbox}) → float</code></p><pre class="programlisting">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(10 0), 0.0)@2001-01-02]'
        |=|
-       trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(50 0), 0.0)@2001-01-01, Pose(Point(50 0), 0.0)@2001-01-02]';
+       trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(50 0), 0.0)@2001-01-01,
+  Pose(Point(50 0), 0.0)@2001-01-02]';
 -- 39
 </pre><p>El operador <code class="varname">|=|</code> se puede utilizar para búsquedas de vecino más cercano contra índices GiST o SP-GiST (véase <a class="xref" href="ch15s17.html" title="Indexación">“Indexación”</a>).</p></li><li class="listitem"><a name="trgeometry_nai"></a><a class="indexterm" name="id11759"></a><p>Devuelve el instante en el que los dos argumentos están a su menor distancia mutua</p><p><code class="varname">nearestApproachInstant({geometry,trgeometry}, {geometry,trgeometry}) → trgeometry</code></p><pre class="programlisting">
 SELECT asText(nearestApproachInstant(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(10 0), 0.0)@2001-01-02]',
   geometry 'Point(5 5)'));
 -- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00+00
 </pre></li><li class="listitem"><a name="trgeometry_shortestLine"></a><a class="indexterm" name="id11767"></a><p>Devuelve la línea que conecta los dos argumentos en su aproximación más cercana</p><p><code class="varname">shortestLine({geometry,trgeometry}, {geometry,trgeometry}) → geometry</code></p><pre class="programlisting">

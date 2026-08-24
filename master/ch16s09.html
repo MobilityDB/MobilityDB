@@ -44,7 +44,8 @@ SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 SELECT ttext '[{"speed": {"unit": "km", "value": 10}}@2001-01-01, 
   {"speed": {"unit": "km", "value": 20}}@2001-01-02]' #&gt; ARRAY[text 'speed', 'value'];
 -- {["10"@2001-01-01, "20"@2001-01-02]}
-SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}@2001-01-01, 
+SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place",
+  "La Bourse"]}@2001-01-01, 
   {"position":"Point(2 2)", "PoIs":["Palais Royal", "Manneken Pis"]}@2001-01-03]' #&gt;&gt;
   ARRAY[text 'PoIs', '1'];
 -- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-03]

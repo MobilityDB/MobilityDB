@@ -7,7 +7,8 @@ SELECT tjsonbSeq(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001
 SELECT tjsonbSeqSet(tjsonb '"{\"vehicleId\": 1,\"location\":\"Point(1 1)\"}"@2001-01-01');
 -- {[{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01]}
 </pre></li><li class="listitem"><a name="tjsonb_setInterp"></a><a class="indexterm" name="id12534"></a><p>Transformar un valor JSONB temporal a otra interpolación</p><p><code class="varname">setInterp(tjsonb,interp) → tjsonb</code></p><pre class="programlisting">
-SELECT setInterp(tjsonb '"{\"vehicleId\": 1,\"location\": \"Point(1 1)\"}"@2001-01-01','step');
+SELECT setInterp(tjsonb
+  '"{\"vehicleId\": 1,\"location\": \"Point(1 1)\"}"@2001-01-01','step');
 -- [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01]
 SELECT setInterp(tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01],
   [{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02]}', 'discrete');

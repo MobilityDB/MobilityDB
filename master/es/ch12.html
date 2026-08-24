@@ -15,7 +15,8 @@ SELECT asText(ARRAY[cbuffer 'Cbuffer(Point(1 1),0.2)', 'Cbuffer(Point(1 1),0.5)'
 -- {"Cbuffer(POINT(1 1),0.2)","Cbuffer(POINT(1 1),0.5)"}
 SELECT asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 -- SRID=5676;Cbuffer(POINT(1 1),0.5)
-SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.2)', 'Cbuffer(SRID=5676;Point(1 1),0.5)']);
+SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.2)',
+  'Cbuffer(SRID=5676;Point(1 1),0.5)']);
 -- {"SRID=5676;Cbuffer(POINT(1 1),0.2)","SRID=5676;Cbuffer(POINT(1 1),0.5)"}
 </pre></li><li class="listitem"><a name="cbuffer_asBinary"></a><a class="indexterm" name="id8538"></a><a class="indexterm" name="id8541"></a><a class="indexterm" name="id8544"></a><a class="indexterm" name="id8547"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), la representación hexadecimal binaria conocida (Hexadecimal Well-Known Binary o HexWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</p><p><code class="varname">asBinary(cbuffer,endian text='') → bytea</code></p><p><code class="varname">asEWKB(cbuffer,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(cbuffer,endian text='') → text</code></p><p><code class="varname">asHexEWKB(cbuffer,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina. Un búfer circular toma su SRID de su punto subyacente: <code class="varname">asEWKB</code> y <code class="varname">asHexEWKB</code> lo incluyen, mientras que las formas simples <code class="varname">asBinary</code> y <code class="varname">asHexWKB</code> lo omiten.</p><pre class="programlisting">
 SELECT asBinary(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');

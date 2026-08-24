@@ -76,7 +76,8 @@ SELECT intspanset '{[1,2],[3,4]}';
 SELECT floatspanset '{[1.5,2.5],(2.5,4.5]}';
 -- {[1.5, 4.5]}
 SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
-  [2001-01-01 08:10:00, 2001-01-01 08:10:00], (2001-01-01 08:10:00, 2001-01-01 08:20:00]}';
+  [2001-01-01 08:10:00, 2001-01-01 08:10:00], (2001-01-01 08:10:00,
+  2001-01-01 08:20:00]}';
 -- {[2001-01-01 08:00:00+00,2001-01-01 08:20:00+00]}
 </pre><p>
 			We give next the functions for input and output of set and span types in Well-Known Text and Well-Known Binary format. The default output format of all set and span types is the Well-Known Text format. The function <code class="varname">asText</code> given next enables to determine the output of floating point values.

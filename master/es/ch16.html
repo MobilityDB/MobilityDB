@@ -102,7 +102,8 @@ SELECT minusValues(jsonbset '[["Grand Place", "La Bourse"],
 </pre></li><li class="listitem"><a name="jsonbset_exists"></a><a class="indexterm" name="id12192"></a><p>Existencia en un conjunto JSONB</p><p><code class="varname">jsonbset ? text → boolean[]</code></p><p><code class="varname">jsonbset ?| text[] → boolean[]</code></p><p><code class="varname">jsonbset ?&amp; text[] → boolean[]</code></p><p>Como en PostgreSQL, los operadores <code class="varname">?|</code> y <code class="varname">?&amp;</code> comprueban, respectivamente, si <span class="emphasis"><em>alguna</em></span> o <span class="emphasis"><em>todas</em></span> las cadenas del arreglo de texto existen como claves de nivel superior o elementos de arreglo.</p><p>El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</p><pre class="programlisting">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
-SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}' ? text 'units';
 -- {t,f}
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}'
   ?| ARRAY[text 'units', text 'lights'];
@@ -162,17 +163,21 @@ SELECT minusValues(textset '[{"speed": 10}, null,
 </pre></li><li class="listitem"><a name="jsonbset_path_exists"></a><a class="indexterm" name="id12262"></a><a class="indexterm" name="id12265"></a><a class="indexterm" name="id12268"></a><p>¿Devuelve la ruta JSON algún elemento para el conjunto JSONB especificado?</p><p><code class="varname">jsonbset @? jsonpath → boolean[]</code></p><p><code class="varname">jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p><code class="varname">jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p>El operador <code class="varname">@?</code> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><p>El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</p><pre class="programlisting">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
-SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}' @? '$.units';
 -- {t,f}
-SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}',
   '$.speed ? (@ &gt; $min)', '{"min": 15}');
 -- {t,f}
 </pre></li><li class="listitem"><a name="jsonbset_path_match"></a><a class="indexterm" name="id12283"></a><a class="indexterm" name="id12286"></a><a class="indexterm" name="id12289"></a><p>Devolver el resultado de una comprobación de predicado de ruta JSON para un conjunto JSONB</p><p><code class="varname">jsonbset @@ jsonpath → boolean[]</code></p><p><code class="varname">jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p><code class="varname">jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p>El operador <code class="varname">@@</code> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><p>El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</p><pre class="programlisting">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
-SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
 -- {t,f}
-SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
+  \"units\": \"km/h\"}"}',
   '$.speed &gt; $min', '{"min": 15}');
 -- {t,f}
 </pre></li><li class="listitem"><a name="jsonbset_path_query_array"></a><a class="indexterm" name="id12304"></a><a class="indexterm" name="id12307"></a><p>Devolver todos los elementos devueltos por una ruta JSON de un conjunto JSONB, como un arreglo JSON</p><p><code class="varname">jsonbsetPathQueryArray(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p><code class="varname">jsonbsetPathQueryArrayTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p>La función anterior puede suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><pre class="programlisting">
