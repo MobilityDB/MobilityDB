@@ -124,6 +124,7 @@ span_inner_consistent(const void *nodebox, const void *query, IndexSearchOp op)
   switch (op)
   {
     case INDEX_CONTAINS:
+    case INDEX_SAME:
       return contain2D(n, q);
     case INDEX_LEFT:      return ! overRight2D(n, q);
     case INDEX_OVERLEFT:  return ! right2D(n, q);
@@ -144,6 +145,7 @@ span_leaf_consistent(const void *key, const void *query, IndexSearchOp op)
   {
     case INDEX_CONTAINS:      return contains_span_span(k, q);
     case INDEX_CONTAINED_BY:  return contains_span_span(q, k);
+    case INDEX_SAME:          return contains_span_span(k, q) && contains_span_span(q, k);
     case INDEX_OVERLAPS:      return overlaps_span_span(k, q);
     case INDEX_LEFT:          return left_span_span(k, q);
     case INDEX_OVERLEFT:      return overleft_span_span(k, q);
@@ -196,6 +198,7 @@ tbox_inner_consistent(const void *nodebox, const void *query, IndexSearchOp op)
   switch (op)
   {
     case INDEX_CONTAINS:
+    case INDEX_SAME:
       return contain4D(n, q);
     case INDEX_LEFT:       return ! overRight4D(n, q);
     case INDEX_OVERLEFT:   return ! right4D(n, q);
@@ -220,6 +223,7 @@ tbox_leaf_consistent(const void *key, const void *query, IndexSearchOp op)
   {
     case INDEX_CONTAINS:      return contains_tbox_tbox(k, q);
     case INDEX_CONTAINED_BY:  return contains_tbox_tbox(q, k);
+    case INDEX_SAME:          return contains_tbox_tbox(k, q) && contains_tbox_tbox(q, k);
     case INDEX_OVERLAPS:      return overlaps_tbox_tbox(k, q);
     case INDEX_LEFT:          return left_tbox_tbox(k, q);
     case INDEX_OVERLEFT:      return overleft_tbox_tbox(k, q);
@@ -282,6 +286,7 @@ stbox_inner_consistent(const void *nodebox, const void *query, IndexSearchOp op)
   switch (op)
   {
     case INDEX_CONTAINS:
+    case INDEX_SAME:
       return contain8D(n, q);
     case INDEX_OVERLAPS:
     case INDEX_CONTAINED_BY:
@@ -318,6 +323,7 @@ stbox_leaf_consistent(const void *key, const void *query, IndexSearchOp op)
   {
     case INDEX_CONTAINS:      return contains_stbox_stbox(k, q);
     case INDEX_CONTAINED_BY:  return contains_stbox_stbox(q, k);
+    case INDEX_SAME:          return contains_stbox_stbox(k, q) && contains_stbox_stbox(q, k);
     case INDEX_OVERLAPS:      return overlaps_stbox_stbox(k, q);
     case INDEX_LEFT:          return left_stbox_stbox(k, q);
     case INDEX_OVERLEFT:      return overleft_stbox_stbox(k, q);

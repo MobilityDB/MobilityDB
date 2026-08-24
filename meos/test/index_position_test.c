@@ -31,7 +31,8 @@
  * @file
  * @brief A program that tests the position search operations of the in-memory
  * indexes, i.e., the operations that order a dimension, against the exact
- * answer and across both index structures.
+ * answer and across both index structures, together with the equality
+ * operation, which orders no dimension but is pruned the way containment is.
  *
  * An index answers a position operation by two different tests: an entry is
  * accepted by the operator of the box type, and a subtree is descended when it
@@ -213,6 +214,47 @@ main(void)
       printf("index position: %-10s matched %d entries over the query set, "
         "fewer than the %d the comparison needs to be meaningful\n",
         OPS[o].name, hits, MIN_HITS);
+      failures++;
+    }
+  }
+
+  /* The equality operation, whose query must be an entry to match anything.
+   * It is answered by the same descent as containment -- a subtree holds a box
+   * equal to the query only when the region bounding it contains the query --
+   * so the pruning is the part worth asserting, and the entries themselves are
+   * the query set that makes the comparison non-vacuous. */
+  {
+    int checked = 0, hits = 0;
+    for (int q = 0; q < NUM_QUERIES; q++)
+    {
+      const STBox *query = &boxes[(q * 37) % NUM_BOXES];
+      int want = 0;
+      for (int i = 0; i < NUM_BOXES; i++)
+        if (same_stbox_stbox(&boxes[i], query))
+          want++;
+
+      MeosArray *got_rt = meos_array_create(sizeof(int64));
+      MeosArray *got_quad = meos_array_create(sizeof(int64));
+      MeosArray *got_kd = meos_array_create(sizeof(int64));
+      int n_rt = rtree_search(rt, INDEX_SAME, query, got_rt);
+      int n_quad = sptree_search(quad, INDEX_SAME, query, got_quad);
+      int n_kd = sptree_search(kd, INDEX_SAME, query, got_kd);
+      if (n_rt != want || n_quad != want || n_kd != want)
+      {
+        printf("index same: query %d expected %d, R-tree %d, quad-tree %d, "
+          "k-d tree %d\n", q, want, n_rt, n_quad, n_kd);
+        failures++;
+      }
+      hits += want;
+      checked++;
+      meos_array_destroy(got_rt);
+      meos_array_destroy(got_quad);
+      meos_array_destroy(got_kd);
+    }
+    if (hits < checked)
+    {
+      printf("index same: matched %d entries over %d queries, fewer than the "
+        "one per query the comparison needs to be meaningful\n", hits, checked);
       failures++;
     }
   }
