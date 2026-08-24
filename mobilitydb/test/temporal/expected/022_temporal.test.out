@@ -1,10 +1,10 @@
-SELECT mobilitydb_version() LIKE 'MobilityDB%';
+SELECT mobilitydbVersion() LIKE 'MobilityDB%';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT left(mobilitydb_full_version(), 10) = 'MobilityDB';
+SELECT left(mobilitydbFullVersion(), 10) = 'MobilityDB';
  ?column? 
 ----------
  t

@@ -47,12 +47,12 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
 -------------------------------------------------------------------------------
 -- Transform by using Gauss Kruger Projection that is used in Secondo
 
-SELECT ST_AsText(transform_gk(geometry 'Linestring empty'));
+SELECT ST_AsText(transformGK(geometry 'Linestring empty'));
 
-SELECT round(MAX(ST_X(startValue(transform_gk(temp)))), 6) FROM tbl_tgeompoint;
+SELECT round(MAX(ST_X(startValue(transformGK(temp)))), 6) FROM tbl_tgeompoint;
 
-SELECT round(MAX(ST_X(transform_gk(g))), 6) FROM tbl_geom_point;
-SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g)))), 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g);
+SELECT round(MAX(ST_X(transformGK(g))), 6) FROM tbl_geom_point;
+SELECT round(MAX(ST_X(ST_StartPoint(transformGK(g)))), 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g);
 
 -------------------------------------------------------------------------------
 

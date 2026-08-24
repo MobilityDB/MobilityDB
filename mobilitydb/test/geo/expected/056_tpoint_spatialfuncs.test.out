@@ -478,37 +478,37 @@ FROM test1, test2;
  t
 (1 row)
 
-SELECT asEWKT(round(transform_gk(tgeompoint 'Point(13.43593 52.41721)@2018-12-20'), 6));
+SELECT asEWKT(round(transformGK(tgeompoint 'Point(13.43593 52.41721)@2018-12-20'), 6));
                                    asewkt                                   
 ----------------------------------------------------------------------------
  SRID=4326;POINT(3005602.001235 5835394.36209)@Thu Dec 20 00:00:00 2018 PST
 (1 row)
 
-SELECT asEWKT(round(transform_gk(tgeompoint '{Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00}'), 6));
+SELECT asEWKT(round(transformGK(tgeompoint '{Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00}'), 6));
                                                                      asewkt                                                                      
 -------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{POINT(3005602.001235 5835394.36209)@Thu Dec 20 10:00:00 2018 PST, POINT(3005609.918253 5835397.425462)@Thu Dec 20 10:01:00 2018 PST}
 (1 row)
 
-SELECT asEWKT(round(transform_gk(tgeompoint '[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00]'), 6));
+SELECT asEWKT(round(transformGK(tgeompoint '[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00]'), 6));
                                                                      asewkt                                                                      
 -------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;[POINT(3005602.001235 5835394.36209)@Thu Dec 20 10:00:00 2018 PST, POINT(3005609.918253 5835397.425462)@Thu Dec 20 10:01:00 2018 PST]
 (1 row)
 
-SELECT asEWKT(round(transform_gk(tgeompoint '{[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00],[Point(13.43705 52.41724)@2018-12-20 10:02:00,Point(13.43805 52.41730)@2018-12-20 10:03:00]}'), 6));
+SELECT asEWKT(round(transformGK(tgeompoint '{[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00],[Point(13.43705 52.41724)@2018-12-20 10:02:00,Point(13.43805 52.41730)@2018-12-20 10:03:00]}'), 6));
                                                                                                                                           asewkt                                                                                                                                           
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{[POINT(3005602.001235 5835394.36209)@Thu Dec 20 10:00:00 2018 PST, POINT(3005609.918253 5835397.425462)@Thu Dec 20 10:01:00 2018 PST], [POINT(3005677.692787 5835405.559112)@Thu Dec 20 10:02:00 2018 PST, POINT(3005744.892798 5835419.245296)@Thu Dec 20 10:03:00 2018 PST]}
 (1 row)
 
-SELECT ST_AsText(round(transform_gk(geometry 'Point Empty'), 6));
+SELECT ST_AsText(round(transformGK(geometry 'Point Empty'), 6));
   st_astext  
 -------------
  POINT EMPTY
 (1 row)
 
-SELECT ST_AsText(round(transform_gk(geometry 'Point(13.43593 52.41721)'), 6));
+SELECT ST_AsText(round(transformGK(geometry 'Point(13.43593 52.41721)'), 6));
               st_astext              
 -------------------------------------
  POINT(3005602.001235 5835394.36209)
@@ -520,14 +520,14 @@ SELECT ST_AsText(round(geometry 'Linestring empty', 6));
  LINESTRING EMPTY
 (1 row)
 
-SELECT ST_AsText(round(transform_gk(geometry 'Linestring(13.43593 52.41721,13.43593 52.41723)'), 6));
+SELECT ST_AsText(round(transformGK(geometry 'Linestring(13.43593 52.41721,13.43593 52.41723)'), 6));
                                st_astext                                
 ------------------------------------------------------------------------
  LINESTRING(3005602.001235 5835394.36209,3005601.771521 5835396.582726)
 (1 row)
 
 /* Error */
-SELECT transform_gk(round(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', 6));
+SELECT transformGK(round(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', 6));
 ERROR:  Component geometry/geography must be of type Point(Z)M or LineString
 SELECT ST_AsText(round(geometry 'Point(1.123456789 1.123456789)', 6));
         st_astext         

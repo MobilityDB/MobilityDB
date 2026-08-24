@@ -61,7 +61,7 @@ jobs:
           initdb -D $HOME/pgdata -E UTF8 --locale=C
           pg_ctl -D $HOME/pgdata -l logfile start
           createdb ___mobdb___test___
-          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
+          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydbFullVersion();"
           # btree_gist owns the base-type <-> distance operators, so mobilitydb
           # and btree_gist must load together in either order without a clash.
           createdb ___mobdb___btgist1___

@@ -83,7 +83,7 @@ jobs:
           pg_ctl start
           # Create database and add the MobilityDB extension
           createdb -U runneradmin mydb
-          psql -p 5432 -U runneradmin -d mydb -v ON_ERROR_STOP=1 -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version(); SELECT tfloat '[1@2000-01-01]';"
+          psql -p 5432 -U runneradmin -d mydb -v ON_ERROR_STOP=1 -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydbFullVersion(); SELECT tfloat '[1@2000-01-01]';"
       - name: Dump postgres log
         if: always()
         shell: msys2 {0}

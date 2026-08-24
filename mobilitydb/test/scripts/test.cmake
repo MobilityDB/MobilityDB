@@ -164,7 +164,7 @@ if(TEST_OPER MATCHES "test_setup")
   endif()
   string(APPEND _create_ext "CREATE EXTENSION mobilitydb CASCADE; ")
   string(APPEND _create_ext "SELECT postgis_full_version(); ")
-  string(APPEND _create_ext "SELECT mobilitydb_full_version();")
+  string(APPEND _create_ext "SELECT mobilitydbFullVersion();")
   execute_process(
     COMMAND ${POSTGRESQL_BIN_DIR}/psql -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres -c "${_create_ext}"
     OUTPUT_FILE ${TEST_DIR_LOG}/create_ext.log

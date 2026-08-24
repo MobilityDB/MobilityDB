@@ -32,7 +32,7 @@
  * @brief Data generator for MobilityDB
  */
 
-CREATE FUNCTION create_trip(record[], timestamptz, boolean, text)
+CREATE FUNCTION createTrip(record[], timestamptz, boolean, text)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Create_trip'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

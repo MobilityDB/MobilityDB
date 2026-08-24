@@ -638,19 +638,19 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 		<title>Funciones de utilidad</title>
 		<itemizedlist>
 			<listitem xml:id="mobilitydb_version">
-				<indexterm significance="normal"><primary><varname>mobilitydb_version</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mobilitydbVersion</varname></primary></indexterm>
 				<para>Versión de la extensión MobilityDB</para>
-				<para><varname>mobilitydb_version() → text</varname></para>
+				<para><varname>mobilitydbVersion() → text</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT mobilitydb_version();
+SELECT mobilitydbVersion();
 -- MobilityDB 1.3.0
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="mobilitydb_full_version">
-				<indexterm significance="normal"><primary><varname>mobilitydb_full_version</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mobilitydbFullVersion</varname></primary></indexterm>
 				<para>Versión de la extensión MobilityDB y de sus dependencias</para>
-				<para><varname>mobilitydb_full_version() → text</varname></para>
+				<para><varname>mobilitydbFullVersion() → text</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 /* MobilityDB 1.3.0, PostgreSQL 17.2, PostGIS 3.5.2, GEOS 3.12.0-CAPI-1.18.0, PROJ 9.2.0,
    JSON-C 0.13.1 */
