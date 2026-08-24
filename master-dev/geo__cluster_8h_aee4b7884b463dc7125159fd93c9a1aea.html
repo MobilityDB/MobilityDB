@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: cluster_boxes</title>
+<title>MobilityDB: geo_union_intersecting</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_a500bfba6d40ba21a6b14c501307d56b.html">geo</a></li><li class="navelem"><a class="el" href="geo__cluster_8c.html">geo_cluster.c</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_2ccc8e21bc632b65d862788272be30c6.html">geo</a></li><li class="navelem"><a class="el" href="geo__cluster_8h.html">geo_cluster.h</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,31 +79,23 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__cluster_8c_a3b6fff49b34e080f624e1ed38a4d7127.html#a3b6fff49b34e080f624e1ed38a4d7127">cluster_boxes</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_aa7cf6d065b41c3242387ff3e8ec6903c.html#aa7cf6d065b41c3242387ff3e8ec6903c">cluster_boxes_within</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_a720a2b603693b726ecd4e9dc962f8b59.html#a720a2b603693b726ecd4e9dc962f8b59">cluster_union_available</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_aec08281c2ff24f34f16570daf0be27cd.html#aec08281c2ff24f34f16570daf0be27cd">cluster_union_core</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_aad4211f0c04da877988a96fa5eee6b3d.html#aad4211f0c04da877988a96fa5eee6b3d">cluster_union_single</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_a0ffe390bba87b5f8f14b815b8a500e8b.html#a0ffe390bba87b5f8f14b815b8a500e8b">geo_cluster_intersecting_geoms</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_a1417eefabb593d3c30514b2b623237d7.html#a1417eefabb593d3c30514b2b623237d7">geo_cluster_within_distance</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_abaa44524098cf0ea120b112fde77f997.html#abaa44524098cf0ea120b112fde77f997">geo_combine_clusters</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_a34fb26bdc6c915937634adfc61f2d048.html#a34fb26bdc6c915937634adfc61f2d048">geo_union_dbscan</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_aee4b7884b463dc7125159fd93c9a1aea.html#aee4b7884b463dc7125159fd93c9a1aea">geo_union_intersecting</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8h_a0ffe390bba87b5f8f14b815b8a500e8b.html#a0ffe390bba87b5f8f14b815b8a500e8b">geo_cluster_intersecting_geoms</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8h_a1417eefabb593d3c30514b2b623237d7.html#a1417eefabb593d3c30514b2b623237d7">geo_cluster_within_distance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8h_abaa44524098cf0ea120b112fde77f997.html#abaa44524098cf0ea120b112fde77f997">geo_combine_clusters</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8h_a34fb26bdc6c915937634adfc61f2d048.html#a34fb26bdc6c915937634adfc61f2d048">geo_union_dbscan</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__cluster_8h_aee4b7884b463dc7125159fd93c9a1aea.html#aee4b7884b463dc7125159fd93c9a1aea">geo_union_intersecting</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a3b6fff49b34e080f624e1ed38a4d7127" name="a3b6fff49b34e080f624e1ed38a4d7127"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3b6fff49b34e080f624e1ed38a4d7127">&#9670;&#160;</a></span>cluster_boxes()</h2>
+<a id="aee4b7884b463dc7125159fd93c9a1aea" name="aee4b7884b463dc7125159fd93c9a1aea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee4b7884b463dc7125159fd93c9a1aea">&#9670;&#160;</a></span>geo_union_intersecting()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structGBOX.html">GBOX</a> * cluster_boxes </td>
+          <td class="memname">bool geo_union_intersecting </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> **&#160;</td>
           <td class="paramname"><em>geoms</em>, </td>
@@ -112,7 +104,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>ngeoms</em>&#160;</td>
+          <td class="paramname"><em>ngeoms</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UNIONFIND *&#160;</td>
+          <td class="paramname"><em>uf</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -120,15 +118,19 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Return the bounding box of every geometry of an array. </p>
-<dl class="section return"><dt>Returns</dt><dd><code>NULL</code> if the box of a geometry cannot be computed </dd></dl>
+<p>Merge the geometries of an array into clusters of geometries that share a point with one another. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geoms</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ngeoms</td><td>Number of geometries </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">uf</td><td>Union-find the clusters are merged into </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>False where a pair falls outside what the native engine covers, which leaves the caller to answer it another way</dd></dl>
+<p>Two geometries whose bounding boxes stand apart share no point, so the boxes decide which pairs are worth asking about, exactly as they decide which pairs are worth measuring for the clusterings by distance. Sharing a point is symmetric, so each pair is asked about once </p><dl class="section note"><dt>Note</dt><dd>The clustering of PostGIS function <code>ST_ClusterIntersecting</code>, without GEOS </dd></dl>
 
 </div>
 </div>
