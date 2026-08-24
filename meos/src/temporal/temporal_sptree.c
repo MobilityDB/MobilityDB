@@ -126,6 +126,11 @@ span_inner_consistent(const void *nodebox, const void *query, IndexSearchOp op)
     case INDEX_CONTAINS:
     case INDEX_SAME:
       return contain2D(n, q);
+    case INDEX_ADJACENT:
+      /* A span meeting another at an excluded bound shares a boundary with it
+       * and no point of it, so overlap alone would prune the very entries an
+       * adjacency search looks for */
+      return adjacent2D(n, q) || overlap2D(n, q);
     case INDEX_LEFT:      return ! overRight2D(n, q);
     case INDEX_OVERLEFT:  return ! right2D(n, q);
     case INDEX_RIGHT:     return ! overLeft2D(n, q);
@@ -146,6 +151,7 @@ span_leaf_consistent(const void *key, const void *query, IndexSearchOp op)
     case INDEX_CONTAINS:      return contains_span_span(k, q);
     case INDEX_CONTAINED_BY:  return contains_span_span(q, k);
     case INDEX_SAME:          return contains_span_span(k, q) && contains_span_span(q, k);
+    case INDEX_ADJACENT:      return adjacent_span_span(k, q);
     case INDEX_OVERLAPS:      return overlaps_span_span(k, q);
     case INDEX_LEFT:          return left_span_span(k, q);
     case INDEX_OVERLEFT:      return overleft_span_span(k, q);
@@ -209,7 +215,9 @@ tbox_inner_consistent(const void *nodebox, const void *query, IndexSearchOp op)
     case INDEX_AFTER:      return ! overBefore4D(n, q);
     case INDEX_OVERAFTER:  return ! before4D(n, q);
     default:
-      /* INDEX_OVERLAPS and INDEX_CONTAINED_BY prune on overlap */
+      /* INDEX_OVERLAPS, INDEX_CONTAINED_BY and INDEX_ADJACENT prune on
+       * overlap, the region being compared on its bounds rather than on the
+       * spans holding them, so a region meeting the query overlaps it here */
       return overlap4D(n, q);
   }
 }
@@ -224,6 +232,7 @@ tbox_leaf_consistent(const void *key, const void *query, IndexSearchOp op)
     case INDEX_CONTAINS:      return contains_tbox_tbox(k, q);
     case INDEX_CONTAINED_BY:  return contains_tbox_tbox(q, k);
     case INDEX_SAME:          return contains_tbox_tbox(k, q) && contains_tbox_tbox(q, k);
+    case INDEX_ADJACENT:      return adjacent_tbox_tbox(k, q);
     case INDEX_OVERLAPS:      return overlaps_tbox_tbox(k, q);
     case INDEX_LEFT:          return left_tbox_tbox(k, q);
     case INDEX_OVERLEFT:      return overleft_tbox_tbox(k, q);
@@ -290,6 +299,9 @@ stbox_inner_consistent(const void *nodebox, const void *query, IndexSearchOp op)
       return contain8D(n, q);
     case INDEX_OVERLAPS:
     case INDEX_CONTAINED_BY:
+    case INDEX_ADJACENT:
+      /* The region is compared on its bounds rather than on the spans holding
+       * them, so a region meeting the query is a region overlapping it here */
       return overlap8D(n, q);
     /* A region can hold a box on one side of the query only when the region
      * itself reaches that side, which is the negation of the opposite
@@ -324,6 +336,7 @@ stbox_leaf_consistent(const void *key, const void *query, IndexSearchOp op)
     case INDEX_CONTAINS:      return contains_stbox_stbox(k, q);
     case INDEX_CONTAINED_BY:  return contains_stbox_stbox(q, k);
     case INDEX_SAME:          return contains_stbox_stbox(k, q) && contains_stbox_stbox(q, k);
+    case INDEX_ADJACENT:      return adjacent_stbox_stbox(k, q);
     case INDEX_OVERLAPS:      return overlaps_stbox_stbox(k, q);
     case INDEX_LEFT:          return left_stbox_stbox(k, q);
     case INDEX_OVERLEFT:      return overleft_stbox_stbox(k, q);

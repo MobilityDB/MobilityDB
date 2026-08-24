@@ -259,6 +259,85 @@ main(void)
     }
   }
 
+  /* Adjacency, on the entry set that separates it from overlap. Two spans
+   * meeting at an excluded bound share a boundary and no point, so they are
+   * adjacent and do NOT overlap, and a descent pruning on overlap alone drops
+   * exactly them -- at the node boundaries, where nothing else in the answer
+   * is missing. The fixture is therefore a chain of half-open spans rather
+   * than the boxes above, and the join is included, a join pruning a pair of
+   * subtrees by the same rule. */
+  {
+    const int NADJ = 512;
+    Span *chain = malloc(sizeof(Span) * NADJ);
+    int64 *chain_ids = malloc(sizeof(int64) * NADJ);
+    char buf[64];
+    for (int i = 0; i < NADJ; i++)
+    {
+      snprintf(buf, sizeof(buf), "[%d,%d)", i * 10, (i + 1) * 10);
+      Span *sp = intspan_in(buf);
+      chain[i] = *sp;
+      free(sp);
+      chain_ids[i] = i;
+    }
+    const Span *query = &chain[NADJ / 2];
+    int want = 0;
+    for (int i = 0; i < NADJ; i++)
+      if (adjacent_span_span(&chain[i], query))
+        want++;
+    if (want < 2)
+    {
+      printf("index adjacent: the query meets %d entries, too few for the "
+        "comparison to be meaningful\n", want);
+      failures++;
+    }
+
+    RTree *art = rtree_create_intspan();
+    SPTree *aquad = sptree_create_intspan(SPTREE_QUADTREE);
+    SPTree *akd = sptree_create_intspan(SPTREE_KDTREE);
+    for (int i = 0; i < NADJ; i++)
+    {
+      rtree_insert(art, &chain[i], chain_ids[i]);
+      sptree_insert(aquad, &chain[i], chain_ids[i]);
+      sptree_insert(akd, &chain[i], chain_ids[i]);
+    }
+    MeosArray *g1 = meos_array_create(sizeof(int64));
+    MeosArray *g2 = meos_array_create(sizeof(int64));
+    MeosArray *g3 = meos_array_create(sizeof(int64));
+    int n1 = rtree_search(art, INDEX_ADJACENT, query, g1);
+    int n2 = sptree_search(aquad, INDEX_ADJACENT, query, g2);
+    int n3 = sptree_search(akd, INDEX_ADJACENT, query, g3);
+    if (n1 != want || n2 != want || n3 != want)
+    {
+      printf("index adjacent: expected %d, R-tree %d, quad-tree %d, "
+        "k-d tree %d\n", want, n1, n2, n3);
+      failures++;
+    }
+
+    int want_pairs = 0;
+    for (int i = 0; i < NADJ; i++)
+      for (int j = 0; j < NADJ; j++)
+        if (adjacent_span_span(&chain[i], &chain[j]))
+          want_pairs++;
+    RTree *art2 = rtree_create_intspan();
+    for (int i = 0; i < NADJ; i++)
+      rtree_insert(art2, &chain[i], chain_ids[i]);
+    MeosArray *pairs = meos_array_create(sizeof(int64));
+    rtree_join(art, art2, INDEX_ADJACENT, pairs);
+    int got_pairs = meos_array_count(pairs) / 2;
+    if (got_pairs != want_pairs)
+    {
+      printf("index adjacent join: expected %d pairs, got %d\n", want_pairs,
+        got_pairs);
+      failures++;
+    }
+
+    meos_array_destroy(g1); meos_array_destroy(g2); meos_array_destroy(g3);
+    meos_array_destroy(pairs);
+    rtree_free(art); rtree_free(art2);
+    sptree_free(aquad); sptree_free(akd);
+    free(chain); free(chain_ids);
+  }
+
   rtree_free(rt);
   sptree_free(quad);
   sptree_free(kd);
