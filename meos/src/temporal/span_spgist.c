@@ -279,7 +279,7 @@ left2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * @brief Can any span from nodebox does not extend to the right of the query?
+ * @brief Can any span from nodebox stop short of the right of the query?
  */
 bool
 overLeft2D(const SpanNode *nodebox, const Span *query)
@@ -288,7 +288,7 @@ overLeft2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * @brief Can any span from nodebox be right the query?
+ * @brief Can any span from nodebox be to the right of the query?
  */
 bool
 right2D(const SpanNode *nodebox, const Span *query)
@@ -297,7 +297,7 @@ right2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * @brief Can any span from nodebox does not extend to the left of the query?
+ * @brief Can any span from nodebox stop short of the left of the query?
  */
 bool
 overRight2D(const SpanNode *nodebox, const Span *query)
@@ -306,7 +306,7 @@ overRight2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * @brief Can any span from nodebox be to the left of the query?
+ * @brief Can any span from nodebox share a boundary with the query?
  */
 bool
 adjacent2D(const SpanNode *nodebox, const Span *query)
