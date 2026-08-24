@@ -112,6 +112,30 @@ COMMENT ON COLUMN pointcloud_dimensions.active IS
 COMMENT ON COLUMN pointcloud_dimensions.description IS
   'Free-form description for human readers.';
 
+/* Helper SQL functions that answer what a pcid names without a value of that
+ * schema in hand and without exposing the table layout, as the geopose_frames
+ * registry answers for a frame. They read a table a user may edit, so they are
+ * STABLE rather than IMMUTABLE. */
+
+CREATE FUNCTION pointCloudSchemaSRID(pcid integer) RETURNS integer
+  LANGUAGE SQL STABLE STRICT PARALLEL SAFE
+  AS $$ SELECT srid FROM pointcloud_schemas WHERE pointcloud_schemas.pcid = $1 $$;
+
+CREATE FUNCTION pointCloudSchemaCompression(pcid integer) RETURNS text
+  LANGUAGE SQL STABLE STRICT PARALLEL SAFE
+  AS $$ SELECT compression FROM pointcloud_schemas
+        WHERE pointcloud_schemas.pcid = $1 $$;
+
+/* A pcid no schema names answers NULL, as the other two do; a schema every
+ * dimension of which is inactive answers 0. A bare count over the dimensions
+ * cannot tell those apart, so the count hangs off the schema row. */
+CREATE FUNCTION pointCloudSchemaNDims(pcid integer) RETURNS integer
+  LANGUAGE SQL STABLE STRICT PARALLEL SAFE
+  AS $$ SELECT count(d.pcid)::integer FROM pointcloud_schemas s
+        LEFT JOIN pointcloud_dimensions d
+          ON d.pcid = s.pcid AND d.active
+        WHERE s.pcid = $1 GROUP BY s.pcid $$;
+
 /* Mark both catalogs as configuration tables so that pg_dump preserves the
  * schemas a user registers, as the geopose_frames registry does. */
 SELECT pg_catalog.pg_extension_config_dump('pointcloud_schemas', '');

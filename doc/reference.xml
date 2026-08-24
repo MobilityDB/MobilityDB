@@ -3282,6 +3282,23 @@
 	<sect1>
 		<title>Temporal Point Clouds</title>
 		<sect2>
+			<title>Quickstart</title>
+			<sect3>
+				<title>Register a schema</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pointcloud_schema_srid"><varname>pointCloudSchemaSRID</varname></link>: Return the spatial reference system every value of a schema is expressed in</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pointcloud_schema_compression"><varname>pointCloudSchemaCompression</varname></link>: Return how a patch of a schema is stored</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pointcloud_schema_ndims"><varname>pointCloudSchemaNDims</varname></link>: Return how many dimensions of a schema hold values</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+		<sect2>
 			<title>Static Types <varname>pcpoint</varname> and <varname>pcpatch</varname></title>
 			<sect3>
 				<title>Ergonomic constructors</title>

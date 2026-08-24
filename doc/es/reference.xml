@@ -3273,6 +3273,23 @@
 	<sect1>
 		<title>Temporal Point Clouds</title>
 		<sect2>
+			<title>Inicio rápido</title>
+			<sect3>
+				<title>Registrar un esquema</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pointcloud_schema_srid"><varname>pointCloudSchemaSRID</varname></link>: Devuelve el sistema de referencia espacial en el que se expresa todo valor de un esquema</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pointcloud_schema_compression"><varname>pointCloudSchemaCompression</varname></link>: Devuelve cómo se almacena un parche de un esquema</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pointcloud_schema_ndims"><varname>pointCloudSchemaNDims</varname></link>: Devuelve cuántas dimensiones de un esquema contienen valores</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+		<sect2>
 			<title>Tipos estáticos <varname>pcpoint</varname> y <varname>pcpatch</varname></title>
 			<sect3>
 				<title>Constructores ergonómicos</title>
