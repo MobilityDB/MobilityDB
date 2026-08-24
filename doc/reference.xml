@@ -3322,6 +3322,12 @@
 						<para><link linkend="pcpoint_xy_xyz"><varname>pcpoint</varname></link>: Build a 2D or 3D pcpoint directly from x/y(/z) coordinates</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="pcpoint_coordinates"><varname>pcpoint</varname></link>: Build a pcpoint from the coordinates of every dimension of the layout of the schema, inactive dimensions included, which is how a schema of more dimensions than the overloads above reach is given its values. That count is the one <varname>PC_MakePoint</varname> takes and is NOT the count of active dimensions that <varname>pointCloudSchemaNDims</varname> reports</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpatch_coordinates"><varname>pcpatch</varname></link>: Build a pcpatch from the coordinates of its points, one point after another, every dimension of the layout of the schema given for each point, inactive dimensions included. That count is the one <varname>PC_MakePatch</varname> takes and is NOT the count of active dimensions that <varname>pointCloudSchemaNDims</varname> reports; a count that divides evenly by the wrong one of the two builds a patch of the wrong points rather than reporting an error. A patch built this way states the schema itself, there being no point to read it from</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="pcpatch_variadic"><varname>pcpatch</varname></link>: Build a pcpatch from a variadic list of pcpoints sharing the same pcid</para>
 					</listitem>
 				</itemizedlist>

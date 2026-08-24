@@ -3313,6 +3313,12 @@
 						<para><link linkend="pcpoint_xy_xyz"><varname>pcpoint</varname></link>: Construye un pcpoint 2D o 3D directamente a partir de coordenadas x/y(/z)</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="pcpoint_coordinates"><varname>pcpoint</varname></link>: Construye un pcpoint a partir de las coordenadas de cada dimensión de la disposición del esquema, incluidas las dimensiones inactivas, que es como se dan sus valores a un esquema con más dimensiones de las que alcanzan las sobrecargas anteriores. Ese número es el que toma <varname>PC_MakePoint</varname> y NO es el número de dimensiones activas que informa <varname>pointCloudSchemaNDims</varname></para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpatch_coordinates"><varname>pcpatch</varname></link>: Construye un pcpatch a partir de las coordenadas de sus puntos, un punto tras otro, dando para cada punto cada dimensión de la disposición del esquema, incluidas las dimensiones inactivas. Ese número es el que toma <varname>PC_MakePatch</varname> y NO es el número de dimensiones activas que informa <varname>pointCloudSchemaNDims</varname>; un número que sea múltiplo del que no corresponde construye un parche de puntos erróneos en lugar de informar un error. Un parche construido así declara él mismo el esquema, al no haber ningún punto del que leerlo</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="pcpatch_variadic"><varname>pcpatch</varname></link>: Construye un pcpatch a partir de una lista variádica de pcpoints que comparten el mismo pcid</para>
 					</listitem>
 				</itemizedlist>

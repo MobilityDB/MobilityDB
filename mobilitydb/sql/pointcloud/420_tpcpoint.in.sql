@@ -178,6 +178,16 @@ CREATE FUNCTION pcpoint(pcid integer, x double precision, y double precision,
   AS 'MODULE_PATHNAME', 'Pcpoint_make'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/* The coordinates of every dimension of the schema's LAYOUT, inactive
+ * dimensions included, which is how a schema of more dimensions than the
+ * overloads above reach is given its values. The shape is the one
+ * pgPointCloud's own PC_MakePoint takes, and that count is NOT the count of
+ * ACTIVE dimensions pointCloudSchemaNDims reports. */
+CREATE FUNCTION pcpoint(pcid integer, coordinates double precision[])
+  RETURNS pcpoint
+  AS 'MODULE_PATHNAME', 'Pcpoint_make_coords'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructors
  ******************************************************************************/

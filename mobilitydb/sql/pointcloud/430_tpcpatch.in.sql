@@ -162,6 +162,18 @@ CREATE FUNCTION pcpatch(VARIADIC points pcpoint[])
   AS 'MODULE_PATHNAME', 'Pcpatch_make'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/* The coordinates of every point, one point after another, every dimension of
+ * the schema's LAYOUT given for each point, inactive dimensions included. That
+ * count is NOT the count of ACTIVE dimensions pointCloudSchemaNDims reports,
+ * and a count that divides evenly by the wrong one of the two builds a patch
+ * of the wrong points rather than reporting an error. A patch built this way
+ * states the schema itself, there being no point to read it from, and the
+ * shape is the one pgPointCloud's own PC_MakePatch takes. */
+CREATE FUNCTION pcpatch(pcid integer, coordinates double precision[])
+  RETURNS pcpatch
+  AS 'MODULE_PATHNAME', 'Pcpatch_make_coords'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructors
  ******************************************************************************/

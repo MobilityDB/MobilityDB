@@ -245,6 +245,8 @@ extern char *pcpatch_as_hexwkb(const Pcpatch *pa);
 /* Constructor */
 
 extern Pcpatch *pcpatch_make(const Pcpoint **points, int count);
+extern Pcpatch *pcpatch_make_coords(uint32_t pcid, const double *values,
+  int count);
 extern Pcpatch *pcpatch_copy(const Pcpatch *pa);
 
 /* Accessor */

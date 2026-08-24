@@ -51,6 +51,21 @@ SELECT ST_AsText(geometry(pcpatch(pcpoint(90, 1, 2, 3),
 -- The number of coordinates is the number of dimensions the schema states
 SELECT pcpoint(90, 1, 2);
 
+-- A schema of more dimensions than the two- and three-argument constructors
+-- reach is given its coordinates as an array, which is the shape pgPointCloud's
+-- own PC_MakePoint takes
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (91, 4326, 'none');
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
+  (91, 1, 'X', 'double'), (91, 2, 'Y', 'double'),
+  (91, 3, 'Z', 'double'), (91, 4, 'Intensity', 'double');
+SELECT getX(pcpoint(91, ARRAY[1, 2, 3, 40]::float[])),
+  getDim(pcpoint(91, ARRAY[1, 2, 3, 40]::float[]), 'Intensity');
+SELECT ST_AsText(geometry(pcpatch(91, ARRAY[1, 2, 3, 40, 4, 5, 6, 50]::float[])));
+
+-- The coordinates of a patch are a whole number of points
+SELECT pcpatch(91, ARRAY[1, 2, 3]::float[]);
+DELETE FROM pointcloud_schemas WHERE pcid = 91;
+
 -- A schema no row states and no XML document describes builds nothing
 SELECT pcpoint(999, 1, 2, 3);
 
