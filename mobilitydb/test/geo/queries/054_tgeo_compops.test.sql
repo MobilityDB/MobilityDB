@@ -61,6 +61,9 @@ SELECT tgeometry 'Point(1 1)@2000-01-01' ?= tgeometry 'Point(1 1)@2000-01-02';
 
 /* Errors */
 SELECT tgeometry 'Point(1 1)@2000-01-01' ?= tgeometry 'SRID=3812;Point(1 1)@2000-01-01';
+SELECT tgeometry 'Point(1 1)@2000-01-01' #= tgeometry 'SRID=3812;Point(1 1)@2000-01-01';
+SELECT tgeometry 'Point(1 1)@2000-01-01' #<> tgeometry 'SRID=3812;Point(1 1)@2000-01-01';
+SELECT tgeometry 'Point(1 1)@2000-01-01' #= tgeometry 'Point(1 1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
 
