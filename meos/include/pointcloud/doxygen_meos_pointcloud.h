@@ -69,6 +69,10 @@
  * @ingroup meos_pointcloud_base
  * @brief Hex-WKB input / output functions for pcpoint and pcpatch
  *
+ * @defgroup meos_pointcloud_base_constructor Constructor functions
+ * @ingroup meos_pointcloud_base
+ * @brief Constructor functions for pcpoint and pcpatch
+ *
  * @defgroup meos_pointcloud_base_accessor Accessor functions
  * @ingroup meos_pointcloud_base
  * @brief Schema-aware coordinate accessors and metadata for pcpoint / pcpatch
