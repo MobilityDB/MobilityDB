@@ -37,11 +37,11 @@
  * Oriented envelope (a.k.a minimum rotated rectangle) and convex hull
  *****************************************************************************/
 
-CREATE FUNCTION OrientedEnvelope(geometry)
+CREATE FUNCTION orientedEnvelope(geometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geom_oriented_envelope'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ConvexHull(geometry)
+CREATE FUNCTION convexHull(geometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geom_convex_hull'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -59,7 +59,7 @@ CREATE FUNCTION isSimple(geometry)
  * Buffer
  *****************************************************************************/
 
-CREATE FUNCTION Buffer(geom geometry, float, options text DEFAULT '')
+CREATE FUNCTION buffer(geom geometry, float, options text DEFAULT '')
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geom_buffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

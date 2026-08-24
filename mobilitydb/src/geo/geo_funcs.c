@@ -57,7 +57,7 @@ PG_FUNCTION_INFO_V1(Geom_oriented_envelope);
 /**
  * @ingroup mobilitydb_geo_base_spatial
  * @brief Return the oriented envelope of a geometry
- * @sqlfn OrientedEnvelope()
+ * @sqlfn orientedEnvelope()
  */
 Datum
 Geom_oriented_envelope(PG_FUNCTION_ARGS)
@@ -75,7 +75,7 @@ PG_FUNCTION_INFO_V1(Geom_convex_hull);
 /**
  * @ingroup mobilitydb_geo_base_spatial
  * @brief Return the convex hull of a geometry
- * @sqlfn ConvexHull()
+ * @sqlfn convexHull()
  */
 Datum
 Geom_convex_hull(PG_FUNCTION_ARGS)
@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(Geom_buffer);
  * @ingroup mobilitydb_geo_base_spatial
  * @brief Return a geometry that represents all the points whose distance from
  * a geometry is less than or equal to a distance
- * @sqlfn Buffer()
+ * @sqlfn buffer()
  */
 Datum
 Geom_buffer(PG_FUNCTION_ARGS)

@@ -45,31 +45,31 @@
 
 		<itemizedlist>
 			<listitem xml:id="geo_orientedenvelope">
-				<indexterm significance="normal"><primary><varname>OrientedEnvelope</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>orientedEnvelope</varname></primary></indexterm>
 				<para>Return the rectangle of minimum area enclosing a geometry</para>
-				<para><varname>OrientedEnvelope(geometry) → geometry</varname></para>
+				<para><varname>orientedEnvelope(geometry) → geometry</varname></para>
 				<para>The rectangle is at the angle that makes it smallest, which is not in general the angle of the axes. It is answered as a line when the geometry is contained in one and as a point when the geometry is one. A geometry carrying a circular arc is answered on the arc itself, the rectangle being placed against the circle the arc lies on rather than against the chain of segments approximating it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
 -- POLYGON((0 0,3 4,-1 7,-4 3,0 0))
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
 -- LINESTRING(0 0,10 0)
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Circularstring(0 0,0.5 0.1,1 0)'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Circularstring(0 0,0.5 0.1,1 0)'), 6));
 -- POLYGON((1 0.1,0 0.1,0 0,1 0,1 0.1))
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="geo_convexhull">
-				<indexterm significance="normal"><primary><varname>ConvexHull</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
 				<para>Return the smallest convex geometry enclosing a geometry</para>
-				<para><varname>ConvexHull(geometry) → geometry</varname></para>
+				<para><varname>convexHull(geometry) → geometry</varname></para>
 				<para>The result is a polygon whose every corner is a point of the geometry, a line when the geometry is contained in one, and a point when the geometry is one. A geometry carrying a circular arc is answered on the arc itself, so the hull is bounded by the arc and is returned as a curved geometry rather than as a polygon approximating it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
 -- POLYGON((0 0,0 10,10 10,10 0,0 0))
-SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
 -- POLYGON((0 0,0 10,10 10,10 0,0 0))
-SELECT ST_AsText(round(ConvexHull(geometry 'Circularstring(5 0,0 5,-5 0)'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Circularstring(5 0,0 5,-5 0)'), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE((5 0,-5 0),CIRCULARSTRING(-5 0,0 5,5 0)))
 </programlisting>
 			</listitem>
@@ -90,18 +90,18 @@ SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(10 0,10 10))');
 			</listitem>
 
 			<listitem xml:id="geo_buffer">
-				<indexterm significance="normal"><primary><varname>Buffer</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>buffer</varname></primary></indexterm>
 				<para>Return the geometry holding every point within a distance of a geometry</para>
-				<para><varname>Buffer(geometry,float,options text='') → geometry</varname></para>
+				<para><varname>buffer(geometry,float,options text='') → geometry</varname></para>
 				<para>The boundary of the result is made of the two offsets of the geometry at the given distance, of the join filling the outer side of each turn, and of the cap closing each end of an open line. A negative distance shrinks an areal geometry and answers an empty geometry for one of any other dimension.</para>
 				<para>The <varname>options</varname> string carries the styles as space-separated <varname>key=value</varname> pairs: <varname>endcap</varname> is one of <varname>round</varname>, <varname>flat</varname> or <varname>square</varname>, <varname>join</varname> one of <varname>round</varname>, <varname>mitre</varname> or <varname>bevel</varname>, and <varname>mitre_limit</varname> the ratio at which a mitre join falls back to a bevel.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 1), 6));
 -- CURVEPOLYGON(CIRCULARSTRING(-1 0,1 0,-1 0))
-SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
+SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
   'join=mitre'), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE((1 1,9 1),(9 1,9 9),(9 9,1 9),(1 9,1 1)))
-SELECT ST_AsText(round(Buffer(geometry
+SELECT ST_AsText(round(buffer(geometry
   'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
 </programlisting>

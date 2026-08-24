@@ -1,70 +1,70 @@
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Point(1 2)'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Point(1 2)'), 6));
  st_astext  
 ------------
  POINT(1 2)
 (1 row)
 
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
       st_astext       
 ----------------------
  LINESTRING(0 0,10 0)
 (1 row)
 
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,10 0,10 5,0 5,0 0))'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Polygon((0 0,10 0,10 5,0 5,0 0))'), 6));
             st_astext             
 ----------------------------------
  POLYGON((0 0,10 0,10 5,0 5,0 0))
 (1 row)
 
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
             st_astext             
 ----------------------------------
  POLYGON((0 0,3 4,-1 7,-4 3,0 0))
 (1 row)
 
-SELECT ST_AsText(OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+SELECT ST_AsText(orientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
             st_astext             
 ----------------------------------
  POLYGON((4 2,0 2,0 -2,4 -2,4 2))
 (1 row)
 
-SELECT round(ST_Area(OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'))::numeric, 6);
+SELECT round(ST_Area(orientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'))::numeric, 6);
    round   
 -----------
  16.000000
 (1 row)
 
-SELECT ST_AsText(round(ConvexHull(geometry 'Point(1 2)'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Point(1 2)'), 6));
  st_astext  
 ------------
  POINT(1 2)
 (1 row)
 
-SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,1 1,2 2)'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,1 1,2 2)'), 6));
       st_astext      
 ---------------------
  LINESTRING(0 0,2 2)
 (1 row)
 
-SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
              st_astext              
 ------------------------------------
  POLYGON((0 0,0 10,10 10,10 0,0 0))
 (1 row)
 
-SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
              st_astext              
 ------------------------------------
  POLYGON((0 0,0 10,10 10,10 0,0 0))
 (1 row)
 
-SELECT ST_AsText(ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
+SELECT ST_AsText(convexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
                              st_astext                              
 --------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE((4 0,0 0),CIRCULARSTRING(0 0,2 2,4 0)))
 (1 row)
 
-SELECT ST_AsText(ConvexHull(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+SELECT ST_AsText(convexHull(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
                                        st_astext                                       
 ---------------------------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(4 0,2 -2,0 0),CIRCULARSTRING(0 0,2 2,4 0)))
@@ -156,85 +156,85 @@ SELECT isSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))') =
  t
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 1), 6));
                   st_astext                  
 ---------------------------------------------
  CURVEPOLYGON(CIRCULARSTRING(-1 0,1 0,-1 0))
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 0), 6));
+SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 0), 6));
    st_astext   
 ---------------
  POLYGON EMPTY
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', -1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', -1), 6));
    st_astext   
 ---------------
  POLYGON EMPTY
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
                                                      st_astext                                                      
 --------------------------------------------------------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE((0 1,10 1),CIRCULARSTRING(10 1,11 0,10 -1),(10 -1,0 -1),CIRCULARSTRING(0 -1,-1 0,0 1)))
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
                                   st_astext                                   
 ------------------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE((0 1,10 1),(10 1,10 -1),(10 -1,0 -1),(0 -1,0 1)))
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square'), 6));
                st_astext                
 ----------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE((0 1,0 1)))
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
                                                                         st_astext                                                                        
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE((0 1,9 1),(9 1,9 10),CIRCULARSTRING(9 10,10 11,11 10),(11 10,11 0),(11 0,10 -1),(10 -1,0 -1),CIRCULARSTRING(0 -1,-1 0,0 1)))
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mitre'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mitre'), 6));
                                                                               st_astext                                                                              
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE((0 1,9 1),(9 1,9 10),CIRCULARSTRING(9 10,10 11,11 10),(11 10,11 0),(11 0,10 0),(10 0,10 -1),(10 -1,0 -1),CIRCULARSTRING(0 -1,-1 0,0 1)))
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
                                                                                       st_astext                                                                                       
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE((-1 0,0 0),(0 0,0 -1),(0 -1,10 -1),(10 -1,10 0),(10 0,11 0),(11 0,11 10),(11 10,10 10),(10 10,10 11),(10 11,0 11),(0 11,0 10),(0 10,-1 10),(-1 10,-1 0)))
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1, 'join=mitre'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1, 'join=mitre'), 6));
                               st_astext                               
 ----------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE((1 1,9 1),(9 1,9 9),(9 9,1 9),(1 9,1 1)))
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
                                                                                                   st_astext                                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,4 -1,3 0),CIRCULARSTRING(3 0,2 1,1 0),CIRCULARSTRING(1 0,0.707107 -0.707107,0 -1),CIRCULARSTRING(0 -1,-0.707107 -0.707107,-1 0)))
 (1 row)
 
-SELECT ST_AsText(round(Buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
                                         st_astext                                        
 -----------------------------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
 (1 row)
 
-SELECT ST_GeometryType(Buffer(geometry 'Multipoint(0 0,10 0)', 1));
+SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));
  st_geometrytype 
 -----------------
  ST_MultiSurface
 (1 row)
 
-SELECT ST_GeometryType(Buffer(geometry 'Multilinestring((0 0,10 0),(0 20,10 20))', 1));
+SELECT ST_GeometryType(buffer(geometry 'Multilinestring((0 0,10 0),(0 20,10 20))', 1));
  st_geometrytype 
 -----------------
  ST_MultiSurface
