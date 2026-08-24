@@ -77,7 +77,8 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">pose_geopose.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -172,12 +173,18 @@ Functions</h2></td></tr>
 <tr class="memitem:a8412aeaff87a87150f20eea6a5dfa7da"><td class="memItemLeft" align="right" valign="top">static json_object *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_a8412aeaff87a87150f20eea6a5dfa7da.html#a8412aeaff87a87150f20eea6a5dfa7da">geopose_find_member</a> (json_object *obj, const char *name)</td></tr>
 <tr class="memdesc:a8412aeaff87a87150f20eea6a5dfa7da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Look up a JSON object member case-insensitively.  <a href="pose__geopose_8c_a8412aeaff87a87150f20eea6a5dfa7da.html#a8412aeaff87a87150f20eea6a5dfa7da">More...</a><br /></td></tr>
 <tr class="separator:a8412aeaff87a87150f20eea6a5dfa7da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga00a2022cc660b99190c2d5efcb32105b"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__base__geopose_ga00a2022cc660b99190c2d5efcb32105b.html#ga00a2022cc660b99190c2d5efcb32105b">geopose_frame</a> (int32_t frame_id)</td></tr>
+<tr class="memdesc:ga00a2022cc660b99190c2d5efcb32105b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the frame the registry states under an identifier, or <code>NULL</code> where it states none.  <a href="group__meos__pose__base__geopose_ga00a2022cc660b99190c2d5efcb32105b.html#ga00a2022cc660b99190c2d5efcb32105b">More...</a><br /></td></tr>
+<tr class="separator:ga00a2022cc660b99190c2d5efcb32105b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c09fe141839fc21880e02bf3f9747a5"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_a6c09fe141839fc21880e02bf3f9747a5.html#a6c09fe141839fc21880e02bf3f9747a5">geopose_frame_parameters</a> (json_object *frame, const char *what)</td></tr>
 <tr class="memdesc:a6c09fe141839fc21880e02bf3f9747a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the <code>parameters</code> string of a FrameSpecification object, checking that the object carries the three members the schema requires.  <a href="pose__geopose_8c_a6c09fe141839fc21880e02bf3f9747a5.html#a6c09fe141839fc21880e02bf3f9747a5">More...</a><br /></td></tr>
 <tr class="separator:a6c09fe141839fc21880e02bf3f9747a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ed0707e51e7026aaebb4635feb6790a"><td class="memItemLeft" align="right" valign="top">static json_object *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_a3ed0707e51e7026aaebb4635feb6790a.html#a3ed0707e51e7026aaebb4635feb6790a">geopose_frame_spec</a> (const char *id, const char *parameters)</td></tr>
 <tr class="memdesc:a3ed0707e51e7026aaebb4635feb6790a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build a FrameSpecification object.  <a href="pose__geopose_8c_a3ed0707e51e7026aaebb4635feb6790a.html#a3ed0707e51e7026aaebb4635feb6790a">More...</a><br /></td></tr>
 <tr class="separator:a3ed0707e51e7026aaebb4635feb6790a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga515b121f0fdde2179dd97905c1be9d47"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">geopose_frames</a> (int *count)</td></tr>
+<tr class="memdesc:ga515b121f0fdde2179dd97905c1be9d47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return every frame of the OGC GeoPose registry.  <a href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">More...</a><br /></td></tr>
+<tr class="separator:ga515b121f0fdde2179dd97905c1be9d47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1b2f84c60db04be35da7e7df552f528"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_ae1b2f84c60db04be35da7e7df552f528.html#ae1b2f84c60db04be35da7e7df552f528">geopose_geodetic_to_ecef</a> (double lat_rad, double lon_rad, double h, double *X, double *Y, double *Z)</td></tr>
 <tr class="memdesc:ae1b2f84c60db04be35da7e7df552f528"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert WGS-84 geographic coordinates to Earth-Centred Earth-Fixed Cartesian coordinates.  <a href="pose__geopose_8c_ae1b2f84c60db04be35da7e7df552f528.html#ae1b2f84c60db04be35da7e7df552f528">More...</a><br /></td></tr>
 <tr class="separator:ae1b2f84c60db04be35da7e7df552f528"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -294,6 +301,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a22d3f350db5c2b71185d56ca88baf48a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_a22d3f350db5c2b71185d56ca88baf48a.html#a22d3f350db5c2b71185d56ca88baf48a">tposeinst_from_geopose_object</a> (json_object *obj)</td></tr>
 <tr class="memdesc:a22d3f350db5c2b71185d56ca88baf48a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse one element of an <code>instants</code> array (single-pose object.  <a href="pose__geopose_8c_a22d3f350db5c2b71185d56ca88baf48a.html#a22d3f350db5c2b71185d56ca88baf48a">More...</a><br /></td></tr>
 <tr class="separator:a22d3f350db5c2b71185d56ca88baf48a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a4dbd31591f42129f5815d4353c3d17bc"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_a4dbd31591f42129f5815d4353c3d17bc.html#a4dbd31591f42129f5815d4353c3d17bc">GEOPOSE_FRAME_REGISTRY</a> []</td></tr>
+<tr class="memdesc:a4dbd31591f42129f5815d4353c3d17bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Every frame an encoder in this file names, and the two systems the Basic classes rest on.  <a href="pose__geopose_8c_a4dbd31591f42129f5815d4353c3d17bc.html#a4dbd31591f42129f5815d4353c3d17bc">More...</a><br /></td></tr>
+<tr class="separator:a4dbd31591f42129f5815d4353c3d17bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

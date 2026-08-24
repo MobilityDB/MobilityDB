@@ -23,8 +23,9 @@ var searchData=
   ['invert_20',['invert',['../structLiftedFunctionInfo_af63eedf967d20fcf7557af1de580f1ba.html#af63eedf967d20fcf7557af1de580f1ba',1,'LiftedFunctionInfo']]],
   ['is_5farc_21',['is_arc',['../structHullBoundary_afdbb32d926c21378b7a03c369b3ba98f.html#afdbb32d926c21378b7a03c369b3ba98f',1,'HullBoundary::is_arc()'],['../structHullFeature_a3e0659efc9f26f4114113d3c9fc08bd2.html#a3e0659efc9f26f4114113d3c9fc08bd2',1,'HullFeature::is_arc()'],['../structDistEdge_a6e637dabc6149d85806a10c50686fb76.html#a6e637dabc6149d85806a10c50686fb76',1,'DistEdge::is_arc()']]],
   ['is_5femit_22',['is_emit',['../structSPNNEntry_ad8e934df0849ed99161ade65a7dec0ee.html#ad8e934df0849ed99161ade65a7dec0ee',1,'SPNNEntry']]],
-  ['is_5fleaf_5fentry_23',['is_leaf_entry',['../structRTreeNNEntry_a4de3913b3ceb2c9ee8898e84e1db03dd.html#a4de3913b3ceb2c9ee8898e84e1db03dd',1,'RTreeNNEntry']]],
-  ['is_5fpoly_24',['is_poly',['../structDistEdge_ac647e28e3aab989aa459c66bfeec40ce.html#ac647e28e3aab989aa459c66bfeec40ce',1,'DistEdge']]],
-  ['is_5fvalid_5fcell_25',['is_valid_cell',['../structDggsCellOps_ac9faeb2e965811eb12c134e002f21f46.html#ac9faeb2e965811eb12c134e002f21f46',1,'DggsCellOps']]],
-  ['iters_26',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
+  ['is_5fgeographic_23',['is_geographic',['../structGeoPoseFrame_a4b92708252081a1fcc7609e129aaeed4.html#a4b92708252081a1fcc7609e129aaeed4',1,'GeoPoseFrame']]],
+  ['is_5fleaf_5fentry_24',['is_leaf_entry',['../structRTreeNNEntry_a4de3913b3ceb2c9ee8898e84e1db03dd.html#a4de3913b3ceb2c9ee8898e84e1db03dd',1,'RTreeNNEntry']]],
+  ['is_5fpoly_25',['is_poly',['../structDistEdge_ac647e28e3aab989aa459c66bfeec40ce.html#ac647e28e3aab989aa459c66bfeec40ce',1,'DistEdge']]],
+  ['is_5fvalid_5fcell_26',['is_valid_cell',['../structDggsCellOps_ac9faeb2e965811eb12c134e002f21f46.html#ac9faeb2e965811eb12c134e002f21f46',1,'DggsCellOps']]],
+  ['iters_27',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
 ];

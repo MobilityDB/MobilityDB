@@ -76,11 +76,17 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Functions implementing the OGC GeoPose v1.0 standard surface for static poses — JSON I/O for the Basic conformance classes, quaternion renormalization, and Euler-angle (yaw / pitch / roll) accessors using the ZYX intrinsic Tait-Bryan convention required by the standard.  
+<p>Functions implementing the OGC GeoPose v1.0 standard surface for static poses — JSON I/O for the Basic conformance classes, quaternion renormalization, Euler-angle (yaw / pitch / roll) accessors using the ZYX intrinsic Tait-Bryan convention required by the standard, and the registry of the frames a document names.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ga00a2022cc660b99190c2d5efcb32105b"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__base__geopose_ga00a2022cc660b99190c2d5efcb32105b.html#ga00a2022cc660b99190c2d5efcb32105b">geopose_frame</a> (int32_t frame_id)</td></tr>
+<tr class="memdesc:ga00a2022cc660b99190c2d5efcb32105b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the frame the registry states under an identifier, or <code>NULL</code> where it states none.  <a href="group__meos__pose__base__geopose_ga00a2022cc660b99190c2d5efcb32105b.html#ga00a2022cc660b99190c2d5efcb32105b">More...</a><br /></td></tr>
+<tr class="separator:ga00a2022cc660b99190c2d5efcb32105b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga515b121f0fdde2179dd97905c1be9d47"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">geopose_frames</a> (int *count)</td></tr>
+<tr class="memdesc:ga515b121f0fdde2179dd97905c1be9d47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return every frame of the OGC GeoPose registry.  <a href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">More...</a><br /></td></tr>
+<tr class="separator:ga515b121f0fdde2179dd97905c1be9d47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga94ca66714e6c9f92dca7b5cddfe26dda"><td class="memItemLeft" align="right" valign="top">static json_object *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__base__geopose_ga94ca66714e6c9f92dca7b5cddfe26dda.html#ga94ca66714e6c9f92dca7b5cddfe26dda">geopose_stream_header_obj</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structGeoPoseAnchor.html">GeoPoseAnchor</a> *anchor, int precision)</td></tr>
 <tr class="memdesc:ga94ca66714e6c9f92dca7b5cddfe26dda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the OGC GeoPose StreamHeader of a temporal pose.  <a href="group__meos__pose__base__geopose_ga94ca66714e6c9f92dca7b5cddfe26dda.html#ga94ca66714e6c9f92dca7b5cddfe26dda">More...</a><br /></td></tr>
 <tr class="separator:ga94ca66714e6c9f92dca7b5cddfe26dda"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -116,7 +122,7 @@ Functions</h2></td></tr>
 <tr class="separator:gae02c37ac519c4920772df78b8a7a0ccc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Functions implementing the OGC GeoPose v1.0 standard surface for static poses — JSON I/O for the Basic conformance classes, quaternion renormalization, and Euler-angle (yaw / pitch / roll) accessors using the ZYX intrinsic Tait-Bryan convention required by the standard. </p>
+<p >Functions implementing the OGC GeoPose v1.0 standard surface for static poses — JSON I/O for the Basic conformance classes, quaternion renormalization, Euler-angle (yaw / pitch / roll) accessors using the ZYX intrinsic Tait-Bryan convention required by the standard, and the registry of the frames a document names. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

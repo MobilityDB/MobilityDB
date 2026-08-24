@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
@@ -88,6 +89,12 @@ $(function() {
 </div>
 <p><a href="meos__pose_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">One frame of the OGC GeoPose registry, as the standard names it.  <a href="structGeoPoseFrame.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:af8abe517531e93148ec95046192751ed"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__pose_8h_af8abe517531e93148ec95046192751ed.html#af8abe517531e93148ec95046192751ed">VALIDATE_POSESET</a>(<a class="el" href="meos_2CMakeLists_8txt_a50c962d28d1be08c3cf4bcc093e4a883.html#a50c962d28d1be08c3cf4bcc093e4a883">set</a>,  ret)</td></tr>
@@ -156,6 +163,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gafa0ec524bfb6a51fe0b9f8572e8eb286"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__comp__ever_gafa0ec524bfb6a51fe0b9f8572e8eb286.html#gafa0ec524bfb6a51fe0b9f8572e8eb286">ever_ne_tpose_tpose</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2)</td></tr>
 <tr class="memdesc:gafa0ec524bfb6a51fe0b9f8572e8eb286"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two temporal poses are ever different.  <a href="group__meos__pose__comp__ever_gafa0ec524bfb6a51fe0b9f8572e8eb286.html#gafa0ec524bfb6a51fe0b9f8572e8eb286">More...</a><br /></td></tr>
 <tr class="separator:gafa0ec524bfb6a51fe0b9f8572e8eb286"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga00a2022cc660b99190c2d5efcb32105b"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__base__geopose_ga00a2022cc660b99190c2d5efcb32105b.html#ga00a2022cc660b99190c2d5efcb32105b">geopose_frame</a> (int32_t frame_id)</td></tr>
+<tr class="memdesc:ga00a2022cc660b99190c2d5efcb32105b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the frame the registry states under an identifier, or <code>NULL</code> where it states none.  <a href="group__meos__pose__base__geopose_ga00a2022cc660b99190c2d5efcb32105b.html#ga00a2022cc660b99190c2d5efcb32105b">More...</a><br /></td></tr>
+<tr class="separator:ga00a2022cc660b99190c2d5efcb32105b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga515b121f0fdde2179dd97905c1be9d47"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structGeoPoseFrame.html">GeoPoseFrame</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">geopose_frames</a> (int *count)</td></tr>
+<tr class="memdesc:ga515b121f0fdde2179dd97905c1be9d47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return every frame of the OGC GeoPose registry.  <a href="group__meos__pose__base__geopose_ga515b121f0fdde2179dd97905c1be9d47.html#ga515b121f0fdde2179dd97905c1be9d47">More...</a><br /></td></tr>
+<tr class="separator:ga515b121f0fdde2179dd97905c1be9d47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf93d0f36f818b75d7cf796a135ad2507"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pose__set__setops_gaf93d0f36f818b75d7cf796a135ad2507.html#gaf93d0f36f818b75d7cf796a135ad2507">intersection_pose_set</a> (const <a class="el" href="structPose.html">Pose</a> *pose, const <a class="el" href="structSet.html">Set</a> *s)</td></tr>
 <tr class="memdesc:gaf93d0f36f818b75d7cf796a135ad2507"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the intersection of a pose and a set.  <a href="group__meos__pose__set__setops_gaf93d0f36f818b75d7cf796a135ad2507.html#gaf93d0f36f818b75d7cf796a135ad2507">More...</a><br /></td></tr>
 <tr class="separator:gaf93d0f36f818b75d7cf796a135ad2507"><td class="memSeparator" colspan="2">&#160;</td></tr>

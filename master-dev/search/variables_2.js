@@ -16,7 +16,8 @@ var searchData=
   ['at1_13',['at1',['../structDistEdge_ab192e12c14869b13a4ce99753b8d83e7.html#ab192e12c14869b13a4ce99753b8d83e7',1,'DistEdge']]],
   ['auth_5fname_14',['auth_name',['../structspatial__ref__sys__record_afcfa1280ade0ad7deabe6e07c40ade53.html#afcfa1280ade0ad7deabe6e07c40ade53',1,'spatial_ref_sys_record']]],
   ['auth_5fsrid_15',['auth_srid',['../structspatial__ref__sys__record_ae6d292653d8650ea73773ea6af11ddde.html#ae6d292653d8650ea73773ea6af11ddde',1,'spatial_ref_sys_record']]],
-  ['authtext_16',['authtext',['../structPjStrs_a48986b8e4b0149dd8090156e6906273f.html#a48986b8e4b0149dd8090156e6906273f',1,'PjStrs']]],
-  ['awgs_17',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]],
-  ['axis_18',['axis',['../structSTRCtx_acdb54c217152bd214a9f969ec1b51530.html#acdb54c217152bd214a9f969ec1b51530',1,'STRCtx']]]
+  ['authority_16',['authority',['../structGeoPoseFrame_a95f46868917d2a1a7359ce81453dcdf7.html#a95f46868917d2a1a7359ce81453dcdf7',1,'GeoPoseFrame']]],
+  ['authtext_17',['authtext',['../structPjStrs_a48986b8e4b0149dd8090156e6906273f.html#a48986b8e4b0149dd8090156e6906273f',1,'PjStrs']]],
+  ['awgs_18',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]],
+  ['axis_19',['axis',['../structSTRCtx_acdb54c217152bd214a9f969ec1b51530.html#acdb54c217152bd214a9f969ec1b51530',1,'STRCtx']]]
 ];
