@@ -44,6 +44,7 @@
 #include <meos_internal.h>
 #include <meos_geo.h>
 #include "temporal/doublen.h"
+#include <meos_error.h>
 #include "temporal/meos_catalog.h"
 
 /* To avoid including pg_collation_d */
@@ -396,9 +397,44 @@ typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
 
 /* Parameter tests */
 
-extern bool ensure_has_X(MeosType type, int16 flags);
-extern bool ensure_has_Z(MeosType type, int16 flags);
-extern bool ensure_has_T(MeosType type, int16 flags);
+/**
+ * @brief Ensure that a MEOS type has X dimension
+ */
+static inline bool
+ensure_has_X(MeosType type, int16 flags)
+{
+  if (MEOS_FLAGS_GET_X(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The %s must have X dimension", meostype_name(type));
+  return false;
+}
+
+/**
+ * @brief Ensure that a MEOS type has Z dimension
+ */
+static inline bool
+ensure_has_Z(MeosType type, int16 flags)
+{
+  if (MEOS_FLAGS_GET_Z(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The %s must have Z dimension", meostype_name(type));
+  return false;
+}
+
+/**
+ * @brief Ensure that a MEOS type has T dimension
+ */
+static inline bool
+ensure_has_T(MeosType type, int16 flags)
+{
+  if (MEOS_FLAGS_GET_T(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The %s must have T dimension", meostype_name(type));
+  return false;
+}
 extern bool ensure_has_not_Z(MeosType type, int16 flags);
 extern bool ensure_not_null(void *ptr);
 extern bool ensure_one_not_null(void *ptr1, void *ptr2);
@@ -409,7 +445,19 @@ extern bool ensure_same_interp(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_same_continuous_interp(int16 flags1, int16 flags2);
 extern bool ensure_linear_interp(int16 flags);
 extern bool ensure_nonlinear_interp(int16 flags);
-extern bool ensure_common_dimension(int16 flags1, int16 flags2);
+/**
+ * @brief Ensure that two temporal values have at least one common dimension
+ */
+static inline bool
+ensure_common_dimension(int16 flags1, int16 flags2)
+{
+  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) ||
+      MEOS_FLAGS_GET_T(flags1) == MEOS_FLAGS_GET_T(flags2))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal values must have at least one common dimension");
+  return false;
+}
 extern bool ensure_temporal_isof_type(const Temporal *temp, MeosType type);
 extern bool ensure_temporal_isof_basetype(const Temporal *temp,
   MeosType basetype);

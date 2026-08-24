@@ -93,32 +93,6 @@ ensure_span_isof_basetype(const Span *s, MeosType basetype)
   return false;
 }
 
-/**
- * @brief Ensure that the spans have the same type
- */
-bool
-ensure_same_span_type(const Span *s1, const Span *s2)
-{
-  if (s1->spantype == s2->spantype)
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-    "Operation on mixed span types: %s and %s",
-    meostype_name(s1->spantype), meostype_name(s2->spantype));
-  return false;
-}
-
-/**
- * @brief Ensure that two span sets are of the same span type
- */
-bool
-ensure_valid_span_span(const Span *s1, const Span *s2)
-{
-  VALIDATE_NOT_NULL(s1, false); VALIDATE_NOT_NULL(s2, false);
-  if (! ensure_same_span_type(s1, s2))
-    return false;
-  return true;
-}
-
 /*****************************************************************************
  * General functions
  *****************************************************************************/

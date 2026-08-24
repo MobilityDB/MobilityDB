@@ -47,6 +47,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <meos_error.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
@@ -196,11 +197,36 @@ extern bool ensure_geodetic_geo(const GSERIALIZED *gs);
 extern bool ensure_not_geodetic_geo(const GSERIALIZED *gs);
 extern bool ensure_geodetic(int16 flags);
 extern bool ensure_not_geodetic(int16 flags);
-extern bool ensure_same_geodetic(int16 flags1, int16 flags2);
+/**
+ * @brief Ensure that two temporal values have the same geodetic flag
+ */
+static inline bool
+ensure_same_geodetic(int16 flags1, int16 flags2)
+{
+  if (MEOS_FLAGS_GET_X(flags1) && MEOS_FLAGS_GET_X(flags2) &&
+    MEOS_FLAGS_GET_GEODETIC(flags1) != MEOS_FLAGS_GET_GEODETIC(flags2))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed planar and geodetic coordinates");
+    return false;
+  }
+  return true;
+}
 extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 extern bool ensure_srid_known(int32_t srid);
-extern bool ensure_same_srid(int32_t srid1, int32_t srid2);
+/**
+ * @brief Ensure that two values have the same SRID
+ */
+static inline bool
+ensure_same_srid(int32_t srid1, int32_t srid2)
+{
+  if (srid1 == srid2)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed SRID");
+  return false;
+}
 extern bool ensure_srid_reconcile(int32_t srid1, int32_t srid2, int32_t *result);
 extern bool ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern bool ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
