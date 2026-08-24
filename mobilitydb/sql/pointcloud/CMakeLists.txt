@@ -1,4 +1,5 @@
 SET(LOCAL_FILES
+  399_pointcloud_schemas
   400_pcset
   410_tpcbox
   420_tpcpoint

@@ -30,23 +30,19 @@ CREATE EXTENSION mobilitydb CASCADE;
 		<sect2 xml:id="tpointcloud_quickstart_setup">
 			<title>Register a schema</title>
 
-			<para>Every <varname>pcpoint</varname> and <varname>pcpatch</varname> value carries a <varname>pcid</varname> that resolves through <varname>pointcloud_formats</varname> to an XML schema. The schema declares the dimensions (X, Y, Z, …), their on-disk numeric type, and per-dimension scale. A minimal 3D schema with all dimensions stored as <varname>int32</varname> at unit scale:</para>
+			<para>Every <varname>pcpoint</varname> and <varname>pcpatch</varname> value carries a <varname>pcid</varname> that resolves to a <emphasis>schema</emphasis>, which states the dimensions the value holds (X, Y, Z, …), the numeric type each is stored as, and its scale and offset. The schema is stated in SQL, in two tables: <varname>pointcloud_schemas</varname> holds what a schema states as a whole, and <varname>pointcloud_dimensions</varname> one row per dimension. A minimal 3D schema, every dimension stored as <varname>int32_t</varname> at unit scale:</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
-INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (1, 4326, '
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"&gt;
-  &lt;pc:dimension&gt;&lt;pc:position&gt;1&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
-    &lt;pc:name&gt;X&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
-    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
-  &lt;pc:dimension&gt;&lt;pc:position&gt;2&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
-    &lt;pc:name&gt;Y&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
-    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
-  &lt;pc:dimension&gt;&lt;pc:position&gt;3&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
-    &lt;pc:name&gt;Z&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
-    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
-&lt;/pc:PointCloudSchema&gt;');
+INSERT INTO pointcloud_schemas (pcid, srid, compression, description) VALUES
+  (1, 4326, 'none', 'Minimal 3D schema');
+
+INSERT INTO pointcloud_dimensions
+    (pcid, position, name, interpretation, scale, "offset", active, description) VALUES
+  (1, 1, 'X', 'int32_t', 1, 0, true, 'Easting'),
+  (1, 2, 'Y', 'int32_t', 1, 0, true, 'Northing'),
+  (1, 3, 'Z', 'int32_t', 1, 0, true, 'Elevation');
 </programlisting>
-			<para>Schemas are global to the database; you usually register them once at fixture-load time. SRID is per-schema and inherited by every value with that <varname>pcid</varname>.</para>
+			<para>The size of each dimension and its offset within a point are absent because they follow from the interpretation, and the X, Y, Z and M dimensions are absent because they resolve from the names. The <varname>position</varname> column states the order the dimensions are stored in, so it does not depend on the order the rows are inserted in. A schema is global to the database and usually registered once, at fixture-load time; the SRID is per schema and is inherited by every value carrying that <varname>pcid</varname>.</para>
+			<para>A database whose schemas are already registered in the <varname>pointcloud_formats</varname> catalog of pgPointCloud, as an XML document, keeps working: that catalog is read for a <varname>pcid</varname> that the two tables above do not state.</para>
 		</sect2>
 
 		<sect2 xml:id="tpointcloud_quickstart_construct">
