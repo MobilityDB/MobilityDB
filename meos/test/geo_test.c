@@ -624,6 +624,16 @@ int main(void)
   assert(meos_errno() == 0);
   meos_errno_reset();
 
+  /* A TIN is a set of triangles, so it covers what the same triangles cover
+   * written any other way. GEOS carries no TIN at all, so what answers for it
+   * is that identity rather than a foreign answer */
+  GSERIALIZED *adjtin = geom_in("TIN Z (((0 0 0,0 1 0,1 1 0,0 0 0)),"
+    "((0 0 0,1 1 0,1 0 0,0 0 0)))", -1);
+  assert(geom_relate_pattern(adjtin, diag, "1********") == true);
+  printf("a TIN covers what its triangles cover written any other way\n");
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 
