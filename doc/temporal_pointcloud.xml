@@ -1252,6 +1252,42 @@ SELECT aDwithin(tpcpointSeq(ARRAY[
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
+		<sect2 xml:id="tpcpoint_tempspatialrels">
+			<title>Temporal Spatial Relationships</title>
+			<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. They read the same <varname>tgeompoint</varname> projection the ever/always relationships read, and are wired in the same three argument orders. A tpcpoint carries the Z its schema declares, and <varname>tContains</varname>, <varname>tCovers</varname> and <varname>tTouches</varname> are planar relationships that refuse a Z dimension, so the type answers the three that a Z-carrying value can.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_tspatialrels">
+					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+					<para>Temporal disjoint, within distance, and intersects</para>
+					<para><varname>tDisjoint({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tbool</varname></para>
+					<para><varname>tDwithin({geometry,tpcpoint},{geometry,tpcpoint},float) &#8594; tbool</varname></para>
+					<para><varname>tIntersects({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tIntersects(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- t@2001-01-01
+SELECT tDisjoint(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- f@2001-01-01
+SELECT tDisjoint(tpcpoint(pcpoint(1, 9, 9, 9), '2001-01-02'::timestamptz),
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- t@2001-01-02
+SELECT tDisjoint(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 9, 9, 9), '2001-01-01'::timestamptz));
+-- t@2001-01-01
+SELECT tDwithin(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  geometry 'Point(1 2)', 2.0);
+-- t@2001-01-01
+SELECT tDwithin(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  geometry 'Point(1 5)', 2.0);
+-- f@2001-01-01
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1 xml:id="tpcpatch">

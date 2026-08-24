@@ -698,6 +698,46 @@ SELECT tposechain '[PoseChain(Pose(Point(1 1), 0.5))@2001-01-01,
 			</itemizedlist>
 		</sect2>
 
+		<sect2 xml:id="tposechain_tempspatialrels">
+			<title>Relaciones espaciales temporales</title>
+			<itemizedlist>
+				<listitem xml:id="tposechain_tspatialrels">
+					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+					<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Una cadena de poses temporal las responde en la posición que ocupa la pose que compone.</para>
+					<para><varname>tContains(geometry,tposechain) → tbool</varname></para>
+					<para><varname>tCovers(geometry,tposechain) → tbool</varname></para>
+					<para><varname>tDisjoint({geometry,tposechain},{geometry,tposechain}) → tbool</varname></para>
+					<para><varname>tDwithin({geometry,tposechain},{geometry,tposechain},float) → tbool</varname></para>
+					<para><varname>tIntersects({geometry,tposechain},{geometry,tposechain}) → tbool</varname></para>
+					<para><varname>tTouches({geometry,tposechain},{geometry,tposechain}) → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tIntersects(tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01,
+  PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- {t@2001-01-01, f@2001-01-03}
+SELECT tDisjoint(tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01,
+  PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- {f@2001-01-01, t@2001-01-03}
+SELECT tContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01');
+-- f@2001-01-01
+SELECT tCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01');
+-- t@2001-01-01
+SELECT tDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01',
+  tposechain 'PoseChain(Pose(Point(1 2), 0.1))@2001-01-01', 2.0);
+-- t@2001-01-01
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="tposechain_aggregations">
 			<title>Agregaciones</title>
 			<itemizedlist>

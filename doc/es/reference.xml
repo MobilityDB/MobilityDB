@@ -1837,6 +1837,14 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
+				<title>Relaciones espaciales temporales</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Una cadena de poses temporal las responde en la posición que ocupa la pose que compone.</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>Agregaciones</title>
 				<itemizedlist>
 					<listitem>
@@ -3556,6 +3564,14 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_dwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Alguna vez / siempre dentro de la distancia.</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Relaciones espaciales temporales</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_tspatialrels"><varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname></link>: Disjunto temporal, a distancia temporal e intersecta temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
