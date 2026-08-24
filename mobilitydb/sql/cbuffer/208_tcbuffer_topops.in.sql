@@ -118,14 +118,6 @@ CREATE FUNCTION contains(stbox, tcbuffer)
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR @> (
-  PROCEDURE = contains,
-  LEFTARG = stbox, RIGHTARG = tcbuffer,
-  COMMUTATOR = <@,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION contains(tcbuffer, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
@@ -137,6 +129,12 @@ CREATE FUNCTION contains(tcbuffer, tcbuffer)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = stbox, RIGHTARG = tcbuffer,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = tcbuffer, RIGHTARG = stbox,
@@ -185,14 +183,6 @@ CREATE FUNCTION contained(stbox, tcbuffer)
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <@ (
-  PROCEDURE = contained,
-  LEFTARG = stbox, RIGHTARG = tcbuffer,
-  COMMUTATOR = @>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION contained(tcbuffer, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
@@ -204,6 +194,12 @@ CREATE FUNCTION contained(tcbuffer, tcbuffer)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = stbox, RIGHTARG = tcbuffer,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = tcbuffer, RIGHTARG = stbox,
@@ -252,14 +248,6 @@ CREATE FUNCTION overlaps(stbox, tcbuffer)
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR && (
-  PROCEDURE = overlaps,
-  LEFTARG = stbox, RIGHTARG = tcbuffer,
-  COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION overlaps(tcbuffer, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
@@ -271,6 +259,12 @@ CREATE FUNCTION overlaps(tcbuffer, tcbuffer)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = stbox, RIGHTARG = tcbuffer,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = tcbuffer, RIGHTARG = stbox,
@@ -319,14 +313,6 @@ CREATE FUNCTION same(stbox, tcbuffer)
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ~= (
-  PROCEDURE = same,
-  LEFTARG = stbox, RIGHTARG = tcbuffer,
-  COMMUTATOR = ~=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION same(tcbuffer, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
@@ -338,6 +324,12 @@ CREATE FUNCTION same(tcbuffer, tcbuffer)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = stbox, RIGHTARG = tcbuffer,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = tcbuffer, RIGHTARG = stbox,
@@ -386,14 +378,6 @@ CREATE FUNCTION adjacent(stbox, tcbuffer)
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
-  LEFTARG = stbox, RIGHTARG = tcbuffer,
-  COMMUTATOR = -|-,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION adjacent(tcbuffer, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
@@ -405,6 +389,12 @@ CREATE FUNCTION adjacent(tcbuffer, tcbuffer)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = stbox, RIGHTARG = tcbuffer,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = tcbuffer, RIGHTARG = stbox,

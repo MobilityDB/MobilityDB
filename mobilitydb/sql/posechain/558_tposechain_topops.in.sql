@@ -120,14 +120,6 @@ CREATE FUNCTION contains(stbox, tposechain)
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR @> (
-  PROCEDURE = contains,
-  LEFTARG = stbox, RIGHTARG = tposechain,
-  COMMUTATOR = <@,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION contains(tposechain, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
@@ -139,6 +131,12 @@ CREATE FUNCTION contains(tposechain, tposechain)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = stbox, RIGHTARG = tposechain,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = tposechain, RIGHTARG = stbox,
@@ -187,14 +185,6 @@ CREATE FUNCTION contained(stbox, tposechain)
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <@ (
-  PROCEDURE = contained,
-  LEFTARG = stbox, RIGHTARG = tposechain,
-  COMMUTATOR = @>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION contained(tposechain, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
@@ -206,6 +196,12 @@ CREATE FUNCTION contained(tposechain, tposechain)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = stbox, RIGHTARG = tposechain,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = tposechain, RIGHTARG = stbox,
@@ -254,14 +250,6 @@ CREATE FUNCTION overlaps(stbox, tposechain)
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR && (
-  PROCEDURE = overlaps,
-  LEFTARG = stbox, RIGHTARG = tposechain,
-  COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION overlaps(tposechain, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
@@ -273,6 +261,12 @@ CREATE FUNCTION overlaps(tposechain, tposechain)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = stbox, RIGHTARG = tposechain,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = tposechain, RIGHTARG = stbox,
@@ -321,14 +315,6 @@ CREATE FUNCTION same(stbox, tposechain)
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ~= (
-  PROCEDURE = same,
-  LEFTARG = stbox, RIGHTARG = tposechain,
-  COMMUTATOR = ~=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION same(tposechain, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
@@ -340,6 +326,12 @@ CREATE FUNCTION same(tposechain, tposechain)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = stbox, RIGHTARG = tposechain,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = tposechain, RIGHTARG = stbox,
@@ -388,14 +380,6 @@ CREATE FUNCTION adjacent(stbox, tposechain)
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
-  LEFTARG = stbox, RIGHTARG = tposechain,
-  COMMUTATOR = -|-,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 CREATE FUNCTION adjacent(tposechain, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
@@ -407,6 +391,12 @@ CREATE FUNCTION adjacent(tposechain, tposechain)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = stbox, RIGHTARG = tposechain,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = tposechain, RIGHTARG = stbox,
