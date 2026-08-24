@@ -54,27 +54,34 @@ CREATE TABLE pointcloud_schemas (
 );
 
 /*
- * The position a dimension holds is a column rather than the order the rows
- * happen to arrive in: a reload, a COPY or a parallel insert would otherwise
- * reorder the layout of a point. Stating it makes a duplicate or a gap a
- * constraint violation rather than a wrong byte offset, and the unique name
- * is what lets the X, Y, Z and M dimensions resolve unambiguously.
+ * A dimension is identified two ways, by number and by name, and both are
+ * stated rather than derived: the number is the order the dimension is stored
+ * in, which the order the rows happen to arrive in must not decide, because a
+ * reload, a COPY or a parallel insert would silently relayout a point; the
+ * name is what the X, Y, Z and M dimensions resolve from. Stating the number
+ * makes a duplicate or a gap a constraint violation rather than a wrong byte
+ * offset.
+ *
+ * No column name needs quoting in any host the tables are materialised in:
+ * `offset` is a reserved word in PostgreSQL and in DuckDB, and `position`,
+ * while usable as a column, cannot be called as a bare function in DuckDB,
+ * which an accessor mirroring the column would have to be.
  */
 CREATE TABLE pointcloud_dimensions (
   pcid            integer NOT NULL REFERENCES pointcloud_schemas(pcid)
                           ON DELETE CASCADE,
-  position        integer NOT NULL CHECK (position >= 1),
-  name            text    NOT NULL,
+  dim_no          integer NOT NULL CHECK (dim_no >= 1),
+  dim_name        text    NOT NULL,
   interpretation  text    NOT NULL
                           CHECK (interpretation IN ('int8_t','uint8_t',
                                  'int16_t','uint16_t','int32_t','uint32_t',
                                  'int64_t','uint64_t','double','float')),
-  scale           double precision NOT NULL DEFAULT 1,
-  "offset"        double precision NOT NULL DEFAULT 0,
+  dim_scale       double precision NOT NULL DEFAULT 1,
+  dim_offset      double precision NOT NULL DEFAULT 0,
   active          boolean NOT NULL DEFAULT true,
   description     text,
-  PRIMARY KEY (pcid, position),
-  UNIQUE (pcid, name)
+  PRIMARY KEY (pcid, dim_no),
+  UNIQUE (pcid, dim_name)
 );
 
 COMMENT ON TABLE  pointcloud_schemas IS
@@ -95,17 +102,17 @@ COMMENT ON TABLE  pointcloud_dimensions IS
   'from the interpretation and from the dimensions before it.';
 COMMENT ON COLUMN pointcloud_dimensions.pcid IS
   'Schema this dimension belongs to.';
-COMMENT ON COLUMN pointcloud_dimensions.position IS
-  'Order this dimension is stored in, from 1, stated rather than taken from '
-  'the order the rows arrive in.';
-COMMENT ON COLUMN pointcloud_dimensions.name IS
-  'Dimension name, unique within the schema. The X, Y, Z and M dimensions '
-  'resolve from it.';
+COMMENT ON COLUMN pointcloud_dimensions.dim_no IS
+  'Number of this dimension within the schema, from 1, which is the order it '
+  'is stored in, stated rather than taken from the order the rows arrive in.';
+COMMENT ON COLUMN pointcloud_dimensions.dim_name IS
+  'Name of this dimension, unique within the schema. The X, Y, Z and M '
+  'dimensions resolve from it.';
 COMMENT ON COLUMN pointcloud_dimensions.interpretation IS
   'Name of the numeric type a value of this dimension is stored as.';
-COMMENT ON COLUMN pointcloud_dimensions.scale IS
+COMMENT ON COLUMN pointcloud_dimensions.dim_scale IS
   'Factor a stored value is multiplied by to give the coordinate.';
-COMMENT ON COLUMN pointcloud_dimensions."offset" IS
+COMMENT ON COLUMN pointcloud_dimensions.dim_offset IS
   'Value added to a scaled stored value to give the coordinate.';
 COMMENT ON COLUMN pointcloud_dimensions.active IS
   'True when the dimension holds values.';

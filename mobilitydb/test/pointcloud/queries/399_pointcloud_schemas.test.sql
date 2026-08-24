@@ -24,7 +24,7 @@
 INSERT INTO pointcloud_schemas (pcid, srid, compression, description) VALUES
   (90, 4326, 'none', 'Three doubles');
 INSERT INTO pointcloud_dimensions
-    (pcid, position, name, interpretation, scale, "offset", active, description)
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset, active, description)
   VALUES
   (90, 1, 'X', 'double', 1, 0, true, 'Easting'),
   (90, 2, 'Y', 'double', 1, 0, true, 'Northing'),
@@ -56,31 +56,31 @@ SELECT pcpoint(999, 1, 2, 3);
 
 -- A second schema, stated the same way, to build a point of another schema with
 INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (92, 4326, 'none');
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (92, 1, 'X', 'double'), (92, 2, 'Y', 'double'), (92, 3, 'Z', 'double');
 
 -- The points of a patch are of one schema, which is the schema of the patch
 SELECT pcpatch(pcpoint(90, 1, 2, 3), pcpoint(92, 4, 5, 6));
 DELETE FROM pointcloud_schemas WHERE pcid = 92;
 
--- A position is stated once within a schema
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+-- A dimension number is stated once within a schema
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 1, 'W', 'double');
 
--- A name is stated once within a schema
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+-- A dimension name is stated once within a schema
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 4, 'X', 'double');
 
 -- An interpretation is one of those the library states
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 4, 'W', 'float128');
 
--- A position is stated from one
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+-- A dimension number is stated from one
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (90, 0, 'W', 'double');
 
 -- A dimension belongs to a schema that is stated
-INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
   (91, 1, 'X', 'double');
 
 -- What a pcid names is answered without a value of that schema in hand
@@ -93,9 +93,9 @@ SELECT pointCloudSchemaCompression(90);
 UPDATE pointcloud_schemas SET compression = 'none' WHERE pcid = 90;
 
 -- A dimension that holds no value is not counted
-UPDATE pointcloud_dimensions SET active = false WHERE pcid = 90 AND position = 3;
+UPDATE pointcloud_dimensions SET active = false WHERE pcid = 90 AND dim_no = 3;
 SELECT pointCloudSchemaNDims(90);
-UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND position = 3;
+UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND dim_no = 3;
 
 -- An unregistered pcid answers NULL rather than erroring
 SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,

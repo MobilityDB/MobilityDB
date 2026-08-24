@@ -35,12 +35,12 @@ INSERT INTO pointcloud_schemas (pcid, srid, compression, description) VALUES
   (1, 4326, 'none', 'Esquema 3D mínimo');
 
 INSERT INTO pointcloud_dimensions
-    (pcid, position, name, interpretation, scale, "offset", active, description) VALUES
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset, active, description) VALUES
   (1, 1, 'X', 'int32_t', 1, 0, true, 'Este'),
   (1, 2, 'Y', 'int32_t', 1, 0, true, 'Norte'),
   (1, 3, 'Z', 'int32_t', 1, 0, true, 'Elevación');
 </programlisting>
-			<para>El tamaño de cada dimensión y su desplazamiento dentro de un punto no aparecen porque se derivan de la interpretación, y las dimensiones X, Y, Z y M tampoco porque se resuelven a partir de los nombres. La columna <varname>position</varname> declara el orden en el que se almacenan las dimensiones, de modo que no depende del orden en el que se insertan las filas. Un esquema es global a la base de datos y suele registrarse una sola vez, al cargar los datos; el SRID es por esquema y lo heredan todos los valores que llevan ese <varname>pcid</varname>.</para>
+			<para>El tamaño de cada dimensión y su desplazamiento dentro de un punto no aparecen porque se derivan de la interpretación, y las dimensiones X, Y, Z y M tampoco porque se resuelven a partir de los nombres. La columna <varname>dim_no</varname> declara el orden en el que se almacenan las dimensiones, de modo que no depende del orden en el que se insertan las filas, y <varname>dim_name</varname> es el nombre por el que se resuelven. Ningún nombre de columna necesita comillas en ninguno de los hosts en los que se materializan estas tablas. Un esquema es global a la base de datos y suele registrarse una sola vez, al cargar los datos; el SRID es por esquema y lo heredan todos los valores que llevan ese <varname>pcid</varname>.</para>
 			<para>Una base de datos cuyos esquemas ya están registrados en el catálogo <varname>pointcloud_formats</varname> de pgPointCloud, como documento XML, sigue funcionando: ese catálogo se lee para un <varname>pcid</varname> que las dos tablas anteriores no declaren.</para>
 			<para>Tres funciones auxiliares responden lo que declara un <varname>pcid</varname> sin disponer de un valor de ese esquema y sin depender de la disposición de las tablas. Cada una responde <varname>NULL</varname> para un <varname>pcid</varname> que ningún esquema declara.</para>
 			<itemizedlist>
