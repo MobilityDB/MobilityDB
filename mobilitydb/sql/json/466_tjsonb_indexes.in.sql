@@ -83,7 +83,8 @@ CREATE OPERATOR CLASS tjsonb_rtree_ops
   FUNCTION  3 tjsonb_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
   FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal);
+  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
+  FUNCTION 11  span_gist_sortsupport(internal);
 
 /******************************************************************************/
 

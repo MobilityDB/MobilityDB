@@ -125,6 +125,7 @@ CREATE OPERATOR CLASS tquadbin_rtree_ops
   FUNCTION  3 tspatial_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
-  FUNCTION  7 stbox_gist_same(stbox, stbox, internal);
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
 
 /******************************************************************************/

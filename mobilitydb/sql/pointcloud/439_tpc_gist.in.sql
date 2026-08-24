@@ -57,6 +57,11 @@ CREATE FUNCTION tpcbox_gist_same(tpcbox, tpcbox, internal)
   AS 'MODULE_PATHNAME', 'Tpcbox_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tpcbox_gist_sortsupport(internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME', 'Tpcbox_gist_sortsupport'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tpcbox_rtree_ops
   DEFAULT FOR TYPE tpcbox USING gist AS
   STORAGE tpcbox,
@@ -110,7 +115,8 @@ CREATE OPERATOR CLASS tpcbox_rtree_ops
   FUNCTION  5  tpcbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tpcbox_gist_picksplit(internal, internal),
   FUNCTION  7  tpcbox_gist_same(tpcbox, tpcbox, internal),
-  FUNCTION  8  tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal);
+  FUNCTION  8  tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
+  FUNCTION 11 tpcbox_gist_sortsupport(internal);
 
 /*****************************************************************************/
 
@@ -211,7 +217,8 @@ CREATE OPERATOR CLASS tpcpoint_rtree_ops
   FUNCTION  8 (tpcpoint, tpcbox)
     tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
   FUNCTION  8 (tpcpoint, tpcpoint)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal);
+    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
+  FUNCTION 11 tpcbox_gist_sortsupport(internal);
 
 /*****************************************************************************
  * tpcpatch
@@ -305,6 +312,7 @@ CREATE OPERATOR CLASS tpcpatch_rtree_ops
   FUNCTION  8 (tpcpatch, tpcbox)
     tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
   FUNCTION  8 (tpcpatch, tpcpatch)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal);
+    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
+  FUNCTION 11 tpcbox_gist_sortsupport(internal);
 
 /*****************************************************************************/

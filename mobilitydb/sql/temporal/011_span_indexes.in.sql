@@ -65,6 +65,10 @@ CREATE FUNCTION span_gist_fetch(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Span_gist_fetch'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_gist_sortsupport(internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME', 'Span_gist_sortsupport'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
@@ -113,7 +117,8 @@ CREATE OPERATOR CLASS intspan_rtree_ops
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(intspan, intspan, internal),
   FUNCTION  8  span_gist_distance(internal, intspan, smallint, oid, internal),
-  FUNCTION  9  span_gist_fetch(internal);
+  FUNCTION  9  span_gist_fetch(internal),
+  FUNCTION 11  span_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -177,7 +182,8 @@ CREATE OPERATOR CLASS bigintspan_rtree_ops
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(bigintspan, bigintspan, internal),
   FUNCTION  8  span_gist_distance(internal, bigintspan, smallint, oid, internal),
-  FUNCTION  9  span_gist_fetch(internal);
+  FUNCTION  9  span_gist_fetch(internal),
+  FUNCTION 11  span_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -241,7 +247,8 @@ CREATE OPERATOR CLASS floatspan_rtree_ops
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(floatspan, floatspan, internal),
   FUNCTION  8  span_gist_distance(internal, floatspan, smallint, oid, internal),
-  FUNCTION  9  span_gist_fetch(internal);
+  FUNCTION  9  span_gist_fetch(internal),
+  FUNCTION 11  span_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -305,7 +312,8 @@ CREATE OPERATOR CLASS datespan_rtree_ops
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(datespan, datespan, internal),
   FUNCTION  8  span_gist_distance(internal, datespan, smallint, oid, internal),
-  FUNCTION  9  span_gist_fetch(internal);
+  FUNCTION  9  span_gist_fetch(internal),
+  FUNCTION 11  span_gist_sortsupport(internal);
 
 /******************************************************************************/
 
@@ -369,7 +377,8 @@ CREATE OPERATOR CLASS tstzspan_rtree_ops
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal),
   FUNCTION  8  span_gist_distance(internal, tstzspan, smallint, oid, internal),
-  FUNCTION  9  span_gist_fetch(internal);
+  FUNCTION  9  span_gist_fetch(internal),
+  FUNCTION 11  span_gist_sortsupport(internal);
 
 /******************************************************************************
  * Quad-tree SP-GiST indexes

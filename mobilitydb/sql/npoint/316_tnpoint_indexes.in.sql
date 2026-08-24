@@ -122,7 +122,8 @@ CREATE OPERATOR CLASS tnpoint_rtree_ops
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8 tnpoint_gist_distance(internal, tnpoint, smallint, oid, internal);
+  FUNCTION  8 tnpoint_gist_distance(internal, tnpoint, smallint, oid, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
 
 /******************************************************************************/
 

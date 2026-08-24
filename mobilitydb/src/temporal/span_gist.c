@@ -51,6 +51,7 @@
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/spanset.h"
 #include "pg_temporal/temporal.h"
+#include "pg_temporal/index_sortsupport.h"
 
 /*****************************************************************************
  * GiST consistent methods
@@ -818,6 +819,64 @@ Span_gist_fetch(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   PG_RETURN_POINTER(entry);
+}
+
+/*****************************************************************************
+ * GiST sort support method
+ *****************************************************************************/
+
+
+/**
+ * @brief Convert a span into its abbreviated key
+ */
+static Datum
+Span_abbrev_convert(Datum original, SortSupport ssup)
+{
+  (void) ssup;
+  return UInt64GetDatum(span_sort_hash(DatumGetSpanP(original)));
+}
+
+/**
+ * @brief Compare two spans for the sorted index build
+ */
+static int
+Span_cmp_full(Datum x, Datum y, SortSupport ssup)
+{
+  const Span *s1 = DatumGetSpanP(x);
+  const Span *s2 = DatumGetSpanP(y);
+  uint64 hash1 = span_sort_hash(s1);
+  uint64 hash2 = span_sort_hash(s2);
+  (void) ssup;
+  if (hash1 > hash2)
+    return 1;
+  if (hash1 < hash2)
+    return -1;
+  /* Spans sharing a lower bound are ordered by their own comparison, so that
+   * the sort is deterministic */
+  return span_cmp(s1, s2);
+}
+
+PGDLLEXPORT Datum Span_gist_sortsupport(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_gist_sortsupport);
+/**
+ * @brief GiST sort support method for spans
+ */
+Datum
+Span_gist_sortsupport(PG_FUNCTION_ARGS)
+{
+  SortSupport ssup = (SortSupport) PG_GETARG_POINTER(0);
+  ssup->comparator = Span_cmp_full;
+  ssup->ssup_extra = NULL;
+  /* An abbreviated key is a whole Datum, so it is only available where a
+   * Datum is 64 bits wide */
+  if (ssup->abbreviate && sizeof(Datum) == 8)
+  {
+    ssup->comparator = sortsupport_abbrev_cmp;
+    ssup->abbrev_converter = Span_abbrev_convert;
+    ssup->abbrev_abort = sortsupport_abbrev_abort;
+    ssup->abbrev_full_comparator = Span_cmp_full;
+  }
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************/
