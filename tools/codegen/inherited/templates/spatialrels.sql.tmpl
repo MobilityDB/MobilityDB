@@ -160,6 +160,13 @@ CREATE FUNCTION aIntersects(geometry, {TEMP})
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aIntersects($1, {CV2}) $$;
 
+-- @IF native_ever_intersects
+CREATE FUNCTION eIntersects({TEMP}, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eintersects_{TEMP}_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- @ENDIF
+-- @IFNOT native_ever_intersects
 -- @IF index_support
 CREATE FUNCTION eIntersects({TEMP}, geometry)
   RETURNS boolean
@@ -172,6 +179,7 @@ CREATE FUNCTION eIntersects({TEMP}, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eIntersects({CV1}, $2) $$;
+-- @ENDIF
 -- @ENDIF
 CREATE FUNCTION aIntersects({TEMP}, geometry)
   RETURNS boolean

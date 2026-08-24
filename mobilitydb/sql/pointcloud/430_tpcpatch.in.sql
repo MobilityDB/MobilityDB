@@ -573,15 +573,6 @@ CREATE FUNCTION minusGeometry(tpcpatch, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Spatial relationships (tpcpatch ↔ geometry)
- ******************************************************************************/
-
-CREATE FUNCTION eIntersects(tpcpatch, geometry)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpcpatch_eIntersects_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************
  * Per-point access (SRF)
  ******************************************************************************/
 

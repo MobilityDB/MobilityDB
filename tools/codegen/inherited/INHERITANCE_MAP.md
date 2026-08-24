@@ -569,8 +569,8 @@ Reading the table:
   ⭐ A family declares the matrix of ITS target rather than a fixed six by three:
   `tpose`, `tposechain` and `tnpoint` declare the 13 cells the `tpoint` entry
   declares, since a moving point neither contains nor covers a geometry and two
-  moving points do not touch. `tpcpoint` declares that same matrix; `tpcpatch`
-  narrows to `tDisjoint`, `tIntersects` and `tDwithin`.
+  moving points do not touch. `tpcpoint` declares that same matrix; `tpcpatch`,
+  whose target is `tgeometry`, declares every predicate in every direction.
   ⛔ A delegating family declares the matrix ITS TARGET declares, and a dimension a
   schema may or may not state is not a property of the type: a point cloud schema
   resolves X/Y/Z/M by NAME (`pc_schema_check_xyzm`), so one declaring X and Y alone
@@ -578,10 +578,16 @@ Reading the table:
   engine's `The tgeompoint cannot have Z dimension`, exactly as a 3-D `tgeompoint`
   does.
 - **`spatialrels` SQL** (the ever/always wrapper *file*) is generated for the
-  **cast-delegated families** (h3 262, quadbin 362, npoint 320, tpcpoint 443) via
-  the `subtypes:` `spatialrels` behaviour — a cell-boundary→`tgeometry` cast for
-  h3/quadbin, a `tnpoint::tgeompoint` / `tpcpoint::tgeompoint` cast for the two
-  point families. cbuffer 212, pose 112 and
+  **cast-delegated families** (h3 262, quadbin 362, npoint 320, tpcpoint 443,
+  tpcpatch 449) via the `subtypes:` `spatialrels` behaviour — a
+  cell-boundary→`tgeometry` cast for h3/quadbin, a `tnpoint::tgeompoint` /
+  `tpcpoint::tgeompoint` cast for the two point families, a
+  `tpcpatch::tgeometry` cast for the patch. ⛔ `native_ever_intersects` is the
+  additive flag a family sets when its type file already declares
+  `eIntersects(<temp>, geometry)` over a kernel that reads the value directly —
+  `tpcpatch` walks the points of each instant and short-circuits — so the emitted
+  file covers 35 of the 36 cells and leaves that one where it is. cbuffer 212,
+  pose 112 and
   rgeo 170 stay hand — even though their underlying **C** ever/always kernel
   dispatch is generated (next bullet).
   ⛔ A family whose VALUES are positions carries `point_target: true`, the additive

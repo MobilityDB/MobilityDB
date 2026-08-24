@@ -238,6 +238,32 @@ subtypes:
     brief: "temporal pgpointcloud patches"
     bin:   400
     category: tspatial
+    # A patch is a cluster of points, so its geometry is the multipoint of the
+    # positions its points occupy and the temporal geometry is the cast target
+    # its geometry names. The family declares the matrix that target declares,
+    # every predicate in every direction; a schema carrying a Z dimension meets
+    # the engine's refusal of a Z value in a planar relationship.
+    convert: "@N@::@extschema@.tgeometry"
+    # `eIntersects(tpcpatch, geometry)` is emitted as a C wrapper over
+    # `Eintersects_tpcpatch_geo`, whose kernel walks the points of each instant
+    # and short-circuits on the first hit instead of materializing a multipoint.
+    native_ever_intersects: true
     positions:
       compops: 34
-    files: [compops]
+      # The band's last free slot: 447 is the point distance file and 450 opens
+      # the next band, so the ever/always file sits above the temporal one it
+      # does not depend on.
+      spatialrels: 49
+    doc:
+      spatialrels: |-
+        /**
+         * @file
+         * @brief Ever/always spatial relationships for temporal pgpointcloud
+         *   patches
+         *
+         * Each function converts its patch operand to the temporal geometry of
+         * the multipoints its patches occupy, through the standard
+         * tpcpatch::tgeometry cast, and delegates to the temporal geometry
+         * ever/always spatial relationship.
+         */
+    files: [compops, spatialrels]

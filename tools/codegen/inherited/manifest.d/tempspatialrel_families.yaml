@@ -229,12 +229,15 @@ tempspatialrel_families:
        */
 
   # A tpcpatch reaches the geometry engine as the multipoint of the positions
-  # its points occupy. Like a tpcpoint it carries the Z its schema declares, so
-  # it declares the three predicates a Z-carrying value can answer.
+  # its points occupy, so the temporal geometry is its cast target and it
+  # declares the matrix that target declares: every predicate in every
+  # direction, an area-valued family keeping what a point-valued one narrows.
+  # A schema carrying a Z dimension meets the engine's refusal of a Z value in
+  # a planar relationship.
   - family:  tpcpatch
     impl:    cast
     file:    mobilitydb/sql/pointcloud/448_tpcpatch_tempspatialrels.in.sql
-    predicates: [tDisjoint, tIntersects, tDwithin]
+    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
     directions:
       - {l: geometry, r: tpcpatch}
       - {l: tpcpatch, r: geometry}

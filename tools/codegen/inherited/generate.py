@@ -97,7 +97,13 @@ BANNER = (
 # that target declares — a moving point neither contains nor covers a geometry,
 # and two moving points do not touch. A cell-index family, whose value is a
 # boundary polygon, omits the flag and keeps all three directions.
-DEFAULT_FALSE_FLAGS = {"front_back", "index_support", "point_target"}
+# `native_ever_intersects`: the family answers `eIntersects(<temp>, geometry)`
+# from a kernel that reads the value directly — a point cloud patch walks the
+# points of each instant and short-circuits on the first hit — so that one cell
+# is emitted as a C wrapper over `Eintersects_<temp>_geo` while every other cell
+# converts and delegates.
+DEFAULT_FALSE_FLAGS = {"front_back", "index_support", "point_target",
+                       "native_ever_intersects"}
 
 
 def apply_conditionals(text: str, sub: dict) -> str:
