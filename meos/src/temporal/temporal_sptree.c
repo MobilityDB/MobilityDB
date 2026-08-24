@@ -560,15 +560,32 @@ sptree_create_tpcbox(SPTreeKind kind)
 
 /**
  * @brief Return a new node holding a bounding box
+ * @details The node holds no child slots. A node acquires them when a descent
+ * first passes through it, so a node that never gains a child never holds one.
  */
 static SPNode *
 spnode_make(const SPTree *sptree, const void *box, int64 id)
 {
   SPNode *node = palloc0(sizeof(SPNode) + sptree->boxsize);
   node->id = id;
-  node->children = palloc0((size_t) sptree->nchild * sizeof(SPNode *));
   memcpy(node->centroid, box, sptree->boxsize);
   return node;
+}
+
+/**
+ * @brief Return the child slots of a node, creating them on first use
+ * @details The slots a node holds are as many as the quadrants of the space it
+ * partitions, which for an STBox is 64 at 6 dimensions and 256 at 8, while the
+ * nodes a tree ends in hold none of them. Reading the slots of a node that has
+ * no child therefore spends the whole array on nothing, so the array is
+ * created by the descent that places the first child rather than by the node.
+ */
+static SPNode **
+spnode_children(const SPTree *sptree, SPNode *node)
+{
+  if (! node->children)
+    node->children = palloc0((size_t) sptree->nchild * sizeof(SPNode *));
+  return node->children;
 }
 
 /**
@@ -671,8 +688,9 @@ sptree_insert(SPTree *sptree, void *box, int64 id)
   int level = 0;
   while (*slot != NULL)
   {
-    slot = &(*slot)->children[spnode_child(sptree, (*slot)->centroid, box,
-      level)];
+    SPNode *cur = *slot;
+    slot = &spnode_children(sptree, cur)[spnode_child(sptree, cur->centroid,
+      box, level)];
     level++;
   }
   *slot = spnode_make(sptree, box, id);
@@ -874,11 +892,12 @@ spnode_build(SPBuild *build, int from, int count, int level)
   {
     int *counts = palloc((size_t) sptree->nchild * sizeof(int));
     spitems_bucket(build, from, rest, node->centroid, level, counts);
+    SPNode **children = spnode_children(sptree, node);
     int offset = 0;
     for (int c = 0; c < sptree->nchild; c++)
     {
       if (counts[c] > 0)
-        node->children[c] = spnode_build(build, from + offset, counts[c],
+        children[c] = spnode_build(build, from + offset, counts[c],
           level + 1);
       offset += counts[c];
     }
@@ -990,7 +1009,8 @@ spnode_search(const SPTree *sptree, const SPNode *node, const void *nodebox,
     int64 id = node->id;
     meos_array_add(result, &id);
   }
-  for (int quadrant = 0; quadrant < sptree->nchild; quadrant++)
+  for (int quadrant = 0; node->children && quadrant < sptree->nchild;
+    quadrant++)
   {
     const SPNode *child = node->children[quadrant];
     if (! child)
@@ -1109,7 +1129,8 @@ spnode_join(const SPTree *sptree1, const SPNode *node1, const SPTree *sptree2,
     meos_array_add(result, &id1);
     meos_array_add(result, &id2);
   }
-  for (int quadrant = 0; quadrant < sptree1->nchild; quadrant++)
+  for (int quadrant = 0; node1->children && quadrant < sptree1->nchild;
+    quadrant++)
   {
     const SPNode *child = node1->children[quadrant];
     if (child)
@@ -1362,19 +1383,22 @@ spnode_free(const SPTree *sptree, SPNode *node)
   while (top > 0)
   {
     SPNode *cur = stack[--top];
-    for (int i = 0; i < sptree->nchild; i++)
+    if (cur->children)
     {
-      SPNode *child = cur->children[i];
-      if (! child)
-        continue;
-      if (top == cap)
+      for (int i = 0; i < sptree->nchild; i++)
       {
-        cap *= 2;
-        stack = repalloc(stack, cap * sizeof(SPNode *));
+        SPNode *child = cur->children[i];
+        if (! child)
+          continue;
+        if (top == cap)
+        {
+          cap *= 2;
+          stack = repalloc(stack, cap * sizeof(SPNode *));
+        }
+        stack[top++] = child;
       }
-      stack[top++] = child;
+      pfree(cur->children);
     }
-    pfree(cur->children);
     pfree(cur);
   }
   pfree(stack);
@@ -1418,11 +1442,12 @@ spnode_stats(const SPTree *sptree, const SPNode *node, int level, int *entries,
   {
     SPNodeLevel cur = stack[--top];
     (*entries)++;
-    *bytes += (int64) (sizeof(SPNode) + sptree->boxsize +
-      (size_t) sptree->nchild * sizeof(SPNode *));
+    *bytes += (int64) (sizeof(SPNode) + sptree->boxsize);
+    if (cur.node->children)
+      *bytes += (int64) ((size_t) sptree->nchild * sizeof(SPNode *));
     if (cur.level > *height)
       *height = cur.level;
-    for (int i = 0; i < sptree->nchild; i++)
+    for (int i = 0; cur.node->children && i < sptree->nchild; i++)
     {
       const SPNode *child = cur.node->children[i];
       if (! child)
@@ -1742,7 +1767,8 @@ sptree_nn_cursor_next(SPNNCursor *cursor, int64 *id_out, double *dist_out)
     sptree_box_nodebox(sptree, node->centroid, centroidbox);
     emit.dist = sptree_nodebox_distance(sptree, cursor->query, centroidbox);
     spnn_heap_push(cursor, &emit);
-    for (int quadrant = 0; quadrant < sptree->nchild; quadrant++)
+    for (int quadrant = 0; node->children && quadrant < sptree->nchild;
+      quadrant++)
     {
       const SPNode *child = node->children[quadrant];
       if (! child)
