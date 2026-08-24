@@ -107,84 +107,84 @@ FROM ordered a JOIN ordered b ON b.rn = a.rn + 1;
  t
 (1 row)
 
-SELECT pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) =
-  pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
+SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) =
+  pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) =
-  pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0));
+SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) =
+  pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0));
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <>
-  pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
+SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <>
+  pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <>
-  pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0));
+SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <>
+  pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT cmp(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
-  pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) = 0;
+SELECT cmp(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
+  pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) = 0;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT cmp(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
-  pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) <> 0;
+SELECT cmp(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
+  pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) <> 0;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <
-    pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) =
-  (cmp(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
-    pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) < 0);
+SELECT (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <
+    pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) =
+  (cmp(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
+    pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) < 0);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) >
-    pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) =
-  (cmp(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
-    pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) > 0);
+SELECT (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) >
+    pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) =
+  (cmp(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
+    pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) > 0);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <
-    pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) =
-  (pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)) >
-    pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+SELECT (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <
+    pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0))) =
+  (pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)) >
+    pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <
-  pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
+SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <
+  pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <=
-  pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
+SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <=
+  pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
  ?column? 
 ----------
  t
@@ -192,9 +192,9 @@ SELECT pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)) <=
 
 WITH v(pa) AS (
   VALUES
-    (pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))),
-    (pcpatch(1, pcpoint(1, 3.0, 3.0, 3.0), pcpoint(1, 4.0, 4.0, 4.0))),
-    (pcpatch(1, pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)))
+    (pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))),
+    (pcpatch(pcpoint(1, 3.0, 3.0, 3.0), pcpoint(1, 4.0, 4.0, 4.0))),
+    (pcpatch(pcpoint(1, 5.0, 5.0, 5.0), pcpoint(1, 6.0, 6.0, 6.0)))
 ), ordered AS (
   SELECT pa, row_number() OVER (ORDER BY pa) AS rn FROM v
 )

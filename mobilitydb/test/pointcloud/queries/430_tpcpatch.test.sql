@@ -30,11 +30,11 @@
 -- Ergonomic pcpatch constructor — same value as the verbose form.
 -------------------------------------------------------------------------------
 
-SELECT pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))::text =
+SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))::text =
   (:patch1)::text;
 -- inline use inside tpcpatch + numPoints round-trip
 SELECT numPoints(tpcpatch(
-  pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
+  pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
   '2024-01-01'::timestamptz)) = 2;
 
 -------------------------------------------------------------------------------
@@ -42,10 +42,10 @@ SELECT numPoints(tpcpatch(
 -------------------------------------------------------------------------------
 
 -- pcid 1 is registered with SRID 0 in the test fixture.
-SELECT SRID(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+SELECT SRID(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
 -- A patch and a point sharing the same pcid resolve the same SRID: both
 -- go through the same schema lookup.
-SELECT SRID(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) =
+SELECT SRID(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) =
   SRID(pcpoint(1, 1.0, 1.0, 1.0));
 
 -------------------------------------------------------------------------------

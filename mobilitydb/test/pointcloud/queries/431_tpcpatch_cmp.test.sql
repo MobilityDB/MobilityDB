@@ -37,11 +37,11 @@
 INSERT INTO pointcloud_formats (pcid, srid, schema)
 SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
 
-\set p1 'tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), ''2024-01-01''::timestamptz)'
-\set p1_dup 'tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), ''2024-01-01''::timestamptz)'
-\set p2 'tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), ''2024-01-01''::timestamptz)'
-\set p3 'tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), ''2024-01-01''::timestamptz)'
-\set p_pcid2 'tpcpatch(pcpatch(2, pcpoint(2, 1.0, 1.0, 1.0)), ''2024-01-01''::timestamptz)'
+\set p1 'tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0)), ''2024-01-01''::timestamptz)'
+\set p1_dup 'tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0)), ''2024-01-01''::timestamptz)'
+\set p2 'tpcpatch(pcpatch(pcpoint(1, 2.0, 2.0, 2.0)), ''2024-01-01''::timestamptz)'
+\set p3 'tpcpatch(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), ''2024-01-01''::timestamptz)'
+\set p_pcid2 'tpcpatch(pcpatch(pcpoint(2, 1.0, 1.0, 1.0)), ''2024-01-01''::timestamptz)'
 
 -------------------------------------------------------------------------------
 -- Reflexivity, equality, and inequality

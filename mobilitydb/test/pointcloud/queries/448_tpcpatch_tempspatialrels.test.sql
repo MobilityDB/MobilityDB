@@ -20,16 +20,16 @@
 -- three predicates its Z-carrying values can answer.
 
 \set square 'geometry ''SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'''
-\set inside 'tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), ''2001-01-01''::timestamptz)'
-\set straddling 'tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), ''2001-01-01''::timestamptz)'
-\set far 'tpcpatch(pcpatch(1, pcpoint(1, 9, 9, 9)), ''2001-01-02''::timestamptz)'
+\set inside 'tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), ''2001-01-01''::timestamptz)'
+\set straddling 'tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), ''2001-01-01''::timestamptz)'
+\set far 'tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), ''2001-01-02''::timestamptz)'
 
 -------------------------------------------------------------------------------
 -- The geometry a patch reaches the engine as
 -------------------------------------------------------------------------------
 
-SELECT ST_AsText(geometry(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
-SELECT ST_AsText(pcpatch(1, pcpoint(1, 1, 1, 1))::geometry);
+SELECT ST_AsText(geometry(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
+SELECT ST_AsText(pcpatch(pcpoint(1, 1, 1, 1))::geometry);
 SELECT asText(:straddling::tgeometry);
 
 -------------------------------------------------------------------------------

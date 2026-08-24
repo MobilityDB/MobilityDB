@@ -1,88 +1,88 @@
-SELECT ST_AsText(geometry(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
+SELECT ST_AsText(geometry(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
            st_astext            
 --------------------------------
  MULTIPOINT Z ((1 1 1),(2 2 2))
 (1 row)
 
-SELECT ST_AsText(pcpatch(1, pcpoint(1, 1, 1, 1))::geometry);
+SELECT ST_AsText(pcpatch(pcpoint(1, 1, 1, 1))::geometry);
        st_astext        
 ------------------------
  MULTIPOINT Z ((1 1 1))
 (1 row)
 
-SELECT asText(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), '2001-01-01'::timestamptz)::tgeometry);
+SELECT asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), '2001-01-01'::timestamptz)::tgeometry);
                            astext                            
 -------------------------------------------------------------
  MULTIPOINT Z ((1 1 1),(9 9 9))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tIntersects(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz)));
+SELECT asText(tIntersects(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz)));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tpcpatch(pcpatch(1, pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tIntersects(tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
              astext             
 --------------------------------
  f@Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDisjoint(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDisjoint(tpcpatch(pcpatch(1, pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
              astext             
 --------------------------------
  t@Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tIntersects(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDisjoint(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tDisjoint(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', 0.0));
+SELECT asText(tDwithin(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', 0.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Point(1 2)', 2.0));
+SELECT asText(tDwithin(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Point(1 2)', 2.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Point(1 5)', 2.0));
+SELECT asText(tDwithin(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), geometry 'SRID=0;Point(1 5)', 2.0));
              astext             
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tDwithin(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), 0.0));
+SELECT asText(tDwithin(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), 0.0));
              astext             
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tIntersects(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT asText(tIntersects(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
                               astext                              
 ------------------------------------------------------------------
  [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
@@ -154,6 +154,6 @@ SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(PC_P
 (1 row)
 
 /* Errors: a schema carrying Z in a planar relationship */
-SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz));
+SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz));
 ERROR:  The tgeometry cannot have Z dimension
 CONTEXT:  SQL function "tcontains" statement 1
