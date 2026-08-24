@@ -2259,6 +2259,30 @@ dist2d_trgeoseqset_trgeoseqset(const TSequenceSet *ss1, const TSequenceSet *ss2,
 }
 
 /**
+ * @brief Ensure that the closest-feature walk can read a reference geometry
+ * @details The sequence kernels of this file read the body as an @p LWPOLY --
+ * the closest-feature walk is written on a convex polygon -- and answer nothing
+ * for a reference geometry of another type, which the constructor nevertheless
+ * accepts: a polyhedral surface is a legal reference geometry.  Reporting it
+ * here is what keeps such a pair from reaching a cast that answers NULL and a
+ * walk that reads it.
+ * @note The INSTANT paths need no such reference: they place the body with
+ * #pose_apply_geo and measure it whole, so they answer for any body and are
+ * left unguarded.
+ */
+static bool
+ensure_trgeo_ref_walkable(const GSERIALIZED *ref_gs)
+{
+  uint32_t type = gserialized_get_type(ref_gs);
+  if (type == POLYGONTYPE)
+    return true;
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "The temporal distance of a rigid geometry with a reference geometry of "
+    "type %s is not supported", lwtype_name(type));
+  return false;
+}
+
+/**
  * @ingroup meos_rgeo_dist
  * @brief Return the temporal distance between a temporal rigid geometry and a
  * geometry/geography point
@@ -2285,6 +2309,9 @@ tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
    * from the temporal value because a sequence set stores it once and not in
    * each of its composing sequences */
   const GSERIALIZED *ref_gs = trgeo_geom_p(temp);
+
+  if (temp->subtype != TINSTANT && ! ensure_trgeo_ref_walkable(ref_gs))
+    return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -2452,6 +2479,14 @@ tdistance_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
   if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
     &sync1, &sync2))
     return NULL;
+
+  if (sync1->subtype != TINSTANT &&
+      (! ensure_trgeo_ref_walkable(ref_gs1) ||
+       ! ensure_trgeo_ref_walkable(ref_gs2)))
+  {
+    pfree(sync1); pfree(sync2);
+    return NULL;
+  }
 
   Temporal *result;
   assert(temptype_subtype(sync1->subtype));
