@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: sptree_search_temporal_dedup</title>
+<title>MobilityDB: spnode_children</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -98,7 +98,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a6bb7d40a2685cc0e76c5e727d2f9443a.html#a6bb7d40a2685cc0e76c5e727d2f9443a">SPNNEntry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a2b9b1532da07230eb2863bbd0b6b1caf.html#a2b9b1532da07230eb2863bbd0b6b1caf">spnode_build</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a45d626922a250011991a22730286680f.html#a45d626922a250011991a22730286680f">spnode_child</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a1101e8fcfaa979d85e645688beeb7773.html#a1101e8fcfaa979d85e645688beeb7773">spnode_children</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__sptree_8c_a1101e8fcfaa979d85e645688beeb7773.html#a1101e8fcfaa979d85e645688beeb7773">spnode_children</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_adc1d4f1d0b9e17b699c30b92a4a0a28d.html#adc1d4f1d0b9e17b699c30b92a4a0a28d">spnode_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a30c6c7939580f1c7f97265861325f2b3.html#a30c6c7939580f1c7f97265861325f2b3">spnode_join</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_ac95685834483a27c37abb4a6fec8b0a9.html#ac95685834483a27c37abb4a6fec8b0a9">spnode_make</a></td></tr>
@@ -129,7 +129,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_gad025a363390e1854419707c9aaf496c6.html#gad025a363390e1854419707c9aaf496c6">sptree_num_entries</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga7d765874fe7316bef6f3eedaf12b2c64.html#ga7d765874fe7316bef6f3eedaf12b2c64">sptree_search</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga6759384d4407fe195e9d52ad8aced6da.html#ga6759384d4407fe195e9d52ad8aced6da">sptree_search_temporal</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__sptree_8c_a01cc2a48f647f9da9c8aeb5203c100b9.html#a01cc2a48f647f9da9c8aeb5203c100b9">sptree_search_temporal_dedup</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a01cc2a48f647f9da9c8aeb5203c100b9.html#a01cc2a48f647f9da9c8aeb5203c100b9">sptree_search_temporal_dedup</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_ac8de139a018147c83d373a57b184a55f.html#ac8de139a018147c83d373a57b184a55f">sptree_set_dims</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_ae9080aab18749591a8a73f20c8e74831.html#ae9080aab18749591a8a73f20c8e74831">stbox_box_dims</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a02c4c5b892bf8037b323973a7a554914.html#a02c4c5b892bf8037b323973a7a554914">stbox_get_quadrant</a></td></tr>
@@ -151,14 +151,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a01cc2a48f647f9da9c8aeb5203c100b9" name="a01cc2a48f647f9da9c8aeb5203c100b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a01cc2a48f647f9da9c8aeb5203c100b9">&#9670;&#160;</a></span>sptree_search_temporal_dedup()</h2>
+<a id="a1101e8fcfaa979d85e645688beeb7773" name="a1101e8fcfaa979d85e645688beeb7773"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1101e8fcfaa979d85e645688beeb7773">&#9670;&#160;</a></span>spnode_children()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int sptree_search_temporal_dedup </td>
+          <td class="memname">static <a class="el" href="structSPNode.html">SPNode</a> ** spnode_children </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structSPTree.html">SPTree</a> *&#160;</td>
           <td class="paramname"><em>sptree</em>, </td>
@@ -166,26 +169,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="meos_8h_a87fac56528d5e990683a4c6b1a1ceac9.html#a87fac56528d5e990683a4c6b1a1ceac9">IndexSearchOp</a>&#160;</td>
-          <td class="paramname"><em>op</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>maxboxes</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>result</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structSPNode.html">SPNode</a> *&#160;</td>
+          <td class="paramname"><em>node</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -193,7 +178,15 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return the child slots of a node, creating them on first use. </p>
+<p >The slots a node holds are as many as the quadrants of the space it partitions, which for an <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> is 64 at 6 dimensions and 256 at 8, while the nodes a tree ends in hold none of them. Reading the slots of a node that has no child therefore spends the whole array on nothing, so the array is created by the descent that places the first child rather than by the node. </p>
 
 </div>
 </div>
