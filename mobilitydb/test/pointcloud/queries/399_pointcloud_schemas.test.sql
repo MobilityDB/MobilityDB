@@ -35,6 +35,34 @@ INSERT INTO pointcloud_dimensions
 -- the rendered coordinates are what states that the schema resolved.
 SELECT asMFJSON(tpcpoint '230000005A000000000000000000F03F00000000000000400000000000000840000000@2024-01-01');
 
+-- A value is BUILT from the schema the rows state, and not only read: the
+-- constructors resolve the schema the way the readers do, so a schema stated
+-- in SQL needs no XML document for a value of it to exist. The coordinates
+-- are read back rather than the text form, which is the stored bytes and
+-- reads alike under a schema that does not describe them.
+SELECT getX(pcpoint(90, 1, 2, 3)), getY(pcpoint(90, 1, 2, 3)),
+  getZ(pcpoint(90, 1, 2, 3));
+SELECT pcid(pcpoint(90, 1, 2, 3)), SRID(pcpoint(90, 1, 2, 3));
+
+-- A patch of that schema is built from the points of it
+SELECT ST_AsText(geometry(pcpatch(90, pcpoint(90, 1, 2, 3),
+  pcpoint(90, 4, 5, 6))));
+
+-- The number of coordinates is the number of dimensions the schema states
+SELECT pcpoint(90, 1, 2);
+
+-- A schema no row states and no XML document describes builds nothing
+SELECT pcpoint(999, 1, 2, 3);
+
+-- A second schema, stated the same way, to read the points of a patch against
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (92, 4326, 'none');
+INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
+  (92, 1, 'X', 'double'), (92, 2, 'Y', 'double'), (92, 3, 'Z', 'double');
+
+-- Every point of a patch is of the schema the patch states
+SELECT pcpatch(90, pcpoint(92, 1, 2, 3));
+DELETE FROM pointcloud_schemas WHERE pcid = 92;
+
 -- A position is stated once within a schema
 INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
   (90, 1, 'W', 'double');

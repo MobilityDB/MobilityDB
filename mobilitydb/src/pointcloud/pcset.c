@@ -39,9 +39,12 @@
  * @c getDim) that build on top of the PCSCHEMA cache.
  */
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
+#include <utils/array.h>
 /* pgpointcloud */
 #include "pc_api.h"
 /* MEOS */
@@ -54,7 +57,71 @@
 #include "pointcloud/meos_schema_hook.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"  /* PG_RETURN_GSERIALIZED_P */
+#include "pg_temporal/type_util.h"  /* datumarr_extract */
 #include "pg_pointcloud/schema_cache.h"
+
+/*****************************************************************************
+ * Constructors
+ *****************************************************************************/
+
+/**
+ * @brief Maximum number of coordinates a pcpoint constructor call carries,
+ *   which is the number of arguments of its widest SQL signature
+ */
+#define PCPOINT_MAX_COORDS 3
+
+PGDLLEXPORT Datum Pcpoint_make(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_make);
+/**
+ * @ingroup mobilitydb_pointcloud_base_constructor
+ * @brief Return a pcpoint from a point cloud identifier and the coordinates
+ *   of the dimensions of the schema it names
+ * @sqlfn pcpoint()
+ */
+Datum
+Pcpoint_make(PG_FUNCTION_ARGS)
+{
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(0);
+  int count = PG_NARGS() - 1;
+  assert(count > 0 && count <= PCPOINT_MAX_COORDS);
+  double values[PCPOINT_MAX_COORDS];
+  for (int i = 0; i < count; i++)
+    values[i] = PG_GETARG_FLOAT8(i + 1);
+  PG_RETURN_PCPOINT_P(pcpoint_make(pcid, values, count));
+}
+
+PGDLLEXPORT Datum Pcpatch_make(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_make);
+/**
+ * @ingroup mobilitydb_pointcloud_base_constructor
+ * @brief Return a pcpatch from a point cloud identifier and an array of
+ *   pcpoints of the schema it names
+ * @sqlfn pcpatch()
+ */
+Datum
+Pcpatch_make(PG_FUNCTION_ARGS)
+{
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  int count;
+  Pcpoint **points = (Pcpoint **) datumarr_extract(array, &count);
+  /* The points state the schema the patch is built from, so a pcid the points
+   * disagree with would state a schema the value does not carry. The points
+   * agreeing among themselves is what pcpatch_make ensures */
+  uint32_t pcid_pt = (count > 0) ? pcpoint_get_pcid(points[0]) : pcid;
+  if (pcid_pt != pcid)
+  {
+    pfree(points);
+    PG_FREE_IF_COPY(array, 1);
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The points must be of the schema the patch states: %u vs %u",
+        pcid_pt, pcid)));
+  }
+  Pcpatch *result = pcpatch_make((const Pcpoint **) points, count);
+  pfree(points);
+  PG_FREE_IF_COPY(array, 1);
+  PG_RETURN_PCPATCH_P(result);
+}
 
 /*****************************************************************************
  * pcid accessors

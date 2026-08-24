@@ -30,10 +30,16 @@
 #include <common/hashfn.h>
 /* PostGIS */
 #include <liblwgeom.h>       /* parse_hex, deparse_hex */
+/* pgPointCloud */
+#include "pc_api.h"
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_pointcloud.h>
 #include "temporal/temporal.h"
+#include "pointcloud/pcpoint.h"
+#include "pointcloud/meos_schema_hook.h"
+#include "pointcloud/pgsql_compat.h"
 
 /*****************************************************************************
  * Reserved tail
@@ -247,6 +253,65 @@ pcpatch_as_hexwkb(const Pcpatch *pa)
 /*****************************************************************************
  * Constructor + accessors
  *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_base_constructor
+ * @brief Return a pcpatch from an array of pcpoints
+ * @param[in] points Array of points, all of the same schema
+ * @param[in] count Number of points
+ * @return On error return @p NULL
+ * @note The schema is resolved through the MEOS cache, so a schema stated in
+ *   SQL and one parsed from an XML document build a value alike.
+ * @csqlfn #Pcpatch_make()
+ */
+Pcpatch *
+pcpatch_make(const Pcpoint **points, int count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(points, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  for (int i = 0; i < count; i++)
+    VALIDATE_NOT_NULL(points[i], NULL);
+  for (int i = 1; i < count; i++)
+    if (! ensure_same_pcid_pcpoint(points[0], points[i]))
+      return NULL;
+  uint32_t pcid = pcpoint_get_pcid(points[0]);
+  const PCSCHEMA *schema = meos_pc_schema(pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pcid);
+    return NULL;
+  }
+
+  PCPOINTLIST *pl = pc_pointlist_make(count);
+  for (int i = 0; i < count; i++)
+  {
+    PCPOINT *pt = meos_pc_point_deserialize(
+      (const SERIALIZED_POINT *) points[i], schema);
+    if (! pt)
+    {
+      pc_pointlist_free(pl);
+      return NULL;
+    }
+    pc_pointlist_add_point(pl, pt);
+  }
+  PCPATCH *pa = pc_patch_from_pointlist(pl);
+  pc_pointlist_free(pl);
+  if (! pa)
+    return NULL;
+  Pcpatch *result = (Pcpatch *) meos_pc_patch_serialize(pa, NULL);
+  pc_patch_free(pa);
+  if (! result)
+    return NULL;
+  /* Zero the reserved tail described at the top of this file so that two
+   * patches holding the same points hold the same bytes, as pcpatch_hex_out
+   * prints them */
+  size_t meaningful = pcpatch_meaningful_size(result);
+  memset(((uint8_t *) result) + meaningful, 0, VARSIZE(result) - meaningful);
+  return result;
+}
 
 /**
  * @ingroup meos_pointcloud_base_constructor

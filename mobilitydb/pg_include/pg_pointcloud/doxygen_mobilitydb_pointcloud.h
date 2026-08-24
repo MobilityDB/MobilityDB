@@ -65,6 +65,10 @@
  *****************************************************************************/
 
 /**
+ * @defgroup mobilitydb_pointcloud_base_constructor Constructor functions
+ * @ingroup mobilitydb_pointcloud_base
+ * @brief Constructor functions for pcpoint / pcpatch
+ *
  * @defgroup mobilitydb_pointcloud_base_accessor Accessor functions
  * @ingroup mobilitydb_pointcloud_base
  * @brief Schema-aware accessors (pcid, getX, getY, getZ, getDim) for

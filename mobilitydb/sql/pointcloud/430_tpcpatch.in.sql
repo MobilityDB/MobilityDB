@@ -145,23 +145,21 @@ CREATE CAST (tpcpatch AS text) WITH FUNCTION asText(tpcpatch);
 -- GENERATED-REPRESENTATIONS-END pointcloud_patch
 
 /******************************************************************************
- * Ergonomic pcpatch constructor
+ * pcpatch constructor
  *
- * Variadic wrapper around PC_Patch so test literals can write
- * `pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))` instead of
- * `PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
- *                 PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])])`.
+ * The schema the pcid names is resolved through the MEOS cache, which reads
+ * the pointcloud_schemas and pointcloud_dimensions tables and falls back to
+ * the XML document pgPointCloud's own catalog carries, so a schema stated
+ * either way builds a value.
  *
- * pcid is the first arg purely for readability — PC_Patch already
- * validates that every input pcpoint shares the same pcid, so we
- * pass the array straight through. (The pcid parameter is unused
- * inside the body — it's there to hint to the reader.)
+ * Every point must be of the schema the pcid names, which the constructor
+ * enforces.
  ******************************************************************************/
 
 CREATE FUNCTION pcpatch(pcid integer, VARIADIC points pcpoint[])
   RETURNS pcpatch
-  AS $$ SELECT PC_Patch($2) $$
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Pcpatch_make'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Constructors
