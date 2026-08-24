@@ -279,7 +279,8 @@ SELECT th3CellToChildPos(th3index '871fa44a8ffffff@2001-01-01', 6);
 				<para>Return the temporal child cell at a given ordinal position of the given parent, at the given child resolution. The two temporal operands are synchronised over their shared time axis.</para>
 				<para><varname>th3ChildPosToCell(tbigint,th3index,integer) → th3index</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01', 8);
+SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01',
+  8);
 -- 881fa44a81fffff@2001-01-01
 </programlisting>
 			</listitem>
@@ -323,10 +324,12 @@ SELECT asText(th3CellToLatlngTgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 
 				<para>Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</para>
 				<para><varname>th3CellToBoundary(th3index) → tgeography</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_GeometryType(getValue(th3CellToBoundary(th3index '871fa44a8ffffff@2001-01-01'))::geometry);
+SELECT ST_GeometryType(getValue(th3CellToBoundary(th3index
+  '871fa44a8ffffff@2001-01-01'))::geometry);
 -- ST_Polygon
 -- A hexagon closes on its first vertex, so it has seven points.
-SELECT ST_NPoints(getValue(th3CellToBoundary(th3index '871fa44a8ffffff@2001-01-01'))::geometry);
+SELECT ST_NPoints(getValue(th3CellToBoundary(th3index
+  '871fa44a8ffffff@2001-01-01'))::geometry);
 -- 7
 </programlisting>
 			</listitem>
@@ -380,10 +383,12 @@ SELECT isValidDirectedEdge(th3index '871fa44a8ffffff@2001-01-01');
 				<para><varname>th3GetDirectedEdgeOrigin(th3index) → th3index</varname></para>
 				<para><varname>th3GetDirectedEdgeDestination(th3index) → th3index</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(th3index
+  '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01'));
 -- 871fa44a8ffffff@2001-01-01
-SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(th3index
+  '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01'));
 -- 871fa44aeffffff@2001-01-01
 </programlisting>
@@ -421,7 +426,8 @@ SELECT th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0);
 				<para>Return the temporal geodetic coordinates of each vertex in a trajectory</para>
 				<para><varname>th3VertexToLatlng(th3index) → tgeogpoint</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(th3VertexToLatlng(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0)), 6);
+SELECT asText(th3VertexToLatlng(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
+  0)), 6);
 -- POINT(4.280027 50.807655)@2001-01-01
 </programlisting>
 			</listitem>
@@ -890,7 +896,8 @@ SELECT tDwithin(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-0
 
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(
-  geometry 'SRID=4326;Polygon((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90, 4.20 50.70))',
+  geometry 'SRID=4326;Polygon((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90,
+  4.20 50.70))',
   th3index '871fa44a8ffffff@2001-01-01');
 -- true
 </programlisting>

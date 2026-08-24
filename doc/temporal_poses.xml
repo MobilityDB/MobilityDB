@@ -393,7 +393,8 @@ SELECT pose 'Pose(Point(3 3), 0.5)' &lt; pose 'Pose(Point(3 3), 0.6)';
 -- true
 SELECT pose 'Pose(Point(3 3), 0.6)' &gt; pose 'Pose(Point(2 2), 0.6)';
 -- true
-SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)' &lt;= pose 'Pose(Point Z(2 2 2), 0.5, 0.5, 0.5, 0.5)';
+SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)' &lt;= pose 'Pose(Point Z(2 2 2), 0.5,
+  0.5, 0.5, 0.5)';
 -- true
 SELECT pose 'Pose(Point(1 1), 0.6)' &gt;= pose 'Pose(Point(1 1), 0.5)';
 -- true
@@ -841,9 +842,11 @@ SELECT asText(round(tpose '{[Pose(Point(1 1.123456789),0.123456789)@2001-01-01,
 				<para><varname>appendInstant(tpose,tposeInst) → tpose</varname></para>
 				<para><varname>appendSequence(tpose,tposeSeq) → tpose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(appendInstant(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', 'Pose(Point(2 2), 1)@2001-01-02'));
+SELECT asText(appendInstant(tpose 'Pose(Point(1 1), 0.5)@2001-01-01',
+  'Pose(Point(2 2), 1)@2001-01-02'));
 -- [Pose(POINT(1 1),0.5)@2001-01-01, Pose(POINT(2 2),1)@2001-01-02]
-SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.5)@2001-01-01]', '[Pose(Point(2 2), 1)@2001-01-02]'));
+SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.5)@2001-01-01]',
+  '[Pose(Point(2 2), 1)@2001-01-02]'));
 -- {[Pose(POINT(1 1),0.5)@2001-01-01], [Pose(POINT(2 2),1)@2001-01-02]}
 </programlisting>
 			</listitem>

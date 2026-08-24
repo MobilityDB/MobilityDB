@@ -63,7 +63,8 @@ SELECT asText(ARRAY[cbuffer 'Cbuffer(Point(1 1),0.2)', 'Cbuffer(Point(1 1),0.5)'
 -- {"Cbuffer(POINT(1 1),0.2)","Cbuffer(POINT(1 1),0.5)"}
 SELECT asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 -- SRID=5676;Cbuffer(POINT(1 1),0.5)
-SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.2)', 'Cbuffer(SRID=5676;Point(1 1),0.5)']);
+SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.2)',
+  'Cbuffer(SRID=5676;Point(1 1),0.5)']);
 -- {"SRID=5676;Cbuffer(POINT(1 1),0.2)","SRID=5676;Cbuffer(POINT(1 1),0.5)"}
 </programlisting>
 				</listitem>
@@ -304,9 +305,11 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.6)' &gt;= cbuffer 'Cbuffer(Point(1 1), 0.5
 		<para>El tipo de búfer circular temporal <varname>tcbuffer</varname> permite representar el movimiento de objetos junto con un radio circular alrededor de ellos. Como todos los tipos temporales, se presenta en tres subtipos, a saber, instante, secuencia y conjunto de secuencias. A continuación se dan ejemplos de valores de <varname>tcbuffer</varname> en estos subtipos.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
-SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02,
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1),
+  0.5)@2001-01-02,
   Cbuffer(Point(1 1), 0.5)@2001-01-03}';
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02,
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1),
+  0.4)@2001-01-02,
   Cbuffer(Point(1 1), 0.5)@2001-01-03]';
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 1)@2001-01-01, Cbuffer(Point(2 2), 1)@2001-01-02],
   [Cbuffer(Point(2 2), 2)@2001-01-04, Cbuffer(Point(2 2), 3)@2001-01-05]}';
@@ -691,9 +694,11 @@ SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-0
 				<para><varname>appendInstant(tcbuffer,tcbufferInst) → tcbuffer</varname></para>
 				<para><varname>appendSequence(tcbuffer,tcbufferSeq) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(appendInstant(tcbuffer 'Cbuffer(Point(1 1), 0.1)@2001-01-01', 'Cbuffer(Point(2 2), 0.2)@2001-01-02'));
+SELECT asText(appendInstant(tcbuffer 'Cbuffer(Point(1 1), 0.1)@2001-01-01',
+  'Cbuffer(Point(2 2), 0.2)@2001-01-02'));
 -- [Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(2 2),0.2)@2001-01-02]
-SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]', '[Cbuffer(Point(2 2), 0.2)@2001-01-02]'));
+SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]',
+  '[Cbuffer(Point(2 2), 0.2)@2001-01-02]'));
 -- {[Cbuffer(POINT(1 1),0.1)@2001-01-01], [Cbuffer(POINT(2 2),0.2)@2001-01-02]}
 </programlisting>
 			</listitem>
@@ -706,10 +711,12 @@ SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]', '
 				<para><varname>merge(tcbuffer[]) → tcbuffer</varname></para>
 				<para><varname>mergeAgg(tcbuffer) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(merge(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03]',
+SELECT asText(merge(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1),
+  0.3)@2001-01-03]',
   '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]'));
 -- [Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-05]
-SELECT asText(merge(ARRAY[tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.2)@2001-01-02]',
+SELECT asText(merge(ARRAY[tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
+  Cbuffer(Point(1 1), 0.2)@2001-01-02]',
   '[Cbuffer(Point(1 1), 0.2)@2001-01-02, Cbuffer(Point(1 1), 0.3)@2001-01-03]']));
 -- [Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(1 1),0.3)@2001-01-03]
 WITH temp(inst) AS (
