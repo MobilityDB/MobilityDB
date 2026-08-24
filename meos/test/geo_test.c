@@ -566,6 +566,34 @@ int main(void)
   assert(meos_errno() != 0);
   meos_errno_reset();
 
+  /* Every entry taking an array of geometries reads one reference system, so
+   * each of them reports the mixture rather than answering about it */
+  int nbad = 0;
+  assert(geo_cluster_kmeans(mixed, 2, 1, &nbad) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(geo_cluster_dbscan(mixed, 2, 1.0, 1, &nbad) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(geo_cluster_within(mixed, 2, 1.0, &nbad) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  GSERIALIZED *mixedarr[2];
+  mixedarr[0] = (GSERIALIZED *) mixed[0];
+  mixedarr[1] = (GSERIALIZED *) mixed[1];
+  assert(geom_array_union(mixedarr, 2) == NULL);
+  printf("the five array entries all report a mixture of SRIDs\n");
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+
+  /* The k-means clustering reports a missing output parameter, which it reads
+   * before the count of clusters is written to it */
+  assert(geo_cluster_kmeans(cl, 4, 2, NULL) == NULL);
+  printf("clusterKMeans without an output parameter: errno %d\n",
+    meos_errno());
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 

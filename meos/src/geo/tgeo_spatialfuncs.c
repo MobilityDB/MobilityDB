@@ -1521,10 +1521,10 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k,
   int *count)
 {
   /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(geoms, NULL); 
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(geoms, NULL);
   if (! ensure_positive(n) || ! ensure_positive(k))
     return NULL;
   if (n < k)
@@ -1534,6 +1534,10 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k,
       k, n);
     return NULL;
   }
+
+  /* The members of the array carry one SRID */
+  if (! ensure_same_srid_geoarr(geoms, (int) n))
+    return NULL;
 
   /* Read all the input geometries into a list */
   LWGEOM **lwgeoms = palloc(sizeof(LWGEOM *) * n);
@@ -1587,6 +1591,10 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
       "Minpoints must be a positive number, got %d", minpoints);
     return NULL;
   }
+
+  /* The members of the array carry one SRID */
+  if (! ensure_same_srid_geoarr(geoms, (int) ngeoms))
+    return NULL;
 
   uint32_t i;
   char *is_in_cluster = NULL;
@@ -1652,10 +1660,8 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
    * whose intersection it asks about, and for the predicate itself. The
    * bounding boxes answer the narrowing and the native engine answers the
    * predicate */
-  int32_t srid = gserialized_get_srid(geoms[0]);
-  for (i = 1; i < ngeoms; i++)
-    if (! ensure_same_srid(srid, gserialized_get_srid(geoms[i])))
-      return NULL;
+  if (! ensure_same_srid_geoarr(geoms, (int) ngeoms))
+    return NULL;
 
   LWGEOM **lwgeoms = palloc(ngeoms * sizeof(LWGEOM *));
   for (i = 0; i < ngeoms; i++)
@@ -1710,6 +1716,10 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
       "Tolerance must be a positive number, got %g", tolerance);
     return NULL;
   }
+
+  /* The members of the array carry one SRID */
+  if (! ensure_same_srid_geoarr(geoms, (int) ngeoms))
+    return NULL;
 
   uint32_t i;
   LWGEOM **lwgeoms = lwalloc(ngeoms * sizeof(LWGEOM *));
