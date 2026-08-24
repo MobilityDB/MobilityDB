@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_not_geodetic</title>
+<title>MobilityDB: relate_point_on_any_edge</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -106,7 +106,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aaa4725a34b5670159285589d8e28a115.html#aaa4725a34b5670159285589d8e28a115">ensure_has_Z_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a7b7f140c1ec50012413fe31dd3069960.html#a7b7f140c1ec50012413fe31dd3069960">ensure_mline_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_addbac4c18cb72e1108e5fdb999875e39.html#addbac4c18cb72e1108e5fdb999875e39">ensure_not_empty</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8236b6654c606cd4d4290243e3049573.html#a8236b6654c606cd4d4290243e3049573">ensure_not_geodetic</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8236b6654c606cd4d4290243e3049573.html#a8236b6654c606cd4d4290243e3049573">ensure_not_geodetic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac2b866c3b1290a23a6767d1561356e1a.html#ac2b866c3b1290a23a6767d1561356e1a">ensure_not_geodetic_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a25f72bdba6129a8c2273e82160fa1706.html#a25f72bdba6129a8c2273e82160fa1706">ensure_point_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aebbfe6bf61813306f13413d2a4cfdbbc.html#aebbfe6bf61813306f13413d2a4cfdbbc">ensure_same_dimensionality</a></td></tr>
@@ -264,7 +264,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa556ae5cd717554ed80bdc1e982ede90.html#aa556ae5cd717554ed80bdc1e982ede90">relate_point_in_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae237541732824ea8d47621e191aa88cc.html#ae237541732824ea8d47621e191aa88cc">relate_point_is_edge_endpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8579721bb13e43769c518cf441613795.html#a8579721bb13e43769c518cf441613795">relate_point_linear</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4981e7f01ce79efa96d106aa04f30315.html#a4981e7f01ce79efa96d106aa04f30315">relate_point_on_any_edge</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4981e7f01ce79efa96d106aa04f30315.html#a4981e7f01ce79efa96d106aa04f30315">relate_point_on_any_edge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae2592a4a4fca991cb150c22827e8ad20.html#ae2592a4a4fca991cb150c22827e8ad20">relate_point_on_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6bac3ef053f1c36662239ea4acb6e8cc.html#a6bac3ef053f1c36662239ea4acb6e8cc">relate_point_on_boundary_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a51ceda5904568d48dd5dfd29793306e1.html#a51ceda5904568d48dd5dfd29793306e1">relate_point_on_edge</a></td></tr>
@@ -286,23 +286,47 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8236b6654c606cd4d4290243e3049573" name="a8236b6654c606cd4d4290243e3049573"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8236b6654c606cd4d4290243e3049573">&#9670;&#160;</a></span>ensure_not_geodetic()</h2>
+<a id="a4981e7f01ce79efa96d106aa04f30315" name="a4981e7f01ce79efa96d106aa04f30315"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4981e7f01ce79efa96d106aa04f30315">&#9670;&#160;</a></span>relate_point_on_any_edge()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool ensure_not_geodetic </td>
+          <td class="memname">static bool relate_point_on_any_edge </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a>&#160;</td>
-          <td class="paramname"><em>flags</em></td><td>)</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structRelateEdges.html">RelateEdges</a> *&#160;</td>
+          <td class="paramname"><em>other</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Ensure that the spatiotemporal argument has planar coordinates. </p>
+<p>Return true if a point stands on any edge of an array, reading the edges that can carry it out of the array's index. </p>
 
 </div>
 </div>

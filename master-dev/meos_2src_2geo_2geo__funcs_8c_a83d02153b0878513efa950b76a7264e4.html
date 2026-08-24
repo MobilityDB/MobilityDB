@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_not_geodetic</title>
+<title>MobilityDB: relate_edge_inside_area</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -106,7 +106,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aaa4725a34b5670159285589d8e28a115.html#aaa4725a34b5670159285589d8e28a115">ensure_has_Z_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a7b7f140c1ec50012413fe31dd3069960.html#a7b7f140c1ec50012413fe31dd3069960">ensure_mline_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_addbac4c18cb72e1108e5fdb999875e39.html#addbac4c18cb72e1108e5fdb999875e39">ensure_not_empty</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8236b6654c606cd4d4290243e3049573.html#a8236b6654c606cd4d4290243e3049573">ensure_not_geodetic</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8236b6654c606cd4d4290243e3049573.html#a8236b6654c606cd4d4290243e3049573">ensure_not_geodetic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac2b866c3b1290a23a6767d1561356e1a.html#ac2b866c3b1290a23a6767d1561356e1a">ensure_not_geodetic_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a25f72bdba6129a8c2273e82160fa1706.html#a25f72bdba6129a8c2273e82160fa1706">ensure_point_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aebbfe6bf61813306f13413d2a4cfdbbc.html#aebbfe6bf61813306f13413d2a4cfdbbc">ensure_same_dimensionality</a></td></tr>
@@ -221,7 +221,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4a229ab5b677bb53e1fec84ef763483d.html#a4a229ab5b677bb53e1fec84ef763483d">relate_dimension</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a05009eaf7b42fbd5a62cd9576730e583.html#a05009eaf7b42fbd5a62cd9576730e583">relate_dispatch</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a49f6df13883bc0ddbe35dc1d8bf99a55.html#a49f6df13883bc0ddbe35dc1d8bf99a55">relate_edge_distance</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a83d02153b0878513efa950b76a7264e4.html#a83d02153b0878513efa950b76a7264e4">relate_edge_inside_area</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a83d02153b0878513efa950b76a7264e4.html#a83d02153b0878513efa950b76a7264e4">relate_edge_inside_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a7a459afae3bba0d825112f083c588f32.html#a7a459afae3bba0d825112f083c588f32">relate_edge_nonempty</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad22b0ada94037f883153b630906767fa.html#ad22b0ada94037f883153b630906767fa">relate_edge_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_abb75f9b8e523c2c31660ecb3b8c791e0.html#abb75f9b8e523c2c31660ecb3b8c791e0">relate_edge_tangent</a></td></tr>
@@ -286,23 +286,42 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8236b6654c606cd4d4290243e3049573" name="a8236b6654c606cd4d4290243e3049573"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8236b6654c606cd4d4290243e3049573">&#9670;&#160;</a></span>ensure_not_geodetic()</h2>
+<a id="a83d02153b0878513efa950b76a7264e4" name="a83d02153b0878513efa950b76a7264e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83d02153b0878513efa950b76a7264e4">&#9670;&#160;</a></span>relate_edge_inside_area()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool ensure_not_geodetic </td>
+          <td class="memname">static bool relate_edge_inside_area </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a>&#160;</td>
-          <td class="paramname"><em>flags</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
+          <td class="paramname"><em>e</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structRelateEdges.html">RelateEdges</a> *&#160;</td>
+          <td class="paramname"><em>other</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Ensure that the spatiotemporal argument has planar coordinates. </p>
+<p>Return true if one point of an edge lies inside the surfaces bounded by another geometry's edges. </p>
+<p >Read only where no curve of either geometry meets a curve of the other, which is what makes one point answer for the whole edge: an edge crossing into a surface would have met its boundary. <a class="el" href="geo__funcs_8h_a510f8313bd5310b2fdacef6db43e7ebe.html#a510f8313bd5310b2fdacef6db43e7ebe" title="Return true if a point is located in a polygon, scanning every edge.">point_in_polygon</a> passes over every edge that bounds no surface, so the array it reads may mix dimensions </p>
 
 </div>
 </div>
