@@ -2681,22 +2681,6 @@ ensure_not_geodetic(int16 flags)
   return false;
 }
 /**
- * @brief Ensure that the spatiotemporal argument have the same type of
- * coordinates, either planar or geodetic
- */
-bool
-ensure_same_geodetic(int16 flags1, int16 flags2)
-{
-  if (MEOS_FLAGS_GET_X(flags1) && MEOS_FLAGS_GET_X(flags2) &&
-    MEOS_FLAGS_GET_GEODETIC(flags1) != MEOS_FLAGS_GET_GEODETIC(flags2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed planar and geodetic coordinates");
-    return false;
-  }
-  return true;
-}
-/**
  * @brief Ensure that two geometries/geographies have the same dimensionality
  */
 bool
@@ -2718,18 +2702,6 @@ ensure_srid_known(int32_t srid)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The SRID cannot be unknown");
-  return false;
-}
-/**
- * @brief Ensure that the two spatial objects have the same SRID
- */
-bool
-ensure_same_srid(int32_t srid1, int32_t srid2)
-{
-  if (srid1 == srid2)
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Operation on mixed SRID");
   return false;
 }
 /**

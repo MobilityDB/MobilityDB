@@ -80,32 +80,6 @@
  *****************************************************************************/
 
 /**
- * @brief Ensure that a MEOS type has X dimension
- */
-bool
-ensure_has_X(MeosType type, int16 flags)
-{
-  if (MEOS_FLAGS_GET_X(flags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The %s must have X dimension", meostype_name(type));
-  return false;
-}
-
-/**
- * @brief Ensure that a MEOS type has Z dimension
- */
-bool
-ensure_has_Z(MeosType type, int16 flags)
-{
-  if (MEOS_FLAGS_GET_Z(flags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The %s must have Z dimension", meostype_name(type));
-  return false;
-}
-
-/**
  * @brief Ensure that a MEOS type has not Z dimension
  */
 bool
@@ -115,19 +89,6 @@ ensure_has_not_Z(MeosType type, int16 flags)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The %s cannot have Z dimension", meostype_name(type));
-  return false;
-}
-
-/**
- * @brief Ensure that a MEOS type has Z dimension
- */
-bool
-ensure_has_T(MeosType type, int16 flags)
-{
-  if (MEOS_FLAGS_GET_T(flags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The %s must have T dimension", meostype_name(type));
   return false;
 }
 
@@ -267,20 +228,6 @@ ensure_nonlinear_interp(int16 flags)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Operation not supported for temporal values with linear interpolation");
-  return false;
-}
-
-/**
- * @brief Ensure that two temporal values have at least one common dimension
- */
-bool
-ensure_common_dimension(int16 flags1, int16 flags2)
-{
-  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) ||
-      MEOS_FLAGS_GET_T(flags1) == MEOS_FLAGS_GET_T(flags2))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The temporal values must have at least one common dimension");
   return false;
 }
 
