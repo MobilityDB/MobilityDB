@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set</title>
+<title>MobilityDB: cluster_boxes_within</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="meos_2src_2geo_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_a500bfba6d40ba21a6b14c501307d56b.html">geo</a></li><li class="navelem"><a class="el" href="geo__cluster_8c.html">geo_cluster.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,27 +79,60 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2CMakeLists_8txt_a76bb6a60613c04ee99af82be95f59791.html#a76bb6a60613c04ee99af82be95f59791">add_subdirectory</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2CMakeLists_8txt_ae0249b869986dc6fdfa756c871a52b23.html#ae0249b869986dc6fdfa756c871a52b23">set</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_a3b6fff49b34e080f624e1ed38a4d7127.html#a3b6fff49b34e080f624e1ed38a4d7127">cluster_boxes</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__cluster_8c_aa7cf6d065b41c3242387ff3e8ec6903c.html#aa7cf6d065b41c3242387ff3e8ec6903c">cluster_boxes_within</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_a720a2b603693b726ecd4e9dc962f8b59.html#a720a2b603693b726ecd4e9dc962f8b59">cluster_union_available</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_aec08281c2ff24f34f16570daf0be27cd.html#aec08281c2ff24f34f16570daf0be27cd">cluster_union_core</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_aad4211f0c04da877988a96fa5eee6b3d.html#aad4211f0c04da877988a96fa5eee6b3d">cluster_union_single</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_a1417eefabb593d3c30514b2b623237d7.html#a1417eefabb593d3c30514b2b623237d7">geo_cluster_within_distance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_abaa44524098cf0ea120b112fde77f997.html#abaa44524098cf0ea120b112fde77f997">geo_combine_clusters</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__cluster_8c_a34fb26bdc6c915937634adfc61f2d048.html#a34fb26bdc6c915937634adfc61f2d048">geo_union_dbscan</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae0249b869986dc6fdfa756c871a52b23" name="ae0249b869986dc6fdfa756c871a52b23"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae0249b869986dc6fdfa756c871a52b23">&#9670;&#160;</a></span>set()</h2>
+<a id="aa7cf6d065b41c3242387ff3e8ec6903c" name="aa7cf6d065b41c3242387ff3e8ec6903c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7cf6d065b41c3242387ff3e8ec6903c">&#9670;&#160;</a></span>cluster_boxes_within()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">set </td>
+          <td class="memname">static bool cluster_boxes_within </td>
           <td>(</td>
-          <td class="paramtype">GEO_SOURCES geo_buffer.c geo_funcs.c geo_round.c postgis_funcs.c stbox.c stbox_index.c tgeo.c tgeo_aggfuncs.c tgeo_boxops.c tgeo_compops.c tgeo_distance.c tgeo_restrict.c tgeo_spatialfuncs.c tgeo_spatialrels.c tgeo_tile.c geo_poly_clip.c tpoint_datagen.c tpoint_geom_clip.c tpoint_spatialfuncs.c tspatial.c tspatial_parser.c tspatial_spgist.c tspatial_tempspatialrels.c tspatial_srid.&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structGBOX.html">GBOX</a> *&#160;</td>
+          <td class="paramname"><em>box1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structGBOX.html">GBOX</a> *&#160;</td>
+          <td class="paramname"><em>box2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>eps</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return true if two geometries can lie within a distance of each other. </p>
+<p >The bounding box of one, widened by the distance, must meet the bounding box of the other. </p>
 
 </div>
 </div>
