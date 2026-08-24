@@ -887,10 +887,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 	<sect1 xml:id="tnpoint_spatial_rels">
 		<title>Spatial Relationships</title>
 		<para>
-			The topological and distance relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> are defined over the geographical space while the temporal network points are defined over the network space. Every one of these relationships also accepts a <varname>tnpoint</varname> argument directly: internally, each network-point operand is converted to a temporal geometry point through the standard <varname>tnpoint::tgeompoint</varname> cast (the point resolved along its route) and then to <varname>tgeometry</varname>, and the corresponding <varname>tgeometry</varname> relationship computes the result, exactly as if the cast had been written out by hand.
-		</para>
-		<para>
-			Because the delegate target <varname>tgeometry</varname> only supports step interpolation, a multi-instant <varname>tnpoint</varname> sequence argument must use step interpolation (<varname>Interp=Step;...</varname>); a sequence with the default linear interpolation raises an error on the implicit conversion, the same restriction already in force when casting a linear <varname>tgeompoint</varname>/<varname>tgeogpoint</varname> to <varname>tgeometry</varname>/<varname>tgeography</varname>. A single instant has no interpolation and is unaffected.
+			The topological and distance relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> are defined over the geographical space while the temporal network points are defined over the network space. Every one of these relationships also accepts a <varname>tnpoint</varname> argument directly: each network-point operand is converted to a temporal geometry point through the standard <varname>tnpoint::tgeompoint</varname> cast (the point resolved along its route) and the corresponding temporal geometry point relationship computes the result, exactly as if the cast had been written out by hand. A sequence keeps the interpolation it carries, so one with the default linear interpolation is answered along its route rather than at its instants alone.
 		</para>
 
 		<itemizedlist>
@@ -915,20 +912,40 @@ SELECT eIntersects(
 
 			<listitem xml:id="tnpoint_tspatialrels">
 				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
-				<para>Spatiotemporal relationships</para>
+				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A temporal network point answers them at the position its route and fraction resolve to. The temporal network point declares the relationships a moving point answers: <varname>tContains</varname> and <varname>tCovers</varname> take the geometry first only, and <varname>tTouches</varname> has no direction between two temporal network points, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
+				<para><varname>tContains(geometry,tnpoint) &#8594; tbool</varname></para>
+				<para><varname>tCovers(geometry,tnpoint) &#8594; tbool</varname></para>
+				<para><varname>tDisjoint({geometry,tnpoint},{geometry,tnpoint}) &#8594; tbool</varname></para>
+				<para><varname>tDwithin({geometry,tnpoint},{geometry,tnpoint},float) &#8594; tbool</varname></para>
+				<para><varname>tIntersects({geometry,tnpoint},{geometry,tnpoint}) &#8594; tbool</varname></para>
+				<para><varname>tTouches(geometry,tnpoint) &#8594; tbool</varname></para>
+				<para><varname>tTouches(tnpoint,geometry) &#8594; tbool</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
--- [f@2001-01-01, f@2001-01-03]
+  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
+-- {[f@2001-01-01, f@2001-01-03]}
+SELECT tCovers(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tnpoint 'Npoint(1, 0.1)@2001-01-01');
+-- f@2001-01-01
 SELECT tDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
-  tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
--- [t@2001-01-01, t@2001-01-03]
-SELECT tDwithin(
-  tnpoint 'Interp=Step;[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
-  tnpoint 'Interp=Step;[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
--- [f@2001-01-01, f@2001-01-03]
+  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
+-- {[t@2001-01-01, t@2001-01-03]}
+SELECT tTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01',
+  geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))');
+-- f@2001-01-01
+SELECT tIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
+  tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.1)@2001-01-03]');
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
+SELECT tDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
+  tnpoint '[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
+/* {[f@2001-01-01, t@2001-01-01 22:19:04.400634+00,
+  t@2001-01-02 01:40:55.599365+00], (f@2001-01-02 01:40:55.599365+00,
+  f@2001-01-03]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
