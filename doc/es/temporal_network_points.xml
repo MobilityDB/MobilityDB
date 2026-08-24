@@ -892,19 +892,50 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 		<itemizedlist>
 			<listitem xml:id="tnpoint_espatialrels">
 				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
-				<para>Relaciones alguna vez y siempre</para>
+				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+				<para>Las relaciones <emphasis>alguna vez</emphasis> y <emphasis>siempre</emphasis> determinan si la relación topológica o de distancia se satisface alguna vez o siempre y dan como resultado un <varname>boolean</varname>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción, de modo que una secuencia con interpolación lineal se responde a lo largo de su ruta y no solo en sus instantes. El punto de red temporal declara las relaciones que responde un punto en movimiento: <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname> y <varname>aCovers</varname> toman la geometría en primer lugar únicamente, y <varname>eTouches</varname> y <varname>aTouches</varname> no tienen dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</para>
+				<para><varname>eContains(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>eCovers(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>eDisjoint({geometry,tnpoint},{geometry,tnpoint}) → boolean</varname></para>
+				<para><varname>eDwithin({geometry,tnpoint},{geometry,tnpoint},float) → boolean</varname></para>
+				<para><varname>eIntersects({geometry,tnpoint},{geometry,tnpoint}) → boolean</varname></para>
+				<para><varname>eTouches(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>eTouches(tnpoint,geometry) → boolean</varname></para>
+				<para><varname>aContains(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>aCovers(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>aDisjoint({geometry,tnpoint},{geometry,tnpoint}) → boolean</varname></para>
+				<para><varname>aDwithin({geometry,tnpoint},{geometry,tnpoint},float) → boolean</varname></para>
+				<para><varname>aIntersects({geometry,tnpoint},{geometry,tnpoint}) → boolean</varname></para>
+				<para><varname>aTouches(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>aTouches(tnpoint,geometry) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
+-- false
+SELECT eCovers(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint 'Npoint(1, 0.1)@2001-01-01');
 -- false
 SELECT eDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
-  tnpoint 'Npoint(1, 0.1)@2001-01-01');
+  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
 -- true
-SELECT eIntersects(
-  tnpoint 'Npoint(1, 0.1)@2001-01-01',
-  tnpoint 'Npoint(2, 0.0)@2001-01-01');
+SELECT eIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
+  tnpoint '[Npoint(2, 0.0)@2001-01-01, Npoint(2, 1)@2001-01-03]');
+-- false
+SELECT eTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01',
+  geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))');
+-- false
+SELECT aDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
+  tnpoint '[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
 -- false
 </programlisting>
 			</listitem>

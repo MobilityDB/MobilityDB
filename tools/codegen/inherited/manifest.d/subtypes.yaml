@@ -86,19 +86,22 @@ subtypes:
     scalar_stbox_cast: false
     stboxes: false
     # A temporal network point delegates its ever/always spatial relationships
-    # (320) to tgeometry via the tgeompoint cast chain (mirroring tpose, not a
-    # cell-boundary function): tnpoint has no boundary polygon, only a
-    # route-relative position, so the cast target is the point's tgeompoint
-    # projection (tnpoint_to_tgeompoint), further cast to tgeometry so every
-    # predicate/direction the template emits resolves against tgeometry's full
-    # 3-direction matrix (tgeompoint's own matrix is degenerate for
-    # Contains/Covers/Touches on the temporal-first side, so it cannot serve as
-    # the final delegate target). No index_support: the tnpoint/geometry cross
-    # relationships have no bbox-backed SUPPORT function, so every wrapper stays
-    # a plain SQL cast-composition with zero new C symbols. The temporal
+    # (320) to the temporal geometry point its route position resolves to
+    # (tnpoint_to_tgeompoint, mirroring tpose, not a cell-boundary function):
+    # tnpoint has no boundary polygon, only a route-relative position, so that
+    # projection is the cast target its geometry names. It carries linear
+    # interpolation, which is the interpolation a sequence carries by default,
+    # and answers from the same kernel. No index_support: the tnpoint/geometry
+    # cross relationships have no bbox-backed SUPPORT function, so every wrapper
+    # stays a plain SQL cast-composition with zero new C symbols. The temporal
     # relationships (322) are generated separately, from the `impl: cast` entry
-    # in manifest.d/tempspatialrel_families.yaml (same convert chain).
-    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
+    # in manifest.d/tempspatialrel_families.yaml (same convert).
+    convert: "@N@::@extschema@.tgeompoint"
+    # A network point holds a POSITION, so the temporal geometry point is the
+    # cast target its geometry names, and the family declares the matrix that
+    # target declares: a moving point neither contains nor covers a geometry,
+    # and two moving points do not touch.
+    point_target: true
     # npoint's 300-band already has distance (312) and aggfuncs (314) sitting on
     # the default compressed spatialrels/tempspatialrels offsets (bin+12/+14), so
     # this family aligns to the tgeo-canonical offsets instead (spatialrels+20,
@@ -116,8 +119,9 @@ subtypes:
          * along the route), not over free geographical space. Each function
          * converts its network-point operand(s) to a temporal geometry point
          * via the standard tnpoint::tgeompoint cast (the point resolved along
-         * its route) and then to tgeometry, and delegates to the tgeometry
-         * ever/always spatial relationship.
+         * its route) and delegates to the temporal geometry point ever/always
+         * spatial relationship, so a sequence keeps the interpolation it
+         * carries.
          *
          * Two temporal network points whose routes belong to different
          * networks, or to different connected components of the same

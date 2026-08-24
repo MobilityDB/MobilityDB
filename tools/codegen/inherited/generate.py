@@ -92,7 +92,12 @@ BANNER = (
 # so a family opts IN explicitly rather than opting out. front_back guards the Z
 # (front/back) position operators, which only the 3-D-capable spatial families
 # (tpose, trgeometry, and the tgeo reference) have; every other family omits them.
-DEFAULT_FALSE_FLAGS = {"front_back", "index_support"}
+# `point_target`: the family's values are POSITIONS, so the cast target of its
+# spatial relationships is a temporal geometry point and it declares the matrix
+# that target declares — a moving point neither contains nor covers a geometry,
+# and two moving points do not touch. A cell-index family, whose value is a
+# boundary polygon, omits the flag and keeps all three directions.
+DEFAULT_FALSE_FLAGS = {"front_back", "index_support", "point_target"}
 
 
 def apply_conditionals(text: str, sub: dict) -> str:

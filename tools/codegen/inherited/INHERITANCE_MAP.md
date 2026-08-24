@@ -224,8 +224,8 @@ SQL, `--gaps` cannot see it (its `CREATE FUNCTION`-matching regex finds nothing 
 C source) and under-reports its coverage — read the manifest itself, not the `--gaps`
 number, for this one axis. `pose`'s native C spatial-rel wrapper is still hand
 (memory `spatialrel-wrapper-surface-is-inherited-generate-it`); `npoint` needs no
-native kernel — its ever/always relationships cast-delegate to `tgeometry` in pure
-SQL (§6, `320_tnpoint_spatialrels`).
+native kernel — its ever/always relationships cast-delegate to the temporal geometry
+point in pure SQL (§6, `320_tnpoint_spatialrels`).
 
 ## 4. `Temporal<T>` chapter — section-by-section
 
@@ -493,7 +493,7 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ✗ HAND | tDistance/nad/nai/shortestLine — reserved position, no template |
 | Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, tnpoint — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
-| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 13/13, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl (delegates to tgeo): tquadbin, th3index, tpose, tposechain, trgeometry, tnpoint, tpcpoint, tpcpatch |
+| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 13/13, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while a cell-index or area-valued family converts its boundary to tgeometry (tquadbin, th3index, trgeometry, tpcpatch) |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
 
@@ -572,9 +572,15 @@ Reading the table:
 - **`spatialrels` SQL** (the ever/always wrapper *file*) is generated for the
   **cast-delegated families** (h3 262, quadbin 362, npoint 320) via the `subtypes:`
   `spatialrels` behaviour — a cell-boundary→`tgeometry` cast for h3/quadbin, a
-  `tnpoint::tgeompoint::tgeometry` cast for npoint. cbuffer 212, pose 112 and
+  `tnpoint::tgeompoint` cast for npoint. cbuffer 212, pose 112 and
   rgeo 170 stay hand — even though their underlying **C** ever/always kernel
   dispatch is generated (next bullet).
+  ⛔ A family whose VALUES are positions carries `point_target: true`, the additive
+  flag (`DEFAULT_FALSE_FLAGS`) whose `-- @IFNOT point_target` guards leave it the
+  matrix its temporal geometry point target declares: `eContains`/`aContains` and
+  `eCovers`/`aCovers` take the geometry first only, and `eTouches`/`aTouches` have
+  no direction between two values of the family. A cell-index family, whose value
+  is a boundary polygon, omits the flag and keeps all three directions.
 - **`spatialfuncs` and `distance`** are generated for no family — no template
   exists; hand everywhere.
 - **`boxops`** (the box-cast `.in.sql` file holding `spans`/`splitNSpans`/
@@ -612,8 +618,8 @@ its last edit:
 - `spatialrel_families` (the C ever/always kernel), **3/13**: only `geo`, `cbuffer`
   and `rgeo` carry one, so every other member of `tspatial_type` reads missing.
   `tnpoint` needs none by design — its ever/always relationships cast-delegate to
-  `tgeometry` at the SQL level instead (§3, §6, the `subtypes:` `spatialrels`
-  bullet below) — and the pointcloud temptypes, members of this class since
+  the temporal geometry point at the SQL level instead (§3, §6, the `subtypes:`
+  `spatialrels` bullet below) — and the pointcloud temptypes, members of this class since
   `tspatial_type` widened to 13, carry no native kernel either.
 - `conversion_families`, **15/19**: `tposechain`, `tgeography`, `tpcpoint`, `tpcpatch`.
   ⛔ `tposechain`'s absence here is NOT a template gap and must not be closed by

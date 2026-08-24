@@ -1124,19 +1124,51 @@ SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
 		<itemizedlist>
 			<listitem xml:id="tpose_espatialrels">
 				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
-				<para>Relaciones alguna vez y siempre</para>
+				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+				<para>Las relaciones <emphasis>alguna vez</emphasis> y <emphasis>siempre</emphasis> determinan si la relación topológica o de distancia se satisface alguna vez o siempre y dan como resultado un <varname>boolean</varname>. Una pose temporal las responde en la posición que ocupa, de modo que un valor con interpolación lineal se responde a lo largo de su trayectoria y no solo en sus instantes. La pose temporal declara las relaciones que responde un punto en movimiento: <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname> y <varname>aCovers</varname> toman la geometría en primer lugar únicamente, y <varname>eTouches</varname> y <varname>aTouches</varname> no tienen dirección entre dos poses temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</para>
+				<para><varname>eContains(geometry,tpose) → boolean</varname></para>
+				<para><varname>eCovers(geometry,tpose) → boolean</varname></para>
+				<para><varname>eDisjoint({geometry,tpose},{geometry,tpose}) → boolean</varname></para>
+				<para><varname>eDwithin({geometry,tpose},{geometry,tpose},float) → boolean</varname></para>
+				<para><varname>eIntersects({geometry,tpose},{geometry,tpose}) → boolean</varname></para>
+				<para><varname>eTouches(geometry,tpose) → boolean</varname></para>
+				<para><varname>eTouches(tpose,geometry) → boolean</varname></para>
+				<para><varname>aContains(geometry,tpose) → boolean</varname></para>
+				<para><varname>aCovers(geometry,tpose) → boolean</varname></para>
+				<para><varname>aDisjoint({geometry,tpose},{geometry,tpose}) → boolean</varname></para>
+				<para><varname>aDwithin({geometry,tpose},{geometry,tpose},float) → boolean</varname></para>
+				<para><varname>aIntersects({geometry,tpose},{geometry,tpose}) → boolean</varname></para>
+				<para><varname>aTouches(geometry,tpose) → boolean</varname></para>
+				<para><varname>aTouches(tpose,geometry) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+  tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(3 3),0.3)@2001-01-03]');
+-- true
+SELECT aCovers(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(3 3),0.3)@2001-01-03]');
 -- true
 SELECT eDisjoint(geometry(pose 'Pose(Point(2 2), 0.0)'),
-  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+  tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)');
 -- true
-SELECT eIntersects(
-  tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'::tgeompoint,
-  tpose '[Pose(Point(2 2),0.0)@2001-01-01, Pose(Point(2 2),1)@2001-01-03)'::tgeompoint);
+SELECT eIntersects(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
+  Pose(Point(3 3),0.1)@2001-01-03]', tpose '[Pose(Point(3 3),0.1)@2001-01-01,
+  Pose(Point(1 1),0.1)@2001-01-03]');
+-- true
+SELECT eTouches(tpose 'Pose(Point(0 0), 0.1)@2001-01-01',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- true
+SELECT aDwithin(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
+  Pose(Point(3 3),0.1)@2001-01-03]', geometry 'Point(9 9)', 1.0);
 -- false
 </programlisting>
 			</listitem>
