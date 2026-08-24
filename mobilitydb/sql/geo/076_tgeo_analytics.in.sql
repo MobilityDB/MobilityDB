@@ -143,7 +143,7 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- CREATE FUNCTION asMVTGeom(tgeo tgeometry, bounds stbox,
   -- extent integer DEFAULT 4096, buffer integer DEFAULT 256, clip boolean DEFAULT TRUE)
 -- RETURNS geom_times
--- AS 'MODULE_PATHNAME','AsMVTGeom'
+-- AS 'MODULE_PATHNAME','Tpoint_as_mvtgeom'
 -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
