@@ -161,9 +161,8 @@ int main(void)
     errno_ok);
   assert(rel_ok == true);
   assert(errno_ok == 0);
-  /* A TIN is outside the edge decomposition and GEOS carries one, so a build
-   * including GEOS answers it and a build excluding GEOS reports the failure
-   * and answers false, the value a language binding reads safely */
+  /* A TIN decomposes into the triangles it collects, so the edges answer it
+   * and neither build consults GEOS for it */
   GSERIALIZED *tin = geom_in(
     "Tin(((0 0,0 1,1 1,0 0)),((0 0,1 0,1 1,0 0)))", -1);
   assert(tin != NULL);
@@ -172,21 +171,12 @@ int main(void)
   int errno_tin = meos_errno();
   printf("geom_relate_pattern(line, tin): %d, errno %d\n", rel_tin,
     errno_tin);
-  /* The option is read from the library at run time: this file is compiled
-   * against the installed headers, which carry no definition of it, so a
-   * preprocessor test here would describe the test's own build and not the
-   * library's */
-  if (strstr(meos_full_version(), "GEOS none") == NULL)
-    assert(errno_tin == 0);
-  else
-  {
-    assert(rel_tin == false);
-    assert(errno_tin != 0);
-  }
-  /* A polyhedral surface is outside the edge decomposition AND outside GEOS,
-   * whose LWGEOM2GEOS reaches an lwerror that ends the process rather than
-   * returning, so it is reported the same way in either build and reaches
-   * GEOS in neither */
+  assert(rel_tin == true);
+  assert(errno_tin == 0);
+  /* A polyhedral surface decomposes into its faces the same way, and it is the
+   * one type GEOS cannot be asked about at all -- LWGEOM2GEOS reaches an
+   * lwerror that ends the process rather than returning -- so the edges are
+   * what answer it in either build */
   GSERIALIZED *phs = geom_in(
     "PolyhedralSurface Z (((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),"
     "((0 0 0,0 1 0,0 1 1,0 0 1,0 0 0)))", -1);
@@ -196,8 +186,8 @@ int main(void)
   int errno_phs = meos_errno();
   printf("geom_relate_pattern(line, polyhedral surface): %d, errno %d\n",
     rel_phs, errno_phs);
-  assert(rel_phs == false);
-  assert(errno_phs != 0);
+  assert(rel_phs == true);
+  assert(errno_phs == 0);
   free(coll); free(away); free(through); free(tin); free(phs);
   meos_errno_reset();
 
@@ -633,6 +623,29 @@ int main(void)
   printf("a TIN covers what its triangles cover written any other way\n");
   assert(meos_errno() == 0);
   meos_errno_reset();
+
+  /* A polyhedral surface covers what its faces cover, and the unit cube is the
+   * case that says so about a WATERTIGHT SOLID: four of its six faces stand
+   * perpendicular to the plane, so each projects to a ring enclosing no area.
+   * What the cube covers in the plane is the unit square, which is exactly the
+   * control the two assertions above already use, so the identity is read
+   * against a geometry this test has independently checked */
+  GSERIALIZED *cube = geom_in("POLYHEDRALSURFACE Z ("
+    "((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),"
+    "((0 0 0,0 0 1,0 1 1,0 1 0,0 0 0)),"
+    "((0 0 0,1 0 0,1 0 1,0 0 1,0 0 0)),"
+    "((1 1 1,1 0 1,0 0 1,0 1 1,1 1 1)),"
+    "((1 1 1,1 1 0,1 0 0,1 0 1,1 1 1)),"
+    "((1 1 1,0 1 1,0 1 0,1 1 0,1 1 1)))", -1);
+  assert(cube != NULL);
+  assert(geom_relate_pattern(cube, diag, "1********") == true);
+  /* And it is areal, not the linework its perpendicular faces draw */
+  assert(geom_relate_pattern(cube, diag, "2********") == false);
+  assert(geom_relate_pattern(adjsq, diag, "2********") == false);
+  printf("a closed polyhedral surface covers what it projects to\n");
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+  free(cube);
 
   /* Finalize MEOS */
   meos_finalize();

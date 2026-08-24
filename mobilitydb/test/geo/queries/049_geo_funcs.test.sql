@@ -147,6 +147,19 @@ SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', geometry 'Linestring(0 
 SELECT relate(geometry 'Tin Z (((0 0 0,0 1 0,1 1 0,0 0 0)),((0 0 0,1 1 0,1 0 0,0 0 0)))',
   geometry 'Linestring(0 0,2 2)');
 
+-- A polyhedral surface covers what its faces cover.  The unit cube is the case
+-- that says so about a watertight solid: four of its six faces stand
+-- perpendicular to the plane, so each projects to a ring enclosing no area, and
+-- what the cube covers is the unit square the row above answers for
+SELECT relate(geometry 'Polyhedralsurface Z (
+  ((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),
+  ((0 0 0,0 0 1,0 1 1,0 1 0,0 0 0)),
+  ((0 0 0,1 0 0,1 0 1,0 0 1,0 0 0)),
+  ((1 1 1,1 0 1,0 0 1,0 1 1,1 1 1)),
+  ((1 1 1,1 1 0,1 0 0,1 0 1,1 1 1)),
+  ((1 1 1,0 1 1,0 1 0,1 1 0,1 1 1)))',
+  geometry 'Linestring(0 0,2 2)');
+
 -- A pattern is matched against that matrix
 SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
 
