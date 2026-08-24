@@ -573,9 +573,17 @@ def _tsr_cast_operand(t: str, pos: int, convert: str) -> str:
     return convert.replace("@N@", f"${pos}")
 
 
+# A cast family whose values are POINTS reaches the geometry engine as a
+# `tgeompoint`, which is the cast target the value's geometry names: a
+# `tgeompoint` carries linear interpolation, a `tgeometry` cannot (two
+# consecutive geometries need not even share a type, so there is nothing to
+# interpolate along). Such a family also declares the matrix ITS target
+# declares — a moving point neither contains nor covers a geometry, and two
+# moving points do not touch — so its `predicates` list the same cells the
+# `tpoint` entry lists.
 def _tsr_cast_body(pred: str, d: dict, fam: dict) -> str:
     """One cast-family CREATE FUNCTION: both operands converted (or passed
-    through raw) and re-delegated to tgeometry's same-named predicate. When
+    through raw) and re-delegated to the target's same-named predicate. When
     BOTH operands need conversion (the own-type x own-type direction), the
     call wraps onto a second line indented to the column of the CREATE
     FUNCTION signature's argument list, matching the historical hand-tuned
