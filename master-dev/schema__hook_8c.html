@@ -87,8 +87,12 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &quot;pc_api.h&quot;</code><br />
+<code>#include &quot;pc_api_internal.h&quot;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__pointcloud_8h_source.html">meos_pointcloud.h</a>&gt;</code><br />
+<code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="meos__schema__hook_8h_source.html">pointcloud/meos_schema_hook.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -118,6 +122,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga5e7d099c0b835c6edfc2696ab16ff61d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_ga5e7d099c0b835c6edfc2696ab16ff61d.html#ga5e7d099c0b835c6edfc2696ab16ff61d">meos_pc_schema_clear</a> (void)</td></tr>
 <tr class="memdesc:ga5e7d099c0b835c6edfc2696ab16ff61d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drop every entry from the MEOS schema cache.  <a href="group__meos__pointcloud__schema__cache_ga5e7d099c0b835c6edfc2696ab16ff61d.html#ga5e7d099c0b835c6edfc2696ab16ff61d">More...</a><br /></td></tr>
 <tr class="separator:ga5e7d099c0b835c6edfc2696ab16ff61d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga29a849835a39fe4c76ad57878cb1ba1c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_ga29a849835a39fe4c76ad57878cb1ba1c.html#ga29a849835a39fe4c76ad57878cb1ba1c">meos_pc_schema_from_dims</a> (uint32_t pcid, int32_t srid, const char *compression, const <a class="el" href="structPCDimensionSpec.html">PCDimensionSpec</a> *dims, int ndims)</td></tr>
+<tr class="memdesc:ga29a849835a39fe4c76ad57878cb1ba1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register the schema that a point cloud identifier names, stated as its dimensions.  <a href="group__meos__pointcloud__schema__cache_ga29a849835a39fe4c76ad57878cb1ba1c.html#ga29a849835a39fe4c76ad57878cb1ba1c">More...</a><br /></td></tr>
+<tr class="separator:ga29a849835a39fe4c76ad57878cb1ba1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaaa8feb189124a1e430b9fef9aadbb83a"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_gaaa8feb189124a1e430b9fef9aadbb83a.html#gaaa8feb189124a1e430b9fef9aadbb83a">meos_pc_schema_get_srid</a> (uint32_t pcid)</td></tr>
 <tr class="memdesc:gaaa8feb189124a1e430b9fef9aadbb83a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the cached SRID for a pcid (SRID_INVALID on miss).  <a href="group__meos__pointcloud__schema__cache_gaaa8feb189124a1e430b9fef9aadbb83a.html#gaaa8feb189124a1e430b9fef9aadbb83a">More...</a><br /></td></tr>
 <tr class="separator:gaaa8feb189124a1e430b9fef9aadbb83a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -127,12 +134,18 @@ Functions</h2></td></tr>
 <tr class="memitem:ga4abdb06a1b50391cc7189d1578bfeb60"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_ga4abdb06a1b50391cc7189d1578bfeb60.html#ga4abdb06a1b50391cc7189d1578bfeb60">meos_pc_schema_register</a> (uint32_t pcid, <a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *schema)</td></tr>
 <tr class="memdesc:ga4abdb06a1b50391cc7189d1578bfeb60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a parsed PCSCHEMA in the MEOS-owned cache.  <a href="group__meos__pointcloud__schema__cache_ga4abdb06a1b50391cc7189d1578bfeb60.html#ga4abdb06a1b50391cc7189d1578bfeb60">More...</a><br /></td></tr>
 <tr class="separator:ga4abdb06a1b50391cc7189d1578bfeb60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga228e4999e6b8c63907e9f74675da28f3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_ga228e4999e6b8c63907e9f74675da28f3.html#ga228e4999e6b8c63907e9f74675da28f3">meos_pc_schema_register_dims</a> (uint32_t pcid, int32_t srid, const char *compression, const <a class="el" href="structPCDimensionSpec.html">PCDimensionSpec</a> *dims, int ndims)</td></tr>
+<tr class="memdesc:ga228e4999e6b8c63907e9f74675da28f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register the schema that a point cloud identifier names, stated as its dimensions.  <a href="group__meos__pointcloud__schema__cache_ga228e4999e6b8c63907e9f74675da28f3.html#ga228e4999e6b8c63907e9f74675da28f3">More...</a><br /></td></tr>
+<tr class="separator:ga228e4999e6b8c63907e9f74675da28f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1e0d2ff7c6b0905c2f75643de9953ebc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_ga1e0d2ff7c6b0905c2f75643de9953ebc.html#ga1e0d2ff7c6b0905c2f75643de9953ebc">meos_pc_schema_register_xml</a> (uint32_t pcid, <a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *schema, const char *xml_text)</td></tr>
 <tr class="memdesc:ga1e0d2ff7c6b0905c2f75643de9953ebc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a parsed PCSCHEMA along with its source XML in the MEOS-owned cache.  <a href="group__meos__pointcloud__schema__cache_ga1e0d2ff7c6b0905c2f75643de9953ebc.html#ga1e0d2ff7c6b0905c2f75643de9953ebc">More...</a><br /></td></tr>
 <tr class="separator:ga1e0d2ff7c6b0905c2f75643de9953ebc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa65dec42a587dd71844da01153212963"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_gaa65dec42a587dd71844da01153212963.html#gaa65dec42a587dd71844da01153212963">meos_pc_schema_xml</a> (uint32_t pcid)</td></tr>
 <tr class="memdesc:gaa65dec42a587dd71844da01153212963"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the cached XML text for a registered pcid (NULL on miss or parse-only registration).  <a href="group__meos__pointcloud__schema__cache_gaa65dec42a587dd71844da01153212963.html#gaa65dec42a587dd71844da01153212963">More...</a><br /></td></tr>
 <tr class="separator:gaa65dec42a587dd71844da01153212963"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90a1243bd6b6042746246d29566eadef"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="schema__hook_8c_a90a1243bd6b6042746246d29566eadef.html#a90a1243bd6b6042746246d29566eadef">pcschema_string_copy</a> (const char *str)</td></tr>
+<tr class="memdesc:a90a1243bd6b6042746246d29566eadef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a copy of a string allocated by the point cloud library, so that freeing the schema releases it.  <a href="schema__hook_8c_a90a1243bd6b6042746246d29566eadef.html#a90a1243bd6b6042746246d29566eadef">More...</a><br /></td></tr>
+<tr class="separator:a90a1243bd6b6042746246d29566eadef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
