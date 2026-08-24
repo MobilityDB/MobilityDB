@@ -128,3 +128,26 @@ SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));
 SELECT ST_GeometryType(buffer(geometry 'Multilinestring((0 0,10 0),(0 20,10 20))', 1));
 
 -------------------------------------------------------------------------------
+-- Intersection matrix
+-------------------------------------------------------------------------------
+
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(2 2)');
+SELECT relate(geometry 'Linestring(0 0,2 2)', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+
+-- The members of a multipolygon may share a boundary edge, and that edge lies
+-- in the interior of what they cover together, as it does when the same region
+-- is written as one polygon
+SELECT relate(geometry 'Multipolygon(((0 0,0 1,1 1,0 0)),((0 0,1 1,1 0,0 0)))',
+  geometry 'Linestring(0 0,2 2)');
+SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', geometry 'Linestring(0 0,2 2)');
+
+-- A TIN covers what its triangles cover written any other way
+SELECT relate(geometry 'Tin Z (((0 0 0,0 1 0,1 1 0,0 0 0)),((0 0 0,1 1 0,1 0 0,0 0 0)))',
+  geometry 'Linestring(0 0,2 2)');
+
+-- A pattern is matched against that matrix
+SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
+
+-------------------------------------------------------------------------------

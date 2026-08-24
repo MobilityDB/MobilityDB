@@ -89,6 +89,32 @@ Geom_convex_hull(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Intersection matrix
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Geom_relate(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_relate);
+/**
+ * @ingroup mobilitydb_geo_base_rel
+ * @brief Return the DE-9IM intersection matrix of two geometries
+ * @sqlfn relate()
+ */
+Datum
+Geom_relate(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
+  char *str = geom_relate(gs1, gs2);
+  PG_FREE_IF_COPY(gs1, 0);
+  PG_FREE_IF_COPY(gs2, 1);
+  if (! str)
+    PG_RETURN_NULL();
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
  * Simple geometries
  *****************************************************************************/
 
