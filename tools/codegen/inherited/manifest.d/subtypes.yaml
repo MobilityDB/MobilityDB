@@ -208,9 +208,29 @@ subtypes:
     brief: "temporal pgpointcloud points"
     bin:   400
     category: tspatial
+    # A point cloud point holds a POSITION, so the temporal geometry point its
+    # points resolve to is the cast target its geometry names, and the family
+    # declares the matrix that target declares. A schema carrying a Z dimension
+    # meets the engine's own refusal of a Z value in a planar relationship, the
+    # way a mixed SRID does; a schema without one answers every direction.
+    convert: "@N@::@extschema@.tgeompoint"
+    point_target: true
     positions:
       compops: 33
-    files: [compops]
+      spatialrels: 43
+    doc:
+      spatialrels: |-
+        /**
+         * @file
+         * @brief Ever/always spatial relationships for temporal pgpointcloud
+         *   points
+         *
+         * Each function converts its point cloud operand to the temporal
+         * geometry point its positions resolve to, through the standard
+         * tpcpoint::tgeompoint cast, and delegates to the temporal geometry
+         * point ever/always spatial relationship.
+         */
+    files: [compops, spatialrels]
 
   - temp:  tpcpatch
     base:  pcpatch

@@ -70,7 +70,6 @@ mobilitydb/sql/pointcloud/438_tpc_distance.in.sql
 mobilitydb/sql/pointcloud/439_tpc_gist.in.sql
 mobilitydb/sql/pointcloud/440_tpc_spgist.in.sql
 mobilitydb/sql/pointcloud/442_tpcpoint_spatialfuncs.in.sql
-mobilitydb/sql/pointcloud/443_tpcpoint_spatialrels.in.sql
 mobilitydb/sql/pointcloud/445_tpcpoint_analytics.in.sql
 mobilitydb/sql/pointcloud/447_tpcpoint_distance.in.sql
 mobilitydb/sql/pose/105_tpose_spatialfuncs.in.sql

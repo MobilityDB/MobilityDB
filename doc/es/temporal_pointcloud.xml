@@ -1191,8 +1191,28 @@ SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
 
 		<sect2 xml:id="tpcpoint_spatialrels">
 			<title>Relaciones espaciales</title>
-			<para>Se evalúan proyectando el tpcpoint a un <varname>tgeompoint</varname> a través de la caché de esquemas y delegando en la relación tgeompoint correspondiente. Cada función está conectada en tres órdenes de argumentos: <varname>(geometry, tpcpoint)</varname>, <varname>(tpcpoint, geometry)</varname> y <varname>(tpcpoint, tpcpoint)</varname>. Las relaciones ever/always están conectadas solo para tpcpoint; un tpcpatch responde en cambio las relaciones temporales, leyendo un parche como el multipunto de las posiciones que ocupan sus puntos.</para>
+			<para>Se evalúan proyectando el tpcpoint a un <varname>tgeompoint</varname> a través de la caché de esquemas y delegando en la relación tgeompoint correspondiente. Cada función está conectada en tres órdenes de argumentos: <varname>(geometry, tpcpoint)</varname>, <varname>(tpcpoint, geometry)</varname> y <varname>(tpcpoint, tpcpoint)</varname>. Las relaciones ever/always están conectadas solo para tpcpoint; un tpcpatch responde en cambio las relaciones temporales, leyendo un parche como el multipunto de las posiciones que ocupan sus puntos. Un tpcpoint declara las relaciones que declara su destino de conversión, de modo que <varname>eContains</varname>, <varname>eCovers</varname> y <varname>eTouches</varname> y sus gemelas siempre también están conectadas: un esquema cuyas dimensiones no incluyen Z las responde, y uno que lleva Z encuentra el rechazo planar <varname>The tgeompoint cannot have Z dimension</varname>, exactamente como lo hace un punto geométrico temporal tridimensional.</para>
 			<itemizedlist>
+				<listitem xml:id="tpcpoint_planarrels">
+					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+					<para>Contiene, cubre y toca alguna vez / siempre</para>
+					<para><varname>{eContains,aContains}(geometry,tpcpoint) → boolean</varname></para>
+					<para><varname>{eCovers,aCovers}(geometry,tpcpoint) → boolean</varname></para>
+					<para><varname>{eTouches,aTouches}(geometry,tpcpoint) → boolean</varname></para>
+					<para><varname>{eTouches,aTouches}(tpcpoint,geometry) → boolean</varname></para>
+					<para>Un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan, de modo que estas toman la geometría en primer lugar únicamente, salvo <varname>eTouches</varname> y <varname>aTouches</varname>, que leen cualquiera de los dos órdenes. Son relaciones planares: un punto cuyo esquema declara una dimensión Z es rechazado.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))',
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
+-- ERROR:  The tgeompoint cannot have Z dimension
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="tpcpoint_intersects">
 					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
@@ -1265,16 +1285,24 @@ SELECT aDwithin(tpcpointSeq(ARRAY[
 
 		<sect2 xml:id="tpcpoint_tempspatialrels">
 			<title>Relaciones espaciales temporales</title>
-			<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Leen la misma proyección a <varname>tgeompoint</varname> que leen las relaciones ever/always, y están conectadas en los mismos tres órdenes de argumentos. Un tpcpoint lleva la Z que declara su esquema, y <varname>tContains</varname>, <varname>tCovers</varname> y <varname>tTouches</varname> son relaciones planas que rechazan una dimensión Z, de modo que el tipo responde las tres que un valor con Z puede responder. Esa proyección lleva la interpolación de su origen, de modo que una secuencia tpcpoint se responde a lo largo de su trayectoria y no solo en sus instantes.</para>
+			<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Leen la misma proyección a <varname>tgeompoint</varname> que leen las relaciones ever/always, y están conectadas en los mismos tres órdenes de argumentos. Un tpcpoint lleva la Z que declara su esquema, si la hay: <varname>tContains</varname>, <varname>tCovers</varname> y <varname>tTouches</varname> son relaciones planares, de modo que un esquema cuyas dimensiones no incluyen Z las responde y uno que lleva Z es rechazado. Esa proyección lleva la interpolación de su origen, de modo que una secuencia tpcpoint se responde a lo largo de su trayectoria y no solo en sus instantes.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_tspatialrels">
+					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
-					<para>Disjunto temporal, a distancia temporal e intersecta temporal</para>
+					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+					<para>Relaciones espaciales temporales</para>
 					<para><varname>tDisjoint({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tbool</varname></para>
 					<para><varname>tDwithin({geometry,tpcpoint},{geometry,tpcpoint},float) &#8594; tbool</varname></para>
 					<para><varname>tIntersects({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tbool</varname></para>
+					<para><varname>tContains(geometry,tpcpoint) &#8594; tbool</varname></para>
+					<para><varname>tCovers(geometry,tpcpoint) &#8594; tbool</varname></para>
+					<para><varname>tTouches(geometry,tpcpoint) &#8594; tbool</varname></para>
+					<para><varname>tTouches(tpcpoint,geometry) &#8594; tbool</varname></para>
+					<para>Un punto de nube de puntos temporal declara las relaciones que declara su destino de conversión, de modo que <varname>tContains</varname> y <varname>tCovers</varname> toman la geometría en primer lugar únicamente y <varname>tTouches</varname> no tiene dirección entre dos puntos de nube de puntos. Las tres son relaciones planares: un esquema cuyas dimensiones no incluyen Z las responde, y uno que lleva Z encuentra el rechazo <varname>The tgeompoint cannot have Z dimension</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');

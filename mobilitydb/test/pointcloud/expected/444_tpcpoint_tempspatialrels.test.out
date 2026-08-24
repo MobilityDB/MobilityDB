@@ -71,3 +71,65 @@ SELECT asText(tIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 
  t
 (1 row)
 
+INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (7, 0,
+'<?xml version="1.0" encoding="UTF-8"?>
+<pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <pc:dimension>
+    <pc:position>1</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>X coordinate</pc:description>
+    <pc:name>X</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>2</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>Y coordinate</pc:description>
+    <pc:name>Y</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:metadata>
+    <Metadata name="srid">0</Metadata>
+  </pc:metadata>
+</pc:PointCloudSchema>')
+  ON CONFLICT (pcid) DO NOTHING;
+INSERT 0 0
+SELECT asText(tContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2024 PST
+(1 row)
+
+SELECT asText(tCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2024 PST
+(1 row)
+
+SELECT asText(tTouches(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+             astext             
+--------------------------------
+ f@Mon Jan 01 00:00:00 2024 PST
+(1 row)
+
+SELECT asText(tTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))'));
+             astext             
+--------------------------------
+ f@Mon Jan 01 00:00:00 2024 PST
+(1 row)
+
+SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = tContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS tc_agrees,
+       tCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = tCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS tcv_agrees,
+       tTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') = tTouches((tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint, geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') AS ttc_agrees;
+ tc_agrees | tcv_agrees | ttc_agrees 
+-----------+------------+------------
+ t         | t          | t
+(1 row)
+
+/* Errors: a schema carrying Z in a planar relationship */
+SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz));
+ERROR:  The tgeompoint cannot have Z dimension
+CONTEXT:  SQL function "tcontains" statement 1

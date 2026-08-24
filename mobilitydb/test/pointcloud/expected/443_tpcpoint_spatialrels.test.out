@@ -100,3 +100,87 @@ SELECT eDwithin(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]:
  t
 (1 row)
 
+INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (7, 0,
+'<?xml version="1.0" encoding="UTF-8"?>
+<pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <pc:dimension>
+    <pc:position>1</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>X coordinate</pc:description>
+    <pc:name>X</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>2</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>Y coordinate</pc:description>
+    <pc:name>Y</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:metadata>
+    <Metadata name="srid">0</Metadata>
+  </pc:metadata>
+</pc:PointCloudSchema>')
+  ON CONFLICT (pcid) DO NOTHING;
+INSERT 0 1
+SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT aContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ acontains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eTouches(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ etouches 
+----------
+ f
+(1 row)
+
+SELECT eTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))');
+ etouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS ec_agrees,
+       eCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = eCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS ecv_agrees,
+       eTouches(tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') = eTouches((tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint, geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') AS etc_agrees,
+       aContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = aContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpoint(PC_MakePoint(7, ARRAY[1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint) AS ac_agrees;
+ ec_agrees | ecv_agrees | etc_agrees | ac_agrees 
+-----------+------------+------------+-----------
+ t         | t          | t          | t
+(1 row)
+
+/* Errors: a schema carrying Z in a planar relationship */
+SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+ERROR:  The tgeompoint cannot have Z dimension
+CONTEXT:  SQL function "econtains" statement 1
+SELECT eTouches(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))');
+ERROR:  The tgeompoint cannot have Z dimension
+CONTEXT:  SQL function "etouches" statement 1
