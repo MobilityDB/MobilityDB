@@ -71,6 +71,32 @@ check(bool ok, const char *what)
   }
 }
 
+/**
+ * @brief Compare two schemas field by field
+ */
+static void
+compare(const PCSCHEMA *a, const PCSCHEMA *b)
+{
+  check(a->ndims == b->ndims, "ndims");
+  check(a->size == b->size, "size");
+  check(a->compression == b->compression, "compression");
+  for (uint32_t i = 0; i < b->ndims; i++)
+  {
+    PCDIMENSION *x = a->dims[i], *y = b->dims[i];
+    check(x && y, "dimension present");
+    if (! x || ! y)
+      continue;
+    check(strcmp(x->name, y->name) == 0, "dimension name");
+    check(x->position == y->position, "dimension position");
+    check(x->size == y->size, "dimension size");
+    check(x->byteoffset == y->byteoffset, "dimension byteoffset");
+    check(x->interpretation == y->interpretation, "dimension interpretation");
+    check(x->scale == y->scale, "dimension scale");
+    check(x->offset == y->offset, "dimension offset");
+    check(x->active == y->active, "dimension active");
+  }
+}
+
 int
 main(void)
 {
@@ -97,25 +123,26 @@ main(void)
   }
 
   printf("The schema stated as dimensions against the same document:\n");
-  check(stated->ndims == parsed->ndims, "ndims");
-  check(stated->size == parsed->size, "size");
-  check(stated->compression == parsed->compression, "compression");
+  compare(stated, parsed);
   check(stated->srid == 4326, "srid");
   check(stated->pcid == 1, "pcid");
-  for (uint32_t i = 0; i < parsed->ndims; i++)
+
+  /* The document describing a schema stated as dimensions is rendered on
+   * demand, and the only proof it is right is the library reading it back:
+   * the schema its own parser builds from that document holds the fields the
+   * dimensions state */
+  const char *rendered = meos_pc_schema_xml(1);
+  check(rendered != NULL, "a schema stated as dimensions renders a document");
+  if (rendered)
   {
-    PCDIMENSION *a = stated->dims[i], *b = parsed->dims[i];
-    check(a && b, "dimension present");
-    if (! a || ! b)
-      continue;
-    check(strcmp(a->name, b->name) == 0, "dimension name");
-    check(a->position == b->position, "dimension position");
-    check(a->size == b->size, "dimension size");
-    check(a->byteoffset == b->byteoffset, "dimension byteoffset");
-    check(a->interpretation == b->interpretation, "dimension interpretation");
-    check(a->scale == b->scale, "dimension scale");
-    check(a->offset == b->offset, "dimension offset");
-    check(a->active == b->active, "dimension active");
+    PCSCHEMA *reparsed = pc_schema_from_xml(rendered);
+    check(reparsed != NULL, "the rendered document parses");
+    if (reparsed)
+    {
+      printf("The rendered document read back by the library:\n");
+      compare(stated, reparsed);
+      pc_schema_free(reparsed);
+    }
   }
   /* The X, Y and Z dimensions are resolved from the names */
   check(stated->xdim && strcmp(stated->xdim->name, "X") == 0, "xdim");
