@@ -3309,6 +3309,9 @@
 					<listitem>
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier (inherited from the schema)</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="pcpatch_geometry"><varname>geometry</varname></link>: Return the multipoint of the positions the points of a patch occupy. The schema the <varname>pcid</varname> names decides the SRID and whether the result carries a Z dimension</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>
@@ -3682,6 +3685,22 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpcpatch_eIntersects"><varname>eIntersects</varname></link>: Return true iff at least one point in any of the tpcpatch's instants intersects the geometry (XY only).</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_tgeometry"><varname>tgeometry</varname></link>: Convert a temporal patch into the temporal geometry of the multipoints its patches occupy. Each instant's patch becomes the multipoint of the positions its points occupy, read through the schema its <varname>pcid</varname> names</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Temporal Spatial Relationships</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_tspatialrels"><varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname></link>: Temporal disjoint, within distance, and intersects</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

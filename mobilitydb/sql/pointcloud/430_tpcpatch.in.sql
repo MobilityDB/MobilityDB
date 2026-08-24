@@ -391,6 +391,16 @@ CREATE FUNCTION numPoints(tpcpatch)
   AS 'MODULE_PATHNAME', 'Tpcpatch_npoints'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- Conversion to tgeometry: each instant's patch becomes the multipoint of the
+-- positions its points occupy, read through the schema its pcid names. The
+-- temporal spatial relationships of the type delegate through this cast.
+CREATE FUNCTION tgeometry(tpcpatch)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Tpcpatch_to_tgeometry'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tpcpatch AS tgeometry) WITH FUNCTION tgeometry(tpcpatch);
+
 -- The tstzspan cast is backed by the generated timeSpan accessor.
 CREATE CAST (tpcpatch AS tstzspan) WITH FUNCTION timeSpan(tpcpatch);
 

@@ -18,6 +18,7 @@ SET(LOCAL_FILES
   445_tpcpoint_analytics
   446_tpcpoint_tile
   447_tpcpoint_distance
+  448_tpcpatch_tempspatialrels
   )
 
 foreach (f ${LOCAL_FILES})

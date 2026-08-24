@@ -59,6 +59,33 @@
 #include "pc_api.h"
 
 /*****************************************************************************
+ * Conversion to tgeometry
+ *
+ * The value-level answer — the multipoint of the positions a patch's points
+ * occupy — lives in the MEOS function @c pcpatch_to_geom, which @c
+ * tpcpatch_to_tgeometry lifts over time. The temporal spatial relationships
+ * of the type reach the geometry engine through the cast this wrapper backs.
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpcpatch_to_tgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpatch_to_tgeometry);
+/**
+ * @ingroup mobilitydb_pointcloud_conversion
+ * @brief Convert a tpcpatch into the temporal geometry of the multipoints its
+ * patches occupy
+ * @sqlfn tgeometry()
+ */
+Datum
+Tpcpatch_to_tgeometry(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpcpatch_to_tgeometry(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Per-type accessors
  *****************************************************************************/
 

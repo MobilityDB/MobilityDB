@@ -3300,6 +3300,9 @@
 					<listitem>
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial (heredado del esquema)</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="pcpatch_geometry"><varname>geometry</varname></link>: Devuelve el multipunto de las posiciones que ocupan los puntos de un parche. El esquema que nombra el <varname>pcid</varname> decide el SRID y si el resultado lleva una dimensión Z</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>
@@ -3673,6 +3676,22 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpcpatch_eIntersects"><varname>eIntersects</varname></link>: Devolver verdadero si y solo si al menos un punto de alguno de los instantes del tpcpatch intersecta la geometría (solo XY).</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Conversiones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_tgeometry"><varname>tgeometry</varname></link>: Convierte un parche temporal en la geometría temporal de los multipuntos que ocupan sus parches. El parche de cada instante se convierte en el multipunto de las posiciones que ocupan sus puntos, leídas a través del esquema que nombra su <varname>pcid</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Relaciones espaciales temporales</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_tspatialrels"><varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname></link>: Disjunto temporal, a distancia temporal e intersecta temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

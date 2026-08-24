@@ -238,6 +238,16 @@ SELECT SRID(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), PC_MakePoin
 -- 0
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="pcpatch_geometry">
+					<indexterm significance="normal"><primary><varname>geometry</varname></primary></indexterm>
+					<para>Return the multipoint of the positions the points of a patch occupy. The schema the <varname>pcid</varname> names decides the SRID and whether the result carries a Z dimension</para>
+					<para><varname>geometry(pcpatch) &#8594; geometry</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(geometry(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
+-- MULTIPOINT Z ((1 1 1),(2 2 2))
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 	</sect1>
@@ -1190,7 +1200,7 @@ SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
 
 		<sect2 xml:id="tpcpoint_spatialrels">
 			<title>Spatial relationships</title>
-			<para>Evaluated by projecting the tpcpoint to a <varname>tgeompoint</varname> via the schema cache and delegating to the corresponding tgeompoint relation. Each function is wired in three argument orders: <varname>(geometry, tpcpoint)</varname>, <varname>(tpcpoint, geometry)</varname>, and <varname>(tpcpoint, tpcpoint)</varname>. tpcpatch is intentionally out of scope, patch-level intersection would require per-point decompression and a different design.</para>
+			<para>Evaluated by projecting the tpcpoint to a <varname>tgeompoint</varname> via the schema cache and delegating to the corresponding tgeompoint relation. Each function is wired in three argument orders: <varname>(geometry, tpcpoint)</varname>, <varname>(tpcpoint, geometry)</varname>, and <varname>(tpcpoint, tpcpoint)</varname>. The ever/always relationships are wired for tpcpoint alone; a tpcpatch answers the temporal relationships instead, reading a patch as the multipoint of the positions its points occupy.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_intersects">
 					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
@@ -1720,6 +1730,54 @@ SELECT eIntersects(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(1, pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
   '2001-01-02'::timestamptz)]), geometry 'POINT(1 1)');
 -- t
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_conversions">
+			<title>Conversions</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_tgeometry">
+					<indexterm significance="normal"><primary><varname>tgeometry</varname></primary></indexterm>
+					<para>Convert a temporal patch into the temporal geometry of the multipoints its patches occupy. Each instant's patch becomes the multipoint of the positions its points occupy, read through the schema its <varname>pcid</varname> names</para>
+					<para><varname>tgeometry(tpcpatch) &#8594; tgeometry</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+  '2001-01-01'::timestamptz)::tgeometry);
+-- MULTIPOINT Z ((1 1 1),(2 2 2))@2001-01-01
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_tempspatialrels">
+			<title>Temporal Spatial Relationships</title>
+			<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A patch reaches the geometry engine through the <varname>tgeometry</varname> conversion above, so one point of a patch inside the argument is enough for the patch to intersect it. A tpcpatch carries the Z its schema declares, and <varname>tContains</varname>, <varname>tCovers</varname> and <varname>tTouches</varname> are planar relationships that refuse a Z dimension, so the type answers the three that a Z-carrying value can.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_tspatialrels">
+					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+					<para>Temporal disjoint, within distance, and intersects</para>
+					<para><varname>tDisjoint({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
+					<para><varname>tDwithin({geometry,tpcpatch},{geometry,tpcpatch},float) &#8594; tbool</varname></para>
+					<para><varname>tIntersects({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tIntersects(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)),
+  '2001-01-01'::timestamptz), geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- t@2001-01-01
+SELECT tDisjoint(tpcpatch(pcpatch(1, pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz),
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- t@2001-01-02
+SELECT tDwithin(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz),
+  geometry 'Point(1 5)', 2.0);
+-- f@2001-01-01
+SELECT tIntersects(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(1, pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz)]),
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- [t@2001-01-01, f@2001-01-02]
 </programlisting>
 				</listitem>
 			</itemizedlist>

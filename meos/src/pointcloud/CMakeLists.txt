@@ -47,6 +47,10 @@ if(POINTCLOUD)
     # nad_tpcpoint_geo.
     tpcpoint_spatialfuncs.c
 
+    # Geometric representation of pcpatch / tpcpatch: pcpatch_to_geom,
+    # tpcpatch_to_tgeometry.
+    tpcpatch_spatialfuncs.c
+
     # Temporal<T> value surface (constructors, accessors, restrictions) for the
     # temporal pgpointcloud types, generated from the tjsonb reference by
     # tools/codegen/temporal_basetype/generate.py.

@@ -493,7 +493,7 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ✗ HAND | tDistance/nad/nai/shortestLine — reserved position, no template |
 | Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, tnpoint — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
-| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 10/10, full coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl (delegates to tgeo): tquadbin, th3index, tpose, trgeometry, tnpoint |
+| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 13/13, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl (delegates to tgeo): tquadbin, th3index, tpose, tposechain, trgeometry, tnpoint, tpcpoint, tpcpatch |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
 
@@ -549,14 +549,14 @@ Reading the table:
 - **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin**
   via the whole-file `aggregate_families` axis (§4b), not the `subtypes:` track
   (`--gaps`: `aggregate_families` 19/19, full coverage).
-- **`tempsp.rels` is generated for cbuffer, npoint, pose, posechain, pointcloud,
-  rgeo, h3, quadbin** via `tempspatialrel_families` (§3/§5) — native for cbuffer,
-  cast-delegated for the other seven, every one of them converting to `tgeometry`
-  (`--gaps`: `tempspatialrel_families` 12/13, `tpcpatch` outstanding).
+- **`tempsp.rels` is generated for cbuffer, npoint, pose, posechain, pointcloud
+  (both types), rgeo, h3, quadbin** via `tempspatialrel_families` (§3/§5) — native
+  for cbuffer, cast-delegated for the other eight, every one of them converting to
+  `tgeometry` (`--gaps`: `tempspatialrel_families` 13/13, full coverage).
   ⛔ A delegating family declares the predicates its VALUES can answer, not a fixed
-  six: `tpcpoint` carries the Z its schema declares and `tContains`, `tCovers` and
-  `tTouches` are planar DE-9IM relationships that refuse a Z dimension, so it
-  declares `tDisjoint`, `tIntersects` and `tDwithin` alone.
+  six: `tpcpoint` and `tpcpatch` carry the Z their schema declares and `tContains`,
+  `tCovers` and `tTouches` are planar DE-9IM relationships that refuse a Z
+  dimension, so both declare `tDisjoint`, `tIntersects` and `tDwithin` alone.
 - **`spatialrels` SQL** (the ever/always wrapper *file*) is generated for the
   **cast-delegated families** (h3 262, quadbin 362, npoint 320) via the `subtypes:`
   `spatialrels` behaviour — a cell-boundary→`tgeometry` cast for h3/quadbin, a
@@ -621,11 +621,11 @@ its last edit:
 - `aggregate_families` is **19/19**: `561_tposechain_aggfuncs.in.sql` carries the
   surface its siblings carry, every statement binding a generic transition or final
   function, so the family needs no kernel of its own.
-- `tempspatialrel_families`, **12/13**: `tpcpatch`.
-  ⛔ It projects onto a conversion the family does NOT have: every delegating
-  family reaches `tgeometry`, and a `pcpatch` has no geometry conversion at all,
-  so closing it ADDS a MEOS entry rather than a manifest line. That is a
-  functional decision for the owner, not a governance one.
+- `tempspatialrel_families` is **13/13**: `448_tpcpatch_tempspatialrels.in.sql`
+  closes the axis. Its conversion is the one the family lacked — `pcpatch_to_geom`
+  reads a patch as the `MULTIPOINT` of the positions its points occupy, and
+  `tpcpatch_to_tgeometry` lifts that over time — so the manifest line rests on a
+  MEOS entry rather than on a cast chain that already existed.
 - `distance_families`, **10/15** of the value-domain types: `posechainset`,
   `h3indexset`, `quadbinset`, `pcpointset`, `pcpatchset`. `posechainset` is
   deliberate and `setfamilies.yaml` says so in place — a pose chain has no

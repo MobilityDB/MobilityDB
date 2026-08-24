@@ -109,6 +109,22 @@ CREATE FUNCTION SRID(pcpatch)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Conversion of a patch into its geometry
+ *
+ * A patch is a cluster of points, so its geometry is the multipoint of the
+ * positions its points occupy. The schema the pcid names decides the SRID and
+ * the Z dimension, which is why the function is STABLE rather than IMMUTABLE,
+ * as the schema-aware getters above are.
+ ******************************************************************************/
+
+CREATE FUNCTION geometry(pcpatch)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Pcpatch_to_geom'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (pcpatch AS geometry) WITH FUNCTION geometry(pcpatch);
+
+/******************************************************************************
  * pcpoint — Comparison / B-tree / hash
  ******************************************************************************/
 

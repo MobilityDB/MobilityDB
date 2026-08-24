@@ -74,6 +74,10 @@
  * @ingroup mobilitydb_pointcloud_base
  * @brief Spatial reference system functions for pcpoint / pcpatch
  *
+ * @defgroup mobilitydb_pointcloud_base_conversion Conversion functions
+ * @ingroup mobilitydb_pointcloud_base
+ * @brief Conversion of pcpoint / pcpatch into other types
+ *
  * @defgroup mobilitydb_pointcloud_base_comp Comparison functions
  * @ingroup mobilitydb_pointcloud_base
  * @brief Comparison functions for pcpoint / pcpatch
