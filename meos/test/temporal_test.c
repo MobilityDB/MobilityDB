@@ -1734,6 +1734,10 @@ int main(void)
   int32_result = always_eq_float_tfloat(float8_in1, tfloat1);
   printf("always_eq_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
 
+  /* int always_eq_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = always_eq_bigint_tbigint(int64_in1, tbigint1);
+  printf("always_eq_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
+
   /* int always_eq_int_tint(int i, const Temporal *temp); */
   int32_result = always_eq_int_tint(int32_in1, tint1);
   printf("always_eq_int_tint(%d, %s): %d\n", int32_in1, tint1_out, int32_result);
@@ -1754,6 +1758,10 @@ int main(void)
   int32_result = always_eq_tfloat_float(tfloat1, float8_in1);
   printf("always_eq_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int always_eq_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = always_eq_tbigint_bigint(tbigint1, int64_in1);
+  printf("always_eq_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int always_eq_tint_int(const Temporal *temp, int i); */
   int32_result = always_eq_tint_int(tint1, int32_in1);
   printf("always_eq_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -1765,6 +1773,10 @@ int main(void)
   /* int always_ge_float_tfloat(double d, const Temporal *temp); */
   int32_result = always_ge_float_tfloat(float8_in1, tfloat1);
   printf("always_ge_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int always_ge_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = always_ge_bigint_tbigint(int64_in1, tbigint1);
+  printf("always_ge_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int always_ge_int_tint(int i, const Temporal *temp); */
   int32_result = always_ge_int_tint(int32_in1, tint1);
@@ -1782,6 +1794,10 @@ int main(void)
   int32_result = always_ge_tfloat_float(tfloat1, float8_in1);
   printf("always_ge_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int always_ge_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = always_ge_tbigint_bigint(tbigint1, int64_in1);
+  printf("always_ge_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int always_ge_tint_int(const Temporal *temp, int i); */
   int32_result = always_ge_tint_int(tint1, int32_in1);
   printf("always_ge_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -1793,6 +1809,10 @@ int main(void)
   /* int always_gt_float_tfloat(double d, const Temporal *temp); */
   int32_result = always_gt_float_tfloat(float8_in1, tfloat1);
   printf("always_gt_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int always_gt_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = always_gt_bigint_tbigint(int64_in1, tbigint1);
+  printf("always_gt_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int always_gt_int_tint(int i, const Temporal *temp); */
   int32_result = always_gt_int_tint(int32_in1, tint1);
@@ -1810,6 +1830,10 @@ int main(void)
   int32_result = always_gt_tfloat_float(tfloat1, float8_in1);
   printf("always_gt_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int always_gt_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = always_gt_tbigint_bigint(tbigint1, int64_in1);
+  printf("always_gt_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int always_gt_tint_int(const Temporal *temp, int i); */
   int32_result = always_gt_tint_int(tint1, int32_in1);
   printf("always_gt_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -1821,6 +1845,10 @@ int main(void)
   /* int always_le_float_tfloat(double d, const Temporal *temp); */
   int32_result = always_le_float_tfloat(float8_in1, tfloat1);
   printf("always_le_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int always_le_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = always_le_bigint_tbigint(int64_in1, tbigint1);
+  printf("always_le_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int always_le_int_tint(int i, const Temporal *temp); */
   int32_result = always_le_int_tint(int32_in1, tint1);
@@ -1838,6 +1866,10 @@ int main(void)
   int32_result = always_le_tfloat_float(tfloat1, float8_in1);
   printf("always_le_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int always_le_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = always_le_tbigint_bigint(tbigint1, int64_in1);
+  printf("always_le_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int always_le_tint_int(const Temporal *temp, int i); */
   int32_result = always_le_tint_int(tint1, int32_in1);
   printf("always_le_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -1849,6 +1881,10 @@ int main(void)
   /* int always_lt_float_tfloat(double d, const Temporal *temp); */
   int32_result = always_lt_float_tfloat(float8_in1, tfloat1);
   printf("always_lt_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int always_lt_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = always_lt_bigint_tbigint(int64_in1, tbigint1);
+  printf("always_lt_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int always_lt_int_tint(int i, const Temporal *temp); */
   int32_result = always_lt_int_tint(int32_in1, tint1);
@@ -1866,6 +1902,10 @@ int main(void)
   int32_result = always_lt_tfloat_float(tfloat1, float8_in1);
   printf("always_lt_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int always_lt_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = always_lt_tbigint_bigint(tbigint1, int64_in1);
+  printf("always_lt_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int always_lt_tint_int(const Temporal *temp, int i); */
   int32_result = always_lt_tint_int(tint1, int32_in1);
   printf("always_lt_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -1881,6 +1921,10 @@ int main(void)
   /* int always_ne_float_tfloat(double d, const Temporal *temp); */
   int32_result = always_ne_float_tfloat(float8_in1, tfloat1);
   printf("always_ne_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int always_ne_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = always_ne_bigint_tbigint(int64_in1, tbigint1);
+  printf("always_ne_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int always_ne_int_tint(int i, const Temporal *temp); */
   int32_result = always_ne_int_tint(int32_in1, tint1);
@@ -1902,6 +1946,10 @@ int main(void)
   int32_result = always_ne_tfloat_float(tfloat1, float8_in1);
   printf("always_ne_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int always_ne_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = always_ne_tbigint_bigint(tbigint1, int64_in1);
+  printf("always_ne_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int always_ne_tint_int(const Temporal *temp, int i); */
   int32_result = always_ne_tint_int(tint1, int32_in1);
   printf("always_ne_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -1917,6 +1965,10 @@ int main(void)
   /* int ever_eq_float_tfloat(double d, const Temporal *temp); */
   int32_result = ever_eq_float_tfloat(float8_in1, tfloat1);
   printf("ever_eq_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int ever_eq_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = ever_eq_bigint_tbigint(int64_in1, tbigint1);
+  printf("ever_eq_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int ever_eq_int_tint(int i, const Temporal *temp); */
   int32_result = ever_eq_int_tint(int32_in1, tint1);
@@ -1938,6 +1990,10 @@ int main(void)
   int32_result = ever_eq_tfloat_float(tfloat1, float8_in1);
   printf("ever_eq_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int ever_eq_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = ever_eq_tbigint_bigint(tbigint1, int64_in1);
+  printf("ever_eq_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int ever_eq_tint_int(const Temporal *temp, int i); */
   int32_result = ever_eq_tint_int(tint1, int32_in1);
   printf("ever_eq_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -1949,6 +2005,10 @@ int main(void)
   /* int ever_ge_float_tfloat(double d, const Temporal *temp); */
   int32_result = ever_ge_float_tfloat(float8_in1, tfloat1);
   printf("ever_ge_float_tfloat(%lf², %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int ever_ge_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = ever_ge_bigint_tbigint(int64_in1, tbigint1);
+  printf("ever_ge_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int ever_ge_int_tint(int i, const Temporal *temp); */
   int32_result = ever_ge_int_tint(int32_in1, tint1);
@@ -1966,6 +2026,10 @@ int main(void)
   int32_result = ever_ge_tfloat_float(tfloat1, float8_in1);
   printf("ever_ge_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int ever_ge_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = ever_ge_tbigint_bigint(tbigint1, int64_in1);
+  printf("ever_ge_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int ever_ge_tint_int(const Temporal *temp, int i); */
   int32_result = ever_ge_tint_int(tint1, int32_in1);
   printf("ever_ge_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -1977,6 +2041,10 @@ int main(void)
   /* int ever_gt_float_tfloat(double d, const Temporal *temp); */
   int32_result = ever_gt_float_tfloat(float8_in1, tfloat1);
   printf("ever_gt_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int ever_gt_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = ever_gt_bigint_tbigint(int64_in1, tbigint1);
+  printf("ever_gt_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int ever_gt_int_tint(int i, const Temporal *temp); */
   int32_result = ever_gt_int_tint(int32_in1, tint1);
@@ -1994,6 +2062,10 @@ int main(void)
   int32_result = ever_gt_tfloat_float(tfloat1, float8_in1);
   printf("ever_gt_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int ever_gt_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = ever_gt_tbigint_bigint(tbigint1, int64_in1);
+  printf("ever_gt_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int ever_gt_tint_int(const Temporal *temp, int i); */
   int32_result = ever_gt_tint_int(tint1, int32_in1);
   printf("ever_gt_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -2005,6 +2077,10 @@ int main(void)
   /* int ever_le_float_tfloat(double d, const Temporal *temp); */
   int32_result = ever_le_float_tfloat(float8_in1, tfloat1);
   printf("ever_le_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int ever_le_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = ever_le_bigint_tbigint(int64_in1, tbigint1);
+  printf("ever_le_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int ever_le_int_tint(int i, const Temporal *temp); */
   int32_result = ever_le_int_tint(int32_in1, tint1);
@@ -2022,6 +2098,10 @@ int main(void)
   int32_result = ever_le_tfloat_float(tfloat1, float8_in1);
   printf("ever_le_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int ever_le_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = ever_le_tbigint_bigint(tbigint1, int64_in1);
+  printf("ever_le_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int ever_le_tint_int(const Temporal *temp, int i); */
   int32_result = ever_le_tint_int(tint1, int32_in1);
   printf("ever_le_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -2033,6 +2113,10 @@ int main(void)
   /* int ever_lt_float_tfloat(double d, const Temporal *temp); */
   int32_result = ever_lt_float_tfloat(float8_in1, tfloat1);
   printf("ever_lt_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int ever_lt_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = ever_lt_bigint_tbigint(int64_in1, tbigint1);
+  printf("ever_lt_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int ever_lt_int_tint(int i, const Temporal *temp); */
   int32_result = ever_lt_int_tint(int32_in1, tint1);
@@ -2050,6 +2134,10 @@ int main(void)
   int32_result = ever_lt_tfloat_float(tfloat1, float8_in1);
   printf("ever_lt_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
 
+  /* int ever_lt_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = ever_lt_tbigint_bigint(tbigint1, int64_in1);
+  printf("ever_lt_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
+
   /* int ever_lt_tint_int(const Temporal *temp, int i); */
   int32_result = ever_lt_tint_int(tint1, int32_in1);
   printf("ever_lt_tint_int(%s, %d): %d\n", tint1_out, int32_in1, int32_result);
@@ -2065,6 +2153,10 @@ int main(void)
   /* int ever_ne_float_tfloat(double d, const Temporal *temp); */
   int32_result = ever_ne_float_tfloat(float8_in1, tfloat1);
   printf("ever_ne_float_tfloat(%lf, %s): %d\n", float8_in1, tfloat1_out, int32_result);
+
+  /* int ever_ne_bigint_tbigint(int64 i, const Temporal *temp); */
+  int32_result = ever_ne_bigint_tbigint(int64_in1, tbigint1);
+  printf("ever_ne_bigint_tbigint(%lld, %s): %d\n", (long long) int64_in1, tbigint1_out, int32_result);
 
   /* int ever_ne_int_tint(int i, const Temporal *temp); */
   int32_result = ever_ne_int_tint(int32_in1, tint1);
@@ -2085,6 +2177,10 @@ int main(void)
   /* int ever_ne_tfloat_float(const Temporal *temp, double d); */
   int32_result = ever_ne_tfloat_float(tfloat1, float8_in1);
   printf("ever_ne_tfloat_float(%s, %lf): %d\n", tfloat1_out, float8_in1, int32_result);
+
+  /* int ever_ne_tbigint_bigint(const Temporal *temp, int64 i); */
+  int32_result = ever_ne_tbigint_bigint(tbigint1, int64_in1);
+  printf("ever_ne_tbigint_bigint(%s, %lld): %d\n", tbigint1_out, (long long) int64_in1, int32_result);
 
   /* int ever_ne_tint_int(const Temporal *temp, int i); */
   int32_result = ever_ne_tint_int(tint1, int32_in1);
