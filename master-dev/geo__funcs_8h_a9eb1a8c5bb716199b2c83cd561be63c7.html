@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: lwcircle_make</title>
+<title>MobilityDB: ensure_same_srid_geoarr</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -109,7 +109,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a4b2bea4c00ea4ed6d10b1a3eeb60a2e7.html#a4b2bea4c00ea4ed6d10b1a3eeb60a2e7">ensure_same_geodetic_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_acf085461d0de2004ca05e19a9777d2b9.html#acf085461d0de2004ca05e19a9777d2b9">ensure_same_spatial_dimensionality</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a6fd6929bd7344f112eb29e6da649e89b.html#a6fd6929bd7344f112eb29e6da649e89b">ensure_same_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a9eb1a8c5bb716199b2c83cd561be63c7.html#a9eb1a8c5bb716199b2c83cd561be63c7">ensure_same_srid_geoarr</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a9eb1a8c5bb716199b2c83cd561be63c7.html#a9eb1a8c5bb716199b2c83cd561be63c7">ensure_same_srid_geoarr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a1edf2b6761d7b8ba3c0f1cfe73109137.html#a1edf2b6761d7b8ba3c0f1cfe73109137">ensure_srid_is_latlong</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a28d681a379f94dc2f2527afcabe5d7a7.html#a28d681a379f94dc2f2527afcabe5d7a7">ensure_srid_known</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_abdf9bba2cdb4de3aa47f442dea780d1d.html#abdf9bba2cdb4de3aa47f442dea780d1d">ensure_srid_reconcile</a></td></tr>
@@ -125,7 +125,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aec0cdbf6de4fde6de67870382b739149.html#aec0cdbf6de4fde6de67870382b739149">geopoint_same</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120c">IntersectType</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac97ccd804c59e373ff793135cef0191b.html#ac97ccd804c59e373ff793135cef0191b">linesegm_intersect</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e">lwcircle_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e">lwcircle_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a68271a26cf0484985212bc9986358f63.html#a68271a26cf0484985212bc9986358f63">lwpointarr_make_trajectory</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8ddc88e891374e0d420e2bfc9318fa2c.html#a8ddc88e891374e0d420e2bfc9318fa2c">lwpointarr_remove_duplicates</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a">meos_areal_union</a></td></tr>
@@ -149,35 +149,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad8290327267bb18b7f28118199edfb9e" name="ad8290327267bb18b7f28118199edfb9e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad8290327267bb18b7f28118199edfb9e">&#9670;&#160;</a></span>lwcircle_make()</h2>
+<a id="a9eb1a8c5bb716199b2c83cd561be63c7" name="a9eb1a8c5bb716199b2c83cd561be63c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9eb1a8c5bb716199b2c83cd561be63c7">&#9670;&#160;</a></span>ensure_same_srid_geoarr()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structLWGEOM.html">LWGEOM</a> * lwcircle_make </td>
+          <td class="memname">bool ensure_same_srid_geoarr </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
+          <td class="paramname"><em>geoms</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>radius</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -187,7 +175,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a circle created from a central point and a radius. </p>
+<p>Ensure that every member of an array of geometries carries the SRID the first one does. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geoms</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: relate_edge_distance</title>
+<title>MobilityDB: ensure_same_srid_geoarr</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -112,7 +112,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aebbfe6bf61813306f13413d2a4cfdbbc.html#aebbfe6bf61813306f13413d2a4cfdbbc">ensure_same_dimensionality</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4b2bea4c00ea4ed6d10b1a3eeb60a2e7.html#a4b2bea4c00ea4ed6d10b1a3eeb60a2e7">ensure_same_geodetic_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_acf085461d0de2004ca05e19a9777d2b9.html#acf085461d0de2004ca05e19a9777d2b9">ensure_same_spatial_dimensionality</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a9eb1a8c5bb716199b2c83cd561be63c7.html#a9eb1a8c5bb716199b2c83cd561be63c7">ensure_same_srid_geoarr</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a9eb1a8c5bb716199b2c83cd561be63c7.html#a9eb1a8c5bb716199b2c83cd561be63c7">ensure_same_srid_geoarr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1edf2b6761d7b8ba3c0f1cfe73109137.html#a1edf2b6761d7b8ba3c0f1cfe73109137">ensure_srid_is_latlong</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a28d681a379f94dc2f2527afcabe5d7a7.html#a28d681a379f94dc2f2527afcabe5d7a7">ensure_srid_known</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_abdf9bba2cdb4de3aa47f442dea780d1d.html#abdf9bba2cdb4de3aa47f442dea780d1d">ensure_srid_reconcile</a></td></tr>
@@ -219,7 +219,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aedaa1fc1d8b92f4e55f5a0e05cc99c8c.html#aedaa1fc1d8b92f4e55f5a0e05cc99c8c">relate_dim_mask</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4a229ab5b677bb53e1fec84ef763483d.html#a4a229ab5b677bb53e1fec84ef763483d">relate_dimension</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a05009eaf7b42fbd5a62cd9576730e583.html#a05009eaf7b42fbd5a62cd9576730e583">relate_dispatch</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a49f6df13883bc0ddbe35dc1d8bf99a55.html#a49f6df13883bc0ddbe35dc1d8bf99a55">relate_edge_distance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a49f6df13883bc0ddbe35dc1d8bf99a55.html#a49f6df13883bc0ddbe35dc1d8bf99a55">relate_edge_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a83d02153b0878513efa950b76a7264e4.html#a83d02153b0878513efa950b76a7264e4">relate_edge_inside_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a7a459afae3bba0d825112f083c588f32.html#a7a459afae3bba0d825112f083c588f32">relate_edge_nonempty</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad22b0ada94037f883153b630906767fa.html#ad22b0ada94037f883153b630906767fa">relate_edge_point</a></td></tr>
@@ -285,32 +285,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a49f6df13883bc0ddbe35dc1d8bf99a55" name="a49f6df13883bc0ddbe35dc1d8bf99a55"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a49f6df13883bc0ddbe35dc1d8bf99a55">&#9670;&#160;</a></span>relate_edge_distance()</h2>
+<a id="a9eb1a8c5bb716199b2c83cd561be63c7" name="a9eb1a8c5bb716199b2c83cd561be63c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9eb1a8c5bb716199b2c83cd561be63c7">&#9670;&#160;</a></span>ensure_same_srid_geoarr()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static double relate_edge_distance </td>
+          <td class="memname">bool ensure_same_srid_geoarr </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
+          <td class="paramname"><em>geoms</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
-          <td class="paramname"><em>e</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -318,14 +309,16 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Return the distance from a point to an edge. </p>
+<p>Ensure that every member of an array of geometries carries the SRID the first one does. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geoms</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
