@@ -928,6 +928,18 @@
 				<listitem>
 					<para><link linkend="geo_buffer"><varname>buffer</varname></link>: Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Devuelve la región que dos geometrías comparten</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Devuelve la región que dos geometrías cubren en conjunto</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_difference"><varname>difference</varname></link>: Devuelve la región de la primera geometría que la segunda no cubre</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_symdifference"><varname>symDifference</varname></link>: Devuelve la región que cubre exactamente una de dos geometrías</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

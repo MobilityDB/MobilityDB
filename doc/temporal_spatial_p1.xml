@@ -106,6 +106,66 @@ SELECT ST_AsText(round(buffer(geometry
 -- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="geo_intersection">
+				<indexterm significance="normal"><primary><varname>intersection</varname></primary></indexterm>
+				<para>Return the region two geometries share</para>
+				<para><varname>intersection(geometry,geometry) → geometry</varname></para>
+				<para>The four Boolean operations of this section answer over the (multi)polygons the temporal types whose values are regions carry, and each takes the name of the PostGIS function it answers for without the <varname>ST_</varname> prefix, so a query reaches this engine by dropping the prefix and PostGIS by keeping it. They are planar and two-dimensional: a geography, a Z dimension and a geometry that is not a (multi)polygon are refused. An empty result is answered as <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
+-- POLYGON((5 3,3 3,3 5,5 5,5 3))
+SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'MultiPolygon(((2 2,2 4,3 4,3 2,2 2)),((4 2,4 4,6 4,6 2,4 2)))'));
+-- MULTIPOLYGON(((3 2,2 2,2 4,3 4,3 2)),((5 2,4 2,4 4,5 4,5 2)))
+SELECT intersection(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
+  geometry 'Polygon((10 10,10 11,11 11,11 10,10 10))') IS NULL;
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_geounion">
+				<indexterm significance="normal"><primary><varname>geoUnion</varname></primary></indexterm>
+				<para>Return the region two geometries cover together</para>
+				<para><varname>geoUnion(geometry,geometry) → geometry</varname></para>
+				<para><varname>UNION</varname> is a reserved word of SQL, so this one carries the name of the type it answers over, as <varname>setUnion</varname> and <varname>spanUnion</varname> do. Two geometries that do not meet are answered as a multipolygon.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(geoUnion(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
+-- POLYGON((5 1,1 1,1 5,3 5,3 7,7 7,7 3,5 3,5 1))
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_difference">
+				<indexterm significance="normal"><primary><varname>difference</varname></primary></indexterm>
+				<para>Return the region of the first geometry that the second does not cover</para>
+				<para><varname>difference(geometry,geometry) → geometry</varname></para>
+				<para>A second geometry lying inside the first leaves a hole rather than dividing it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
+-- POLYGON((5 1,1 1,1 5,3 5,3 3,5 3,5 1))
+SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((2 2,2 4,4 4,4 2,2 2))'));
+-- POLYGON((5 1,1 1,1 5,5 5,5 1),(2 4,2 2,4 2,4 4,2 4))
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_symdifference">
+				<indexterm significance="normal"><primary><varname>symDifference</varname></primary></indexterm>
+				<para>Return the region exactly one of two geometries covers</para>
+				<para><varname>symDifference(geometry,geometry) → geometry</varname></para>
+				<para>It is the union of the two geometries less the region they share, so a geometry against itself is answered as <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(symDifference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
+-- MULTIPOLYGON(((7 3,5 3,5 5,3 5,3 7,7 7,7 3)),((5 1,1 1,1 5,3 5,3 3,5 3,5 1)))
+SELECT symDifference(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))') IS NULL;
+-- true
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

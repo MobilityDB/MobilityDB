@@ -928,6 +928,18 @@
 				<listitem>
 					<para><link linkend="geo_buffer"><varname>buffer</varname></link>: Return the geometry holding every point within a distance of a geometry</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Return the region two geometries share</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Return the region two geometries cover together</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_difference"><varname>difference</varname></link>: Return the region of the first geometry that the second does not cover</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_symdifference"><varname>symDifference</varname></link>: Return the region exactly one of two geometries covers</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
