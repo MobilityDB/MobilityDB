@@ -226,6 +226,10 @@ extern uint32_t pcpatch_npoints(const Pcpatch *pa);
 extern uint32 pcpatch_hash(const Pcpatch *pa);
 extern uint64 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed);
 
+/* Conversion */
+
+extern GSERIALIZED *pcpatch_to_geom(const Pcpatch *pa);
+
 /* Comparison */
 
 extern int pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2);
@@ -449,6 +453,7 @@ extern bool ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2);
 /* Conversion */
 
 extern Temporal *tpointcloud_to_tgeompoint(const Temporal *temp);
+extern Temporal *tpcpatch_to_tgeometry(const Temporal *temp);
 
 extern TInstant *tpcpointinst_make(const Pcpoint *pt, TimestampTz t);
 extern TSequence *tpcpointseq_from_base_tstzset(const Pcpoint *pt, const Set *s);

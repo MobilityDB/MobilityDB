@@ -176,6 +176,24 @@ tempspatialrel_families:
        * @brief Temporal spatial relationships for temporal pgpointcloud points
        */
 
+  # A tpcpatch reaches the geometry engine as the multipoint of the positions
+  # its points occupy. Like a tpcpoint it carries the Z its schema declares, so
+  # it declares the three predicates a Z-carrying value can answer.
+  - family:  tpcpatch
+    impl:    cast
+    file:    mobilitydb/sql/pointcloud/448_tpcpatch_tempspatialrels.in.sql
+    predicates: [tDisjoint, tIntersects, tDwithin]
+    directions:
+      - {l: geometry, r: tpcpatch}
+      - {l: tpcpatch, r: geometry}
+      - {l: tpcpatch, r: tpcpatch}
+    convert: "@N@::@extschema@.tgeometry"
+    doc: |-
+      /**
+       * @file
+       * @brief Temporal spatial relationships for temporal pgpointcloud patches
+       */
+
   - family:  tposechain
     impl:    cast
     file:    mobilitydb/sql/posechain/564_tposechain_tempspatialrels.in.sql

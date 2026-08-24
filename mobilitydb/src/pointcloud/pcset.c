@@ -53,6 +53,7 @@
 #include "pointcloud/pcpatch.h"
 #include "pointcloud/meos_schema_hook.h"
 /* MobilityDB */
+#include "pg_geo/postgis.h"  /* PG_RETURN_GSERIALIZED_P */
 #include "pg_pointcloud/schema_cache.h"
 
 /*****************************************************************************
@@ -396,6 +397,28 @@ Pcpoint_hash_extended(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Comparison functions for pcpatch
  *****************************************************************************/
+
+/*****************************************************************************
+ * Conversion of a patch into its geometry
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pcpatch_to_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_to_geom);
+/**
+ * @ingroup mobilitydb_pointcloud_base_conversion
+ * @brief Convert a pcpatch into the multipoint of the positions its points
+ * occupy
+ * @sqlfn geometry()
+ */
+Datum
+Pcpatch_to_geom(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  GSERIALIZED *result = pcpatch_to_geom(pa);
+  PG_FREE_IF_COPY(pa, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
 
 PGDLLEXPORT Datum Pcpatch_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpatch_eq);

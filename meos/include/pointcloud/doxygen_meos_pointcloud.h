@@ -73,6 +73,10 @@
  * @ingroup meos_pointcloud_base
  * @brief Schema-aware coordinate accessors and metadata for pcpoint / pcpatch
  *
+ * @defgroup meos_pointcloud_base_conversion Conversion functions
+ * @ingroup meos_pointcloud_base
+ * @brief Conversion of pcpoint / pcpatch into other types
+ *
  * @defgroup meos_pointcloud_base_comp Comparison functions
  * @ingroup meos_pointcloud_base
  * @brief Equality, ordering, and hashing for pcpoint and pcpatch
