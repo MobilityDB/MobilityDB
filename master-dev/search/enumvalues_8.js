@@ -19,11 +19,12 @@ var searchData=
   ['index_5foverleft_16',['INDEX_OVERLEFT',['../meos_8h_a87fac56528d5e990683a4c6b1a1ceac9.html#a87fac56528d5e990683a4c6b1a1ceac9a8c43af67e4f4c607d2bb27165cbd88a7',1,'meos.h']]],
   ['index_5foverright_17',['INDEX_OVERRIGHT',['../meos_8h_a87fac56528d5e990683a4c6b1a1ceac9.html#a87fac56528d5e990683a4c6b1a1ceac9ab6b94aa569efd86cd8b69321362e9e51',1,'meos.h']]],
   ['index_5fright_18',['INDEX_RIGHT',['../meos_8h_a87fac56528d5e990683a4c6b1a1ceac9.html#a87fac56528d5e990683a4c6b1a1ceac9a6d07d7da29cc0ee9203ffb7720a6a7d4',1,'meos.h']]],
-  ['inter_19',['INTER',['../meos_2include_2temporal_2temporal_8h_aea6d16f68cc33ad5b54e68733eded97b.html#aea6d16f68cc33ad5b54e68733eded97ba5efa5610d5a2c5e9123d6894dd72e335',1,'temporal.h']]],
-  ['interp_5fnone_20',['INTERP_NONE',['../meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7aa44ef612e9247c6e8bac5b9d6834a377',1,'meos.h']]],
-  ['intersect_5fnone_21',['INTERSECT_NONE',['../geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120ca7e9ecaf94a863cd021c6a630d8e70caf',1,'geo_funcs.h']]],
-  ['intersect_5fop_22',['INTERSECT_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dbad4078d10abda35f0c242f03f4c219254',1,'meos_catalog.h']]],
-  ['intersect_5foverlap_23',['INTERSECT_OVERLAP',['../geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120ca693338feba56baa2448c5e42c2182669',1,'geo_funcs.h']]],
-  ['intersect_5fpoint_24',['INTERSECT_POINT',['../geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120ca7c34cf0e2856ee1ff5882aef7a364dc7',1,'geo_funcs.h']]],
-  ['intersects_25',['INTERSECTS',['../meos__geo_8h_a24b4bb83270bd2149778ccb5712f264c.html#a24b4bb83270bd2149778ccb5712f264ca28e79ef0037d9e5a6d47d167d068c71a',1,'meos_geo.h']]]
+  ['index_5fsame_19',['INDEX_SAME',['../meos_8h_a87fac56528d5e990683a4c6b1a1ceac9.html#a87fac56528d5e990683a4c6b1a1ceac9a0b15623d3de74993ee9eedd07157a6a8',1,'meos.h']]],
+  ['inter_20',['INTER',['../meos_2include_2temporal_2temporal_8h_aea6d16f68cc33ad5b54e68733eded97b.html#aea6d16f68cc33ad5b54e68733eded97ba5efa5610d5a2c5e9123d6894dd72e335',1,'temporal.h']]],
+  ['interp_5fnone_21',['INTERP_NONE',['../meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7aa44ef612e9247c6e8bac5b9d6834a377',1,'meos.h']]],
+  ['intersect_5fnone_22',['INTERSECT_NONE',['../geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120ca7e9ecaf94a863cd021c6a630d8e70caf',1,'geo_funcs.h']]],
+  ['intersect_5fop_23',['INTERSECT_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dbad4078d10abda35f0c242f03f4c219254',1,'meos_catalog.h']]],
+  ['intersect_5foverlap_24',['INTERSECT_OVERLAP',['../geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120ca693338feba56baa2448c5e42c2182669',1,'geo_funcs.h']]],
+  ['intersect_5fpoint_25',['INTERSECT_POINT',['../geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120ca7c34cf0e2856ee1ff5882aef7a364dc7',1,'geo_funcs.h']]],
+  ['intersects_26',['INTERSECTS',['../meos__geo_8h_a24b4bb83270bd2149778ccb5712f264c.html#a24b4bb83270bd2149778ccb5712f264ca28e79ef0037d9e5a6d47d167d068c71a',1,'meos_geo.h']]]
 ];
