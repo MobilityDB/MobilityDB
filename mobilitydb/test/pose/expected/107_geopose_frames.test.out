@@ -47,6 +47,17 @@ SELECT count(*) FROM geopose_frames;
      8
 (1 row)
 
+SELECT count(*) AS meos_frames_absent_from_the_table FROM (
+  SELECT frame_id, authority, code, name, srid, is_geographic
+  FROM geoPoseFrames()
+  EXCEPT
+  SELECT frame_id, authority, code, name, srid, is_geographic
+  FROM geopose_frames) d;
+ meos_frames_absent_from_the_table 
+-----------------------------------
+                                 0
+(1 row)
+
 INSERT INTO geopose_frames(frame_id, authority, name) VALUES (0, 'CUSTOM', 'Zero');
 ERROR:  new row for relation "geopose_frames" violates check constraint "geopose_frames_frame_id_check"
 DETAIL:  Failing row contains (0, CUSTOM, null, Zero, null, f, null).

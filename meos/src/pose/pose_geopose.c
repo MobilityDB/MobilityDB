@@ -144,6 +144,88 @@
 #define GEOPOSE_ID_CHAIN_OUTER_FRAME  "/Extrinsic/LTP-ENU"
 #define GEOPOSE_ID_CHAIN_INNER_FRAME  "/Intrinsic/Translate-Rotate"
 
+/*****************************************************************************
+ * The frame registry
+ *****************************************************************************/
+
+/**
+ * @brief Every frame an encoder in this file names, and the two systems the
+ * Basic classes rest on
+ * @details The four rows under #GEOPOSE_AUTHORITY take their identifiers from
+ * the very macros the encoders write, so a frame this file learns to emit
+ * cannot be absent here, and a host that materialises the registry as a table
+ * states what the documents state.
+ */
+static const GeoPoseFrame GEOPOSE_FRAME_REGISTRY[] =
+{
+  { 1, "EPSG", "4326", "WGS-84 geographic (lat/lon/h)", 4326, true,
+    "OGC GeoPose Basic-class default outer frame. Position parsed as "
+    "{lat, lon, h} in degrees / metres." },
+  { 2, "EPSG", "4978", "WGS-84 ECEF (Earth-Centred Earth-Fixed)", 4978, false,
+    "Cartesian X/Y/Z geocentric. Used as an intermediate by frame transforms; "
+    "rotation between this frame and WGS-84 geographic at point P is given by "
+    "the East-North-Up basis at P." },
+  { 3, "OGC", "LTP", "Local Tangent Plane (East-North-Up)", 0, false,
+    "Parameterised at runtime by an anchor (lat, lon, h). The outer-frame "
+    "conversion to ECEF is the standard ENU rotation matrix at the anchor." },
+  { 4, "OGC", "BODY", "Right-handed body axes (default inner frame)", 0, false,
+    "Conventional inner frame: X forward, Y left, Z up. The pose's quaternion "
+    "takes vectors from this body frame to the outer frame." },
+  { 5, GEOPOSE_AUTHORITY, GEOPOSE_ID_OUTER_FRAME,
+    "GeoPose outer frame of a Composite Sequence Series", 0, false,
+    "Authority and id emitted as the outerFrame of a Series. Parameterised by "
+    "the tangent point of the first pose as "
+    "'longitude=<degrees>&latitude=<degrees>&height=<metres>'." },
+  { 6, GEOPOSE_AUTHORITY, GEOPOSE_ID_INNER_FRAME,
+    "GeoPose inner frame of a Composite Sequence Series", 0, false,
+    "Authority and id emitted for each inner frame of a Series. Parameterised "
+    "as 'translation=[e, n, u]&rotation=[w, x, y, z]', the translation in "
+    "metres in the outer frame and the rotation taking body axes to the outer "
+    "frame." },
+  { 7, GEOPOSE_AUTHORITY, GEOPOSE_ID_CHAIN_OUTER_FRAME,
+    "GeoPose outer frame of a Chain", 0, false,
+    "The frame a Chain document names where a Series names 'LTP-ENU'. Same "
+    "frame, same authority, the name its own class uses; a Chain is read "
+    "accepting either." },
+  { 8, GEOPOSE_AUTHORITY, GEOPOSE_ID_CHAIN_INNER_FRAME,
+    "GeoPose inner frame of a Chain", 0, false,
+    "The frame a Chain document names where a Series names 'RotateTranslate'. "
+    "Same frame, same authority, the name its own class uses; a Chain is read "
+    "accepting either." }
+};
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return every frame of the OGC GeoPose registry
+ * @param[out] count Number of frames returned
+ * @csqlfn #Geopose_frames()
+ */
+const GeoPoseFrame *
+geopose_frames(int *count)
+{
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = (int) (sizeof(GEOPOSE_FRAME_REGISTRY) /
+    sizeof(GEOPOSE_FRAME_REGISTRY[0]));
+  return GEOPOSE_FRAME_REGISTRY;
+}
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the frame the registry states under an identifier, or `NULL`
+ * where it states none
+ * @param[in] frame_id Identifier of the frame
+ */
+const GeoPoseFrame *
+geopose_frame(int32_t frame_id)
+{
+  int count = (int) (sizeof(GEOPOSE_FRAME_REGISTRY) /
+    sizeof(GEOPOSE_FRAME_REGISTRY[0]));
+  for (int i = 0; i < count; i++)
+    if (GEOPOSE_FRAME_REGISTRY[i].frame_id == frame_id)
+      return &GEOPOSE_FRAME_REGISTRY[i];
+  return NULL;
+}
+
 /**
  * @brief Return true if @p srid names the WGS-84 geographic frame the
  * GeoPose classes require, or is unknown.

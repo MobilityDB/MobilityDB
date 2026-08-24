@@ -73,23 +73,21 @@ COMMENT ON COLUMN geopose_frames.name       IS 'Human-readable frame name.';
 COMMENT ON COLUMN geopose_frames.srid       IS 'PostGIS SRID, or NULL if the frame is parametric (e.g., LTP at runtime).';
 COMMENT ON COLUMN geopose_frames.is_geographic IS 'TRUE for lat/lon/h frames, FALSE for Cartesian / projected.';
 
-INSERT INTO geopose_frames(frame_id, authority, code, name, srid, is_geographic, description) VALUES
-  (1, 'EPSG', '4326', 'WGS-84 geographic (lat/lon/h)', 4326, true,
-     'OGC GeoPose Basic-class default outer frame. Position parsed as {lat, lon, h} in degrees / metres.'),
-  (2, 'EPSG', '4978', 'WGS-84 ECEF (Earth-Centred Earth-Fixed)', 4978, false,
-     'Cartesian X/Y/Z geocentric. Used as an intermediate by frame transforms; rotation between this frame and WGS-84 geographic at point P is given by the East-North-Up basis at P.'),
-  (3, 'OGC',  'LTP',  'Local Tangent Plane (East-North-Up)', NULL, false,
-     'Parameterised at runtime by an anchor (lat, lon, h). The outer-frame conversion to ECEF is the standard ENU rotation matrix at the anchor.'),
-  (4, 'OGC',  'BODY', 'Right-handed body axes (default inner frame)', NULL, false,
-     'Conventional inner frame: X forward, Y left, Z up. The pose''s quaternion takes vectors from this body frame to the outer frame.'),
-  (5, '/geopose/1.0', 'LTP-ENU', 'GeoPose outer frame of a Composite Sequence Series', NULL, false,
-     'Authority and id emitted as the outerFrame of a Series. Parameterised by the tangent point of the first pose as ''longitude=<degrees>&latitude=<degrees>&height=<metres>''.'),
-  (6, '/geopose/1.0', 'RotateTranslate', 'GeoPose inner frame of a Composite Sequence Series', NULL, false,
-     'Authority and id emitted for each inner frame of a Series. Parameterised as ''translation=[e, n, u]&rotation=[w, x, y, z]'', the translation in metres in the outer frame and the rotation taking body axes to the outer frame.'),
-  (7, '/geopose/1.0', '/Extrinsic/LTP-ENU', 'GeoPose outer frame of a Chain', NULL, false,
-     'The frame a Chain document names where a Series names ''LTP-ENU''. Same frame, same authority, the name its own class uses; a Chain is read accepting either.'),
-  (8, '/geopose/1.0', '/Intrinsic/Translate-Rotate', 'GeoPose inner frame of a Chain', NULL, false,
-     'The frame a Chain document names where a Series names ''RotateTranslate''. Same frame, same authority, the name its own class uses; a Chain is read accepting either.');
+/* The frames the standard and the encoders name come from MEOS, which builds
+ * them from the very macros pose_geopose.c writes, so a frame this build can
+ * emit cannot be absent from the registry. A user registers further frames by
+ * inserting into the table. */
+
+CREATE FUNCTION geoPoseFrames()
+  RETURNS TABLE (frame_id integer, authority text, code text, name text,
+                 srid integer, is_geographic boolean, description text)
+  AS 'MODULE_PATHNAME', 'Geopose_frames'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+INSERT INTO geopose_frames(frame_id, authority, code, name, srid,
+  is_geographic, description)
+SELECT frame_id, authority, code, name, srid, is_geographic, description
+FROM geoPoseFrames();
 
 /* Helper SQL functions to query the registry without exposing the schema. */
 

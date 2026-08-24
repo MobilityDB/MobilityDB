@@ -118,8 +118,9 @@
  * @ingroup meos_pose_base
  * @brief Functions implementing the OGC GeoPose v1.0 standard surface for
  * static poses — JSON I/O for the Basic conformance classes, quaternion
- * renormalization, and Euler-angle (yaw / pitch / roll) accessors using
- * the ZYX intrinsic Tait-Bryan convention required by the standard.
+ * renormalization, Euler-angle (yaw / pitch / roll) accessors using
+ * the ZYX intrinsic Tait-Bryan convention required by the standard, and the
+ * registry of the frames a document names.
  */
 
 /*****************************************************************************/

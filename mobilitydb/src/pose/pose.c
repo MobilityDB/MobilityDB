@@ -335,6 +335,58 @@ Pose_from_geopose(PG_FUNCTION_ARGS)
   PG_RETURN_POSE_P(result);
 }
 
+PGDLLEXPORT Datum Geopose_frames(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geopose_frames);
+/**
+ * @ingroup mobilitydb_pose_base_inout
+ * @brief Set-returning function emitting one row per frame of the OGC GeoPose
+ *   registry
+ * @details The rows come from MEOS, which builds them from the very macros the
+ * encoders write, so the table this function seeds states what the documents
+ * state.
+ * @sqlfn geoPoseFrames()
+ */
+Datum
+Geopose_frames(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+
+  if (SRF_IS_FIRSTCALL())
+  {
+    funcctx = SRF_FIRSTCALL_INIT();
+    MemoryContext oldctx = MemoryContextSwitchTo(
+      funcctx->multi_call_memory_ctx);
+    int count;
+    funcctx->user_fctx = (void *) geopose_frames(&count);
+    funcctx->max_calls = (uint64) count;
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldctx);
+  }
+
+  funcctx = SRF_PERCALL_SETUP();
+  if (funcctx->call_cntr >= funcctx->max_calls)
+    SRF_RETURN_DONE(funcctx);
+
+  const GeoPoseFrame *frames = (const GeoPoseFrame *) funcctx->user_fctx;
+  const GeoPoseFrame *f = &frames[funcctx->call_cntr];
+  Datum values[7];
+  bool isnull[7] = {false, false, false, false, false, false, false};
+  values[0] = Int32GetDatum(f->frame_id);
+  values[1] = PointerGetDatum(cstring_to_text(f->authority));
+  values[2] = PointerGetDatum(cstring_to_text(f->code));
+  values[3] = PointerGetDatum(cstring_to_text(f->name));
+  /* A frame parameterised at runtime states no reference system */
+  if (f->srid == 0)
+    isnull[4] = true;
+  else
+    values[4] = Int32GetDatum(f->srid);
+  values[5] = BoolGetDatum(f->is_geographic);
+  values[6] = PointerGetDatum(cstring_to_text(f->description));
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
+}
+
 PGDLLEXPORT Datum Pose_as_geopose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_as_geopose);
 /**

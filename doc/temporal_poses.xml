@@ -1495,7 +1495,19 @@ FROM geopose_frames ORDER BY frame_id;
 -- 7 | /geopose/1.0 | /Extrinsic/LTP-ENU          | GeoPose outer frame of a Chain                     | f
 -- 8 | /geopose/1.0 | /Intrinsic/Translate-Rotate | GeoPose inner frame of a Chain                     | f
 </programlisting>
-			<para>Three SQL helpers provide a stable lookup interface that is independent of the table layout:</para>
+			<para>The rows above come from MEOS, which builds them from the identifiers the encoders write, so a frame this build can emit is never absent from the registry. A user registers further frames by inserting into the table.</para>
+			<itemizedlist>
+				<listitem xml:id="pose_geopose_frames_fn">
+					<indexterm significance="normal"><primary><varname>geoPoseFrames</varname></primary></indexterm>
+					<para>Return every frame the standard and the encoders name</para>
+					<para><varname>geoPoseFrames() &#x2192; setof record</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT count(*) FROM geoPoseFrames();
+-- 8
+</programlisting>
+				</listitem>
+			</itemizedlist>
+			<para>Three SQL helpers provide a stable lookup interface that is independent of the table layout, and read the table so that a frame a user registers is found too:</para>
 			<itemizedlist>
 				<listitem xml:id="pose_geopose_frame_srid">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameSRID</varname></primary></indexterm>

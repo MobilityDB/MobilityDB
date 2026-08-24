@@ -1608,6 +1608,9 @@
 				<title>Registro de metadatos de marcos</title>
 				<itemizedlist>
 					<listitem>
+						<para><link linkend="pose_geopose_frames_fn"><varname>geoPoseFrames</varname></link>: Devuelve todos los marcos que nombran el estándar y los codificadores</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="pose_geopose_frame_srid"><varname>geoPoseFrameSRID</varname></link>: Devuelve el SRID de un marco, o <varname>NULL</varname> si el marco es paramétrico (LTP, BODY)</para>
 					</listitem>
 					<listitem>

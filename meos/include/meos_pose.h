@@ -117,6 +117,25 @@ extern char *tpose_as_geopose(const Temporal *temp, int conformance, int precisi
 extern char *tpose_as_geopose_stream_header(const Temporal *temp, int precision);
 extern char *tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst, int precision);
 extern char *tpose_as_geopose_stream(const Temporal *temp, int precision);
+
+/**
+ * @brief One frame of the OGC GeoPose registry, as the standard names it
+ * @details A frame whose position depends on a runtime anchor states no
+ * spatial reference system, and carries @p srid 0 for it.
+ */
+typedef struct
+{
+  int32_t frame_id;       /**< Stable key the registry states the frame under */
+  const char *authority;  /**< Naming authority: EPSG, OGC or /geopose/1.0 */
+  const char *code;       /**< Identifier the authority names the frame by */
+  const char *name;       /**< Human-readable frame name */
+  int32_t srid;           /**< Spatial reference system, 0 where parametric */
+  bool is_geographic;     /**< True for a lat/lon/h frame */
+  const char *description;/**< Free-form description for human readers */
+} GeoPoseFrame;
+
+extern const GeoPoseFrame *geopose_frames(int *count);
+extern const GeoPoseFrame *geopose_frame(int32_t frame_id);
 extern GSERIALIZED *pose_apply_geo(const Pose *pose, const GSERIALIZED *body);
 extern Temporal *tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body);
 extern Temporal *tpose_compose_pose(const Temporal *body, const Pose *frame);

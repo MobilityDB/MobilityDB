@@ -1611,6 +1611,9 @@
 				<title>Frame Metadata Registry</title>
 				<itemizedlist>
 					<listitem>
+						<para><link linkend="pose_geopose_frames_fn"><varname>geoPoseFrames</varname></link>: Return every frame the standard and the encoders name</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="pose_geopose_frame_srid"><varname>geoPoseFrameSRID</varname></link>: Return the SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
 					</listitem>
 					<listitem>
