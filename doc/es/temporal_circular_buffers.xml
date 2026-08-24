@@ -385,18 +385,18 @@ SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)',
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tcbuffer 'Cbuffer(Point(1 2),0.5)@2001-01-01', 3);
 /* {"type":"MovingCircularBuffer","bbox":[[0.5,1.5],[1.5,2.5]],
-  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-01T00:00:00+01",
+  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-01T00:00:00",
   "lower_inc":true,"upper_inc":true},
   "values":[{"point":[1,2],"radius":0.5}],
-  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 SELECT asMFJSON(tcbuffer 'SRID=4326;[Cbuffer(Point(1 1),0.2)@2001-01-01,
   Cbuffer(Point(2 2),0.4)@2001-01-02)', 3);
 /* {"type":"MovingCircularBuffer","crs":{"type":"Name",
   "properties":{"name":"EPSG:4326"}},"bbox":[[0.8,0.8],[2.4,2.4]],
-  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-02T00:00:00+01",
+  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-02T00:00:00",
   "lower_inc":true,"upper_inc":false},
   "values":[{"point":[1,1],"radius":0.2},{"point":[2,2],"radius":0.4}],
-  "datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],
+  "datetimes":["2001-01-01T00:00:00","2001-01-02T00:00:00"],
   "lower_inc":true,"upper_inc":false,"interpolation":"Linear"} */
 </programlisting>
 			</listitem>
@@ -843,10 +843,10 @@ SELECT tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
--- Cbuffer(Point(2 2),0.349928)@2001-01-01 02:59:44.402905+01
+-- Cbuffer(Point(2 2),0.349928)@2001-01-01 02:59:44.402905
 SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)');
--- Cbuffer(Point(2 2),0.592181)@2001-01-01 17:31:51.080405+01
+-- Cbuffer(Point(2 2),0.592181)@2001-01-01 17:31:51.080405
 </programlisting>
 			</listitem>
 
@@ -940,8 +940,8 @@ SELECT asText(atGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 -- {[Cbuffer(POINT(2 2),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.7)@2001-01-03]}
 SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
-/* {(Cbuffer(Point(2 2),0.342593)@2001-01-01 05:06:40.364673+01,
-   Cbuffer(Point(2 2),0.7)@2001-01-03 00:00:00+01]} */
+/* {(Cbuffer(Point(2 2),0.342593)@2001-01-01 05:06:40.364673,
+   Cbuffer(Point(2 2),0.7)@2001-01-03]} */
 </programlisting>
 			</listitem>
 			<listitem xml:id="tcbuffer_atStbox">
@@ -1137,9 +1137,9 @@ SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(1 1), 0.3)@2001-01-03)', 1);
-/* {[t@2001-01-01 00:00:00+01, t@2001-01-01 22:35:55.379053+01],
-   (f@2001-01-01 22:35:55.379053+01, t@2001-01-02 01:24:04.620946+01,
-   t@2001-01-03 00:00:00+01)} */
+/* {[t@2001-01-01, t@2001-01-01 22:35:55.379053],
+   (f@2001-01-01 22:35:55.379053, t@2001-01-02 01:24:04.620946,
+   t@2001-01-03)} */
 </programlisting>
 			</listitem>
 		</itemizedlist>

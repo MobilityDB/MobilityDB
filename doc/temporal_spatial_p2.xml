@@ -234,7 +234,7 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
     Point(0 0 0)@2001-01-05)'::geometry,
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
     Point(2 2 2)@2001-01-06)'::geometry));
--- 2001-01-03 12:00:00+00
+-- 2001-01-03 12:00:00
 </programlisting>
 			</listitem>
 

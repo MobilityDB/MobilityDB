@@ -491,16 +491,16 @@ SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)',
 				<para><varname>asMFJSON(tpose) → text</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 3);
-/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00+01",
-  "end":"2001-01-01T00:00:00+01","lower_inc":true,"upper_inc":true},
+/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00",
+  "end":"2001-01-01T00:00:00","lower_inc":true,"upper_inc":true},
   "values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],
-  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
 /* {"type":"MovingPose","bbox":[[1,2,3],[1,2,3]],
-  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-01T00:00:00+01",
+  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-01T00:00:00",
   "lower_inc":true,"upper_inc":true},
   "values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],
-  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 </programlisting>
 			</listitem>
 
@@ -911,7 +911,7 @@ SELECT atGeometry(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
 SELECT minusGeometry(tpose '[Pose(Point(2 2), 0.3)@2001-01-01, 
   Pose(Point(2 2), 0.7)@2001-01-03]',
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
-/* {(Pose(Point(2 2),0.342593)@2001-01-01 05:06:40.364673+01,
+/* {(Pose(Point(2 2),0.342593)@2001-01-01 05:06:40.364673,
    Pose(Point(2 2),0.7)@2001-01-03]} */
 </programlisting>
 			</listitem>
@@ -1109,7 +1109,7 @@ SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
 SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
   Pose(Point(2 2), 0.5)@2001-01-03]' &lt;-&gt;
   tpose '[Pose(Point(1 2), 0.3)@2001-01-02, Pose(Point(2 1), 0.5)@2001-01-04]', 6);
--- [0.707107@2001-01-02, 0.5@2001-01-02 12:00:00+01, 0.707107@2001-01-03]
+-- [0.707107@2001-01-02, 0.5@2001-01-02 12:00:00, 0.707107@2001-01-03]
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1207,8 +1207,8 @@ SELECT tTouches(tpose 'Pose(Point(0 0), 0.1)@2001-01-01',
 SELECT tDwithin(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
   Pose(Point(1 1),0.5)@2001-01-03)', tpose '[Pose(Point(1 1),0.5)@2001-01-01,
   Pose(Point(3 3),0.3)@2001-01-03)', 1);
-/* {[t@2001-01-01, t@2001-01-01 16:58:14.025894+00],
-  (f@2001-01-01 16:58:14.025894+00, f@2001-01-03)} */
+/* {[t@2001-01-01, t@2001-01-01 16:58:14.025894],
+  (f@2001-01-01 16:58:14.025894, f@2001-01-03)} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
