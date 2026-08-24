@@ -594,6 +594,22 @@ int main(void)
   assert(meos_errno() != 0);
   meos_errno_reset();
 
+  /* A ring that encloses no area draws its own linework and bounds no
+   * region, so it relates as a line and never as a surface. The square that
+   * does enclose area is the control */
+  GSERIALIZED *square2 = geom_in("POLYGON((0 0,0 2,2 2,2 0,0 0))", -1);
+  GSERIALIZED *noarea = geom_in("POLYGON((3 0,3 1,3 1,3 0,3 0))", -1);
+  GSERIALIZED *realsq = geom_in("POLYGON((3 0,3 1,4 1,4 0,3 0))", -1);
+  /* The interior of the slit lies in the exterior of the square and is one
+   * dimensional; a surface there would make it two */
+  assert(geom_relate_pattern(noarea, square2, "**1******") == true);
+  assert(geom_relate_pattern(noarea, square2, "**2******") == false);
+  /* The control keeps the two dimensions of a surface */
+  assert(geom_relate_pattern(realsq, square2, "**2******") == true);
+  printf("a ring enclosing no area relates as the linework it draws\n");
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 
