@@ -43,13 +43,14 @@
  * frames so that a future Advanced-class lift only needs to extend it,
  * not re-design it.
  *
- * The shape mirrors pgPointCloud's `pointcloud_formats(pcid, …, schema)`
- * registry: a small primary-key-indexed catalog of named formats, with a
- * description column that's free-form for human readers.
+ * The shape is the one `pointcloud_schemas` carries: a small
+ * primary-key-indexed catalog stated in SQL, marked as a configuration table
+ * so that pg_dump preserves the rows a user registers, with a description
+ * column that is free-form for human readers.
  */
 
 CREATE TABLE geopose_frames (
-  frame_id      integer PRIMARY KEY,
+  frame_id      integer PRIMARY KEY CHECK (frame_id > 0),
   authority     text NOT NULL,
   code          text,
   name          text NOT NULL,
@@ -63,7 +64,10 @@ COMMENT ON TABLE  geopose_frames IS
   'the Pose type encodes the outer frame implicitly via SRID and uses '
   'a conventional right-handed body-axes inner frame.';
 COMMENT ON COLUMN geopose_frames.frame_id   IS 'Stable integer key for cross-references.';
-COMMENT ON COLUMN geopose_frames.authority  IS 'Naming authority: ''EPSG'', ''OGC'', ''CUSTOM''.';
+COMMENT ON COLUMN geopose_frames.authority  IS
+  'Naming authority: ''EPSG'' or ''OGC'' for a frame those bodies name, '
+  '''/geopose/1.0'' for one the standard names in a document, and '
+  '''CUSTOM'' for one a user registers.';
 COMMENT ON COLUMN geopose_frames.code       IS 'Authority-specific code (e.g., ''4326'').';
 COMMENT ON COLUMN geopose_frames.name       IS 'Human-readable frame name.';
 COMMENT ON COLUMN geopose_frames.srid       IS 'PostGIS SRID, or NULL if the frame is parametric (e.g., LTP at runtime).';
@@ -81,7 +85,11 @@ INSERT INTO geopose_frames(frame_id, authority, code, name, srid, is_geographic,
   (5, '/geopose/1.0', 'LTP-ENU', 'GeoPose outer frame of a Composite Sequence Series', NULL, false,
      'Authority and id emitted as the outerFrame of a Series. Parameterised by the tangent point of the first pose as ''longitude=<degrees>&latitude=<degrees>&height=<metres>''.'),
   (6, '/geopose/1.0', 'RotateTranslate', 'GeoPose inner frame of a Composite Sequence Series', NULL, false,
-     'Authority and id emitted for each inner frame of a Series. Parameterised as ''translation=[e, n, u]&rotation=[w, x, y, z]'', the translation in metres in the outer frame and the rotation taking body axes to the outer frame.');
+     'Authority and id emitted for each inner frame of a Series. Parameterised as ''translation=[e, n, u]&rotation=[w, x, y, z]'', the translation in metres in the outer frame and the rotation taking body axes to the outer frame.'),
+  (7, '/geopose/1.0', '/Extrinsic/LTP-ENU', 'GeoPose outer frame of a Chain', NULL, false,
+     'The frame a Chain document names where a Series names ''LTP-ENU''. Same frame, same authority, the name its own class uses; a Chain is read accepting either.'),
+  (8, '/geopose/1.0', '/Intrinsic/Translate-Rotate', 'GeoPose inner frame of a Chain', NULL, false,
+     'The frame a Chain document names where a Series names ''RotateTranslate''. Same frame, same authority, the name its own class uses; a Chain is read accepting either.');
 
 /* Helper SQL functions to query the registry without exposing the schema. */
 

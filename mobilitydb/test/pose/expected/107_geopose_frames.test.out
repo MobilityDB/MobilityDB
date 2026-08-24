@@ -1,7 +1,7 @@
 SELECT count(*) FROM geopose_frames;
  count 
 -------
-     6
+     8
 (1 row)
 
 SELECT geoPoseFrameSRID(1), geoPoseFrameIsGeographic(1);
@@ -44,6 +44,9 @@ DELETE 1
 SELECT count(*) FROM geopose_frames;
  count 
 -------
-     6
+     8
 (1 row)
 
+INSERT INTO geopose_frames(frame_id, authority, name) VALUES (0, 'CUSTOM', 'Zero');
+ERROR:  new row for relation "geopose_frames" violates check constraint "geopose_frames_frame_id_check"
+DETAIL:  Failing row contains (0, CUSTOM, null, Zero, null, f, null).

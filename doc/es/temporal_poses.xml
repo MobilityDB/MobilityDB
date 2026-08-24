@@ -1464,14 +1464,18 @@ SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
 		<sect2 xml:id="pose_geopose_frames">
 			<title>Registro de metadatos de marcos</title>
 			<para>El estándar OGC GeoPose v1.0 distingue el <emphasis>marco exterior</emphasis> (la referencia global, por ejemplo, WGS-84 geográfico o ECEF) del <emphasis>marco interior</emphasis> (el marco del cuerpo cuya orientación es el cuaternión de la pose). Las clases de conformidad Basic exigen WGS-84 geográfico como marco exterior y un marco interior implícito de ejes de cuerpo dextrógiros; la clase Advanced nombra su marco exterior de forma explícita y sitúa la pose en el origen de ese marco.</para>
-			<para>En MobilityDB, el tipo <varname>pose</varname> codifica el marco exterior de forma implícita mediante su SRID y utiliza el marco interior convencional de ejes de cuerpo dextrógiros. La tabla <varname>geopose_frames</varname> registra esta correspondencia en un catálogo paralelo a la tabla <varname>pointcloud_formats</varname> de pgPointCloud. Las pilas de marcos de la clase Advanced no están admitidas.</para>
+			<para>En MobilityDB, el tipo <varname>pose</varname> codifica el marco exterior de forma implícita mediante su SRID y utiliza el marco interior convencional de ejes de cuerpo dextrógiros. La tabla <varname>geopose_frames</varname> registra esta correspondencia y declara todos los identificadores de marco que un documento puede nombrar: una serie de secuencia compuesta nombra <varname>LTP-ENU</varname> y <varname>RotateTranslate</varname>, y una cadena nombra esos mismos dos marcos como <varname>/Extrinsic/LTP-ENU</varname> e <varname>/Intrinsic/Translate-Rotate</varname>, todos bajo la autoridad <varname>/geopose/1.0</varname>. Las pilas de marcos de la clase Advanced no están admitidas.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT frame_id, authority, code, name, is_geographic
 FROM geopose_frames ORDER BY frame_id;
--- 1 | EPSG | 4326 | WGS-84 geographic (lat/lon/h)                | t
--- 2 | EPSG | 4978 | WGS-84 ECEF (Earth-Centred Earth-Fixed)      | f
--- 3 | OGC  | LTP  | Local Tangent Plane (East-North-Up)          | f
--- 4 | OGC  | BODY | Right-handed body axes (default inner frame) | f
+-- 1 | EPSG         | 4326                        | WGS-84 geographic (lat/lon/h)                      | t
+-- 2 | EPSG         | 4978                        | WGS-84 ECEF (Earth-Centred Earth-Fixed)            | f
+-- 3 | OGC          | LTP                         | Local Tangent Plane (East-North-Up)                | f
+-- 4 | OGC          | BODY                        | Right-handed body axes (default inner frame)       | f
+-- 5 | /geopose/1.0 | LTP-ENU                     | GeoPose outer frame of a Composite Sequence Series | f
+-- 6 | /geopose/1.0 | RotateTranslate             | GeoPose inner frame of a Composite Sequence Series | f
+-- 7 | /geopose/1.0 | /Extrinsic/LTP-ENU          | GeoPose outer frame of a Chain                     | f
+-- 8 | /geopose/1.0 | /Intrinsic/Translate-Rotate | GeoPose inner frame of a Chain                     | f
 </programlisting>
 			<para>Tres funciones auxiliares SQL proporcionan una interfaz de consulta estable que es independiente de la disposición de la tabla:</para>
 			<itemizedlist>

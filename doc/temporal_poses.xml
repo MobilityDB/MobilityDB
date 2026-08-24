@@ -1482,14 +1482,18 @@ SELECT round(pitch(tpose 'Pose(Point(0 0 0),1,0,0,0)@2001-01-01'), 6);
 		<sect2 xml:id="pose_geopose_frames">
 			<title>Frame Metadata Registry</title>
 			<para>The OGC GeoPose v1.0 standard distinguishes the <emphasis>outer frame</emphasis> (the global reference, e.g., WGS-84 geographic or ECEF) from the <emphasis>inner frame</emphasis> (the body frame whose orientation is the pose's quaternion). The Basic conformance classes mandate WGS-84 geographic as the outer frame and an implicit right-handed body-axes inner frame; the Advanced class names its outer frame explicitly and places the pose at that frame's origin.</para>
-			<para>In MobilityDB the <varname>pose</varname> type encodes the outer frame implicitly via its SRID and uses the conventional right-handed body-axes inner frame. The <varname>geopose_frames</varname> table records this mapping in a registry parallel to pgPointCloud's <varname>pointcloud_formats</varname>. Advanced-class frame stacks are not supported.</para>
+			<para>In MobilityDB the <varname>pose</varname> type encodes the outer frame implicitly via its SRID and uses the conventional right-handed body-axes inner frame. The <varname>geopose_frames</varname> table records this mapping, and states every frame identifier a document can name: a Composite Sequence Series names <varname>LTP-ENU</varname> and <varname>RotateTranslate</varname>, and a Chain names the same two frames as <varname>/Extrinsic/LTP-ENU</varname> and <varname>/Intrinsic/Translate-Rotate</varname>, all under the <varname>/geopose/1.0</varname> authority. Advanced-class frame stacks are not supported.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT frame_id, authority, code, name, is_geographic
 FROM geopose_frames ORDER BY frame_id;
--- 1 | EPSG | 4326 | WGS-84 geographic (lat/lon/h)                | t
--- 2 | EPSG | 4978 | WGS-84 ECEF (Earth-Centred Earth-Fixed)      | f
--- 3 | OGC  | LTP  | Local Tangent Plane (East-North-Up)          | f
--- 4 | OGC  | BODY | Right-handed body axes (default inner frame) | f
+-- 1 | EPSG         | 4326                        | WGS-84 geographic (lat/lon/h)                      | t
+-- 2 | EPSG         | 4978                        | WGS-84 ECEF (Earth-Centred Earth-Fixed)            | f
+-- 3 | OGC          | LTP                         | Local Tangent Plane (East-North-Up)                | f
+-- 4 | OGC          | BODY                        | Right-handed body axes (default inner frame)       | f
+-- 5 | /geopose/1.0 | LTP-ENU                     | GeoPose outer frame of a Composite Sequence Series | f
+-- 6 | /geopose/1.0 | RotateTranslate             | GeoPose inner frame of a Composite Sequence Series | f
+-- 7 | /geopose/1.0 | /Extrinsic/LTP-ENU          | GeoPose outer frame of a Chain                     | f
+-- 8 | /geopose/1.0 | /Intrinsic/Translate-Rotate | GeoPose inner frame of a Chain                     | f
 </programlisting>
 			<para>Three SQL helpers provide a stable lookup interface that is independent of the table layout:</para>
 			<itemizedlist>

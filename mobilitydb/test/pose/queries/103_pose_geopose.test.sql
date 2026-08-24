@@ -367,7 +367,31 @@ SELECT d->'innerFrameSeries'->0->>'authority', d->'innerFrameSeries'->0->>'id',
   split_part(d->'innerFrameSeries'->0->>'parameters', '&', 1)
 FROM j;
 
--- The registry documents the authority and id pairs the encoder emits.
+-- The registry states every authority and id pair an encoder emits. Read the
+-- pairs out of documents the encoders actually write rather than out of a
+-- literal, so a frame the registry never heard of fails here.
+WITH emitted(authority, code) AS (
+  SELECT d->'outerFrame'->>'authority', d->'outerFrame'->>'id' FROM (SELECT
+    asGeoPose(tpose '[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+      Geodpose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 6)::jsonb) t(d)
+  UNION
+  SELECT d->'innerFrameSeries'->0->>'authority',
+         d->'innerFrameSeries'->0->>'id' FROM (SELECT
+    asGeoPose(tpose '[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+      Geodpose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 6)::jsonb) t(d)
+  UNION
+  SELECT c->>'authority', c->>'id' FROM (SELECT asGeoPose(tposechain
+    'SRID=4326;PoseChain(GeodPose(Point Z(-122.3 47.7 11), 1, 0, 0, 0),
+    Pose(Point Z(2 0 0), 1, 0, 0, 0))@2021-04-28 05:36:10.083+00',
+    6)::jsonb) t(d),
+    LATERAL (SELECT d->'outerFrame' UNION ALL
+             SELECT jsonb_array_elements(d->'frameChain')) u(c))
+SELECT e.authority, e.code, f.frame_id IS NOT NULL AS registered
+FROM emitted e LEFT JOIN geopose_frames f
+  ON f.authority = e.authority AND f.code = e.code
+WHERE e.authority IS NOT NULL ORDER BY e.code;
+
+-- The registry states the pairs, and nothing it does not.
 SELECT authority, code FROM geopose_frames WHERE authority = '/geopose/1.0'
 ORDER BY code;
 
