@@ -647,6 +647,31 @@ int main(void)
   meos_errno_reset();
   free(cube);
 
+  /* The overlay answers NULL for a geometry it cannot read -- a polyhedral
+   * surface reaches the default arm of LWGEOM2GEOS, whose lwerror the MEOS
+   * handler reports and returns from -- so the union has to answer the absence
+   * rather than read the null pointer it was handed. Every step after that
+   * read one, and the process died in lwgeom_set_geodetic */
+  GSERIALIZED *phsurf = geom_in("PolyhedralSurface Z ("
+    "((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),((0 0 0,0 0 1,0 1 1,0 1 0,0 0 0)))", -1);
+  assert(phsurf != NULL);
+  meos_errno_reset();
+  GSERIALIZED *uu = geom_unary_union(phsurf, -1);
+  printf("geom_unary_union of a polyhedral surface: %s, errno %d\n",
+    uu ? "answered" : "declined", meos_errno());
+  assert(uu == NULL);
+  assert(meos_errno() != 0);
+  /* The control is a geometry the overlay does read */
+  meos_errno_reset();
+  GSERIALIZED *mp = geom_in("MULTIPOLYGON(((0 0,0 1,1 1,1 0,0 0)),"
+    "((1 0,1 1,2 1,2 0,1 0)))", -1);
+  GSERIALIZED *uu2 = geom_unary_union(mp, -1);
+  assert(uu2 != NULL);
+  assert(meos_errno() == 0);
+  printf("the union of a multipolygon is answered as before\n");
+  free(phsurf); free(mp); free(uu2);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 

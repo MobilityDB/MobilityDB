@@ -2370,6 +2370,15 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
   if (! lwresult)
   {
     lwresult = lwgeom_unaryunion_prec(lwgeom, prec);
+    /* MEOS: the overlay answers NULL for a geometry it cannot read -- a
+     * polyhedral surface reaches the default arm of #LWGEOM2GEOS, whose
+     * lwerror the MEOS handler reports and RETURNS from -- so the answer is
+     * absent rather than empty and every step below would read a null pointer */
+    if (! lwresult)
+    {
+      lwgeom_free(lwgeom);
+      return NULL;
+    }
     /* MEOS: PostGIS function #lwgeom_unaryunion_prec only propagates the SRID
      * and the Z flag. The GEODETIC flag must be set BEFORE serialization,
      * since the bounding box of a geodetic value is computed on the unit
