@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: RTree::bbox_contains</title>
+<title>MobilityDB: RTree::bbox_adjacent</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,8 +79,8 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="structRTree_aa175f8f07b88a349f10816caa659039c.html#aa175f8f07b88a349f10816caa659039c">bbox_adjacent</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="structRTree_ad1acfdf586e580ff0ff292f7062328e7.html#ad1acfdf586e580ff0ff292f7062328e7">bbox_contains</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="structRTree_aa175f8f07b88a349f10816caa659039c.html#aa175f8f07b88a349f10816caa659039c">bbox_adjacent</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRTree_ad1acfdf586e580ff0ff292f7062328e7.html#ad1acfdf586e580ff0ff292f7062328e7">bbox_contains</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="structRTree_aaa0d6acac61e4c9752d86fd7a57e8bd0.html#aaa0d6acac61e4c9752d86fd7a57e8bd0">bbox_expand</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="structRTree_ae0444e84fa4a52b188b7460922a1a0f7.html#ae0444e84fa4a52b188b7460922a1a0f7">bbox_overlaps</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="structRTree_a6e6e567208441a9afe38f653faa4e7c9.html#a6e6e567208441a9afe38f653faa4e7c9">bbox_position</a></td></tr>
@@ -94,17 +94,19 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad1acfdf586e580ff0ff292f7062328e7" name="ad1acfdf586e580ff0ff292f7062328e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1acfdf586e580ff0ff292f7062328e7">&#9670;&#160;</a></span>bbox_contains</h2>
+<a id="aa175f8f07b88a349f10816caa659039c" name="aa175f8f07b88a349f10816caa659039c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa175f8f07b88a349f10816caa659039c">&#9670;&#160;</a></span>bbox_adjacent</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool(* RTree::bbox_contains) (const void *, const void *)</td>
+          <td class="memname">bool(* RTree::bbox_adjacent) (const void *, const void *)</td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Whether the two boxes share a boundary and no point, which overlap does not answer: a span meeting another at an excluded bound overlaps it in no point at all. </p>
 
 </div>
 </div>

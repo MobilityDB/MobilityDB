@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: get_axis_length</title>
+<title>MobilityDB: bbox_adjacent_stbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a7aca2e739f1e116f63cdf5b620a70b4a.html#a7aca2e739f1e116f63cdf5b620a70b4a">bbox_adjacent_span</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a71fe205cd36324e195ebf754c6949f34.html#a71fe205cd36324e195ebf754c6949f34">bbox_adjacent_stbox</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__rtree_8c_a71fe205cd36324e195ebf754c6949f34.html#a71fe205cd36324e195ebf754c6949f34">bbox_adjacent_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a2b1b1983219d282f1c36469bd8fc6c6b.html#a2b1b1983219d282f1c36469bd8fc6c6b">bbox_adjacent_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_aea2894a5c2f8f4c71aa9616319f1d745.html#aea2894a5c2f8f4c71aa9616319f1d745">bbox_contains_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_aca4c32e36f3eba5f918094eb1ca1d857.html#aca4c32e36f3eba5f918094eb1ca1d857">bbox_contains_stbox</a></td></tr>
@@ -97,7 +97,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a030f2b98d5573f821d4d5d9836860371.html#a030f2b98d5573f821d4d5d9836860371">box_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a1eb207a88cdec353b8e01c7b655ff607.html#a1eb207a88cdec353b8e01c7b655ff607">box_largest_axis</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a75c4768a8cb1378f5c5f1ab607d2dc92.html#a75c4768a8cb1378f5c5f1ab607d2dc92">ensure_valid_rtree_box</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__rtree_8c_adf697f0ee03d3f78218db80963bf70f2.html#adf697f0ee03d3f78218db80963bf70f2">get_axis_length</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_adf697f0ee03d3f78218db80963bf70f2.html#adf697f0ee03d3f78218db80963bf70f2">get_axis_length</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_af898a4e3a4def8ebdc5103c6da6bf40b.html#af898a4e3a4def8ebdc5103c6da6bf40b">get_axis_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a2b3a4b5efa66307ebd73242641998eb9.html#a2b3a4b5efa66307ebd73242641998eb9">get_axis_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_ad6d348b72765b7837c3dd61dbb83382f.html#ad6d348b72765b7837c3dd61dbb83382f">get_axis_tbox</a></td></tr>
@@ -153,8 +153,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="adf697f0ee03d3f78218db80963bf70f2" name="adf697f0ee03d3f78218db80963bf70f2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adf697f0ee03d3f78218db80963bf70f2">&#9670;&#160;</a></span>get_axis_length()</h2>
+<a id="a71fe205cd36324e195ebf754c6949f34" name="a71fe205cd36324e195ebf754c6949f34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71fe205cd36324e195ebf754c6949f34">&#9670;&#160;</a></span>bbox_adjacent_stbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -163,22 +163,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static double get_axis_length </td>
+          <td class="memname">static bool bbox_adjacent_stbox </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
-          <td class="paramname"><em>rtree</em>, </td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>box1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>axis</em>&#160;</td>
+          <td class="paramname"><em>box2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -188,20 +182,10 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Return the length of a bounding box along a given axis as a double. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Pointer to the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> structure containing the function to retrieve axis values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Pointer to the bounding box for which the axis length is to be calculated </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">axis</td><td>The given axis (e.g., 0, 1, 2) along which to compute the length </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
