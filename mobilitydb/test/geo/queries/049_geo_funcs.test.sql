@@ -31,34 +31,34 @@
 -------------------------------------------------------------------------------
 
 -- The envelope of a point is that point, of two points the segment they span
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Point(1 2)'), 6));
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Point(1 2)'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
 
 -- A rectangle is its own envelope, whatever angle it is written at
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,10 0,10 5,0 5,0 0))'), 6));
-SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Polygon((0 0,10 0,10 5,0 5,0 0))'), 6));
+SELECT ST_AsText(round(orientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
 
 -- An arc reaches past the points that define it, and is enclosed by reading
 -- how far its circle reaches in each direction. The envelope of a circle of
 -- radius 2 is the square of side 4 about it, of area 16; a rectangle placed on
 -- the points of that circle has area 8 and leaves a third of it outside
-SELECT ST_AsText(OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
-SELECT round(ST_Area(OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'))::numeric, 6);
+SELECT ST_AsText(orientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+SELECT round(ST_Area(orientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'))::numeric, 6);
 
 -- The hull of a point is that point, and of collinear points their segment
-SELECT ST_AsText(round(ConvexHull(geometry 'Point(1 2)'), 6));
-SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,1 1,2 2)'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Point(1 2)'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,1 1,2 2)'), 6));
 
 -- A point inside the hull of the others does not reach its boundary
-SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
 
 -- The hull of a concave polygon closes over the notch
-SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
+SELECT ST_AsText(round(convexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
 
 -- The hull of a geometry carrying an arc carries that arc, where a hull placed
 -- on the three points defining a semicircular arc leaves the whole arc outside
-SELECT ST_AsText(ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
-SELECT ST_AsText(ConvexHull(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+SELECT ST_AsText(convexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
+SELECT ST_AsText(convexHull(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
 
 -------------------------------------------------------------------------------
 -- Simple geometries
@@ -96,35 +96,35 @@ SELECT isSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))') =
   ST_IsSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))');
 
 -------------------------------------------------------------------------------
--- Buffer
+-- buffer
 -- A buffer is bounded by the offsets of the geometry and by the joins and caps
 -- between them, and a circular arc is kept as an arc rather than sampled
 -------------------------------------------------------------------------------
 
 -- The buffer of a point is a disk, of a negative or zero distance nothing
-SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 1), 6));
-SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 0), 6));
-SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', -1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 0), 6));
+SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', -1), 6));
 
 -- The two offsets of a line, closed by a cap at each end
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square'), 6));
 
 -- The outer side of a turn is filled by the join the style names
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
-SELECT ST_AsText(round(Buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mitre'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mitre'), 6));
 
 -- A polygon grows outwards and its holes inwards
-SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
-SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1, 'join=mitre'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1, 'join=mitre'), 6));
 
 -- A circular string keeps its arcs, and so does the buffer of one
-SELECT ST_AsText(round(Buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
-SELECT ST_AsText(round(Buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
 
 -- The buffer of a geometry of several components is their union
-SELECT ST_GeometryType(Buffer(geometry 'Multipoint(0 0,10 0)', 1));
-SELECT ST_GeometryType(Buffer(geometry 'Multilinestring((0 0,10 0),(0 20,10 20))', 1));
+SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));
+SELECT ST_GeometryType(buffer(geometry 'Multilinestring((0 0,10 0),(0 20,10 20))', 1));
 
 -------------------------------------------------------------------------------

@@ -917,16 +917,16 @@
 			<title>Funciones sobre Geometrías</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="geo_orientedenvelope"><varname>OrientedEnvelope</varname></link>: Devuelve el rectángulo de área mínima que encierra una geometría</para>
+					<para><link linkend="geo_orientedenvelope"><varname>orientedEnvelope</varname></link>: Devuelve el rectángulo de área mínima que encierra una geometría</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="geo_convexhull"><varname>ConvexHull</varname></link>: Devuelve la geometría convexa más pequeña que encierra una geometría</para>
+					<para><link linkend="geo_convexhull"><varname>convexHull</varname></link>: Devuelve la geometría convexa más pequeña que encierra una geometría</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_issimple"><varname>isSimple</varname></link>: Devuelve verdadero si una geometría no tiene ningún punto en el que se cruce o se toque a sí misma</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="geo_buffer"><varname>Buffer</varname></link>: Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</para>
+					<para><link linkend="geo_buffer"><varname>buffer</varname></link>: Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
