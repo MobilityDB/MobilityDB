@@ -206,6 +206,14 @@ Set<T>/Span<T> topological/position operators) and the `subtypes:` `files:` trac
 `@>`, `<@`, `~=`, `-\|-` / `<<`, `>>`, `&<`, `&>`…). The two never share a manifest
 entry.
 
+Every `topops.sql.tmpl` section declares its functions and then the operators over
+them, in both of its divider-separated blocks: the `tstzspan` block declares two
+functions and their two operators, and the `stbox` block declares three functions —
+`op(stbox, {TEMP})`, `op({TEMP}, stbox)`, `op({TEMP}, {TEMP})` — and then their three
+operators. A `CREATE OPERATOR` names a `PROCEDURE` that must already exist, so the
+functions lead; grouping them keeps one shape for both blocks and matches the
+committed temporal geometry and temporal point files.
+
 **Temporal spatial relationships (`tempspatialrel_families:`)** — a third,
 standalone whole-file axis (no `positions:` slot, no `subtypes:` participation) for
 the Spatiotemporal predicate surface (`tIntersects`/`tDwithin`/`tContains`/

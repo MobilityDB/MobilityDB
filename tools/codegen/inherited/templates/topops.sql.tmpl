@@ -126,14 +126,6 @@ CREATE FUNCTION contains(stbox, {TEMP})
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR @> (
-  PROCEDURE = contains,
-  LEFTARG = stbox, RIGHTARG = {TEMP},
-  COMMUTATOR = <@,
-  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
-);
-
 CREATE FUNCTION contains({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
@@ -145,6 +137,12 @@ CREATE FUNCTION contains({TEMP}, {TEMP})
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  COMMUTATOR = <@,
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
+);
 CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
@@ -193,14 +191,6 @@ CREATE FUNCTION contained(stbox, {TEMP})
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <@ (
-  PROCEDURE = contained,
-  LEFTARG = stbox, RIGHTARG = {TEMP},
-  COMMUTATOR = @>,
-  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
-);
-
 CREATE FUNCTION contained({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
@@ -212,6 +202,12 @@ CREATE FUNCTION contained({TEMP}, {TEMP})
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  COMMUTATOR = @>,
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
+);
 CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
@@ -260,14 +256,6 @@ CREATE FUNCTION overlaps(stbox, {TEMP})
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR && (
-  PROCEDURE = overlaps,
-  LEFTARG = stbox, RIGHTARG = {TEMP},
-  COMMUTATOR = &&,
-  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
-);
-
 CREATE FUNCTION overlaps({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
@@ -279,6 +267,12 @@ CREATE FUNCTION overlaps({TEMP}, {TEMP})
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  COMMUTATOR = &&,
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
+);
 CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
@@ -327,14 +321,6 @@ CREATE FUNCTION same(stbox, {TEMP})
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ~= (
-  PROCEDURE = same,
-  LEFTARG = stbox, RIGHTARG = {TEMP},
-  COMMUTATOR = ~=,
-  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
-);
-
 CREATE FUNCTION same({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
@@ -346,6 +332,12 @@ CREATE FUNCTION same({TEMP}, {TEMP})
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  COMMUTATOR = ~=,
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
+);
 CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
@@ -394,14 +386,6 @@ CREATE FUNCTION adjacent(stbox, {TEMP})
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR -|- (
-  PROCEDURE = adjacent,
-  LEFTARG = stbox, RIGHTARG = {TEMP},
-  COMMUTATOR = -|-,
-  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
-);
-
 CREATE FUNCTION adjacent({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
@@ -413,6 +397,12 @@ CREATE FUNCTION adjacent({TEMP}, {TEMP})
   SUPPORT {SEL}_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  COMMUTATOR = -|-,
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
+);
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
