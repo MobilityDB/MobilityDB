@@ -2020,7 +2020,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
  * @param[in] clip_geom True when the geometry is clipped
  * @return Structure with the geometry, the parallel array of timestamps,
  * and the number of timestamps
- * @csqlfn #Tpoint_AsMVTGeom()
+ * @csqlfn #AsMVTGeom()
  */
 MvtGeom
 tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,

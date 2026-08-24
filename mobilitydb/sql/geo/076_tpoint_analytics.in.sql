@@ -207,7 +207,7 @@ CREATE FUNCTION asMVTGeom(tpoint tgeompoint, bounds stbox,
   extent integer DEFAULT 4096, buffer integer DEFAULT 256, clip boolean DEFAULT TRUE)
 -- RETURNS tgeompoint
 RETURNS geom_times
-AS 'MODULE_PATHNAME','Tpoint_AsMVTGeom'
+AS 'MODULE_PATHNAME','AsMVTGeom'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
