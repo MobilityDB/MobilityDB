@@ -8,10 +8,10 @@ SELECT tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 </pre></li><li class="listitem"><a name="tcbuffer_nearestApproachInstant"></a><a class="indexterm" name="id9206"></a><p>TODO Devuelve el instante del primer búfer circular temporal en el que los dos argumentos están a la distancia más cercana</p><p><code class="varname">nearestApproachInstant({geo,cbuffer,tcbuffer},{geo,cbuffer,tcbuffer}) → tcbuffer</code></p><pre class="programlisting">
 SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
--- Cbuffer(Point(2 2),0.349928)@2001-01-01 02:59:44.402905+01
+-- Cbuffer(Point(2 2),0.349928)@2001-01-01 02:59:44.402905
 SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)');
--- Cbuffer(Point(2 2),0.592181)@2001-01-01 17:31:51.080405+01
+-- Cbuffer(Point(2 2),0.592181)@2001-01-01 17:31:51.080405
 </pre></li><li class="listitem"><a name="tcbuffer_shortestLine"></a><a class="indexterm" name="id9214"></a><p>TODO Devuelve la línea que conecta el punto de aproximación más cercano entre los dos argumentos</p><p><code class="varname">shortestLine({geo,cbuffer,tcbuffer},{geo,cbuffer,tcbuffer}) → geometry</code></p><p>La función devuelve la primera línea que encuentre si hay más de una</p><pre class="programlisting">
 SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));

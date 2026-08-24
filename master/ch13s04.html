@@ -12,16 +12,16 @@ SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)',
 -- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
 </pre></li><li class="listitem"><a name="tpose_asMFJSON"></a><a class="indexterm" name="id10520"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><p><code class="varname">asMFJSON(tpose) → text</code></p><pre class="programlisting">
 SELECT asMFJSON(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 3);
-/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00+01",
-  "end":"2001-01-01T00:00:00+01","lower_inc":true,"upper_inc":true},
+/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00",
+  "end":"2001-01-01T00:00:00","lower_inc":true,"upper_inc":true},
   "values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],
-  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
 /* {"type":"MovingPose","bbox":[[1,2,3],[1,2,3]],
-  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-01T00:00:00+01",
+  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-01T00:00:00",
   "lower_inc":true,"upper_inc":true},
   "values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],
-  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 </pre></li><li class="listitem"><a name="tpose_asBinary"></a><a class="indexterm" name="id10528"></a><a class="indexterm" name="id10531"></a><a class="indexterm" name="id10534"></a><a class="indexterm" name="id10537"></a><p>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, the Hexadecimal Well-Known Binary (HexWKB) representation, or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">asBinary(tpose,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tpose,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(tpose,endian text='') → text</code></p><p><code class="varname">asHexEWKB(tpose,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
 SELECT asBinary(tpose 'Pose(Point(1 2),1)@2001-01-01');
 -- \x0138000101000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000

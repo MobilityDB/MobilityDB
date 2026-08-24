@@ -22,7 +22,7 @@ SELECT asText(nearestApproachInstant(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
   Pose(Point(10 0), 0.0)@2001-01-02]',
   geometry 'Point(5 5)'));
--- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00+00
+-- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00
 </pre></li><li class="listitem"><a name="trgeometry_shortestLine"></a><a class="indexterm" name="id12541"></a><p>Return the line connecting the two arguments at their nearest approach</p><p><code class="varname">shortestLine({geometry,trgeometry}, {geometry,trgeometry}) → geometry</code></p><pre class="programlisting">
 SELECT ST_AsText(shortestLine(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',

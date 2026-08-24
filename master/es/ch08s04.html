@@ -43,7 +43,7 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
     Point(0 0 0)@2001-01-05)'::geometry,
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
     Point(2 2 2)@2001-01-06)'::geometry));
--- 2001-01-03 12:00:00+00
+-- 2001-01-03 12:00:00
 </pre></li><li class="listitem"><a name="tgeo_minDistance"></a><a class="indexterm" name="id6143"></a><p>Devuelve la distancia espacial mínima entre dos geometrías temporales sobre la unión de sus extensiones temporales</p><p><code class="varname">minDistance({tgeo,geo},{tgeo,geo}) → float</code></p><p><code class="varname">minDistance(tgeo[],tgeo[]) → float</code></p><p><code class="varname">minDistance(tgeo,tgeo) → float</code> (agregado)</p><p>La forma escalar devuelve la distancia mínima alcanzada entre los dos argumentos sobre la intersección de sus extensiones temporales, equivalente al valor mínimo de la distancia temporal <code class="varname">&lt;-&gt;</code>. La forma de arreglo generaliza esto a dos conjuntos de geometrías temporales y devuelve el mínimo sobre todos los pares. La forma de agregado, utilizada con <code class="varname">GROUP BY</code>, devuelve la distancia mínima alcanzada sobre todos los pares agregados en el grupo.</p><pre class="programlisting">
 SELECT minDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
   geometry 'Point(0 1)');

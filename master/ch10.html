@@ -5,7 +5,7 @@ SELECT tCount(NoEmps) FROM Department;
 SELECT extent(noEmps) FROM Department;
 -- TBOX XT((4,12),[2001-01-01,2001-10-01])
 SELECT extent(Trip) FROM Trips;
--- STBOX XT(((0,0),(3,3)),[2001-01-01 08:00:00+01, 2001-01-01 08:20:00+01))
+-- STBOX XT(((0,0),(3,3)),[2001-01-01 08:00:00, 2001-01-01 08:20:00))
 </pre></li><li class="listitem"><a name="tbool_tAnd"></a><a class="indexterm" name="id7943"></a><a class="indexterm" name="id7946"></a><p>Temporal and, temporal or</p><p><code class="varname">tOr(tbool) → tbool</code></p><p><code class="varname">tAnd(tbool) → tbool</code></p><pre class="programlisting">
 SELECT tAnd(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-04-01, f@2001-10-01)}
@@ -40,8 +40,8 @@ SELECT round(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
    7.333@2001-06-01, 9@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
 </pre></li><li class="listitem"><a name="tpoint_tCentroid"></a><a class="indexterm" name="id8010"></a><p>Temporal centroid</p><p><code class="varname">tCentroid(tgeompoint) → tgeompoint</code></p><pre class="programlisting">
 SELECT tCentroid(Trip) FROM Trips;
-/* {[POINT(0 0)@2001-01-01 08:00:00+00, POINT(1 0)@2001-01-01 08:05:00+00),
-   [POINT(0.5 0)@2001-01-01 08:05:00+00, POINT(1.5 0.5)@2001-01-01 08:10:00+00,
-   POINT(2 1.5)@2001-01-01 08:15:00+00),
-   [POINT(2 2)@2001-01-01 08:15:00+00, POINT(3 3)@2001-01-01 08:20:00+00)} */
+/* {[POINT(0 0)@2001-01-01 08:00:00, POINT(1 0)@2001-01-01 08:05:00),
+   [POINT(0.5 0)@2001-01-01 08:05:00, POINT(1.5 0.5)@2001-01-01 08:10:00,
+   POINT(2 1.5)@2001-01-01 08:15:00),
+   [POINT(2 2)@2001-01-01 08:15:00, POINT(3 3)@2001-01-01 08:20:00)} */
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch09s06.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch10s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Multidimensional Tiling </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Indexing</td></tr></table></div></body></html>

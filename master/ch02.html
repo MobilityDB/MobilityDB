@@ -78,7 +78,7 @@ SELECT floatspanset '{[1.5,2.5],(2.5,4.5]}';
 SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
   [2001-01-01 08:10:00, 2001-01-01 08:10:00], (2001-01-01 08:10:00,
   2001-01-01 08:20:00]}';
--- {[2001-01-01 08:00:00+00,2001-01-01 08:20:00+00]}
+-- {[2001-01-01 08:00:00,2001-01-01 08:20:00]}
 </pre><p>
 			We give next the functions for input and output of set and span types in Well-Known Text and Well-Known Binary format. The default output format of all set and span types is the Well-Known Text format. The function <code class="varname">asText</code> given next enables to determine the output of floating point values.
 		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_asText"></a><a class="indexterm" name="id2235"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText({floatset,floatspans},maxdecdigits=15) → text</code></p><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">

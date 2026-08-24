@@ -12,16 +12,16 @@ SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)',
 -- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
 </pre></li><li class="listitem"><a name="tpose_asMFJSON"></a><a class="indexterm" name="id9954"></a><p>Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON)</p><p><code class="varname">asMFJSON(tpose) → text</code></p><pre class="programlisting">
 SELECT asMFJSON(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 3);
-/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00+01",
-  "end":"2001-01-01T00:00:00+01","lower_inc":true,"upper_inc":true},
+/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00",
+  "end":"2001-01-01T00:00:00","lower_inc":true,"upper_inc":true},
   "values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],
-  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
 /* {"type":"MovingPose","bbox":[[1,2,3],[1,2,3]],
-  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-01T00:00:00+01",
+  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-01T00:00:00",
   "lower_inc":true,"upper_inc":true},
   "values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],
-  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 </pre></li><li class="listitem"><a name="tpose_asBinary"></a><a class="indexterm" name="id9962"></a><a class="indexterm" name="id9965"></a><a class="indexterm" name="id9968"></a><a class="indexterm" name="id9971"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), la representación hexadecimal binaria conocida (Hexadecimal Well-Known Binary o HexWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</p><p><code class="varname">asBinary(tpose,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tpose,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(tpose,endian text='') → text</code></p><p><code class="varname">asHexEWKB(tpose,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
 SELECT asBinary(tpose 'Pose(Point(1 2),1)@2001-01-01');
 -- \x0138000101000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000

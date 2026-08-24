@@ -19,7 +19,7 @@ SELECT tIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 -- Temporal distance
 SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
   tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
--- [0.5@2001-01-02 08:05:00+00, 0.745184033794557@2001-01-03 08:10:00+00)
+-- [0.5@2001-01-02 08:05:00, 0.745184033794557@2001-01-03 08:10:00)
 </pre><p>
 			Another common requirement is to determine whether the operands <span class="emphasis"><em>ever</em></span> or <span class="emphasis"><em>always</em></span> satisfy a condition with respect to an operation. These can be obtained by applying the ever or always comparison operators. These operators are denoted by prefixing the traditional comparison operators with, respectively, <code class="varname">?</code> (ever) and <code class="varname">%</code> (always). Examples of ever and always comparison operators are given next.
 		</p><pre class="programlisting">

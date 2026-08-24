@@ -16,7 +16,7 @@ SELECT asHexWKB(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-
 SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
   {"Position": "Point(2 2)"}@2001-01-02]');
 /* {"type":"MovingJsonb","values":[{"Position": "Point(1 1)"},{"Position": "Point(2 2)"}],
-   "datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],
+   "datetimes":["2001-01-01T00:00:00","2001-01-02T00:00:00"],
    "lower_inc":true,"upper_inc":true,"interpolation":"Step"} */
 </pre></li><li class="listitem"><a name="tjsonbFromText"></a><a class="indexterm" name="id12587"></a><p>Entrada a partir de la representación en texto bien conocido (WKT)</p><p><code class="varname">tjsonbFromText(text) → tjsonb</code></p><pre class="programlisting">
 SELECT tjsonbFromText(text
@@ -35,6 +35,6 @@ SELECT tjsonbFromHexWKB(asHexWKB(
 SELECT tjsonbFromMFJSON('{"type": "MovingJsonb", "interpolation": "Step",
   "values": [{"Position": "Point(1 1)"}, {"Position": "Point(2 2)"}],
   "datetimes": ["2001-01-01T10:00:00Z","2001-01-01T12:00:00Z"]}');
-/* [{"Position": "Point(1 1)"}@2001-01-01 11:00:00+01,
-   {"Position": "Point(2 2)"}@2001-01-01 13:00:00+01] */
+/* [{"Position": "Point(1 1)"}@2001-01-01 11:00:00,
+   {"Position": "Point(2 2)"}@2001-01-01 13:00:00] */
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Validez de los valores JSONB temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Constructores</td></tr></table></div></body></html>

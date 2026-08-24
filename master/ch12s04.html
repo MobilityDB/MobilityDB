@@ -13,18 +13,18 @@ SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)',
 </pre></li><li class="listitem"><a name="tcbuffer_asMFJSON"></a><a class="indexterm" name="id9415"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><p><code class="varname">asMFJSON(tcbuffer) → text</code></p><p>A circular buffer is always planar 2D. Each value is an object with a <code class="varname">point</code> member, an <code class="varname">[x, y]</code> coordinate array, and a numeric <code class="varname">radius</code> member, mirroring the <code class="varname">point</code> and <code class="varname">radius</code> accessors.</p><pre class="programlisting">
 SELECT asMFJSON(tcbuffer 'Cbuffer(Point(1 2),0.5)@2001-01-01', 3);
 /* {"type":"MovingCircularBuffer","bbox":[[0.5,1.5],[1.5,2.5]],
-  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-01T00:00:00+01",
+  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-01T00:00:00",
   "lower_inc":true,"upper_inc":true},
   "values":[{"point":[1,2],"radius":0.5}],
-  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 SELECT asMFJSON(tcbuffer 'SRID=4326;[Cbuffer(Point(1 1),0.2)@2001-01-01,
   Cbuffer(Point(2 2),0.4)@2001-01-02)', 3);
 /* {"type":"MovingCircularBuffer","crs":{"type":"Name",
   "properties":{"name":"EPSG:4326"}},"bbox":[[0.8,0.8],[2.4,2.4]],
-  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-02T00:00:00+01",
+  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-02T00:00:00",
   "lower_inc":true,"upper_inc":false},
   "values":[{"point":[1,1],"radius":0.2},{"point":[2,2],"radius":0.4}],
-  "datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],
+  "datetimes":["2001-01-01T00:00:00","2001-01-02T00:00:00"],
   "lower_inc":true,"upper_inc":false,"interpolation":"Linear"} */
 </pre></li><li class="listitem"><a name="tcbuffer_asBinary"></a><a class="indexterm" name="id9429"></a><a class="indexterm" name="id9432"></a><a class="indexterm" name="id9435"></a><a class="indexterm" name="id9438"></a><p>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, the Hexadecimal Well-Known Binary (HexWKB) representation, or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">asBinary(tcbuffer,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tcbuffer,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(tcbuffer,endian text='') → text</code></p><p><code class="varname">asHexEWKB(tcbuffer,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
 SELECT asBinary(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');

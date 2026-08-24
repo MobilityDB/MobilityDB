@@ -43,7 +43,7 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
     Point(0 0 0)@2001-01-05)'::geometry,
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
     Point(2 2 2)@2001-01-06)'::geometry));
--- 2001-01-03 12:00:00+00
+-- 2001-01-03 12:00:00
 </pre></li><li class="listitem"><a name="tgeo_minDistance"></a><a class="indexterm" name="id6658"></a><p>Return the minimum spatial distance between two temporal geometries over the union of their temporal extents</p><p><code class="varname">minDistance({tgeo,geo},{tgeo,geo}) → float</code></p><p><code class="varname">minDistance(tgeo[],tgeo[]) → float</code></p><p><code class="varname">minDistance(tgeo,tgeo) → float</code> (aggregate)</p><p>The scalar form returns the minimum distance reached between the two arguments over the intersection of their temporal extents, equivalent to the minimum value of the temporal distance <code class="varname">&lt;-&gt;</code>. The array form generalises this to two sets of temporal geometries and returns the minimum across all pairs. The aggregate form, used with <code class="varname">GROUP BY</code>, returns the minimum distance reached over all aggregated pairs in the group.</p><pre class="programlisting">
 SELECT minDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
   geometry 'Point(0 1)');
