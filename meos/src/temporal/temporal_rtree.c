@@ -933,6 +933,9 @@ leaf_consistent(const RTree *rtree, const void *key, const void *query,
       return rtree->bbox_contains(key, query);
     case INDEX_CONTAINED_BY:
       return rtree->bbox_contains(query, key);
+    case INDEX_SAME:
+      /* Two extents are equal exactly when each contains the other */
+      return rtree->bbox_contains(key, query) && rtree->bbox_contains(query, key);
     default:
       /* An entry satisfies a position operation as the box type answers it */
       return rtree->bbox_position ?
@@ -958,6 +961,9 @@ inner_consistent(const RTree *rtree, const void *key, const void *query,
     case INDEX_CONTAINED_BY:
       return rtree->bbox_overlaps(key, query);
     case INDEX_CONTAINS:
+    case INDEX_SAME:
+      /* A subtree holds an entry equal to the query only when the box bounding
+       * the subtree contains the query, an entry being contained by it */
       return rtree->bbox_contains(key, query);
     default:
       /* The subtree can hold an entry on one side of the query only when the

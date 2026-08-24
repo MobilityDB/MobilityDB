@@ -233,7 +233,8 @@ ensure_same_index_bboxtype(MeosType bboxtype1, MeosType bboxtype2)
 bool
 ensure_index_join_op(IndexSearchOp op)
 {
-  if (op == INDEX_OVERLAPS || op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY)
+  if (op == INDEX_OVERLAPS || op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY ||
+      op == INDEX_SAME)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "A join answers the operations that compare extents, not the ones that "
