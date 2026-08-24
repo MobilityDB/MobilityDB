@@ -97,6 +97,14 @@ jobs:
       - name: Check that every error sentinel is the maximum of the return type
         run: python3 tools/scripts/check_error_sentinels.py
 
+  liblwgeom_geos_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check that no new call reaches GEOS through the vendored library
+        run: python3 tools/scripts/check_liblwgeom_geos.py
+
   binding_io_ownership_check:
     runs-on: ubuntu-latest
     steps:

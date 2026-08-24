@@ -1,0 +1,15 @@
+# Entry points of the vendored PostGIS geometry library that
+# answer with GEOS and that MobilityDB calls, as
+# tools/scripts/check_liblwgeom_geos.py reads them. The list only
+# shrinks: a call to an entry point it does not carry fails the
+# check. Regenerate with --rebaseline once a native answer takes
+# a call over. The library answers 125 entry points in all.
+meos/src/geo/postgis_funcs.c	lwgeom_centroid
+meos/src/geo/postgis_funcs.c	lwgeom_difference_prec
+meos/src/geo/postgis_funcs.c	lwgeom_intersection_prec
+meos/src/geo/postgis_funcs.c	lwgeom_is_simple
+meos/src/geo/postgis_funcs.c	lwgeom_unaryunion_prec
+meos/src/raster/raster_rtcore.c	rt_raster_destroy
+meos/src/raster/raster_rtcore.c	rt_raster_get_band
+meos/src/raster/raster_rtcore.c	rt_raster_get_num_bands
+meos/src/temporal/temporal_modif.c	lwgeom_linemerge_directed
