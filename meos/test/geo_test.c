@@ -526,6 +526,46 @@ int main(void)
   assert(meos_errno() != 0);
   meos_errno_reset();
 
+  /* The clustering entries partition an array of geometries: the three points
+   * about the origin and the line string joining two of them meet, the far
+   * point stands alone, and a member carrying another SRID is refused */
+  meos_errno_reset();
+  const GSERIALIZED *cl[4];
+  cl[0] = geom_in("SRID=4326;Point(0 0)", -1);
+  cl[1] = geom_in("SRID=4326;Point(1 1)", -1);
+  cl[2] = geom_in("SRID=4326;Linestring(0 0,1 1)", -1);
+  cl[3] = geom_in("SRID=4326;Point(50 50)", -1);
+  int nclusters = 0;
+  GSERIALIZED **clusters = geo_cluster_intersecting(cl, 4, &nclusters);
+  printf("clusterIntersecting of 4 geometries: %d clusters, errno %d\n",
+    nclusters, meos_errno());
+  assert(clusters != NULL);
+  assert(nclusters == 2);
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+
+  /* The same array within a distance reaching every member is one cluster */
+  int nwithin = 0;
+  GSERIALIZED **within = geo_cluster_within(cl, 4, 100.0, &nwithin);
+  printf("clusterWithin of the same 4 at distance 100: %d cluster(s)\n",
+    nwithin);
+  assert(within != NULL);
+  assert(nwithin == 1);
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+
+  /* Clustering geometries of different SRIDs is an error */
+  const GSERIALIZED *mixed[2];
+  mixed[0] = geom_in("SRID=4326;Point(0 0)", -1);
+  mixed[1] = geom_in("SRID=3812;Point(0 1)", -1);
+  int nmixed = 0;
+  GSERIALIZED **bad = geo_cluster_intersecting(mixed, 2, &nmixed);
+  printf("clusterIntersecting on mixed SRID: %s, errno %d\n",
+    bad ? "non-NULL" : "NULL", meos_errno());
+  assert(bad == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 
