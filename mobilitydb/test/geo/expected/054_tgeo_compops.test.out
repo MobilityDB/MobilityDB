@@ -109,6 +109,12 @@ SELECT tgeometry 'Point(1 1)@2000-01-01' ?= tgeometry 'Point(1 1)@2000-01-02';
 /* Errors */
 SELECT tgeometry 'Point(1 1)@2000-01-01' ?= tgeometry 'SRID=3812;Point(1 1)@2000-01-01';
 ERROR:  Operation on mixed SRID
+SELECT tgeometry 'Point(1 1)@2000-01-01' #= tgeometry 'SRID=3812;Point(1 1)@2000-01-01';
+ERROR:  Operation on mixed SRID
+SELECT tgeometry 'Point(1 1)@2000-01-01' #<> tgeometry 'SRID=3812;Point(1 1)@2000-01-01';
+ERROR:  Operation on mixed SRID
+SELECT tgeometry 'Point(1 1)@2000-01-01' #= tgeometry 'Point(1 1 1)@2000-01-01';
+ERROR:  The arguments must be of the same dimensionality
 CREATE INDEX tbl_tgeometry_rtree_idx ON tbl_tgeometry USING gist(temp);
 CREATE INDEX
 CREATE INDEX tbl_tgeography_rtree_idx ON tbl_tgeography USING gist(temp);

@@ -286,3 +286,6 @@ SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+/* Errors */
+SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01' #= trgeometry 'SRID=3812;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01';
+ERROR:  Operation on mixed SRID

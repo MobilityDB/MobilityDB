@@ -2026,22 +2026,6 @@ tlt_ttext_text(const Temporal *temp, const text *txt)
 
 /*****************************************************************************/
 
-/**
- * @ingroup meos_temporal_comp_temp
- * @brief Return the temporal less than of two temporal values
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Tlt_temporal_temporal()
- */
-Temporal *
-tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
-      ! ensure_torder_type(temp1->temptype))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
-}
-
 /*****************************************************************************
  * Temporal le
  *****************************************************************************/
@@ -2146,22 +2130,6 @@ tle_ttext_text(const Temporal *temp, const text *txt)
 
 /*****************************************************************************/
 
-/**
- * @ingroup meos_temporal_comp_temp
- * @brief Return the temporal less than or equal to of two temporal values
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Tle_temporal_temporal()
- */
-Temporal *
-tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
-      ! ensure_torder_type(temp1->temptype))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
-}
-
 /*****************************************************************************
  * Temporal gt
  *****************************************************************************/
@@ -2259,22 +2227,6 @@ tgt_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup meos_temporal_comp_temp
- * @brief Return the temporal greater than of two temporal values
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Tgt_temporal_temporal()
- */
-Temporal *
-tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
-      ! ensure_torder_type(temp1->temptype))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
-}
 
 /*****************************************************************************
  * Temporal ge
@@ -2379,21 +2331,5 @@ tge_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup meos_temporal_comp_temp
- * @brief Return the temporal greater than or equal to of two temporal values
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Tge_temporal_temporal()
- */
-Temporal *
-tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
-      ! ensure_torder_type(temp1->temptype))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
-}
 
 /*****************************************************************************/

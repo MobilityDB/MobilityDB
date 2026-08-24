@@ -286,3 +286,6 @@ SELECT tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+/* Errors */
+SELECT tpose 'Pose(Point(1 1), 0.5)@2000-01-01' #= tpose 'SRID=3812;Pose(Point(1 1), 0.5)@2000-01-01';
+ERROR:  Operation on mixed SRID

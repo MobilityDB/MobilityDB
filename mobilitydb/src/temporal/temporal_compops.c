@@ -682,11 +682,11 @@ Tcomp_temporal_base(FunctionCallInfo fcinfo,
  */
 Datum
 Tcomp_temporal_temporal(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, MeosType))
+  Temporal * (*func)(const Temporal *, const Temporal *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = tcomp_temporal_temporal(temp1, temp2, func);
+  Temporal *result = func(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
@@ -892,7 +892,7 @@ PG_FUNCTION_INFO_V1(Teq_temporal_temporal);
 inline Datum
 Teq_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return Tcomp_temporal_temporal(fcinfo, &datum2_eq);
+  return Tcomp_temporal_temporal(fcinfo, &teq_temporal_temporal);
 }
 
 PGDLLEXPORT Datum Tne_temporal_temporal(PG_FUNCTION_ARGS);
@@ -907,7 +907,7 @@ PG_FUNCTION_INFO_V1(Tne_temporal_temporal);
 inline Datum
 Tne_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return Tcomp_temporal_temporal(fcinfo, &datum2_ne);
+  return Tcomp_temporal_temporal(fcinfo, &tne_temporal_temporal);
 }
 
 PGDLLEXPORT Datum Tlt_temporal_temporal(PG_FUNCTION_ARGS);
@@ -922,7 +922,7 @@ PG_FUNCTION_INFO_V1(Tlt_temporal_temporal);
 inline Datum
 Tlt_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return Tcomp_temporal_temporal(fcinfo, &datum2_lt);
+  return Tcomp_temporal_temporal(fcinfo, &tlt_temporal_temporal);
 }
 
 PGDLLEXPORT Datum Tle_temporal_temporal(PG_FUNCTION_ARGS);
@@ -937,7 +937,7 @@ PG_FUNCTION_INFO_V1(Tle_temporal_temporal);
 inline Datum
 Tle_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return Tcomp_temporal_temporal(fcinfo, &datum2_le);
+  return Tcomp_temporal_temporal(fcinfo, &tle_temporal_temporal);
 }
 
 PGDLLEXPORT Datum Tgt_temporal_temporal(PG_FUNCTION_ARGS);
@@ -952,7 +952,7 @@ PG_FUNCTION_INFO_V1(Tgt_temporal_temporal);
 inline Datum
 Tgt_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return Tcomp_temporal_temporal(fcinfo, &datum2_gt);
+  return Tcomp_temporal_temporal(fcinfo, &tgt_temporal_temporal);
 }
 PGDLLEXPORT Datum Tge_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tge_temporal_temporal);
@@ -966,7 +966,7 @@ PG_FUNCTION_INFO_V1(Tge_temporal_temporal);
 inline Datum
 Tge_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return Tcomp_temporal_temporal(fcinfo, &datum2_ge);
+  return Tcomp_temporal_temporal(fcinfo, &tge_temporal_temporal);
 }
 
 /*****************************************************************************/
