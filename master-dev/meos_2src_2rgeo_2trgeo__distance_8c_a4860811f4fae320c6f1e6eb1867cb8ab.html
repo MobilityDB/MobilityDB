@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tdist_array_sort</title>
+<title>MobilityDB: ensure_trgeo_ref_walkable</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -103,7 +103,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a73d3143fd3c9244494b13e36731888fb.html#a73d3143fd3c9244494b13e36731888fb">dist2d_trgeoseqset_trgeoseqset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_abe52a948b1371cfc11d3c14464805d35.html#abe52a948b1371cfc11d3c14464805d35">edge_vertex_tpoly_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a38f142095b4b5be0b3371aebfb05509a.html#a38f142095b4b5be0b3371aebfb05509a">edge_vertex_tpoly_poly</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a4860811f4fae320c6f1e6eb1867cb8ab.html#a4860811f4fae320c6f1e6eb1867cb8ab">ensure_trgeo_ref_walkable</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a4860811f4fae320c6f1e6eb1867cb8ab.html#a4860811f4fae320c6f1e6eb1867cb8ab">ensure_trgeo_ref_walkable</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a94b7a8fc0fbde2084b6cfe824ac39b9c.html#a94b7a8fc0fbde2084b6cfe824ac39b9c">f_parallel_edges_tpoly_poly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a3d3d10238ae9b3de8d28f6707581ec73.html#a3d3d10238ae9b3de8d28f6707581ec73">f_poly_tpoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a67fbe5af0e6f04b7c57556e8c18e2502.html#a67fbe5af0e6f04b7c57556e8c18e2502">f_tpoint_poly</a></td></tr>
@@ -134,7 +134,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a584ffda3dd12e6f48ac47634d1beec71.html#a584ffda3dd12e6f48ac47634d1beec71">solve_s_poly_tpoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_aaebdf2c25e8565a9db56d57af35dc644.html#aaebdf2c25e8565a9db56d57af35dc644">solve_s_tpoly_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a29284eba053715811082699c7685a76a.html#a29284eba053715811082699c7685a76a">solve_s_tpoly_poly</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_aecdd63632fa2863bbca6126f6dfb10b4.html#aecdd63632fa2863bbca6126f6dfb10b4">tdist_array_sort</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_aecdd63632fa2863bbca6126f6dfb10b4.html#aecdd63632fa2863bbca6126f6dfb10b4">tdist_array_sort</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a17da91c798fad7970f2d657b008b518e.html#a17da91c798fad7970f2d657b008b518e">tdist_elem_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_aa179823173d6f7a30cc0215207b131ac.html#aa179823173d6f7a30cc0215207b131ac">tdist_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__dist_gaab9479cd3e7e4c212268088831a8b7f9.html#gaab9479cd3e7e4c212268088831a8b7f9">tdistance_trgeometry_geo</a></td></tr>
@@ -158,8 +158,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aecdd63632fa2863bbca6126f6dfb10b4" name="aecdd63632fa2863bbca6126f6dfb10b4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aecdd63632fa2863bbca6126f6dfb10b4">&#9670;&#160;</a></span>tdist_array_sort()</h2>
+<a id="a4860811f4fae320c6f1e6eb1867cb8ab" name="a4860811f4fae320c6f1e6eb1867cb8ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4860811f4fae320c6f1e6eb1867cb8ab">&#9670;&#160;</a></span>ensure_trgeo_ref_walkable()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -168,10 +168,10 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void tdist_array_sort </td>
+          <td class="memname">static bool ensure_trgeo_ref_walkable </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structtdist__array.html">tdist_array</a> *&#160;</td>
-          <td class="paramname"><em>tda</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>ref_gs</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -182,7 +182,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Sort the distance elements by time and drop duplicate timestamps, keeping the smallest distance so that a coincident kink and extremum collapse to the true value. </p>
+<p>Ensure that the closest-feature walk can read a reference geometry. </p>
+<p >The sequence kernels of this file read the body as an <code><a class="el" href="structLWPOLY.html">LWPOLY</a></code> &ndash; the closest-feature walk is written on a convex polygon &ndash; and answer nothing for a reference geometry of another type, which the constructor nevertheless accepts: a polyhedral surface is a legal reference geometry. Reporting it here is what keeps such a pair from reaching a cast that answers NULL and a walk that reads it. </p><dl class="section note"><dt>Note</dt><dd>The INSTANT paths need no such reference: they place the body with <a class="el" href="group__meos__pose__base__geopose_ga35e0152cab2586184ec03943561134ba.html#ga35e0152cab2586184ec03943561134ba" title="Return the world-frame geometry obtained by applying a pose&#39;s rigid-body transform to a body-frame ge...">pose_apply_geo</a> and measure it whole, so they answer for any body and are left unguarded. </dd></dl>
 
 </div>
 </div>
