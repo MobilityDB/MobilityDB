@@ -58,6 +58,7 @@ int main(void)
   char *bool1_out = bool_out(bool1);
 
   int32 int32_in1 = 1;
+  int64 int64_in1 = 1;
   int32 int32_in2 = 3;
 
   double float8_in1 = 1;
@@ -139,6 +140,10 @@ int main(void)
   char *tbool2_in = "{[t@2001-01-02, t@2001-01-03],[f@2001-01-04, f@2001-01-06]}";
   Temporal *tbool2 = tbool_in(tbool2_in);
   char *tbool2_out = tbool_out(tbool2);
+
+  char *tbigint1_in = "{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}";
+  Temporal *tbigint1 = tbigint_in(tbigint1_in);
+  char *tbigint1_out = tbigint_out(tbigint1);
 
   char *tint1_in = "{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}";
   Temporal *tint1 = tint_in(tint1_in);
@@ -2105,6 +2110,12 @@ int main(void)
   printf("teq_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tbool_result); free(char_result);
 
+  /* Temporal *teq_bigint_tbigint(int64 i, const Temporal *temp); */
+  tbool_result = teq_bigint_tbigint(int64_in1, tbigint1);
+  char_result = tbool_out(tbool_result);
+  printf("teq_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
+  free(tbool_result); free(char_result);
+
   /* Temporal *teq_int_tint(int i, const Temporal *temp); */
   tbool_result = teq_int_tint(int32_in1, tint1);
   char_result = tbool_out(tbool_result);
@@ -2135,6 +2146,12 @@ int main(void)
   printf("teq_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
+  /* Temporal *teq_tbigint_bigint(const Temporal *temp, int64 i); */
+  tbool_result = teq_tbigint_bigint(tbigint1, int64_in1);
+  char_result = tbool_out(tbool_result);
+  printf("teq_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
+  free(tbool_result); free(char_result);
+
   /* Temporal *teq_tint_int(const Temporal *temp, int i); */
   tbool_result = teq_tint_int(tint1, int32_in1);
   char_result = tbool_out(tbool_result);
@@ -2151,6 +2168,12 @@ int main(void)
   tbool_result = tge_float_tfloat(float8_in1, tfloat1);
   char_result = tbool_out(tbool_result);
   printf("tge_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
+  free(tbool_result); free(char_result);
+
+  /* Temporal *tge_bigint_tbigint(int64 i, const Temporal *temp); */
+  tbool_result = tge_bigint_tbigint(int64_in1, tbigint1);
+  char_result = tbool_out(tbool_result);
+  printf("tge_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_int_tint(int i, const Temporal *temp); */
@@ -2177,6 +2200,12 @@ int main(void)
   printf("tge_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
+  /* Temporal *tge_tbigint_bigint(const Temporal *temp, int64 i); */
+  tbool_result = tge_tbigint_bigint(tbigint1, int64_in1);
+  char_result = tbool_out(tbool_result);
+  printf("tge_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
+  free(tbool_result); free(char_result);
+
   /* Temporal *tge_tint_int(const Temporal *temp, int i); */
   tbool_result = tge_tint_int(tint1, int32_in1);
   char_result = tbool_out(tbool_result);
@@ -2193,6 +2222,12 @@ int main(void)
   tbool_result = tgt_float_tfloat(float8_in1, tfloat1);
   char_result = tbool_out(tbool_result);
   printf("tgt_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
+  free(tbool_result); free(char_result);
+
+  /* Temporal *tgt_bigint_tbigint(int64 i, const Temporal *temp); */
+  tbool_result = tgt_bigint_tbigint(int64_in1, tbigint1);
+  char_result = tbool_out(tbool_result);
+  printf("tgt_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_int_tint(int i, const Temporal *temp); */
@@ -2219,6 +2254,12 @@ int main(void)
   printf("tgt_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
+  /* Temporal *tgt_tbigint_bigint(const Temporal *temp, int64 i); */
+  tbool_result = tgt_tbigint_bigint(tbigint1, int64_in1);
+  char_result = tbool_out(tbool_result);
+  printf("tgt_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
+  free(tbool_result); free(char_result);
+
   /* Temporal *tgt_tint_int(const Temporal *temp, int i); */
   tbool_result = tgt_tint_int(tint1, int32_in1);
   char_result = tbool_out(tbool_result);
@@ -2235,6 +2276,12 @@ int main(void)
   tbool_result = tle_float_tfloat(float8_in1, tfloat1);
   char_result = tbool_out(tbool_result);
   printf("tle_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
+  free(tbool_result); free(char_result);
+
+  /* Temporal *tle_bigint_tbigint(int64 i, const Temporal *temp); */
+  tbool_result = tle_bigint_tbigint(int64_in1, tbigint1);
+  char_result = tbool_out(tbool_result);
+  printf("tle_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_int_tint(int i, const Temporal *temp); */
@@ -2261,6 +2308,12 @@ int main(void)
   printf("tle_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
+  /* Temporal *tle_tbigint_bigint(const Temporal *temp, int64 i); */
+  tbool_result = tle_tbigint_bigint(tbigint1, int64_in1);
+  char_result = tbool_out(tbool_result);
+  printf("tle_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
+  free(tbool_result); free(char_result);
+
   /* Temporal *tle_tint_int(const Temporal *temp, int i); */
   tbool_result = tle_tint_int(tint1, int32_in1);
   char_result = tbool_out(tbool_result);
@@ -2277,6 +2330,12 @@ int main(void)
   tbool_result = tlt_float_tfloat(float8_in1, tfloat1);
   char_result = tbool_out(tbool_result);
   printf("tlt_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
+  free(tbool_result); free(char_result);
+
+  /* Temporal *tlt_bigint_tbigint(int64 i, const Temporal *temp); */
+  tbool_result = tlt_bigint_tbigint(int64_in1, tbigint1);
+  char_result = tbool_out(tbool_result);
+  printf("tlt_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_int_tint(int i, const Temporal *temp); */
@@ -2303,6 +2362,12 @@ int main(void)
   printf("tlt_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
+  /* Temporal *tlt_tbigint_bigint(const Temporal *temp, int64 i); */
+  tbool_result = tlt_tbigint_bigint(tbigint1, int64_in1);
+  char_result = tbool_out(tbool_result);
+  printf("tlt_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
+  free(tbool_result); free(char_result);
+
   /* Temporal *tlt_tint_int(const Temporal *temp, int i); */
   tbool_result = tlt_tint_int(tint1, int32_in1);
   char_result = tbool_out(tbool_result);
@@ -2325,6 +2390,12 @@ int main(void)
   tbool_result = tne_float_tfloat(float8_in1, tfloat1);
   char_result = tbool_out(tbool_result);
   printf("tne_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
+  free(tbool_result); free(char_result);
+
+  /* Temporal *tne_bigint_tbigint(int64 i, const Temporal *temp); */
+  tbool_result = tne_bigint_tbigint(int64_in1, tbigint1);
+  char_result = tbool_out(tbool_result);
+  printf("tne_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_int_tint(int i, const Temporal *temp); */
@@ -2355,6 +2426,12 @@ int main(void)
   tbool_result = tne_tfloat_float(tfloat1, float8_in1);
   char_result = tbool_out(tbool_result);
   printf("tne_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
+  free(tbool_result); free(char_result);
+
+  /* Temporal *tne_tbigint_bigint(const Temporal *temp, int64 i); */
+  tbool_result = tne_tbigint_bigint(tbigint1, int64_in1);
+  char_result = tbool_out(tbool_result);
+  printf("tne_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_tint_int(const Temporal *temp, int i); */
@@ -3871,6 +3948,7 @@ int main(void)
   free(tintbox2); free(tintbox2_out);
   free(tbool1); free(tbool1_out);
   free(tbool2); free(tbool2_out);
+  free(tbigint1); free(tbigint1_out);
   free(tint1); free(tint1_out); free(tint1_mfjson);
   free(tint2); free(tint2_out);
   free(tfloat1); free(tfloat1_out);
