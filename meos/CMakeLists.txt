@@ -405,6 +405,11 @@ if(MEOS)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/src/geo/spatial_ref_sys.csv"
     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
+  if(POINTCLOUD)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/src/pointcloud/pointcloud_schemas.xml"
+      DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
+  endif()
 
   if(CBUFFER)
     install(

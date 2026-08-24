@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The point cloud schemas a host with no SQL resolves a pcid through. A host
+  with SQL states the same schemas as rows of pointcloud_schemas and
+  pointcloud_dimensions and never reads this file;
+  meos_set_pointcloud_schemas_xml() names a different one.
+
+  Each pc:PointCloudSchema below is a pgPointCloud document, read by that
+  library's own pc_schema_from_xml, so the dimensions are stated in the
+  vendor's format and no parser of ours reads them.
+
+  The enclosing element and its two attributes are what that format leaves
+  without a home. A document states the dimensions of ONE schema and carries
+  no identifier at all, and while the library's own fixtures write the
+  reference system as <Metadata name="spatialreference">, its parser reads
+  only the compression from that block: a schema parsed from a document
+  stating spatialreference=4326 comes back with srid 0. So pcid and srid are
+  stated here, as the columns of pointcloud_formats state them where
+  PostgreSQL holds them.
+
+  Nothing reads this file unless a host names it. A spatial reference system
+  is read from a vendored CSV without being asked because an EPSG code means
+  the same thing everywhere; a pcid names one user's instrument, so a schema
+  answering pcid 1 by default would decode a value of somebody else's pcid 1
+  into silently wrong coordinates instead of reporting that none is
+  registered. This file is a starting point to copy, not a registry.
+-->
+<pc:PointCloudSchemas xmlns:pc="http://pointcloud.org/schemas/PC/1.1">
+
+  <!-- The schema of section 19.1.1 of the manual, which the examples use -->
+  <pc:PointCloudSchema pcid="1" srid="0">
+    <pc:dimension>
+      <pc:position>1</pc:position>
+      <pc:size>4</pc:size>
+      <pc:description>X coordinate</pc:description>
+      <pc:name>X</pc:name>
+      <pc:interpretation>int32_t</pc:interpretation>
+      <pc:scale>0.01</pc:scale>
+      <pc:offset>0</pc:offset>
+      <pc:active>1</pc:active>
+    </pc:dimension>
+    <pc:dimension>
+      <pc:position>2</pc:position>
+      <pc:size>4</pc:size>
+      <pc:description>Y coordinate</pc:description>
+      <pc:name>Y</pc:name>
+      <pc:interpretation>int32_t</pc:interpretation>
+      <pc:scale>0.01</pc:scale>
+      <pc:offset>0</pc:offset>
+      <pc:active>1</pc:active>
+    </pc:dimension>
+    <pc:dimension>
+      <pc:position>3</pc:position>
+      <pc:size>4</pc:size>
+      <pc:description>Z coordinate</pc:description>
+      <pc:name>Z</pc:name>
+      <pc:interpretation>int32_t</pc:interpretation>
+      <pc:scale>0.01</pc:scale>
+      <pc:offset>0</pc:offset>
+      <pc:active>1</pc:active>
+    </pc:dimension>
+    <pc:metadata>
+      <Metadata name="compression">none</Metadata>
+    </pc:metadata>
+  </pc:PointCloudSchema>
+
+</pc:PointCloudSchemas>

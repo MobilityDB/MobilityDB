@@ -159,10 +159,10 @@ a query**, and that is their whole scope: the ergonomics of a SQL host. It is no
 XML is wrong for a host with no SQL, where there is no table to write into and a file is the only
 thing a user has.
 
-⛔ **THE ENCODING OF THE VENDORED FILE IS ACCIDENTAL.** What matters is that MEOS ships the catalog
-for hosts that have no catalog of their own, under a default path a `meos_set_…` entry overrides.
-XML is chosen for point cloud schemas only because `pc_schema_from_xml` already reads it, so the
-payload costs no parser and stays the vendor's format rather than one of ours.
+⛔ **THE ENCODING OF THE VENDORED FILE IS ACCIDENTAL.** What matters is that MEOS ships a catalog for
+hosts that have no catalog of their own, which a `meos_set_…` entry names. XML is chosen for point
+cloud schemas only because `pc_schema_from_xml` already reads it, so the payload costs no parser and
+stays the vendor's format rather than one of ours.
 
 ⭐ **THIS IS THE ESTABLISHED PATTERN, NOT A NEW ONE.** Two catalogs in this tree already have exactly
 these two front ends, which is the strongest argument that a third should not invent a third shape:
@@ -183,10 +183,16 @@ reconciles them, and the same holds here. ⇒ A trigger keeping one front end in
 is NOT the answer: it would exist in PostgreSQL alone, where the other hosts have nothing to
 synchronise, which is a host-specific special case rather than a shared mechanism.
 
-⚠️ **WHERE THE ANALOGY WITH `spatial_ref_sys.csv` STOPS.** The EPSG registry is universal reference
-data — every user wants 4326 — whereas a point cloud schema describes one user's own instrument.
-A vendored schema document is therefore a starting set, and the path override is the primary route
-rather than a fallback.
+⚠️⛔ **WHERE THE ANALOGY WITH `spatial_ref_sys.csv` STOPS, AND IT DECIDES THE DEFAULT.** The EPSG
+registry is universal reference data — 4326 means the same thing to everybody — whereas a `pcid`
+names one user's own instrument. So the two rows above differ in one respect the table cannot show:
+`meos_set_spatial_ref_sys_csv` and `meos_set_ways_csv` each OVERRIDE a default the loader reads
+without being asked, while **nothing reads the schema document unless a host names it**. A bundled
+schema answering `pcid` 1 by default would decode a value of somebody else's `pcid` 1 into silently
+wrong coordinates instead of reporting that none is registered — and a wrong schema is invisible in
+the text form, since the same bytes are printed whichever schema decodes them. The vendored document
+is therefore a starting point to copy, not a registry, and naming a file is the only route rather
+than the primary one.
 
 ⛔ **THE DOCUMENT CARRIES NEITHER `pcid` NOR `srid`.** `pc_schema_from_xml` reads neither; both are
 columns of `pointcloud_formats`, which is precisely why a table exists on the PostgreSQL side at all.

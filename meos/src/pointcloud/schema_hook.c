@@ -21,6 +21,9 @@
 /* pgPointcloud */
 #include "pc_api.h"
 #include "pc_api_internal.h"
+/* libxml2 — the pointcloud family already links it for pc_schema_from_xml */
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #include "stringbuffer.h"
 /* PostGIS */
 #include <liblwgeom.h>
@@ -467,6 +470,125 @@ meos_pc_schema_get_ndims(uint32_t pcid)
  * @ref meos_pc_schema, which states the miss as an error; a caller reading a
  * property it can answer without one asks here and reads the miss itself.
  */
+/*****************************************************************************
+ * The document a host with no SQL states its schemas in
+ *
+ * A host with SQL states a schema as rows of pointcloud_schemas and
+ * pointcloud_dimensions and installs the hook above, which reads them. A host
+ * with no SQL has no table to write into, so it states the same schemas in a
+ * pgPointCloud document, exactly as spatial reference systems reach a
+ * standalone MEOS through a CSV that meos_set_spatial_ref_sys_csv names and
+ * the road network through the one meos_set_ways_csv names.
+ *
+ * ⛔ The file is never a prerequisite: meos_pc_schema_register_dims alone
+ * registers a schema, so a host without a filesystem is not blocked.
+ *****************************************************************************/
+
+/* Location of the point cloud schemas document, which a host states before a
+ * schema is looked up. ⛔ There is NO default read, unlike the spatial
+ * reference systems a standalone MEOS reads from a vendored CSV without being
+ * asked: an EPSG code means the same thing everywhere, while a pcid names one
+ * user's instrument, so a bundled schema answering pcid 1 would decode a value
+ * of somebody else's pcid 1 into silently wrong coordinates rather than
+ * reporting that no schema is registered. The document beside this file is a
+ * starting point to copy, and a host names it like any other. */
+char *POINTCLOUD_SCHEMAS_XML = NULL;
+
+/* True once the document has been read, so a miss on a pcid it does not state
+ * does not re-read it on every lookup */
+static bool schemas_xml_read = false;
+
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Set the file the point cloud schemas are read from
+ * @param[in] path Location of the document
+ */
+void
+meos_set_pointcloud_schemas_xml(const char *path)
+{
+  if (! path)
+    return;
+  char *copy = malloc(strlen(path) + 1);
+  if (! copy)
+    return;
+  strcpy(copy, path);
+  POINTCLOUD_SCHEMAS_XML = copy;
+  /* A path named after a lookup already missed is still read */
+  schemas_xml_read = false;
+}
+
+/**
+ * @brief Register every schema the document states
+ * @details The enclosing element carries the identifier and the reference
+ *   system of each schema, which a pgPointCloud document states nowhere: it
+ *   holds the dimensions of one schema, carries no identifier, and its parser
+ *   reads only the compression out of the metadata, so a document stating
+ *   `spatialreference` still parses to srid 0. Each schema element is handed
+ *   to the library's own parser verbatim, so the dimensions are read by
+ *   pgPointCloud and by nothing of ours.
+ */
+static void
+read_pointcloud_schemas_xml(void)
+{
+  schemas_xml_read = true;
+  if (! POINTCLOUD_SCHEMAS_XML)
+    return;
+  xmlDoc *doc = xmlReadFile(POINTCLOUD_SCHEMAS_XML, NULL, XML_PARSE_NOERROR |
+    XML_PARSE_NOWARNING);
+  if (! doc)
+    return;
+  xmlNode *root = xmlDocGetRootElement(doc);
+  for (xmlNode *cur = root ? root->children : NULL; cur; cur = cur->next)
+  {
+    if (cur->type != XML_ELEMENT_NODE ||
+        strcmp((const char *) cur->name, "PointCloudSchema") != 0)
+      continue;
+    /* A schema element states nothing without the identifier a value carries */
+    xmlChar *pcid_str = xmlGetProp(cur, (const xmlChar *) "pcid");
+    if (! pcid_str)
+      continue;
+    xmlChar *srid_str = xmlGetProp(cur, (const xmlChar *) "srid");
+    {
+      /* Serialise the schema element back out so the library's parser reads
+       * the document it defines, not a tree of ours.
+       * ⛔ The element is copied into a document of its own and its namespaces
+       * reconciled first: the `pc` prefix is declared on the ENCLOSING
+       * element, so dumping the subtree alone yields prefixes bound to
+       * nothing, and the library's parser answers `Namespace prefix pc on
+       * PointCloudSchema is not defined` followed by an undefined-prefix XPath
+       * error. */
+      xmlDoc *one = xmlNewDoc((const xmlChar *) "1.0");
+      xmlNode *copy = one ? xmlDocCopyNode(cur, one, 1) : NULL;
+      if (copy)
+      {
+        xmlDocSetRootElement(one, copy);
+        xmlReconciliateNs(one, copy);
+        xmlChar *text = NULL;
+        int len = 0;
+        xmlDocDumpMemory(one, &text, &len);
+        if (text)
+        {
+          PCSCHEMA *schema = pc_schema_from_xml((const char *) text);
+          if (schema)
+          {
+            schema->pcid = (uint32_t) atoi((const char *) pcid_str);
+            schema->srid = srid_str ?
+              (uint32_t) atoi((const char *) srid_str) : 0;
+            meos_pc_schema_register(schema->pcid, schema);
+          }
+          xmlFree(text);
+        }
+      }
+      if (one)
+        xmlFreeDoc(one);
+    }
+    xmlFree(pcid_str);
+    if (srid_str)
+      xmlFree(srid_str);
+  }
+  xmlFreeDoc(doc);
+}
+
 PCSCHEMA *
 meos_pc_schema_lookup(uint32_t pcid)
 {
@@ -484,6 +606,16 @@ meos_pc_schema_lookup(uint32_t pcid)
     if (s)
       meos_pc_schema_register(pcid, s);
     return s;
+  }
+  /* (3) A host that installs no hook states its schemas in a document */
+  if (! schemas_xml_read)
+  {
+    read_pointcloud_schemas_xml();
+    for (int i = 0; i < cache_count; i++)
+    {
+      if (cache_buf[i].pcid == pcid)
+        return cache_buf[i].schema;
+    }
   }
   return NULL;
 }
