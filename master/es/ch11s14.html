@@ -2,7 +2,7 @@
 			Las relaciones topológicas y de distancia descritas en <a class="xref" href="ch08s05.html" title="Relaciones espaciales">“Relaciones espaciales”</a>, como <code class="varname">eIntersects</code>, <code class="varname">aDwithin</code> o <code class="varname">tContains</code>, se definen en el espacio geográfico, mientras que los puntos de la red temporal se definen en el espacio de la red. Cada una de estas relaciones también acepta directamente un argumento <code class="varname">tnpoint</code>: internamente, cada operando de punto de red se convierte en un punto geométrico temporal mediante la conversión estándar <code class="varname">tnpoint::tgeompoint</code> (el punto resuelto a lo largo de su ruta) y luego en <code class="varname">tgeometry</code>, y la relación <code class="varname">tgeometry</code> correspondiente calcula el resultado, exactamente como si la conversión se hubiera escrito manualmente.
 		</p><p>
 			Dado que el objetivo de la delegación, <code class="varname">tgeometry</code>, solo admite interpolación escalonada, un argumento <code class="varname">tnpoint</code> de secuencia con varios instantes debe usar interpolación escalonada (<code class="varname">Interp=Step;...</code>); una secuencia con la interpolación lineal predeterminada produce un error en la conversión implícita, la misma restricción ya vigente al convertir un <code class="varname">tgeompoint</code>/<code class="varname">tgeogpoint</code> lineal en <code class="varname">tgeometry</code>/<code class="varname">tgeography</code>. Un único instante no tiene interpolación y no se ve afectado.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_espatialrels"></a><a class="indexterm" name="id8346"></a><a class="indexterm" name="id8349"></a><a class="indexterm" name="id8352"></a><p>Relaciones alguna vez y siempre</p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_espatialrels"></a><a class="indexterm" name="id8347"></a><a class="indexterm" name="id8350"></a><a class="indexterm" name="id8353"></a><p>Relaciones alguna vez y siempre</p><pre class="programlisting">
 SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint 'Npoint(1, 0.1)@2001-01-01');
 -- false
@@ -13,7 +13,7 @@ SELECT eIntersects(
   tnpoint 'Npoint(1, 0.1)@2001-01-01',
   tnpoint 'Npoint(2, 0.0)@2001-01-01');
 -- false
-</pre></li><li class="listitem"><a name="tnpoint_tspatialrels"></a><a class="indexterm" name="id8358"></a><a class="indexterm" name="id8361"></a><a class="indexterm" name="id8364"></a><p>Relaciones espaciotemporales</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_tspatialrels"></a><a class="indexterm" name="id8359"></a><a class="indexterm" name="id8362"></a><a class="indexterm" name="id8365"></a><p>Relaciones espaciotemporales</p><pre class="programlisting">
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
 -- [f@2001-01-01, f@2001-01-03]
