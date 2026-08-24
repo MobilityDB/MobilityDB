@@ -60,6 +60,7 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include <meos_pointcloud.h>
 #include <pgtypes.h>
 #include "temporal/span.h"
@@ -897,6 +898,17 @@ intersection_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_pointcloud_box_topo
+ * @brief Return @p true if the first TPCBox contains the second
+ */
+bool
+tpcbox_contains(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  return stbox_contains((const STBox *) box1, (const STBox *) box2);
+}
+
+/**
  * @ingroup meos_pointcloud_box_topo
  * @brief Return @p true if the first TPCBox contains the second
  * @csqlfn #Contains_tpcbox_tpcbox()
@@ -907,8 +919,19 @@ contains_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpcbox_tpcbox(box1, box2))
     return false;
+  return tpcbox_contains(box1, box2);
+}
 
-  return contains_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_topo
+ * @brief Return @p true if the first TPCBox is contained in the second
+ */
+bool
+tpcbox_contained(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  return stbox_contained((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -922,8 +945,19 @@ contained_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpcbox_tpcbox(box1, box2))
     return false;
+  return tpcbox_contained(box1, box2);
+}
 
-  return contained_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_topo
+ * @brief Return @p true if two TPCBox values overlap
+ */
+bool
+tpcbox_overlaps(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  return stbox_overlaps((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -937,8 +971,20 @@ overlaps_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpcbox_tpcbox(box1, box2))
     return false;
+  return tpcbox_overlaps(box1, box2);
+}
 
-  return overlaps_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_topo
+ * @brief Return @p true if two TPCBox values are equal in the common
+ * dimensions
+ */
+bool
+tpcbox_same(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  return stbox_same((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -953,8 +999,19 @@ same_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpcbox_tpcbox(box1, box2))
     return false;
+  return tpcbox_same(box1, box2);
+}
 
-  return same_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_topo
+ * @brief Return @p true if two TPCBox values touch but do not overlap
+ */
+bool
+tpcbox_adjacent(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  return stbox_adjacent((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -968,9 +1025,9 @@ adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpcbox_tpcbox(box1, box2))
     return false;
-
-  return adjacent_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+  return tpcbox_adjacent(box1, box2);
 }
+
 
 /*****************************************************************************
  * Comparison
@@ -1086,6 +1143,20 @@ bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
 /* X axis */
 
 /**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly left of box2 (X-axis).
+ * @details Returns @p false if either box lacks the X dimension.
+ */
+bool
+tpcbox_left(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return stbox_left((const STBox *) box1, (const STBox *) box2);
+}
+
+/**
  * @ingroup meos_pointcloud_box_pos
  * @brief Return @p true if box1 is strictly left of box2 (X-axis).
  * @details Returns @p false if either box lacks the X dimension.
@@ -1099,8 +1170,21 @@ left_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_left(box1, box2);
+}
 
-  return left_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend to the right of box2.
+ */
+bool
+tpcbox_overleft(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return stbox_overleft((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1116,8 +1200,21 @@ overleft_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_overleft(box1, box2);
+}
 
-  return overleft_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly right of box2 (X-axis).
+ */
+bool
+tpcbox_right(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return stbox_right((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1133,8 +1230,21 @@ right_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_right(box1, box2);
+}
 
-  return right_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend to the left of box2.
+ */
+bool
+tpcbox_overright(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return stbox_overright((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1150,11 +1260,24 @@ overright_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-
-  return overright_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+  return tpcbox_overright(box1, box2);
 }
 
+
 /* Y axis */
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly below box2 (Y-axis).
+ */
+bool
+tpcbox_below(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return stbox_below((const STBox *) box1, (const STBox *) box2);
+}
 
 /**
  * @ingroup meos_pointcloud_box_pos
@@ -1169,8 +1292,21 @@ below_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_below(box1, box2);
+}
 
-  return below_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend above box2.
+ */
+bool
+tpcbox_overbelow(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return stbox_overbelow((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1186,8 +1322,21 @@ overbelow_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_overbelow(box1, box2);
+}
 
-  return overbelow_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly above box2 (Y-axis).
+ */
+bool
+tpcbox_above(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return stbox_above((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1203,8 +1352,21 @@ above_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_above(box1, box2);
+}
 
-  return above_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend below box2.
+ */
+bool
+tpcbox_overabove(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return stbox_overabove((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1220,11 +1382,25 @@ overabove_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-
-  return overabove_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+  return tpcbox_overabove(box1, box2);
 }
 
+
 /* Z axis — front/back only meaningful when both boxes have Z */
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly in front of box2 (Z-axis).
+ * @details Returns @p false if either box lacks a Z dimension.
+ */
+bool
+tpcbox_front(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_Z(box1->flags));
+  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  return stbox_front((const STBox *) box1, (const STBox *) box2);
+}
 
 /**
  * @ingroup meos_pointcloud_box_pos
@@ -1240,8 +1416,21 @@ front_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_Z(T_TPCBOX, box1->flags) ||
       ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_front(box1, box2);
+}
 
-  return front_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend behind box2.
+ */
+bool
+tpcbox_overfront(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_Z(box1->flags));
+  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  return stbox_overfront((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1257,8 +1446,21 @@ overfront_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_Z(T_TPCBOX, box1->flags) ||
       ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_overfront(box1, box2);
+}
 
-  return overfront_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly behind box2 (Z-axis).
+ */
+bool
+tpcbox_back(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_Z(box1->flags));
+  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  return stbox_back((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1274,8 +1476,21 @@ back_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_Z(T_TPCBOX, box1->flags) ||
       ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_back(box1, box2);
+}
 
-  return back_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend in front of box2.
+ */
+bool
+tpcbox_overback(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_Z(box1->flags));
+  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  return stbox_overback((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1291,11 +1506,25 @@ overback_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_Z(T_TPCBOX, box1->flags) ||
       ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
-
-  return overback_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+  return tpcbox_overback(box1, box2);
 }
 
+
 /* Time axis — before/after only meaningful when both boxes have T */
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly before box2 in time.
+ * @details Returns @p false if either box lacks a T dimension.
+ */
+bool
+tpcbox_before(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return stbox_before((const STBox *) box1, (const STBox *) box2);
+}
 
 /**
  * @ingroup meos_pointcloud_box_pos
@@ -1311,8 +1540,21 @@ before_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_before(box1, box2);
+}
 
-  return before_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend after box2 in time.
+ */
+bool
+tpcbox_overbefore(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return stbox_overbefore((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1328,8 +1570,21 @@ overbefore_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_overbefore(box1, box2);
+}
 
-  return overbefore_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly after box2 in time.
+ */
+bool
+tpcbox_after(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return stbox_after((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1345,8 +1600,21 @@ after_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
+  return tpcbox_after(box1, box2);
+}
 
-  return after_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+
+/**
+ * @ingroup meos_internal_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend before box2 in time.
+ */
+bool
+tpcbox_overafter(const TPCBox *box1, const TPCBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return stbox_overafter((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1362,8 +1630,8 @@ overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
-
-  return overafter_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+  return tpcbox_overafter(box1, box2);
 }
+
 
 /*****************************************************************************/

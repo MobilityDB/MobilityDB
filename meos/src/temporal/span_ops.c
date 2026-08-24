@@ -148,6 +148,25 @@ contains_span_timestamptz(const Span *s, TimestampTz t)
 }
 
 /**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if the first span contains the second one
+ * @param[in] s1,s2 Spans
+ */
+bool
+span_contains(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == s2->spantype);
+  int cmp1 = datum_cmp(s1->lower, s2->lower, s1->basetype);
+  int cmp2 = datum_cmp(s1->upper, s2->upper, s1->basetype);
+  if (
+    (cmp1 < 0 || (cmp1 == 0 && (s1->lower_inc || ! s2->lower_inc))) &&
+    (cmp2 > 0 || (cmp2 == 0 && (s1->upper_inc || ! s2->upper_inc))) )
+    return true;
+  return false;
+}
+
+/**
  * @ingroup meos_setspan_topo
  * @brief Return true if the first span contains the second one
  * @param[in] s1,s2 Spans
@@ -159,14 +178,9 @@ contains_span_span(const Span *s1, const Span *s2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_span_span(s1, s2))
     return false;
+  return span_contains(s1, s2);
+}
 
-  int cmp1 = datum_cmp(s1->lower, s2->lower, s1->basetype);
-  int cmp2 = datum_cmp(s1->upper, s2->upper, s1->basetype);
-  if (
-    (cmp1 < 0 || (cmp1 == 0 && (s1->lower_inc || ! s2->lower_inc))) &&
-    (cmp2 > 0 || (cmp2 == 0 && (s1->upper_inc || ! s2->upper_inc))) )
-    return true;
-  return false;}
 
 /*****************************************************************************
  * Contained
@@ -185,6 +199,19 @@ contained_value_span(Datum value, const Span *s)
 }
 
 /**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if the first span is contained in the second one
+ * @param[in] s1,s2 Spans
+ */
+bool
+span_contained(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == s2->spantype);
+  return span_contains(s2, s1);
+}
+
+/**
  * @ingroup meos_setspan_topo
  * @brief Return true if the first span is contained in the second one
  * @param[in] s1,s2 Spans
@@ -193,12 +220,35 @@ contained_value_span(Datum value, const Span *s)
 bool
 contained_span_span(const Span *s1, const Span *s2)
 {
-  return contains_span_span(s2, s1);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_span_span(s1, s2))
+    return false;
+  return span_contained(s1, s2);
 }
+
 
 /*****************************************************************************
  * Overlaps
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if two spans overlap
+ * @param[in] s1,s2 Spans
+ */
+bool
+span_overlaps(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == s2->spantype);
+  int cmp1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
+  int cmp2 = datum_cmp(s2->lower, s1->upper, s1->basetype);
+  if (
+    (cmp1 < 0 || (cmp1 == 0 && s1->lower_inc && s2->upper_inc)) &&
+    (cmp2 < 0 || (cmp2 == 0 && s2->lower_inc && s1->upper_inc)) )
+    return true;
+  return false;
+}
 
 /**
  * @ingroup meos_setspan_topo
@@ -212,15 +262,9 @@ overlaps_span_span(const Span *s1, const Span *s2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_span_span(s1, s2))
     return false;
-
-  int cmp1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
-  int cmp2 = datum_cmp(s2->lower, s1->upper, s1->basetype);
-  if (
-    (cmp1 < 0 || (cmp1 == 0 && s1->lower_inc && s2->upper_inc)) &&
-    (cmp2 < 0 || (cmp2 == 0 && s2->lower_inc && s1->upper_inc)) )
-    return true;
-  return false;
+  return span_overlaps(s1, s2);
 }
+
 
 /**
  * @ingroup meos_internal_setspan_topo
@@ -261,18 +305,15 @@ adjacent_span_value(const Span *s, Datum value)
 }
 
 /**
- * @ingroup meos_setspan_topo
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if two spans are adjacent
  * @param[in] s1,s2 Spans
- * @csqlfn #Adjacent_span_span()
  */
 bool
-adjacent_span_span(const Span *s1, const Span *s2)
+span_adjacent(const Span *s1, const Span *s2)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_span_span(s1, s2))
-    return false;
-
+  assert(s1); assert(s2);
+  assert(s1->spantype == s2->spantype);
   /*
    * Canonical span-adjacency rule: set-theoretic share-a-boundary.
    * Two spans are adjacent iff their closures meet at a single boundary value
@@ -292,9 +333,43 @@ adjacent_span_span(const Span *s1, const Span *s2)
           datum_eq(s2->upper, s1->lower, s1->basetype));
 }
 
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if two spans are adjacent
+ * @param[in] s1,s2 Spans
+ * @csqlfn #Adjacent_span_span()
+ */
+bool
+adjacent_span_span(const Span *s1, const Span *s2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_span_span(s1, s2))
+    return false;
+  return span_adjacent(s1, s2);
+}
+
+
 /*****************************************************************************
  * Same
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if two spans are equal in the common dimensions
+ * @param[in] s1,s2 Spans
+ */
+bool
+span_same(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == s2->spantype);
+  /* A span is a single dimension, so `same` (`~=`) reduces to span equality.
+   * This is the base case of the bounding-box `same` family (#same_tbox_tbox(),
+   * #same_stbox_stbox()), letting the temporal/span bounding-box wrappers
+   * dispatch on `~=` uniformly instead of borrowing the equality (`=`)
+   * function #span_eq(). */
+  return span_eq(s1, s2);
+}
 
 /**
  * @ingroup meos_setspan_topo
@@ -304,13 +379,12 @@ adjacent_span_span(const Span *s1, const Span *s2)
 bool
 same_span_span(const Span *s1, const Span *s2)
 {
-  /* A span is a single dimension, so `same` (`~=`) reduces to span equality.
-   * This is the base case of the bounding-box `same` family (#same_tbox_tbox(),
-   * #same_stbox_stbox()), letting the temporal/span bounding-box wrappers
-   * dispatch on `~=` uniformly instead of borrowing the equality (`=`)
-   * function #span_eq(). */
-  return span_eq(s1, s2);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_span_span(s1, s2))
+    return false;
+  return span_same(s1, s2);
 }
+
 
 /*****************************************************************************
  * Left of
@@ -345,6 +419,20 @@ left_span_value(const Span *s, Datum value)
 }
 
 /**
+ * @ingroup meos_internal_setspan_pos
+ * @brief Return true if the first span is to the left of the second one
+ * @param[in] s1,s2 Spans
+ */
+bool
+span_left(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == s2->spantype);
+  int cmp = datum_cmp(s1->upper, s2->lower, s1->basetype);
+  return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
+}
+
+/**
  * @ingroup meos_setspan_pos
  * @brief Return true if the first span is to the left of the second one
  * @param[in] s1,s2 Spans
@@ -356,10 +444,9 @@ left_span_span(const Span *s1, const Span *s2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_span_span(s1, s2))
     return false;
-
-  int cmp = datum_cmp(s1->upper, s2->lower, s1->basetype);
-  return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
+  return span_left(s1, s2);
 }
+
 
 /**
  * @ingroup meos_internal_setspan_pos
@@ -405,6 +492,19 @@ right_span_value(const Span *s, Datum value)
 }
 
 /**
+ * @ingroup meos_internal_setspan_pos
+ * @brief Return true if the first span is to right the of the second one
+ * @param[in] s1,s2 Spans
+ */
+bool
+span_right(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == s2->spantype);
+  return span_left(s2, s1);
+}
+
+/**
  * @ingroup meos_setspan_pos
  * @brief Return true if the first span is to right the of the second one
  * @param[in] s1,s2 Spans
@@ -413,8 +513,12 @@ right_span_value(const Span *s, Datum value)
 bool
 right_span_span(const Span *s1, const Span *s2)
 {
-  return left_span_span(s2, s1);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_span_span(s1, s2))
+    return false;
+  return span_right(s1, s2);
 }
+
 
 /*****************************************************************************
  * Does not extend to right of
@@ -452,6 +556,21 @@ overleft_span_value(const Span *s, Datum value)
 }
 
 /**
+ * @ingroup meos_internal_setspan_pos
+ * @brief Return true if the first span does not extend to the right of the
+ * second one
+ * @param[in] s1,s2 Spans
+ */
+bool
+span_overleft(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == s2->spantype);
+  int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
+  return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
+}
+
+/**
  * @ingroup meos_setspan_pos
  * @brief Return true if the first span does not extend to the right of the
  * second one
@@ -464,10 +583,9 @@ overleft_span_span(const Span *s1, const Span *s2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_span_span(s1, s2))
     return false;
-
-  int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
-  return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
+  return span_overleft(s1, s2);
 }
+
 
 /*****************************************************************************
  * Does not extend to left of
@@ -501,6 +619,21 @@ overright_span_value(const Span *s, Datum value)
 }
 
 /**
+ * @ingroup meos_internal_setspan_pos
+ * @brief Return true if the first span does not extend to the left of the
+ * second one
+ * @param[in] s1,s2 Spans
+ */
+bool
+span_overright(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == s2->spantype);
+  int cmp = datum_cmp(s2->lower, s1->lower, s1->basetype);
+  return (cmp < 0 || (cmp == 0 && (! s1->lower_inc || s2->lower_inc)));
+}
+
+/**
  * @ingroup meos_setspan_pos
  * @brief Return true if the first span does not extend to the left of the
  * second one
@@ -513,10 +646,9 @@ overright_span_span(const Span *s1, const Span *s2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_span_span(s1, s2))
     return false;
-
-  int cmp = datum_cmp(s2->lower, s1->lower, s1->basetype);
-  return (cmp < 0 || (cmp == 0 && (! s1->lower_inc || s2->lower_inc)));
+  return span_overright(s1, s2);
 }
+
 
 /*****************************************************************************
  * Set union

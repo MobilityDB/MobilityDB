@@ -1519,6 +1519,20 @@ tbox_expand_time(const TBox *box, const Interval *interv)
  *****************************************************************************/
 
 /**
+ * @brief Set the ouput variables with the flag values of the boxes
+ * @param[in] box1,box2 Input boxes
+ * @param[out] hasx,hast Boolean variables
+ */
+static void
+tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
+{
+  assert(box1); assert(box2); assert(hasx); assert(hast);
+  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  return;
+}
+
+/**
  * @brief Return the ouput variables initialized  with the flag values of the
  * boxes
  * @param[in] box1,box2 Input boxes
@@ -1531,9 +1545,26 @@ ensure_valid_tbox_tbox(const TBox *box1, const TBox *box2, bool *hasx,
   assert(box1); assert(box2); assert(hasx); assert(hast);
   if (! ensure_common_dimension(box1->flags, box2->flags))
     return false;
-  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  tbox_tbox_flags(box1, box2, hasx, hast);
   if (*hasx && ! ensure_same_span_type(&box1->span, &box2->span))
+    return false;
+  return true;
+}
+
+/**
+ * @ingroup meos_internal_box_bbox_topo
+ * @brief Return true if the first temporal box contains the second one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_contains(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  bool hasx, hast;
+  tbox_tbox_flags(box1, box2, &hasx, &hast);
+  if (hasx && ! span_contains(&box1->span, &box2->span))
+    return false;
+  if (hast && ! span_contains(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -1552,12 +1583,20 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
   bool hasx, hast;
   if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
     return false;
+  return tbox_contains(box1, box2);
+}
 
-  if (hasx && ! contains_span_span(&box1->span, &box2->span))
-    return false;
-  if (hast && ! contains_span_span(&box1->period, &box2->period))
-    return false;
-  return true;
+
+/**
+ * @ingroup meos_internal_box_bbox_topo
+ * @brief Return true if the first temporal box is contained in the second one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_contained(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  return tbox_contains(box2, box1);
 }
 
 /**
@@ -1569,7 +1608,31 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 contained_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  return contains_tbox_tbox(box2, box1);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+  bool hasx, hast;
+  if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
+    return false;
+  return tbox_contained(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_box_bbox_topo
+ * @brief Return true if two temporal boxes overlap
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_overlaps(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  bool hasx, hast;
+  tbox_tbox_flags(box1, box2, &hasx, &hast);
+  if (hasx && ! span_overlaps(&box1->span, &box2->span))
+    return false;
+  if (hast && ! span_overlaps(&box1->period, &box2->period))
+    return false;
+  return true;
 }
 
 /**
@@ -1586,10 +1649,24 @@ overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
   bool hasx, hast;
   if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
     return false;
+  return tbox_overlaps(box1, box2);
+}
 
-  if (hasx && ! overlaps_span_span(&box1->span, &box2->span))
+
+/**
+ * @ingroup meos_internal_box_bbox_topo
+ * @brief Return true if two temporal boxes are equal in the common dimensions
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_same(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  bool hasx, hast;
+  tbox_tbox_flags(box1, box2, &hasx, &hast);
+  if (hasx && ! span_eq(&box1->span, &box2->span))
     return false;
-  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
+  if (hast && ! span_eq(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -1608,12 +1685,39 @@ same_tbox_tbox(const TBox *box1, const TBox *box2)
   bool hasx, hast;
   if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
     return false;
+  return tbox_same(box1, box2);
+}
 
-  if (hasx && ! span_eq(&box1->span, &box2->span))
-    return false;
-  if (hast && ! span_eq(&box1->period, &box2->period))
-    return false;
-  return true;
+
+/**
+ * @ingroup meos_internal_box_bbox_topo
+ * @brief Return true if two temporal boxes are adjacent
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_adjacent(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  bool hasx, hast;
+  tbox_tbox_flags(box1, box2, &hasx, &hast);
+  /* Boxes are adjacent if they meet in every common dimension and touch in at
+   * least one of them. A dimension in which the boxes are apart separates them
+   * whatever the remaining dimensions do, so an adjacency in one dimension is
+   * an adjacency of the boxes only when the others at least overlap */
+  bool adjx = false, adjt = false;
+  if (hasx)
+  {
+    adjx = span_adjacent(&box1->span, &box2->span);
+    if (! adjx && ! span_overlaps(&box1->span, &box2->span))
+      return false;
+  }
+  if (hast)
+  {
+    adjt = span_adjacent(&box1->period, &box2->period);
+    if (! adjt && ! span_overlaps(&box1->period, &box2->period))
+      return false;
+  }
+  return (adjx || adjt);
 }
 
 /**
@@ -1630,30 +1734,28 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
   bool hasx, hast;
   if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
     return false;
-
-  /* Boxes are adjacent if they meet in every common dimension and touch in at
-   * least one of them. A dimension in which the boxes are apart separates them
-   * whatever the remaining dimensions do, so an adjacency in one dimension is
-   * an adjacency of the boxes only when the others at least overlap */
-  bool adjx = false, adjt = false;
-  if (hasx)
-  {
-    adjx = adjacent_span_span(&box1->span, &box2->span);
-    if (! adjx && ! overlaps_span_span(&box1->span, &box2->span))
-      return false;
-  }
-  if (hast)
-  {
-    adjt = adjacent_span_span(&box1->period, &box2->period);
-    if (! adjt && ! overlaps_span_span(&box1->period, &box2->period))
-      return false;
-  }
-  return (adjx || adjt);
+  return tbox_adjacent(box1, box2);
 }
+
 
 /*****************************************************************************
  * Position operators
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_box_bbox_pos
+ * @brief Return true if the first temporal box is to the left of the second
+ * one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_left(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return span_left(&box1->span, &box2->span);
+}
 
 /**
  * @ingroup meos_box_bbox_pos
@@ -1667,11 +1769,26 @@ left_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  assert(box1); assert(box2);
-  if (! ensure_has_X(T_TBOX, box1->flags) || 
+  if (! ensure_has_X(T_TBOX, box1->flags) ||
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
-  return left_span_span(&box1->span, &box2->span);
+  return tbox_left(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_box_bbox_pos
+ * @brief Return true if the first temporal box does not extend to the right
+ * of the second one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_overleft(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return span_overleft(&box1->span, &box2->span);
 }
 
 /**
@@ -1689,7 +1806,23 @@ overleft_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_X(T_TBOX, box1->flags) ||
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
-  return overleft_span_span(&box1->span, &box2->span);
+  return tbox_overleft(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_box_bbox_pos
+ * @brief Return true if the first temporal box is to the right of the second
+ * one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_right(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return span_right(&box1->span, &box2->span);
 }
 
 /**
@@ -1707,7 +1840,23 @@ right_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
-  return right_span_span(&box1->span, &box2->span);
+  return tbox_right(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_box_bbox_pos
+ * @brief Return true if the first temporal box does not extend to the left of
+ * the second one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_overright(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  return span_overright(&box1->span, &box2->span);
 }
 
 /**
@@ -1725,7 +1874,22 @@ overright_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
-  return overright_span_span(&box1->span, &box2->span);
+  return tbox_overright(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_box_bbox_pos
+ * @brief Return true if the first temporal box is before the second one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_before(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return span_left(&box1->period, &box2->period);
 }
 
 /**
@@ -1742,7 +1906,22 @@ before_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_T(T_TBOX, box1->flags) || 
       ! ensure_has_T(T_TBOX, box2->flags))
     return false;
-  return left_span_span(&box1->period, &box2->period);
+  return tbox_before(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_box_bbox_pos
+ * @brief Return true if the first temporal box is not after the second one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_overbefore(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return span_overleft(&box1->period, &box2->period);
 }
 
 /**
@@ -1759,7 +1938,22 @@ overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_T(T_TBOX, box1->flags) || 
       ! ensure_has_T(T_TBOX, box2->flags))
     return false;
-  return overleft_span_span(&box1->period, &box2->period);
+  return tbox_overbefore(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_box_bbox_pos
+ * @brief Return true if the first temporal box is after the second one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_after(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return span_right(&box1->period, &box2->period);
 }
 
 /**
@@ -1776,7 +1970,22 @@ after_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_T(T_TBOX, box1->flags) || 
       ! ensure_has_T(T_TBOX, box2->flags))
     return false;
-  return right_span_span(&box1->period, &box2->period);
+  return tbox_after(box1, box2);
+}
+
+
+/**
+ * @ingroup meos_internal_box_bbox_pos
+ * @brief Return true if the first temporal box is not before the second one
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
+tbox_overafter(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_T(box1->flags));
+  assert(MEOS_FLAGS_GET_T(box2->flags));
+  return span_overright(&box1->period, &box2->period);
 }
 
 /**
@@ -1793,8 +2002,9 @@ overafter_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_T(T_TBOX, box1->flags) || 
       ! ensure_has_T(T_TBOX, box2->flags))
     return false;
-  return overright_span_span(&box1->period, &box2->period);
+  return tbox_overafter(box1, box2);
 }
+
 
 /*****************************************************************************
  * Set operators
