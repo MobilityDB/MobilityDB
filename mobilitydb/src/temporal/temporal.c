@@ -279,7 +279,7 @@ PG_FUNCTION_INFO_V1(Mobilitydb_version);
 /**
  * @ingroup mobilitydb_misc
  * @brief Return the version of the MobilityDB extension
- * @sqlfn mobilitydb_version()
+ * @sqlfn mobilitydbVersion()
  */
 Datum
 Mobilitydb_version(PG_FUNCTION_ARGS UNUSED)
@@ -294,7 +294,7 @@ PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 /**
  * @ingroup mobilitydb_misc
  * @brief Return the versions of the MobilityDB extension and its dependencies
- * @sqlfn mobilitydb_full_version()
+ * @sqlfn mobilitydbFullVersion()
  */
 Datum
 Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)

@@ -31,7 +31,7 @@ Use the commands:
 ```SQL
 SELECT version();
 SELECT postgis_full_version();
-SELECT mobilitydb_full_version();
+SELECT mobilitydbFullVersion();
 ```
 
 **Additional context**

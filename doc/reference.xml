@@ -776,10 +776,10 @@
 			<title>Miscellaneous</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="mobilitydb_version"><varname>mobilitydb_version</varname></link>: Version of the MobilityDB extension</para>
+					<para><link linkend="mobilitydb_version"><varname>mobilitydbVersion</varname></link>: Version of the MobilityDB extension</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="mobilitydb_full_version"><varname>mobilitydb_full_version</varname></link>: Versions of the MobilityDB extension and its dependencies</para>
+					<para><link linkend="mobilitydb_full_version"><varname>mobilitydbFullVersion</varname></link>: Versions of the MobilityDB extension and its dependencies</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

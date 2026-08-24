@@ -202,19 +202,19 @@ FROM test1, test2;
 --------------------------------------------------------
 
 -- Temporal type
-SELECT asEWKT(round(transform_gk(tgeompoint 'Point(13.43593 52.41721)@2018-12-20'), 6));
-SELECT asEWKT(round(transform_gk(tgeompoint '{Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00}'), 6));
-SELECT asEWKT(round(transform_gk(tgeompoint '[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00]'), 6));
-SELECT asEWKT(round(transform_gk(tgeompoint '{[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00],[Point(13.43705 52.41724)@2018-12-20 10:02:00,Point(13.43805 52.41730)@2018-12-20 10:03:00]}'), 6));
+SELECT asEWKT(round(transformGK(tgeompoint 'Point(13.43593 52.41721)@2018-12-20'), 6));
+SELECT asEWKT(round(transformGK(tgeompoint '{Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00}'), 6));
+SELECT asEWKT(round(transformGK(tgeompoint '[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00]'), 6));
+SELECT asEWKT(round(transformGK(tgeompoint '{[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00],[Point(13.43705 52.41724)@2018-12-20 10:02:00,Point(13.43805 52.41730)@2018-12-20 10:03:00]}'), 6));
 
 -- PostGIS geometry
-SELECT ST_AsText(round(transform_gk(geometry 'Point Empty'), 6));
-SELECT ST_AsText(round(transform_gk(geometry 'Point(13.43593 52.41721)'), 6));
+SELECT ST_AsText(round(transformGK(geometry 'Point Empty'), 6));
+SELECT ST_AsText(round(transformGK(geometry 'Point(13.43593 52.41721)'), 6));
 SELECT ST_AsText(round(geometry 'Linestring empty', 6));
-SELECT ST_AsText(round(transform_gk(geometry 'Linestring(13.43593 52.41721,13.43593 52.41723)'), 6));
+SELECT ST_AsText(round(transformGK(geometry 'Linestring(13.43593 52.41721,13.43593 52.41723)'), 6));
 
 /* Error */
-SELECT transform_gk(round(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', 6));
+SELECT transformGK(round(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', 6));
 
 --------------------------------------------------------
 

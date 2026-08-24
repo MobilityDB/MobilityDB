@@ -125,12 +125,12 @@ CREATE FUNCTION transformPipeline(tgeogpoint, text, srid integer DEFAULT 0,
 
 -- Gauss Kruger transformation
 
-CREATE FUNCTION transform_gk(tgeompoint)
+CREATE FUNCTION transformGK(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tgeompoint_transform_gk'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION transform_gk(geometry)
+CREATE FUNCTION transformGK(geometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geometry_transform_gk'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

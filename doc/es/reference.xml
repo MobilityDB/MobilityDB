@@ -776,10 +776,10 @@
 			<title>Funciones de utilidad</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="mobilitydb_version"><varname>mobilitydb_version</varname></link>: Versión de la extensión MobilityDB</para>
+					<para><link linkend="mobilitydb_version"><varname>mobilitydbVersion</varname></link>: Versión de la extensión MobilityDB</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="mobilitydb_full_version"><varname>mobilitydb_full_version</varname></link>: Versión de la extensión MobilityDB y de sus dependencias</para>
+					<para><link linkend="mobilitydb_full_version"><varname>mobilitydbFullVersion</varname></link>: Versión de la extensión MobilityDB y de sus dependencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -36,32 +36,32 @@
  * V-clip functions
  *****************************************************************************/
 
-CREATE FUNCTION v_clip_poly_point(geometry(Polygon), geometry(Point))
+CREATE FUNCTION vClipPolyPoint(geometry(Polygon), geometry(Point))
   RETURNS float
   AS 'MODULE_PATHNAME', 'VClip_poly_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION v_clip_poly_poly(geometry(Polygon), geometry(Polygon))
+CREATE FUNCTION vClipPolyPoly(geometry(Polygon), geometry(Polygon))
   RETURNS float
   AS 'MODULE_PATHNAME', 'VClip_poly_poly'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION v_clip_tpoly_point(trgeometry, geometry(Point), timestamptz)
+CREATE FUNCTION vClipTpolyPoint(trgeometry, geometry(Point), timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'VClip_tpoly_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION v_clip_tpoly_poly(trgeometry, geometry(Polygon), timestamptz)
+CREATE FUNCTION vClipTpolyPoly(trgeometry, geometry(Polygon), timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'VClip_tpoly_poly'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION v_clip_tpoly_tpoint(trgeometry, tgeompoint, timestamptz)
+CREATE FUNCTION vClip(trgeometry, tgeompoint, timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'VClip_tpoly_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION v_clip_tpoly_tpoly(trgeometry, trgeometry, timestamptz)
+CREATE FUNCTION vClip(trgeometry, trgeometry, timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'VClip_tpoly_tpoly'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

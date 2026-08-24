@@ -43,12 +43,12 @@ CREATE TYPE ttext;
  *****************************************************************************/
 
 -- The function is not strict
-CREATE FUNCTION mobilitydb_version()
+CREATE FUNCTION mobilitydbVersion()
   RETURNS text
   AS 'MODULE_PATHNAME', 'Mobilitydb_version'
   LANGUAGE C IMMUTABLE;
 
-CREATE FUNCTION mobilitydb_full_version()
+CREATE FUNCTION mobilitydbFullVersion()
   RETURNS text
   AS 'MODULE_PATHNAME', 'Mobilitydb_full_version'
   LANGUAGE C IMMUTABLE;

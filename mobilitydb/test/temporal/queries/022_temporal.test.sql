@@ -31,8 +31,8 @@
 -- Utility functions
 -------------------------------------------------------------------------------
 
-SELECT mobilitydb_version() LIKE 'MobilityDB%';
-SELECT left(mobilitydb_full_version(), 10) = 'MobilityDB';
+SELECT mobilitydbVersion() LIKE 'MobilityDB%';
+SELECT left(mobilitydbFullVersion(), 10) = 'MobilityDB';
 
 -------------------------------------------------------------------------------
 -- Input/output functions
