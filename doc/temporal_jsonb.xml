@@ -492,7 +492,7 @@ SELECT asHexWKB(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-
 SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
   {"Position": "Point(2 2)"}@2001-01-02]');
 /* {"type":"MovingJsonb","values":[{"Position": "Point(1 1)"},{"Position": "Point(2 2)"}],
-   "datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],
+   "datetimes":["2001-01-01T00:00:00","2001-01-02T00:00:00"],
    "lower_inc":true,"upper_inc":true,"interpolation":"Step"} */
 </programlisting>
 			</listitem>
@@ -534,8 +534,8 @@ SELECT tjsonbFromHexWKB(asHexWKB(
 SELECT tjsonbFromMFJSON('{"type": "MovingJsonb", "interpolation": "Step",
   "values": [{"Position": "Point(1 1)"}, {"Position": "Point(2 2)"}],
   "datetimes": ["2001-01-01T10:00:00Z","2001-01-01T12:00:00Z"]}');
-/* [{"Position": "Point(1 1)"}@2001-01-01 11:00:00+01,
-   {"Position": "Point(2 2)"}@2001-01-01 13:00:00+01] */
+/* [{"Position": "Point(1 1)"}@2001-01-01 11:00:00,
+   {"Position": "Point(2 2)"}@2001-01-01 13:00:00] */
 </programlisting>
 			</listitem>
 		</itemizedlist>

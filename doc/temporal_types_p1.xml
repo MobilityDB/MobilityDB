@@ -212,21 +212,21 @@ FROM Trips;
 -- Restriction to a value
 SELECT CarId, asText(atValue(Trip, geometry 'Point(2 0)'))
 FROM Trips;
--- 10 | {"[POINT(2 0)@2001-01-01 08:10:00+00]"}
+-- 10 | {"[POINT(2 0)@2001-01-01 08:10:00]"}
 -- 20 | 
 
 -- Restriction to a period
 SELECT CarId, asText(atTime(Trip, tstzspan '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
 FROM Trips;
--- 10 | {[POINT(1 0)@2001-01-01 08:05:00+00, POINT(2 0)@2001-01-01 08:10:00+00]}
--- 20 | {[POINT(0 0)@2001-01-01 08:05:00+00, POINT(1 1)@2001-01-01 08:10:00+00]}
+-- 10 | {[POINT(1 0)@2001-01-01 08:05:00, POINT(2 0)@2001-01-01 08:10:00]}
+-- 20 | {[POINT(0 0)@2001-01-01 08:05:00, POINT(1 1)@2001-01-01 08:10:00]}
 
 -- Temporal distance
 SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip
 FROM Trips T1, Trips T2
 WHERE T1.CarId &lt; T2.CarId;
-/* 10 | 20 | {[1@2001-01-01 08:05:00+00, 1.4142135623731@2001-01-01 08:10:00+00,
-   1@2001-01-01 08:15:00+00)} */
+/* 10 | 20 | {[1@2001-01-01 08:05:00, 1.4142135623731@2001-01-01 08:10:00,
+   1@2001-01-01 08:15:00)} */
 </programlisting>
 	</sect1>
 
@@ -320,7 +320,7 @@ SELECT tIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 -- Temporal distance
 SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
   tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
--- [0.5@2001-01-02 08:05:00+00, 0.745184033794557@2001-01-03 08:10:00+00)
+-- [0.5@2001-01-02 08:05:00, 0.745184033794557@2001-01-03 08:10:00)
 </programlisting>
 
 		<para>
@@ -579,27 +579,27 @@ SELECT asText(tgeometry
 				<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tbool 't@2001-01-01 18:00:00', 1);
-/* {"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
-  "end":"2001-01-01T18:00:00+01","lowerInc":true,"upperInc":true},
-  "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"} */
+/* {"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00",
+  "end":"2001-01-01T18:00:00","lowerInc":true,"upperInc":true},
+  "values":[true],"datetimes":["2001-01-01T18:00:00"],"interpolation":"None"} */
 SELECT asMFJSON(tint '{10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}', 1);
-/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
-   "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
-   "2001-01-01T18:10:00+01"],"lowerInc":true,"upperInc":true,
+/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00",
+   "end":"2001-01-01T18:10:00"},"values":[10,25],"datetimes":["2001-01-01T18:00:00",
+   "2001-01-01T18:10:00"],"lowerInc":true,"upperInc":true,
    "interpolation":"Discrete"} */
 SELECT asMFJSON(tfloat '[10.5@2001-01-01 18:00:00+02, 25.5@2001-01-01 18:10:00+02]');
-/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
-  "2001-01-01T17:10:00+01"],"lowerInc":true,"upperInc":true,"interpolation":"Linear"} */
+/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00",
+  "2001-01-01T17:10:00"],"lowerInc":true,"upperInc":true,"interpolation":"Linear"} */
 SELECT asMFJSON(ttext '{[walking@2001-01-01 18:00:00+02,
   driving@2001-01-01 18:10:00+02]}');
 /* {"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
+  "datetimes":["2001-01-01T17:00:00","2001-01-01T17:10:00"],
   "lowerInc":true,"upperInc":true}],"interpolation":"Step"} */
 SELECT asMFJSON(tgeometry '{[Point(1 1)@2001-01-01 18:00:00+02,
   Linestring(1 1,2 2)@2001-01-01 18:10:00+02]}');
 /* {"type":"MovingGeometry","sequences":[{"values":[{"type":"Point",
     "coordinates":[1,1]},{"type":"LineString","coordinates":[[1,1],[2,2]]}],
-    "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
+    "datetimes":["2001-01-01T17:00:00","2001-01-01T17:10:00"],
     "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
 </programlisting>
 			</listitem>
@@ -1221,20 +1221,20 @@ SELECT asText(shiftTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-
 SELECT scaleTime(tint '1@2001-01-01', '1 day');
 -- 1@2001-01-01
 SELECT scaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
--- {1@2001-01-01, 2@2001-01-01 12:00:00+01, 1@2001-01-02}
+-- {1@2001-01-01, 2@2001-01-01 12:00:00, 1@2001-01-02}
 SELECT scaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
 -- [1@2001-01-01, 2@2001-01-02]
 SELECT asText(scaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
-/* {[POINT(1 1)@2001-01-01 00:00:00+01, POINT(2 2)@2001-01-01 06:00:00+01,
-   POINT(1 1)@2001-01-01 12:00:00+01], [POINT(2 2) @2001-01-01 18:00:00+01,
-   POINT(1 1)@2001-01-02 00:00:00+01]} */
+/* {[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-01 06:00:00,
+   POINT(1 1)@2001-01-01 12:00:00], [POINT(2 2) @2001-01-01 18:00:00,
+   POINT(1 1)@2001-01-02]} */
 SELECT scaleTime(tint '1@2001-01-01', '-1 day');
 -- ERROR:  The interval must be positive: -1 days
 SELECT shiftScaleTime(tint '1@2001-01-01', '1 day', '1 day');
 -- 1@2001-01-02
 SELECT shiftScaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day','1 day');
--- {1@2001-01-02, 2@2001-01-02 12:00:00+01, 1@2001-01-03}
+-- {1@2001-01-02, 2@2001-01-02 12:00:00, 1@2001-01-03}
 SELECT shiftScaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
 -- [1@2001-01-02, 2@2001-01-03]
 SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01, 

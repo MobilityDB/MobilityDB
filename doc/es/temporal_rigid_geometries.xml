@@ -635,7 +635,7 @@ SELECT asText(nearestApproachInstant(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
   Pose(Point(10 0), 0.0)@2001-01-02]',
   geometry 'Point(5 5)'));
--- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00+00
+-- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00
 </programlisting>
 			</listitem>
 

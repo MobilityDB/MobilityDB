@@ -50,7 +50,7 @@ SELECT tCount(NoEmps) FROM Department;
 SELECT extent(noEmps) FROM Department;
 -- TBOX XT((4,12),[2001-01-01,2001-10-01])
 SELECT extent(Trip) FROM Trips;
--- STBOX XT(((0,0),(3,3)),[2001-01-01 08:00:00+01, 2001-01-01 08:20:00+01))
+-- STBOX XT(((0,0),(3,3)),[2001-01-01 08:00:00, 2001-01-01 08:20:00))
 </programlisting>
 			</listitem>
 
@@ -134,10 +134,10 @@ SELECT round(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
 				<para><varname>tCentroid(tgeompoint) → tgeompoint</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tCentroid(Trip) FROM Trips;
-/* {[POINT(0 0)@2001-01-01 08:00:00+00, POINT(1 0)@2001-01-01 08:05:00+00),
-   [POINT(0.5 0)@2001-01-01 08:05:00+00, POINT(1.5 0.5)@2001-01-01 08:10:00+00,
-   POINT(2 1.5)@2001-01-01 08:15:00+00),
-   [POINT(2 2)@2001-01-01 08:15:00+00, POINT(3 3)@2001-01-01 08:20:00+00)} */
+/* {[POINT(0 0)@2001-01-01 08:00:00, POINT(1 0)@2001-01-01 08:05:00),
+   [POINT(0.5 0)@2001-01-01 08:05:00, POINT(1.5 0.5)@2001-01-01 08:10:00,
+   POINT(2 1.5)@2001-01-01 08:15:00),
+   [POINT(2 2)@2001-01-01 08:15:00, POINT(3 3)@2001-01-01 08:20:00)} */
 </programlisting>
 			</listitem>
 

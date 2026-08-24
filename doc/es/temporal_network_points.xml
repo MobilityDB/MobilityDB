@@ -718,8 +718,8 @@ SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
 SELECT minusGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
-/* {(NPoint(2,0.342593)@2001-01-01 05:06:40.364673+01,
-   NPoint(2,0.7)@2001-01-03 00:00:00+01]} */
+/* {(NPoint(2,0.342593)@2001-01-01 05:06:40.364673,
+   NPoint(2,0.7)@2001-01-03]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -753,10 +753,10 @@ SELECT tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]' |=|
 				<programlisting language="sql" xml:space="preserve">
 SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
--- NPoint(2,0.349928)@2001-01-01 02:59:44.402905+01
+-- NPoint(2,0.349928)@2001-01-01 02:59:44.402905
 SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)');
--- NPoint(2,0.592181)@2001-01-01 17:31:51.080405+01
+-- NPoint(2,0.592181)@2001-01-01 17:31:51.080405
 </programlisting>
 			</listitem>
 
@@ -973,8 +973,8 @@ SELECT tIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-0
 -- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
 SELECT tDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
   tnpoint '[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
-/* {[f@2001-01-01, t@2001-01-01 22:19:04.400634+00,
-  t@2001-01-02 01:40:55.599365+00], (f@2001-01-02 01:40:55.599365+00,
+/* {[f@2001-01-01, t@2001-01-01 22:19:04.400634,
+  t@2001-01-02 01:40:55.599365], (f@2001-01-02 01:40:55.599365,
   f@2001-01-03]} */
 </programlisting>
 			</listitem>
