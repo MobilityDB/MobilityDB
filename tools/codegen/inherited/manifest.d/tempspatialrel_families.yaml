@@ -13,10 +13,20 @@
 #    kernel of its own; per the cast-only spatial-uniformization rule (geo is
 #    the one place the relationship logic lives — memory
 #    north-star-spatial-cast-only-no-duplication), it converts each of its own
-#    operands to tgeometry via `convert` and re-delegates to tgeometry's
-#    tContains..tDwithin. See generate.py's render_tempspatialrels for the
-#    full mechanism (both impls share the predicate/direction matrix; only the
-#    per-cell CREATE FUNCTION body differs).
+#    operands via `convert` and re-delegates to the target's tContains..tDwithin.
+#    See generate.py's render_tempspatialrels for the full mechanism (both impls
+#    share the predicate/direction matrix; only the per-cell CREATE FUNCTION
+#    body differs).
+#    ⭐ The cast target follows the value's geometry: a family whose values are
+#    AREAS reaches tgeometry, a family whose values are POINTS reaches
+#    tgeompoint. The distinction is load-bearing rather than cosmetic — a
+#    tgeompoint carries linear interpolation and a tgeometry cannot, since two
+#    consecutive geometries need not even share a type, so reaching past a
+#    point's own target would refuse every linear value of the family.
+#    ⭐ A family also declares the matrix of ITS target, not a fixed six by
+#    three: a moving point neither contains nor covers a geometry, and two
+#    moving points do not touch, so the point-like families below declare the
+#    same cells the tpoint entry declares.
 tempspatialrel_families:
   - family:  cbuffer
     impl:    native
@@ -145,12 +155,33 @@ tempspatialrel_families:
   - family:  tpose
     impl:    cast
     file:    mobilitydb/sql/pose/114_tpose_tempspatialrels.in.sql
-    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
-    directions:
-      - {l: geometry, r: tpose}
-      - {l: tpose,    r: geometry}
-      - {l: tpose,    r: tpose}
-    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
+    predicates:
+      - name: tContains
+        directions:
+          - {l: geometry, r: tpose}
+      - name: tCovers
+        directions:
+          - {l: geometry, r: tpose}
+      - name: tDisjoint
+        directions:
+          - {l: geometry, r: tpose}
+          - {l: tpose, r: geometry}
+          - {l: tpose, r: tpose}
+      - name: tIntersects
+        directions:
+          - {l: geometry, r: tpose}
+          - {l: tpose, r: geometry}
+          - {l: tpose, r: tpose}
+      - name: tTouches
+        directions:
+          - {l: geometry, r: tpose}
+          - {l: tpose, r: geometry}
+      - name: tDwithin
+        directions:
+          - {l: geometry, r: tpose}
+          - {l: tpose, r: geometry}
+          - {l: tpose, r: tpose}
+    convert: "@N@::@extschema@.tgeompoint"
     doc: |-
       /**
        * @file
@@ -169,7 +200,7 @@ tempspatialrel_families:
       - {l: geometry, r: tpcpoint}
       - {l: tpcpoint, r: geometry}
       - {l: tpcpoint, r: tpcpoint}
-    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
+    convert: "@N@::@extschema@.tgeompoint"
     doc: |-
       /**
        * @file
@@ -197,12 +228,33 @@ tempspatialrel_families:
   - family:  tposechain
     impl:    cast
     file:    mobilitydb/sql/posechain/564_tposechain_tempspatialrels.in.sql
-    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
-    directions:
-      - {l: geometry,   r: tposechain}
-      - {l: tposechain, r: geometry}
-      - {l: tposechain, r: tposechain}
-    convert: "@N@::@extschema@.tpose::@extschema@.tgeompoint::@extschema@.tgeometry"
+    predicates:
+      - name: tContains
+        directions:
+          - {l: geometry, r: tposechain}
+      - name: tCovers
+        directions:
+          - {l: geometry, r: tposechain}
+      - name: tDisjoint
+        directions:
+          - {l: geometry, r: tposechain}
+          - {l: tposechain, r: geometry}
+          - {l: tposechain, r: tposechain}
+      - name: tIntersects
+        directions:
+          - {l: geometry, r: tposechain}
+          - {l: tposechain, r: geometry}
+          - {l: tposechain, r: tposechain}
+      - name: tTouches
+        directions:
+          - {l: geometry, r: tposechain}
+          - {l: tposechain, r: geometry}
+      - name: tDwithin
+        directions:
+          - {l: geometry, r: tposechain}
+          - {l: tposechain, r: geometry}
+          - {l: tposechain, r: tposechain}
+    convert: "@N@::@extschema@.tpose::@extschema@.tgeompoint"
     doc: |-
       /**
        * @file
@@ -230,12 +282,33 @@ tempspatialrel_families:
   - family:  tnpoint
     impl:    cast
     file:    mobilitydb/sql/npoint/322_tnpoint_tempspatialrels.in.sql
-    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
-    directions:
-      - {l: geometry, r: tnpoint}
-      - {l: tnpoint,  r: geometry}
-      - {l: tnpoint,  r: tnpoint}
-    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
+    predicates:
+      - name: tContains
+        directions:
+          - {l: geometry, r: tnpoint}
+      - name: tCovers
+        directions:
+          - {l: geometry, r: tnpoint}
+      - name: tDisjoint
+        directions:
+          - {l: geometry, r: tnpoint}
+          - {l: tnpoint, r: geometry}
+          - {l: tnpoint, r: tnpoint}
+      - name: tIntersects
+        directions:
+          - {l: geometry, r: tnpoint}
+          - {l: tnpoint, r: geometry}
+          - {l: tnpoint, r: tnpoint}
+      - name: tTouches
+        directions:
+          - {l: geometry, r: tnpoint}
+          - {l: tnpoint, r: geometry}
+      - name: tDwithin
+        directions:
+          - {l: geometry, r: tnpoint}
+          - {l: tnpoint, r: geometry}
+          - {l: tnpoint, r: tnpoint}
+    convert: "@N@::@extschema@.tgeompoint"
     doc: |-
       /**
        * @file

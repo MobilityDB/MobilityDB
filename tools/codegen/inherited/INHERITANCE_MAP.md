@@ -551,8 +551,20 @@ Reading the table:
   (`--gaps`: `aggregate_families` 19/19, full coverage).
 - **`tempsp.rels` is generated for cbuffer, npoint, pose, posechain, pointcloud
   (both types), rgeo, h3, quadbin** via `tempspatialrel_families` (§3/§5) — native
-  for cbuffer, cast-delegated for the other eight, every one of them converting to
-  `tgeometry` (`--gaps`: `tempspatialrel_families` 13/13, full coverage).
+  for cbuffer, cast-delegated for the other eight (`--gaps`:
+  `tempspatialrel_families` 13/13, full coverage).
+  ⭐ The cast target follows the value's geometry: an AREA-valued family reaches
+  `tgeometry`, a POINT-valued one reaches `tgeompoint`. It is load-bearing rather
+  than cosmetic — a `tgeompoint` carries linear interpolation and a `tgeometry`
+  cannot, two consecutive geometries sharing neither type nor vertex
+  correspondence — so reaching past a point's own target would refuse every linear
+  value of the family.
+  ⭐ A family declares the matrix of ITS target rather than a fixed six by three:
+  `tpose`, `tposechain` and `tnpoint` declare the 13 cells the `tpoint` entry
+  declares, since a moving point neither contains nor covers a geometry and two
+  moving points do not touch. `tpcpoint` and `tpcpatch` narrow further to
+  `tDisjoint`, `tIntersects` and `tDwithin`, the three a Z-carrying value can
+  answer.
   ⛔ A delegating family declares the predicates its VALUES can answer, not a fixed
   six: `tpcpoint` and `tpcpatch` carry the Z their schema declares and `tContains`,
   `tCovers` and `tTouches` are planar DE-9IM relationships that refuse a Z

@@ -40,3 +40,34 @@ SELECT asText(tDwithin(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), 
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+SELECT asText(tIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+                                                                astext                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST], (f@Mon Jan 01 12:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(tIntersects(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)])));
+                                                                astext                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST], (f@Mon Jan 01 12:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(tDisjoint(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
+                                                                astext                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 12:00:00 2001 PST], (t@Mon Jan 01 12:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(tDwithin(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Point(1 1)', 1.0));
+                                                                       astext                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 08:29:07.012947 2001 PST], (f@Mon Jan 01 08:29:07.012947 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(tIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)]), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))')) =
+  asText(tIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-02'::timestamptz)])::tgeompoint, geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))')) AS ti_agrees;
+ ti_agrees 
+-----------
+ t
+(1 row)
+

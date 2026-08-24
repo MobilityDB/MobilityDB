@@ -1274,7 +1274,7 @@ SELECT aDwithin(tpcpointSeq(ARRAY[
 
 		<sect2 xml:id="tpcpoint_tempspatialrels">
 			<title>Temporal Spatial Relationships</title>
-			<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. They read the same <varname>tgeompoint</varname> projection the ever/always relationships read, and are wired in the same three argument orders. A tpcpoint carries the Z its schema declares, and <varname>tContains</varname>, <varname>tCovers</varname> and <varname>tTouches</varname> are planar relationships that refuse a Z dimension, so the type answers the three that a Z-carrying value can.</para>
+			<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. They read the same <varname>tgeompoint</varname> projection the ever/always relationships read, and are wired in the same three argument orders. A tpcpoint carries the Z its schema declares, and <varname>tContains</varname>, <varname>tCovers</varname> and <varname>tTouches</varname> are planar relationships that refuse a Z dimension, so the type answers the three that a Z-carrying value can. That projection carries the interpolation of its source, so a tpcpoint sequence is answered along its trajectory rather than at its instants alone.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_tspatialrels">
 					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>

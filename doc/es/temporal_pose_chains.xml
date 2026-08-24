@@ -715,13 +715,14 @@ SELECT tposechain '[PoseChain(Pose(Point(1 1), 0.5))@2001-01-01,
 					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
-					<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Una cadena de poses temporal las responde en la posición que ocupa la pose que compone.</para>
+					<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Una cadena de poses temporal las responde en la posición que ocupa la pose que compone, de modo que una cadena con interpolación lineal se responde a lo largo de su trayectoria y no solo en sus instantes. La cadena declara las relaciones que responde un punto en movimiento: <varname>tContains</varname> y <varname>tCovers</varname> toman la geometría en primer lugar únicamente, y <varname>tTouches</varname> no tiene dirección entre dos cadenas, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</para>
 					<para><varname>tContains(geometry,tposechain) → tbool</varname></para>
 					<para><varname>tCovers(geometry,tposechain) → tbool</varname></para>
 					<para><varname>tDisjoint({geometry,tposechain},{geometry,tposechain}) → tbool</varname></para>
 					<para><varname>tDwithin({geometry,tposechain},{geometry,tposechain},float) → tbool</varname></para>
 					<para><varname>tIntersects({geometry,tposechain},{geometry,tposechain}) → tbool</varname></para>
-					<para><varname>tTouches({geometry,tposechain},{geometry,tposechain}) → tbool</varname></para>
+					<para><varname>tTouches(geometry,tposechain) → tbool</varname></para>
+					<para><varname>tTouches(tposechain,geometry) → tbool</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01,
   PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}',
