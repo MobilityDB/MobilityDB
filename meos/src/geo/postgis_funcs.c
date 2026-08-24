@@ -2194,6 +2194,45 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
+ * @brief Return the union of an array of geometries whose members are all
+ * surfaces, read from their boundaries
+ * @details The array is presented to #meos_areal_union() as the collection it
+ * stands for, so the answer is the one the unary union of that collection
+ * gives: a pair whose interiors meet becomes one surface and a pair that only
+ * touches stays apart. An empty member carries no area and is left out
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @return The union, or @p NULL where a member is not a surface or the
+ * boundary overlay does not cover the topology of a pair, which leaves the
+ * caller to answer it another way
+ */
+static GSERIALIZED *
+geom_array_areal_union(GSERIALIZED **gsarr, int count)
+{
+  assert(gsarr); assert(count > 1);
+  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
+  int ngeoms = 0;
+  for (int i = 0; i < count; i++)
+    if (! gserialized_is_empty(gsarr[i]))
+      geoms[ngeoms++] = lwgeom_from_gserialized(gsarr[i]);
+  if (ngeoms == 0)
+  {
+    pfree(geoms);
+    return NULL;
+  }
+  /* #lwcollection_construct() takes ownership of the array it is given, so
+   * geoms must not be freed after this call */
+  LWCOLLECTION *coll = lwcollection_construct(COLLECTIONTYPE,
+    gserialized_get_srid(gsarr[0]), NULL, (uint32_t) ngeoms, geoms);
+  LWGEOM *lwresult = meos_areal_union(lwcollection_as_lwgeom(coll));
+  GSERIALIZED *result = lwresult ? geo_serialize(lwresult) : NULL;
+  if (lwresult)
+    lwgeom_free(lwresult);
+  lwcollection_free(coll);
+  return result;
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the union of an array of geometries
  * @details The function will iteratively call @p GEOSUnion on the
@@ -2217,6 +2256,46 @@ geom_array_union(GSERIALIZED **gsarr, int count)
   if (count == 1)
     return gsarr[0];
 
+  /* An array holding nothing but empties has an empty union, which is read
+   * from the array alone. It is answered here so that a build carrying no
+   * GEOS answers it too */
+  int nonempty = 0;
+  uint8_t largest_empty = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (! gserialized_is_empty(gsarr[i]))
+      nonempty++;
+    else
+    {
+      uint8_t gser_type = (uint8_t) gserialized_get_type(gsarr[i]);
+      if (gser_type > largest_empty)
+        largest_empty = gser_type;
+    }
+  }
+  if (nonempty == 0)
+  {
+    if (largest_empty == 0)
+      return NULL;
+    LWGEOM *empty = lwgeom_construct_empty(largest_empty,
+      gserialized_get_srid(gsarr[0]), (bool) gserialized_has_z(gsarr[0]), 0);
+    GSERIALIZED *result = geo_serialize(empty);
+    lwgeom_free(empty);
+    return result;
+  }
+
+  /* The dissolve of an array whose members are all surfaces is read from their
+   * boundaries, which keeps a circular arc on its own circle where a
+   * linearization would put the chain of segments approximating it in its
+   * place. A member that is not a surface is not what it answers, and neither
+   * is a geodetic value, whose union is measured on the sphere */
+  if (! FLAGS_GET_GEODETIC(gsarr[0]->gflags))
+  {
+    GSERIALIZED *native = geom_array_areal_union(gsarr, count);
+    if (native)
+      return native;
+  }
+
+#if GEOS
   bool is3d = false, gotsrid = false;
   int curgeom = 0;
   uint8_t empty_type = 0;
@@ -2331,6 +2410,12 @@ geom_array_union(GSERIALIZED **gsarr, int count)
     /* Union returned a NULL geometry */
     return NULL;
   return result;
+#else /* ! GEOS */
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "The union of geometries that are not all surfaces is answered by the "
+    "GEOS library, which this build excludes: configure with -DGEOS=ON");
+  return NULL;
+#endif /* GEOS */
 }
 
 /**
