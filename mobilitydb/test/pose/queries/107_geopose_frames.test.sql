@@ -35,3 +35,7 @@ SELECT geoPoseFrameSRID(1000), geoPoseFrameName(1000);
 -- Cleanup the user-added row so the test doesn't leave state behind.
 DELETE FROM geopose_frames WHERE frame_id = 1000;
 SELECT count(*) FROM geopose_frames;
+
+-- A frame is stated from one. (103_pose_geopose asserts that the registry
+-- states every authority and id pair the encoder emits.)
+INSERT INTO geopose_frames(frame_id, authority, name) VALUES (0, 'CUSTOM', 'Zero');
