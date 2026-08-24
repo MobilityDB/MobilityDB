@@ -58,6 +58,7 @@
 /* MEOS */
 #include "meos.h"
 #include "geo/geo_cluster.h"
+#include "geo/geo_funcs.h"
 
 /*****************************************************************************/
 
@@ -215,6 +216,87 @@ cluster_union_core(LWGEOM **geoms, uint32_t ngeoms, UNIONFIND *uf, double eps,
     }
   }
   pfree(neighbors); pfree(is_core);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Merge the geometries of an array into clusters of geometries that
+ * share a point with one another
+ * @param[in] geoms Geometries
+ * @param[in] ngeoms Number of geometries
+ * @param[in,out] uf Union-find the clusters are merged into
+ * @return False where a pair falls outside what the native engine covers,
+ * which leaves the caller to answer it another way
+ * @details Two geometries whose bounding boxes stand apart share no point, so
+ * the boxes decide which pairs are worth asking about, exactly as they decide
+ * which pairs are worth measuring for the clusterings by distance. Sharing a
+ * point is symmetric, so each pair is asked about once
+ * @note The clustering of PostGIS function @p ST_ClusterIntersecting, without
+ * GEOS
+ */
+bool
+geo_union_intersecting(LWGEOM **geoms, uint32_t ngeoms, UNIONFIND *uf)
+{
+  assert(geoms); assert(uf);
+  GBOX *boxes = cluster_boxes(geoms, ngeoms);
+  if (! boxes)
+    return false;
+  bool result = true;
+  for (uint32_t p = 0; p < ngeoms && result; p++)
+  {
+    if (lwgeom_is_empty(geoms[p]))
+      continue;
+    for (uint32_t q = p + 1; q < ngeoms; q++)
+    {
+      if (lwgeom_is_empty(geoms[q]))
+        continue;
+      /* Already the same cluster, and sharing a point does not change it */
+      if (UF_find(uf, p) == UF_find(uf, q))
+        continue;
+      if (! cluster_boxes_within(&boxes[p], &boxes[q], 0.0))
+        continue;
+      bool meet;
+      if (! meos_spatialrel(geoms[p], geoms[q], INTERSECTS, &meet))
+      {
+        result = false;
+        break;
+      }
+      if (meet)
+        UF_union(uf, p, q);
+    }
+  }
+  pfree(boxes);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Merge the geometries of an array into clusters of geometries that
+ * share a point with one another, and assemble each cluster
+ * @param[in] geoms Geometries
+ * @param[in] ngeoms Number of geometries
+ * @param[out] clusters Clusters
+ * @param[out] nclusters Number of clusters
+ * @return False where a pair falls outside what the native engine covers
+ * @note The clustering of PostGIS function @p ST_ClusterIntersecting, without
+ * GEOS
+ */
+bool
+geo_cluster_intersecting_geoms(LWGEOM **geoms, uint32_t ngeoms,
+  LWGEOM ***clusters, uint32_t *nclusters)
+{
+  assert(geoms); assert(clusters); assert(nclusters);
+  UNIONFIND *uf = UF_create(ngeoms);
+  if (! geo_union_intersecting(geoms, ngeoms, uf))
+  {
+    UF_destroy(uf);
+    return false;
+  }
+  bool result = geo_combine_clusters(uf, geoms, ngeoms, clusters, nclusters);
+  UF_destroy(uf);
   return result;
 }
 
