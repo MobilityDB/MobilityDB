@@ -47,6 +47,15 @@ CREATE FUNCTION convexHull(geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Intersection matrix
+ *****************************************************************************/
+
+CREATE FUNCTION relate(geometry, geometry)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Geom_relate'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Simple geometries
  *****************************************************************************/
 

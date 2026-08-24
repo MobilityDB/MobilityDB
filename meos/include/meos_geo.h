@@ -430,6 +430,7 @@ extern bool geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, doubl
 extern bool geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern char *geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *patt);
 extern bool geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 

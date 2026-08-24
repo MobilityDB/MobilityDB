@@ -2049,6 +2049,42 @@ geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
 /**
  * @ingroup meos_geo_base_rel
+ * @brief Return the DE-9IM intersection matrix of two geometries
+ * @param[in] gs1,gs2 Geometries
+ * @details The matrix is the native one, so a circular arc is met on its own
+ * circle rather than on the chords a linearization would put in its place.
+ * @ref geom_relate_pattern() answers whether a pattern matches it, which is
+ * the question a caller holding a pattern asks; this entry answers the matrix
+ * itself, which is what a caller without one needs
+ * @return A newly allocated string of nine characters, @p NULL on error
+ * @note PostGIS function: @p ST_Relate(geometry, geometry)
+ * @csqlfn #Geom_relate()
+ */
+char *
+geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
+    return NULL;
+
+  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  char matrix[10];
+  bool covered = meos_relate(geom1, geom2, matrix);
+  lwgeom_free(geom1); lwgeom_free(geom2);
+  if (! covered)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The intersection matrix of the geometries is not supported");
+    return NULL;
+  }
+  char *result = palloc(10);
+  strcpy(result, matrix);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries satisfy a spatial relationship given
  * by a pattern
  * @param[in] gs1,gs2 Geometries
