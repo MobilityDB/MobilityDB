@@ -430,6 +430,36 @@ meos_pc_schema_get_srid(uint32_t pcid)
 
 /**
  * @ingroup meos_pointcloud_schema_cache
+ * @brief Return the compression a point cloud schema states
+ * @param[in] pcid Identifier of the schema
+ * @return On a pcid no schema is registered for return -1
+ * @details The compression is read off the resolved schema, so a caller
+ *   answers it without the PCSCHEMA definition, as for the reference system
+ */
+int32_t
+meos_pc_schema_get_compression(uint32_t pcid)
+{
+  const PCSCHEMA *s = meos_pc_schema_lookup(pcid);
+  return s ? (int32_t) s->compression : -1;
+}
+
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Return the number of dimensions a point cloud schema states
+ * @param[in] pcid Identifier of the schema
+ * @return On a pcid no schema is registered for return -1
+ * @details The count is read off the resolved schema, so a caller answers it
+ *   without the PCSCHEMA definition, as for the reference system
+ */
+int32_t
+meos_pc_schema_get_ndims(uint32_t pcid)
+{
+  const PCSCHEMA *s = meos_pc_schema_lookup(pcid);
+  return s ? (int32_t) s->ndims : -1;
+}
+
+/**
+ * @ingroup meos_pointcloud_schema_cache
  * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback, answering
  *   @p NULL where neither the cache nor a hook holds one.
  *
