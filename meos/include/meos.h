@@ -366,7 +366,8 @@ typedef enum
   INDEX_OVERBEFORE,    /**< Find stored boxes that do not extend after the query */
   INDEX_AFTER,         /**< Find stored boxes strictly after the query */
   INDEX_OVERAFTER,     /**< Find stored boxes that do not extend before the query */
-  INDEX_SAME           /**< Find stored boxes whose extent equals the query */
+  INDEX_SAME,          /**< Find stored boxes whose extent equals the query */
+  INDEX_ADJACENT       /**< Find stored boxes that share a boundary with the query */
 } IndexSearchOp;
 
 /**

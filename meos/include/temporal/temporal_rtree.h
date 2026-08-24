@@ -91,6 +91,10 @@ struct RTree
   void (*bbox_expand)(const void *, void *);
   bool (*bbox_contains)(const void *, const void *);
   bool (*bbox_overlaps)(const void *, const void *);
+  /** Whether the two boxes share a boundary and no point, which overlap does
+   * not answer: a span meeting another at an excluded bound overlaps it in
+   * no point at all */
+  bool (*bbox_adjacent)(const void *, const void *);
   /** Position of the first box with respect to the second one, for the
    * operations that order a dimension. NULL for a box type with none */
   bool (*bbox_position)(const void *, const void *, IndexSearchOp);

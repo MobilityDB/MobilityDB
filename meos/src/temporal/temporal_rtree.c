@@ -249,6 +249,40 @@ bbox_overlaps_span(const void *box1, const void *box2)
 }
 
 /**
+ * @brief Return `true` if the two boxes share a boundary, `false` otherwise
+ * @details Each delegates to the predicate of its box type, adjacency holding
+ * across every dimension the two boxes share and being a different relation
+ * from overlap: two boxes meeting at an excluded bound share a boundary and no
+ * point, and two boxes meeting at an included one share a point and are not
+ * adjacent.
+ */
+static bool
+bbox_adjacent_span(const void *box1, const void *box2)
+{
+  return adjacent_span_span((const Span *) box1, (const Span *) box2);
+}
+
+static bool
+bbox_adjacent_tbox(const void *box1, const void *box2)
+{
+  return adjacent_tbox_tbox((const TBox *) box1, (const TBox *) box2);
+}
+
+static bool
+bbox_adjacent_stbox(const void *box1, const void *box2)
+{
+  return adjacent_stbox_stbox((const STBox *) box1, (const STBox *) box2);
+}
+
+#if POINTCLOUD
+static bool
+bbox_adjacent_tpcbox(const void *box1, const void *box2)
+{
+  return adjacent_tpcbox_tpcbox((const TPCBox *) box1, (const TPCBox *) box2);
+}
+#endif /* POINTCLOUD */
+
+/**
  * @brief Return `true` if the two temporal boxes overlap, `false` otherwise
  * @details The homogeneous boxes stored in an R-tree share the same value span
  * type by construction, so the dimension and type validation of
@@ -936,6 +970,8 @@ leaf_consistent(const RTree *rtree, const void *key, const void *query,
     case INDEX_SAME:
       /* Two extents are equal exactly when each contains the other */
       return rtree->bbox_contains(key, query) && rtree->bbox_contains(query, key);
+    case INDEX_ADJACENT:
+      return rtree->bbox_adjacent(key, query);
     default:
       /* An entry satisfies a position operation as the box type answers it */
       return rtree->bbox_position ?
@@ -960,6 +996,11 @@ inner_consistent(const RTree *rtree, const void *key, const void *query,
     case INDEX_OVERLAPS:
     case INDEX_CONTAINED_BY:
       return rtree->bbox_overlaps(key, query);
+    case INDEX_ADJACENT:
+      /* An entry meeting the query lies in a box that meets it or overlaps it,
+       * the entry being contained by that box */
+      return rtree->bbox_overlaps(key, query) ||
+        rtree->bbox_adjacent(key, query);
     case INDEX_CONTAINS:
     case INDEX_SAME:
       /* A subtree holds an entry equal to the query only when the box bounding
@@ -1029,7 +1070,14 @@ node_join(const RTree *rtree1, const RTreeNode *node1, const void *box1,
   const RTree *rtree2, const RTreeNode *node2, const void *box2,
   IndexSearchOp op, MeosArray *result)
 {
-  if (box1 && box2 && ! rtree1->bbox_overlaps(box1, box2))
+  /* A pair of subtrees holds a qualifying pair only where the two boxes
+   * bounding them meet, which for every operation but adjacency is an overlap.
+   * Two boxes meeting at an excluded bound share a boundary and no point, so
+   * pruning that pair on overlap alone drops the pairs an adjacency join is
+   * looking for -- and it drops them at the node boundaries, where nothing
+   * else in the answer is missing. */
+  if (box1 && box2 && ! rtree1->bbox_overlaps(box1, box2) &&
+      ! (op == INDEX_ADJACENT && rtree1->bbox_adjacent(box1, box2)))
     return;
 
   bool leaf1 = (node1->node_type == RTREE_LEAF);
@@ -1095,6 +1143,7 @@ rtree_create(MeosType bboxtype)
     rtree->bbox_expand = &bbox_expand_span;
     rtree->bbox_contains = &bbox_contains_span;
     rtree->bbox_overlaps = &bbox_overlaps_span;
+    rtree->bbox_adjacent = &bbox_adjacent_span;
     rtree->bbox_position = &bbox_position_span;
   }
   else if (bboxtype == T_TBOX)
@@ -1104,6 +1153,7 @@ rtree_create(MeosType bboxtype)
     rtree->bbox_expand = &bbox_expand_tbox;
     rtree->bbox_contains = &bbox_contains_tbox;
     rtree->bbox_overlaps = &bbox_overlaps_tbox;
+    rtree->bbox_adjacent = &bbox_adjacent_tbox;
     rtree->bbox_position = &bbox_position_tbox;
   }
 #if POINTCLOUD
@@ -1116,6 +1166,7 @@ rtree_create(MeosType bboxtype)
     rtree->bbox_expand = &bbox_expand_tpcbox;
     rtree->bbox_contains = &bbox_contains_tpcbox;
     rtree->bbox_overlaps = &bbox_overlaps_tpcbox;
+    rtree->bbox_adjacent = &bbox_adjacent_tpcbox;
     rtree->bbox_position = &bbox_position_tpcbox;
   }
 #endif
@@ -1128,6 +1179,7 @@ rtree_create(MeosType bboxtype)
     rtree->bbox_expand = &bbox_expand_stbox;
     rtree->bbox_contains = &bbox_contains_stbox;
     rtree->bbox_overlaps = &bbox_overlaps_stbox;
+    rtree->bbox_adjacent = &bbox_adjacent_stbox;
     rtree->bbox_position = &bbox_position_stbox;
   }
   rtree->bboxtype = bboxtype;
