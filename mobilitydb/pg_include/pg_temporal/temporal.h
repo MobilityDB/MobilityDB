@@ -215,7 +215,7 @@ extern Datum Tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   Temporal * (*func)(const Temporal *, const Temporal *));
 
 extern Datum Tcomp_temporal_base(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, MeosType));
+  Temporal * (*func)(const Temporal *, Datum));
 
 /* Indexing functions */
 
