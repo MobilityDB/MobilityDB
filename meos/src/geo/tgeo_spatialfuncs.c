@@ -1595,16 +1595,10 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   for (i = 0; i < ngeoms; i++)
     lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
 
-  bool success =
-#if GEOS
-    union_dbscan(lwgeoms, ngeoms, uf, tolerance, minpoints,
-      minpoints > 1 ? &is_in_cluster : NULL);
-#else
-    /* The clustering of liblwgeom reaches GEOS only for the index narrowing
-     * the pairs whose distance it computes, which the bounding boxes answer */
-    geo_union_dbscan(lwgeoms, ngeoms, uf, tolerance, (uint32_t) minpoints,
-      minpoints > 1 ? &is_in_cluster : NULL);
-#endif /* GEOS */
+  /* The clustering of liblwgeom reaches GEOS only for the index narrowing
+   * the pairs whose distance it computes, which the bounding boxes answer */
+  bool success = geo_union_dbscan(lwgeoms, ngeoms, uf, tolerance,
+    (uint32_t) minpoints, minpoints > 1 ? &is_in_cluster : NULL);
 
   for (i = 0; i < ngeoms; i++)
     lwgeom_free(lwgeoms[i]);
@@ -1654,96 +1648,38 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
 
   /* TODO short-circuit for one element? */
 
-#if ! GEOS
   /* The clustering of liblwgeom reaches GEOS for the index narrowing the pairs
    * whose intersection it asks about, and for the predicate itself. The
    * bounding boxes answer the narrowing and the native engine answers the
-   * predicate, so a build carrying no GEOS clusters as well as one that does */
+   * predicate */
+  int32_t srid = gserialized_get_srid(geoms[0]);
+  for (i = 1; i < ngeoms; i++)
+    if (! ensure_same_srid(srid, gserialized_get_srid(geoms[i])))
+      return NULL;
+
   LWGEOM **lwgeoms = palloc(ngeoms * sizeof(LWGEOM *));
   for (i = 0; i < ngeoms; i++)
     lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
   LWGEOM **lw_results;
-  uint32_t nclusters_n;
+  uint32_t nclusters;
   bool ok = geo_cluster_intersecting_geoms(lwgeoms, ngeoms, &lw_results,
-    &nclusters_n);
+    &nclusters);
   /* The collections take ownership of the geometries they are built from */
   pfree(lwgeoms);
   if (! ok)
   {
-    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "The clustering of geometries the native engine does not cover is "
-      "answered by the GEOS library, which this build excludes: configure "
-      "with -DGEOS=ON");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error during clustering");
     return NULL;
   }
-  GSERIALIZED **res_n = palloc(nclusters_n * sizeof(GSERIALIZED *));
-  for (i = 0; i < nclusters_n; i++)
+  GSERIALIZED **result = palloc(nclusters * sizeof(GSERIALIZED *));
+  for (i = 0; i < nclusters; i++)
   {
-    res_n[i] = geo_serialize(lw_results[i]);
+    result[i] = geo_serialize(lw_results[i]);
     lwgeom_free(lw_results[i]);
   }
   lwfree(lw_results);
-  *count = (int) nclusters_n;
-  return res_n;
-#else
-  int is3d = 0;
-  uint32_t nclusters, j;
-  int32_t srid = SRID_UNKNOWN;
-  bool gotsrid = false;
-
-  /* Ok, we really need geos now ;) */
-  GEOSContextHandle_t ctx = geos_get_context();
-  GEOSGeometry **geos_inputs = palloc(ngeoms * sizeof(GEOSGeometry *));
-  for (i = 0; i < ngeoms; i++)
-  {
-    is3d = is3d || gserialized_has_z(geoms[i]);
-    geos_inputs[i] = POSTGIS2GEOS(geoms[i]);
-    if (! geos_inputs[i])
-    {
-      lwerror("Geometry could not be converted to GEOS");
-      for (j = 0; j < i; j++)
-        GEOSGeom_destroy_r(ctx, geos_inputs[j]);
-      return NULL;
-    }
-
-    if (! gotsrid)
-    {
-      srid = gserialized_get_srid(geoms[i]);
-      gotsrid = true;
-    }
-    else if (! ensure_same_srid(srid, gserialized_get_srid(geoms[i])))
-    {
-      for (j = 0; j <= i; j++)
-        GEOSGeom_destroy_r(ctx, geos_inputs[j]);
-      return NULL;
-    }
-  }
-
-  /* Perform the clustering */
-  GEOSGeometry **geos_results;
-  if (cluster_intersecting(geos_inputs, ngeoms, &geos_results, &nclusters) !=
-    LW_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-      "clusterintersecting: Error performing clustering");
-    return NULL;
-  }
-  /* Don't need to destroy items because GeometryCollections have taken ownership */
-  pfree(geos_inputs);
-
-  if (!geos_results)
-    return NULL;
-
-  GSERIALIZED **result = palloc(nclusters * sizeof(GSERIALIZED *));
-  for (i = 0; i < nclusters; ++i)
-  {
-    result[i] = GEOS2POSTGIS(geos_results[i], is3d);
-    GEOSGeom_destroy_r(ctx, geos_results[i]);
-  }
-  lwfree(geos_results);
-  *count = nclusters;
+  *count = (int) nclusters;
   return result;
-#endif /* ! GEOS */
 }
 
 /**
@@ -1783,13 +1719,8 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
   LWGEOM **lw_results;
   uint32_t nclusters;
   bool success =
-#if GEOS
-    cluster_within_distance(lwgeoms, ngeoms, tolerance, &lw_results,
-      &nclusters);
-#else
     geo_cluster_within_distance(lwgeoms, ngeoms, tolerance, &lw_results,
       &nclusters);
-#endif /* GEOS */
   /* don't need to destroy items because GeometryCollections have taken ownership */
   pfree(lwgeoms);
 
