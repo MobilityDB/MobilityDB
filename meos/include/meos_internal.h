@@ -1353,6 +1353,18 @@ extern int ever_le_base_temporal(Datum value, const Temporal *temp);
 extern int ever_le_temporal_base(const Temporal *temp, Datum value);
 extern int ever_lt_base_temporal(Datum value, const Temporal *temp);
 extern int ever_lt_temporal_base(const Temporal *temp, Datum value);
+extern Temporal *teq_base_temporal(Datum value, const Temporal *temp);
+extern Temporal *teq_temporal_base(const Temporal *temp, Datum value);
+extern Temporal *tne_base_temporal(Datum value, const Temporal *temp);
+extern Temporal *tne_temporal_base(const Temporal *temp, Datum value);
+extern Temporal *tlt_base_temporal(Datum value, const Temporal *temp);
+extern Temporal *tlt_temporal_base(const Temporal *temp, Datum value);
+extern Temporal *tle_base_temporal(Datum value, const Temporal *temp);
+extern Temporal *tle_temporal_base(const Temporal *temp, Datum value);
+extern Temporal *tgt_base_temporal(Datum value, const Temporal *temp);
+extern Temporal *tgt_temporal_base(const Temporal *temp, Datum value);
+extern Temporal *tge_base_temporal(Datum value, const Temporal *temp);
+extern Temporal *tge_temporal_base(const Temporal *temp, Datum value);
 
 /*****************************************************************************/
 

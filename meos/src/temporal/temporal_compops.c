@@ -722,6 +722,154 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 }
 
 /*****************************************************************************
+ * Temporal comparisons of a temporal value and a base value
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal equality of a base value and a temporal value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+teq_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_eq);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal equality of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ */
+Temporal *
+teq_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_eq);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal difference of a base value and a temporal value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tne_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_ne);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal difference of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ */
+Temporal *
+tne_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_ne);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal less than of a base value and a temporal value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tlt_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_lt);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal less than of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ */
+Temporal *
+tlt_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_lt);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal less than or equal to of a base value and a temporal value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tle_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_le);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal less than or equal to of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ */
+Temporal *
+tle_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_le);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal greater than of a base value and a temporal value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tgt_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_gt);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal greater than of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ */
+Temporal *
+tgt_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_gt);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal greater than or equal to of a base value and a temporal value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tge_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_ge);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal greater than or equal to of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ */
+Temporal *
+tge_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_ge);
+}
+
+/*****************************************************************************
  * Temporal comparisons
  *****************************************************************************/
 
