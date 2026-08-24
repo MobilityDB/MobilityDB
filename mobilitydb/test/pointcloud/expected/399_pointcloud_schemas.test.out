@@ -36,6 +36,29 @@ SELECT ST_AsText(geometry(pcpatch(pcpoint(90, 1, 2, 3),
 
 SELECT pcpoint(90, 1, 2);
 ERROR:  The number of coordinates must be the number of dimensions of the schema 90: 2 vs 3
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (91, 4326, 'none');
+INSERT 0 1
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation) VALUES
+  (91, 1, 'X', 'double'), (91, 2, 'Y', 'double'),
+  (91, 3, 'Z', 'double'), (91, 4, 'Intensity', 'double');
+INSERT 0 4
+SELECT getX(pcpoint(91, ARRAY[1, 2, 3, 40]::float[])),
+  getDim(pcpoint(91, ARRAY[1, 2, 3, 40]::float[]), 'Intensity');
+ getx | getdim 
+------+--------
+    1 |     40
+(1 row)
+
+SELECT ST_AsText(geometry(pcpatch(91, ARRAY[1, 2, 3, 40, 4, 5, 6, 50]::float[])));
+           st_astext            
+--------------------------------
+ MULTIPOINT Z ((1 2 3),(4 5 6))
+(1 row)
+
+SELECT pcpatch(91, ARRAY[1, 2, 3]::float[]);
+ERROR:  The number of coordinates must be a whole number of points of the schema 91: 3 is not a multiple of 4
+DELETE FROM pointcloud_schemas WHERE pcid = 91;
+DELETE 1
 SELECT pcpoint(999, 1, 2, 3);
 ERROR:  No schema registered for pcid 999
 INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES (92, 4326, 'none');

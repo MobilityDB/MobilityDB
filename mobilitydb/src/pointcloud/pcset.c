@@ -45,6 +45,7 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <utils/array.h>
+#include <catalog/pg_type_d.h>  /* FLOAT8OID, without the fmgrprotos of utils/builtins.h */
 /* pgpointcloud */
 #include "pc_api.h"
 /* MEOS */
@@ -88,6 +89,65 @@ Pcpoint_make(PG_FUNCTION_ARGS)
   for (int i = 0; i < count; i++)
     values[i] = PG_GETARG_FLOAT8(i + 1);
   PG_RETURN_PCPOINT_P(pcpoint_make(pcid, values, count));
+}
+
+/**
+ * @brief Return the coordinates a float8 array holds
+ */
+static const double *
+float8arr_extract(ArrayType *array, int *count)
+{
+  if (ARR_ELEMTYPE(array) != FLOAT8OID)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The array must be of float8 values")));
+  if (ARR_NDIM(array) != 1)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The array must have one dimension")));
+  if (ARR_HASNULL(array))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The array must have no null value")));
+  *count = ARR_DIMS(array)[0];
+  return (double *) ARR_DATA_PTR(array);
+}
+
+PGDLLEXPORT Datum Pcpoint_make_coords(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_make_coords);
+/**
+ * @ingroup mobilitydb_pointcloud_base_constructor
+ * @brief Return a pcpoint from a point cloud identifier and the coordinates
+ *   of the dimensions of the schema it names
+ * @sqlfn pcpoint()
+ */
+Datum
+Pcpoint_make_coords(PG_FUNCTION_ARGS)
+{
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  int count;
+  const double *values = float8arr_extract(array, &count);
+  Pcpoint *result = pcpoint_make(pcid, values, count);
+  PG_FREE_IF_COPY(array, 1);
+  PG_RETURN_PCPOINT_P(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_make_coords(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_make_coords);
+/**
+ * @ingroup mobilitydb_pointcloud_base_constructor
+ * @brief Return a pcpatch from a point cloud identifier and the coordinates
+ *   of the points of the schema it names
+ * @sqlfn pcpatch()
+ */
+Datum
+Pcpatch_make_coords(PG_FUNCTION_ARGS)
+{
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  int count;
+  const double *values = float8arr_extract(array, &count);
+  Pcpatch *result = pcpatch_make_coords(pcid, values, count);
+  PG_FREE_IF_COPY(array, 1);
+  PG_RETURN_PCPATCH_P(result);
 }
 
 PGDLLEXPORT Datum Pcpatch_make(PG_FUNCTION_ARGS);

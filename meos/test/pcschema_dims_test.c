@@ -105,6 +105,10 @@ int
 main(void)
 {
   meos_initialize();
+  /* A schema stating no dimensions is reported rather than answered, and the
+   * default handler ends the process on a report, so the error reaches the
+   * caller as an errno instead */
+  meos_initialize_noexit_error_handler();
 
   /* The same schema, stated as its dimensions */
   PCDimensionSpec dims[3] = {
@@ -190,6 +194,25 @@ main(void)
   check(meos_pc_schema_get_ndims(999) == -1, "no schema states no dimensions");
   check(meos_pc_schema_get_compression(999) == NULL,
     "no schema states no compression");
+
+  /* A schema stating NO dimension reaches the constructors only from a caller
+   * that builds one itself: both registration entries refuse it, so nothing a
+   * SQL host can write produces one. The patch constructor divides the count
+   * of coordinates by the number of dimensions, and a zero divisor is
+   * undefined, so it reports the schema instead of dividing by it */
+  PCSCHEMA *empty = pc_schema_new(0);
+  check(empty != NULL, "a schema of no dimensions is built");
+  if (empty)
+  {
+    empty->pcid = 92;
+    meos_pc_schema_register(92, empty);
+    double one = 1.0;
+    meos_errno_reset();
+    check(pcpatch_make_coords(92, &one, 1) == NULL,
+      "a schema of no dimensions builds no patch");
+    check(meos_errno() != 0, "and it reports why");
+    meos_errno_reset();
+  }
 
   printf("%s: %d field(s) disagree\n", failures ? "FAILED" : "PASSED",
     failures);

@@ -196,6 +196,24 @@ SELECT pcpoint(1, 10.0, 20.0, 30.0);
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="pcpoint_coordinates">
+					<indexterm significance="normal"><primary><varname>pcpoint</varname></primary></indexterm>
+					<para>Construye un pcpoint a partir de las coordenadas de cada dimensión de la disposición del esquema, incluidas las dimensiones inactivas, que es como se dan sus valores a un esquema con más dimensiones de las que alcanzan las sobrecargas anteriores. Ese número es el que toma <varname>PC_MakePoint</varname> y NO es el número de dimensiones activas que informa <varname>pointCloudSchemaNDims</varname></para>
+					<para><varname>pcpoint(pcid integer, coordinates float[]) → pcpoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pcpoint(1, ARRAY[10.0, 20.0, 30.0]::float[]);
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpatch_coordinates">
+					<indexterm significance="normal"><primary><varname>pcpatch</varname></primary></indexterm>
+					<para>Construye un pcpatch a partir de las coordenadas de sus puntos, un punto tras otro, dando para cada punto cada dimensión de la disposición del esquema, incluidas las dimensiones inactivas. Ese número es el que toma <varname>PC_MakePatch</varname> y NO es el número de dimensiones activas que informa <varname>pointCloudSchemaNDims</varname>; un número que sea múltiplo del que no corresponde construye un parche de puntos erróneos en lugar de informar un error. Un parche construido así declara él mismo el esquema, al no haber ningún punto del que leerlo</para>
+					<para><varname>pcpatch(pcid integer, coordinates float[]) → pcpatch</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pcpatch(1, ARRAY[1.0, 1.0, 1.0, 2.0, 2.0, 2.0]::float[]);
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="pcpatch_variadic">
 					<indexterm significance="normal"><primary><varname>pcpatch</varname></primary></indexterm>
 					<para>Construye un pcpatch a partir de una lista variádica de pcpoints que comparten el mismo pcid</para>

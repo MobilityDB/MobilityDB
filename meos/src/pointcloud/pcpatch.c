@@ -256,6 +256,78 @@ pcpatch_as_hexwkb(const Pcpatch *pa)
 
 /**
  * @ingroup meos_pointcloud_base_constructor
+ * @brief Return a pcpatch from the coordinates of its points
+ * @param[in] pcid Point cloud identifier naming the schema
+ * @param[in] values Coordinate of each dimension of each point, one point
+ *   after another, in the order the schema states the dimensions
+ * @param[in] count Number of coordinates, a whole number of points
+ * @return On error return @p NULL
+ * @note The schema is resolved through the MEOS cache, so a schema stated in
+ *   SQL and one parsed from an XML document build a value alike.
+ * @csqlfn #Pcpatch_make_coords()
+ */
+Pcpatch *
+pcpatch_make_coords(uint32_t pcid, const double *values, int count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  const PCSCHEMA *schema = meos_pc_schema(pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pcid);
+    return NULL;
+  }
+  int ndims = (int) schema->ndims;
+  /* A schema states at least one dimension, so a caller reaching this with
+   * none has built one outside the registration entries, which validate it.
+   * The count below divides by this, and a zero divisor is undefined */
+  if (ndims < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The schema %u states no dimensions", pcid);
+    return NULL;
+  }
+  if (count % ndims != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The number of coordinates must be a whole number of points of the "
+      "schema %u: %d is not a multiple of %d", pcid, count, ndims);
+    return NULL;
+  }
+
+  int npoints = count / ndims;
+  PCPOINTLIST *pl = pc_pointlist_make(npoints);
+  for (int i = 0; i < npoints; i++)
+  {
+    PCPOINT *pt = pc_point_from_double_array(schema, (double *) values,
+      (uint32_t) (i * ndims), (uint32_t) ndims);
+    if (! pt)
+    {
+      pc_pointlist_free(pl);
+      return NULL;
+    }
+    pc_pointlist_add_point(pl, pt);
+  }
+  PCPATCH *pa = pc_patch_from_pointlist(pl);
+  pc_pointlist_free(pl);
+  if (! pa)
+    return NULL;
+  Pcpatch *result = (Pcpatch *) meos_pc_patch_serialize(pa, NULL);
+  pc_patch_free(pa);
+  if (! result)
+    return NULL;
+  /* Zero the reserved tail described at the top of this file so that two
+   * patches holding the same points hold the same bytes */
+  size_t meaningful = pcpatch_meaningful_size(result);
+  memset(((uint8_t *) result) + meaningful, 0, VARSIZE(result) - meaningful);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_base_constructor
  * @brief Return a pcpatch from an array of pcpoints
  * @param[in] points Array of points, all of the same schema
  * @param[in] count Number of points

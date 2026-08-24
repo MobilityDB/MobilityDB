@@ -198,6 +198,24 @@ SELECT pcpoint(1, 10.0, 20.0, 30.0);
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="pcpoint_coordinates">
+					<indexterm significance="normal"><primary><varname>pcpoint</varname></primary></indexterm>
+					<para>Build a pcpoint from the coordinates of every dimension of the layout of the schema, inactive dimensions included, which is how a schema of more dimensions than the overloads above reach is given its values. That count is the one <varname>PC_MakePoint</varname> takes and is NOT the count of active dimensions that <varname>pointCloudSchemaNDims</varname> reports</para>
+					<para><varname>pcpoint(pcid integer, coordinates float[]) → pcpoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pcpoint(1, ARRAY[10.0, 20.0, 30.0]::float[]);
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpatch_coordinates">
+					<indexterm significance="normal"><primary><varname>pcpatch</varname></primary></indexterm>
+					<para>Build a pcpatch from the coordinates of its points, one point after another, every dimension of the layout of the schema given for each point, inactive dimensions included. That count is the one <varname>PC_MakePatch</varname> takes and is NOT the count of active dimensions that <varname>pointCloudSchemaNDims</varname> reports; a count that divides evenly by the wrong one of the two builds a patch of the wrong points rather than reporting an error. A patch built this way states the schema itself, there being no point to read it from</para>
+					<para><varname>pcpatch(pcid integer, coordinates float[]) → pcpatch</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pcpatch(1, ARRAY[1.0, 1.0, 1.0, 2.0, 2.0, 2.0]::float[]);
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="pcpatch_variadic">
 					<indexterm significance="normal"><primary><varname>pcpatch</varname></primary></indexterm>
 					<para>Build a pcpatch from a variadic list of pcpoints sharing the same pcid</para>
