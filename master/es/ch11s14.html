@@ -1,8 +1,6 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones espaciales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch11.html" title="Capítulo 11. Puntos de red temporales"><link rel="prev" href="ch11s13.html" title="Operaciones de cuadro delimitador"><link rel="next" href="ch11s15.html" title="Comparaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones espaciales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 11. Puntos de red temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch11s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_spatial_rels"></a>Relaciones espaciales</h2></div></div></div><p>
-			Las relaciones topológicas y de distancia descritas en <a class="xref" href="ch08s05.html" title="Relaciones espaciales">“Relaciones espaciales”</a>, como <code class="varname">eIntersects</code>, <code class="varname">aDwithin</code> o <code class="varname">tContains</code>, se definen en el espacio geográfico, mientras que los puntos de la red temporal se definen en el espacio de la red. Cada una de estas relaciones también acepta directamente un argumento <code class="varname">tnpoint</code>: internamente, cada operando de punto de red se convierte en un punto geométrico temporal mediante la conversión estándar <code class="varname">tnpoint::tgeompoint</code> (el punto resuelto a lo largo de su ruta) y luego en <code class="varname">tgeometry</code>, y la relación <code class="varname">tgeometry</code> correspondiente calcula el resultado, exactamente como si la conversión se hubiera escrito manualmente.
-		</p><p>
-			Dado que el objetivo de la delegación, <code class="varname">tgeometry</code>, solo admite interpolación escalonada, un argumento <code class="varname">tnpoint</code> de secuencia con varios instantes debe usar interpolación escalonada (<code class="varname">Interp=Step;...</code>); una secuencia con la interpolación lineal predeterminada produce un error en la conversión implícita, la misma restricción ya vigente al convertir un <code class="varname">tgeompoint</code>/<code class="varname">tgeogpoint</code> lineal en <code class="varname">tgeometry</code>/<code class="varname">tgeography</code>. Un único instante no tiene interpolación y no se ve afectado.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_espatialrels"></a><a class="indexterm" name="id8351"></a><a class="indexterm" name="id8354"></a><a class="indexterm" name="id8357"></a><p>Relaciones alguna vez y siempre</p><pre class="programlisting">
+			Las relaciones topológicas y de distancia descritas en <a class="xref" href="ch08s05.html" title="Relaciones espaciales">“Relaciones espaciales”</a>, como <code class="varname">eIntersects</code>, <code class="varname">aDwithin</code> o <code class="varname">tContains</code>, se definen en el espacio geográfico, mientras que los puntos de la red temporal se definen en el espacio de la red. Cada una de estas relaciones también acepta directamente un argumento <code class="varname">tnpoint</code>: cada operando de punto de red se convierte en un punto geométrico temporal mediante la conversión estándar <code class="varname">tnpoint::tgeompoint</code> (el punto resuelto a lo largo de su ruta) y la relación correspondiente del punto geométrico temporal calcula el resultado, exactamente como si la conversión se hubiera escrito manualmente. Una secuencia conserva la interpolación que lleva, de modo que una con la interpolación lineal predeterminada se responde a lo largo de su ruta y no solo en sus instantes.
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_espatialrels"></a><a class="indexterm" name="id8341"></a><a class="indexterm" name="id8344"></a><a class="indexterm" name="id8347"></a><p>Relaciones alguna vez y siempre</p><pre class="programlisting">
 SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint 'Npoint(1, 0.1)@2001-01-01');
 -- false
@@ -13,15 +11,25 @@ SELECT eIntersects(
   tnpoint 'Npoint(1, 0.1)@2001-01-01',
   tnpoint 'Npoint(2, 0.0)@2001-01-01');
 -- false
-</pre></li><li class="listitem"><a name="tnpoint_tspatialrels"></a><a class="indexterm" name="id8363"></a><a class="indexterm" name="id8366"></a><a class="indexterm" name="id8369"></a><p>Relaciones espaciotemporales</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_tspatialrels"></a><a class="indexterm" name="id8353"></a><a class="indexterm" name="id8356"></a><a class="indexterm" name="id8359"></a><a class="indexterm" name="id8362"></a><a class="indexterm" name="id8365"></a><a class="indexterm" name="id8368"></a><p>Las relaciones <span class="emphasis"><em>temporales</em></span> calculan la relación topológica o de distancia en cada instante y dan como resultado un <code class="varname">tbool</code>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción. El punto de red temporal declara las relaciones que responde un punto en movimiento: <code class="varname">tContains</code> y <code class="varname">tCovers</code> toman la geometría en primer lugar únicamente, y <code class="varname">tTouches</code> no tiene dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</p><p><code class="varname">tContains(geometry,tnpoint) → tbool</code></p><p><code class="varname">tCovers(geometry,tnpoint) → tbool</code></p><p><code class="varname">tDisjoint({geometry,tnpoint},{geometry,tnpoint}) → tbool</code></p><p><code class="varname">tDwithin({geometry,tnpoint},{geometry,tnpoint},float) → tbool</code></p><p><code class="varname">tIntersects({geometry,tnpoint},{geometry,tnpoint}) → tbool</code></p><p><code class="varname">tTouches(geometry,tnpoint) → tbool</code></p><p><code class="varname">tTouches(tnpoint,geometry) → tbool</code></p><pre class="programlisting">
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
--- [f@2001-01-01, f@2001-01-03]
+  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
+-- {[f@2001-01-01, f@2001-01-03]}
+SELECT tCovers(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tnpoint 'Npoint(1, 0.1)@2001-01-01');
+-- f@2001-01-01
 SELECT tDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
-  tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
--- [t@2001-01-01, t@2001-01-03]
-SELECT tDwithin(
-  tnpoint 'Interp=Step;[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
-  tnpoint 'Interp=Step;[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
--- [f@2001-01-01, f@2001-01-03]
+  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
+-- {[t@2001-01-01, t@2001-01-03]}
+SELECT tTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01',
+  geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))');
+-- f@2001-01-01
+SELECT tIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
+  tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.1)@2001-01-03]');
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
+SELECT tDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
+  tnpoint '[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
+/* {[f@2001-01-01, t@2001-01-01 22:19:04.400634+00,
+  t@2001-01-02 01:40:55.599365+00], (f@2001-01-02 01:40:55.599365+00,
+  f@2001-01-03]} */
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s13.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s15.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de cuadro delimitador </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Comparaciones</td></tr></table></div></body></html>

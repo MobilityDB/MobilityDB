@@ -1,6 +1,6 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones espaciales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales"><link rel="prev" href="ch13s13.html" title="Operaciones de distancia"><link rel="next" href="ch13s15.html" title="Comparaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones espaciales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch13s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_spatial_rels"></a>Relaciones espaciales</h2></div></div></div><p>
-			Las relaciones topológicas y de distancia descritas en la <a class="xref" href="ch08s05.html" title="Relaciones espaciales">“Relaciones espaciales”</a> tales como <code class="varname">eIntersects</code>, <code class="varname">aDwithin</code> o <code class="varname">tContains</code> solo consideran la ubicación de las geometrías, no su orientación. Para poder aplicar estas relaciones espaciales a las poses temporales, se deben transformar a puntos geométricos temporales. Esto se puede realizar fácilmente utilizando las funciones <code class="varname">geometry</code> y <code class="varname">tgeompoint</code> o utilizando un casting explícito <code class="varname">::</code> como se muestra en los ejemplos a continuación.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_espatialrels"></a><a class="indexterm" name="id10305"></a><a class="indexterm" name="id10308"></a><a class="indexterm" name="id10311"></a><p>Relaciones alguna vez y siempre</p><pre class="programlisting">
+			Las relaciones topológicas y de distancia descritas en la <a class="xref" href="ch08s05.html" title="Relaciones espaciales">“Relaciones espaciales”</a> tales como <code class="varname">eIntersects</code>, <code class="varname">aDwithin</code> o <code class="varname">tContains</code> solo consideran la ubicación de un valor, no su orientación. Una pose temporal las acepta directamente y las responde en la posición que ocupa su pose, que es el punto que nombra el destino de conversión <code class="varname">tgeompoint</code>. Las funciones <code class="varname">geometry</code> y <code class="varname">tgeompoint</code> y los castings explícitos <code class="varname">::</code> correspondientes siguen disponibles cuando lo que se quiere es la geometría misma.
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_espatialrels"></a><a class="indexterm" name="id10324"></a><a class="indexterm" name="id10327"></a><a class="indexterm" name="id10330"></a><p>Relaciones alguna vez y siempre</p><pre class="programlisting">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
 -- true
@@ -11,16 +11,25 @@ SELECT eIntersects(
   tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'::tgeompoint,
   tpose '[Pose(Point(2 2),0.0)@2001-01-01, Pose(Point(2 2),1)@2001-01-03)'::tgeompoint);
 -- false
-</pre></li><li class="listitem"><a name="tpose_tspatialrels"></a><a class="indexterm" name="id10317"></a><a class="indexterm" name="id10320"></a><a class="indexterm" name="id10323"></a><p>Relaciones espaciotemporales</p><pre class="programlisting">
-SELECT tContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
--- {[t@2001-01-01, t@2001-01-03)}
-SELECT tDisjoint(geometry(pose 'Pose(Point(2 2), 0.0)'),
-  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
--- [t@2001-01-01, t@2001-01-03)
-SELECT tDwithin(
- tpose '[Pose(Point(1 1),0.3)@2001-01-01,Pose(Point(1 1),0.5)@2001-01-03)'::tgeompoint, 
- tpose '[Pose(Point(1 1),0.5)@2001-01-01,Pose(Point(3 3),0.3)@2001-01-03)'::tgeompoint,1);
-/* {[t@2001-01-01 00:00:00+01, t@2001-01-01 16:58:14.025894+01],
-  (f@2001-01-01 16:58:14.025894+01, f@2001-01-03 00:00:00+01)} */
+</pre></li><li class="listitem"><a name="tpose_tspatialrels"></a><a class="indexterm" name="id10336"></a><a class="indexterm" name="id10339"></a><a class="indexterm" name="id10342"></a><a class="indexterm" name="id10345"></a><a class="indexterm" name="id10348"></a><a class="indexterm" name="id10351"></a><p>Las relaciones <span class="emphasis"><em>temporales</em></span> calculan la relación topológica o de distancia en cada instante y dan como resultado un <code class="varname">tbool</code>. Una pose temporal las responde en la posición que ocupa, de modo que un valor con interpolación lineal se responde a lo largo de su trayectoria y no solo en sus instantes. La pose temporal declara las relaciones que responde un punto en movimiento: <code class="varname">tContains</code> y <code class="varname">tCovers</code> toman la geometría en primer lugar únicamente, y <code class="varname">tTouches</code> no tiene dirección entre dos poses temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</p><p><code class="varname">tContains(geometry,tpose) → tbool</code></p><p><code class="varname">tCovers(geometry,tpose) → tbool</code></p><p><code class="varname">tDisjoint({geometry,tpose},{geometry,tpose}) → tbool</code></p><p><code class="varname">tDwithin({geometry,tpose},{geometry,tpose},float) → tbool</code></p><p><code class="varname">tIntersects({geometry,tpose},{geometry,tpose}) → tbool</code></p><p><code class="varname">tTouches(geometry,tpose) → tbool</code></p><p><code class="varname">tTouches(tpose,geometry) → tbool</code></p><pre class="programlisting">
+SELECT tIntersects(tpose '[Pose(Point(1 1), 0.1)@2001-01-01,
+  Pose(Point(3 3), 0.1)@2001-01-03]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- {[t@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
+SELECT tDisjoint(tpose '[Pose(Point(1 1), 0.1)@2001-01-01,
+  Pose(Point(3 3), 0.1)@2001-01-03]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03]}
+SELECT tContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tpose 'Pose(Point(0 0), 0.1)@2001-01-01');
+-- f@2001-01-01
+SELECT tCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tpose 'Pose(Point(0 0), 0.1)@2001-01-01');
+-- t@2001-01-01
+SELECT tTouches(tpose 'Pose(Point(0 0), 0.1)@2001-01-01',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- t@2001-01-01
+SELECT tDwithin(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
+  Pose(Point(1 1),0.5)@2001-01-03)', tpose '[Pose(Point(1 1),0.5)@2001-01-01,
+  Pose(Point(3 3),0.3)@2001-01-03)', 1);
+/* {[t@2001-01-01, t@2001-01-01 16:58:14.025894+00],
+  (f@2001-01-01 16:58:14.025894+00, f@2001-01-03)} */
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s13.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s15.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de distancia </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Comparaciones</td></tr></table></div></body></html>
