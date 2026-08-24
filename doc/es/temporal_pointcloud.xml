@@ -42,6 +42,36 @@ INSERT INTO pointcloud_dimensions
 </programlisting>
 			<para>El tamaño de cada dimensión y su desplazamiento dentro de un punto no aparecen porque se derivan de la interpretación, y las dimensiones X, Y, Z y M tampoco porque se resuelven a partir de los nombres. La columna <varname>position</varname> declara el orden en el que se almacenan las dimensiones, de modo que no depende del orden en el que se insertan las filas. Un esquema es global a la base de datos y suele registrarse una sola vez, al cargar los datos; el SRID es por esquema y lo heredan todos los valores que llevan ese <varname>pcid</varname>.</para>
 			<para>Una base de datos cuyos esquemas ya están registrados en el catálogo <varname>pointcloud_formats</varname> de pgPointCloud, como documento XML, sigue funcionando: ese catálogo se lee para un <varname>pcid</varname> que las dos tablas anteriores no declaren.</para>
+			<para>Tres funciones auxiliares responden lo que declara un <varname>pcid</varname> sin disponer de un valor de ese esquema y sin depender de la disposición de las tablas. Cada una responde <varname>NULL</varname> para un <varname>pcid</varname> que ningún esquema declara.</para>
+			<itemizedlist>
+				<listitem xml:id="pointcloud_schema_srid">
+					<indexterm significance="normal"><primary><varname>pointCloudSchemaSRID</varname></primary></indexterm>
+					<para>Devuelve el sistema de referencia espacial en el que se expresa todo valor de un esquema</para>
+					<para><varname>pointCloudSchemaSRID(integer) &#x2192; integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pointCloudSchemaSRID(1);
+-- 4326
+</programlisting>
+				</listitem>
+				<listitem xml:id="pointcloud_schema_compression">
+					<indexterm significance="normal"><primary><varname>pointCloudSchemaCompression</varname></primary></indexterm>
+					<para>Devuelve cómo se almacena un parche de un esquema</para>
+					<para><varname>pointCloudSchemaCompression(integer) &#x2192; text</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pointCloudSchemaCompression(1);
+-- none
+</programlisting>
+				</listitem>
+				<listitem xml:id="pointcloud_schema_ndims">
+					<indexterm significance="normal"><primary><varname>pointCloudSchemaNDims</varname></primary></indexterm>
+					<para>Devuelve cuántas dimensiones de un esquema contienen valores</para>
+					<para><varname>pointCloudSchemaNDims(integer) &#x2192; integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pointCloudSchemaNDims(1);
+-- 3
+</programlisting>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2 xml:id="tpointcloud_quickstart_construct">

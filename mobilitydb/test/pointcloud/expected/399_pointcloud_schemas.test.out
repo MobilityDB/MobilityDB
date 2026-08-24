@@ -34,6 +34,40 @@ INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
   (91, 1, 'X', 'double');
 ERROR:  insert or update on table "pointcloud_dimensions" violates foreign key constraint "pointcloud_dimensions_pcid_fkey"
 DETAIL:  Key (pcid)=(91) is not present in table "pointcloud_schemas".
+SELECT pointCloudSchemaSRID(90), pointCloudSchemaCompression(90),
+  pointCloudSchemaNDims(90);
+ pointcloudschemasrid | pointcloudschemacompression | pointcloudschemandims 
+----------------------+-----------------------------+-----------------------
+                 4326 | none                        |                     3
+(1 row)
+
+UPDATE pointcloud_schemas SET compression = 'dimensional' WHERE pcid = 90;
+UPDATE 1
+SELECT pointCloudSchemaCompression(90);
+ pointcloudschemacompression 
+-----------------------------
+ dimensional
+(1 row)
+
+UPDATE pointcloud_schemas SET compression = 'none' WHERE pcid = 90;
+UPDATE 1
+UPDATE pointcloud_dimensions SET active = false WHERE pcid = 90 AND position = 3;
+UPDATE 1
+SELECT pointCloudSchemaNDims(90);
+ pointcloudschemandims 
+-----------------------
+                     2
+(1 row)
+
+UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND position = 3;
+UPDATE 1
+SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,
+  pointCloudSchemaNDims(999) AS unknown_ndims;
+ unknown_srid | unknown_ndims 
+--------------+---------------
+ t            |              
+(1 row)
+
 DELETE FROM pointcloud_schemas WHERE pcid = 90;
 DELETE 1
 SELECT count(*) FROM pointcloud_dimensions WHERE pcid = 90;

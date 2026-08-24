@@ -55,6 +55,24 @@ INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
 INSERT INTO pointcloud_dimensions (pcid, position, name, interpretation) VALUES
   (91, 1, 'X', 'double');
 
+-- What a pcid names is answered without a value of that schema in hand
+SELECT pointCloudSchemaSRID(90), pointCloudSchemaCompression(90),
+  pointCloudSchemaNDims(90);
+
+-- The lookups answer what the rows state, so an edit is seen
+UPDATE pointcloud_schemas SET compression = 'dimensional' WHERE pcid = 90;
+SELECT pointCloudSchemaCompression(90);
+UPDATE pointcloud_schemas SET compression = 'none' WHERE pcid = 90;
+
+-- A dimension that holds no value is not counted
+UPDATE pointcloud_dimensions SET active = false WHERE pcid = 90 AND position = 3;
+SELECT pointCloudSchemaNDims(90);
+UPDATE pointcloud_dimensions SET active = true WHERE pcid = 90 AND position = 3;
+
+-- An unregistered pcid answers NULL rather than erroring
+SELECT pointCloudSchemaSRID(999) IS NULL AS unknown_srid,
+  pointCloudSchemaNDims(999) AS unknown_ndims;
+
 -- The dimensions of a schema go when the schema goes
 DELETE FROM pointcloud_schemas WHERE pcid = 90;
 SELECT count(*) FROM pointcloud_dimensions WHERE pcid = 90;
