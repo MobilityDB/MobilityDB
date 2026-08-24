@@ -265,14 +265,53 @@ buffer_make_arc(int32_t srid, double cx, double cy, double radius,
 /**
  * @brief Add a straight segment to a compound curve
  */
+/* Defined with the ring walk that shares its question of node identity */
+static bool buffer_points_equal(POINT2D p1, POINT2D p2);
+
+/**
+ * @brief Write a piece's start as the point the curve already ends at
+ * @details The walk decides that two pieces meet by #buffer_points_equal, at
+ * the tolerance the buffer places a node to, and #lwcompound_add_lwgeom
+ * decides it AGAIN by liblwgeom's own `FP_EQUALS` -- an ABSOLUTE 1e-12 on a
+ * coordinate, a thousand times finer than the last bit of a projected 6.4e6.
+ * Two computations of one node therefore join for the walk and not for the
+ * compound, which REFUSES the component; the refusal is a return value the
+ * callers drop, so the piece leaves the ring without a word and the boundary
+ * closes across the gap it left. Writing the shared node ONCE -- the
+ * coordinates the curve already carries -- makes the two agree by
+ * construction, which is what one node means
+ */
+static void
+buffer_snap_to_curve_end(const LWCOMPOUND *curve, POINT2D *point)
+{
+  assert(curve); assert(point);
+  if (curve->ngeoms == 0)
+    return;
+  /* A compound carries lines and circular strings, which hold their points
+   * the same way, and this reads only the last of them */
+  const LWLINE *prev = (const LWLINE *) curve->geoms[curve->ngeoms - 1];
+  if (! prev || ! prev->points || prev->points->npoints == 0)
+    return;
+  POINT4D last;
+  getPoint4d_p(prev->points, prev->points->npoints - 1, &last);
+  POINT2D end;
+  end.x = last.x;
+  end.y = last.y;
+  if (buffer_points_equal(end, *point))
+    *point = end;
+  return;
+}
+
 static void
 buffer_add_segment(LWCOMPOUND *curve, int32_t srid, POINT2D p1, POINT2D p2)
 {
   assert(curve);
+  buffer_snap_to_curve_end(curve, &p1);
   if (hypot(p2.x - p1.x, p2.y - p1.y) <= MEOS_GEOM_TOLERANCE)
     return;
   LWLINE *line = buffer_make_segment(srid, p1, p2);
-  lwcompound_add_lwgeom(curve, lwline_as_lwgeom(line));
+  if (lwcompound_add_lwgeom(curve, lwline_as_lwgeom(line)) != LW_SUCCESS)
+    lwline_free(line);
 }
 
 /**
@@ -296,15 +335,25 @@ buffer_add_arc(LWCOMPOUND *curve, int32_t srid, double cx, double cy,
   if (count < 1)
     count = 1;
   double delta = sweep / (double) count;
+  POINT2D first;
+  const POINT2D *snapped = start;
+  if (start)
+  {
+    first = *start;
+    buffer_snap_to_curve_end(curve, &first);
+    snapped = &first;
+  }
   for (int i = 0; i < count; i++)
   {
     double a0 = ccw ? start_angle + delta * i : start_angle - delta * i;
     double a1 = ccw ? start_angle + delta * (i + 1) : 
       start_angle - delta * (i + 1);
     LWCIRCSTRING *arc = buffer_make_arc(srid, cx, cy, radius, a0, a1, ccw,
-      i == 0 ? start : NULL, i == count - 1 ? end : NULL);
-    if (arc)
-      lwcompound_add_lwgeom(curve, lwcircstring_as_lwgeom(arc));
+      i == 0 ? snapped : NULL, i == count - 1 ? end : NULL);
+    if (arc &&
+        lwcompound_add_lwgeom(curve, lwcircstring_as_lwgeom(arc)) !=
+          LW_SUCCESS)
+      lwcircstring_free(arc);
   }
 }
 
@@ -1788,33 +1837,25 @@ buffer_piece_contains_point(const BufferPiece *piece, POINT2D *point)
 {
   assert(piece); assert(point);
   if (piece->type == BUFFER_SEGMENT)
-  {
-    double dx = piece->x2 - piece->x1;
-    double dy = piece->y2 - piece->y1;
-    double px = point->x - piece->x1;
-    double py = point->y - piece->y1;
-    /* Collinearity test */
-    double cross = buffer_cross(dx, dy, px, py);
-    double scale = fmax(1.0, hypot(dx, dy) * hypot(px, py));
-    if (fabs(cross) > MEOS_GEOM_TOLERANCE * scale)
-      return false;
-    /* Bounding-box test */
-    if (point->x < fmin(piece->x1, piece->x2) - MEOS_GEOM_TOLERANCE ||
-        point->x > fmax(piece->x1, piece->x2) + MEOS_GEOM_TOLERANCE ||
-        point->y < fmin(piece->y1, piece->y2) - MEOS_GEOM_TOLERANCE ||
-        point->y > fmax(piece->y1, piece->y2) + MEOS_GEOM_TOLERANCE)
-      return false;
-    return true;
-  }
+    /* The node the splitter asks about was placed by the arithmetic of the
+     * boundary that produced it, so it lies off the piece by the rounding of
+     * ITS OWN COORDINATES rather than by the size of the piece. Bounding the
+     * collinearity by the piece's local lengths asks a node at a projected
+     * 6.4e6 to be collinear to 1e-12 of a metre, which is a thousand times
+     * finer than the last bit of the coordinates it is built from */
+    return point_on_segment(point->x, point->y, piece->x1, piece->y1,
+      piece->x2, piece->y2);
 
   if (piece->type == BUFFER_ARC)
   {
     double dx = point->x - piece->cx;
     double dy = point->y - piece->cy;
     double distance = hypot(dx, dy);
-    /* First check that the point is on the supporting circle */
+    /* The radial distance is read from the coordinates of the point and of
+     * the centre, so it carries their rounding and not the arc's radius */
     if (fabs(distance - piece->radius) >
-        MEOS_GEOM_TOLERANCE * fmax(1.0, piece->radius))
+        fmax(coordinate_tolerance(point->x, piece->cx),
+          coordinate_tolerance(point->y, piece->cy)))
       return false;
     /* Then check that its angle lies within the finite arc */
     return buffer_point_on_arc(piece, point->x, point->y);
