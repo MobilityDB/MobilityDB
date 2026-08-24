@@ -6108,15 +6108,24 @@ relate_union_edges(const LWGEOM *geom)
 
 /**
  * @brief Return the edges a DE-9IM cell is computed on
- * @details Every geometry answers with its own edges, except a collection,
- * whose topology is that of the union of its components
+ * @details Every geometry answers with its own edges, except a value holding
+ * several components, whose topology is that of their union. Two members of a
+ * multipolygon may share a boundary edge -- edge-adjacent polygons are a valid
+ * multipolygon -- and that edge lies in the interior of what they cover
+ * together, so reading the members' own edges reports it as boundary
  */
 static MeosArray *
 relate_extract_edges(const LWGEOM *geom)
 {
-  if (geom->type == COLLECTIONTYPE)
-    return relate_union_edges(geom);
-  return geom_extract_edges(geom);
+  switch (geom->type)
+  {
+    case MULTIPOLYGONTYPE:
+    case MULTISURFACETYPE:
+    case COLLECTIONTYPE:
+      return relate_union_edges(geom);
+    default:
+      return geom_extract_edges(geom);
+  }
 }
 
 /*****************************************************************************

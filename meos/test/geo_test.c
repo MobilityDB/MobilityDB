@@ -610,6 +610,20 @@ int main(void)
   assert(meos_errno() == 0);
   meos_errno_reset();
 
+  /* Two members of a multipolygon may share a boundary edge, and that edge
+   * lies in the INTERIOR of what they cover together. The same region written
+   * as one polygon is the control: both must report a line running along that
+   * edge as meeting their interior */
+  GSERIALIZED *adjmp = geom_in("MULTIPOLYGON(((0 0,0 1,1 1,0 0)),"
+    "((0 0,1 1,1 0,0 0)))", -1);
+  GSERIALIZED *adjsq = geom_in("POLYGON((0 0,0 1,1 1,1 0,0 0))", -1);
+  GSERIALIZED *diag = geom_in("LINESTRING(0 0,2 2)", -1);
+  assert(geom_relate_pattern(adjmp, diag, "1********") == true);
+  assert(geom_relate_pattern(adjsq, diag, "1********") == true);
+  printf("the members of a multipolygon share the interior they cover\n");
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 
