@@ -2618,8 +2618,11 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
     int32_t xml_len = int32_from_wkb_state(s);
     assert(xml_len >= 0);
     wkb_parse_state_check(s, (size_t) xml_len);
-    /* Only parse + register if we don't already have it cached. */
-    if (meos_pc_schema((uint32_t) pcid_in) == NULL)
+    /* Only parse + register if we don't already have it cached. Asking
+     * through the resolution that answers a miss is what makes the blob's own
+     * schema reach the parse below: the reader is here precisely because the
+     * pcid may be one this process does not know. */
+    if (meos_pc_schema_lookup((uint32_t) pcid_in) == NULL)
     {
       char *xml = palloc((size_t) xml_len + 1);
       memcpy(xml, s->pos, (size_t) xml_len);

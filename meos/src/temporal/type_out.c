@@ -73,6 +73,7 @@
 #endif
 #if POINTCLOUD
   #include <meos_pointcloud.h>            /* meos_pc_schema_xml */
+  #include "pointcloud/meos_schema_hook.h"
   #include "pointcloud/pcpoint.h"
   #include "pointcloud/pcpatch.h"
 #endif
@@ -2910,8 +2911,10 @@ pcschema_header_to_wkb_size(const Temporal *temp)
    * schema, registering its XML. A passive lookup here would then answer NULL
    * while the writer, running after that resolution, answers with the XML and
    * emits a header of bytes nobody reserved. Resolve the schema here so both
-   * passes see the same answer, whichever it is. */
-  (void) meos_pc_schema(pcid);
+   * passes see the same answer, whichever it is — through the resolution that
+   * answers a miss rather than stating it, since a header carrying a schema is
+   * exactly what a value whose schema does not resolve does not have. */
+  (void) meos_pc_schema_lookup(pcid);
   const char *xml = meos_pc_schema_xml(pcid);
   if (xml == NULL)
     return 0;

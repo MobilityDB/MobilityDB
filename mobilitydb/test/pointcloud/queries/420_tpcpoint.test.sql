@@ -344,3 +344,18 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 SELECT splitEachNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 
 -------------------------------------------------------------------------------
+-- A value whose pcid names no schema
+-- A pcpoint carries a pcid, its coordinates and nothing about its own
+-- layout, so which dimensions it holds and what a stored number means as a
+-- coordinate are stated by the schema that pcid resolves to. A value naming
+-- a pcid no pointcloud_formats row declares is still read from its
+-- serialized form and written back to it, because neither reads the schema;
+-- a question that must decode a coordinate reports the schema it did not
+-- find.
+-------------------------------------------------------------------------------
+
+SELECT tpcpoint '2300000063000000000000000000F03F00000000000000400000000000000840000000@2024-01-01';
+SELECT tpcpoint '2300000063000000000000000000F03F00000000000000400000000000000840000000@2024-01-01' &&
+  tpcbox_xt(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 99, 0);
+
+-------------------------------------------------------------------------------

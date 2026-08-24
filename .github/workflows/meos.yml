@@ -115,6 +115,12 @@ jobs:
           # built and installed above.
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o raster_test raster_test.c -L/usr/local/lib -lmeos
           ./raster_test
+          # What a program with no pgPointCloud catalog can do with a point
+          # cloud value, and what it cannot, is a property only a program
+          # outside PostgreSQL can check: the PostgreSQL suite always has the
+          # catalog. The POINTCLOUD family is built and installed above.
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tpointcloud_test tpointcloud_test.c -L/usr/local/lib -lmeos
+          ./tpointcloud_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geopose_test geopose_test.c -L/usr/local/lib -lmeos
           ./geopose_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o numeric_test numeric_test.c -L/usr/local/lib -lmeos
