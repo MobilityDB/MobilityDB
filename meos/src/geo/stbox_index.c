@@ -182,52 +182,52 @@ stbox_gist_inner_consistent(const STBox *key, const STBox *query,
         return true;
       return overlaps_stbox_stbox(key, query);
     case RTLeftStrategyNumber:
-      retval = !overright_stbox_stbox(key, query);
+      retval = ! overright_stbox_stbox(key, query);
       break;
     case RTOverLeftStrategyNumber:
-      retval = !right_stbox_stbox(key, query);
+      retval = ! right_stbox_stbox(key, query);
       break;
     case RTRightStrategyNumber:
-      retval = !overleft_stbox_stbox(key, query);
+      retval = ! overleft_stbox_stbox(key, query);
       break;
     case RTOverRightStrategyNumber:
-      retval = !left_stbox_stbox(key, query);
+      retval = ! left_stbox_stbox(key, query);
       break;
     case RTBelowStrategyNumber:
-      retval = !overabove_stbox_stbox(key, query);
+      retval = ! overabove_stbox_stbox(key, query);
       break;
     case RTOverBelowStrategyNumber:
-      retval = !above_stbox_stbox(key, query);
+      retval = ! above_stbox_stbox(key, query);
       break;
     case RTAboveStrategyNumber:
-      retval = !overbelow_stbox_stbox(key, query);
+      retval = ! overbelow_stbox_stbox(key, query);
       break;
     case RTOverAboveStrategyNumber:
-      retval = !below_stbox_stbox(key, query);
+      retval = ! below_stbox_stbox(key, query);
       break;
     case RTFrontStrategyNumber:
-      retval = !overback_stbox_stbox(key, query);
+      retval = ! overback_stbox_stbox(key, query);
       break;
     case RTOverFrontStrategyNumber:
-      retval = !back_stbox_stbox(key, query);
+      retval = ! back_stbox_stbox(key, query);
       break;
     case RTBackStrategyNumber:
-      retval = !overfront_stbox_stbox(key, query);
+      retval = ! overfront_stbox_stbox(key, query);
       break;
     case RTOverBackStrategyNumber:
-      retval = !front_stbox_stbox(key, query);
+      retval = ! front_stbox_stbox(key, query);
       break;
     case RTBeforeStrategyNumber:
-      retval = !overafter_stbox_stbox(key, query);
+      retval = ! overafter_stbox_stbox(key, query);
       break;
     case RTOverBeforeStrategyNumber:
-      retval = !after_stbox_stbox(key, query);
+      retval = ! after_stbox_stbox(key, query);
       break;
     case RTAfterStrategyNumber:
-      retval = !overbefore_stbox_stbox(key, query);
+      retval = ! overbefore_stbox_stbox(key, query);
       break;
     case RTOverAfterStrategyNumber:
-      retval = !before_stbox_stbox(key, query);
+      retval = ! before_stbox_stbox(key, query);
       break;
     default:
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
