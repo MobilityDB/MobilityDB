@@ -31,10 +31,11 @@
  * @file
  * @brief Tile functions for temporal poses
  *
- * All functions delegate to the tgeometry equivalents by casting
- * tpose → tgeompoint → tgeometry for the spatial computation.
- * Split functions reconstruct the tpose fragment by restricting the
- * original tpose to the time extent of each returned tgeometry tile.
+ * All functions delegate to the temporal geometry point equivalents
+ * by casting tpose → tgeompoint for the spatial computation, so a
+ * value keeps the interpolation it carries. Split functions
+ * reconstruct the tpose fragment by restricting the original tpose to
+ * the time extent of each returned tile.
  */
 
 /******************************************************************************
@@ -47,7 +48,7 @@ CREATE FUNCTION spaceBoxes(tpose, xsize float, ysize float, zsize float,
   RETURNS stbox[]
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.spaceBoxes(
-      $1::@extschema@.tgeompoint::@extschema@.tgeometry, $2, $3, $4, $5, $6, $7)
+      $1::@extschema@.tgeompoint, $2, $3, $4, $5, $6, $7)
   $$;
 CREATE FUNCTION spaceBoxes(tpose, xsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
@@ -70,7 +71,7 @@ CREATE FUNCTION timeBoxes(tpose, interval,
   RETURNS stbox[]
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.timeBoxes(
-      $1::@extschema@.tgeompoint::@extschema@.tgeometry, $2, $3, $4, $5)
+      $1::@extschema@.tgeompoint, $2, $3, $4, $5)
   $$;
 
 CREATE FUNCTION spaceTimeBoxes(tpose, xsize float, ysize float,
@@ -80,7 +81,7 @@ CREATE FUNCTION spaceTimeBoxes(tpose, xsize float, ysize float,
   RETURNS stbox[]
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.spaceTimeBoxes(
-      $1::@extschema@.tgeompoint::@extschema@.tgeometry, $2, $3, $4, $5, $6, $7, $8, $9)
+      $1::@extschema@.tgeompoint, $2, $3, $4, $5, $6, $7, $8, $9)
   $$;
 CREATE FUNCTION spaceTimeBoxes(tpose, xsize float, interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
@@ -113,9 +114,9 @@ CREATE FUNCTION spaceSplit(tpose, xsize float, ysize float, zsize float,
     borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_tpose
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
-    SELECT r.point, @extschema@.atTime($1, @extschema@.getTime(r.tgeo))
+    SELECT r.point, @extschema@.atTime($1, @extschema@.getTime(r.tpoint))
     FROM @extschema@.spaceSplit(
-      $1::@extschema@.tgeompoint::@extschema@.tgeometry, $2, $3, $4, $5, $6, $7) AS r
+      $1::@extschema@.tgeompoint, $2, $3, $4, $5, $6, $7) AS r
   $$;
 CREATE FUNCTION spaceSplit(tpose, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
@@ -144,9 +145,9 @@ CREATE FUNCTION spaceTimeSplit(tpose, xsize float, ysize float,
     borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_time_tpose
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
-    SELECT r.point, r.time, @extschema@.atTime($1, @extschema@.getTime(r.tgeo))
+    SELECT r.point, r.time, @extschema@.atTime($1, @extschema@.getTime(r.tpoint))
     FROM @extschema@.spaceTimeSplit(
-      $1::@extschema@.tgeompoint::@extschema@.tgeometry, $2, $3, $4, $5, $6, $7, $8, $9) AS r
+      $1::@extschema@.tgeompoint, $2, $3, $4, $5, $6, $7, $8, $9) AS r
   $$;
 CREATE FUNCTION spaceTimeSplit(tpose, size float, interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',

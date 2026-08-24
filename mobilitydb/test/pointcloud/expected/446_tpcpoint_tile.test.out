@@ -1,0 +1,62 @@
+SELECT spaceBoxes(NULL::tpcpoint, 2.0);
+ spaceboxes 
+------------
+ 
+(1 row)
+
+SELECT spaceBoxes(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), NULL::float);
+ spaceboxes 
+------------
+ 
+(1 row)
+
+SELECT spaceBoxes(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), 2.0);
+                                                                                       spaceboxes                                                                                        
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX ZT(((1,1,0),(2,2,0)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST))","STBOX ZT(((2,2,0),(3,3,0)),[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])"}
+(1 row)
+
+SELECT spaceBoxes(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), 2.0) = spaceBoxes(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)])::tgeompoint, 2.0) AS agrees_geo;
+ agrees_geo 
+------------
+ t
+(1 row)
+
+SELECT timeBoxes(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), interval '1 day', '2001-01-01');
+                                                                                                                                     timeboxes                                                                                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX ZT(((1,1,0),(2,2,0)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST))","STBOX ZT(((2,2,0),(3,3,0)),[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST))","STBOX ZT(((3,3,0),(3,3,0)),[Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])"}
+(1 row)
+
+SELECT timeBoxes(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), interval '1 day', '2001-01-01') =
+  timeBoxes(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)])::tgeompoint, interval '1 day', '2001-01-01') AS agrees_geo_time;
+ agrees_geo_time 
+-----------------
+ t
+(1 row)
+
+SELECT spaceTimeBoxes(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), 2.0, interval '1 day', geometry 'Point(0 0 0)',
+  '2001-01-01');
+                                                                                                                                   spacetimeboxes                                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX ZT(((1,1,0),(2,2,0)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST))","STBOX ZT(((2,2,0),(3,3,0)),[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST))","STBOX ZT(((3,3,0),(3,3,0)),[Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])"}
+(1 row)
+
+SELECT (q).point, numInstants((q).tpcpoint)
+FROM (SELECT spaceSplit(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), 2.0) AS q) t;
+                           point                            | numinstants 
+------------------------------------------------------------+-------------
+ 0101000080000000000000000000000000000000000000000000000000 |           2
+ 0101000080000000000000004000000000000000400000000000000000 |           2
+(2 rows)
+
+SELECT (q).point, (q).time, numInstants((q).tpcpoint)
+FROM (SELECT spaceTimeSplit(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 0.0]::float[]), '2001-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 0.0]::float[]), '2001-01-03'::timestamptz)]), 2.0, interval '1 day', geometry 'Point(0 0 0)',
+  '2001-01-01') AS q) t;
+                           point                            |             time             | numinstants 
+------------------------------------------------------------+------------------------------+-------------
+ 0101000080000000000000000000000000000000000000000000000000 | Mon Jan 01 00:00:00 2001 PST |           2
+ 0101000080000000000000004000000000000000400000000000000000 | Tue Jan 02 00:00:00 2001 PST |           2
+ 0101000080000000000000004000000000000000400000000000000000 | Wed Jan 03 00:00:00 2001 PST |           1
+(3 rows)
+
