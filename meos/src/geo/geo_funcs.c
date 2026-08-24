@@ -6651,7 +6651,7 @@ relate_edges_meet(const Edge *a, const Edge *b)
  * mix dimensions
  */
 static bool
-relate_edge_inside_area(const Edge *e, Edge **other, int nother)
+relate_edge_inside_area(const Edge *e, const RelateEdges *other)
 {
   double x, y;
   if (e->etype == EDGE_POINT)
@@ -6661,7 +6661,99 @@ relate_edge_inside_area(const Edge *e, Edge **other, int nother)
   }
   else
     relate_edge_point(e, 0.5, &x, &y);
-  return point_in_polygon(x, y, other, nother) != 0;
+  if (! other->index)
+    return point_in_polygon(x, y, other->edges, other->nedges) != 0;
+  return point_in_polygon_index(x, y, other->edges, other->nedges,
+    other->index, other->xmax) != 0;
+}
+
+/**
+ * @brief Return the edges of an array whose box can meet a given box, read
+ * out of the array's index
+ * @details The query is grown by the widest tolerance the array asks for, so
+ * every edge the unindexed scan tests is among the ones it answers
+ */
+static int
+relate_edges_candidates(const RelateEdges *re, double xmin, double xmax,
+  double ymin, double ymax, MeosArray *candidates)
+{
+  STBox query;
+  stbox_set(true, false, false, 0, xmin - re->tol, xmax + re->tol,
+    ymin - re->tol, ymax + re->tol, 0, 0, NULL, &query);
+  return rtree_search(re->index, INDEX_OVERLAPS, &query, candidates);
+}
+
+/**
+ * @brief Return true if a curve meets any curve of an edge array, reading the
+ * edges whose box can meet its own out of the array's index
+ */
+static bool
+relate_edges_meet_any(const Edge *a, const RelateEdges *other)
+{
+  if (! other->index)
+  {
+    for (int j = 0; j < other->nedges; j++)
+    {
+      const Edge *b = other->edges[j];
+      if (b->etype == EDGE_POINT)
+        continue;
+      if (a->xmax < b->xmin - MEOS_GEOM_TOLERANCE ||
+          b->xmax < a->xmin - MEOS_GEOM_TOLERANCE ||
+          a->ymax < b->ymin - MEOS_GEOM_TOLERANCE ||
+          b->ymax < a->ymin - MEOS_GEOM_TOLERANCE)
+        continue;
+      if (relate_edges_meet(a, b))
+        return true;
+    }
+    return false;
+  }
+  MeosArray *candidates = meos_array_create(sizeof(int64));
+  int nc = relate_edges_candidates(other, a->xmin, a->xmax, a->ymin, a->ymax,
+    candidates);
+  bool result = false;
+  for (int c = 0; c < nc && ! result; c++)
+  {
+    const Edge *b = other->edges[*(int64 *) meos_array_get(candidates, c)];
+    if (b->etype == EDGE_POINT)
+      continue;
+    /* The index query is grown by the widest tolerance the array asks for,
+     * which is wider than the bound the scan rejects a pair by. Applying the
+     * scan's own test to what the index answers is what keeps the pairs
+     * solved here the pairs the scan solves, so the answer does not depend on
+     * whether the index was built */
+    if (a->xmax < b->xmin - MEOS_GEOM_TOLERANCE ||
+        b->xmax < a->xmin - MEOS_GEOM_TOLERANCE ||
+        a->ymax < b->ymin - MEOS_GEOM_TOLERANCE ||
+        b->ymax < a->ymin - MEOS_GEOM_TOLERANCE)
+      continue;
+    result = relate_edges_meet(a, b);
+  }
+  meos_array_destroy(candidates);
+  return result;
+}
+
+/**
+ * @brief Return true if a point stands on any edge of an array, reading the
+ * edges that can carry it out of the array's index
+ */
+static bool
+relate_point_on_any_edge(double x, double y, const RelateEdges *other)
+{
+  if (! other->index)
+  {
+    for (int j = 0; j < other->nedges; j++)
+      if (relate_point_on_edge(x, y, other->edges[j]))
+        return true;
+    return false;
+  }
+  MeosArray *candidates = meos_array_create(sizeof(int64));
+  int nc = relate_edges_candidates(other, x, x, y, y, candidates);
+  bool result = false;
+  for (int c = 0; c < nc && ! result; c++)
+    result = relate_point_on_edge(x, y,
+      other->edges[*(int64 *) meos_array_get(candidates, c)]);
+  meos_array_destroy(candidates);
+  return result;
 }
 
 /**
@@ -6671,11 +6763,19 @@ relate_edge_inside_area(const Edge *e, Edge **other, int nother)
  * first witness it finds: a point of one geometry standing on a curve or a
  * point of the other; a curve of one meeting a curve of the other; and, once
  * no curves meet at all, an edge lying within a surface of the other, where
- * one point of that edge answers for the whole of it
+ * one point of that edge answers for the whole of it. Each question reads the
+ * other array through its index where one is built: stopping at the first
+ * witness is what makes a pair that DOES meet cheap, but a pair that does not
+ * holds no witness to stop at, so every question runs to the end and costs the
+ * product of the two arrays. That is the case the index removes, and it is the
+ * common one, a pair whose boxes overlap while the geometries keep apart
  */
 static bool
-relate_edges_intersect(Edge **e1, int n1, Edge **e2, int n2)
+relate_edges_intersect(const RelateEdges *re1, const RelateEdges *re2)
 {
+  Edge **e1 = re1->edges, **e2 = re2->edges;
+  int n1 = re1->nedges, n2 = re2->nedges;
+
   /* Geometries whose bounding boxes stand apart share no point, and reading
    * that first is what keeps a pair that does not meet from costing a pass
    * over every edge of one against every edge of the other */
@@ -6687,48 +6787,34 @@ relate_edges_intersect(Edge **e1, int n1, Edge **e2, int n2)
   {
     if (e1[i]->etype != EDGE_POINT)
       continue;
-    for (int j = 0; j < n2; j++)
-      if (relate_point_on_edge(e1[i]->x1, e1[i]->y1, e2[j]))
-        return true;
+    if (relate_point_on_any_edge(e1[i]->x1, e1[i]->y1, re2))
+      return true;
   }
   for (int j = 0; j < n2; j++)
   {
     if (e2[j]->etype != EDGE_POINT)
       continue;
-    for (int i = 0; i < n1; i++)
-      if (relate_point_on_edge(e2[j]->x1, e2[j]->y1, e1[i]))
-        return true;
+    if (relate_point_on_any_edge(e2[j]->x1, e2[j]->y1, re1))
+      return true;
   }
 
   /* Two curves meeting, the bounding boxes deciding which pairs are worth
    * solving */
   for (int i = 0; i < n1; i++)
   {
-    const Edge *a = e1[i];
-    if (a->etype == EDGE_POINT)
+    if (e1[i]->etype == EDGE_POINT)
       continue;
-    for (int j = 0; j < n2; j++)
-    {
-      const Edge *b = e2[j];
-      if (b->etype == EDGE_POINT)
-        continue;
-      if (a->xmax < b->xmin - MEOS_GEOM_TOLERANCE ||
-          b->xmax < a->xmin - MEOS_GEOM_TOLERANCE ||
-          a->ymax < b->ymin - MEOS_GEOM_TOLERANCE ||
-          b->ymax < a->ymin - MEOS_GEOM_TOLERANCE)
-        continue;
-      if (relate_edges_meet(a, b))
-        return true;
-    }
+    if (relate_edges_meet_any(e1[i], re2))
+      return true;
   }
 
   /* No curve of either geometry meets the other, so each edge lies wholly
    * inside or wholly outside the surfaces of the other geometry */
   for (int i = 0; i < n1; i++)
-    if (relate_edge_inside_area(e1[i], e2, n2))
+    if (relate_edge_inside_area(e1[i], re2))
       return true;
   for (int j = 0; j < n2; j++)
-    if (relate_edge_inside_area(e2[j], e1, n1))
+    if (relate_edge_inside_area(e2[j], re1))
       return true;
   return false;
 }
@@ -6860,8 +6946,18 @@ meos_intersects(const LWGEOM *g1, const LWGEOM *g2, bool *result)
   for (int j = 0; j < n2; j++)
     e2[j] = (Edge *) meos_array_get(a2, j);
 
-  *result = relate_edges_intersect(e1, n1, e2, n2);
+  /* Every question this kernel asks reads one of the two arrays once per edge
+   * of the other, so an unindexed walk costs their PRODUCT wherever no witness
+   * ends it early. The gate is the one the matrix uses, and below it the walk
+   * is the cheaper of the two and the index is not built */
+  RelateEdges re1, re2;
+  bool index = ((int64) n1 * (int64) n2 >= RELATE_INDEX_MIN_PAIRS);
+  relate_edges_init(&re1, e1, n1, index);
+  relate_edges_init(&re2, e2, n2, index);
 
+  *result = relate_edges_intersect(&re1, &re2);
+
+  relate_edges_clear(&re1); relate_edges_clear(&re2);
   pfree(e1); pfree(e2);
   meos_array_destroy(a1); meos_array_destroy(a2);
   return true;
