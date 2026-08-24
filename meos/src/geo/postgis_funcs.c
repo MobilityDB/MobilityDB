@@ -2253,6 +2253,9 @@ geom_array_union(GSERIALIZED **gsarr, int count)
   VALIDATE_NOT_NULL(gsarr, NULL);
   if (! ensure_positive(count))
     return NULL;
+  /* The members of the array carry one SRID */
+  if (! ensure_same_srid_geoarr((const GSERIALIZED **) gsarr, count))
+    return NULL;
 
   /* One geom geom? Return it */
   if (count == 1)
@@ -2317,10 +2320,7 @@ geom_array_union(GSERIALIZED **gsarr, int count)
   */
   for (int i = 0; i < count; i++)
   {
-    /* Check for SRID mismatch in array elements */
-    if (gotsrid)
-      assert(gserialized_get_srid(gsarr[i]) == srid);
-    else
+    if (! gotsrid)
     {
       /* Initialize SRID/dimensions info */
       srid = gserialized_get_srid(gsarr[i]);

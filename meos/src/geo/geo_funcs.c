@@ -2680,6 +2680,24 @@ ensure_not_geodetic(int16 flags)
     "Only planar coordinates supported");
   return false;
 }
+
+/**
+ * @brief Ensure that every member of an array of geometries carries the SRID
+ * the first one does
+ * @param[in] geoms Geometries
+ * @param[in] count Number of elements in the array
+ */
+bool
+ensure_same_srid_geoarr(const GSERIALIZED **geoms, int count)
+{
+  assert(geoms);
+  int32_t srid = gserialized_get_srid(geoms[0]);
+  for (int i = 1; i < count; i++)
+    if (! ensure_same_srid(srid, gserialized_get_srid(geoms[i])))
+      return false;
+  return true;
+}
+
 /**
  * @brief Ensure that two geometries/geographies have the same dimensionality
  */
