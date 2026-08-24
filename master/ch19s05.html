@@ -3,7 +3,7 @@ CREATE TABLE scans (id int, traj tpcpoint(1), full_scan tpcpatch(1));
 -- accepts pcid 1
 INSERT INTO scans VALUES (1,
   tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), '2024-01-01'::timestamptz),
-  tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
            '2024-01-01'::timestamptz));
 -- rejects any other pcid:
 -- ERROR: Pcid of tpcpoint value (2) does not match column typmod pcid (1)

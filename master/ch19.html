@@ -25,7 +25,7 @@ SELECT pointCloudSchemaNDims(1);
 SELECT pcpoint(1, 1.0, 2.0, 3.0);
 
 -- a patch holding two points
-SELECT pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0),
+SELECT pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
                   pcpoint(1, 4.0, 5.0, 6.0));
 
 -- a single-instant tpcpoint at (10, 20, 30) at 2024-01-01
@@ -44,7 +44,7 @@ INSERT INTO scans VALUES (1,
   tpcpointSeq(ARRAY[
     tpcpoint(pcpoint(1, 0, 0, 0), '2024-01-01'::timestamptz),
     tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-02'::timestamptz)]),
-  tpcpatch(pcpatch(1, pcpoint(1,1,1,1), pcpoint(1,2,2,2)),
+  tpcpatch(pcpatch(pcpoint(1,1,1,1), pcpoint(1,2,2,2)),
            '2024-01-01'::timestamptz));
 </pre><p>Inserting a value whose pcid disagrees with the column's typmod raises <code class="varname">ERROR: Pcid of tpcpoint value (N) does not match column typmod pcid (M)</code>; mixing pcids in an unconstrained column is also rejected at <code class="varname">extent</code> aggregation time.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpointcloud_quickstart_query"></a>Query with the bbox surface</h3></div></div></div><p>Every tpcpoint and tpcpatch carries a <code class="varname">tpcbox</code> (mirror of <code class="varname">stbox</code> + <code class="varname">pcid</code>) computed at construction time. The bbox-level operator surface, topological (<code class="varname">&amp;&amp;</code>, <code class="varname">@&gt;</code>, <code class="varname">&lt;@</code>, <code class="varname">~=</code>, <code class="varname">-|-</code>), directional on X/Y/Z/time, and KNN distance <code class="varname">|=|</code>, works between any pair of (<code class="varname">tpcbox</code>, <code class="varname">tpcpoint</code>, <code class="varname">tpcpatch</code>):</p><pre class="programlisting">
 -- rows whose track ever entered a 3D-temporal box

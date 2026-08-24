@@ -3,7 +3,7 @@ SELECT asMFJSON(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- {"type":"MovingPCPoint","coordinates":[[1,1,1]],
 --  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"}
 </pre></li><li class="listitem"><a name="tpcpatch_mfjson"></a><a class="indexterm" name="id17185"></a><p>For <code class="varname">tpcpatch</code>, the type tag is <code class="varname">"MovingPCPatch"</code> and each instant emits a small object <code class="varname">{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</code>. The compressed point payload is intentionally not in the JSON, use <code class="varname">asBinary</code> / <code class="varname">asHexWKB</code> for round-trip.</p><p><code class="varname">asMFJSON(tpcpatch, options int=0, flags int=0, maxdecimaldigits int=15) → text</code></p><pre class="programlisting">
-SELECT asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+SELECT asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz));
 -- {"type":"MovingPCPatch","values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2]}],
 --  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"}
