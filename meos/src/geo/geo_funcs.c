@@ -143,14 +143,62 @@ extract_mline(const LWMLINE *ml, MeosArray *edges)
 }
 
 /**
+ * @brief Return true if a ring encloses no area
+ * @details A ring that runs out and back along itself, or whose vertices are
+ * collinear, bounds no region: the point set it draws is its own linework.
+ * Real survey data carries them, so this is not a synthetic case.
+ * @note The shoelace sum is an AREA, so what reads it as zero is an area too:
+ * a distance times the extent the ring occupies. Reading it against a length
+ * would make the answer depend on the unit the coordinates are expressed in.
+ * #ptarray_signed_area accumulates DIFFERENCES of coordinates rather than the
+ * coordinates themselves, so its rounding grows with that extent and not with
+ * the distance of the ring from the origin.
+ */
+static bool
+ring_encloses_no_area(const POINTARRAY *pa)
+{
+  if (! pa || pa->npoints < 3)
+    return true;
+  double xmin, xmax, ymin, ymax;
+  const POINT2D *p = getPoint2d_cp(pa, 0);
+  xmin = xmax = p->x; ymin = ymax = p->y;
+  for (uint32_t i = 1; i < pa->npoints; i++)
+  {
+    p = getPoint2d_cp(pa, i);
+    xmin = Min(xmin, p->x); xmax = Max(xmax, p->x);
+    ymin = Min(ymin, p->y); ymax = Max(ymax, p->y);
+  }
+  double extent = Max(xmax - xmin, ymax - ymin);
+  double tol = (MEOS_GEOM_TOLERANCE +
+    4.0 * DBL_EPSILON * (double) pa->npoints * extent) * extent;
+  return fabs(ptarray_signed_area(pa)) <= tol;
+}
+
+/**
  * @brief Add to the dynamic array in the last argument the edges obtained
  * from a polygon
+ * @details A ring enclosing no area bounds no region, so what it contributes
+ * is the point set its own linework traces, one dimension lower. An outer ring
+ * of no area therefore yields line edges and the surface is not areal at all,
+ * while such a hole removes nothing from the surface it sits in and yields
+ * none: its linework already lies in that surface.
  */
 static void
 extract_poly(const LWPOLY *poly, MeosArray *edges)
 {
+  if (poly->nrings == 0)
+    return;
+  if (ring_encloses_no_area(poly->rings[0]))
+  {
+    emit_ring_edges(poly->rings[0], edges, EDGE_LINESEG);
+    return;
+  }
   for (int r = 0; r < (int) poly->nrings; r++)
+  {
+    if (r > 0 && ring_encloses_no_area(poly->rings[r]))
+      continue;
     emit_ring_edges(poly->rings[r], edges, EDGE_POLYSEG);
+  }
   return;
 }
 
@@ -175,7 +223,8 @@ extract_mpoly(const LWMPOLY *mp, MeosArray *edges)
 static void
 extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
 {
-  emit_ring_edges(tri->points, edges, EDGE_POLYSEG);
+  emit_ring_edges(tri->points, edges,
+    ring_encloses_no_area(tri->points) ? EDGE_LINESEG : EDGE_POLYSEG);
   return;
 }
 
@@ -6100,11 +6149,27 @@ relate_dim_mask(const LWGEOM *geom)
     case MULTICURVETYPE:
       return 2;
     case POLYGONTYPE:
-    case MULTIPOLYGONTYPE:
+      /* A ring enclosing no area bounds no region, so what the surface draws
+       * is its own linework and the dimension follows what it draws */
+      return ring_encloses_no_area(((const LWPOLY *) geom)->rings[0]) ? 2 : 4;
     case TRIANGLETYPE:
+      return ring_encloses_no_area(((const LWTRIANGLE *) geom)->points) ?
+        2 : 4;
     case CURVEPOLYTYPE:
     case MULTISURFACETYPE:
       return 4;
+    case MULTIPOLYGONTYPE:
+    {
+      /* A multipolygon carrying any surface is areal: a member enclosing no
+       * area draws linework the surfaces already account for, and reporting
+       * both dimensions would send a value every member of which is a polygon
+       * down the mixed-dimension path */
+      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+      int mask = 0;
+      for (uint32_t i = 0; i < col->ngeoms; i++)
+        mask |= relate_dim_mask(col->geoms[i]);
+      return (mask & 4) ? 4 : mask;
+    }
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
