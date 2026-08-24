@@ -5402,16 +5402,33 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
  * @brief Process all point intersections between two area boundaries.
  */
 static void
-relate_area_boundary_points(Edge **aedges, int na, Edge **bedges, int nb,
+relate_area_boundary_points(const RelateEdges *are, const RelateEdges *bre,
   MeosDE9IM *m)
 {
+  Edge **aedges = are->edges, **bedges = bre->edges;
+  int na = are->nedges, nb = bre->nedges;
+  MeosArray *candidates = bre->index ? meos_array_create(sizeof(int64)) : NULL;
   for (int i = 0; i < na; i++)
   {
     const Edge *a = aedges[i];
     if (!relate_area_boundary_edge(a))
       continue;
-    for (int j = 0; j < nb; j++)
+    /* Two edges whose boxes stand apart meet nowhere, so the edges worth
+     * solving against this one are those the index answers for its box. The
+     * bound the query is grown by is the widest tolerance the array asks for,
+     * which is what makes the index admit every edge the pass would test */
+    int ncand = nb;
+    if (bre->index)
     {
+      STBox query;
+      double pad = fmax(bre->tol, a->tol);
+      stbox_set(true, false, false, 0, a->xmin - pad, a->xmax + pad,
+        a->ymin - pad, a->ymax + pad, 0, 0, NULL, &query);
+      ncand = rtree_search(bre->index, INDEX_OVERLAPS, &query, candidates);
+    }
+    for (int c = 0; c < ncand; c++)
+    {
+      int j = candidates ? (int) *(int64 *) meos_array_get(candidates, c) : c;
       const Edge *b = bedges[j];
       if (!relate_area_boundary_edge(b))
         continue;
@@ -5446,6 +5463,8 @@ relate_area_boundary_points(Edge **aedges, int na, Edge **bedges, int nb,
         de9im_add(&m->bb, 0);
     }
   }
+  if (candidates)
+    meos_array_destroy(candidates);
   return;
 }
 
@@ -5679,7 +5698,7 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
   /* Boundary / Boundary.
    * Point intersections give dimension 0.
    * Coincident/overlapping boundary portions give dimension 1. */
-  relate_area_boundary_points(e1, n1, e2, n2, m);
+  relate_area_boundary_points(&re1, &re2, m);
 
   /* Interior / Exterior, of dimension 2 because a non-empty open region is
    * two-dimensional. Two independent sources answer it, and either one alone
