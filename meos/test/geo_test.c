@@ -672,6 +672,27 @@ int main(void)
   free(phsurf); free(mp); free(uu2);
   meos_errno_reset();
 
+  /* The union of a GEODETIC array is serialized twice: GEOS answers a planar
+   * value, and the geodetic flag cannot be set on it because the planar
+   * bounding box already written occupies a different number of floats. The
+   * deserialization that carries the value across reads its coordinates OUT OF
+   * the planar buffer, so releasing that buffer before the geodetic value is
+   * built leaves the second serialization walking freed memory -- it answered
+   * a MULTIPOINT of denormal coordinates, and valgrind reported the read in
+   * ll2cart under lwgeom_calculate_gbox_geodetic */
+  GSERIALIZED *gg1 = geog_in("POINT(1 1)", -1);
+  GSERIALIZED *gg2 = geog_in("POINT(2 2)", -1);
+  assert(gg1 != NULL); assert(gg2 != NULL);
+  GSERIALIZED *ggarr[2] = {gg1, gg2};
+  meos_errno_reset();
+  GSERIALIZED *ggu = geom_array_union(ggarr, 2);
+  assert(ggu != NULL);
+  char *ggwkt = geo_as_ewkt(ggu, 6);
+  printf("the union of two geography points: %s\n", ggwkt);
+  assert(strcmp(ggwkt, "SRID=4326;MULTIPOINT(1 1,2 2)") == 0);
+  free(gg1); free(gg2); free(ggu); free(ggwkt);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 
