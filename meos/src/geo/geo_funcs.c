@@ -7300,11 +7300,28 @@ linear_union_subsegment(const Edge *edge, double t0, double t1, int32_t srid)
   POINTARRAY *pa = ptarray_construct_empty(0, 0, 2);
   POINT4D p;
   memset(&p, 0, sizeof(POINT4D));
-  p.x = edge->x1 + t0 * edge->dx;
-  p.y = edge->y1 + t0 * edge->dy;
+  /* An end of the edge is written as the edge writes it: @p x1 + 1.0 * dx is
+   * not @p x2 in floating point, and a piece spanning the whole edge has to
+   * reproduce the coordinates it was read from rather than a rounding of them */
+  if (t0 <= 0.0)
+  {
+    p.x = edge->x1; p.y = edge->y1;
+  }
+  else
+  {
+    p.x = edge->x1 + t0 * edge->dx;
+    p.y = edge->y1 + t0 * edge->dy;
+  }
   ptarray_append_point(pa, &p, LW_TRUE);
-  p.x = edge->x1 + t1 * edge->dx;
-  p.y = edge->y1 + t1 * edge->dy;
+  if (t1 >= 1.0)
+  {
+    p.x = edge->x2; p.y = edge->y2;
+  }
+  else
+  {
+    p.x = edge->x1 + t1 * edge->dx;
+    p.y = edge->y1 + t1 * edge->dy;
+  }
   ptarray_append_point(pa, &p, LW_TRUE);
   return lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
 }
@@ -7381,88 +7398,102 @@ linear_chain_reverse(LinearChain *chain)
 }
 
 /**
- * @brief Sew a line and a set of pieces into the single curve they draw
- * @details Each piece continues the chain at one of its two ends, in either
+ * @brief Sew a set of pieces into the curves they draw
+ * @details Each piece continues a chain at one of its two ends, in either
  * direction, and the scan restarts whenever one attaches, the enlarged chain
- * reaching further than it did
- * @param[in] geom Line the chain starts from
- * @param[in] pieces,npieces Pieces to attach, which stay the caller's
+ * reaching further than it did. A piece continuing neither end of the chain
+ * under construction starts a chain of its own, so a set drawing a fork is
+ * answered as the several curves it takes to walk it rather than refused
+ * @param[in] pieces,npieces Pieces to sew, which stay the caller's
  * @param[in] srid Spatial reference identifier
- * @return The curve, or @p NULL where a piece continues neither end -- what
- * the pieces draw with the line is then a fork rather than one curve
+ * @param[out] result Curves drawn, allocated here and owned by the caller
+ * @return Number of curves, or 0 where there is nothing to sew
  */
-static LWGEOM *
-linear_union_chain(const LWGEOM *geom, LWGEOM **pieces, int npieces,
-  int32_t srid)
+static int
+linear_union_chain_all(LWGEOM **pieces, int npieces, int32_t srid,
+  LWGEOM ***result)
 {
-  assert(geom);
-  if (geom->type != LINETYPE)
-    return NULL;
-  const POINTARRAY *pa = ((const LWLINE *) geom)->points;
-  if (pa->npoints < 2)
-    return NULL;
+  assert(result);
+  *result = NULL;
+  if (npieces <= 0)
+    return 0;
+  bool *used = palloc0(sizeof(bool) * (size_t) npieces);
+  LWGEOM **out = palloc(sizeof(LWGEOM *) * (size_t) npieces);
+  int nout = 0;
 
-  LinearChain chain;
-  chain.maxcount = (int) pa->npoints + 2 * npieces + 2;
-  chain.count = 0;
-  chain.points = palloc(sizeof(POINT2D) * (size_t) chain.maxcount);
-  for (uint32_t i = 0; i < pa->npoints; i++)
-    linear_chain_append(&chain, getPoint2d_cp(pa, i));
-
-  bool *used = palloc0(sizeof(bool) * (size_t) (npieces > 0 ? npieces : 1));
-  int nleft = npieces;
-  bool attached = true;
-  while (nleft > 0 && attached)
+  for (int seed = 0; seed < npieces; seed++)
   {
-    attached = false;
-    for (int p = 0; p < npieces && ! attached; p++)
+    if (used[seed])
+      continue;
+    const POINTARRAY *spa = ((const LWLINE *) pieces[seed])->points;
+    if (pieces[seed]->type != LINETYPE || spa->npoints < 2)
     {
-      if (used[p])
-        continue;
-      const POINTARRAY *ppa = ((const LWLINE *) pieces[p])->points;
-      if (ppa->npoints < 2)
-      {
-        used[p] = true; nleft--; attached = true;
-        continue;
-      }
-      /* The two ends are COPIED: appending may move the chain in memory */
-      POINT2D head = chain.points[0], tail = chain.points[chain.count - 1];
-      const POINT2D *first = getPoint2d_cp(ppa, 0);
-      const POINT2D *last = getPoint2d_cp(ppa, ppa->npoints - 1);
-      if (linear_union_same_point(&head, first) ||
-          linear_union_same_point(&head, last))
-        linear_chain_reverse(&chain);
-      else if (! linear_union_same_point(&tail, first) &&
-               ! linear_union_same_point(&tail, last))
-        continue;
-      POINT2D end = chain.points[chain.count - 1];
-      if (linear_union_same_point(&end, first))
-        for (uint32_t i = 1; i < ppa->npoints; i++)
-          linear_chain_append(&chain, getPoint2d_cp(ppa, i));
-      else
-        for (int i = (int) ppa->npoints - 2; i >= 0; i--)
-          linear_chain_append(&chain, getPoint2d_cp(ppa, i));
-      used[p] = true; nleft--; attached = true;
+      used[seed] = true;
+      continue;
     }
+    used[seed] = true;
+    LinearChain chain;
+    chain.maxcount = (int) spa->npoints + 2 * npieces + 2;
+    chain.count = 0;
+    chain.points = palloc(sizeof(POINT2D) * (size_t) chain.maxcount);
+    for (uint32_t i = 0; i < spa->npoints; i++)
+      linear_chain_append(&chain, getPoint2d_cp(spa, i));
+
+    bool attached = true;
+    while (attached)
+    {
+      attached = false;
+      for (int p = 0; p < npieces && ! attached; p++)
+      {
+        if (used[p])
+          continue;
+        const POINTARRAY *ppa = ((const LWLINE *) pieces[p])->points;
+        if (pieces[p]->type != LINETYPE || ppa->npoints < 2)
+        {
+          used[p] = true;
+          continue;
+        }
+        /* The two ends are COPIED: appending may move the chain in memory */
+        POINT2D head = chain.points[0], tail = chain.points[chain.count - 1];
+        const POINT2D *first = getPoint2d_cp(ppa, 0);
+        const POINT2D *last = getPoint2d_cp(ppa, ppa->npoints - 1);
+        if (linear_union_same_point(&head, first) ||
+            linear_union_same_point(&head, last))
+          linear_chain_reverse(&chain);
+        else if (! linear_union_same_point(&tail, first) &&
+                 ! linear_union_same_point(&tail, last))
+          continue;
+        POINT2D end = chain.points[chain.count - 1];
+        if (linear_union_same_point(&end, first))
+          for (uint32_t i = 1; i < ppa->npoints; i++)
+            linear_chain_append(&chain, getPoint2d_cp(ppa, i));
+        else
+          for (int i = (int) ppa->npoints - 2; i >= 0; i--)
+            linear_chain_append(&chain, getPoint2d_cp(ppa, i));
+        used[p] = true; attached = true;
+      }
+    }
+
+    POINTARRAY *pa = ptarray_construct_empty(0, 0, (uint32_t) chain.count);
+    POINT4D p4;
+    memset(&p4, 0, sizeof(POINT4D));
+    for (int i = 0; i < chain.count; i++)
+    {
+      p4.x = chain.points[i].x;
+      p4.y = chain.points[i].y;
+      ptarray_append_point(pa, &p4, LW_TRUE);
+    }
+    pfree(chain.points);
+    out[nout++] = lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
   }
   pfree(used);
-  if (nleft > 0)
+  if (nout == 0)
   {
-    pfree(chain.points);
-    return NULL;
+    pfree(out);
+    return 0;
   }
-
-  POINTARRAY *out = ptarray_construct_empty(0, 0, (uint32_t) chain.count);
-  POINT4D p4;
-  memset(&p4, 0, sizeof(POINT4D));
-  for (int i = 0; i < chain.count; i++)
-  {
-    p4.x = chain.points[i].x;
-    p4.y = chain.points[i].y;
-    ptarray_append_point(out, &p4, LW_TRUE);
-  }
-  pfree(chain.points);
-  return lwline_as_lwgeom(lwline_construct(srid, NULL, out));
+  *result = out;
+  return nout;
 }
 
 /**
@@ -7549,13 +7580,117 @@ linear_union_merge(const LWGEOM *geom1, const LWGEOM *geom2)
   pfree(lo); pfree(hi);
   meos_array_destroy(e1); meos_array_destroy(e2);
 
+  /* The first curve seeds the sewing, so the pieces attach to it in the order
+   * it is walked */
+  LWGEOM **all = palloc(sizeof(LWGEOM *) * (size_t) (npieces + 1));
+  all[0] = lwgeom_clone_deep(geom1);
+  for (int p = 0; p < npieces; p++)
+    all[p + 1] = pieces[p];
+  pfree(pieces);
+  LWGEOM **curves = NULL;
+  int ncurves = linear_union_chain_all(all, npieces + 1, srid, &curves);
+  for (int p = 0; p <= npieces; p++)
+    lwgeom_free(all[p]);
+  pfree(all);
   /* What the two draw together is a single curve, or it is a fork this entry
    * does not answer */
-  LWGEOM *merged = linear_union_chain(geom1, pieces, npieces, srid);
+  LWGEOM *merged = NULL;
+  if (ncurves == 1)
+    merged = curves[0];
+  else
+    for (int c = 0; c < ncurves; c++)
+      lwgeom_free(curves[c]);
+  if (curves)
+    pfree(curves);
+  return merged;
+}
+
+/**
+ * @brief Return a line that walks its own points once
+ * @details A union is a POINT SET, so the measure of the answer is the measure
+ * of that set: a line walking a stretch twice -- @p LINESTRING(6 5,6 3,6 4)
+ * traverses @p (6 3)-(6 4) on the way down and again on the way back -- reports
+ * a length larger than the set it covers.  Each segment keeps only what no
+ * EARLIER segment of the same line already covers, and what remains is sewn
+ * back into the curve it draws
+ * @param[in] geom Geometry
+ * @param[out] curves Curves the line draws walking each of its points once,
+ * allocated here and owned by the caller
+ * @return Number of curves, or 0 where the geometry is not a line of straight
+ * segments -- the caller then keeps the line as it stands. Dropping a doubled
+ * stretch can leave what remains in SEVERAL pieces, so a line does not always
+ * walk its own points as one curve
+ */
+static int
+linear_union_dissolve(const LWGEOM *geom, LWGEOM ***curves)
+{
+  assert(geom); assert(curves);
+  *curves = NULL;
+  if (geom->type != LINETYPE)
+    return 0;
+  MeosArray *edges = geom_extract_edges(geom);
+  if (! edges || ! linear_union_straight(edges))
+  {
+    if (edges) meos_array_destroy(edges);
+    return 0;
+  }
+  int nedges = (int) edges->count;
+  if (nedges < 2)
+  {
+    meos_array_destroy(edges);
+    return 0;
+  }
+  int32_t srid = lwgeom_get_srid(geom);
+
+  LWGEOM **pieces = palloc(sizeof(LWGEOM *) * (size_t) (nedges * nedges + 1));
+  int npieces = 0;
+  double *lo = palloc(sizeof(double) * (size_t) (nedges + 1));
+  double *hi = palloc(sizeof(double) * (size_t) (nedges + 1));
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *b = (const Edge *) meos_array_get(edges, i);
+    int nover = 0;
+    for (int j = 0; j < i; j++)
+    {
+      const Edge *a = (const Edge *) meos_array_get(edges, j);
+      IntersectResult r = linesegm_intersect(b->x1, b->y1, b->dx, b->dy,
+        a->x1, a->y1, a->x2, a->y2);
+      if (r.type != INTERSECT_OVERLAP)
+        continue;
+      lo[nover] = (r.t0 < r.t1) ? r.t0 : r.t1;
+      hi[nover] = (r.t0 < r.t1) ? r.t1 : r.t0;
+      nover++;
+    }
+    for (int p = 1; p < nover; p++)
+    {
+      double l = lo[p], h = hi[p];
+      int q = p - 1;
+      while (q >= 0 && lo[q] > l)
+      {
+        lo[q + 1] = lo[q]; hi[q + 1] = hi[q]; q--;
+      }
+      lo[q + 1] = l; hi[q + 1] = h;
+    }
+    double mint = (b->length > 0.0) ? b->tol / b->length : 1.0;
+    double cur = 0.0;
+    for (int p = 0; p < nover; p++)
+    {
+      if (lo[p] > cur + mint)
+        pieces[npieces++] = linear_union_subsegment(b, cur, lo[p], srid);
+      if (hi[p] > cur)
+        cur = hi[p];
+    }
+    if (1.0 > cur + mint)
+      pieces[npieces++] = linear_union_subsegment(b, cur, 1.0, srid);
+  }
+  pfree(lo); pfree(hi);
+  meos_array_destroy(edges);
+
+  int ncurves = linear_union_chain_all(pieces, npieces, srid, curves);
   for (int p = 0; p < npieces; p++)
     lwgeom_free(pieces[p]);
   pfree(pieces);
-  return merged;
+  return ncurves;
 }
 
 /**
@@ -7602,10 +7737,44 @@ meos_linear_union(const LWGEOM *geom)
 
   /* The live component of each slot: the one collected, or the curve a merge
    * put in its place, which this function owns and frees */
-  const LWGEOM **cur = palloc(sizeof(LWGEOM *) * ncomp);
-  LWGEOM **owned = palloc0(sizeof(LWGEOM *) * ncomp);
+  /* A component walking a stretch of itself twice covers it once, and the
+   * measure of the answer is the measure of what it covers. Dropping the
+   * doubled stretch can leave what remains in SEVERAL curves, so a component
+   * may stand for more than one, and the list grows to hold them */
+  int maxcur = ncomp;
+  const LWGEOM **cur = palloc(sizeof(LWGEOM *) * maxcur);
+  LWGEOM **owned = palloc0(sizeof(LWGEOM *) * maxcur);
+  int ncur = 0;
   for (int i = 0; i < ncomp; i++)
-    cur[i] = comps[i];
+  {
+    LWGEOM **curves = NULL;
+    int ncurves = linear_union_dissolve(comps[i], &curves);
+    if (ncurves <= 0)
+    {
+      if (ncur == maxcur)
+      {
+        maxcur *= 2;
+        cur = repalloc(cur, sizeof(LWGEOM *) * (size_t) maxcur);
+        owned = repalloc(owned, sizeof(LWGEOM *) * (size_t) maxcur);
+      }
+      owned[ncur] = NULL;
+      cur[ncur++] = comps[i];
+      continue;
+    }
+    for (int c = 0; c < ncurves; c++)
+    {
+      if (ncur == maxcur)
+      {
+        maxcur *= 2;
+        cur = repalloc(cur, sizeof(LWGEOM *) * (size_t) maxcur);
+        owned = repalloc(owned, sizeof(LWGEOM *) * (size_t) maxcur);
+      }
+      owned[ncur] = curves[c];
+      cur[ncur++] = curves[c];
+    }
+    pfree(curves);
+  }
+  ncomp = ncur;
   GBOX *boxes = palloc(sizeof(GBOX) * ncomp);
   bool *hasbox = palloc(sizeof(bool) * ncomp);
   bool *dropped = palloc0(sizeof(bool) * ncomp);
