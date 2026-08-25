@@ -161,6 +161,42 @@ RESET enable_seqscan;
 RESET enable_indexscan;
 RESET enable_bitmapscan;
 
+-------------------------------------------------------------------------------
+-- Functional call form. The planner support function rewrites a call such as
+-- overlaps(temp, box) into the indexable temp && box, so the counts a scan
+-- produces and the counts an index produces must agree for the call form
+-- exactly as they do for the operator form.
+-------------------------------------------------------------------------------
+
+CREATE INDEX tbl_tpcpoint_gist_idx ON tbl_tpcpoint USING gist(temp);
+CREATE INDEX tbl_tpcpatch_gist_idx ON tbl_tpcpatch USING gist(temp);
+
+SET enable_seqscan = on;  SET enable_indexscan = off; SET enable_bitmapscan = off;
+SELECT COUNT(*) AS seq_fn_box FROM tbl_tpcpoint
+WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+SELECT COUNT(*) AS seq_fn_span FROM tbl_tpcpoint
+WHERE overlaps(temp, tstzspan '[2001-06-01, 2001-12-31]');
+SELECT COUNT(*) AS seq_fn_patch FROM tbl_tpcpatch
+WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+
+SET enable_seqscan = off; SET enable_indexscan = on; SET enable_bitmapscan = on;
+SELECT COUNT(*) AS idx_fn_box FROM tbl_tpcpoint
+WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+SELECT COUNT(*) AS idx_fn_span FROM tbl_tpcpoint
+WHERE overlaps(temp, tstzspan '[2001-06-01, 2001-12-31]');
+SELECT COUNT(*) AS idx_fn_patch FROM tbl_tpcpatch
+WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+
+DROP INDEX tbl_tpcpoint_gist_idx;
+DROP INDEX tbl_tpcpatch_gist_idx;
+RESET enable_seqscan;
+RESET enable_indexscan;
+RESET enable_bitmapscan;
+
 -- typanalyze: ANALYZE must succeed on the temporal pointcloud columns; tspatial_analyze
 -- projects each TPCBox bounding box to an STBox for the spatial statistics
 ANALYZE tbl_tpcpoint;

@@ -250,6 +250,78 @@ RESET enable_indexscan;
 RESET
 RESET enable_bitmapscan;
 RESET
+CREATE INDEX tbl_tpcpoint_gist_idx ON tbl_tpcpoint USING gist(temp);
+CREATE INDEX
+CREATE INDEX tbl_tpcpatch_gist_idx ON tbl_tpcpatch USING gist(temp);
+CREATE INDEX
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_fn_box FROM tbl_tpcpoint
+WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+ seq_fn_box 
+------------
+         26
+(1 row)
+
+SELECT COUNT(*) AS seq_fn_span FROM tbl_tpcpoint
+WHERE overlaps(temp, tstzspan '[2001-06-01, 2001-12-31]');
+ seq_fn_span 
+-------------
+          49
+(1 row)
+
+SELECT COUNT(*) AS seq_fn_patch FROM tbl_tpcpatch
+WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+ seq_fn_patch 
+--------------
+           46
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_fn_box FROM tbl_tpcpoint
+WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+ idx_fn_box 
+------------
+         26
+(1 row)
+
+SELECT COUNT(*) AS idx_fn_span FROM tbl_tpcpoint
+WHERE overlaps(temp, tstzspan '[2001-06-01, 2001-12-31]');
+ idx_fn_span 
+-------------
+          49
+(1 row)
+
+SELECT COUNT(*) AS idx_fn_patch FROM tbl_tpcpatch
+WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+ idx_fn_patch 
+--------------
+           46
+(1 row)
+
+DROP INDEX tbl_tpcpoint_gist_idx;
+DROP INDEX
+DROP INDEX tbl_tpcpatch_gist_idx;
+DROP INDEX
+RESET enable_seqscan;
+RESET
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET
 ANALYZE tbl_tpcpoint;
 ANALYZE
 ANALYZE tbl_tpcpatch;
