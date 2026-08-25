@@ -217,7 +217,7 @@ extern void meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
 extern const char *meos_pc_schema_xml(uint32_t pcid);
 extern void meos_pc_schema_clear(void);
 extern int32_t meos_pc_schema_get_srid(uint32_t pcid);
-extern int32_t meos_pc_schema_get_compression(uint32_t pcid);
+extern const char *meos_pc_schema_get_compression(uint32_t pcid);
 extern int32_t meos_pc_schema_get_ndims(uint32_t pcid);
 extern void meos_set_pointcloud_schemas_xml(const char *path);
 
