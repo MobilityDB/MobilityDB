@@ -31,9 +31,9 @@
  * wrappers from `mobilitydb/src/pointcloud/tpc_boxops.c`.
  */
 
-/******************************************************************************
- * Contains (@>)
- ******************************************************************************/
+/*****************************************************************************
+ * Contains
+ *****************************************************************************/
 
 -- tpcpoint
 CREATE FUNCTION contains(tstzspan, tpcpoint) RETURNS boolean
@@ -101,9 +101,9 @@ CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 
-/******************************************************************************
- * Contained (<@)
- ******************************************************************************/
+/*****************************************************************************
+ * Contained
+ *****************************************************************************/
 
 -- tpcpoint
 CREATE FUNCTION contained(tstzspan, tpcpoint) RETURNS boolean
@@ -171,9 +171,9 @@ CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 
-/******************************************************************************
- * Overlaps (&&)
- ******************************************************************************/
+/*****************************************************************************
+ * Overlaps
+ *****************************************************************************/
 
 -- tpcpoint
 CREATE FUNCTION overlaps(tstzspan, tpcpoint) RETURNS boolean
@@ -241,9 +241,9 @@ CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 
-/******************************************************************************
- * Same (~=)
- ******************************************************************************/
+/*****************************************************************************
+ * Same
+ *****************************************************************************/
 
 -- tpcpoint
 CREATE FUNCTION same(tstzspan, tpcpoint) RETURNS boolean
@@ -311,9 +311,9 @@ CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 
-/******************************************************************************
- * Adjacent (-|-)
- ******************************************************************************/
+/*****************************************************************************
+ * Adjacent
+ *****************************************************************************/
 
 -- tpcpoint
 CREATE FUNCTION adjacent(tstzspan, tpcpoint) RETURNS boolean
