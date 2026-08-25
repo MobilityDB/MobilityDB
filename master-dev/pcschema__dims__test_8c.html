@@ -108,7 +108,8 @@ Variables</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Test that a point cloud schema stated as dimensions is the schema that the same document states. </p>
-<p >A schema stated as rows and the same schema parsed from its XML document are two statements of one thing, so every field of the result must agree, including the ones the engine computes: the size of a dimension, the offset of a dimension within a point, and the width of a point. </p>
+<p >A schema stated as rows and the same schema parsed from its XML document are two statements of one thing, so every field of the result must agree, including the ones the engine computes: the size of a dimension, the offset of a dimension within a point, and the width of a point.</p>
+<p >The three accessors a binding reads a schema through are exercised on a schema carrying an inactive dimension, which is the state that tells the number of dimensions apart from the width of the layout. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

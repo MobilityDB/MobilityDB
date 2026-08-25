@@ -83,7 +83,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_gaaf34a314ae9e598c268606ff3eb2c665.html#gaaf34a314ae9e598c268606ff3eb2c665">meos_pc_schema</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga5e7d099c0b835c6edfc2696ab16ff61d.html#ga5e7d099c0b835c6edfc2696ab16ff61d">meos_pc_schema_clear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga29a849835a39fe4c76ad57878cb1ba1c.html#ga29a849835a39fe4c76ad57878cb1ba1c">meos_pc_schema_from_dims</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga211c0921d000722d0703459ca419fff4.html#ga211c0921d000722d0703459ca419fff4">meos_pc_schema_get_compression</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga3cf5e3fd3d62d616e847d2f34fe626ae.html#ga3cf5e3fd3d62d616e847d2f34fe626ae">meos_pc_schema_get_compression</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga9347688854598c442815535a76ece60e.html#ga9347688854598c442815535a76ece60e">meos_pc_schema_get_ndims</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_gaaa8feb189124a1e430b9fef9aadbb83a.html#gaaa8feb189124a1e430b9fef9aadbb83a">meos_pc_schema_get_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga4abdb06a1b50391cc7189d1578bfeb60.html#ga4abdb06a1b50391cc7189d1578bfeb60">meos_pc_schema_register</a></td></tr>
@@ -96,14 +96,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga211c0921d000722d0703459ca419fff4" name="ga211c0921d000722d0703459ca419fff4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga211c0921d000722d0703459ca419fff4">&#9670;&#160;</a></span>meos_pc_schema_get_compression()</h2>
+<a id="ga3cf5e3fd3d62d616e847d2f34fe626ae" name="ga3cf5e3fd3d62d616e847d2f34fe626ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3cf5e3fd3d62d616e847d2f34fe626ae">&#9670;&#160;</a></span>meos_pc_schema_get_compression()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int32_t meos_pc_schema_get_compression </td>
+          <td class="memname">const char * meos_pc_schema_get_compression </td>
           <td>(</td>
           <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>pcid</em></td><td>)</td>
@@ -119,8 +119,8 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On a pcid no schema is registered for return -1</dd></dl>
-<p>The compression is read off the resolved schema, so a caller answers it without the PCSCHEMA definition, as for the reference system </p>
+<dl class="section return"><dt>Returns</dt><dd>On a pcid no schema is registered for return <code>NULL</code> </dd></dl>
+<p>The name the catalog states is answered — <code>none</code>, <code>dimensional</code> or <code>laz</code> — which is what the SQL function of the same name answers. The compression field of the schema is an enumerator of the point cloud library, declared in its own header, so a number leaves a caller of this surface nothing to decode it with </p><dl class="section note"><dt>Note</dt><dd>The result is a string constant owned by that library, so a caller reads it and never frees it </dd></dl>
 
 </div>
 </div>
