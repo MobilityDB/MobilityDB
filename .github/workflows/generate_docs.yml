@@ -42,7 +42,10 @@ jobs:
         run: |
           cd doc
           dblatex -s texstyle.sty -o mobilitydb-manual.pdf mobilitydb-manual.xml
-          dbtoepub -o mobilitydb-manual.epub mobilitydb-manual.xml
+          # EPUB 3, whose HTML5 content keeps the @start attribute a continued
+          # list needs. The EPUB 2 content is XHTML 1.1, which has no @start,
+          # so a list carrying continuation="continues" restarts its numbering.
+          dbtoepub -s /usr/share/xml/docbook/stylesheet/docbook-xsl/epub3/chunk.xsl -o mobilitydb-manual.epub mobilitydb-manual.xml
           xsltproc --stringparam html.stylesheet "docbook.css" --stringparam chunker.output.encoding "UTF-8" --xinclude -o index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl mobilitydb-manual.xml
 
       # generate the documentation files
@@ -59,7 +62,7 @@ jobs:
           cp es/*.xml epub-es/
           cp -r images epub-es/images
           sed -i 's|\.\./images/|images/|g' epub-es/*.xml
-          dbtoepub -o es/mobilitydb-manual.epub epub-es/mobilitydb-manual.xml
+          dbtoepub -s /usr/share/xml/docbook/stylesheet/docbook-xsl/epub3/chunk.xsl -o es/mobilitydb-manual.epub epub-es/mobilitydb-manual.xml
           rm -rf epub-es
           xsltproc --stringparam html.stylesheet "docbook.css" --stringparam chunker.output.encoding "UTF-8" --xinclude -o es/index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl es/mobilitydb-manual.xml
           cp docbook.css es/

@@ -1,7 +1,10 @@
 <?xml version='1.0' encoding="iso-8859-1"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version='1.0'>
 
-<xsl:import href="@DOCBOOK_XSL@/epub/docbook.xsl"/> 
+<!-- EPUB 3, whose HTML5 content keeps the @start attribute a continued list needs. The EPUB 2
+     content is XHTML 1.1, which has no @start, so a list carrying continuation="continues"
+     restarts its numbering there. -->
+<xsl:import href="@DOCBOOK_XSL@/epub3/chunk.xsl"/>
 
 <!-- Set parameters to uniformize manual across all formats -->
 
