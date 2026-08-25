@@ -81,12 +81,17 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 -- {[2001-01-01 08:00:00,2001-01-01 08:20:00]}
 </pre><p>
 			Damos a continuación las funciones de entrada y salida de tipos de conjunto y de rango en formato textual (Well-Known Text o WKT) y binario (Well-Known Binary o WKB). El formato de salida predeterminado de todos los tipos de conjuntos y de rango es el formato de texto conocido. La función <code class="varname">asText</code> que se da a continuación permite determinar la salida de valores de punto flotante.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_asText"></a><a class="indexterm" name="id1743"></a><p>Devuelve la representación textual conocida (Well-Known Text o WKT)</p><p><code class="varname">asText({floatset,floatspans},maxdecdigits=15) → text</code></p><p>El argumento <code class="varname">maxdecdigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_asText"></a><a class="indexterm" name="id1743"></a><p>Devuelve la representación textual conocida (Well-Known Text o WKT)</p><pre class="programlisting">
+asText({floatset,floatspans},maxdecdigits=15) → text
+</pre><p>El argumento <code class="varname">maxdecdigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
 SELECT asText(floatset '{1.123456789,2.123456789}', 3);
 -- {1.123, 2.123}
 SELECT asText(floatspanset '{[1.55,2.55],[4,5]}',0);
 -- {[2, 3], [4, 5]}
-</pre></li><li class="listitem"><a name="setspan_asBinary"></a><a class="indexterm" name="id1753"></a><a class="indexterm" name="id1756"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><p><code class="varname">asBinary({set,spans},endian text='') → bytea</code></p><p><code class="varname">asHexWKB({set,spans},endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_asBinary"></a><a class="indexterm" name="id1752"></a><a class="indexterm" name="id1755"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
+asBinary({set,spans},endian text='') → bytea
+asHexWKB({set,spans},endian text='') → text
+</pre><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
 SELECT asBinary(dateset '{2001-01-01, 2001-01-03}');
 -- \x01050001020000006e01000070010000
 SELECT asBinary(intspan '[1, 3)');
@@ -99,7 +104,12 @@ SELECT asHexWKB(intspan '[1, 3)');
 -- 011300010100000003000000
 SELECT asHexWKB(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 -- 00000E00000002033FF000000000000040000000000000000340100000000000004014000000000000
-</pre></li><li class="listitem"><a name="setspan_asEWKB"></a><a class="indexterm" name="id1767"></a><a class="indexterm" name="id1770"></a><p>Devuelve la representación binaria extendida conocida (Extended Well-Known Binary o EWKB) o la representación hexadecimal binaria extendida conocida (HexEWKB) de un conjunto espacial</p><p><code class="varname">asEWKB({geomset,geogset,cbufferset,npointset,poseset,posechainset,pcpointset,pcpatchset},endian text='') → bytea</code></p><p><code class="varname">asHexEWKB({geomset,geogset,cbufferset,npointset,poseset,posechainset,pcpointset,pcpatchset},endian text='') → text</code></p><p>Para <code class="varname">geomset</code>, <code class="varname">geogset</code>, <code class="varname">cbufferset</code>, <code class="varname">npointset</code>, <code class="varname">poseset</code> y <code class="varname">posechainset</code> el SRID (cuando se conoce) se incluye una única vez en la cabecera del conjunto: <code class="varname">asEWKB</code> y <code class="varname">asHexEWKB</code> lo incluyen, mientras que <code class="varname">asBinary</code> y <code class="varname">asHexWKB</code> devuelven la representación binaria conocida (WKB) sin él, siguiendo la convención OGC y el <code class="varname">asBinary</code>/<code class="varname">asHexWKB</code> de los tipos base <code class="varname">cbuffer</code>, <code class="varname">npoint</code> y <code class="varname">pose</code>. Para <code class="varname">pcpointset</code> y <code class="varname">pcpatchset</code> el esquema, y su SRID, se resuelve fuera de banda a partir del catálogo <code class="varname">pointcloud_formats</code> en lugar de incluirse en el valor, por lo que las cuatro funciones siempre devuelven los mismos bytes para estos dos tipos.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_asEWKB"></a><a class="indexterm" name="id1763"></a><a class="indexterm" name="id1766"></a><p>Devuelve la representación binaria extendida conocida (Extended Well-Known Binary o EWKB) o la representación hexadecimal binaria extendida conocida (HexEWKB) de un conjunto espacial</p><pre class="programlisting">
+asEWKB({geomset,geogset,cbufferset,npointset,poseset,posechainset,pcpointset,pcpatchset},
+  endian text='') → bytea
+asHexEWKB({geomset,geogset,cbufferset,npointset,poseset,posechainset,pcpointset,
+  pcpatchset},endian text='') → text
+</pre><p>Para <code class="varname">geomset</code>, <code class="varname">geogset</code>, <code class="varname">cbufferset</code>, <code class="varname">npointset</code>, <code class="varname">poseset</code> y <code class="varname">posechainset</code> el SRID (cuando se conoce) se incluye una única vez en la cabecera del conjunto: <code class="varname">asEWKB</code> y <code class="varname">asHexEWKB</code> lo incluyen, mientras que <code class="varname">asBinary</code> y <code class="varname">asHexWKB</code> devuelven la representación binaria conocida (WKB) sin él, siguiendo la convención OGC y el <code class="varname">asBinary</code>/<code class="varname">asHexWKB</code> de los tipos base <code class="varname">cbuffer</code>, <code class="varname">npoint</code> y <code class="varname">pose</code>. Para <code class="varname">pcpointset</code> y <code class="varname">pcpatchset</code> el esquema, y su SRID, se resuelve fuera de banda a partir del catálogo <code class="varname">pointcloud_formats</code> en lugar de incluirse en el valor, por lo que las cuatro funciones siempre devuelven los mismos bytes para estos dos tipos.</p><pre class="programlisting">
 SELECT asBinary(geomset 'SRID=4326;{Point(1 1)}');
 -- \x012b0001010000000101000000000000000000f03f000000000000f03f
 SELECT asHexWKB(geomset 'SRID=4326;{Point(1 1)}');
@@ -112,7 +122,11 @@ SELECT asEWKB(cbufferset 'SRID=4326;{"Cbuffer(Point(1 1),0.5)"}');
 -- \x013a0041e610000001000000000000000000f03f000000000000f03f000000000000e03f
 SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
 -- 01310041E61000000100000041E61000000100000000000000000000000000E03F
-</pre></li><li class="listitem"><a name="setspan_FromBinary"></a><a class="indexterm" name="id1799"></a><a class="indexterm" name="id1802"></a><a class="indexterm" name="id1805"></a><p>Entrar a partir de la representación binaria conocida (WKB)</p><p><code class="varname">settypeFromBinary(bytea) → set</code></p><p><code class="varname">spantypeFromBinary(bytea) → span</code></p><p><code class="varname">spansettypeFromBinary(bytea) → spanset</code></p><p>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_FromBinary"></a><a class="indexterm" name="id1792"></a><a class="indexterm" name="id1795"></a><a class="indexterm" name="id1798"></a><p>Entrar a partir de la representación binaria conocida (WKB)</p><pre class="programlisting">
+settypeFromBinary(bytea) → set
+spantypeFromBinary(bytea) → span
+spansettypeFromBinary(bytea) → spanset
+</pre><p>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</p><pre class="programlisting">
 SELECT datesetFromBinary('\x01050001020000006e01000070010000');
 -- {2001-01-01, 2001-01-03}
 SELECT intspanFromBinary('\x011300010100000003000000');
@@ -120,7 +134,11 @@ SELECT intspanFromBinary('\x011300010100000003000000');
 SELECT floatspansetFromBinary(
   '\x00000e00000002033ff000000000000040000000000000000340100000000000004014000000000000');
 -- {[1, 2], [4, 5]}
-</pre></li><li class="listitem"><a name="setspan_FromHexWKB"></a><a class="indexterm" name="id1818"></a><a class="indexterm" name="id1821"></a><a class="indexterm" name="id1824"></a><p>Entrar a partir de la representación hexadecimal binaria conocida (HexWKB)</p><p><code class="varname">settypeFromHexWKB(text) → set</code></p><p><code class="varname">spantypeFromHexWKB(text) → span</code></p><p><code class="varname">spansettypeFromHexWKB(text) → spanset</code></p><p>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_FromHexWKB"></a><a class="indexterm" name="id1806"></a><a class="indexterm" name="id1809"></a><a class="indexterm" name="id1812"></a><p>Entrar a partir de la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
+settypeFromHexWKB(text) → set
+spantypeFromHexWKB(text) → span
+spansettypeFromHexWKB(text) → spanset
+</pre><p>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</p><pre class="programlisting">
 SELECT datesetFromHexWKB('01050001020000006E01000070010000');
 -- {2001-01-01, 2001-01-03}
 SELECT intspanFromHexWKB('011300010100000003000000');

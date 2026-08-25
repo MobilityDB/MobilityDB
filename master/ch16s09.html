@@ -13,7 +13,13 @@ SELECT tjsonb '{[{"unit": "km", "speed": 10}@2001-01-01,
 -- {["10"@2001-01-01, "20"@2001-01-02]}
 </pre><p>
 		which is obtained by applying the PostgreSQL operator <code class="varname">-&gt;</code> at every instant of the temporal JSON or JSONB value.
-		</p><p>When manipulating JSON collections of varying structure, it may be the case that an item is defined in some of the documents but not all. PostgreSQL provides the lax mode for this purpose, where the argument <code class="varname">null_value_treatment</code> determines the behavior in the case a function returns a NULL value. The argument can take one of the following values: <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, <code class="varname">'return_target'</code>, where <code class="varname">'use_json_null'</code> is the default value. In PostgreSQL the lax mode is supported only for <span class="emphasis"><em>update</em></span> (not <span class="emphasis"><em>query</em></span>) operations with the function <code class="varname">jsonb_set_lax</code>. In MobilityDB, we kept the same semantics for the corresponding function <code class="varname">tjsonbSetLax</code>, but we enabled similar behavior for <span class="emphasis"><em>all</em></span> temporal JSON operations that may return a null value, except that we replaced the value <code class="varname">'return_target'</code> with <code class="varname">'return_null'</code>, since the former is not meaningful for temporal operations. For operators such as <code class="varname">-&gt;</code>, the default value <code class="varname">'use_json_null'</code> is used and cannot be changed, whereas for the corresponding functions <code class="varname">tjsonObjectField</code> and <code class="varname">tjsonbObjectField</code>, the last argument specifies the behavior in the case the function returns NULL. We illustrate this behavior for function <code class="varname">tjsonObjectField</code> below.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjson_object_field"></a><a class="indexterm" name="id13408"></a><a class="indexterm" name="id13411"></a><a class="indexterm" name="id13414"></a><a class="indexterm" name="id13417"></a><a class="indexterm" name="id13420"></a><p>Extract a temporal JSON object field specified by a key</p><p><code class="varname">{ttext,tjsonb} -&gt; text → {ttext,tjsonb}</code></p><p><code class="varname">tjsonb -&gt;&gt; text → ttext</code></p><p><code class="varname">tjsonObjectField(ttext,text,null_handle text='use_json_null') → ttext</code></p><p><code class="varname">tjsonbObjectField(tjsonb,text,null_handle text='use_json_null') → tjsonb</code></p><p><code class="varname">tjsonbObjectFieldText(tjsonb,text,null_handle text='use_json_null') → ttext</code></p><pre class="programlisting">
+		</p><p>When manipulating JSON collections of varying structure, it may be the case that an item is defined in some of the documents but not all. PostgreSQL provides the lax mode for this purpose, where the argument <code class="varname">null_value_treatment</code> determines the behavior in the case a function returns a NULL value. The argument can take one of the following values: <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, <code class="varname">'return_target'</code>, where <code class="varname">'use_json_null'</code> is the default value. In PostgreSQL the lax mode is supported only for <span class="emphasis"><em>update</em></span> (not <span class="emphasis"><em>query</em></span>) operations with the function <code class="varname">jsonb_set_lax</code>. In MobilityDB, we kept the same semantics for the corresponding function <code class="varname">tjsonbSetLax</code>, but we enabled similar behavior for <span class="emphasis"><em>all</em></span> temporal JSON operations that may return a null value, except that we replaced the value <code class="varname">'return_target'</code> with <code class="varname">'return_null'</code>, since the former is not meaningful for temporal operations. For operators such as <code class="varname">-&gt;</code>, the default value <code class="varname">'use_json_null'</code> is used and cannot be changed, whereas for the corresponding functions <code class="varname">tjsonObjectField</code> and <code class="varname">tjsonbObjectField</code>, the last argument specifies the behavior in the case the function returns NULL. We illustrate this behavior for function <code class="varname">tjsonObjectField</code> below.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjson_object_field"></a><a class="indexterm" name="id11728"></a><a class="indexterm" name="id11731"></a><a class="indexterm" name="id11734"></a><a class="indexterm" name="id11737"></a><a class="indexterm" name="id11740"></a><p>Extract a temporal JSON object field specified by a key</p><pre class="programlisting">
+{ttext,tjsonb} -&gt; text → {ttext,tjsonb}
+tjsonb -&gt;&gt; text → ttext
+tjsonObjectField(ttext,text,null_handle text='use_json_null') → ttext
+tjsonbObjectField(tjsonb,text,null_handle text='use_json_null') → tjsonb
+tjsonbObjectFieldText(tjsonb,text,null_handle text='use_json_null') → ttext
+</pre><pre class="programlisting">
 SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01, 
   {"unit": "km", "speed": 20}@2001-01-02]}' -&gt; text 'speed';
 -- {["10"@2001-01-01, "20"@2001-01-02]}
@@ -40,7 +46,12 @@ SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'return_null');
 -- NULL
-</pre></li><li class="listitem"><a name="tjson_extract_path"></a><a class="indexterm" name="id13440"></a><a class="indexterm" name="id13443"></a><a class="indexterm" name="id13446"></a><a class="indexterm" name="id13449"></a><a class="indexterm" name="id13452"></a><p>Extract a temporal JSON object field specified by a path</p><p><code class="varname">{ttext,tjsonb} #&gt; text[] → {ttext,tjsonb}</code></p><p><code class="varname">tjsonExtractPath(ttext,text[],null_handle text='use_json_null') → ttext</code></p><p><code class="varname">tjsonbExtractPath(tjsonb,text[],null_handle text='use_json_null') → tjsonb</code></p><p><code class="varname">tjsonbExtractPathText(tjsonb,text[],null_handle text='use_json_null') → ttext</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjson_extract_path"></a><a class="indexterm" name="id11751"></a><a class="indexterm" name="id11754"></a><a class="indexterm" name="id11757"></a><a class="indexterm" name="id11760"></a><a class="indexterm" name="id11763"></a><p>Extract a temporal JSON object field specified by a path</p><pre class="programlisting">
+{ttext,tjsonb} #&gt; text[] → {ttext,tjsonb}
+tjsonExtractPath(ttext,text[],null_handle text='use_json_null') → ttext
+tjsonbExtractPath(tjsonb,text[],null_handle text='use_json_null') → tjsonb
+tjsonbExtractPathText(tjsonb,text[],null_handle text='use_json_null') → ttext
+</pre><pre class="programlisting">
 SELECT ttext '[{"speed": {"unit": "km", "value": 10}}@2001-01-01, 
   {"speed": {"unit": "km", "value": 20}}@2001-01-02]' #&gt; ARRAY[text 'speed', 'value'];
 -- {["10"@2001-01-01, "20"@2001-01-02]}
@@ -49,14 +60,23 @@ SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place",
   {"position":"Point(2 2)", "PoIs":["Palais Royal", "Manneken Pis"]}@2001-01-03]' #&gt;&gt;
   ARRAY[text 'PoIs', '1'];
 -- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-03]
-</pre></li><li class="listitem"><a name="tjson_array_element"></a><a class="indexterm" name="id13466"></a><a class="indexterm" name="id13469"></a><a class="indexterm" name="id13472"></a><p>Extract an element from a temporal JSON array</p><p><code class="varname">tjsonArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb</code></p><p><code class="varname">tjsonbArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb</code></p><p><code class="varname">tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → tjsonb</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjson_array_element"></a><a class="indexterm" name="id11770"></a><a class="indexterm" name="id11773"></a><a class="indexterm" name="id11776"></a><p>Extract an element from a temporal JSON array</p><pre class="programlisting">
+tjsonArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+tjsonbArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+</pre><pre class="programlisting">
 SELECT tjsonArrayElement(ttext '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 0);
 -- ["Grand Place"@2001-01-01, "Palais Royal"@2001-01-02]
 SELECT tjsonbArrayElement(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 1);
 -- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-02]
-</pre></li><li class="listitem"><a name="tjsonb_talphanum"></a><a class="indexterm" name="id13484"></a><a class="indexterm" name="id13487"></a><a class="indexterm" name="id13490"></a><a class="indexterm" name="id13493"></a><p>Extract a temporal alphanumeric value from a temporal JSONB value given by a key</p><p><code class="varname">tbool(tjsonb,text,null_handle text='raise_exception') → tbool</code></p><p><code class="varname">tint(tjsonb,text,null_handle text='raise_exception') → tint</code></p><p><code class="varname">tfloat(tjsonb,text,interp='linear',null_handle text='raise_exception') → tfloat</code></p><p><code class="varname">ttext(tjsonb,text, null_handle text='raise_exception') → ttext</code></p><p>Note that the value <code class="varname">use_json_null</code> cannot be used for the above functions and thus the default value <code class="varname">'raise_exception'</code> is used.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_talphanum"></a><a class="indexterm" name="id11783"></a><a class="indexterm" name="id11786"></a><a class="indexterm" name="id11789"></a><a class="indexterm" name="id11792"></a><p>Extract a temporal alphanumeric value from a temporal JSONB value given by a key</p><pre class="programlisting">
+tbool(tjsonb,text,null_handle text='raise_exception') → tbool
+tint(tjsonb,text,null_handle text='raise_exception') → tint
+tfloat(tjsonb,text,interp='linear',null_handle text='raise_exception') → tfloat
+ttext(tjsonb,text, null_handle text='raise_exception') → ttext
+</pre><p>Note that the value <code class="varname">use_json_null</code> cannot be used for the above functions and thus the default value <code class="varname">'raise_exception'</code> is used.</p><pre class="programlisting">
 SELECT tbool(tjsonb '[{"speed": 10, "lights": "on"}@2001-01-01,
   {"speed": 20, "lights": "on"}@2001-01-02]', 'lights');
 -- [true@2001-01-01, true@2001-01-02]
@@ -71,7 +91,9 @@ SELECT ttext(tjsonb '[{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-
   {"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-02,
   {"road": "Bvd de la Cambre", "category": "residential"}@2001-01-03]', 'category');
 -- [primary@2001-01-01, residential@2001-01-03]
-</pre></li><li class="listitem"><a name="tjsonb_concat"></a><a class="indexterm" name="id13510"></a><p>Temporal JSONB concatenation</p><p><code class="varname">tjsonb || {jsonb,tjsonb} → tjsonb</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_concat"></a><a class="indexterm" name="id11802"></a><p>Temporal JSONB concatenation</p><pre class="programlisting">
+tjsonb || {jsonb,tjsonb} → tjsonb
+</pre><pre class="programlisting">
 SELECT tjsonb '{[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]}' ||
   '{"unit":"km"}'::jsonb;
 -- {[{"unit": "km", "speed": 10}@2001-01-01, {"unit": "km", "speed": 20}@2001-01-02]}
@@ -79,7 +101,10 @@ SELECT tjsonb '{[{"speed":10}@2001-01-01, {"speed":20}@2001-01-03]}' ||
   tjsonb '{[{"Position":"Point(1 1)"}@2001-01-02, {"Position":"Point(2 2)"}@2001-01-04]}';
 /* {[{"speed": 10, "Position": "Point(1 1)"}@2001-01-02,
      {"speed": 20, "Position": "Point(2 2)"}@2001-01-03]} */
-</pre></li><li class="listitem"><a name="tjsonb_delete"></a><a class="indexterm" name="id13518"></a><p>Temporal JSONB deletion</p><p><code class="varname">tjsonb - {int,text,text[]} → tjsonb</code></p><p><code class="varname">tjsonb #- text[] → tjsonb</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_delete"></a><a class="indexterm" name="id11809"></a><p>Temporal JSONB deletion</p><pre class="programlisting">
+tjsonb - {int,text,text[]} → tjsonb
+tjsonb #- text[] → tjsonb
+</pre><pre class="programlisting">
 SELECT tjsonb '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - 'unit';
 -- {[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02]}
@@ -105,7 +130,11 @@ SELECT minusValues(tjsonb '{[{"unit": "km", "speed": 10, "light": true}@2001-01-
 SELECT minusValues(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal"]@2001-01-02]' - 0,  jsonbset '{"[]","{}"}');
 -- {[["La Bourse"]@2001-01-01, ["La Bourse"]@2001-01-02)}
-</pre></li><li class="listitem"><a name="tjsonb_exists"></a><a class="indexterm" name="id13532"></a><p>Temporal JSONB exists</p><p><code class="varname">tjsonb ? jsonb → tbool</code></p><p><code class="varname">tjsonb ?| jsonb[] → tbool</code></p><p><code class="varname">tjsonb ?&amp; jsonb[] → tbool</code></p><p>As in PostgreSQL, the operators <code class="varname">?|</code> and <code class="varname">?&amp;</code> test, respectively, whether <span class="emphasis"><em>any</em></span> or <span class="emphasis"><em>all</em></span> of the strings in the text array exist as top-level keys or array elements.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_exists"></a><a class="indexterm" name="id11820"></a><p>Temporal JSONB exists</p><pre class="programlisting">
+tjsonb ? jsonb → tbool
+tjsonb ?| jsonb[] → tbool
+tjsonb ?&amp; jsonb[] → tbool
+</pre><p>As in PostgreSQL, the operators <code class="varname">?|</code> and <code class="varname">?&amp;</code> test, respectively, whether <span class="emphasis"><em>any</em></span> or <span class="emphasis"><em>all</em></span> of the strings in the text array exist as top-level keys or array elements.</p><pre class="programlisting">
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' ? text 'geom';
 -- t@2001-01-01
 SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(2 2)"}@2001-01-02,
@@ -114,7 +143,10 @@ SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(2 2)"}@2001-0
 SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]' ?&amp; ARRAY['speed', 'units'];
 -- {[t@2001-01-01, t@2001-01-02]}
-</pre></li><li class="listitem"><a name="tjsonb_contains"></a><a class="indexterm" name="id13549"></a><a class="indexterm" name="id13552"></a><p>Temporal JSONB contains/contained</p><p><code class="varname">{tjsonb,jsonb} @&gt; {tjsonb,jsonb} → tbool</code></p><p><code class="varname">{tjsonb,jsonb} &lt;@ {tjsonb,jsonb} → tbool</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_contains"></a><a class="indexterm" name="id11832"></a><a class="indexterm" name="id11835"></a><p>Temporal JSONB contains/contained</p><pre class="programlisting">
+{tjsonb,jsonb} @&gt; {tjsonb,jsonb} → tbool
+{tjsonb,jsonb} &lt;@ {tjsonb,jsonb} → tbool
+</pre><pre class="programlisting">
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' @&gt; jsonb '{"geom": "Point(1 1)"}';
 -- t@2001-01-01
 SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(2 2)"}@2001-01-02,
@@ -124,7 +156,10 @@ SELECT jsonb '{"geom": "Point(1 1)"}' &lt;@ tjsonb '{[{"geom": "Point(1 1)"}@200
   {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03],
   [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}';
 -- {[t@2001-01-01, t@2001-01-03], [f@2001-01-04, f@2001-01-05]}
-</pre></li><li class="listitem"><a name="tjsonb_set"></a><a class="indexterm" name="id13562"></a><a class="indexterm" name="id13565"></a><p>Temporal JSONB set</p><p><code class="varname">tjsonbSet(tjsonb,path text[],jsonb,create boolean=true) → tjsonb</code></p><p><code class="varname">tjsonbSetLax(tjsonb,path text[],jsonb,create boolean=true,handle_null text) → tjsonb</code></p><p>Return the <code class="varname">tjsonb</code> value with the item specified by path replaced by <code class="varname">jsonb</code>, or added if <code class="varname">create</code> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.
+</pre></li><li class="listitem"><a name="tjsonb_set"></a><a class="indexterm" name="id11842"></a><a class="indexterm" name="id11845"></a><p>Temporal JSONB set</p><pre class="programlisting">
+tjsonbSet(tjsonb,path text[],jsonb,create boolean=true) → tjsonb
+tjsonbSetLax(tjsonb,path text[],jsonb,create boolean=true,handle_null text) → tjsonb
+</pre><p>Return the <code class="varname">tjsonb</code> value with the item specified by path replaced by <code class="varname">jsonb</code>, or added if <code class="varname">create</code> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.
         </p><p>Function <code class="varname">tjsonbSetLax</code> behaves identically to <code class="varname">tjsonbSet</code> if the given value is not NULL, Otherwise, it behaves according to the value of <code class="varname">handle_null</code>, which must be one of <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, or <code class="varname">'return_source'</code>. As stated above, we kept PostgreSQL behavior for this function enabling the value <code class="varname">'return_source'</code> whereas for all other <span class="emphasis"><em>query</em></span> operations, this value has been replaced with <code class="varname">'return_null'</code>.</p><pre class="programlisting">
 SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
@@ -138,7 +173,9 @@ SELECT tjsonbSet(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
 SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20}@2001-01-02]', ARRAY['units'], 'null'::jsonb, true, 'delete_key');
 -- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20}@2001-01-02]
-</pre></li><li class="listitem"><a name="tjsonb_insert"></a><a class="indexterm" name="id13590"></a><p>Temporal JSONB insert</p><p><code class="varname">tjsonbInsert(tjsonb,path text[],jsonb,after boolean=false) → tjsonb</code></p><p>Return the <code class="varname">tjsonb</code> value with <code class="varname">jsonb</code> inserted. If the item specified by the path is an array element, the new value will be inserted before that item if <code class="varname">after</code> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_insert"></a><a class="indexterm" name="id11867"></a><p>Temporal JSONB insert</p><pre class="programlisting">
+tjsonbInsert(tjsonb,path text[],jsonb,after boolean=false) → tjsonb
+</pre><p>Return the <code class="varname">tjsonb</code> value with <code class="varname">jsonb</code> inserted. If the item specified by the path is an array element, the new value will be inserted before that item if <code class="varname">after</code> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</p><pre class="programlisting">
 SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
 -- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]
@@ -148,7 +185,10 @@ SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
 SELECT tjsonbInsert(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', ARRAY['units'], '"mi/h"'::jsonb);
 -- [{"speed": 10, "units": "mi/h"}@2001-01-01, {"speed": 20, "units": "mi/h"}@2001-01-02]
-</pre></li><li class="listitem"><a name="tjson_strip_nulls"></a><a class="indexterm" name="id13602"></a><a class="indexterm" name="id13605"></a><p>Return a temporal JSON value without nulls</p><p><code class="varname">tjsonStripNulls(ttext,strip_in_arrays boolean=false) → ttext</code></p><p><code class="varname">tjsonbStripNulls(tjsonb,strip_in_arrays boolean=false) → tjsonb</code></p><p>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjson_strip_nulls"></a><a class="indexterm" name="id11878"></a><a class="indexterm" name="id11881"></a><p>Return a temporal JSON value without nulls</p><pre class="programlisting">
+tjsonStripNulls(ttext,strip_in_arrays boolean=false) → ttext
+tjsonbStripNulls(tjsonb,strip_in_arrays boolean=false) → tjsonb
+</pre><p>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</p><pre class="programlisting">
 SELECT tjsonStripNulls(ttext '[{"speed": 10, "lights": null}@2001-01-01,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}@2001-01-02]');
 /* [{"speed": 10}@2001-01-01,
@@ -173,7 +213,11 @@ SELECT minusValues(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]', 'null');
 /* {[{"speed": 10}@2001-01-01, {"speed": 10}@2001-01-02),
    [{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]}
-</pre></li><li class="listitem"><a name="tjsonb_path_exists"></a><a class="indexterm" name="id13619"></a><a class="indexterm" name="id13622"></a><a class="indexterm" name="id13625"></a><p>Does the JSON path return any item for the specified temporal JSONB value?</p><p><code class="varname">tjsonb @? jsonpath → tbool</code></p><p><code class="varname">tjsonbPathExists(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</code></p><p><code class="varname">tjsonbPathExistsTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</code></p><p>The operator <code class="varname">@?</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_path_exists"></a><a class="indexterm" name="id11892"></a><a class="indexterm" name="id11895"></a><a class="indexterm" name="id11898"></a><p>Does the JSON path return any item for the specified temporal JSONB value?</p><pre class="programlisting">
+tjsonb @? jsonpath → tbool
+tjsonbPathExists(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
+tjsonbPathExistsTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
+</pre><p>The operator <code class="varname">@?</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
 SELECT tjsonb '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]' @?
   '$.units ? (@ == "km/h")';
 -- [f@2001-01-01, t@2001-01-02]
@@ -189,7 +233,11 @@ SELECT tjsonbPathExistsTz(tjsonb
     {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
   '$.lastInspection ? (@.datetime() &gt; "2000-06-01".datetime() )');
 -- [t@2001-01-01, f@2001-01-02]
-</pre></li><li class="listitem"><a name="tjsonb_path_match"></a><a class="indexterm" name="id13639"></a><a class="indexterm" name="id13642"></a><a class="indexterm" name="id13645"></a><p>Return the result of a JSON path predicate check for a temporal JSONB value</p><p><code class="varname">tjsonb @@ jsonpath → tbool</code></p><p><code class="varname">tjsonbPathMatch(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</code></p><p><code class="varname">tjsonbPathMatchTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</code></p><p>The operator <code class="varname">@@</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_path_match"></a><a class="indexterm" name="id11907"></a><a class="indexterm" name="id11910"></a><a class="indexterm" name="id11913"></a><p>Return the result of a JSON path predicate check for a temporal JSONB value</p><pre class="programlisting">
+tjsonb @@ jsonpath → tbool
+tjsonbPathMatch(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
+tjsonbPathMatchTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
+</pre><p>The operator <code class="varname">@@</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
 SELECT tjsonb '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]' @@
   '$.units == "km/h"';
 -- [f@2001-01-01, t@2001-01-02]
@@ -205,7 +253,10 @@ SELECT tjsonbPathMatchTz(tjsonb
     {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
   '$.lastInspection.datetime() &gt; "2000-06-01".datetime()');
 -- [t@2001-01-01, f@2001-01-02]
-</pre></li><li class="listitem"><a name="tjsonb_path_query_array"></a><a class="indexterm" name="id13659"></a><a class="indexterm" name="id13662"></a><p>Return all items returned by a JSON path from a temporal JSONB value, as a JSON array</p><p><code class="varname">tjsonbPathQueryArray(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</code></p><p><code class="varname">tjsonbPathQueryArrayTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</code></p><p>The above function can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_path_query_array"></a><a class="indexterm" name="id11922"></a><a class="indexterm" name="id11925"></a><p>Return all items returned by a JSON path from a temporal JSONB value, as a JSON array</p><pre class="programlisting">
+tjsonbPathQueryArray(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
+tjsonbPathQueryArrayTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
+</pre><p>The above function can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
 SELECT tjsonbPathQueryArray(tjsonb 
   '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]',
   '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
@@ -217,7 +268,10 @@ SELECT tjsonbPathQueryArrayTz(tjsonb
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp; 
    @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
 -- [["2000-01-06", "2000-01-09"]@2001-01-01, ["2000-01-07"]@2001-01-02]
-</pre></li><li class="listitem"><a name="tjsonb_path_query_first"></a><a class="indexterm" name="id13673"></a><a class="indexterm" name="id13676"></a><p>Return the fist item returned by a JSON path from a temporal JSONB value</p><p><code class="varname">tjsonbPathQueryFirst(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</code></p><p><code class="varname">tjsonbPathQueryFirstTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</code></p><p>The above functions can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_path_query_first"></a><a class="indexterm" name="id11933"></a><a class="indexterm" name="id11936"></a><p>Return the fist item returned by a JSON path from a temporal JSONB value</p><pre class="programlisting">
+tjsonbPathQueryFirst(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
+tjsonbPathQueryFirstTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
+</pre><p>The above functions can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
 SELECT tjsonbPathQueryFirst(tjsonb 
   '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]',
   '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max'), '{"min":10, "max":30}');
