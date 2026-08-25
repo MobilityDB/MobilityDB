@@ -125,6 +125,42 @@ RESET enable_seqscan;
 RESET enable_indexscan;
 RESET enable_bitmapscan;
 
+-------------------------------------------------------------------------------
+-- Query arguments other than a tpcbox. The opclass declares members against
+-- tstzspan and against the temporal type itself, so the consistent method
+-- meets those types as the query and the counts it produces must equal the
+-- ones a scan produces.
+-------------------------------------------------------------------------------
+
+CREATE INDEX tbl_tpcpoint_gist_idx ON tbl_tpcpoint USING gist(temp);
+CREATE INDEX tbl_tpcpatch_gist_idx ON tbl_tpcpatch USING gist(temp);
+
+SET enable_seqscan = on;  SET enable_indexscan = off; SET enable_bitmapscan = off;
+SELECT COUNT(*) AS seq_span FROM tbl_tpcpoint
+WHERE temp && tstzspan '[2001-06-01, 2001-12-31]';
+SELECT COUNT(*) AS seq_span_patch FROM tbl_tpcpatch
+WHERE temp && tstzspan '[2001-06-01, 2001-12-31]';
+SELECT COUNT(*) AS seq_contained_span FROM tbl_tpcpoint
+WHERE temp <@ tstzspan '[2001-01-01, 2002-01-01]';
+SELECT COUNT(*) AS seq_self FROM tbl_tpcpoint t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+
+SET enable_seqscan = off; SET enable_indexscan = on; SET enable_bitmapscan = on;
+SELECT COUNT(*) AS idx_span FROM tbl_tpcpoint
+WHERE temp && tstzspan '[2001-06-01, 2001-12-31]';
+SELECT COUNT(*) AS idx_span_patch FROM tbl_tpcpatch
+WHERE temp && tstzspan '[2001-06-01, 2001-12-31]';
+SELECT COUNT(*) AS idx_contained_span FROM tbl_tpcpoint
+WHERE temp <@ tstzspan '[2001-01-01, 2002-01-01]';
+SELECT COUNT(*) AS idx_self FROM tbl_tpcpoint t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+
+DROP INDEX tbl_tpcpoint_gist_idx;
+DROP INDEX tbl_tpcpatch_gist_idx;
+RESET enable_seqscan;
+RESET enable_indexscan;
+RESET enable_bitmapscan;
+
 -- typanalyze: ANALYZE must succeed on the temporal pointcloud columns; tspatial_analyze
 -- projects each TPCBox bounding box to an STBox for the spatial statistics
 ANALYZE tbl_tpcpoint;

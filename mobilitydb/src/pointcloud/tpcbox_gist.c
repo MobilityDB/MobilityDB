@@ -48,6 +48,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_pointcloud.h>
+#include "temporal/span.h"              /* PG_GETARG_SPAN_P */
 #include "temporal/stratnum.h"
 #include "temporal/type_util.h"
 #include "pointcloud/tpcbox.h"
@@ -64,6 +65,42 @@
  * GiST consistent
  *****************************************************************************/
 
+/**
+ * @brief Transform a query argument into a box, initializing the dimensions
+ * that must not be taken into account by the operators
+ * @note Mirrors @p tspatial_gist_get_stbox. The opclass declares members
+ *   against @p tstzspan and against the temporal type itself as well as
+ *   against @p tpcbox, so the query datum carries whichever of those types
+ *   the operator names.
+ */
+static bool
+tpc_gist_get_tpcbox(FunctionCallInfo fcinfo, TPCBox *result, MeosType type)
+{
+  if (type == T_TSTZSPAN)
+  {
+    Span *s = PG_GETARG_SPAN_P(1);
+    tstzspan_set_tpcbox(s, result);
+  }
+  else if (type == T_TPCBOX)
+  {
+    TPCBox *box = PG_GETARG_TPCBOX_P(1);
+    if (! box)
+      return false;
+    memcpy(result, box, sizeof(TPCBox));
+  }
+  else if (tpointcloud_temptype(type))
+  {
+    if (PG_ARGISNULL(1))
+      return false;
+    Datum tempdatum = PG_GETARG_DATUM(1);
+    Temporal *temp = temporal_slice(tempdatum);
+    temporal_set_bbox(temp, result);
+  }
+  else
+    elog(ERROR, "Unsupported type for indexing: %d", type);
+  return true;
+}
+
 PGDLLEXPORT Datum Tpcbox_gist_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_consistent);
 /**
@@ -75,21 +112,25 @@ Datum
 Tpcbox_gist_consistent(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  TPCBox *query = PG_GETARG_TPCBOX_P(1);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-  /* Oid typid = PG_GETARG_OID(3); -- always TPCBox in this opclass */
+  Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
-  TPCBox *key = DatumGetTpcboxP(entry->key);
-  if (! key || ! query)
+  TPCBox *key = DatumGetTpcboxP(entry->key), query;
+  if (! key)
     PG_RETURN_BOOL(false);
 
+  /* Determine whether the index is lossy depending on the strategy */
   *recheck = tpcbox_index_recheck(strategy);
+
+  /* Transform the query into a box */
+  if (! tpc_gist_get_tpcbox(fcinfo, &query, oid_meostype(typid)))
+    PG_RETURN_BOOL(false);
 
   bool result;
   if (GIST_LEAF(entry))
-    result = tpcbox_index_leaf_consistent(key, query, strategy);
+    result = tpcbox_index_leaf_consistent(key, &query, strategy);
   else
-    result = tpcbox_gist_inner_consistent(key, query, strategy);
+    result = tpcbox_gist_inner_consistent(key, &query, strategy);
 
   PG_RETURN_BOOL(result);
 }

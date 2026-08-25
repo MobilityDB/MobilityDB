@@ -23,6 +23,7 @@
 
 extern void tpcbox_expand(const TPCBox *box1, TPCBox *box2);
 
+extern void tstzspan_set_tpcbox(const Span *s, TPCBox *box);
 extern void tpointcloudinst_set_tpcbox(const TInstant *inst, TPCBox *box);
 extern void tpointcloudinstarr_set_tpcbox(TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, TPCBox *box);

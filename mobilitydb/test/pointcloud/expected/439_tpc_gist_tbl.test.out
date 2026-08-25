@@ -168,6 +168,88 @@ RESET enable_indexscan;
 RESET
 RESET enable_bitmapscan;
 RESET
+CREATE INDEX tbl_tpcpoint_gist_idx ON tbl_tpcpoint USING gist(temp);
+CREATE INDEX
+CREATE INDEX tbl_tpcpatch_gist_idx ON tbl_tpcpatch USING gist(temp);
+CREATE INDEX
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_span FROM tbl_tpcpoint
+WHERE temp && tstzspan '[2001-06-01, 2001-12-31]';
+ seq_span 
+----------
+       49
+(1 row)
+
+SELECT COUNT(*) AS seq_span_patch FROM tbl_tpcpatch
+WHERE temp && tstzspan '[2001-06-01, 2001-12-31]';
+ seq_span_patch 
+----------------
+             48
+(1 row)
+
+SELECT COUNT(*) AS seq_contained_span FROM tbl_tpcpoint
+WHERE temp <@ tstzspan '[2001-01-01, 2002-01-01]';
+ seq_contained_span 
+--------------------
+                100
+(1 row)
+
+SELECT COUNT(*) AS seq_self FROM tbl_tpcpoint t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+ seq_self 
+----------
+        1
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_span FROM tbl_tpcpoint
+WHERE temp && tstzspan '[2001-06-01, 2001-12-31]';
+ idx_span 
+----------
+       49
+(1 row)
+
+SELECT COUNT(*) AS idx_span_patch FROM tbl_tpcpatch
+WHERE temp && tstzspan '[2001-06-01, 2001-12-31]';
+ idx_span_patch 
+----------------
+             48
+(1 row)
+
+SELECT COUNT(*) AS idx_contained_span FROM tbl_tpcpoint
+WHERE temp <@ tstzspan '[2001-01-01, 2002-01-01]';
+ idx_contained_span 
+--------------------
+                100
+(1 row)
+
+SELECT COUNT(*) AS idx_self FROM tbl_tpcpoint t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+ idx_self 
+----------
+        1
+(1 row)
+
+DROP INDEX tbl_tpcpoint_gist_idx;
+DROP INDEX
+DROP INDEX tbl_tpcpatch_gist_idx;
+DROP INDEX
+RESET enable_seqscan;
+RESET
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET
 ANALYZE tbl_tpcpoint;
 ANALYZE
 ANALYZE tbl_tpcpatch;
