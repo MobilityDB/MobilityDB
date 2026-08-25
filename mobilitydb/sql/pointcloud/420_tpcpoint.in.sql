@@ -392,27 +392,26 @@ CREATE FUNCTION pcid(tpcpoint)
   AS 'MODULE_PATHNAME', 'Tpcpoint_pcid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Per-dimension projection to tfloat. STABLE because the projection
--- reads the schema cache, which depends on pg_catalog state.
+-- Per-dimension projection to tfloat; the projection reads the schema cache.
 CREATE FUNCTION getX(tpcpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpcpoint_get_x'
-  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getY(tpcpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpcpoint_get_y'
-  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getZ(tpcpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpcpoint_get_z'
-  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getDim(tpcpoint, text)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpcpoint_get_dim'
-  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- XY projection to tgeompoint. Step interpolation on the source
 -- tpcpoint is promoted to linear in the output: the projected XY
@@ -421,7 +420,7 @@ CREATE FUNCTION getDim(tpcpoint, text)
 CREATE FUNCTION tgeompoint(tpcpoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpcpoint_to_tgeompoint'
-  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tpcpoint AS tgeompoint) WITH FUNCTION tgeompoint(tpcpoint);
 

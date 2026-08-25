@@ -58,7 +58,7 @@ CREATE FUNCTION centroid(tpcpoint)
 
 CREATE FUNCTION trajectory(tpcpoint, boolean DEFAULT FALSE)
   RETURNS geometry
-  LANGUAGE SQL STABLE STRICT PARALLEL SAFE AS $$
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.trajectory($1::@extschema@.tgeompoint, $2)
   $$;
 

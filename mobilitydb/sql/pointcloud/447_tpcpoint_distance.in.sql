@@ -46,12 +46,12 @@
 
 CREATE FUNCTION tDistance(geometry, tpcpoint)
   RETURNS tfloat
-  LANGUAGE SQL STABLE STRICT PARALLEL SAFE AS $$
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.tDistance($1, $2::@extschema@.tgeompoint)
   $$;
 CREATE FUNCTION tDistance(tpcpoint, geometry)
   RETURNS tfloat
-  LANGUAGE SQL STABLE STRICT PARALLEL SAFE AS $$
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.tDistance($1::@extschema@.tgeompoint, $2)
   $$;
 
@@ -75,12 +75,12 @@ CREATE OPERATOR <-> (
 
 CREATE FUNCTION nearestApproachDistance(geometry, tpcpoint)
   RETURNS float
-  LANGUAGE SQL STABLE STRICT PARALLEL SAFE AS $$
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.nearestApproachDistance($1, $2::@extschema@.tgeompoint)
   $$;
 CREATE FUNCTION nearestApproachDistance(tpcpoint, geometry)
   RETURNS float
-  LANGUAGE SQL STABLE STRICT PARALLEL SAFE AS $$
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.nearestApproachDistance($1::@extschema@.tgeompoint, $2)
   $$;
 
@@ -104,14 +104,14 @@ CREATE OPERATOR |=| (
 
 CREATE FUNCTION nearestApproachInstant(geometry, tpcpoint)
   RETURNS tpcpoint
-  LANGUAGE SQL STABLE STRICT PARALLEL SAFE AS $$
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.atTime($2,
       @extschema@.getTimestamp(
         @extschema@.nearestApproachInstant($1, $2::@extschema@.tgeompoint)))
   $$;
 CREATE FUNCTION nearestApproachInstant(tpcpoint, geometry)
   RETURNS tpcpoint
-  LANGUAGE SQL STABLE STRICT PARALLEL SAFE AS $$
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.atTime($1,
       @extschema@.getTimestamp(
         @extschema@.nearestApproachInstant($1::@extschema@.tgeompoint, $2)))
@@ -123,12 +123,12 @@ CREATE FUNCTION nearestApproachInstant(tpcpoint, geometry)
 
 CREATE FUNCTION shortestLine(geometry, tpcpoint)
   RETURNS geometry
-  LANGUAGE SQL STABLE STRICT PARALLEL SAFE AS $$
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.shortestLine($1, $2::@extschema@.tgeompoint)
   $$;
 CREATE FUNCTION shortestLine(tpcpoint, geometry)
   RETURNS geometry
-  LANGUAGE SQL STABLE STRICT PARALLEL SAFE AS $$
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.shortestLine($1::@extschema@.tgeompoint, $2)
   $$;
 

@@ -396,7 +396,7 @@ CREATE FUNCTION numPoints(tpcpatch)
 CREATE FUNCTION tgeometry(tpcpatch)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Tpcpatch_to_tgeometry'
-  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tpcpatch AS tgeometry) WITH FUNCTION tgeometry(tpcpatch);
 
