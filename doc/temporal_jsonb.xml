@@ -46,10 +46,12 @@ SELECT tjsonb '[{"unit": "km", "speed": 10}@2001-01-01,
 				<indexterm significance="normal"><primary><varname>jsonbsetObjectField</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetObjectFieldText</varname></primary></indexterm>
 				<para>Extract a JSON object field specified by a key</para>
-				<para><varname>{textset,jsonbset} -> text → {textset,jsonbset}</varname></para>
-				<para><varname>jsonbset ->> text → textset</varname></para>
-				<para><varname>jsonbsetObjectField(jsonbset,text,null_handle text='use_json_null') → jsonbset</varname></para>
-				<para><varname>jsonbsetObjectFieldText(jsonbset,text,null_handle text='use_json_null') → textset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{textset,jsonbset} -> text → {textset,jsonbset}
+jsonbset ->> text → textset
+jsonbsetObjectField(jsonbset,text,null_handle text='use_json_null') → jsonbset
+jsonbsetObjectFieldText(jsonbset,text,null_handle text='use_json_null') → textset
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT textset '{[{"unit": "km", "speed": 10}, 
   {"unit": "km", "speed": 20}]}' -> text 'speed';
@@ -88,9 +90,11 @@ SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10},
 				<indexterm significance="normal"><primary><varname>jsonbsetExtractPath</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetExtractPathText</varname></primary></indexterm>
 				<para>Extract a JSON object field specified by a path</para>
-				<para><varname>{textset,jsonbset} #> text[] → {textset,jsonbset}</varname></para>
-				<para><varname>jsonbsetExtractPath(jsonbset,text[],null_handle text='use_json_null') → jsonbset</varname></para>
-				<para><varname>jsonbsetExtractPathText(jsonbset,text[],null_handle text='use_json_null') → textset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{textset,jsonbset} #> text[] → {textset,jsonbset}
+jsonbsetExtractPath(jsonbset,text[],null_handle text='use_json_null') → jsonbset
+jsonbsetExtractPathText(jsonbset,text[],null_handle text='use_json_null') → textset
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT textset '[{"speed": {"unit": "km", "value": 10}}, 
   {"speed": {"unit": "km", "value": 20}}]' #> ARRAY[text 'speed', 'value'];
@@ -106,8 +110,10 @@ SELECT jsonbset '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}
 				<indexterm significance="normal"><primary><varname>jsonbsetArrayElement</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetArrayElementText</varname></primary></indexterm>
 				<para>Extract an element from a JSON array</para>
-				<para><varname>jsonbsetArrayElement(jsonbset,integer,null_handle text='use_json_null') → jsonbset</varname></para>
-				<para><varname>jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → jsonbset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbsetArrayElement(jsonbset,integer,null_handle text='use_json_null') → jsonbset
+jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → jsonbset
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetArrayElement(textset '[["Grand Place", "La Bourse"],
   ["Palais Royal", "Manneken Pis"]]', 0);
@@ -123,9 +129,11 @@ SELECT jsonbsetArrayElement(jsonbset '[["Grand Place", "La Bourse"],
 				<indexterm significance="normal"><primary><varname>floatset</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>textset</varname></primary></indexterm>
 				<para>Extract a alphanumeric value from a JSONB set given by a key</para>
-				<para><varname>intset(jsonbset,text,null_handle text='raise_exception') → tint</varname></para>
-				<para><varname>floatset(jsonbset,text,null_handle text='raise_exception') → tfloat</varname></para>
-				<para><varname>textset(jsonbset,text,null_handle text='raise_exception') → textset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+intset(jsonbset,text,null_handle text='raise_exception') → tint
+floatset(jsonbset,text,null_handle text='raise_exception') → tfloat
+textset(jsonbset,text,null_handle text='raise_exception') → textset
+</programlisting>
 				<para>Note that the value <varname>use_json_null</varname> cannot be used for the above functions and thus the default value <varname>'raise_exception'</varname> is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT intset(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}",
@@ -143,7 +151,9 @@ SELECT textset(jsonbset '{"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"pri
 			<listitem xml:id="jsonbset_concat">
 				<indexterm significance="normal"><primary><varname>||</varname></primary></indexterm>
 				<para>Temporal JSONB concatenation</para>
-				<para><varname>jsonbset || {jsonb,jsonbset} → jsonbset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbset || {jsonb,jsonbset} → jsonbset
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' ||
   '{"unit":"km"}'::jsonb;
@@ -158,8 +168,10 @@ SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' ||
 			<listitem xml:id="jsonbset_delete">
 				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
 				<para>Temporal JSONB deletion</para>
-				<para><varname>jsonbset - {int,text,text[]} → jsonbset</varname></para>
-				<para><varname>jsonbset #- text[] → jsonbset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbset - {int,text,text[]} → jsonbset
+jsonbset #- text[] → jsonbset
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{[{"unit": "km", "speed": 10},
   {"unit": "km", "speed": 20}]}' - 'unit';
@@ -195,9 +207,11 @@ SELECT minusValues(jsonbset '[["Grand Place", "La Bourse"],
 			<listitem xml:id="jsonbset_exists">
 				<indexterm significance="normal"><primary><varname>?</varname></primary></indexterm>
 				<para>JSONB set exists</para>
-				<para><varname>jsonbset ? text → boolean[]</varname></para>
-				<para><varname>jsonbset ?| text[] → boolean[]</varname></para>
-				<para><varname>jsonbset ?&amp; text[] → boolean[]</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbset ? text → boolean[]
+jsonbset ?| text[] → boolean[]
+jsonbset ?&amp; text[] → boolean[]
+</programlisting>
 				<para>As in PostgreSQL, the operators <varname>?|</varname> and <varname>?&amp;</varname> test, respectively, whether <emphasis>any</emphasis> or <emphasis>all</emphasis> of the strings in the text array exist as top-level keys or array elements.</para>
 				<para>The result is a Boolean for every value of the set, in the order of the values of the set.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -220,8 +234,11 @@ SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}'
 				<indexterm significance="normal"><primary><varname>jsonbsetSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetSetLax</varname></primary></indexterm>
 				<para>Temporal JSONB set</para>
-				<para><varname>jsonbsetSet(jsonbset,path text[],jsonb,create boolean=true) → jsonbset</varname></para>
-				<para><varname>jsonbsetSetLax(jsonbset,path text[],jsonb,create boolean=true,handle_null text) → jsonbset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbsetSet(jsonbset,path text[],jsonb,create boolean=true) → jsonbset
+jsonbsetSetLax(jsonbset,path text[],jsonb,create boolean=true,
+  handle_null text) → jsonbset
+</programlisting>
 				<para>Return the <varname>jsonbset</varname> value with the item specified by path replaced by <varname>jsonb</varname>, or added if <varname>create</varname> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.
         </para>
 				<para>Function <varname>jsonbsetSetLax</varname> behaves identically to <varname>jsonbsetSet</varname> if the given value is not NULL, Otherwise, it behaves according to the value of <varname>handle_null</varname>, which must be one of <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname>, or <varname>'return_source'</varname>. As stated above, we kept PostgreSQL behavior for this function enabling the value <varname>'return_source'</varname> whereas for all other <emphasis>query</emphasis> operations, this value has been replaced with <varname>'return_null'</varname>.</para>
@@ -244,7 +261,9 @@ SELECT jsonbsetSetLax(jsonbset '[{"speed": 10, "units": "km/h"},
 			<listitem xml:id="jsonbset_insert">
 				<indexterm significance="normal"><primary><varname>jsonbsetInsert</varname></primary></indexterm>
 				<para>Temporal JSONB insert</para>
-				<para><varname>jsonbsetInsert(jsonbset,path text[],jsonb,after boolean=false) → jsonbset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbsetInsert(jsonbset,path text[],jsonb,after boolean=false) → jsonbset
+</programlisting>
 				<para>Return the <varname>jsonbset</varname> value with <varname>jsonb</varname> inserted. If the item specified by the path is an array element, the new value will be inserted before that item if <varname>after</varname> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]',
@@ -262,7 +281,9 @@ SELECT jsonbsetInsert(jsonbset '[{"speed": 10, "units": "km/h"},
 			<listitem xml:id="jsonbset_strip_nulls">
 				<indexterm significance="normal"><primary><varname>jsonbsetStripNulls</varname></primary></indexterm>
 				<para>Return a JSONB set without nulls</para>
-				<para><varname>jsonbsetStripNulls(jsonbset,strip_in_arrays boolean=false) → jsonbset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbsetStripNulls(jsonbset,strip_in_arrays boolean=false) → jsonbset
+</programlisting>
 				<para>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetStripNulls(textset '[{"speed": 10, "lights": null},
@@ -300,9 +321,11 @@ SELECT minusValues(textset '[{"speed": 10}, null,
 				<indexterm significance="normal"><primary><varname>jsonbsetPathExists</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetPathExistsTz</varname></primary></indexterm>
 				<para>Does the JSON path return any item for the specified JSONB set?</para>
-				<para><varname>jsonbset @? jsonpath → boolean[]</varname></para>
-				<para><varname>jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
-				<para><varname>jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbset @? jsonpath → boolean[]
+jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
+jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
+</programlisting>
 				<para>The operator <varname>@?</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<para>The result is a Boolean for every value of the set, in the order of the values of the set.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -323,9 +346,11 @@ SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
 				<indexterm significance="normal"><primary><varname>jsonbsetPathMatch</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetPathMatchTz</varname></primary></indexterm>
 				<para>Return the result of a JSON path predicate check for a JSONB set</para>
-				<para><varname>jsonbset @@ jsonpath → boolean[]</varname></para>
-				<para><varname>jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
-				<para><varname>jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbset @@ jsonpath → boolean[]
+jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
+jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
+</programlisting>
 				<para>The operator <varname>@@</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<para>The result is a Boolean for every value of the set, in the order of the values of the set.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -345,8 +370,10 @@ SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20,
 				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryArray</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryArrayTz</varname></primary></indexterm>
 				<para>Return all items returned by a JSON path from a JSONB set, as a JSON array</para>
-				<para><varname>jsonbsetPathQueryArray(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
-				<para><varname>jsonbsetPathQueryArrayTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbsetPathQueryArray(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
+jsonbsetPathQueryArrayTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
+</programlisting>
 				<para>The above function can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetPathQueryArray(jsonbset 
@@ -367,8 +394,10 @@ SELECT jsonbsetPathQueryArrayTz(jsonbset
 				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryFirst</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryFirstTz</varname></primary></indexterm>
 				<para>Return the fist item returned by a JSON path from a JSONB set</para>
-				<para><varname>jsonbsetPathQueryFirst(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
-				<para><varname>jsonbsetPathQueryFirstTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+jsonbsetPathQueryFirst(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
+jsonbsetPathQueryFirstTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
+</programlisting>
 				<para>The above functions can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetPathQueryFirst(jsonbset 
@@ -455,7 +484,9 @@ SELECT tjsonb 'Point(0 0)@2001-01-01 08:05:00';
 			<listitem xml:id="tjsonb_asText">
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<para>Return the Well-Known Text (WKT) representation</para>
-				<para><varname>asText({tjsonb,tjsonb[]}) → {text,text[]}</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+asText({tjsonb,tjsonb[]}) → {text,text[]}
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
@@ -473,8 +504,10 @@ SELECT asText(ARRAY[tjsonb '"{\"vehicleId\":1, \"location\": \"Point(1 1)\"}"@20
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 				<para>Return the Well-Known Binary (WKB) or the Hexadecimal Extended Well-Known Binary (HexWKB) representation</para>
-				<para><varname>asBinary(tjsonb,endian text='') → bytea</varname></para>
-				<para><varname>asHexWKB(tjsonb,endian text='') → text</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+asBinary(tjsonb,endian text='') → bytea
+asHexWKB(tjsonb,endian text='') → text
+</programlisting>
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-01-01');
@@ -487,7 +520,9 @@ SELECT asHexWKB(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-
 			<listitem xml:id="tjsonb_asMFJSON">
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>Return the Moving Features JSON (MF-JSON) representation</para>
-				<para><varname>asMFJSON(text) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+asMFJSON(text) → tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
   {"Position": "Point(2 2)"}@2001-01-02]');
@@ -500,7 +535,9 @@ SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
 			<listitem xml:id="tjsonbFromText">
 				<indexterm significance="normal"><primary><varname>tjsonbFromText</varname></primary></indexterm>
 				<para>Input from the Well-Known Text (WKT) representation</para>
-				<para><varname>tjsonbFromText(text) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbFromText(text) → tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbFromText(text
   '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
@@ -514,8 +551,10 @@ SELECT tjsonbFromText(text
 				<indexterm significance="normal"><primary><varname>tjsonbFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbFromHexWKB</varname></primary></indexterm>
 				<para>Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
-				<para><varname>tjsonbFromBinary(bytea) → tjsonb</varname></para>
-				<para><varname>tjsonbFromHexWKB(text) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbFromBinary(bytea) → tjsonb
+tjsonbFromHexWKB(text) → tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbFromBinary(asBinary(
   tjsonb '[{"vehicleId": 1, "location": "Point(1 2)"}@2001-01-01]'));
@@ -529,7 +568,9 @@ SELECT tjsonbFromHexWKB(asHexWKB(
 			<listitem xml:id="tjsonbFromMFJSON">
 				<indexterm significance="normal"><primary><varname>tjsonbFromMFJSON</varname></primary></indexterm>
 				<para>Input from the Moving Features JSON (MF-JSON) representation</para>
-				<para><varname>tjsonbFromMFJSON(text) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbFromMFJSON(text) → tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbFromMFJSON('{"type": "MovingJsonb", "interpolation": "Step",
   "values": [{"Position": "Point(1 1)"}, {"Position": "Point(2 2)"}],
@@ -548,10 +589,12 @@ SELECT tjsonbFromMFJSON('{"type": "MovingJsonb", "interpolation": "Step",
 			<listitem xml:id="tjsonb_const">
 				<indexterm significance="normal"><primary><varname>tjsonb</varname></primary></indexterm>
 				<para>Constructor for temporal JSONB values having a constant value</para>
-				<para><varname>tjsonb(jsonb,timestamptz) → tjsonbInst</varname></para>
-				<para><varname>tjsonb(jsonb,tstzset) → tjsonbDiscSeq</varname></para>
-				<para><varname>tjsonb(jsonb,tstzspan) → tjsonbContSeq</varname></para>
-				<para><varname>tjsonb(jsonb,tstzspanset) → tjsonbSeqSet</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb(jsonb,timestamptz) → tjsonbInst
+tjsonb(jsonb,tstzset) → tjsonbDiscSeq
+tjsonb(jsonb,tstzspan) → tjsonbContSeq
+tjsonb(jsonb,tstzspanset) → tjsonbSeqSet
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}', timestamptz '2001-01-01');
 -- {"location": "Point(1 1)", "vehicleId": 1}@2001-01-01
@@ -576,7 +619,9 @@ SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
 			<listitem xml:id="tjsonbSeq">
 				<indexterm significance="normal"><primary><varname>tjsonbSeq</varname></primary></indexterm>
 				<para>Constructor for temporal JSONB values of sequence subtype</para>
-				<para><varname>tjsonbSeq(tjsonbInst[]},leftInc boolean=true,rightInc boolean=true) →tjsonbSeq</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbSeq(tjsonbInst[]},leftInc boolean=true,rightInc boolean=true) →tjsonbSeq
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSeq(ARRAY[tjsonb
   '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01',
@@ -592,8 +637,10 @@ SELECT tjsonbSeq(ARRAY[tjsonb
 				<indexterm significance="normal"><primary><varname>tjsonbSeqSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbSeqSetGaps</varname></primary></indexterm>
 				<para>Constructor for temporal JSONB values of sequence set subtype</para>
-				<para><varname>tjsonbSeqSet(tjsonb[]) → tjsonbSeqSet</varname></para>
-				<para><varname>tjsonbSeqSetGaps(tjsonbInst[],maxt=NULL,maxdist=NULL) → tjsonbSeqSet</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbSeqSet(tjsonb[]) → tjsonbSeqSet
+tjsonbSeqSetGaps(tjsonbInst[],maxt=NULL,maxdist=NULL) → tjsonbSeqSet
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSeqSet(ARRAY[tjsonb
   '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
@@ -622,7 +669,9 @@ SELECT tjsonbSeqSetGaps(ARRAY[tjsonb
 			<listitem xml:id="tjsonb_tstzspan">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convert a temporal JSONB to a <varname>tstzspan</varname></para>
-				<para><varname>tjsonb::tstzpan</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb::tstzpan
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]'::tstzspan;
@@ -633,8 +682,10 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 			<listitem xml:id="tjsonb_text">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convert between a temporal JSONB and a text</para>
-				<para><varname>tjsonb::text</varname></para>
-				<para><varname>text::tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb::text
+text::tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (text '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::jsonb;
@@ -649,8 +700,10 @@ SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 			<listitem xml:id="tjsonb_ttext">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convert between a temporal JSONB and a temporal text</para>
-				<para><varname>tjsonb::ttext</varname></para>
-				<para><varname>ttext::tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb::ttext
+ttext::tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ttext '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::tjsonb;
@@ -670,7 +723,9 @@ SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 			<listitem xml:id="tjsonb_getValues">
 				<indexterm significance="normal"><primary><varname>getValues</varname></primary></indexterm>
 				<para>Return the values</para>
-				<para><varname>getValues(tjsonb) → jsonbset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+getValues(tjsonb) → jsonbset
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getValues(tjsonb
   '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
@@ -682,7 +737,9 @@ SELECT getValues(tjsonb
 			<listitem xml:id="tjsonb_valueAtTimestamp">
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Return the value at a timestamp</para>
-				<para><varname>valueAtTimestamp(tjsonb,timestamptz) → jsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+valueAtTimestamp(tjsonb,timestamptz) → jsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueAtTimestamp(tjsonb
   '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
@@ -701,9 +758,11 @@ SELECT valueAtTimestamp(tjsonb
 				<indexterm significance="normal"><primary><varname>tjsonbSeq</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbSeqSet</varname></primary></indexterm>
 				<para>Transform a temporal JSONB to another subtype</para>
-				<para><varname>tjsonbInst(tjsonb) → tjsonbInst</varname></para>
-				<para><varname>tjsonbSeq(tjsonb,interp='step') → tjsonbSeq</varname></para>
-				<para><varname>tjsonbSeqSet(tjsonb) → tjsonbSeqSet</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbInst(tjsonb) → tjsonbInst
+tjsonbSeq(tjsonb,interp='step') → tjsonbSeq
+tjsonbSeqSet(tjsonb) → tjsonbSeqSet
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSeq(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01');
 -- [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01]
@@ -718,7 +777,9 @@ SELECT tjsonbSeqSet(tjsonb '"{\"vehicleId\": 1,\"location\":\"Point(1 1)\"}"@200
 			<listitem xml:id="tjsonb_setInterp">
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Transform a temporal JSONB value to another interpolation</para>
-				<para><varname>setInterp(tjsonb,interp) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+setInterp(tjsonb,interp) → tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT setInterp(tjsonb
   '"{\"vehicleId\": 1,\"location\": \"Point(1 1)\"}"@2001-01-01','step');
@@ -764,11 +825,13 @@ SELECT tjsonb '{[{"unit": "km", "speed": 10}@2001-01-01,
 				<indexterm significance="normal"><primary><varname>tjsonbObjectField</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbObjectFieldText</varname></primary></indexterm>
 				<para>Extract a temporal JSON object field specified by a key</para>
-				<para><varname>{ttext,tjsonb} -> text → {ttext,tjsonb}</varname></para>
-				<para><varname>tjsonb ->> text → ttext</varname></para>
-				<para><varname>tjsonObjectField(ttext,text,null_handle text='use_json_null') → ttext</varname></para>
-				<para><varname>tjsonbObjectField(tjsonb,text,null_handle text='use_json_null') → tjsonb</varname></para>
-				<para><varname>tjsonbObjectFieldText(tjsonb,text,null_handle text='use_json_null') → ttext</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{ttext,tjsonb} -> text → {ttext,tjsonb}
+tjsonb ->> text → ttext
+tjsonObjectField(ttext,text,null_handle text='use_json_null') → ttext
+tjsonbObjectField(tjsonb,text,null_handle text='use_json_null') → tjsonb
+tjsonbObjectFieldText(tjsonb,text,null_handle text='use_json_null') → ttext
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01, 
   {"unit": "km", "speed": 20}@2001-01-02]}' -> text 'speed';
@@ -808,10 +871,12 @@ SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 				<indexterm significance="normal"><primary><varname>tjsonbExtractPath</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbExtractPathText</varname></primary></indexterm>
 				<para>Extract a temporal JSON object field specified by a path</para>
-				<para><varname>{ttext,tjsonb} #> text[] → {ttext,tjsonb}</varname></para>
-				<para><varname>tjsonExtractPath(ttext,text[],null_handle text='use_json_null') → ttext</varname></para>
-				<para><varname>tjsonbExtractPath(tjsonb,text[],null_handle text='use_json_null') → tjsonb</varname></para>
-				<para><varname>tjsonbExtractPathText(tjsonb,text[],null_handle text='use_json_null') → ttext</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{ttext,tjsonb} #> text[] → {ttext,tjsonb}
+tjsonExtractPath(ttext,text[],null_handle text='use_json_null') → ttext
+tjsonbExtractPath(tjsonb,text[],null_handle text='use_json_null') → tjsonb
+tjsonbExtractPathText(tjsonb,text[],null_handle text='use_json_null') → ttext
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ttext '[{"speed": {"unit": "km", "value": 10}}@2001-01-01, 
   {"speed": {"unit": "km", "value": 20}}@2001-01-02]' #> ARRAY[text 'speed', 'value'];
@@ -829,9 +894,11 @@ SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place",
 				<indexterm significance="normal"><primary><varname>tjsonbArrayElement</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbArrayElementText</varname></primary></indexterm>
 				<para>Extract an element from a temporal JSON array</para>
-				<para><varname>tjsonArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb</varname></para>
-				<para><varname>tjsonbArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb</varname></para>
-				<para><varname>tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+tjsonbArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonArrayElement(ttext '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 0);
@@ -848,10 +915,12 @@ SELECT tjsonbArrayElement(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
 				<indexterm significance="normal"><primary><varname>tfloat</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>ttext</varname></primary></indexterm>
 				<para>Extract a temporal alphanumeric value from a temporal JSONB value given by a key</para>
-				<para><varname>tbool(tjsonb,text,null_handle text='raise_exception') → tbool</varname></para>
-				<para><varname>tint(tjsonb,text,null_handle text='raise_exception') → tint</varname></para>
-				<para><varname>tfloat(tjsonb,text,interp='linear',null_handle text='raise_exception') → tfloat</varname></para>
-				<para><varname>ttext(tjsonb,text, null_handle text='raise_exception') → ttext</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tbool(tjsonb,text,null_handle text='raise_exception') → tbool
+tint(tjsonb,text,null_handle text='raise_exception') → tint
+tfloat(tjsonb,text,interp='linear',null_handle text='raise_exception') → tfloat
+ttext(tjsonb,text, null_handle text='raise_exception') → ttext
+</programlisting>
 				<para>Note that the value <varname>use_json_null</varname> cannot be used for the above functions and thus the default value <varname>'raise_exception'</varname> is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbool(tjsonb '[{"speed": 10, "lights": "on"}@2001-01-01,
@@ -874,7 +943,9 @@ SELECT ttext(tjsonb '[{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-
 			<listitem xml:id="tjsonb_concat">
 				<indexterm significance="normal"><primary><varname>||</varname></primary></indexterm>
 				<para>Temporal JSONB concatenation</para>
-				<para><varname>tjsonb || {jsonb,tjsonb} → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb || {jsonb,tjsonb} → tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '{[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]}' ||
   '{"unit":"km"}'::jsonb;
@@ -889,8 +960,10 @@ SELECT tjsonb '{[{"speed":10}@2001-01-01, {"speed":20}@2001-01-03]}' ||
 			<listitem xml:id="tjsonb_delete">
 				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
 				<para>Temporal JSONB deletion</para>
-				<para><varname>tjsonb - {int,text,text[]} → tjsonb</varname></para>
-				<para><varname>tjsonb #- text[] → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb - {int,text,text[]} → tjsonb
+tjsonb #- text[] → tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - 'unit';
@@ -926,9 +999,11 @@ SELECT minusValues(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
 			<listitem xml:id="tjsonb_exists">
 				<indexterm significance="normal"><primary><varname>?</varname></primary></indexterm>
 				<para>Temporal JSONB exists</para>
-				<para><varname>tjsonb ? jsonb → tbool</varname></para>
-				<para><varname>tjsonb ?| jsonb[] → tbool</varname></para>
-				<para><varname>tjsonb ?&amp; jsonb[] → tbool</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb ? jsonb → tbool
+tjsonb ?| jsonb[] → tbool
+tjsonb ?&amp; jsonb[] → tbool
+</programlisting>
 				<para>As in PostgreSQL, the operators <varname>?|</varname> and <varname>?&amp;</varname> test, respectively, whether <emphasis>any</emphasis> or <emphasis>all</emphasis> of the strings in the text array exist as top-level keys or array elements.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' ? text 'geom';
@@ -946,8 +1021,10 @@ SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
 				<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
 				<para>Temporal JSONB contains/contained</para>
-				<para><varname>{tjsonb,jsonb} @&gt; {tjsonb,jsonb} → tbool</varname></para>
-				<para><varname>{tjsonb,jsonb} &lt;@ {tjsonb,jsonb} → tbool</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{tjsonb,jsonb} @&gt; {tjsonb,jsonb} → tbool
+{tjsonb,jsonb} &lt;@ {tjsonb,jsonb} → tbool
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' @&gt; jsonb '{"geom": "Point(1 1)"}';
 -- t@2001-01-01
@@ -965,8 +1042,10 @@ SELECT jsonb '{"geom": "Point(1 1)"}' &lt;@ tjsonb '{[{"geom": "Point(1 1)"}@200
 				<indexterm significance="normal"><primary><varname>tjsonbSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbSetLax</varname></primary></indexterm>
 				<para>Temporal JSONB set</para>
-				<para><varname>tjsonbSet(tjsonb,path text[],jsonb,create boolean=true) → tjsonb</varname></para>
-				<para><varname>tjsonbSetLax(tjsonb,path text[],jsonb,create boolean=true,handle_null text) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbSet(tjsonb,path text[],jsonb,create boolean=true) → tjsonb
+tjsonbSetLax(tjsonb,path text[],jsonb,create boolean=true,handle_null text) → tjsonb
+</programlisting>
 				<para>Return the <varname>tjsonb</varname> value with the item specified by path replaced by <varname>jsonb</varname>, or added if <varname>create</varname> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.
         </para>
 				<para>Function <varname>tjsonbSetLax</varname> behaves identically to <varname>tjsonbSet</varname> if the given value is not NULL, Otherwise, it behaves according to the value of <varname>handle_null</varname>, which must be one of <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname>, or <varname>'return_source'</varname>. As stated above, we kept PostgreSQL behavior for this function enabling the value <varname>'return_source'</varname> whereas for all other <emphasis>query</emphasis> operations, this value has been replaced with <varname>'return_null'</varname>.</para>
@@ -989,7 +1068,9 @@ SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
 			<listitem xml:id="tjsonb_insert">
 				<indexterm significance="normal"><primary><varname>tjsonbInsert</varname></primary></indexterm>
 				<para>Temporal JSONB insert</para>
-				<para><varname>tjsonbInsert(tjsonb,path text[],jsonb,after boolean=false) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbInsert(tjsonb,path text[],jsonb,after boolean=false) → tjsonb
+</programlisting>
 				<para>Return the <varname>tjsonb</varname> value with <varname>jsonb</varname> inserted. If the item specified by the path is an array element, the new value will be inserted before that item if <varname>after</varname> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
@@ -1008,8 +1089,10 @@ SELECT tjsonbInsert(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
 				<indexterm significance="normal"><primary><varname>tjsonStripNulls</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbStripNulls</varname></primary></indexterm>
 				<para>Return a temporal JSON value without nulls</para>
-				<para><varname>tjsonStripNulls(ttext,strip_in_arrays boolean=false) → ttext</varname></para>
-				<para><varname>tjsonbStripNulls(tjsonb,strip_in_arrays boolean=false) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonStripNulls(ttext,strip_in_arrays boolean=false) → ttext
+tjsonbStripNulls(tjsonb,strip_in_arrays boolean=false) → tjsonb
+</programlisting>
 				<para>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonStripNulls(ttext '[{"speed": 10, "lights": null}@2001-01-01,
@@ -1047,9 +1130,11 @@ SELECT minusValues(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
 				<indexterm significance="normal"><primary><varname>tjsonbPathExists</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbPathExistsTz</varname></primary></indexterm>
 				<para>Does the JSON path return any item for the specified temporal JSONB value?</para>
-				<para><varname>tjsonb @? jsonpath → tbool</varname></para>
-				<para><varname>tjsonbPathExists(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
-				<para><varname>tjsonbPathExistsTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb @? jsonpath → tbool
+tjsonbPathExists(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
+tjsonbPathExistsTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
+</programlisting>
 				<para>The operator <varname>@?</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]' @?
@@ -1075,9 +1160,11 @@ SELECT tjsonbPathExistsTz(tjsonb
 				<indexterm significance="normal"><primary><varname>tjsonbPathMatch</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbPathMatchTz</varname></primary></indexterm>
 				<para>Return the result of a JSON path predicate check for a temporal JSONB value</para>
-				<para><varname>tjsonb @@ jsonpath → tbool</varname></para>
-				<para><varname>tjsonbPathMatch(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
-				<para><varname>tjsonbPathMatchTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb @@ jsonpath → tbool
+tjsonbPathMatch(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
+tjsonbPathMatchTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
+</programlisting>
 				<para>The operator <varname>@@</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]' @@
@@ -1102,8 +1189,10 @@ SELECT tjsonbPathMatchTz(tjsonb
 				<indexterm significance="normal"><primary><varname>tjsonbPathQueryArray</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbPathQueryArrayTz</varname></primary></indexterm>
 				<para>Return all items returned by a JSON path from a temporal JSONB value, as a JSON array</para>
-				<para><varname>tjsonbPathQueryArray(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
-				<para><varname>tjsonbPathQueryArrayTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbPathQueryArray(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
+tjsonbPathQueryArrayTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
+</programlisting>
 				<para>The above function can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbPathQueryArray(tjsonb 
@@ -1124,8 +1213,10 @@ SELECT tjsonbPathQueryArrayTz(tjsonb
 				<indexterm significance="normal"><primary><varname>tjsonbPathQueryFirst</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbPathQueryFirstTz</varname></primary></indexterm>
 				<para>Return the fist item returned by a JSON path from a temporal JSONB value</para>
-				<para><varname>tjsonbPathQueryFirst(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
-				<para><varname>tjsonbPathQueryFirstTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonbPathQueryFirst(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
+tjsonbPathQueryFirstTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
+</programlisting>
 				<para>The above functions can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbPathQueryFirst(tjsonb 
@@ -1154,10 +1245,12 @@ SELECT tjsonbPathQueryArrayTz(tjsonb
 				<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a value or a set of values</para>
-				<para><varname>atValue(tjsonb,value) → tjsonb</varname></para>
-				<para><varname>minusValue(tjsonb,value) → tjsonb</varname></para>
-				<para><varname>atValues(tjsonb,valueset) → tjsonb</varname></para>
-				<para><varname>minusValues(tjsonb,valueset) → tjsonb</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+atValue(tjsonb,value) → tjsonb
+minusValue(tjsonb,value) → tjsonb
+atValues(tjsonb,valueset) → tjsonb
+minusValues(tjsonb,valueset) → tjsonb
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atValue(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03]',
@@ -1184,7 +1277,9 @@ SELECT minusValue(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01
 				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 				<para>Traditional comparisons</para>
-				<para><varname>tjsonb {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tjsonb → boolean</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tjsonb {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tjsonb → boolean
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02),
@@ -1210,7 +1305,9 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
 				<para>Ever and always comparisons</para>
-				<para><varname>{jsonb,tjsonb} {?=, %=} {jsonb,tjsonb} → boolean</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{jsonb,tjsonb} {?=, %=} {jsonb,tjsonb} → boolean
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' ?=
@@ -1226,7 +1323,9 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 			<listitem xml:id="tjsonb_tcomp">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Temporal comparisons</para>
-				<para><varname>{jsonb,tjsonb} {#=, #&lt;&gt;} {jsonb,tjsonb} → tbool</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{jsonb,tjsonb} {#=, #&lt;&gt;} {jsonb,tjsonb} → tbool
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)' #=
@@ -1252,7 +1351,9 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 				<para>Topological operators</para>
-				<para><varname>{tjsonb,tstzspan} {&amp;&amp;, &lt;@#, #@&gt;, ~=, -|-} {tjsonb,tstzspan} → boolean</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{tjsonb,tstzspan} {&amp;&amp;, &lt;@#, #@&gt;, ~=, -|-} {tjsonb,tstzspan} → boolean
+</programlisting>
 				<para>The temporal contains and contained operator are marked with a <varname>#</varname> to distinguish them from the corresponding JSONB operators.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
@@ -1274,7 +1375,9 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 			<listitem xml:id="tjsonb_pos">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Position operators</para>
-				<para><varname>{tjsonb,tstzspan} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tjsonb,tstzspan} → boolean</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{tjsonb,tstzspan} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tjsonb,tstzspan} → boolean
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
     {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' &lt;&lt;#
@@ -1302,7 +1405,9 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02,
 			<listitem xml:id="tjsonb_tCount">
 				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Temporal count</para>
-				<para><varname>tCount(tjsonb) → {tintSeq,tintSeqSet}</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tCount(tjsonb) → {tintSeq,tintSeqSet}
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH Temp(temp) AS (
   SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
@@ -1318,7 +1423,9 @@ FROM Temp;
 			<listitem xml:id="tjsonb_wCount">
 				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
 				<para>Window count</para>
-				<para><varname>wCount(tjsonb) → {tintSeq,tintSeqSet}</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+wCount(tjsonb) → {tintSeq,tintSeqSet}
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH Temp(temp) AS (
   SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,

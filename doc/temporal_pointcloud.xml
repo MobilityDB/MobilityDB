@@ -48,7 +48,9 @@ INSERT INTO pointcloud_dimensions
 				<listitem xml:id="pointcloud_schema_srid">
 					<indexterm significance="normal"><primary><varname>pointCloudSchemaSRID</varname></primary></indexterm>
 					<para>Return the spatial reference system every value of a schema is expressed in</para>
-					<para><varname>pointCloudSchemaSRID(integer) &#x2192; integer</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pointCloudSchemaSRID(integer) &#x2192; integer
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pointCloudSchemaSRID(1);
 -- 4326
@@ -57,7 +59,9 @@ SELECT pointCloudSchemaSRID(1);
 				<listitem xml:id="pointcloud_schema_compression">
 					<indexterm significance="normal"><primary><varname>pointCloudSchemaCompression</varname></primary></indexterm>
 					<para>Return how a patch of a schema is stored</para>
-					<para><varname>pointCloudSchemaCompression(integer) &#x2192; text</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pointCloudSchemaCompression(integer) &#x2192; text
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pointCloudSchemaCompression(1);
 -- none
@@ -66,7 +70,9 @@ SELECT pointCloudSchemaCompression(1);
 				<listitem xml:id="pointcloud_schema_ndims">
 					<indexterm significance="normal"><primary><varname>pointCloudSchemaNDims</varname></primary></indexterm>
 					<para>Return how many dimensions of a schema hold values</para>
-					<para><varname>pointCloudSchemaNDims(integer) &#x2192; integer</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pointCloudSchemaNDims(integer) &#x2192; integer
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pointCloudSchemaNDims(1);
 -- 3
@@ -190,8 +196,10 @@ SELECT id, numPoints(full_scan) FROM scans;
 				<listitem xml:id="pcpoint_xy_xyz">
 					<indexterm significance="normal"><primary><varname>pcpoint</varname></primary></indexterm>
 					<para>Build a 2D or 3D pcpoint directly from x/y(/z) coordinates</para>
-					<para><varname>pcpoint(pcid integer, x float, y float) → pcpoint</varname></para>
-					<para><varname>pcpoint(pcid integer, x float, y float, z float) → pcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcpoint(pcid integer, x float, y float) → pcpoint
+pcpoint(pcid integer, x float, y float, z float) → pcpoint
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pcpoint(1, 10.0, 20.0, 30.0);
 -- equivalent to PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]::float[])
@@ -201,7 +209,9 @@ SELECT pcpoint(1, 10.0, 20.0, 30.0);
 				<listitem xml:id="pcpoint_coordinates">
 					<indexterm significance="normal"><primary><varname>pcpoint</varname></primary></indexterm>
 					<para>Build a pcpoint from the coordinates of every dimension of the layout of the schema, inactive dimensions included, which is how a schema of more dimensions than the overloads above reach is given its values. That count is the one <varname>PC_MakePoint</varname> takes and is NOT the count of active dimensions that <varname>pointCloudSchemaNDims</varname> reports</para>
-					<para><varname>pcpoint(pcid integer, coordinates float[]) → pcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcpoint(pcid integer, coordinates float[]) → pcpoint
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pcpoint(1, ARRAY[10.0, 20.0, 30.0]::float[]);
 </programlisting>
@@ -210,7 +220,9 @@ SELECT pcpoint(1, ARRAY[10.0, 20.0, 30.0]::float[]);
 				<listitem xml:id="pcpatch_coordinates">
 					<indexterm significance="normal"><primary><varname>pcpatch</varname></primary></indexterm>
 					<para>Build a pcpatch from the coordinates of its points, one point after another, every dimension of the layout of the schema given for each point, inactive dimensions included. That count is the one <varname>PC_MakePatch</varname> takes and is NOT the count of active dimensions that <varname>pointCloudSchemaNDims</varname> reports; a count that divides evenly by the wrong one of the two builds a patch of the wrong points rather than reporting an error. A patch built this way states the schema itself, there being no point to read it from</para>
-					<para><varname>pcpatch(pcid integer, coordinates float[]) → pcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcpatch(pcid integer, coordinates float[]) → pcpatch
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pcpatch(1, ARRAY[1.0, 1.0, 1.0, 2.0, 2.0, 2.0]::float[]);
 </programlisting>
@@ -219,7 +231,9 @@ SELECT pcpatch(1, ARRAY[1.0, 1.0, 1.0, 2.0, 2.0, 2.0]::float[]);
 				<listitem xml:id="pcpatch_variadic">
 					<indexterm significance="normal"><primary><varname>pcpatch</varname></primary></indexterm>
 					<para>Build a pcpatch from a variadic list of pcpoints sharing the same pcid</para>
-					<para><varname>pcpatch(VARIADIC points pcpoint[]) → pcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcpatch(VARIADIC points pcpoint[]) → pcpatch
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
 -- equivalent to PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
@@ -236,8 +250,10 @@ SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
 				<listitem xml:id="pcpoint_pcid">
 					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
 					<para>Return the schema id of a pcpoint or pcpatch</para>
-					<para><varname>pcid(pcpoint) → integer</varname></para>
-					<para><varname>pcid(pcpatch) → integer</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcid(pcpoint) → integer
+pcid(pcpatch) → integer
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pcid(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 -- 1
@@ -249,9 +265,11 @@ SELECT pcid(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 					<indexterm significance="normal"><primary><varname>getY</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>getZ</varname></primary></indexterm>
 					<para>Return a coordinate of a pcpoint, NULL if the dimension is absent from the schema</para>
-					<para><varname>getX(pcpoint) → float</varname></para>
-					<para><varname>getY(pcpoint) → float</varname></para>
-					<para><varname>getZ(pcpoint) → float</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+getX(pcpoint) → float
+getY(pcpoint) → float
+getZ(pcpoint) → float
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH pt AS (SELECT PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]) p)
   SELECT getX(p), getY(p), getZ(p) FROM pt;
@@ -262,7 +280,9 @@ WITH pt AS (SELECT PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]) p)
 				<listitem xml:id="pcpoint_getDim">
 					<indexterm significance="normal"><primary><varname>getDim</varname></primary></indexterm>
 					<para>Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</para>
-					<para><varname>getDim(pcpoint,text) → float</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+getDim(pcpoint,text) → float
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getDim(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), 'X');
 -- 10
@@ -272,8 +292,10 @@ SELECT getDim(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), 'X');
 				<listitem xml:id="pcpoint_SRID">
 					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
 					<para>Return the spatial reference identifier (inherited from the schema)</para>
-					<para><varname>SRID(pcpoint) → integer</varname></para>
-					<para><varname>SRID(pcpatch) → integer</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+SRID(pcpoint) → integer
+SRID(pcpatch) → integer
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 -- 0
@@ -286,7 +308,9 @@ SELECT SRID(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), PC_MakePoin
 				<listitem xml:id="pcpatch_geometry">
 					<indexterm significance="normal"><primary><varname>geometry</varname></primary></indexterm>
 					<para>Return the multipoint of the positions the points of a patch occupy. The schema the <varname>pcid</varname> names decides the SRID and whether the result carries a Z dimension</para>
-					<para><varname>geometry(pcpatch) &#8594; geometry</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+geometry(pcpatch) &#8594; geometry
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(geometry(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
 -- MULTIPOINT Z ((1 1 1),(2 2 2))
@@ -309,8 +333,10 @@ SELECT ST_AsText(geometry(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
 				<listitem xml:id="pcpointset_set">
 					<indexterm significance="normal"><primary><varname>set</varname></primary></indexterm>
 					<para>Construct a set from an array of values, all of which must share the same pcid</para>
-					<para><varname>set(pcpoint[]) → pcpointset</varname></para>
-					<para><varname>set(pcpatch[]) → pcpatchset</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+set(pcpoint[]) → pcpointset
+set(pcpatch[]) → pcpatchset
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numValues(set(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
   PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),  -- duplicate, deduped
@@ -339,11 +365,13 @@ SELECT numValues(set(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 					<indexterm significance="normal"><primary><varname>tpcbox_xt</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tpcbox_zt</varname></primary></indexterm>
 					<para>Construct a tpcbox from explicit X/Y/Z/T bounds and a pcid</para>
-					<para><varname>tpcbox(xmin,ymin,xmax,ymax,pcid,srid=0) → tpcbox</varname></para>
-					<para><varname>tpcbox_z(xmin,ymin,zmin,xmax,ymax,zmax,pcid,srid=0) → tpcbox</varname></para>
-					<para><varname>tpcbox_t(period,pcid) → tpcbox</varname></para>
-					<para><varname>tpcbox_xt(xmin,ymin,xmax,ymax,period,pcid,srid=0) → tpcbox</varname></para>
-					<para><varname>tpcbox_zt(xmin,ymin,zmin,xmax,ymax,zmax,period,pcid,srid=0) → tpcbox</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox(xmin,ymin,xmax,ymax,pcid,srid=0) → tpcbox
+tpcbox_z(xmin,ymin,zmin,xmax,ymax,zmax,pcid,srid=0) → tpcbox
+tpcbox_t(period,pcid) → tpcbox
+tpcbox_xt(xmin,ymin,xmax,ymax,period,pcid,srid=0) → tpcbox
+tpcbox_zt(xmin,ymin,zmin,xmax,ymax,zmax,period,pcid,srid=0) → tpcbox
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 10, 10, 1, 0);
 -- TPCBOX(X((0,0),(10,10)), 1)
@@ -360,7 +388,9 @@ SELECT tpcbox_zt(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0)
 				<listitem xml:id="tpcbox_pcpoint_to_tpcbox">
 					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
 					<para>Convert a pcpoint to a degenerate (zero-extent) tpcbox; SRID and pcid come from the schema</para>
-					<para><varname>tpcbox(pcpoint) → tpcbox</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox(pcpoint) → tpcbox
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 -- TPCBOX(Z((10,20,30),(10,20,30)), 1)
@@ -370,8 +400,10 @@ SELECT tpcbox(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 				<listitem xml:id="tpcbox_pcpatch_to_tpcbox">
 					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
 					<para>Convert a pcpatch to a tpcbox using the patch's embedded 2D PCBOUNDS; the second form takes an explicit SRID instead of looking it up from the schema</para>
-					<para><varname>tpcbox(pcpatch) → tpcbox</varname></para>
-					<para><varname>tpcbox(pcpatch,integer) → tpcbox</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox(pcpatch) → tpcbox
+tpcbox(pcpatch,integer) → tpcbox
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])));
 </programlisting>
@@ -387,9 +419,11 @@ SELECT tpcbox(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])));
 					<indexterm significance="normal"><primary><varname>hasZ</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>hasT</varname></primary></indexterm>
 					<para>Return whether a tpcbox has the X/Y, Z, or T dimensions set</para>
-					<para><varname>hasX(tpcbox) → boolean</varname></para>
-					<para><varname>hasZ(tpcbox) → boolean</varname></para>
-					<para><varname>hasT(tpcbox) → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+hasX(tpcbox) → boolean
+hasZ(tpcbox) → boolean
+hasT(tpcbox) → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
   SELECT hasX(b), hasZ(b) FROM b;
@@ -405,12 +439,14 @@ WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
 					<indexterm significance="normal"><primary><varname>zmin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>zmax</varname></primary></indexterm>
 					<para>Return a coordinate bound, NULL if the corresponding dimension is absent</para>
-					<para><varname>xmin(tpcbox) → float</varname></para>
-					<para><varname>xmax(tpcbox) → float</varname></para>
-					<para><varname>ymin(tpcbox) → float</varname></para>
-					<para><varname>ymax(tpcbox) → float</varname></para>
-					<para><varname>zmin(tpcbox) → float</varname></para>
-					<para><varname>zmax(tpcbox) → float</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+xmin(tpcbox) → float
+xmax(tpcbox) → float
+ymin(tpcbox) → float
+ymax(tpcbox) → float
+zmin(tpcbox) → float
+zmax(tpcbox) → float
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
   SELECT xmin(b), xmax(b) FROM b;
@@ -422,8 +458,10 @@ WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
 					<indexterm significance="normal"><primary><varname>tmin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tmax</varname></primary></indexterm>
 					<para>Return a temporal bound, NULL if the box has no T dimension</para>
-					<para><varname>tmin(tpcbox) → timestamptz</varname></para>
-					<para><varname>tmax(tpcbox) → timestamptz</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tmin(tpcbox) → timestamptz
+tmax(tpcbox) → timestamptz
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tmin(tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1));
 -- 2024-01-01
@@ -434,8 +472,10 @@ SELECT tmin(tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1));
 					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
 					<para>Return the schema id and SRID</para>
-					<para><varname>pcid(tpcbox) → integer</varname></para>
-					<para><varname>SRID(tpcbox) → integer</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcid(tpcbox) → integer
+SRID(tpcbox) → integer
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH b AS (SELECT tpcbox(0, 0, 10, 10, 7, 4326) AS b)
   SELECT pcid(b), SRID(b) FROM b;
@@ -451,7 +491,9 @@ WITH b AS (SELECT tpcbox(0, 0, 10, 10, 7, 4326) AS b)
 				<listitem xml:id="tpcbox_round">
 					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 					<para>Return a tpcbox with coordinates rounded to a given number of decimal digits</para>
-					<para><varname>round(tpcbox,integer=0) → tpcbox</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+round(tpcbox,integer=0) → tpcbox
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(tpcbox(0.123456, 1.234567, 2.345678, 3.456789, 1, 0), 2);
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
@@ -461,7 +503,9 @@ SELECT round(tpcbox(0.123456, 1.234567, 2.345678, 3.456789, 1, 0), 2);
 				<listitem xml:id="tpcbox_setSRID">
 					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
 					<para>Return a tpcbox with the SRID overwritten. Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</para>
-					<para><varname>setSRID(tpcbox,integer) → tpcbox</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+setSRID(tpcbox,integer) → tpcbox
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
 -- 4326
@@ -476,8 +520,10 @@ SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
 				<listitem xml:id="tpcbox_union">
 					<indexterm significance="normal"><primary><varname>tpcbox_union</varname></primary></indexterm>
 					<para>Return the union of two tpcboxes; both must share the same pcid</para>
-					<para><varname>tpcbox_union(tpcbox,tpcbox) → tpcbox</varname></para>
-					<para><varname>tpcbox + tpcbox → tpcbox</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox_union(tpcbox,tpcbox) → tpcbox
+tpcbox + tpcbox → tpcbox
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
 -- TPCBOX(X((0,0),(10,10)), 1)
@@ -487,8 +533,10 @@ SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
 				<listitem xml:id="tpcbox_intersection">
 					<indexterm significance="normal"><primary><varname>tpcbox_intersection</varname></primary></indexterm>
 					<para>Return the intersection of two tpcboxes, NULL if disjoint or pcid mismatch</para>
-					<para><varname>tpcbox_intersection(tpcbox,tpcbox) → tpcbox</varname></para>
-					<para><varname>tpcbox * tpcbox → tpcbox</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox_intersection(tpcbox,tpcbox) → tpcbox
+tpcbox * tpcbox → tpcbox
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
 -- TPCBOX(X((3,3),(5,5)), 1)
@@ -505,7 +553,9 @@ SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
 				<listitem xml:id="tpcbox_contains">
 					<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
 					<para>Return true if the first tpcbox contains the second</para>
-					<para><varname>tpcbox @&gt; tpcbox → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox @&gt; tpcbox → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 10, 10, 1, 0) @&gt; tpcbox(2, 2, 8, 8, 1, 0);
 -- t
@@ -515,7 +565,9 @@ SELECT tpcbox(0, 0, 10, 10, 1, 0) @&gt; tpcbox(2, 2, 8, 8, 1, 0);
 				<listitem xml:id="tpcbox_contained">
 					<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
 					<para>Return true if the first tpcbox is contained in the second</para>
-					<para><varname>tpcbox &lt;@ tpcbox → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox &lt;@ tpcbox → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(2, 2, 8, 8, 1, 0) &lt;@ tpcbox(0, 0, 10, 10, 1, 0);
 -- t
@@ -525,7 +577,9 @@ SELECT tpcbox(2, 2, 8, 8, 1, 0) &lt;@ tpcbox(0, 0, 10, 10, 1, 0);
 				<listitem xml:id="tpcbox_overlaps">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
 					<para>Return true if two tpcboxes overlap</para>
-					<para><varname>tpcbox &amp;&amp; tpcbox → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox &amp;&amp; tpcbox → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(3, 3, 10, 10, 1, 0);  -- t
 SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);
@@ -536,7 +590,9 @@ SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);
 				<listitem xml:id="tpcbox_same">
 					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 					<para>Return true if two tpcboxes are equal in the dimensions they share</para>
-					<para><varname>tpcbox ~= tpcbox → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox ~= tpcbox → boolean
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 2, 2) ~= tpcbox(0, 0, 2, 2);
 -- t
@@ -546,7 +602,9 @@ SELECT tpcbox(0, 0, 2, 2) ~= tpcbox(0, 0, 2, 2);
 				<listitem xml:id="tpcbox_adjacent">
 					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 					<para>Return true if two tpcboxes are adjacent (share a boundary)</para>
-					<para><varname>tpcbox -|- tpcbox → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox -|- tpcbox → boolean
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 2, 2) -|- tpcbox(5, 5, 7, 7);
 -- f
@@ -638,12 +696,14 @@ SELECT tpcbox(0, 0, 2, 2) &lt;&lt;# tpcbox(5, 5, 7, 7);
 					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 					<para>Compare two tpcboxes; total order over the canonical encoding (pcid, srid, flags, period, then spatial bounds in XYZ-min/max order)</para>
-					<para><varname>tpcbox = tpcbox → boolean</varname></para>
-					<para><varname>tpcbox &lt;&gt; tpcbox → boolean</varname></para>
-					<para><varname>tpcbox &lt; tpcbox → boolean</varname></para>
-					<para><varname>tpcbox &lt;= tpcbox → boolean</varname></para>
-					<para><varname>tpcbox &gt; tpcbox → boolean</varname></para>
-					<para><varname>tpcbox &gt;= tpcbox → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcbox = tpcbox → boolean
+tpcbox &lt;&gt; tpcbox → boolean
+tpcbox &lt; tpcbox → boolean
+tpcbox &lt;= tpcbox → boolean
+tpcbox &gt; tpcbox → boolean
+tpcbox &gt;= tpcbox → boolean
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 2, 2) = tpcbox(0, 0, 2, 2);
 -- t
@@ -683,7 +743,9 @@ INSERT INTO scans VALUES (1,
 				<listitem xml:id="tpcpoint_inst">
 					<indexterm significance="normal"><primary><varname>tpcpoint</varname></primary></indexterm>
 					<para>Construct a temporal pcpoint of instant subtype</para>
-					<para><varname>tpcpoint(pcpoint,timestamptz) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpoint(pcpoint,timestamptz) → tpcpoint
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), '2024-01-01 12:00+00');
 </programlisting>
@@ -692,8 +754,10 @@ SELECT tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), '2024-01-01 12:00+00')
 				<listitem xml:id="tpcpoint_seq">
 					<indexterm significance="normal"><primary><varname>tpcpointSeq</varname></primary></indexterm>
 					<para>Construct a temporal pcpoint of sequence subtype from an array of instants. The interpolation is one of <varname>'discrete'</varname>, <varname>'step'</varname>; <varname>'step'</varname> is the default for tpcpoint since pcpoints carry heterogeneous dimensions that do not interpolate linearly</para>
-					<para><varname>tpcpointSeq(tpcpoint[]) → tpcpoint</varname></para>
-					<para><varname>tpcpointSeq(tpcpoint[],text) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpointSeq(tpcpoint[]) → tpcpoint
+tpcpointSeq(tpcpoint[],text) → tpcpoint
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]),
   '2024-01-01'::timestamptz),
@@ -704,7 +768,9 @@ SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]),
 				<listitem xml:id="tpcpoint_seqset">
 					<indexterm significance="normal"><primary><varname>tpcpointSeqSet</varname></primary></indexterm>
 					<para>Construct a temporal pcpoint of sequence-set subtype from an array of sequences</para>
-					<para><varname>tpcpointSeqSet(tpcpoint[]) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpointSeqSet(tpcpoint[]) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numSequences(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -726,7 +792,9 @@ SELECT numInstants(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
 				<listitem xml:id="tpcpoint_pcid">
 					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
 					<para>Return the pgPointCloud schema id shared by all instants</para>
-					<para><varname>pcid(tpcpoint) → integer</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcid(tpcpoint) → integer
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pcid(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- 1
@@ -736,8 +804,10 @@ SELECT pcid(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 				<listitem xml:id="tpcpoint_SRID">
 					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
 					<para>Return the SRID inherited from the schema</para>
-					<para><varname>SRID(tpcpoint) → integer</varname></para>
-					<para><varname>SRID(tpcpatch) → integer</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+SRID(tpcpoint) → integer
+SRID(tpcpatch) → integer
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The SRID is that of the schema registered for the pcid.
 SELECT SRID(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
@@ -758,9 +828,11 @@ SELECT SRID(tpcpatch(PC_Patch(ARRAY[pcpoint(1, 1, 1, 1)]),
 					<indexterm significance="normal"><primary><varname>getY</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>getZ</varname></primary></indexterm>
 					<para>Project a tpcpoint onto a spatial dimension, yielding a tfloat</para>
-					<para><varname>getX(tpcpoint) → tfloat</varname></para>
-					<para><varname>getY(tpcpoint) → tfloat</varname></para>
-					<para><varname>getZ(tpcpoint) → tfloat</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+getX(tpcpoint) → tfloat
+getY(tpcpoint) → tfloat
+getZ(tpcpoint) → tfloat
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT startValue(getX(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
   '2024-01-01'::timestamptz)));
@@ -771,7 +843,9 @@ SELECT startValue(getX(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 				<listitem xml:id="tpcpoint_getDim">
 					<indexterm significance="normal"><primary><varname>getDim</varname></primary></indexterm>
 					<para>Project a tpcpoint onto any named schema dimension, yielding a tfloat</para>
-					<para><varname>getDim(tpcpoint,text) → tfloat</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+getDim(tpcpoint,text) → tfloat
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getDim(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -789,7 +863,9 @@ SELECT getDim(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Cast a tpcpoint to a temporal geometry point, projecting away every non-spatial dimension while preserving timestamps. The result has the same SRID as the schema; its dimensionality (2D vs. 3D) follows the presence of Z in the schema. A reverse cast is not provided: reconstructing a pcpoint requires a target schema that the temporal value alone cannot supply</para>
 					<para><varname>tgeompoint::tpcpoint</varname> is not defined</para>
-					<para><varname>tpcpoint::tgeompoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpoint::tgeompoint
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
   '2024-01-01'::timestamptz)::tgeompoint));
@@ -808,9 +884,11 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 					<indexterm significance="normal"><primary><varname>tpcpointSeq</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tpcpointSeqSet</varname></primary></indexterm>
 					<para>Transform a tpcpoint to another subtype</para>
-					<para><varname>tpcpointInst(tpcpoint) → tpcpoint</varname></para>
-					<para><varname>tpcpointSeq(tpcpoint,interp='step') → tpcpoint</varname></para>
-					<para><varname>tpcpointSeqSet(tpcpoint) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpointInst(tpcpoint) → tpcpoint
+tpcpointSeq(tpcpoint,interp='step') → tpcpoint
+tpcpointSeqSet(tpcpoint) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(tpcpointInst(tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz)));
@@ -824,7 +902,9 @@ SELECT numInstants(tpcpointSeq(tpcpointSeq(ARRAY[
 				<listitem xml:id="tpcpoint_setInterp">
 					<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 					<para>Transform a tpcpoint to another interpolation</para>
-					<para><varname>setInterp(tpcpoint,interp) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+setInterp(tpcpoint,interp) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A tpcpoint carries step interpolation.
 SELECT interp(tpcpointSeq(ARRAY[
@@ -851,12 +931,14 @@ SELECT interp(setInterp(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 					<para>Compare two tpcpoints lexicographically over their canonical encodings</para>
-					<para><varname>tpcpoint = tpcpoint → boolean</varname></para>
-					<para><varname>tpcpoint &lt;&gt; tpcpoint → boolean</varname></para>
-					<para><varname>tpcpoint &lt; tpcpoint → boolean</varname></para>
-					<para><varname>tpcpoint &lt;= tpcpoint → boolean</varname></para>
-					<para><varname>tpcpoint &gt; tpcpoint → boolean</varname></para>
-					<para><varname>tpcpoint &gt;= tpcpoint → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpoint = tpcpoint → boolean
+tpcpoint &lt;&gt; tpcpoint → boolean
+tpcpoint &lt; tpcpoint → boolean
+tpcpoint &lt;= tpcpoint → boolean
+tpcpoint &gt; tpcpoint → boolean
+tpcpoint &gt;= tpcpoint → boolean
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) = tpcpoint(pcpoint(1, 1,
   1, 1), '2001-01-01'::timestamptz);
@@ -878,13 +960,17 @@ SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) &lt; tpcpoint(pc
 					<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
 					<para>Test whether the value at any (ever) or every (always) instant equals, or differs from, a pcpoint or another tpcpoint</para>
-					<para><varname>eEq(pcpoint,tpcpoint) → boolean</varname></para>
-					<para><varname>eEq(tpcpoint,pcpoint) → boolean</varname></para>
-					<para><varname>eEq(tpcpoint,tpcpoint) → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+eEq(pcpoint,tpcpoint) → boolean
+eEq(tpcpoint,pcpoint) → boolean
+eEq(tpcpoint,tpcpoint) → boolean
+</programlisting>
 					<para><varname>aEq</varname>, <varname>eNe</varname> and <varname>aNe</varname> take the same three argument pairs</para>
-					<para><varname>pcpoint ?= tpcpoint → boolean</varname></para>
-					<para><varname>tpcpoint ?= pcpoint → boolean</varname></para>
-					<para><varname>tpcpoint ?= tpcpoint → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcpoint ?= tpcpoint → boolean
+tpcpoint ?= pcpoint → boolean
+tpcpoint ?= tpcpoint → boolean
+</programlisting>
 					<para>The operators <varname>%=</varname>, <varname>?&lt;&gt;</varname> and <varname>%&lt;&gt;</varname> take the same three operand pairs</para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eEq(pcpoint(1, 1, 1, 1), tpcpointSeq(ARRAY[
@@ -905,13 +991,17 @@ SELECT aEq(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>tNe</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
 					<para>Return the temporal equality or inequality of a tpcpoint with a pcpoint or with another tpcpoint, as a tbool</para>
-					<para><varname>tEq(pcpoint,tpcpoint) → tbool</varname></para>
-					<para><varname>tEq(tpcpoint,pcpoint) → tbool</varname></para>
-					<para><varname>tEq(tpcpoint,tpcpoint) → tbool</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tEq(pcpoint,tpcpoint) → tbool
+tEq(tpcpoint,pcpoint) → tbool
+tEq(tpcpoint,tpcpoint) → tbool
+</programlisting>
 					<para><varname>tNe</varname> takes the same three argument pairs</para>
-					<para><varname>pcpoint #= tpcpoint → tbool</varname></para>
-					<para><varname>tpcpoint #= pcpoint → tbool</varname></para>
-					<para><varname>tpcpoint #= tpcpoint → tbool</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcpoint #= tpcpoint → tbool
+tpcpoint #= pcpoint → tbool
+tpcpoint #= tpcpoint → tbool
+</programlisting>
 					<para>The operator <varname>#&lt;&gt;</varname> takes the same three operand pairs</para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tEq(tpcpointSeq(ARRAY[
@@ -933,10 +1023,12 @@ SELECT tEq(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
 					<para>Restrict a tpcpoint to (the complement of) a pcpoint value or a set of pcpoint values</para>
-					<para><varname>atValue(tpcpoint,pcpoint) → tpcpoint</varname></para>
-					<para><varname>minusValue(tpcpoint,pcpoint) → tpcpoint</varname></para>
-					<para><varname>atValues(tpcpoint,pcpointset) → tpcpoint</varname></para>
-					<para><varname>minusValues(tpcpoint,pcpointset) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+atValue(tpcpoint,pcpoint) → tpcpoint
+minusValue(tpcpoint,pcpoint) → tpcpoint
+atValues(tpcpoint,pcpointset) → tpcpoint
+minusValues(tpcpoint,pcpointset) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- With step interpolation the matching value is held on
 -- [2001-01-01, 2001-01-02); its closing bound is stored as a second instant.
@@ -957,14 +1049,16 @@ SELECT numInstants(minusValue(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atTime</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTime</varname></primary></indexterm>
 					<para>Restrict a tpcpoint to a time selector (timestamp, period, set, or spanset), or remove it</para>
-					<para><varname>atTime(tpcpoint,timestamptz) → tpcpoint</varname></para>
-					<para><varname>atTime(tpcpoint,tstzspan) → tpcpoint</varname></para>
-					<para><varname>atTime(tpcpoint,tstzset) → tpcpoint</varname></para>
-					<para><varname>atTime(tpcpoint,tstzspanset) → tpcpoint</varname></para>
-					<para><varname>minusTime(tpcpoint,timestamptz) → tpcpoint</varname></para>
-					<para><varname>minusTime(tpcpoint,tstzspan) → tpcpoint</varname></para>
-					<para><varname>minusTime(tpcpoint,tstzset) → tpcpoint</varname></para>
-					<para><varname>minusTime(tpcpoint,tstzspanset) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+atTime(tpcpoint,timestamptz) → tpcpoint
+atTime(tpcpoint,tstzspan) → tpcpoint
+atTime(tpcpoint,tstzset) → tpcpoint
+atTime(tpcpoint,tstzspanset) → tpcpoint
+minusTime(tpcpoint,timestamptz) → tpcpoint
+minusTime(tpcpoint,tstzspan) → tpcpoint
+minusTime(tpcpoint,tstzset) → tpcpoint
+minusTime(tpcpoint,tstzspanset) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTime(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -984,8 +1078,10 @@ SELECT numInstants(atTime(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
 					<para>Restrict a tpcpoint to the spatial / temporal extent of a tpcbox, or remove it. Returns NULL when the tpcbox's pcid does not match the tpcpoint's. Internally projects to a tgeompoint via the schema cache, restricts the projection by the equivalent stbox, and lifts the result's time span back onto the original tpcpoint to preserve the full pcpoint values</para>
-					<para><varname>atTpcbox(tpcpoint,tpcbox,border_inc boolean=TRUE) → tpcpoint</varname></para>
-					<para><varname>minusTpcbox(tpcpoint,tpcbox,border_inc boolean=TRUE) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+atTpcbox(tpcpoint,tpcbox,border_inc boolean=TRUE) → tpcpoint
+minusTpcbox(tpcpoint,tpcbox,border_inc boolean=TRUE) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1007,8 +1103,10 @@ SELECT numInstants(minusTpcbox(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
 					<para>Restrict a tpcpoint to the instants before or after a timestamp. The strict flag excludes the instant at the timestamp itself</para>
-					<para><varname>beforeTimestamp(tpcpoint,timestamptz,strict boolean=TRUE) → tpcpoint</varname></para>
-					<para><varname>afterTimestamp(tpcpoint,timestamptz,strict boolean=TRUE) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+beforeTimestamp(tpcpoint,timestamptz,strict boolean=TRUE) → tpcpoint
+afterTimestamp(tpcpoint,timestamptz,strict boolean=TRUE) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT timeSpan(beforeTimestamp(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1032,8 +1130,10 @@ SELECT timeSpan(afterTimestamp(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
 					<para>Insert a tpcpoint into another one, or update another one with it</para>
-					<para><varname>insert(tpcpoint,tpcpoint,connect boolean=TRUE) → tpcpoint</varname></para>
-					<para><varname>update(tpcpoint,tpcpoint,connect boolean=TRUE) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+insert(tpcpoint,tpcpoint,connect boolean=TRUE) → tpcpoint
+update(tpcpoint,tpcpoint,connect boolean=TRUE) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(insert(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1047,10 +1147,12 @@ SELECT numInstants(insert(tpcpointSeq(ARRAY[
 				<listitem xml:id="tpcpoint_deleteTime">
 					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 					<para>Delete a time selector (timestamp, set, period, or spanset) from a tpcpoint</para>
-					<para><varname>deleteTime(tpcpoint,timestamptz,connect boolean=TRUE) → tpcpoint</varname></para>
-					<para><varname>deleteTime(tpcpoint,tstzset,connect boolean=TRUE) → tpcpoint</varname></para>
-					<para><varname>deleteTime(tpcpoint,tstzspan,connect boolean=TRUE) → tpcpoint</varname></para>
-					<para><varname>deleteTime(tpcpoint,tstzspanset,connect boolean=TRUE) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+deleteTime(tpcpoint,timestamptz,connect boolean=TRUE) → tpcpoint
+deleteTime(tpcpoint,tstzset,connect boolean=TRUE) → tpcpoint
+deleteTime(tpcpoint,tstzspan,connect boolean=TRUE) → tpcpoint
+deleteTime(tpcpoint,tstzspanset,connect boolean=TRUE) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Deleting the middle instant splits the sequence into
 -- {[2001-01-01, 2001-01-02), (2001-01-02, 2001-01-03]}; each half stores
@@ -1067,8 +1169,10 @@ SELECT numInstants(deleteTime(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 					<para>Append an instant or a sequence to a tpcpoint</para>
-					<para><varname>appendInstant(tpcpoint,tpcpoint) → tpcpoint</varname></para>
-					<para><varname>appendSequence(tpcpoint,tpcpoint) → tpcpoint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+appendInstant(tpcpoint,tpcpoint) → tpcpoint
+appendSequence(tpcpoint,tpcpoint) → tpcpoint
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(appendInstant(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1086,7 +1190,9 @@ SELECT numInstants(appendInstant(tpcpointSeq(ARRAY[
 				<listitem xml:id="tpcpoint_unnest">
 					<indexterm significance="normal"><primary><varname>unnest</varname></primary></indexterm>
 					<para>Return the distinct values of a tpcpoint with the span set on which each of them is taken</para>
-					<para><varname>unnest(tpcpoint) → {(value,time)}</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+unnest(tpcpoint) → {(value,time)}
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (un).time
 FROM (SELECT unnest(tpcpointSeq(ARRAY[
@@ -1101,7 +1207,10 @@ FROM (SELECT unnest(tpcpointSeq(ARRAY[
 				<listitem xml:id="tpcpoint_timeSplit">
 					<indexterm significance="normal"><primary><varname>timeSplit</varname></primary></indexterm>
 					<para>Split a tpcpoint into fragments, one per time bin</para>
-					<para><varname>timeSplit(tpcpoint,bin_width interval,origin timestamptz='2000-01-03') → {(time,tpcpoint)}</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+timeSplit(tpcpoint,bin_width interval,
+  origin timestamptz='2000-01-03') → {(time,tpcpoint)}
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ts).time, numInstants((ts).temp)
 FROM (SELECT timeSplit(tpcpointSeq(ARRAY[
@@ -1118,7 +1227,9 @@ FROM (SELECT timeSplit(tpcpointSeq(ARRAY[
 				<listitem xml:id="tpcpoint_spans">
 					<indexterm significance="normal"><primary><varname>spans</varname></primary></indexterm>
 					<para>Return the array of time spans of a tpcpoint's segments</para>
-					<para><varname>spans(tpcpoint) → tstzspan[]</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+spans(tpcpoint) → tstzspan[]
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT spans(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
@@ -1132,8 +1243,10 @@ SELECT spans(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
 					<para>Return the time spans of a tpcpoint split into a given number of bins, or with a given number of segments per bin</para>
-					<para><varname>splitNSpans(tpcpoint, integer) → tstzspan[]</varname></para>
-					<para><varname>splitEachNSpans(tpcpoint, integer) → tstzspan[]</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+splitNSpans(tpcpoint, integer) → tstzspan[]
+splitEachNSpans(tpcpoint, integer) → tstzspan[]
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitNSpans(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-01'::timestamptz),
@@ -1200,8 +1313,10 @@ SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&l
 					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 					<para>Nearest-approach distance, KNN-orderable through the GiST opclass: <varname>SELECT … ORDER BY temp |=| query LIMIT N</varname> is index-accelerated. Pcid mismatch yields infinity.</para>
-					<para><varname>nearestApproachDistance(tpcpoint,tpcbox) → float</varname></para>
-					<para><varname>nearestApproachDistance(tpcpoint,tpcpoint) → float</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+nearestApproachDistance(tpcpoint,tpcbox) → float
+nearestApproachDistance(tpcpoint,tpcpoint) → float
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(nearestApproachDistance(
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1254,10 +1369,12 @@ SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
 					<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
 					<para>Ever / always contains, covers and touches</para>
-					<para><varname>{eContains,aContains}(geometry,tpcpoint) &#8594; boolean</varname></para>
-					<para><varname>{eCovers,aCovers}(geometry,tpcpoint) &#8594; boolean</varname></para>
-					<para><varname>{eTouches,aTouches}(geometry,tpcpoint) &#8594; boolean</varname></para>
-					<para><varname>{eTouches,aTouches}(tpcpoint,geometry) &#8594; boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+{eContains,aContains}(geometry,tpcpoint) &#8594; boolean
+{eCovers,aCovers}(geometry,tpcpoint) &#8594; boolean
+{eTouches,aTouches}(geometry,tpcpoint) &#8594; boolean
+{eTouches,aTouches}(tpcpoint,geometry) &#8594; boolean
+</programlisting>
 					<para>A moving point neither contains nor covers a geometry and two moving points do not touch, so these take the geometry first only, apart from <varname>eTouches</varname> and <varname>aTouches</varname>, which read either order. They are planar relationships: a point whose schema states a Z dimension is refused.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))',
@@ -1348,13 +1465,15 @@ SELECT aDwithin(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
 					<para>Temporal spatial relationships</para>
-					<para><varname>tDisjoint({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tbool</varname></para>
-					<para><varname>tDwithin({geometry,tpcpoint},{geometry,tpcpoint},float) &#8594; tbool</varname></para>
-					<para><varname>tIntersects({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tbool</varname></para>
-					<para><varname>tContains(geometry,tpcpoint) &#8594; tbool</varname></para>
-					<para><varname>tCovers(geometry,tpcpoint) &#8594; tbool</varname></para>
-					<para><varname>tTouches(geometry,tpcpoint) &#8594; tbool</varname></para>
-					<para><varname>tTouches(tpcpoint,geometry) &#8594; tbool</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tDisjoint({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tbool
+tDwithin({geometry,tpcpoint},{geometry,tpcpoint},float) &#8594; tbool
+tIntersects({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tbool
+tContains(geometry,tpcpoint) &#8594; tbool
+tCovers(geometry,tpcpoint) &#8594; tbool
+tTouches(geometry,tpcpoint) &#8594; tbool
+tTouches(tpcpoint,geometry) &#8594; tbool
+</programlisting>
 					<para>A temporal point cloud point declares the relationships its cast target declares, so <varname>tContains</varname> and <varname>tCovers</varname> take the geometry first only and <varname>tTouches</varname> has no direction between two point cloud points. The three are planar relationships: a schema whose dimensions do not include Z answers them, and one carrying Z meets the refusal <varname>The tgeompoint cannot have Z dimension</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1392,7 +1511,9 @@ SELECT tDwithin(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
 				<listitem xml:id="tpcpatch_inst">
 					<indexterm significance="normal"><primary><varname>tpcpatch</varname></primary></indexterm>
 					<para>Construct a temporal pcpatch of instant subtype</para>
-					<para><varname>tpcpatch(pcpatch,timestamptz) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpatch(pcpatch,timestamptz) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz));
@@ -1403,8 +1524,10 @@ SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
 				<listitem xml:id="tpcpatch_seq">
 					<indexterm significance="normal"><primary><varname>tpcpatchSeq</varname></primary></indexterm>
 					<para>Construct a temporal pcpatch of sequence subtype</para>
-					<para><varname>tpcpatchSeq(tpcpatch[]) → tpcpatch</varname></para>
-					<para><varname>tpcpatchSeq(tpcpatch[],text) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpatchSeq(tpcpatch[]) → tpcpatch
+tpcpatchSeq(tpcpatch[],text) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1422,7 +1545,9 @@ SELECT numInstants(tpcpatchSeq(ARRAY[
 				<listitem xml:id="tpcpatch_seqset">
 					<indexterm significance="normal"><primary><varname>tpcpatchSeqSet</varname></primary></indexterm>
 					<para>Construct a temporal pcpatch of sequence-set subtype</para>
-					<para><varname>tpcpatchSeqSet(tpcpatch[]) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpatchSeqSet(tpcpatch[]) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numSequences(tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1443,8 +1568,10 @@ SELECT numSequences(tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>startNumPoints</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>endNumPoints</varname></primary></indexterm>
 					<para>Return the number of points in the patch carried by the first or last instant</para>
-					<para><varname>startNumPoints(tpcpatch) → integer</varname></para>
-					<para><varname>endNumPoints(tpcpatch) → integer</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+startNumPoints(tpcpatch) → integer
+endNumPoints(tpcpatch) → integer
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT startNumPoints(tpcpatch(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
   '2024-02-01'::timestamptz));
@@ -1455,7 +1582,9 @@ SELECT startNumPoints(tpcpatch(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])
 				<listitem xml:id="tpcpatch_total_numpoints">
 					<indexterm significance="normal"><primary><varname>numPoints</varname></primary></indexterm>
 					<para>Return the total number of points across every instant's patch. Read directly from each patch's header, no decompression.</para>
-					<para><varname>numPoints(tpcpatch) → bigint</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+numPoints(tpcpatch) → bigint
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numPoints(tpcpatchSeq(ARRAY[
   tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
@@ -1470,7 +1599,9 @@ SELECT numPoints(tpcpatchSeq(ARRAY[
 				<listitem xml:id="tpcpatch_points">
 					<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
 					<para>Set-returning function: emits one row per (instant timestamp, point) by walking each instant's patch and decomposing it through pgPointCloud's in-memory C API. Useful for joining a tpcpatch column against per-point predicates that the bbox-level operators can't express. Cost is O(total points), one per-instant decompression plus one row emission per point.</para>
-					<para><varname>points(tpcpatch) → setof (t timestamptz, point pcpoint)</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+points(tpcpatch) → setof (t timestamptz, point pcpoint)
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT t, point FROM points(tpcpatch(
   PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
@@ -1495,9 +1626,11 @@ SELECT t, point FROM points(tpcpatch(
 					<indexterm significance="normal"><primary><varname>tpcpatchSeq</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tpcpatchSeqSet</varname></primary></indexterm>
 					<para>Transform a tpcpatch to another subtype</para>
-					<para><varname>tpcpatchInst(tpcpatch) → tpcpatch</varname></para>
-					<para><varname>tpcpatchSeq(tpcpatch,interp='step') → tpcpatch</varname></para>
-					<para><varname>tpcpatchSeqSet(tpcpatch) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tpcpatchInst(tpcpatch) → tpcpatch
+tpcpatchSeq(tpcpatch,interp='step') → tpcpatch
+tpcpatchSeqSet(tpcpatch) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tempSubtype(tpcpatchSeq(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2,
   2)), '2001-01-01'::timestamptz)));
@@ -1507,7 +1640,9 @@ SELECT tempSubtype(tpcpatchSeq(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 
 				<listitem xml:id="tpcpatch_setInterp">
 					<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 					<para>Transform a tpcpatch to another interpolation</para>
-					<para><varname>setInterp(tpcpatch,interp) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+setInterp(tpcpatch,interp) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT interp(setInterp(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1529,10 +1664,12 @@ SELECT interp(setInterp(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
 					<para>Restrict a tpcpatch to (the complement of) a pcpatch value or a set of pcpatch values</para>
-					<para><varname>atValue(tpcpatch,pcpatch) → tpcpatch</varname></para>
-					<para><varname>minusValue(tpcpatch,pcpatch) → tpcpatch</varname></para>
-					<para><varname>atValues(tpcpatch,pcpatchset) → tpcpatch</varname></para>
-					<para><varname>minusValues(tpcpatch,pcpatchset) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+atValue(tpcpatch,pcpatch) → tpcpatch
+minusValue(tpcpatch,pcpatch) → tpcpatch
+atValues(tpcpatch,pcpatchset) → tpcpatch
+minusValues(tpcpatch,pcpatchset) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The matching value is held up to the next instant; the closing bound
 -- is stored as a second instant.
@@ -1557,8 +1694,10 @@ SELECT numInstants(minusValue(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
 					<para>Restrict a tpcpatch to the instants whose patch passes a coarse PCBOUNDS overlap test against the tpcbox, or remove them. Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim, with no per-point decompression. Because pgPointCloud's <varname>PCBOUNDS</varname> is 2D, the Z dimension of the box is ignored at this granularity. Returns NULL when the tpcbox's pcid does not match.</para>
-					<para><varname>atTpcbox(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch</varname></para>
-					<para><varname>minusTpcbox(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+atTpcbox(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch
+minusTpcbox(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1582,8 +1721,10 @@ SELECT numInstants(minusTpcbox(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atTpcboxFine</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTpcboxFine</varname></primary></indexterm>
 					<para>Per-point variant of the previous: each surviving instant carries a freshly-built pcpatch holding only the points inside (or outside, for minus) the tpcbox in 2D, and 3D when the box has a Z dimension. Instants whose patch filters to zero points are dropped. Slower than the coarse variant because every patch is decompressed and rebuilt; use when you need point-level fidelity.</para>
-					<para><varname>atTpcboxFine(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch</varname></para>
-					<para><varname>minusTpcboxFine(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+atTpcboxFine(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch
+minusTpcboxFine(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcboxFine(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1598,8 +1739,10 @@ SELECT numInstants(atTpcboxFine(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
 					<para>Restrict a tpcpatch to the points whose XY projection intersects (or does not intersect, for minus) a 2D geometry. Z is ignored. SRID compatibility between the patch schema and the geometry must be ensured by the caller.</para>
-					<para><varname>atGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
-					<para><varname>minusGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+atGeometry(tpcpatch,geometry) → tpcpatch
+minusGeometry(tpcpatch,geometry) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The polygon boundary touches the point (3 3) of the patch at
 -- 2001-01-02, so that patch survives both the at and the minus side.
@@ -1624,8 +1767,10 @@ SELECT numInstants(minusGeometry(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
 					<para>Restrict a tpcpatch to the instants before or after a timestamp. The strict flag excludes the instant at the timestamp itself</para>
-					<para><varname>beforeTimestamp(tpcpatch,timestamptz,strict boolean=TRUE) → tpcpatch</varname></para>
-					<para><varname>afterTimestamp(tpcpatch,timestamptz,strict boolean=TRUE) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+beforeTimestamp(tpcpatch,timestamptz,strict boolean=TRUE) → tpcpatch
+afterTimestamp(tpcpatch,timestamptz,strict boolean=TRUE) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT timeSpan(beforeTimestamp(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1655,8 +1800,10 @@ SELECT timeSpan(afterTimestamp(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
 					<para>Insert a tpcpatch into another one, or update another one with it</para>
-					<para><varname>insert(tpcpatch,tpcpatch,connect boolean=TRUE) → tpcpatch</varname></para>
-					<para><varname>update(tpcpatch,tpcpatch,connect boolean=TRUE) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+insert(tpcpatch,tpcpatch,connect boolean=TRUE) → tpcpatch
+update(tpcpatch,tpcpatch,connect boolean=TRUE) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(insert(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1673,10 +1820,12 @@ SELECT numInstants(insert(tpcpatchSeq(ARRAY[
 				<listitem xml:id="tpcpatch_deleteTime">
 					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 					<para>Delete a time selector (timestamp, set, period, or spanset) from a tpcpatch</para>
-					<para><varname>deleteTime(tpcpatch,timestamptz,connect boolean=TRUE) → tpcpatch</varname></para>
-					<para><varname>deleteTime(tpcpatch,tstzset,connect boolean=TRUE) → tpcpatch</varname></para>
-					<para><varname>deleteTime(tpcpatch,tstzspan,connect boolean=TRUE) → tpcpatch</varname></para>
-					<para><varname>deleteTime(tpcpatch,tstzspanset,connect boolean=TRUE) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+deleteTime(tpcpatch,timestamptz,connect boolean=TRUE) → tpcpatch
+deleteTime(tpcpatch,tstzset,connect boolean=TRUE) → tpcpatch
+deleteTime(tpcpatch,tstzspan,connect boolean=TRUE) → tpcpatch
+deleteTime(tpcpatch,tstzspanset,connect boolean=TRUE) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Deleting the middle instant splits the sequence into
 -- {[2001-01-01, 2001-01-02), (2001-01-02, 2001-01-03]}; each half stores
@@ -1696,8 +1845,10 @@ SELECT numInstants(deleteTime(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 					<para>Append an instant or a sequence to a tpcpatch</para>
-					<para><varname>appendInstant(tpcpatch,tpcpatch) → tpcpatch</varname></para>
-					<para><varname>appendSequence(tpcpatch,tpcpatch) → tpcpatch</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+appendInstant(tpcpatch,tpcpatch) → tpcpatch
+appendSequence(tpcpatch,tpcpatch) → tpcpatch
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(appendInstant(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1717,7 +1868,9 @@ SELECT numInstants(appendInstant(tpcpatchSeq(ARRAY[
 				<listitem xml:id="tpcpatch_unnest">
 					<indexterm significance="normal"><primary><varname>unnest</varname></primary></indexterm>
 					<para>Return the distinct values of a tpcpatch with the span set on which each of them is taken</para>
-					<para><varname>unnest(tpcpatch) → {(value,time)}</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+unnest(tpcpatch) → {(value,time)}
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (un).time
 FROM (SELECT unnest(tpcpatchSeq(ARRAY[
@@ -1735,7 +1888,10 @@ FROM (SELECT unnest(tpcpatchSeq(ARRAY[
 				<listitem xml:id="tpcpatch_timeSplit">
 					<indexterm significance="normal"><primary><varname>timeSplit</varname></primary></indexterm>
 					<para>Split a tpcpatch into fragments, one per time bin</para>
-					<para><varname>timeSplit(tpcpatch,bin_width interval,origin timestamptz='2000-01-03') → {(time,tpcpatch)}</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+timeSplit(tpcpatch,bin_width interval,
+  origin timestamptz='2000-01-03') → {(time,tpcpatch)}
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ts).time, numInstants((ts).temp)
 FROM (SELECT timeSplit(tpcpatchSeq(ARRAY[
@@ -1755,7 +1911,9 @@ FROM (SELECT timeSplit(tpcpatchSeq(ARRAY[
 				<listitem xml:id="tpcpatch_spans">
 					<indexterm significance="normal"><primary><varname>spans</varname></primary></indexterm>
 					<para>Return the array of time spans of a tpcpatch's segments</para>
-					<para><varname>spans(tpcpatch) → tstzspan[]</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+spans(tpcpatch) → tstzspan[]
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT spans(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1772,8 +1930,10 @@ SELECT spans(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
 					<para>Return the time spans of a tpcpatch split into a given number of bins, or with a given number of segments per bin</para>
-					<para><varname>splitNSpans(tpcpatch, integer) → tstzspan[]</varname></para>
-					<para><varname>splitEachNSpans(tpcpatch, integer) → tstzspan[]</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+splitNSpans(tpcpatch, integer) → tstzspan[]
+splitEachNSpans(tpcpatch, integer) → tstzspan[]
+</programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitNSpans(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -1805,7 +1965,9 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
 					<para>Return true iff at least one point in any of the tpcpatch's instants intersects the geometry (XY only).</para>
-					<para><varname>eIntersects(tpcpatch,geometry) → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+eIntersects(tpcpatch,geometry) → boolean
+</programlisting>
 					<para>The ever and always relationships cover the same matrix: <varname>eContains</varname>, <varname>eCovers</varname>, <varname>eDisjoint</varname>, <varname>eIntersects</varname>, <varname>eTouches</varname> and <varname>eDwithin</varname>, each in the three argument orders, and their always twins. <varname>eIntersects(tpcpatch,geometry)</varname> is the one the type answers natively, walking the points of each instant and stopping at the first hit; the rest convert the patch to the temporal geometry of its multipoints.</para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(tpcpatchSeq(ARRAY[
@@ -1825,7 +1987,9 @@ SELECT eIntersects(tpcpatchSeq(ARRAY[
 				<listitem xml:id="tpcpatch_tgeometry">
 					<indexterm significance="normal"><primary><varname>tgeometry</varname></primary></indexterm>
 					<para>Convert a temporal patch into the temporal geometry of the multipoints its patches occupy. Each instant's patch becomes the multipoint of the positions its points occupy, read through the schema its <varname>pcid</varname> names</para>
-					<para><varname>tgeometry(tpcpatch) &#8594; tgeometry</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tgeometry(tpcpatch) &#8594; tgeometry
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz)::tgeometry);
@@ -1847,12 +2011,14 @@ SELECT asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
 					<para>Temporal spatial relationships</para>
-					<para><varname>tDisjoint({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
-					<para><varname>tDwithin({geometry,tpcpatch},{geometry,tpcpatch},float) &#8594; tbool</varname></para>
-					<para><varname>tIntersects({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
-					<para><varname>tContains({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
-					<para><varname>tCovers({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
-					<para><varname>tTouches({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tDisjoint({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
+tDwithin({geometry,tpcpatch},{geometry,tpcpatch},float) &#8594; tbool
+tIntersects({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
+tContains({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
+tCovers({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
+tTouches({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
+</programlisting>
 					<para>A patch reaches the geometry engine as the multipoint of the positions its points occupy, so it declares the matrix that temporal geometry declares: every predicate in every direction. The planar ones answer for a schema whose dimensions do not include Z, and a schema carrying Z meets the refusal <varname>The tgeometry cannot have Z dimension</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)),
@@ -1890,8 +2056,10 @@ SELECT tIntersects(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 					<para>Nearest-approach distance (<varname>|=|</varname>) is KNN-orderable through the GiST opclass.</para>
-					<para><varname>nearestApproachDistance(tpcpatch,tpcbox) → float</varname></para>
-					<para><varname>nearestApproachDistance(tpcpatch,tpcpatch) → float</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+nearestApproachDistance(tpcpatch,tpcbox) → float
+nearestApproachDistance(tpcpatch,tpcpatch) → float
+</programlisting>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1907,13 +2075,17 @@ SELECT tIntersects(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
 					<para>Test whether the value at any (ever) or every (always) instant equals, or differs from, a pcpatch or another tpcpatch</para>
-					<para><varname>eEq(pcpatch,tpcpatch) → boolean</varname></para>
-					<para><varname>eEq(tpcpatch,pcpatch) → boolean</varname></para>
-					<para><varname>eEq(tpcpatch,tpcpatch) → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+eEq(pcpatch,tpcpatch) → boolean
+eEq(tpcpatch,pcpatch) → boolean
+eEq(tpcpatch,tpcpatch) → boolean
+</programlisting>
 					<para><varname>aEq</varname>, <varname>eNe</varname> and <varname>aNe</varname> take the same three argument pairs</para>
-					<para><varname>pcpatch ?= tpcpatch → boolean</varname></para>
-					<para><varname>tpcpatch ?= pcpatch → boolean</varname></para>
-					<para><varname>tpcpatch ?= tpcpatch → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcpatch ?= tpcpatch → boolean
+tpcpatch ?= pcpatch → boolean
+tpcpatch ?= tpcpatch → boolean
+</programlisting>
 					<para>The operators <varname>%=</varname>, <varname>?&lt;&gt;</varname> and <varname>%&lt;&gt;</varname> take the same three operand pairs</para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eEq(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), tpcpatchSeq(ARRAY[
@@ -1936,13 +2108,17 @@ SELECT aEq(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>tNe</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
 					<para>Return the temporal equality or inequality of a tpcpatch with a pcpatch or with another tpcpatch, as a tbool</para>
-					<para><varname>tEq(pcpatch,tpcpatch) → tbool</varname></para>
-					<para><varname>tEq(tpcpatch,pcpatch) → tbool</varname></para>
-					<para><varname>tEq(tpcpatch,tpcpatch) → tbool</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tEq(pcpatch,tpcpatch) → tbool
+tEq(tpcpatch,pcpatch) → tbool
+tEq(tpcpatch,tpcpatch) → tbool
+</programlisting>
 					<para><varname>tNe</varname> takes the same three argument pairs</para>
-					<para><varname>pcpatch #= tpcpatch → tbool</varname></para>
-					<para><varname>tpcpatch #= pcpatch → tbool</varname></para>
-					<para><varname>tpcpatch #= tpcpatch → tbool</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+pcpatch #= tpcpatch → tbool
+tpcpatch #= pcpatch → tbool
+tpcpatch #= tpcpatch → tbool
+</programlisting>
 					<para>The operator <varname>#&lt;&gt;</varname> takes the same three operand pairs</para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tEq(tpcpatchSeq(ARRAY[
@@ -2024,9 +2200,11 @@ CREATE INDEX ON my_table USING spgist(my_tpcpoint_column tpcpoint_kdtree_ops);
 			<listitem xml:id="tpcpoint_extent">
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Bounding-box aggregate over a column of tpcpoint, tpcpatch, or tpcbox values. Returns the smallest tpcbox containing every input. Aggregating across distinct pcids raises an error, the bbox would be uninterpretable since dimensions are pcid-relative.</para>
-				<para><varname>extent(tpcpoint) → tpcbox</varname></para>
-				<para><varname>extent(tpcpatch) → tpcbox</varname></para>
-				<para><varname>extent(tpcbox) → tpcbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+extent(tpcpoint) → tpcbox
+extent(tpcpatch) → tpcbox
+extent(tpcbox) → tpcbox
+</programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT extent(v) FROM (VALUES
   (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
@@ -2056,7 +2234,9 @@ SELECT wCount(v, interval '1 day') FROM (VALUES
 			<listitem xml:id="tpcpatch_tnpoints">
 				<indexterm significance="normal"><primary><varname>tnpoints</varname></primary></indexterm>
 				<para>Per-instant pcpatch point count, summed across rows. Distinct from <varname>tCount(tpcpatch)</varname>, which counts the number of patches (always 1 per instant). <varname>tnpoints</varname> reads as "how many points were in the cloud at time t", the natural primitive for ingest-QC and density-over-time dashboards.</para>
-				<para><varname>tnpoints(tpcpatch) → tint</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tnpoints(tpcpatch) → tint
+</programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tnpoints(v) FROM (VALUES
   (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -2070,7 +2250,9 @@ SELECT tnpoints(v) FROM (VALUES
 			<listitem xml:id="tpcpatch_tdensity">
 				<indexterm significance="normal"><primary><varname>tdensity</varname></primary></indexterm>
 				<para>Per-instant point density (<varname>numPoints / xy-bbox-area</varname>) summed across rows. Each pcpatch carries the inline <varname>PCBOUNDS</varname> (xmin / xmax / ymin / ymax) so the bbox-area term is read directly, no recomputation. A 1-point or co-linear patch yields <varname>+Infinity</varname> for that instant; filter with <varname>isfinite()</varname> in downstream queries if needed.</para>
-				<para><varname>tdensity(tpcpatch) → tfloat</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tdensity(tpcpatch) → tfloat
+</programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Each patch holds 2 points over a 1x1 xy-bbox.
 SELECT tdensity(v) FROM (VALUES
@@ -2135,9 +2317,11 @@ SELECT numInstants(appendInstant(v ORDER BY startTimestamp(v))) FROM (VALUES
 			<listitem xml:id="tpcpoint_asText">
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<para>Return the text representation of a tpcpoint, or of an array of them, and cast a tpcpoint to text</para>
-				<para><varname>asText(tpcpoint) → text</varname></para>
-				<para><varname>asText(tpcpoint[]) → text[]</varname></para>
-				<para><varname>tpcpoint::text → text</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+asText(tpcpoint) → text
+asText(tpcpoint[]) → text[]
+tpcpoint::text → text
+</programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The pcpoint payload renders as hex-encoded WKB.
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
@@ -2147,9 +2331,11 @@ SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 			<listitem xml:id="tpcpatch_asText">
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<para>Return the text representation of a tpcpatch, or of an array of them, and cast a tpcpatch to text</para>
-				<para><varname>asText(tpcpatch) → text</varname></para>
-				<para><varname>asText(tpcpatch[]) → text[]</varname></para>
-				<para><varname>tpcpatch::text → text</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+asText(tpcpatch) → text
+asText(tpcpatch[]) → text[]
+tpcpatch::text → text
+</programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The pcpatch payload renders as hex-encoded WKB.
 SELECT left(asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
@@ -2170,7 +2356,9 @@ SELECT left(asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
 			<listitem xml:id="tpcpoint_mfjson">
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>For <varname>tpcpoint</varname>, the temporal type is emitted as <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "datetimes":[…]}</varname>. X/Y/[Z] are extracted from each instant's <varname>pcpoint</varname> via the schema cache; if the schema lacks X/Y the coordinate array is empty for that instant.</para>
-				<para><varname>asMFJSON(tpcpoint, options int=0, flags int=0, maxdecimaldigits int=15) → text</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+asMFJSON(tpcpoint, options int=0, flags int=0, maxdecimaldigits int=15) → text
+</programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- {"type":"MovingPCPoint","coordinates":[[1,1,1]],
@@ -2180,7 +2368,9 @@ SELECT asMFJSON(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 			<listitem xml:id="tpcpatch_mfjson">
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>For <varname>tpcpatch</varname>, the type tag is <varname>"MovingPCPatch"</varname> and each instant emits a small object <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname>. The compressed point payload is intentionally not in the JSON, use <varname>asBinary</varname> / <varname>asHexWKB</varname> for round-trip.</para>
-				<para><varname>asMFJSON(tpcpatch, options int=0, flags int=0, maxdecimaldigits int=15) → text</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+asMFJSON(tpcpatch, options int=0, flags int=0, maxdecimaldigits int=15) → text
+</programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz));

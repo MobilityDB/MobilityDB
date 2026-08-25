@@ -51,10 +51,12 @@
 				<indexterm significance="normal"><primary><varname>timeSpan</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tbox</varname></primary></indexterm>
 				<para>Convertir un número temporal en un rango o un cuadro delimitador temporal</para>
-				<para><varname>tnumber::{span,tbox}</varname></para>
-				<para><varname>valueSpan(tnumber) → numspan</varname></para>
-				<para><varname>timeSpan(tnumber) → tstzspan</varname></para>
-				<para><varname>tbox(tnumber) → tbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tnumber::{span,tbox}
+valueSpan(tnumber) → numspan
+timeSpan(tnumber) → tstzspan
+tbox(tnumber) → tbox
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intspan;
 -- [1, 3)
@@ -78,8 +80,10 @@ SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::tbox;
 				<indexterm significance="normal"><primary><varname>tint(tbool)</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tint</varname></primary></indexterm>
 				<para>Convertir entre un booleano temporal y un entero temporal</para>
-				<para><varname>tbool::tint</varname></para>
-				<para><varname>tint(tbool) → tint</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tbool::tint
+tint(tbool) → tint
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
 -- [1@2001-01-01, 0@2001-01-03]
@@ -90,8 +94,10 @@ SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tnumber(tnumber)</varname></primary></indexterm>
 				<para>Convertir entre enteros temporales, enteros grandes temporales y flotantes temporales</para>
-				<para><varname>tnumber::tnumber</varname></para>
-				<para><varname>tnumber(tnumber) → tnumber</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tnumber::tnumber
+tnumber(tnumber) → tnumber
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03]
@@ -112,7 +118,9 @@ SELECT tint(tfloat '[1.5@2001-01-01, 2.5@2001-01-03]');
 			<listitem xml:id="talpha_valueSpan">
 				<indexterm significance="normal"><primary><varname>valueSpan</varname></primary></indexterm>
 				<para>Devuelve el intervalo de valores ignorando las brechas potenciales</para>
-				<para><varname>valueSpan(tnumber) → numspan</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+valueSpan(tnumber) → numspan
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueSpan(tint '{[1@2001-01-01, 1@2001-01-03), [4@2001-01-03, 6@2001-01-05]}');
 -- [1,7)
@@ -124,7 +132,9 @@ SELECT valueSpan(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
 			<listitem xml:id="talpha_valueSet">
 				<indexterm significance="normal"><primary><varname>valueSet</varname></primary></indexterm>
 				<para>Devuelve el conjunto de valores de un número temporal</para>
-				<para><varname>valueSet(tnumber) → numset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+valueSet(tnumber) → numset
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueSet(tint '[1@2001-01-01, 2@2001-01-03]');
 -- {1, 2}
@@ -138,9 +148,11 @@ SELECT valueSet(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-
 				<indexterm significance="normal"><primary><varname>maxValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>avgValue</varname></primary></indexterm>
 				<para>Devuelve el valor mínimo, máximo, o promedio</para>
-				<para><varname>minValue(torder) → base</varname></para>
-				<para><varname>maxValue(torder) → base</varname></para>
-				<para><varname>avgValue(tnumber) → base</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+minValue(torder) → base
+maxValue(torder) → base
+avgValue(tnumber) → base
+</programlisting>
 				<para>Las funciones no tienen en cuenta si los límites son inclusivos o no.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minValue(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
@@ -162,8 +174,10 @@ SELECT maxValue(ttext '{[A@2001-01-01, B@2001-01-02], [C@2001-01-03, E@2001-01-0
 				<indexterm significance="normal"><primary><varname>minInstant</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>maxInstant</varname></primary></indexterm>
 				<para>Devuelve el instante con el valor mínimo o máximo</para>
-				<para><varname>minInstant(torder) → base</varname></para>
-				<para><varname>maxInstant(torder) → base</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+minInstant(torder) → base
+maxInstant(torder) → base
+</programlisting>
 				<para>Las funciones no tienen en cuenta si los límites son inclusivos o no. Si varios instantes tienen el valor mínimo, se devuelve el primero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minInstant(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
@@ -183,9 +197,11 @@ SELECT maxInstant(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-0
 				<indexterm significance="normal"><primary><varname>scaleValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>shiftScaleValue</varname></primary></indexterm>
 				<para>Desplazar y/o escalear el rango de valores de un número temporal con uno o dos números</para>
-				<para><varname>shiftValue(tnumber,base) → tnumber</varname></para>
-				<para><varname>scaleValue(tnumber,width) → tnumber</varname></para>
-				<para><varname>shiftScaleValue(tnumber,base,base) → tnumber</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+shiftValue(tnumber,base) → tnumber
+scaleValue(tnumber,width) → tnumber
+shiftScaleValue(tnumber,base,base) → tnumber
+</programlisting>
 				<para>Cuando se escalea, si el rango de valores del valor temporal es un valor único (por ejemplo, para un instante temporal), el resultado es el valor temporal. Además, el ancho data debe ser estrictamente superio que cero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT shiftValue(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', 1);
@@ -209,7 +225,9 @@ SELECT shiftScaleValue(tfloat '{[1@2001-01-01,2@2001-01-02],[3@2001-01-03,4@2001
 			<listitem xml:id="tnumber_stops">
 				<indexterm significance="normal"><primary><varname>stops</varname></primary></indexterm>
 				<para>Extraer de un flotante temporal con interpolación lineal las subsecuencias donde los valores permanecen en un rango de un ancho dado durante al menos una duración dada</para>
-				<para><varname>stops(tfloat,maxDist=0.0,minDuration='0 minutes') → tfloatSeqSet</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+stops(tfloat,maxDist=0.0,minDuration='0 minutes') → tfloatSeqSet
+</programlisting>
 				<para>Si <varname>maxDist</varname> no se especifica, el valor 0.0 se asume por defecto y por lo tanto, la functión extrae los segmentos constantes del flotante temporal.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-02, 2@2001-01-03]');
@@ -230,10 +248,12 @@ SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-02, 2@2001-01-03]', 0.0, '2 days')
 				<indexterm significance="normal"><primary><varname>minusMin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusMax</varname></primary></indexterm>
 				<para>Restringir al (complemento del) valor mínimo o máximo</para>
-				<para><varname>atMin(torder) → torder</varname></para>
-				<para><varname>atMax(torder) → torder</varname></para>
-				<para><varname>minusMin(torder) → torder</varname></para>
-				<para><varname>minusMax(torder) → torder</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+atMin(torder) → torder
+atMax(torder) → torder
+minusMin(torder) → torder
+minusMax(torder) → torder
+</programlisting>
 				<para>La función devuelve un valor nulo si el valor mínimo o máximo sólo ocurre en límites exclusivos.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT atMin(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}');
@@ -279,8 +299,10 @@ SELECT minusMax(tfloat '{[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-
 				<indexterm significance="normal"><primary><varname>atTbox</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusTbox</varname></primary></indexterm>
 				<para>Restringir a (al complemento de) un <varname>tbox</varname></para>
-				<para><varname>atTbox(tnumber,tbox) → tnumber</varname></para>
-				<para><varname>minusTbox(tnumber,tbox) → tnumber</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+atTbox(tnumber,tbox) → tnumber
+minusTbox(tnumber,tbox) → tnumber
+</programlisting>
 				<para>When the bounding box has both value and time dimensions, the functions restrict the temporal number with respect to the value <emphasis>and</emphasis> the time extents of the box.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT atTbox(tfloat '[0@2001-01-01, 3@2001-01-04)',
@@ -308,7 +330,9 @@ SELECT minusSpan(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
 				<indexterm significance="normal"><primary><varname>&amp;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>|</varname></primary></indexterm>
 				<para>Y temporal, o temporal</para>
-				<para><varname>{boolean,tbool} {&amp; |} {boolean,tbool} → tbool</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{boolean,tbool} {&amp; |} {boolean,tbool} → tbool
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool '[true@2001-01-03, true@2001-01-05)' &amp;
   tbool '[false@2001-01-03, false@2001-01-05)';
@@ -328,7 +352,9 @@ SELECT tbool '[true@2001-01-03, true@2001-01-05)' |
 			<listitem xml:id="tbool_not">
 				<indexterm significance="normal"><primary><varname>~</varname></primary></indexterm>
 				<para>No temporal</para>
-				<para><varname>~tbool → tbool</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+~tbool → tbool
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT ~tbool '[true@2001-01-03, true@2001-01-05)';
 -- [f@2001-01-03, f@2001-01-05)
@@ -338,7 +364,9 @@ SELECT ~tbool '[true@2001-01-03, true@2001-01-05)';
 			<listitem xml:id="tbool_whenTrue">
 				<indexterm significance="normal"><primary><varname>whenTrue</varname></primary></indexterm>
 				<para>Devuelve el tiempo cuando un booleano temporal toma el valor verdadero</para>
-				<para><varname>whenTrue(tbool) → tstzspanset</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+whenTrue(tbool) → tstzspanset
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT whenTrue(tfloat '[1@2001-01-01, 4@2001-01-04, 1@2001-01-07]' #> 2);
 -- {(2001-01-02, 2001-01-06)}
@@ -360,7 +388,9 @@ SELECT whenTrue(tdwithin(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-
 				<indexterm significance="normal"><primary><varname>*</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>/</varname></primary></indexterm>
 				<para>Adición, resta, multiplicación y división temporal</para>
-				<para><varname>{number,tnumber} {+, -, *, /} {number,tnumber} → tnumber</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{number,tnumber} {+, -, *, /} {number,tnumber} → tnumber
+</programlisting>
 				<para>La división temporal genera un error si el denominador es alguna vez igual a cero durante el intervalo de tiempo común de los argumentos.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[2@2001-01-01, 2@2001-01-04)' + 1;
@@ -403,7 +433,9 @@ SELECT tfloat '[-1@2001-01-04, 1@2001-01-05]' / tfloat '[-1@2001-01-01, 1@2001-0
 			<listitem xml:id="tnumber_abs">
 				<indexterm significance="normal"><primary><varname>abs</varname></primary></indexterm>
 				<para>Devuelve el valor absoluto del número temporal</para>
-				<para><varname>abs(tnumber) → tnumber</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+abs(tnumber) → tnumber
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT abs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 0@2001-01-02, 1@2001-01-03, 0@2001-01-04, 1@2001-01-05],
@@ -416,8 +448,10 @@ SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 				<indexterm significance="normal"><primary><varname>floor</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>ceil</varname></primary></indexterm>
 				<para>Redondear al entero inferior o superior</para>
-				<para><varname>floor(tfloat) → tfloat</varname></para>
-				<para><varname>ceil(tfloat) → tfloat</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+floor(tfloat) → tfloat
+ceil(tfloat) → tfloat
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT floor(tfloat '[0.5@2001-01-01, 1.5@2001-01-02]');
 -- [0@2001-01-01, 1@2001-01-02]
@@ -429,7 +463,9 @@ SELECT ceil(tfloat '[0.5@2001-01-01, 0.6@2001-01-02, 0.7@2001-01-03]');
 			<listitem xml:id="tnumber_round">
 				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 				<para>Redondear a un número de posiciones decimales</para>
-				<para><varname>round(tfloat,integer=0) → tfloat</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+round(tfloat,integer=0) → tfloat
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]', 2);
 -- [0.79@2001-01-01, 2.36@2001-01-02]
@@ -440,8 +476,10 @@ SELECT round(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02
 				<indexterm significance="normal"><primary><varname>degrees</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>radians</varname></primary></indexterm>
 				<para>Convertir a grados o radianes</para>
-				<para><varname>degrees({float,tfloat},normalize=false) → tfloat</varname></para>
-				<para><varname>radians(tfloat) → tfloat</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+degrees({float,tfloat},normalize=false) → tfloat
+radians(tfloat) → tfloat
+</programlisting>
 				<para>El parámetro adicional en la función <varname>degrees</varname> puede ser utilizado para normalizar los valores entre 0 y 360 grados.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT degrees(pi() * 5);
@@ -458,7 +496,9 @@ SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 			<listitem xml:id="tnumber_deltaValue">
 				<indexterm significance="normal"><primary><varname>deltaValue</varname></primary></indexterm>
 				<para>Devuelve la diferencia de valor entre instantes consectivos del número temporal</para>
-				<para><varname>deltaValue(tnumber) → tnumber</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+deltaValue(tnumber) → tnumber
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT deltaValue(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
 -- [1@2001-01-01, -1@2001-01-02, -1@2001-01-03)
@@ -472,7 +512,9 @@ SELECT deltaValue(tfloat '{[1.5@2001-01-01, 2@2001-01-02, 1@2001-01-03],
 			<listitem xml:id="tfloat_trend">
 				<indexterm significance="normal"><primary><varname>trend</varname></primary></indexterm>
 				<para>Devuelve la tendencia de un flotante temporal con interpolación lineal, que indica si su valor es creciente, constante o decreciente, representado, respectivamente, por 1, 0 y -1.</para>
-				<para><varname>trend(tfloat) → tint</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+trend(tfloat) → tint
+</programlisting>
 				<para>Nótese que la tendencia es NULL para secuencias instantáneas.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT trend(tfloat '[1@2001-01-01, 2@2001-01-02, 4@2001-01-03, 4@2001-01-04,
@@ -486,7 +528,9 @@ SELECT trend(tfloat '[1@2001-01-01]');
 			<listitem xml:id="tnumber_derivative">
 				<indexterm significance="normal"><primary><varname>derivative</varname></primary></indexterm>
 				<para>Devuelve la derivada sobre el tiempo del número flotante temporal en unidades por segundo</para>
-				<para><varname>derivative(tfloat) → tfloat</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+derivative(tfloat) → tfloat
+</programlisting>
 				<para>El número flotante temporal debe tener interpolación linear. Nótese que esta función corresponde a la función <link linkend="tgeo_speed"><varname>speed</varname></link> para los puntos temporales.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT derivative(tfloat '{[0@2001-01-01, 10@2001-01-02, 5@2001-01-03],
@@ -501,7 +545,9 @@ SELECT derivative(tfloat 'Interp=Step;[0@2001-01-01, 10@2001-01-02, 5@2001-01-03
 			<listitem xml:id="tnumber_integral">
 				<indexterm significance="normal"><primary><varname>integral</varname></primary></indexterm>
 				<para>Devuelve el área bajo la curva</para>
-				<para><varname>integral(tnumber) → float</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+integral(tnumber) → float
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT  integral(tint '[1@2001-01-01,2@2001-01-02]') / (24 * 3600 * 1e6);
 -- 1
@@ -513,7 +559,9 @@ SELECT integral(tfloat '[1@2001-01-01,2@2001-01-02]') / (24 * 3600 * 1e6);
 			<listitem xml:id="tnumber_twAvg">
 				<indexterm significance="normal"><primary><varname>twAvg</varname></primary></indexterm>
 				<para>Devuelve el promedio ponderado en el tiempo</para>
-				<para><varname>twAvg(tnumber) → float</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+twAvg(tnumber) → float
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)}');
 -- 1.75
@@ -524,8 +572,10 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 				<indexterm significance="normal"><primary><varname>ln</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>log10</varname></primary></indexterm>
 				<para>Devuelve el logaritmo natural y el logaritmo base 10 de un número flotante temporal</para>
-				<para><varname>ln(tfloat) → tfloat</varname></para>
-				<para><varname>log10(tfloat) → tfloat</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+ln(tfloat) → tfloat
+log10(tfloat) → tfloat
+</programlisting>
 				<para>El número flotante temporal no puede ser cero o negativo</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT ln(tfloat '{[1@2001-01-01, 10@2001-01-02, 5@2001-01-03],
@@ -540,7 +590,9 @@ SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
 			<listitem xml:id="tnumber_exp">
 				<indexterm significance="normal"><primary><varname>exp</varname></primary></indexterm>
 				<para>Devuelve el exponencial (e elevado a la potencia dada) de un número flotante temporal</para>
-				<para><varname>exp(tfloat) → tfloat</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+exp(tfloat) → tfloat
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02],
   [1@2001-01-04, 1@2001-01-05]}');
@@ -556,9 +608,11 @@ SELECT exp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
 				<indexterm significance="normal"><primary><varname>cos</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tan</varname></primary></indexterm>
 				<para>Devuelve el seno, coseno o tangente de un número flotante temporal (argumento en radianes)</para>
-				<para><varname>sin(tfloat) → tfloat</varname></para>
-				<para><varname>cos(tfloat) → tfloat</varname></para>
-				<para><varname>tan(tfloat) → tfloat</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+sin(tfloat) → tfloat
+cos(tfloat) → tfloat
+tan(tfloat) → tfloat
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(sin(tfloat '[0@2001-01-01, 6.283185307@2001-01-02]'), 6);
 -- [0@2001-01-01, -0.000000@2001-01-02]
@@ -578,7 +632,9 @@ SELECT round(tan(tfloat '{0@2001-01-01, 0.785398163@2001-01-02}'), 6);
 			<listitem xml:id="ttext_concat">
 				<indexterm significance="normal"><primary><varname>||</varname></primary></indexterm>
 				<para>Concatenación de texto</para>
-				<para><varname>{text,ttext} || {text,ttext} → ttext</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{text,ttext} || {text,ttext} → ttext
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT ttext '[AA@2001-01-01, AA@2001-01-04)' || text 'B';
 -- ["AAB"@2001-01-01, "AAB"@2001-01-04)
@@ -595,9 +651,11 @@ SELECT ttext '[A@2001-01-01, B@2001-01-03, C@2001-01-04]' ||
 				<indexterm significance="normal"><primary><varname>upper</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>initcap</varname></primary></indexterm>
 				<para>Transformar en minúsculas, mayúsculas o initcap</para>
-				<para><varname>lower(ttext) → ttext</varname></para>
-				<para><varname>upper(ttext) → ttext</varname></para>
-				<para><varname>initcap(ttext) → ttext</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+lower(ttext) → ttext
+upper(ttext) → ttext
+initcap(ttext) → ttext
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT upper(ttext '[AA@2001-01-01, bb@2001-01-02]');
 -- ["AA"@2001-01-01, "BB"@2001-01-02]
