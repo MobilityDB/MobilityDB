@@ -57,6 +57,11 @@ static int cache_cap = 0;
 meos_pc_schema_fn_t meos_pc_schema_fn = NULL;
 meos_pc_parse_xml_fn_t meos_pc_parse_xml_fn = NULL;
 
+/* Registration, answering whether the cache took the schema; the public
+ * entries below answer nothing, so a caller that must know reads this */
+static bool schema_register(uint32_t pcid, PCSCHEMA *schema,
+  const char *xml_text);
+
 /*****************************************************************************
  * Public API
  *****************************************************************************/
@@ -106,6 +111,34 @@ ensure_cache_capacity(void)
 #if ! MEOS
   MemoryContextSwitchTo(oldctx);
 #endif
+}
+
+/**
+ * @brief Return true if a schema is one the point cloud library accepts
+ * @details The library states what a schema must hold — an X and a Y
+ *   dimension, at least one dimension, and a dimension at every position of
+ *   its layout — and every reader of the cache takes those for granted. The
+ *   document parser applies this test itself, so a schema reaching the cache
+ *   any other way is the one that would otherwise arrive unchecked.
+ */
+static bool
+pcschema_registrable(uint32_t pcid, const PCSCHEMA *schema)
+{
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The schema of pcid %u is null", pcid);
+    return false;
+  }
+  if (! pc_schema_is_valid(schema))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The schema of pcid %u is not one the point cloud library accepts: it "
+      "states an X and a Y dimension and a dimension at every position of its "
+      "layout", pcid);
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -248,7 +281,13 @@ meos_pc_schema_register_dims(uint32_t pcid, int32_t srid,
     ndims);
   if (! schema)
     return false;
-  meos_pc_schema_register(pcid, schema);
+  /* Registration refuses a schema the library does not accept, and nothing
+   * else owns one it refused */
+  if (! schema_register(pcid, schema, NULL))
+  {
+    pc_schema_free(schema);
+    return false;
+  }
   return true;
 }
 
@@ -257,14 +296,21 @@ meos_pc_schema_register_dims(uint32_t pcid, int32_t srid,
  * @brief Register a parsed PCSCHEMA along with its source XML in the
  *   MEOS-owned cache.
  */
-void
-meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
-  const char *xml_text)
+/**
+ * @brief Register a schema, answering whether the cache took it
+ * @details The two public entries answer nothing, so this is what a caller
+ *   that must know reads — the registration entry stating its own outcome and
+ *   the lookup deciding what to answer for a schema a hook supplied.
+ */
+static bool
+schema_register(uint32_t pcid, PCSCHEMA *schema, const char *xml_text)
 {
   /* If already present, replace; preserve previously-cached XML when
    * the new call passes NULL for xml_text (so a parse-only re-register
    * doesn't accidentally drop a prior XML registration). */
-  int32_t srid = schema ? (int32_t) schema->srid : SRID_INVALID;
+  if (! pcschema_registrable(pcid, schema))
+    return false;
+  int32_t srid = (int32_t) schema->srid;
   for (int i = 0; i < cache_count; i++)
   {
     if (cache_buf[i].pcid == pcid)
@@ -277,7 +323,7 @@ meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
           pfree(cache_buf[i].xml_text);
         cache_buf[i].xml_text = copy_xml_long_lived(xml_text);
       }
-      return;
+      return true;
     }
   }
   ensure_cache_capacity();
@@ -286,6 +332,19 @@ meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
   cache_buf[cache_count].srid = srid;
   cache_buf[cache_count].xml_text = copy_xml_long_lived(xml_text);
   cache_count++;
+  return true;
+}
+
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Variant of @ref meos_pc_schema_register that also caches the document
+ *   a schema is stated by
+ */
+void
+meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
+  const char *xml_text)
+{
+  (void) schema_register(pcid, schema, xml_text);
 }
 
 /**
@@ -617,8 +676,12 @@ meos_pc_schema_lookup(uint32_t pcid)
   if (meos_pc_schema_fn)
   {
     PCSCHEMA *s = meos_pc_schema_fn(pcid);
-    if (s)
-      meos_pc_schema_register(pcid, s);
+    if (! s)
+      return NULL;
+    /* Registration refuses a schema the library does not accept, and a schema
+     * the cache would not take is not one to answer with either */
+    if (! schema_register(pcid, s, NULL))
+      return NULL;
     return s;
   }
   /* (3) A host that installs no hook states its schemas in a document */
