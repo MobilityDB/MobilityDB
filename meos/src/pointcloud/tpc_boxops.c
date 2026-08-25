@@ -117,6 +117,25 @@ pcpatch_fill_tpcbox_spatial(const Pcpatch *pa, TPCBox *box)
 }
 
 /**
+ * @brief Set a temporal pointcloud bounding box from a timestamptz span
+ * @param[in] s Timestamptz span
+ * @param[out] box Bounding box carrying the span and no spatial dimension
+ * @note Mirrors @p tstzspan_set_stbox. The span names no schema, so @p pcid
+ *   stays 0 — the "unknown" value @p ensure_same_pcid_tpcbox accepts against
+ *   any schema, which is what lets a time-only query meet an indexed box.
+ */
+void
+tstzspan_set_tpcbox(const Span *s, TPCBox *box)
+{
+  assert(s); assert(box); assert(s->spantype == T_TSTZSPAN);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TPCBox));
+  memcpy(&box->period, s, sizeof(Span));
+  MEOS_FLAGS_SET_T(box->flags, true);
+  return;
+}
+
+/**
  * @brief Set the bounding box of a temporal pointcloud instant
  * @param[in] inst Temporal instant of type @p T_TPCPOINT or @p T_TPCPATCH
  * @param[out] box Bounding box
