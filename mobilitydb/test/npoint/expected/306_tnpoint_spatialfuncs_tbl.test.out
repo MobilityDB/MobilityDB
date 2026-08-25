@@ -1,7 +1,7 @@
 SELECT MAX(st_npoints(trajectory(temp))) FROM tbl_tnpoint;
  max 
 -----
-  46
+  26
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE atGeometry(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;

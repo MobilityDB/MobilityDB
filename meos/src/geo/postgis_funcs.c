@@ -2160,6 +2160,44 @@ geom_array_areal_union(GSERIALIZED **gsarr, int count)
 }
 
 /**
+ * @brief Return the union of an array of geometries whose members carry
+ * linework and points
+ * @details The array is presented to #meos_linear_union() as the collection it
+ * stands for, so the answer is the one the unary union of that collection
+ * gives: a component another one covers is left out and what remains is
+ * collected.  An empty member carries nothing and is left out
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @return The union, or @p NULL where a member is not linear or a point, or
+ * where a pair shares a curve, which leaves the caller to answer it another way
+ */
+static GSERIALIZED *
+geom_array_linear_union(GSERIALIZED **gsarr, int count)
+{
+  assert(gsarr); assert(count > 1);
+  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
+  int ngeoms = 0;
+  for (int i = 0; i < count; i++)
+    if (! gserialized_is_empty(gsarr[i]))
+      geoms[ngeoms++] = lwgeom_from_gserialized(gsarr[i]);
+  if (ngeoms == 0)
+  {
+    pfree(geoms);
+    return NULL;
+  }
+  /* #lwcollection_construct() takes ownership of the array it is given, so
+   * geoms must not be freed after this call */
+  LWCOLLECTION *coll = lwcollection_construct(COLLECTIONTYPE,
+    gserialized_get_srid(gsarr[0]), NULL, (uint32_t) ngeoms, geoms);
+  LWGEOM *lwresult = meos_linear_union(lwcollection_as_lwgeom(coll));
+  GSERIALIZED *result = lwresult ? geo_serialize(lwresult) : NULL;
+  if (lwresult)
+    lwgeom_free(lwresult);
+  lwcollection_free(coll);
+  return result;
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the union of an array of geometries
  * @details The function will iteratively call @p GEOSUnion on the
@@ -2221,6 +2259,11 @@ geom_array_union(GSERIALIZED **gsarr, int count)
   if (! FLAGS_GET_GEODETIC(gsarr[0]->gflags))
   {
     GSERIALIZED *native = geom_array_areal_union(gsarr, count);
+    if (native)
+      return native;
+    /* An array whose members carry linework and points is read the same way,
+     * by #meos_linear_union(), which keeps a circular arc on its own circle */
+    native = geom_array_linear_union(gsarr, count);
     if (native)
       return native;
   }
@@ -2339,8 +2382,9 @@ geom_array_union(GSERIALIZED **gsarr, int count)
   return result;
 #else /* ! GEOS */
   meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-    "The union of geometries that are not all surfaces is answered by the "
-    "GEOS library, which this build excludes: configure with -DGEOS=ON");
+    "The union of a geodetic array, and of one whose linework coincides over a "
+    "curve, is answered by the GEOS library, which this build excludes: "
+    "configure with -DGEOS=ON");
   return NULL;
 #endif /* GEOS */
 }
