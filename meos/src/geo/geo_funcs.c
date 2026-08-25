@@ -7291,6 +7291,274 @@ linear_union_transpose(const char matrix[10], char result[10])
 }
 
 /**
+ * @brief Return the sub-segment an edge draws between two of its parameters
+ */
+static LWGEOM *
+linear_union_subsegment(const Edge *edge, double t0, double t1, int32_t srid)
+{
+  assert(edge);
+  POINTARRAY *pa = ptarray_construct_empty(0, 0, 2);
+  POINT4D p;
+  memset(&p, 0, sizeof(POINT4D));
+  p.x = edge->x1 + t0 * edge->dx;
+  p.y = edge->y1 + t0 * edge->dy;
+  ptarray_append_point(pa, &p, LW_TRUE);
+  p.x = edge->x1 + t1 * edge->dx;
+  p.y = edge->y1 + t1 * edge->dy;
+  ptarray_append_point(pa, &p, LW_TRUE);
+  return lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
+}
+
+/**
+ * @brief Return true if every edge of a geometry is a straight line segment
+ */
+static bool
+linear_union_straight(const MeosArray *edges)
+{
+  assert(edges);
+  if (edges->count == 0)
+    return false;
+  for (int i = 0; i < (int) edges->count; i++)
+    if (((const Edge *) meos_array_get(edges, i))->etype != EDGE_LINESEG)
+      return false;
+  return true;
+}
+
+/**
+ * @brief Return true if two points are the same to what their coordinates
+ * resolve
+ */
+static bool
+linear_union_same_point(const POINT2D *p1, const POINT2D *p2)
+{
+  assert(p1); assert(p2);
+  return fabs(p1->x - p2->x) <= coordinate_tolerance(p1->x, p2->x) &&
+    fabs(p1->y - p2->y) <= coordinate_tolerance(p1->y, p2->y);
+}
+
+/**
+ * @brief A chain of points a curve is assembled into, grown at its end
+ */
+typedef struct
+{
+  POINT2D *points;   /**< Points of the chain, in the order it is walked */
+  int count;         /**< Number of points */
+  int maxcount;      /**< Number of points the array has room for */
+} LinearChain;
+
+/**
+ * @brief Add a point to the end of a chain
+ */
+static void
+linear_chain_append(LinearChain *chain, const POINT2D *p)
+{
+  assert(chain); assert(p);
+  if (chain->count == chain->maxcount)
+  {
+    chain->maxcount *= 2;
+    chain->points = repalloc(chain->points,
+      sizeof(POINT2D) * (size_t) chain->maxcount);
+  }
+  chain->points[chain->count++] = *p;
+}
+
+/**
+ * @brief Walk a chain the other way
+ * @details A curve and the same curve reversed draw the same points, so a
+ * piece continuing the START of the chain is attached by turning the chain
+ * around and appending to it, which leaves one growth direction to maintain
+ */
+static void
+linear_chain_reverse(LinearChain *chain)
+{
+  assert(chain);
+  for (int i = 0, j = chain->count - 1; i < j; i++, j--)
+  {
+    POINT2D tmp = chain->points[i];
+    chain->points[i] = chain->points[j];
+    chain->points[j] = tmp;
+  }
+}
+
+/**
+ * @brief Sew a line and a set of pieces into the single curve they draw
+ * @details Each piece continues the chain at one of its two ends, in either
+ * direction, and the scan restarts whenever one attaches, the enlarged chain
+ * reaching further than it did
+ * @param[in] geom Line the chain starts from
+ * @param[in] pieces,npieces Pieces to attach, which stay the caller's
+ * @param[in] srid Spatial reference identifier
+ * @return The curve, or @p NULL where a piece continues neither end -- what
+ * the pieces draw with the line is then a fork rather than one curve
+ */
+static LWGEOM *
+linear_union_chain(const LWGEOM *geom, LWGEOM **pieces, int npieces,
+  int32_t srid)
+{
+  assert(geom);
+  if (geom->type != LINETYPE)
+    return NULL;
+  const POINTARRAY *pa = ((const LWLINE *) geom)->points;
+  if (pa->npoints < 2)
+    return NULL;
+
+  LinearChain chain;
+  chain.maxcount = (int) pa->npoints + 2 * npieces + 2;
+  chain.count = 0;
+  chain.points = palloc(sizeof(POINT2D) * (size_t) chain.maxcount);
+  for (uint32_t i = 0; i < pa->npoints; i++)
+    linear_chain_append(&chain, getPoint2d_cp(pa, i));
+
+  bool *used = palloc0(sizeof(bool) * (size_t) (npieces > 0 ? npieces : 1));
+  int nleft = npieces;
+  bool attached = true;
+  while (nleft > 0 && attached)
+  {
+    attached = false;
+    for (int p = 0; p < npieces && ! attached; p++)
+    {
+      if (used[p])
+        continue;
+      const POINTARRAY *ppa = ((const LWLINE *) pieces[p])->points;
+      if (ppa->npoints < 2)
+      {
+        used[p] = true; nleft--; attached = true;
+        continue;
+      }
+      /* The two ends are COPIED: appending may move the chain in memory */
+      POINT2D head = chain.points[0], tail = chain.points[chain.count - 1];
+      const POINT2D *first = getPoint2d_cp(ppa, 0);
+      const POINT2D *last = getPoint2d_cp(ppa, ppa->npoints - 1);
+      if (linear_union_same_point(&head, first) ||
+          linear_union_same_point(&head, last))
+        linear_chain_reverse(&chain);
+      else if (! linear_union_same_point(&tail, first) &&
+               ! linear_union_same_point(&tail, last))
+        continue;
+      POINT2D end = chain.points[chain.count - 1];
+      if (linear_union_same_point(&end, first))
+        for (uint32_t i = 1; i < ppa->npoints; i++)
+          linear_chain_append(&chain, getPoint2d_cp(ppa, i));
+      else
+        for (int i = (int) ppa->npoints - 2; i >= 0; i--)
+          linear_chain_append(&chain, getPoint2d_cp(ppa, i));
+      used[p] = true; nleft--; attached = true;
+    }
+  }
+  pfree(used);
+  if (nleft > 0)
+  {
+    pfree(chain.points);
+    return NULL;
+  }
+
+  POINTARRAY *out = ptarray_construct_empty(0, 0, (uint32_t) chain.count);
+  POINT4D p4;
+  memset(&p4, 0, sizeof(POINT4D));
+  for (int i = 0; i < chain.count; i++)
+  {
+    p4.x = chain.points[i].x;
+    p4.y = chain.points[i].y;
+    ptarray_append_point(out, &p4, LW_TRUE);
+  }
+  pfree(chain.points);
+  return lwline_as_lwgeom(lwline_construct(srid, NULL, out));
+}
+
+/**
+ * @brief Return the union of two geometries whose linework coincides over a
+ * curve, as the single line it draws
+ * @details Two surfaces whose interiors meet become ONE surface under
+ * #meos_areal_union(), and a pair of curves sharing more than a finite set of
+ * points is the same question one dimension down. The union is read as the
+ * first geometry plus the parts of the second it does not already cover: each
+ * segment of @p geom2 keeps the parameters no segment of @p geom1 overlaps,
+ * and #linear_union_chain() sews what remains onto the curve it
+ * continues
+ * @param[in] geom1,geom2 Geometries
+ * @return The union as a single line, or @p NULL where either geometry carries
+ * an edge that is not a straight segment, and where what the two draw together
+ * is more than one line -- a fork cannot be walked as one curve, and a caller
+ * that has another way to answer may take it
+ */
+static LWGEOM *
+linear_union_merge(const LWGEOM *geom1, const LWGEOM *geom2)
+{
+  assert(geom1); assert(geom2);
+  MeosArray *e1 = geom_extract_edges(geom1);
+  MeosArray *e2 = geom_extract_edges(geom2);
+  if (! e1 || ! e2 || ! linear_union_straight(e1) || ! linear_union_straight(e2))
+  {
+    if (e1) meos_array_destroy(e1);
+    if (e2) meos_array_destroy(e2);
+    return NULL;
+  }
+  int n1 = (int) e1->count, n2 = (int) e2->count;
+  int32_t srid = lwgeom_get_srid(geom1);
+
+  /* Every segment of the second geometry contributes the parts of itself the
+   * first does not cover, so at most one piece more than the overlaps it
+   * carries */
+  LWGEOM **pieces = palloc(sizeof(LWGEOM *) * (size_t) (n2 * (n1 + 1) + 1));
+  int npieces = 0;
+  double *lo = palloc(sizeof(double) * (size_t) (n1 + 1));
+  double *hi = palloc(sizeof(double) * (size_t) (n1 + 1));
+
+  for (int j = 0; j < n2; j++)
+  {
+    const Edge *b = (const Edge *) meos_array_get(e2, j);
+    int nover = 0;
+    for (int i = 0; i < n1; i++)
+    {
+      const Edge *a = (const Edge *) meos_array_get(e1, i);
+      IntersectResult r = linesegm_intersect(b->x1, b->y1, b->dx, b->dy,
+        a->x1, a->y1, a->x2, a->y2);
+      /* A pair meeting at a point leaves the segment whole; only a shared
+       * stretch removes anything from it */
+      if (r.type != INTERSECT_OVERLAP)
+        continue;
+      lo[nover] = (r.t0 < r.t1) ? r.t0 : r.t1;
+      hi[nover] = (r.t0 < r.t1) ? r.t1 : r.t0;
+      nover++;
+    }
+    /* The overlaps read in the order the segment is walked */
+    for (int p = 1; p < nover; p++)
+    {
+      double l = lo[p], h = hi[p];
+      int q = p - 1;
+      while (q >= 0 && lo[q] > l)
+      {
+        lo[q + 1] = lo[q]; hi[q + 1] = hi[q]; q--;
+      }
+      lo[q + 1] = l; hi[q + 1] = h;
+    }
+    /* A piece shorter than what the segment's own coordinates resolve is not
+     * linework, it is the rounding of the parameter that produced it */
+    double mint = (b->length > 0.0) ? b->tol / b->length : 1.0;
+    double cur = 0.0;
+    for (int p = 0; p < nover; p++)
+    {
+      if (lo[p] > cur + mint)
+        pieces[npieces++] = linear_union_subsegment(b, cur, lo[p], srid);
+      if (hi[p] > cur)
+        cur = hi[p];
+    }
+    if (1.0 > cur + mint)
+      pieces[npieces++] = linear_union_subsegment(b, cur, 1.0, srid);
+  }
+  pfree(lo); pfree(hi);
+  meos_array_destroy(e1); meos_array_destroy(e2);
+
+  /* What the two draw together is a single curve, or it is a fork this entry
+   * does not answer */
+  LWGEOM *merged = linear_union_chain(geom1, pieces, npieces, srid);
+  for (int p = 0; p < npieces; p++)
+    lwgeom_free(pieces[p]);
+  pfree(pieces);
+  return merged;
+}
+
+/**
  * @ingroup meos_internal_geo_base_spatial
  * @brief Return the union of the linear and point components of a geometry
  * @details The components are read as the point set they cover: a component
@@ -7301,8 +7569,8 @@ linear_union_transpose(const char matrix[10], char result[10])
  * replace it by the chain of segments approximating it
  * @param[in] geom Geometry
  * @return The union, or @p NULL where the geometry carries a component that is
- * not linear or a point, or where a pair coincides over a positive length,
- * which leaves the caller to answer it another way
+ * not linear or a point, and where a coincident pair draws a fork rather than
+ * a single curve, which leaves the caller to answer it another way
  */
 LWGEOM *
 meos_linear_union(const LWGEOM *geom)
@@ -7332,56 +7600,92 @@ meos_linear_union(const LWGEOM *geom)
     return result;
   }
 
-  /* The extent of each component, read once.  Two components whose extents do
-   * not meet share nothing at all, so neither covers the other and the two
-   * cannot coincide over a curve.  The DE-9IM walk is quadratic in the
-   * vertices of the pair while the extent test is a handful of comparisons,
-   * so the pairs the extents separate are never walked */
+  /* The live component of each slot: the one collected, or the curve a merge
+   * put in its place, which this function owns and frees */
+  const LWGEOM **cur = palloc(sizeof(LWGEOM *) * ncomp);
+  LWGEOM **owned = palloc0(sizeof(LWGEOM *) * ncomp);
+  for (int i = 0; i < ncomp; i++)
+    cur[i] = comps[i];
   GBOX *boxes = palloc(sizeof(GBOX) * ncomp);
   bool *hasbox = palloc(sizeof(bool) * ncomp);
-  for (int i = 0; i < ncomp; i++)
-    hasbox[i] = (lwgeom_calculate_gbox(comps[i], &boxes[i]) == LW_SUCCESS);
-
-  /* A pair sharing a curve is merged rather than collected, which the interval
-   * arithmetic this entry does not carry answers.  Reporting it leaves the
-   * caller its own way to the answer */
   bool *dropped = palloc0(sizeof(bool) * ncomp);
-  for (int i = 0; i < ncomp; i++)
+  bool declined = false;
+
+  /* A pair whose linework coincides over a curve becomes ONE component, the
+   * rule #meos_areal_union() applies to two surfaces whose interiors meet.
+   * The merged curve may in turn meet a component already passed, so the scan
+   * restarts on it -- and it terminates, every merge retiring one component */
+  bool again = true;
+  while (again && ! declined)
   {
-    if (dropped[i])
-      continue;
-    for (int j = i + 1; j < ncomp; j++)
+    again = false;
+    /* The extent of each live component, read once per scan. Two components
+     * whose extents do not meet share nothing at all, so neither covers the
+     * other and the two cannot coincide over a curve. The DE-9IM walk is
+     * quadratic in the vertices of the pair while the extent test is a handful
+     * of comparisons, so the pairs the extents separate are never walked */
+    for (int i = 0; i < ncomp; i++)
+      hasbox[i] = dropped[i] ? false :
+        (lwgeom_calculate_gbox(cur[i], &boxes[i]) == LW_SUCCESS);
+
+    for (int i = 0; i < ncomp && ! again && ! declined; i++)
     {
-      if (dropped[j])
+      if (dropped[i])
         continue;
-      if (hasbox[i] && hasbox[j] &&
-          gbox_overlaps_2d(&boxes[i], &boxes[j]) == LW_FALSE)
-        continue;
-      /* ONE matrix answers all three questions the pair raises: the ordered
-       * pair, its reverse (the transpose) and what the two interiors share */
-      char matrix[10], reversed[10];
-      if (! meos_relate(comps[i], comps[j], matrix))
-        continue;
-      /* A component another one covers contributes nothing of its own */
-      if (linear_union_covers(matrix))
+      for (int j = i + 1; j < ncomp; j++)
       {
-        dropped[j] = true;
-        continue;
-      }
-      linear_union_transpose(matrix, reversed);
-      if (linear_union_covers(reversed))
-      {
-        dropped[i] = true;
-        break;
-      }
-      /* The interior/interior cell is the dimension of what the two share:
-       * @p 1 where they share a curve, @p 0 where they share only points */
-      if (matrix[0] == '1')
-      {
-        pfree(boxes); pfree(hasbox); pfree(dropped); pfree(comps);
-        return NULL;
+        if (dropped[j])
+          continue;
+        if (hasbox[i] && hasbox[j] &&
+            gbox_overlaps_2d(&boxes[i], &boxes[j]) == LW_FALSE)
+          continue;
+        /* ONE matrix answers all three questions the pair raises: the ordered
+         * pair, its reverse (the transpose) and what the two interiors share */
+        char matrix[10], reversed[10];
+        if (! meos_relate(cur[i], cur[j], matrix))
+          continue;
+        /* A component another one covers contributes nothing of its own */
+        if (linear_union_covers(matrix))
+        {
+          dropped[j] = true;
+          continue;
+        }
+        linear_union_transpose(matrix, reversed);
+        if (linear_union_covers(reversed))
+        {
+          dropped[i] = true;
+          break;
+        }
+        /* The interior/interior cell is the dimension of what the two share:
+         * @p 1 where they share a curve, @p 0 where they share only points */
+        if (matrix[0] == '1')
+        {
+          LWGEOM *merged = linear_union_merge(cur[i], cur[j]);
+          if (! merged)
+          {
+            declined = true;
+            break;
+          }
+          if (owned[i])
+            lwgeom_free(owned[i]);
+          owned[i] = merged;
+          cur[i] = merged;
+          dropped[j] = true;
+          again = true;
+          break;
+        }
       }
     }
+  }
+
+  if (declined)
+  {
+    for (int i = 0; i < ncomp; i++)
+      if (owned[i])
+        lwgeom_free(owned[i]);
+    pfree(owned); pfree(cur); pfree(boxes); pfree(hasbox); pfree(dropped);
+    pfree(comps);
+    return NULL;
   }
   pfree(boxes); pfree(hasbox);
 
@@ -7394,8 +7698,11 @@ meos_linear_union(const LWGEOM *geom)
     LWGEOM *result = NULL;
     for (int i = 0; i < ncomp; i++)
       if (! dropped[i])
-        result = lwgeom_clone_deep(comps[i]);
-    pfree(dropped); pfree(comps);
+        result = lwgeom_clone_deep(cur[i]);
+    for (int i = 0; i < ncomp; i++)
+      if (owned[i])
+        lwgeom_free(owned[i]);
+    pfree(owned); pfree(cur); pfree(dropped); pfree(comps);
     return result;
   }
 
@@ -7409,7 +7716,7 @@ meos_linear_union(const LWGEOM *geom)
   {
     if (dropped[i])
       continue;
-    uint8_t comp = comps[i]->type;
+    uint8_t comp = cur[i]->type;
     if (comp != POINTTYPE)
       allpoint = false;
     if (comp != LINETYPE)
@@ -7424,12 +7731,15 @@ meos_linear_union(const LWGEOM *geom)
     {
       if (dropped[i])
         continue;
-      bool ispoint = comps[i]->type == POINTTYPE;
+      bool ispoint = cur[i]->type == POINTTYPE;
       if ((pass == 0) != ispoint)
         continue;
-      kept[k++] = lwgeom_clone_deep(comps[i]);
+      kept[k++] = lwgeom_clone_deep(cur[i]);
     }
-  pfree(dropped); pfree(comps);
+  for (int i = 0; i < ncomp; i++)
+    if (owned[i])
+      lwgeom_free(owned[i]);
+  pfree(owned); pfree(cur); pfree(dropped); pfree(comps);
   uint8_t colltype = allpoint ? MULTIPOINTTYPE :
     (allline ? MULTILINETYPE :
       (allcurve ? MULTICURVETYPE : COLLECTIONTYPE));
