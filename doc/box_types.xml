@@ -71,7 +71,9 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 				<listitem xml:id="box_asText">
 					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 					<para>Return the Well-Known Text (WKT) representation</para>
-					<para><varname>asText(box,maxdecdigits=15) → text</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+asText(box,maxdecdigits=15) → text
+</programlisting>
 					<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
@@ -85,8 +87,10 @@ SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 					<para>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
-					<para><varname>asBinary(box,endian text='') → bytea</varname></para>
-					<para><varname>asHexWKB(box,endian text='') → text</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+asBinary(box,endian text='') → bytea
+asHexWKB(box,endian text='') → text
+</programlisting>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
@@ -108,8 +112,10 @@ SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 					<indexterm significance="normal"><primary><varname>boxFromBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>boxFromHexWKB</varname></primary></indexterm>
 					<para>Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
-					<para><varname>boxFromBinary(bytea) → box</varname></para>
-					<para><varname>boxFromHexWKB(text) → box</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+boxFromBinary(bytea) → box
+boxFromHexWKB(text) → box
+</programlisting>
 					<para>In the signatures above, <varname>box</varname> replaces any box type, that is, <varname>tbox</varname> or <varname>stbox</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tboxFromBinary(
@@ -141,9 +147,11 @@ SELECT stboxFromHexWKB(
 			<listitem xml:id="tbox">
 				<indexterm significance="normal"><primary><varname>tbox</varname></primary></indexterm>
 				<para>Constructor for <varname>tbox</varname></para>
-				<para><varname>tbox({number,numspan}) → tbox</varname></para>
-				<para><varname>tbox({timestamptz,tstzspan}) → tbox</varname></para>
-				<para><varname>tbox({number,numspan},{timestamptz,tstzspan}) → tbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tbox({number,numspan}) → tbox
+tbox({timestamptz,tstzspan}) → tbox
+tbox({number,numspan},{timestamptz,tstzspan}) → tbox
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Both value and time dimensions
 SELECT tbox(1.0, timestamptz '2001-01-01');
@@ -172,17 +180,19 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 				<indexterm significance="normal"><primary><varname>geodstboxZT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
 				<para>Constructor for <varname>stbox</varname></para>
-				<para><varname>stboxX(float,float,float,float,srid=0) → stbox</varname></para>
-				<para><varname>stboxZ(float,float,float,float,float,float,srid=0) → stbox</varname></para>
-				<para><varname>stboxT({timestamptz,tstzspan}) → stbox</varname></para>
-				<para><varname>stboxXT(float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
-				<para><varname>stboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
-				<para><varname>geodstboxZ(float,float,float,float,float,float,srid=4326) → stbox</varname></para>
-				<para><varname>geodstboxT({timestamptz,tstzspan}) → stbox</varname></para>
-				<para><varname>geodstboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},srid=4326)</varname></para>
-				<para><varname>  → stbox</varname></para>
-				<para><varname>stbox(geo) → stbox</varname></para>
-				<para><varname>stbox(geo,{timestamptz,tstzspan}) → stbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+stboxX(float,float,float,float,srid=0) → stbox
+stboxZ(float,float,float,float,float,float,srid=0) → stbox
+stboxT({timestamptz,tstzspan}) → stbox
+stboxXT(float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox
+stboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox
+geodstboxZ(float,float,float,float,float,float,srid=4326) → stbox
+geodstboxT({timestamptz,tstzspan}) → stbox
+geodstboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},srid=4326)
+  → stbox
+stbox(geo) → stbox
+stbox(geo,{timestamptz,tstzspan}) → stbox
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Only value dimension with X and Y coordinates
 SELECT stboxX(1.0,2.0,1.0,2.0);
@@ -221,10 +231,12 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03,2001-01-
 				<indexterm significance="normal"><primary><varname>floatspan</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tstzspan</varname></primary></indexterm>
 				<para>Convert a <varname>tbox</varname> to another type</para>
-				<para><varname>tbox::{intspan,floatspan,tstzspan}</varname></para>
-				<para><varname>intspan(tbox) → tbox</varname></para>
-				<para><varname>floatspan(tbox) → tbox</varname></para>
-				<para><varname>tstzspan(tbox) → tbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+tbox::{intspan,floatspan,tstzspan}
+intspan(tbox) → tbox
+floatspan(tbox) → tbox
+tstzspan(tbox) → tbox
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXINT XT([1,4),[2001-01-01,2001-01-02))'::intspan;
 -- [1,4)
@@ -239,8 +251,10 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02))'::tstzspan;
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tbox</varname></primary></indexterm>
 				<para>Convert another type to a <varname>tbox</varname></para>
-				<para><varname>{numbers,times,tnumber}::tbox</varname></para>
-				<para><varname>tbox({numbers,times,tnumber}) → tbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{numbers,times,tnumber}::tbox
+tbox({numbers,times,tnumber}) → tbox
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT intset '{1,2}'::tbox;
 -- TBOXINT X([1, 3))
@@ -261,12 +275,14 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 				<indexterm significance="normal"><primary><varname>geography</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tstzspan</varname></primary></indexterm>
 				<para>Convert an <varname>stbox</varname> to a another type</para>
-				<para><varname>stbox::{box2d,box3d,geo,tstzspan}</varname></para>
-				<para><varname>box2d(stbox) → box2d</varname></para>
-				<para><varname>box3d(stbox) → box2d</varname></para>
-				<para><varname>geometry(stbox) → geometry</varname></para>
-				<para><varname>geography(stbox) → geography</varname></para>
-				<para><varname>tstzspan(stbox) → tstzspan</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+stbox::{box2d,box3d,geo,tstzspan}
+box2d(stbox) → box2d
+box3d(stbox) → box2d
+geometry(stbox) → geometry
+geography(stbox) → geography
+tstzspan(stbox) → tstzspan
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::box2d;
 -- BOX(1 2,3 4)
@@ -292,8 +308,10 @@ SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
 				<para>Convert another type to an <varname>stbox</varname></para>
-				<para><varname>{box2d,box3d,geo,time,tgeo}::stbox</varname></para>
-				<para><varname>stbox({box2d,box3d,geo,time,tgeo}) → stbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+{box2d,box3d,geo,time,tgeo}::stbox
+stbox({box2d,box3d,geo,time,tgeo}) → stbox
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geometry 'Linestring(1 1 1,2 2 2)'::box3d::stbox;
 -- STBOX Z((1,1,1),(2,2,2))
@@ -315,9 +333,11 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 				<indexterm significance="normal"><primary><varname>hasZ</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>hasT</varname></primary></indexterm>
 				<para>Has X/Z/T dimension?</para>
-				<para><varname>hasX(box) → boolean</varname></para>
-				<para><varname>hasZ(stbox) → boolean</varname></para>
-				<para><varname>hasT(box) → boolean</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+hasX(box) → boolean
+hasZ(stbox) → boolean
+hasT(box) → boolean
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT hasX(tbox 'TBOX T([2001-01-01,2001-01-03))');
 -- false
@@ -335,7 +355,9 @@ SELECT hasT(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 			<listitem xml:id="stbox_isGeodetic">
 				<indexterm significance="normal"><primary><varname>isGeodetic</varname></primary></indexterm>
 				<para>Is geodetic?</para>
-				<para><varname>isGeodetic(stbox) → boolean</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+isGeodetic(stbox) → boolean
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT isGeodetic(stbox 'GEODSTBOX Z((1.0,1.0,0.0),(3.0,3.0,1.0))');
 -- true
@@ -350,10 +372,12 @@ SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])
 				<indexterm significance="normal"><primary><varname>zMin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tMin</varname></primary></indexterm>
 				<para>Return the minimum X/Y/Z/T value</para>
-				<para><varname>xMin(box) → float</varname></para>
-				<para><varname>yMin(stbox) → float</varname></para>
-				<para><varname>zMin(stbox) → float</varname></para>
-				<para><varname>tMin(box) → timestamptz</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+xMin(box) → float
+yMin(stbox) → float
+zMin(stbox) → float
+tMin(box) → timestamptz
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT xMin(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- 1
@@ -373,10 +397,12 @@ SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<indexterm significance="normal"><primary><varname>zMax</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tMax</varname></primary></indexterm>
 				<para>Return the maximum X/Y/Z/T value</para>
-				<para><varname>xMax(box) → float</varname></para>
-				<para><varname>yMax(stbox) → float</varname></para>
-				<para><varname>zMax(stbox) → float</varname></para>
-				<para><varname>tMax(box) → timestamptz</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+xMax(box) → float
+yMax(stbox) → float
+zMax(stbox) → float
+tMax(box) → timestamptz
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT xMax(tbox 'TBOXINT X([1,4))');
 -- 3
@@ -394,8 +420,10 @@ SELECT tMax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<indexterm significance="normal"><primary><varname>xMinInc</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tMinInc</varname></primary></indexterm>
 				<para>Is the minimum X/T value inclusive?</para>
-				<para><varname>xMinInc(tbox) → boolean</varname></para>
-				<para><varname>tMinInc(box) → boolean</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+xMinInc(tbox) → boolean
+tMinInc(box) → boolean
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT xMinInc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
@@ -408,8 +436,10 @@ SELECT tMinInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<indexterm significance="normal"><primary><varname>xMaxInc</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tMaxInc</varname></primary></indexterm>
 				<para>Is the maximum X/T value inclusive?</para>
-				<para><varname>xMaxInc(tbox) → boolean</varname></para>
-				<para><varname>tMaxInc(box) → boolean</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+xMaxInc(tbox) → boolean
+tMaxInc(box) → boolean
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT xMaxInc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
@@ -423,9 +453,11 @@ SELECT tMaxInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<indexterm significance="normal"><primary><varname>perimeter</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>volume</varname></primary></indexterm>
 				<para>Area, volume, perimeter</para>
-				<para><varname>area(stbox, spheroid boolean=true) → float</varname></para>
-				<para><varname>volume(stbox) → float</varname></para>
-				<para><varname>perimeter(stbox, spheroid boolean=true) → float</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+area(stbox, spheroid boolean=true) → float
+volume(stbox) → float
+perimeter(stbox, spheroid boolean=true) → float
+</programlisting>
 				<para>For geodetic boxes, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used. The <varname>volume</varname> function do not accept geodetic boxes.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT area(stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03))');
@@ -452,9 +484,11 @@ SELECT perimeter(stbox 'GEODSTBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03))', fa
 				<indexterm significance="normal"><primary><varname>scaleValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>shiftScaleValue</varname></primary></indexterm>
 				<para>Shift and/or scale the span of a bounding box by one or two values</para>
-				<para><varname>shiftValue(box,{integer,float}) → box</varname></para>
-				<para><varname>scaleValue(box,{integer,float}) → box</varname></para>
-				<para><varname>shiftScaleValue(tbox,{integer,float},{integer,float}) → box</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+shiftValue(box,{integer,float}) → box
+scaleValue(box,{integer,float}) → box
+shiftScaleValue(tbox,{integer,float},{integer,float}) → box
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 1.0);
 -- TBOXFLOAT XT([2.5, 3.5],[2001-01-01, 2001-01-02])
@@ -470,9 +504,11 @@ SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 
 				<indexterm significance="normal"><primary><varname>scaleTime</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>shiftScaleTime</varname></primary></indexterm>
 				<para>Shift and/or scale the span or the period of the bounding box to a value or interval</para>
-				<para><varname>shiftTime(box,interval) → box</varname></para>
-				<para><varname>scaleTime(box,interval) → box</varname></para>
-				<para><varname>shiftScaleTime(box,interval,interval) → box</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+shiftTime(box,interval) → box
+scaleTime(box,interval) → box
+shiftScaleTime(box,interval,interval) → box
+</programlisting>
 				<para>For scaling, if the width or the time span of the period is zero (that is, the lower and upper bound are equal), the result is the box. The given value or interval must be strictly greater than zero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT shiftTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
@@ -504,7 +540,9 @@ SELECT shiftScaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])
 			<listitem xml:id="box_getSpace">
 				<indexterm significance="normal"><primary><varname>getSpace</varname></primary></indexterm>
 				<para>Return the spatial dimension of the bounding box, removing the temporal dimension if any</para>
-				<para><varname>getSpace(stbox) → stbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+getSpace(stbox) → stbox
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 -- STBOX Z((1,1,1),(2,2,2))
@@ -521,9 +559,11 @@ SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 				<indexterm significance="normal"><primary><varname>expandSpace</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>expandTime</varname></primary></indexterm>
 				<para>Expand the numeric, spatial, or temporal dimension of a bounding box by a value or an interval</para>
-				<para><varname>expandValue(tbox,{integer,float}) → tbox</varname></para>
-				<para><varname>expandSpace(stbox,float) → stbox</varname></para>
-				<para><varname>expandTime(box,interval) → box</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+expandValue(tbox,{integer,float}) → tbox
+expandSpace(stbox,float) → stbox
+expandTime(box,interval) → box
+</programlisting>
 				<para>The function returns NULL if the value or interval given as second argument is negative and the span resulting from shifting the bounds with the argument is empty.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT expandValue(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', 1.0);
@@ -553,7 +593,9 @@ SELECT expandTime(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', interval '-2 da
 			<listitem xml:id="box_round">
 				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 				<para>Round the value or the coordinates of the bounding box to a number of decimal places</para>
-				<para><varname>round(box,integer=0) → box</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+round(box,integer=0) → box
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(tbox 'TBOXFLOAT XT((1.12345,2.12345),[2001-01-01,2001-01-02])', 2);
 -- TBOXFLOAT XT((1.12,2.12),[2001-01-01, 2001-01-02])
@@ -575,8 +617,10 @@ SELECT round(tstzspan '[2000-01-01, 2001-01-02]'::tbox);
 				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
 				<para>Return or set the spatial reference identifier</para>
-				<para><varname>SRID(stbox) → integer</varname></para>
-				<para><varname>setSRID(stbox) → stbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+SRID(stbox) → integer
+setSRID(stbox) → stbox
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
 -- 0
@@ -597,8 +641,10 @@ SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
 				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transform to a spatial reference identifier</para>
-				<para><varname>transform(stbox,to_srid integer) → stbox</varname></para>
-				<para><varname>transformPipeline(stbox,pipeline text,to_srid integer,is_forward boolean=true) → stbox</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+transform(stbox,to_srid integer) → stbox
+transformPipeline(stbox,pipeline text,to_srid integer,is_forward boolean=true) → stbox
+</programlisting>
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input box has an unknown SRID (represented by 0). The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
 				<para>The SRID of the input box is ignored, and the SRID of the output box will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
@@ -627,7 +673,9 @@ FROM test;
 				<indexterm significance="normal"><primary><varname>quadSplit</varname></primary></indexterm>
 				<para>Split the bounding box in quadrants or octants &SRF;
 </para>
-				<para><varname>quadSplit(stbox) → {stbox}</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+quadSplit(stbox) → {stbox}
+</programlisting>
 				<para>As indicated by the &SRF;
  symbol, this function is a <emphasis>set-returning function</emphasis> (also known as a <emphasis>table function</emphasis>) since it typically return more than one value.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -665,7 +713,9 @@ SELECT quadSplit(stbox 'STBOX Z((0,0,0),(4,4,4))');
 				<indexterm significance="normal"><primary><varname>+</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>*</varname></primary></indexterm>
 				<para>Union and intersection of two bounding boxes</para>
-				<para><varname>box {+, *} box → box</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+box {+, *} box → box
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXINT XT([1,3),[2001-01-01,2001-01-03])' +
   tbox 'TBOXINT XT([2,4),[2001-01-02,2001-01-04])';
@@ -700,7 +750,9 @@ SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *
 				<listitem xml:id="box_overlap">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
 					<para>Do the bounding boxes overlap?</para>
-					<para><varname>box &amp;&amp; box → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+box &amp;&amp; box → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXFLOAT XT((1,3),[2001-01-01,2001-01-03])' &amp;&amp;
   tbox 'TBOXFLOAT XT((2,4),[2001-01-02,2001-01-04])';
@@ -714,7 +766,9 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' &amp;&amp;
 				<listitem xml:id="box_contains">
 					<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
 					<para>Does the first bounding box contain the second one?</para>
-					<para><varname>box @&gt; box → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+box @&gt; box → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])' @&gt;
   tbox 'TBOXFLOAT XT((2,3),[2001-01-01,2001-01-02])';
@@ -728,7 +782,9 @@ SELECT stbox 'STBOX Z((1,1,1),(3,3,3))' @&gt;
 				<listitem xml:id="box_containedby">
 					<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
 					<para>Is the first bounding box contained in the second one?</para>
-					<para><varname>box &lt;@ box → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+box &lt;@ box → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &lt;@
   tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])';
@@ -742,7 +798,9 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' &lt;@
 				<listitem xml:id="box_same">
 					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 					<para>Are the bounding boxes equal in their common dimensions?</para>
-					<para><varname>box ~= box → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+box ~= box → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' ~=
   tbox 'TBOXFLOAT T([2001-01-01,2001-01-02])';
@@ -756,7 +814,9 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' ~=
 				<listitem xml:id="box_adjacent">
 					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 					<para>Are the bounding boxes adjacent?</para>
-					<para><varname>box -|- box → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+box -|- box → boolean
+</programlisting>
 					<para>Two boxes are adjacent if their extents meet in every dimension the boxes share and touch at a single value in at least one of them. A dimension in which the boxes are apart separates them whatever the remaining dimensions do.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXINT XT([1,2),[2001-01-01,2001-01-02])' -|-
@@ -786,8 +846,10 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' -|-
 					<indexterm significance="normal"><primary><varname>&lt;&lt;/</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 					<para>Are the X/Y/Z/T values of the first bounding box strictly less than those of the second one?</para>
-					<para><varname>tbox {&lt;&lt;, &lt;&lt;#} tbox → boolean</varname></para>
-					<para><varname>stbox {&lt;&lt;, &lt;&lt;|, &lt;&lt;/, &lt;&lt;#} stbox → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tbox {&lt;&lt;, &lt;&lt;#} tbox → boolean
+stbox {&lt;&lt;, &lt;&lt;|, &lt;&lt;/, &lt;&lt;#} stbox → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &lt;&lt;
   tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])';
@@ -811,8 +873,10 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &lt;&lt;#
 					<indexterm significance="normal"><primary><varname>/&gt;&gt;</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 					<para>Are the X/Y/Z/T values of the first bounding box strictly greater than those of the second one?</para>
-					<para><varname>tbox {&gt;&gt;, #&gt;&gt;} tbox → boolean</varname></para>
-					<para><varname>stbox {&gt;&gt;, |&gt;&gt;, /&gt;&gt;, #&gt;&gt;} stbox → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tbox {&gt;&gt;, #&gt;&gt;} tbox → boolean
+stbox {&gt;&gt;, |&gt;&gt;, /&gt;&gt;, #&gt;&gt;} stbox → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])' &gt;&gt;
   tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])';
@@ -833,8 +897,10 @@ SELECT stbox 'STBOX XT(((3,3),(4,4)),[2001-01-03,2001-01-04])'  #&gt;&gt;
 					<indexterm significance="normal"><primary><varname>&amp;&lt;/</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&amp;&lt;#</varname></primary></indexterm>
 					<para>Are the X/Y/Z/T values of the first bounding box not greater than those of the second one?</para>
-					<para><varname>tbox {&amp;&lt;, &amp;&lt;#} {tbox,stbox} → boolean</varname></para>
-					<para><varname>stbox {&amp;&lt;, &amp;&lt;|, &amp;&lt;/, &amp;&lt;#} stbox → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tbox {&amp;&lt;, &amp;&lt;#} {tbox,stbox} → boolean
+stbox {&amp;&lt;, &amp;&lt;|, &amp;&lt;/, &amp;&lt;#} stbox → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])' &amp;&lt;
   tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])';
@@ -855,8 +921,10 @@ SELECT tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])' &amp;&lt;#
 					<indexterm significance="normal"><primary><varname>/&amp;&gt;</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>#&amp;&gt;</varname></primary></indexterm>
 					<para>Are the X/Y/Z/T values of the first bounding box not less than those of the second one?</para>
-					<para><varname>tbox {&amp;&gt;, #&amp;&gt;} tbox → boolean</varname></para>
-					<para><varname>stbox {&amp;&gt;, |&amp;&gt;, /&amp;&gt;, #&amp;&gt;} stbox} → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+tbox {&amp;&gt;, #&amp;&gt;} tbox → boolean
+stbox {&amp;&gt;, |&amp;&gt;, /&amp;&gt;, #&amp;&gt;} stbox} → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &amp;&gt;
   tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])';
@@ -889,9 +957,11 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 				<para>Traditional comparisons</para>
-				<para><varname>box {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} box → boolean</varname></para>
-				<para><varname>cmp(tbox,tbox) → int</varname></para>
-				<para><varname>cmp(stbox,stbox) → int</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+box {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} box → boolean
+cmp(tbox,tbox) → int
+cmp(stbox,stbox) → int
+</programlisting>
 				<para>Function <varname>cmp</varname> returns -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXINT XT([1,1],[2001-01-01,2001-01-04])' =
@@ -927,7 +997,9 @@ SELECT cmp(tbox 'TBOXFLOAT XT([1,1],[2001-01-01,2001-01-04])',
 			<listitem xml:id="box_extent">
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Bounding box extent</para>
-				<para><varname>extent(box) → box</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+extent(box) → box
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH boxes(b) AS (
   SELECT tbox 'TBOXFLOAT XT((1,3),[2001-01-01,2001-01-03])' UNION

@@ -82,7 +82,9 @@
 			<listitem xml:id="ttype_insert">
 				<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
 				<para>Insertar un valor temporal en otro</para>
-				<para><varname>insert(ttype,ttype,connect=true) → ttype</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+insert(ttype,ttype,connect=true) → ttype
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT insert(tint '{1@2001-01-01, 3@2001-01-03, 5@2001-01-05}',
   tint '{3@2001-01-03, 7@2001-01-07}');
@@ -107,7 +109,9 @@ SELECT asText(insert(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01
 			<listitem xml:id="ttype_update">
 				<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
 				<para>Actualizar un valor temporal con otro</para>
-				<para><varname>update(ttype,ttype,connect=true) → ttype</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+update(ttype,ttype,connect=true) → ttype
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT update(tint '{1@2001-01-01, 3@2001-01-03, 5@2001-01-05}',
   tint '{5@2001-01-03, 7@2001-01-07}');
@@ -131,7 +135,9 @@ SELECT asText(update(
 			<listitem xml:id="ttype_deleteTime">
 				<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 				<para>Eliminar de un valor temporal un valor de tiempo</para>
-				<para><varname>deleteTime(ttype,time,connect=true) → ttype</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+deleteTime(ttype,time,connect=true) → ttype
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT deleteTime(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02', false);
 -- {[1@2001-01-01, 1@2001-01-02), (1@2001-01-02, 1@2001-01-03]}
@@ -151,8 +157,10 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2001-01-01,
 			<listitem xml:id="ttype_appendInstant">
 				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 				<para>Anexar un instante temporal a un valor temporal</para>
-				<para><varname>appendInstant(ttype,ttypeInst,interp=NULL) → ttype</varname></para>
-				<para><varname>appendInstant(ttypeInst,interp=NULL,maxdist=NULL,maxt=NULL) → ttypeSeq</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+appendInstant(ttype,ttypeInst,interp=NULL) → ttype
+appendInstant(ttypeInst,interp=NULL,maxdist=NULL,maxt=NULL) → ttypeSeq
+</programlisting>
 				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
 				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL. Dos argumentos opcionales establecen una distancia máxima y un intervalo de tiempo máximo de modo que se introduce una brecha de tiempo cada vez que dos instantes consecutivos tienen una distancia o un intervalo de tiempo mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Si uno de estos argumentos no se dan, no se tiene en cuenta para determinar las brechas.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -220,8 +228,10 @@ SELECT asText(appendInstant(inst, NULL, sqrt(2), '1 day' ORDER BY inst)) FROM te
 			<listitem xml:id="ttype_appendSequence">
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Anexar una secuencia temporal a un valor temporal</para>
-				<para><varname>appendSequence(ttype,ttypeSeq) → {ttypeSeq, ttypeSeqSet}</varname></para>
-				<para><varname>appendSequence(ttypeSeq) → {ttypeSeq,ttypeSeqSet}</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+appendSequence(ttype,ttypeSeq) → {ttypeSeq, ttypeSeqSet}
+appendSequence(ttypeSeq) → {ttypeSeq,ttypeSeqSet}
+</programlisting>
 				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
 				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -247,9 +257,11 @@ SELECT asText(appendSequence(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001
 			<listitem xml:id="ttype_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
 				<para>Fusionar los valores temporales</para>
-				<para><varname>merge(ttype,ttype) → ttype</varname></para>
-				<para><varname>merge(ttype[]) → ttype</varname></para>
-				<para><varname>merge(ttype) → ttype</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+merge(ttype,ttype) → ttype
+merge(ttype[]) → ttype
+merge(ttype) → ttype
+</programlisting>
 				<para>Los valores temporales solo pueden intersectar en su límite. En ese caso, para todos los tipos temporales excepto <varname>tgeometry</varname> y <varname>tgeography</varname>, sus valores de base en las marcas de tiempo comunes deben ser los mismos, de lo contrario se genera un error. Para los tipos <varname>tgeometry</varname> y <varname>tgeography</varname>, si el valor en sus marcas de tiempo comunes es diferente, el valor resultante después de la <varname>merge</varname> será la unión espacial de los valores. La razón de un comportamiento diferente para estos tipos es que son los únicos tipos temporales que no son tipos <emphasis>escalares</emphasis>, es decir, su valor en una marca de tiempo dada no es un único elemento del dominio del tipo base, sino más bien un subconjunto de su dominio.</para>
 				<para>La tercera versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -322,14 +334,16 @@ SELECT merge(inst) FROM temp;
 				<indexterm significance="normal"><primary><varname>atSpanset</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusSpanset</varname></primary></indexterm>
 				<para>Restringir a (al complemento de) un valor o un conjunto de valores o, para un número temporal, un span o un conjunto de spans de valores</para>
-				<para><varname>atValue(ttype,value) → ttype</varname></para>
-				<para><varname>minusValue(ttype,value) → ttype</varname></para>
-				<para><varname>atValues(ttype,valueset) → ttype</varname></para>
-				<para><varname>minusValues(ttype,valueset) → ttype</varname></para>
-				<para><varname>atSpan(tnumber,span) → tnumber</varname></para>
-				<para><varname>minusSpan(tnumber,span) → tnumber</varname></para>
-				<para><varname>atSpanset(tnumber,spanset) → tnumber</varname></para>
-				<para><varname>minusSpanset(tnumber,spanset) → tnumber</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+atValue(ttype,value) → ttype
+minusValue(ttype,value) → ttype
+atValues(ttype,valueset) → ttype
+minusValues(ttype,valueset) → ttype
+atSpan(tnumber,span) → tnumber
+minusSpan(tnumber,span) → tnumber
+atSpanset(tnumber,spanset) → tnumber
+minusSpanset(tnumber,spanset) → tnumber
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT atValue(tint '[1@2001-01-01, 1@2001-01-15)', 1);
 -- [1@2001-01-01, 1@2001-01-15)
@@ -381,8 +395,10 @@ SELECT asText(minusValue(tgeometry '[Point(0 0)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>atTime</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusTime</varname></primary></indexterm>
 				<para>Restringir a (al complemento de) un valor de tiempo</para>
-				<para><varname>atTime(ttype,times) → ttype</varname></para>
-				<para><varname>minusTime(ttype,times) → ttype</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+atTime(ttype,times) → ttype
+minusTime(ttype,times) → ttype
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT atTime(tfloat '[1@2001-01-01, 5@2001-01-05)', timestamptz '2001-01-02');
 -- 2@2001-01-02
@@ -417,8 +433,10 @@ SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
 				<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
 				<para>Mantener los instantes de un valor temporal que son anteriores o posteriores a una marca de tiempo, o iguales a ella</para>
-				<para><varname>beforeTimestamp(ttype,timestamptz,strict boolean=TRUE) → ttype</varname></para>
-				<para><varname>afterTimestamp(ttype,timestamptz,strict boolean=TRUE) → ttype</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+beforeTimestamp(ttype,timestamptz,strict boolean=TRUE) → ttype
+afterTimestamp(ttype,timestamptz,strict boolean=TRUE) → ttype
+</programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02');
 -- [1@2001-01-01, 1@2001-01-02)
@@ -488,7 +506,9 @@ SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02]' =
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 					<para>Comparaciones tradicionales</para>
-					<para><varname>ttype {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} ttype → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+ttype {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} ttype → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 1@2001-01-04)' = tint '[2@2001-01-03, 2@2001-01-05)';
 -- false
@@ -526,8 +546,10 @@ SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt;= tint '[2@2001-01-03, 2@2001-01-
 					<indexterm significance="normal"><primary><varname>?&gt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>%&gt;=</varname></primary></indexterm>
 					<para>Comparaciones alguna vez y siempre</para>
-					<para><varname>{base,ttype} {?=, ?&lt;&gt;, ?&lt;, ?&gt;, ?&lt;=, ?&gt;=} {base,ttype} → boolean</varname></para>
-					<para><varname>{base,ttype} {%=, %&lt;&gt;, %&lt;, %&gt;, %&lt;=, %&gt;=} {base,ttype} → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+{base,ttype} {?=, ?&lt;&gt;, ?&lt;, ?&gt;, ?&lt;=, ?&gt;=} {base,ttype} → boolean
+{base,ttype} {%=, %&lt;&gt;, %&lt;, %&gt;, %&lt;=, %&gt;=} {base,ttype} → boolean
+</programlisting>
 					<para>Los operadores no tienen en cuenta si los límites son inclusivos o no.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 3@2001-01-04]' ?= 2;
@@ -596,7 +618,9 @@ SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03), [BBB@2001-01-04, BBB@2001-01-05
 					<indexterm significance="normal"><primary><varname>#&lt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>#&gt;=</varname></primary></indexterm>
 					<para>Comparaciones temporales</para>
-					<para><varname>{base,ttype} {#=, #&lt;&gt;, #&lt;, #&gt;, #&lt;=, #&gt;=} {base,ttype} → boolean</varname></para>
+					<programlisting xml:space="preserve" format="linespecific">
+{base,ttype} {#=, #&lt;&gt;, #&lt;, #&gt;, #&lt;=, #&gt;=} {base,ttype} → boolean
+</programlisting>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tfloat '[1@2001-01-01, 2@2001-01-04)' #= 3;
 -- {[f@2001-01-01, f@2001-01-04)}
@@ -640,7 +664,9 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 			<listitem xml:id="mobilitydb_version">
 				<indexterm significance="normal"><primary><varname>mobilitydbVersion</varname></primary></indexterm>
 				<para>Versión de la extensión MobilityDB</para>
-				<para><varname>mobilitydbVersion() → text</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+mobilitydbVersion() → text
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT mobilitydbVersion();
 -- MobilityDB 1.3.0
@@ -650,7 +676,9 @@ SELECT mobilitydbVersion();
 			<listitem xml:id="mobilitydb_full_version">
 				<indexterm significance="normal"><primary><varname>mobilitydbFullVersion</varname></primary></indexterm>
 				<para>Versión de la extensión MobilityDB y de sus dependencias</para>
-				<para><varname>mobilitydbFullVersion() → text</varname></para>
+				<programlisting xml:space="preserve" format="linespecific">
+mobilitydbFullVersion() → text
+</programlisting>
 				<programlisting language="sql" xml:space="preserve">
 /* MobilityDB 1.3.0, PostgreSQL 17.2, PostGIS 3.5.2, GEOS 3.12.0-CAPI-1.18.0, PROJ 9.2.0,
    JSON-C 0.13.1 */
