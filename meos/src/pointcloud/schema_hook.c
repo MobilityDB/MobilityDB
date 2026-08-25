@@ -432,30 +432,44 @@ meos_pc_schema_get_srid(uint32_t pcid)
  * @ingroup meos_pointcloud_schema_cache
  * @brief Return the compression a point cloud schema states
  * @param[in] pcid Identifier of the schema
- * @return On a pcid no schema is registered for return -1
- * @details The compression is read off the resolved schema, so a caller
- *   answers it without the PCSCHEMA definition, as for the reference system
+ * @return On a pcid no schema is registered for return @p NULL
+ * @details The name the catalog states is answered — @p none, @p dimensional
+ *   or @p laz — which is what the SQL function of the same name answers. The
+ *   compression field of the schema is an enumerator of the point cloud
+ *   library, declared in its own header, so a number leaves a caller of this
+ *   surface nothing to decode it with
+ * @note The result is a string constant owned by that library, so a caller
+ *   reads it and never frees it
  */
-int32_t
+const char *
 meos_pc_schema_get_compression(uint32_t pcid)
 {
   const PCSCHEMA *s = meos_pc_schema_lookup(pcid);
-  return s ? (int32_t) s->compression : -1;
+  return s ? pc_compression_name((int) s->compression) : NULL;
 }
 
 /**
  * @ingroup meos_pointcloud_schema_cache
- * @brief Return the number of dimensions a point cloud schema states
+ * @brief Return the number of active dimensions a point cloud schema states
  * @param[in] pcid Identifier of the schema
  * @return On a pcid no schema is registered for return -1
- * @details The count is read off the resolved schema, so a caller answers it
- *   without the PCSCHEMA definition, as for the reference system
+ * @details The ACTIVE dimensions are counted, which is what the SQL function
+ *   of the same name answers. The @p ndims field of the schema is the width
+ *   of its layout: an inactive dimension still occupies a slot and still
+ *   contributes to the width of a point, so the byte offsets are indexed by
+ *   it and it is a different quantity, not this one under another name
  */
 int32_t
 meos_pc_schema_get_ndims(uint32_t pcid)
 {
   const PCSCHEMA *s = meos_pc_schema_lookup(pcid);
-  return s ? (int32_t) s->ndims : -1;
+  if (! s)
+    return -1;
+  int32_t result = 0;
+  for (uint32_t i = 0; i < s->ndims; i++)
+    if (s->dims[i] && s->dims[i]->active)
+      result++;
+  return result;
 }
 
 /**

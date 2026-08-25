@@ -36,6 +36,10 @@
  * are two statements of one thing, so every field of the result must agree,
  * including the ones the engine computes: the size of a dimension, the offset
  * of a dimension within a point, and the width of a point.
+ *
+ * The three accessors a binding reads a schema through are exercised on a
+ * schema carrying an inactive dimension, which is the state that tells the
+ * number of dimensions apart from the width of the layout.
  */
 
 #include <stdio.h>
@@ -151,6 +155,41 @@ main(void)
   /* The name hash table answers, as a schema built from a document does */
   check(pc_schema_get_dimension_by_name(stated, "Y") == stated->dims[1],
     "dimension by name");
+
+  /* The three accessors a binding reads a schema through, on a schema whose
+   * last dimension is INACTIVE, which is the state that tells the number of
+   * dimensions apart from the width of the layout */
+  PCDimensionSpec dims90[3] = {
+    { "X", NULL, 1, "int32_t", 1, 0, true },
+    { "Y", NULL, 2, "int32_t", 1, 0, true },
+    { "Intensity", NULL, 3, "int32_t", 1, 0, false }
+  };
+  if (! meos_pc_schema_register_dims(90, 4326, "dimensional", dims90, 3))
+  {
+    printf("FAILED: the schema with an inactive dimension is not registered\n");
+    return 1;
+  }
+  PCSCHEMA *inactive = meos_pc_schema(90);
+  check(inactive != NULL, "the schema with an inactive dimension resolves");
+  /* Both quantities of ONE schema are asserted here, so answering the width
+   * where the count is asked does not pass: an inactive dimension still
+   * occupies a slot, so the layout is three wide while two dimensions are
+   * active, and the accessor answers the ACTIVE count, which is what the SQL
+   * function pointCloudSchemaNDims answers for the same schema */
+  check(inactive && inactive->ndims == 3, "the layout of the schema is 3 wide");
+  check(meos_pc_schema_get_ndims(90) == 2,
+    "2 dimensions of the schema are active");
+  const char *compression = meos_pc_schema_get_compression(90);
+  check(compression && strcmp(compression, "dimensional") == 0,
+    "the compression of the schema is named");
+  check(meos_pc_schema_get_srid(90) == 4326,
+    "the reference system of the schema");
+  /* A pcid no schema is registered for */
+  printf("The reference system naming no schema: %d\n",
+    meos_pc_schema_get_srid(999));
+  check(meos_pc_schema_get_ndims(999) == -1, "no schema states no dimensions");
+  check(meos_pc_schema_get_compression(999) == NULL,
+    "no schema states no compression");
 
   printf("%s: %d field(s) disagree\n", failures ? "FAILED" : "PASSED",
     failures);
