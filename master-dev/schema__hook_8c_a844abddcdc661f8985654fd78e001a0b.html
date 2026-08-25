@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pcschema_string_copy</title>
+<title>MobilityDB: pcschema_registrable</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -100,8 +100,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_gaa65dec42a587dd71844da01153212963.html#gaa65dec42a587dd71844da01153212963">meos_pc_schema_xml</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga02620b806841f77bfbafeb5f92fe4122.html#ga02620b806841f77bfbafeb5f92fe4122">meos_set_pointcloud_schemas_xml</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_adf32ecc82db689b08a7c8fa6de00e751.html#adf32ecc82db689b08a7c8fa6de00e751">pc_schema_as_xml</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a844abddcdc661f8985654fd78e001a0b.html#a844abddcdc661f8985654fd78e001a0b">pcschema_registrable</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="schema__hook_8c_a90a1243bd6b6042746246d29566eadef.html#a90a1243bd6b6042746246d29566eadef">pcschema_string_copy</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="schema__hook_8c_a844abddcdc661f8985654fd78e001a0b.html#a844abddcdc661f8985654fd78e001a0b">pcschema_registrable</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a90a1243bd6b6042746246d29566eadef.html#a90a1243bd6b6042746246d29566eadef">pcschema_string_copy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga84f66a00ad9a188104a88bf122afcb11.html#ga84f66a00ad9a188104a88bf122afcb11">POINTCLOUD_SCHEMAS_XML</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a43ec781266944a91626cc4ba2c077b8e.html#a43ec781266944a91626cc4ba2c077b8e">read_pointcloud_schemas_xml</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a22da830b30ce894f875c9c28f452a193.html#a22da830b30ce894f875c9c28f452a193">schema_entry</a></td></tr>
@@ -111,8 +111,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a90a1243bd6b6042746246d29566eadef" name="a90a1243bd6b6042746246d29566eadef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a90a1243bd6b6042746246d29566eadef">&#9670;&#160;</a></span>pcschema_string_copy()</h2>
+<a id="a844abddcdc661f8985654fd78e001a0b" name="a844abddcdc661f8985654fd78e001a0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a844abddcdc661f8985654fd78e001a0b">&#9670;&#160;</a></span>pcschema_registrable()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -121,11 +121,21 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static char * pcschema_string_copy </td>
+          <td class="memname">static bool pcschema_registrable </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>str</em></td><td>)</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>pcid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *&#160;</td>
+          <td class="paramname"><em>schema</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -135,7 +145,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return a copy of a string allocated by the point cloud library, so that freeing the schema releases it. </p>
+<p>Return true if a schema is one the point cloud library accepts. </p>
+<p >The library states what a schema must hold — an X and a Y dimension, at least one dimension, and a dimension at every position of its layout — and every reader of the cache takes those for granted. The document parser applies this test itself, so a schema reaching the cache any other way is the one that would otherwise arrive unchecked. </p>
 
 </div>
 </div>
