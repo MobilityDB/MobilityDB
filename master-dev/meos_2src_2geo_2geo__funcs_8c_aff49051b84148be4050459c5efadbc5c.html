@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: linear_union_chain</title>
+<title>MobilityDB: linear_union_dissolve</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -153,9 +153,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af40bb938170f413594ece3cbf4394c7e.html#af40bb938170f413594ece3cbf4394c7e">hull_support</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aace79c7a493abb3a897893ec0d2a3fb0.html#aace79c7a493abb3a897893ec0d2a3fb0">linear_chain_append</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a707f7bd54768c1c05cba75d9277e03e7.html#a707f7bd54768c1c05cba75d9277e03e7">linear_chain_reverse</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a544e079905e3129d8bea7cdacabe163c.html#a544e079905e3129d8bea7cdacabe163c">linear_union_chain</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a850e4076687a4877575f53ba9bb3197e.html#a850e4076687a4877575f53ba9bb3197e">linear_union_chain_all</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a08978d08fd0db65a588f57eb66997129.html#a08978d08fd0db65a588f57eb66997129">linear_union_collect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad969646782b535cee5d596b5bbdb828b.html#ad969646782b535cee5d596b5bbdb828b">linear_union_covers</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aff49051b84148be4050459c5efadbc5c.html#aff49051b84148be4050459c5efadbc5c">linear_union_dissolve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a61b78b82dacd0945bede1e2db7011ee8.html#a61b78b82dacd0945bede1e2db7011ee8">linear_union_merge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a04be751a44f433619dd07e6b5f553a66.html#a04be751a44f433619dd07e6b5f553a66">linear_union_same_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a67a6211409f3411fad70e72d6f622e1a.html#a67a6211409f3411fad70e72d6f622e1a">linear_union_straight</a></td></tr>
@@ -298,8 +299,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a544e079905e3129d8bea7cdacabe163c" name="a544e079905e3129d8bea7cdacabe163c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a544e079905e3129d8bea7cdacabe163c">&#9670;&#160;</a></span>linear_union_chain()</h2>
+<a id="aff49051b84148be4050459c5efadbc5c" name="aff49051b84148be4050459c5efadbc5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff49051b84148be4050459c5efadbc5c">&#9670;&#160;</a></span>linear_union_dissolve()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -308,7 +309,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * linear_union_chain </td>
+          <td class="memname">static int linear_union_dissolve </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
           <td class="paramname"><em>geom</em>, </td>
@@ -316,20 +317,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> **&#160;</td>
-          <td class="paramname"><em>pieces</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>npieces</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> ***&#160;</td>
+          <td class="paramname"><em>curves</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -344,16 +333,15 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Sew a line and a set of pieces into the single curve they draw. </p>
-<p >Each piece continues the chain at one of its two ends, in either direction, and the scan restarts whenever one attaches, the enlarged chain reaching further than it did </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return a line that walks its own points once. </p>
+<p >A union is a POINT SET, so the measure of the answer is the measure of that set: a line walking a stretch twice &ndash; <code>LINESTRING(6 5,6 3,6 4)</code> traverses <code></code>(6 3)-(6 4) on the way down and again on the way back &ndash; reports a length larger than the set it covers. Each segment keeps only what no EARLIER segment of the same line already covers, and what remains is sewn back into the curve it draws </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">geom</td><td>Line the chain starts from </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pieces,npieces</td><td>Pieces to attach, which stay the caller's </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference identifier </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">geom</td><td>Geometry </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">curves</td><td>Curves the line draws walking each of its points once, allocated here and owned by the caller </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The curve, or <code>NULL</code> where a piece continues neither end &ndash; what the pieces draw with the line is then a fork rather than one curve </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Number of curves, or 0 where the geometry is not a line of straight segments &ndash; the caller then keeps the line as it stands. Dropping a doubled stretch can leave what remains in SEVERAL pieces, so a line does not always walk its own points as one curve </dd></dl>
 
 </div>
 </div>
