@@ -71,7 +71,8 @@ $(function() {
 
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">Schema cache helpers<div class="ingroups"><a class="el" href="group__meos.html">MEOS library</a> &raquo; <a class="el" href="group__meos__api.html">External API</a> &raquo; <a class="el" href="group__meos__pointcloud.html">Functions for temporal pgpointcloud types</a></div></div></div>
 </div><!--header-->
 <div class="contents">
@@ -102,9 +103,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gaaa8feb189124a1e430b9fef9aadbb83a"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_gaaa8feb189124a1e430b9fef9aadbb83a.html#gaaa8feb189124a1e430b9fef9aadbb83a">meos_pc_schema_get_srid</a> (uint32_t pcid)</td></tr>
 <tr class="memdesc:gaaa8feb189124a1e430b9fef9aadbb83a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the cached SRID for a pcid (SRID_INVALID on miss).  <a href="group__meos__pointcloud__schema__cache_gaaa8feb189124a1e430b9fef9aadbb83a.html#gaaa8feb189124a1e430b9fef9aadbb83a">More...</a><br /></td></tr>
 <tr class="separator:gaaa8feb189124a1e430b9fef9aadbb83a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad639dfc85483a5c503fc6ae535373100"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_gad639dfc85483a5c503fc6ae535373100.html#gad639dfc85483a5c503fc6ae535373100">meos_pc_schema_lookup</a> (uint32_t pcid)</td></tr>
-<tr class="memdesc:gad639dfc85483a5c503fc6ae535373100"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a parsed PCSCHEMA by pcid, with hook fallback, answering <code>NULL</code> where neither the cache nor a hook holds one.  <a href="group__meos__pointcloud__schema__cache_gad639dfc85483a5c503fc6ae535373100.html#gad639dfc85483a5c503fc6ae535373100">More...</a><br /></td></tr>
-<tr class="separator:gad639dfc85483a5c503fc6ae535373100"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4abdb06a1b50391cc7189d1578bfeb60"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_ga4abdb06a1b50391cc7189d1578bfeb60.html#ga4abdb06a1b50391cc7189d1578bfeb60">meos_pc_schema_register</a> (uint32_t pcid, <a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *schema)</td></tr>
 <tr class="memdesc:ga4abdb06a1b50391cc7189d1578bfeb60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a parsed PCSCHEMA in the MEOS-owned cache.  <a href="group__meos__pointcloud__schema__cache_ga4abdb06a1b50391cc7189d1578bfeb60.html#ga4abdb06a1b50391cc7189d1578bfeb60">More...</a><br /></td></tr>
 <tr class="separator:ga4abdb06a1b50391cc7189d1578bfeb60"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -117,6 +115,15 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa65dec42a587dd71844da01153212963"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_gaa65dec42a587dd71844da01153212963.html#gaa65dec42a587dd71844da01153212963">meos_pc_schema_xml</a> (uint32_t pcid)</td></tr>
 <tr class="memdesc:gaa65dec42a587dd71844da01153212963"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the pgPointCloud document of a registered pcid.  <a href="group__meos__pointcloud__schema__cache_gaa65dec42a587dd71844da01153212963.html#gaa65dec42a587dd71844da01153212963">More...</a><br /></td></tr>
 <tr class="separator:gaa65dec42a587dd71844da01153212963"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga02620b806841f77bfbafeb5f92fe4122"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_ga02620b806841f77bfbafeb5f92fe4122.html#ga02620b806841f77bfbafeb5f92fe4122">meos_set_pointcloud_schemas_xml</a> (const char *path)</td></tr>
+<tr class="memdesc:ga02620b806841f77bfbafeb5f92fe4122"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the file the point cloud schemas are read from.  <a href="group__meos__pointcloud__schema__cache_ga02620b806841f77bfbafeb5f92fe4122.html#ga02620b806841f77bfbafeb5f92fe4122">More...</a><br /></td></tr>
+<tr class="separator:ga02620b806841f77bfbafeb5f92fe4122"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ga84f66a00ad9a188104a88bf122afcb11"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pointcloud__schema__cache_ga84f66a00ad9a188104a88bf122afcb11.html#ga84f66a00ad9a188104a88bf122afcb11">POINTCLOUD_SCHEMAS_XML</a> = NULL</td></tr>
+<tr class="memdesc:ga84f66a00ad9a188104a88bf122afcb11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a parsed PCSCHEMA by pcid, with hook fallback, answering <code>NULL</code> where neither the cache nor a hook holds one.  <a href="group__meos__pointcloud__schema__cache_ga84f66a00ad9a188104a88bf122afcb11.html#ga84f66a00ad9a188104a88bf122afcb11">More...</a><br /></td></tr>
+<tr class="separator:ga84f66a00ad9a188104a88bf122afcb11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p >Process-global cache of parsed pgpointcloud PCSCHEMA values. </p>

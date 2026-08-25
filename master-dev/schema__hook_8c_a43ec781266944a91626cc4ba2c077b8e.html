@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: copy_xml_long_lived</title>
+<title>MobilityDB: read_pointcloud_schemas_xml</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,7 +82,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_ad942150eaddbe2485a456eac68aa1a9e.html#ad942150eaddbe2485a456eac68aa1a9e">cache_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a044338039b050601a02352cae7cdc2a5.html#a044338039b050601a02352cae7cdc2a5">cache_cap</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a48eecf707352ceeeabce1ef34b00479c.html#a48eecf707352ceeeabce1ef34b00479c">cache_count</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="schema__hook_8c_adec57a58972a8f2aca37ecd8e83997a8.html#adec57a58972a8f2aca37ecd8e83997a8">copy_xml_long_lived</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_adec57a58972a8f2aca37ecd8e83997a8.html#adec57a58972a8f2aca37ecd8e83997a8">copy_xml_long_lived</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a74f63426f55ee730048ab06548aca809.html#a74f63426f55ee730048ab06548aca809">ensure_cache_capacity</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_gad830b0cfc84d3a74293b26bca97f7083.html#gad830b0cfc84d3a74293b26bca97f7083">meos_initialize_pointcloud</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_afdde9b40b0a41feb707de56790bb1c91.html#afdde9b40b0a41feb707de56790bb1c91">meos_pc_parse_xml_fn</a></td></tr>
@@ -102,15 +102,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_adf32ecc82db689b08a7c8fa6de00e751.html#adf32ecc82db689b08a7c8fa6de00e751">pc_schema_as_xml</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a90a1243bd6b6042746246d29566eadef.html#a90a1243bd6b6042746246d29566eadef">pcschema_string_copy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__schema__cache_ga84f66a00ad9a188104a88bf122afcb11.html#ga84f66a00ad9a188104a88bf122afcb11">POINTCLOUD_SCHEMAS_XML</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a43ec781266944a91626cc4ba2c077b8e.html#a43ec781266944a91626cc4ba2c077b8e">read_pointcloud_schemas_xml</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="schema__hook_8c_a43ec781266944a91626cc4ba2c077b8e.html#a43ec781266944a91626cc4ba2c077b8e">read_pointcloud_schemas_xml</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a22da830b30ce894f875c9c28f452a193.html#a22da830b30ce894f875c9c28f452a193">schema_entry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__hook_8c_a8a57901a51d562ed8870060d967e1c88.html#a8a57901a51d562ed8870060d967e1c88">schemas_xml_read</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="adec57a58972a8f2aca37ecd8e83997a8" name="adec57a58972a8f2aca37ecd8e83997a8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adec57a58972a8f2aca37ecd8e83997a8">&#9670;&#160;</a></span>copy_xml_long_lived()</h2>
+<a id="a43ec781266944a91626cc4ba2c077b8e" name="a43ec781266944a91626cc4ba2c077b8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43ec781266944a91626cc4ba2c077b8e">&#9670;&#160;</a></span>read_pointcloud_schemas_xml()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -119,10 +119,10 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static char * copy_xml_long_lived </td>
+          <td class="memname">static void read_pointcloud_schemas_xml </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>xml</em></td><td>)</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -133,8 +133,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Internal helper — copy <code>xml</code> into long-lived memory. </p>
-<dl class="section return"><dt>Returns</dt><dd>palloc'd cstring (TopMemoryContext on PG, malloc on standalone) or NULL when <code>xml</code> is NULL. </dd></dl>
+<p>Register every schema the document states. </p>
+<p >The enclosing element carries the identifier and the reference system of each schema, which a pgPointCloud document states nowhere: it holds the dimensions of one schema, carries no identifier, and its parser reads only the compression out of the metadata, so a document stating <code>spatialreference</code> still parses to srid 0. Each schema element is handed to the library's own parser verbatim, so the dimensions are read by pgPointCloud and by nothing of ours. </p>
 
 </div>
 </div>
