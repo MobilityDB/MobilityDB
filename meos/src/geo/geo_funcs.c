@@ -7208,4 +7208,235 @@ meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2, const char *pattern,
   *result = de9im_match(matrix, pattern);
   return true;
 }
+
+/*****************************************************************************
+ * Union of the linear and point components of a geometry
+ *****************************************************************************/
+
+/**
+ * @brief Return true if a type is one the linear union answers for
+ * @details A surface is answered by #meos_areal_union() instead, and a type
+ * carrying no linework at all is answered by neither
+ */
+static bool
+linear_union_type(uint8_t type)
+{
+  return type == POINTTYPE || type == MULTIPOINTTYPE || type == LINETYPE ||
+    type == MULTILINETYPE || type == CIRCSTRINGTYPE || type == COMPOUNDTYPE ||
+    type == MULTICURVETYPE;
+}
+
+/**
+ * @brief Collect the components of a geometry that carry no collection of
+ * their own, in the order the geometry gives them
+ * @details A multipoint, a multiline and a multicurve contribute their members;
+ * a compound curve does NOT, its pieces being one curve rather than several
+ * @return False where a component is of a type the linear union does not answer
+ */
+static bool
+linear_union_collect(const LWGEOM *geom, const LWGEOM ***comps, int *ncomp,
+  int *maxcomp)
+{
+  if (! geom || lwgeom_is_empty(geom))
+    return true;
+  uint8_t type = geom->type;
+  if (type == MULTIPOINTTYPE || type == MULTILINETYPE ||
+      type == MULTICURVETYPE || type == COLLECTIONTYPE)
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+      if (! linear_union_collect(coll->geoms[i], comps, ncomp, maxcomp))
+        return false;
+    return true;
+  }
+  if (! linear_union_type(type))
+    return false;
+  if (*ncomp == *maxcomp)
+  {
+    *maxcomp *= 2;
+    *comps = repalloc(*comps, sizeof(LWGEOM *) * (*maxcomp));
+  }
+  (*comps)[(*ncomp)++] = geom;
+  return true;
+}
+
+/**
+ * @brief Return true if a DE-9IM matrix says the first geometry of the ordered
+ * pair it was read from covers the second
+ */
+static bool
+linear_union_covers(const char matrix[10])
+{
+  return de9im_match(matrix, "T*****FF*") ||
+    de9im_match(matrix, "*T****FF*") || de9im_match(matrix, "***T**FF*") ||
+    de9im_match(matrix, "****T*FF*");
+}
+
+/**
+ * @brief Write the DE-9IM matrix of the reversed pair
+ * @details Row @p r column @p c of a DE-9IM matrix holds the dimension of what
+ * the @p r-th part of the first geometry shares with the @p c-th part of the
+ * second, and what the two share does not depend on the order they are named
+ * in.  The matrix of the reversed pair is therefore the TRANSPOSE of this one,
+ * so the reversed question is answered by reading the matrix already computed
+ * rather than by a second walk over the two geometries
+ */
+static void
+linear_union_transpose(const char matrix[10], char result[10])
+{
+  for (int r = 0; r < 3; r++)
+    for (int c = 0; c < 3; c++)
+      result[3 * c + r] = matrix[3 * r + c];
+  result[9] = '\0';
+}
+
+/**
+ * @ingroup meos_internal_geo_base_spatial
+ * @brief Return the union of the linear and point components of a geometry
+ * @details The components are read as the point set they cover: a component
+ * another one covers is left out, and what remains is the union.  The rule is
+ * the one #meos_areal_union() applies to surfaces -- a pair sharing more than a
+ * finite set of points becomes one, a pair meeting at points only stays apart
+ * -- so a circular arc is kept on its own circle where a linearization would
+ * replace it by the chain of segments approximating it
+ * @param[in] geom Geometry
+ * @return The union, or @p NULL where the geometry carries a component that is
+ * not linear or a point, or where a pair coincides over a positive length,
+ * which leaves the caller to answer it another way
+ */
+LWGEOM *
+meos_linear_union(const LWGEOM *geom)
+{
+  assert(geom);
+  if (lwgeom_is_empty(geom))
+    return NULL;
+
+  /* One component is its own union */
+  if (linear_union_type(geom->type))
+    return lwgeom_clone_deep(geom);
+  if (geom->type != MULTIPOINTTYPE && geom->type != MULTILINETYPE &&
+      geom->type != MULTICURVETYPE && geom->type != COLLECTIONTYPE)
+    return NULL;
+
+  int maxcomp = 8, ncomp = 0;
+  const LWGEOM **comps = palloc(sizeof(LWGEOM *) * maxcomp);
+  if (! linear_union_collect(geom, &comps, &ncomp, &maxcomp) || ncomp == 0)
+  {
+    pfree(comps);
+    return NULL;
+  }
+  if (ncomp == 1)
+  {
+    LWGEOM *result = lwgeom_clone_deep(comps[0]);
+    pfree(comps);
+    return result;
+  }
+
+  /* The extent of each component, read once.  Two components whose extents do
+   * not meet share nothing at all, so neither covers the other and the two
+   * cannot coincide over a curve.  The DE-9IM walk is quadratic in the
+   * vertices of the pair while the extent test is a handful of comparisons,
+   * so the pairs the extents separate are never walked */
+  GBOX *boxes = palloc(sizeof(GBOX) * ncomp);
+  bool *hasbox = palloc(sizeof(bool) * ncomp);
+  for (int i = 0; i < ncomp; i++)
+    hasbox[i] = (lwgeom_calculate_gbox(comps[i], &boxes[i]) == LW_SUCCESS);
+
+  /* A pair sharing a curve is merged rather than collected, which the interval
+   * arithmetic this entry does not carry answers.  Reporting it leaves the
+   * caller its own way to the answer */
+  bool *dropped = palloc0(sizeof(bool) * ncomp);
+  for (int i = 0; i < ncomp; i++)
+  {
+    if (dropped[i])
+      continue;
+    for (int j = i + 1; j < ncomp; j++)
+    {
+      if (dropped[j])
+        continue;
+      if (hasbox[i] && hasbox[j] &&
+          gbox_overlaps_2d(&boxes[i], &boxes[j]) == LW_FALSE)
+        continue;
+      /* ONE matrix answers all three questions the pair raises: the ordered
+       * pair, its reverse (the transpose) and what the two interiors share */
+      char matrix[10], reversed[10];
+      if (! meos_relate(comps[i], comps[j], matrix))
+        continue;
+      /* A component another one covers contributes nothing of its own */
+      if (linear_union_covers(matrix))
+      {
+        dropped[j] = true;
+        continue;
+      }
+      linear_union_transpose(matrix, reversed);
+      if (linear_union_covers(reversed))
+      {
+        dropped[i] = true;
+        break;
+      }
+      /* The interior/interior cell is the dimension of what the two share:
+       * @p 1 where they share a curve, @p 0 where they share only points */
+      if (matrix[0] == '1')
+      {
+        pfree(boxes); pfree(hasbox); pfree(dropped); pfree(comps);
+        return NULL;
+      }
+    }
+  }
+  pfree(boxes); pfree(hasbox);
+
+  int nkept = 0;
+  for (int i = 0; i < ncomp; i++)
+    if (! dropped[i])
+      nkept++;
+  if (nkept == 1)
+  {
+    LWGEOM *result = NULL;
+    for (int i = 0; i < ncomp; i++)
+      if (! dropped[i])
+        result = lwgeom_clone_deep(comps[i]);
+    pfree(dropped); pfree(comps);
+    return result;
+  }
+
+  /* The collection carries the type its members do: a set of points is a
+   * multipoint, a set of line strings a multiline, a set carrying a circular
+   * arc a multicurve -- a multiline cannot hold one -- and a mixture the
+   * general collection.  A mixture lists its points before its curves, the
+   * order a collection is read in */
+  bool allpoint = true, allline = true, allcurve = true;
+  for (int i = 0; i < ncomp; i++)
+  {
+    if (dropped[i])
+      continue;
+    uint8_t comp = comps[i]->type;
+    if (comp != POINTTYPE)
+      allpoint = false;
+    if (comp != LINETYPE)
+      allline = false;
+    if (comp == POINTTYPE)
+      allcurve = false;
+  }
+  LWGEOM **kept = palloc(sizeof(LWGEOM *) * nkept);
+  int k = 0;
+  for (int pass = 0; pass < 2; pass++)
+    for (int i = 0; i < ncomp; i++)
+    {
+      if (dropped[i])
+        continue;
+      bool ispoint = comps[i]->type == POINTTYPE;
+      if ((pass == 0) != ispoint)
+        continue;
+      kept[k++] = lwgeom_clone_deep(comps[i]);
+    }
+  pfree(dropped); pfree(comps);
+  uint8_t colltype = allpoint ? MULTIPOINTTYPE :
+    (allline ? MULTILINETYPE :
+      (allcurve ? MULTICURVETYPE : COLLECTIONTYPE));
+  /* #lwcollection_construct() takes ownership of the array it is given */
+  LWCOLLECTION *result = lwcollection_construct(colltype,
+    lwgeom_get_srid(geom), NULL, (uint32_t) nkept, kept);
+  return lwcollection_as_lwgeom(result);
+}
+
 /*****************************************************************************/
