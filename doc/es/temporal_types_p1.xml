@@ -750,9 +750,9 @@ SELECT tgeographySeq(ARRAY[tgeography 'Point(1 1)@2001-01-01 08:00:00',
 			</listitem>
 
 			<listitem xml:id="ttypeSeqSet">
-				<para>Constructores para tipos temporales de subtipo conjunto de secuencias</para>
 				<indexterm significance="normal"><primary><varname>ttypeSeqSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>ttypeSeqSetGaps</varname></primary></indexterm>
+				<para>Constructores para tipos temporales de subtipo conjunto de secuencias</para>
 				<para><varname>ttypeSeqSet(ttypeContSeq[]) → ttypeSeqSet</varname></para>
 				<para><varname>ttypeSeqSetGaps(ttypeInst[],maxt=NULL,maxdist=NULL,interp='linear') → ttypeSeqSet</varname></para>
 				<para>Un primer conjunto de constructores tiene un solo argumento, que es una matriz de valores de los valores de <emphasis>secuencia</emphasis> correspondientes. La interpolación del valor temporal resultante depende de la interpolación de las secuencias que lo componen. Se genera un error si las secuencias que componen la matriz tienen una interpolación diferente.</para>
@@ -1230,6 +1230,7 @@ SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01,
     POINT(1 1)@2001-01-02 12:00:00], [POINT(2 2)@2001-01-02 18:00:00, 
     POLYGON((1 1,2 2,3 1,1 1))@2001-01-03 00:00:00]} */
 </programlisting>
+			</listitem>
 
 			<listitem xml:id="ttype_segmentMinDuration">
 				<indexterm significance="normal"><primary><varname>segmentMinDuration</varname></primary></indexterm>
@@ -1252,9 +1253,6 @@ SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day', false);
 -- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
 </programlisting>
-			</listitem>
-
-
 			</listitem>
 
 			<listitem xml:id="ttype_unnest">

@@ -617,7 +617,7 @@
 					<para><link linkend="ttypeSeq"><varname>ttypeSeq</varname></link>: Constructores para tipos temporales de subtipo secuencia</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttypeSeqSet"><varname>ttypeSeqSet</varname>, <varname>ttypeSeqSetGaps</varname></link>: <varname>ttypeSeqSet(ttypeContSeq[]) → ttypeSeqSet</varname></para>
+					<para><link linkend="ttypeSeqSet"><varname>ttypeSeqSet</varname>, <varname>ttypeSeqSetGaps</varname></link>: Constructores para tipos temporales de subtipo conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -698,7 +698,7 @@
 					<para><link linkend="ttype_setInterp"><varname>setInterp</varname></link>: Transformar un valor temporal a otra interpolación</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>segmentMinDuration</varname>, <varname>segmentMaxDuration</varname></link>: Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada.</para>
+					<para><link linkend="ttype_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Desplazar y/o escalear el intervalo de tiempo de un valor temporal a uno o dos intervalos</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_segmentMinDuration"><varname>segmentMinDuration</varname>, <varname>segmentMaxDuration</varname></link>: Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada.</para>

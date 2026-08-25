@@ -697,9 +697,9 @@ SELECT ttextFromHexWKB('01290001040000000000000041414100009C57D3C11C0000');
 
 		<itemizedlist>
 			<listitem xml:id="ttype_const">
+				<indexterm significance="normal"><primary><varname>ttype</varname></primary></indexterm>
 				<para>Constructors for temporal types having a constant value</para>
 				<para>These contructors have two arguments, a base type and a time value, where the latter is a <varname>timestamptz</varname>, a <varname>tstzset</varname>, a <varname>tstzspan</varname>, or a <varname>tstzspanset</varname> value for constructing, respectively, an instant, a sequence with discrete interpolation, a sequence with linear or step interpolation, or a sequence set value. The functions for sequence or sequence set values with continuous base type have an optional third argument stating whether the resulting temporal value has linear or step interpolation. Linear interpolation is assumed by default if the argument is not specified.</para>
-				<indexterm significance="normal"><primary><varname>ttype</varname></primary></indexterm>
 				<para><varname>ttype(base,timestamptz) → ttypeInst</varname></para>
 				<para><varname>ttype(base,tstzset) → ttypeDiscSeq</varname></para>
 				<para><varname>ttype(base,tstzspan,interp='linear') → ttypeContSeq</varname></para>
@@ -740,9 +740,9 @@ SELECT tgeographySeq(ARRAY[tgeography 'Point(1 1)@2001-01-01 08:00:00',
 			</listitem>
 
 			<listitem xml:id="ttypeSeqSet">
-				<para>Constructors for temporal types of sequence set subtype</para>
 				<indexterm significance="normal"><primary><varname>ttypeSeqSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>ttypeSeqSetGaps</varname></primary></indexterm>
+				<para>Constructors for temporal types of sequence set subtype</para>
 				<para><varname>ttypeSeqSet(ttypeContSeq[]) → ttypeSeqSet</varname></para>
 				<para><varname>ttypeSeqSetGaps(ttypeInst[],maxt=NULL,maxdist=NULL,interp='linear') → ttypeSeqSet</varname></para>
 				<para>A first set of contructors have a single argument, which is an array of values of the corresponding <emphasis>sequence</emphasis> values. The interpolation of the resulting temporal value depends on the interpolation of the composing sequences. An error is raised if the sequences composing the array have different interpolation.</para>

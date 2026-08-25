@@ -611,13 +611,13 @@
 			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_const"><varname>ttype</varname></link>: <varname>ttype(base,timestamptz) → ttypeInst</varname></para>
+					<para><link linkend="ttype_const"><varname>ttype</varname></link>: Constructors for temporal types having a constant value</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttypeSeq"><varname>ttypeSeq</varname></link>: Constructors for temporal types of sequence subtype</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttypeSeqSet"><varname>ttypeSeqSet</varname>, <varname>ttypeSeqSetGaps</varname></link>: <varname>ttypeSeqSet(ttypeContSeq[]) → ttypeSeqSet</varname></para>
+					<para><link linkend="ttypeSeqSet"><varname>ttypeSeqSet</varname>, <varname>ttypeSeqSetGaps</varname></link>: Constructors for temporal types of sequence set subtype</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
