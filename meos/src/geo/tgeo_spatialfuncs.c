@@ -431,7 +431,7 @@ pcpoint_flags(const Pcpoint *pt)
 static int16
 pcpatch_flags(const Pcpatch *pa)
 {
-  int32_t srid = meos_pc_schema_get_srid(pcpatch_get_pcid(pa));
+  int32_t srid = meos_pc_schema_srid(pcpatch_get_pcid(pa));
   TPCBox *box = pcpatch_to_tpcbox(pa, srid);
   if (! box)
   {

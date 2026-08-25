@@ -181,18 +181,16 @@ main(void)
    * active, and the accessor answers the ACTIVE count, which is what the SQL
    * function pointCloudSchemaNDims answers for the same schema */
   check(inactive && inactive->ndims == 3, "the layout of the schema is 3 wide");
-  check(meos_pc_schema_get_ndims(90) == 2,
-    "2 dimensions of the schema are active");
-  const char *compression = meos_pc_schema_get_compression(90);
+  check(meos_pc_schema_ndims(90) == 2, "2 dimensions of the schema are active");
+  const char *compression = meos_pc_schema_compression(90);
   check(compression && strcmp(compression, "dimensional") == 0,
     "the compression of the schema is named");
-  check(meos_pc_schema_get_srid(90) == 4326,
-    "the reference system of the schema");
+  check(meos_pc_schema_srid(90) == 4326, "the reference system of the schema");
   /* A pcid no schema is registered for */
   printf("The reference system naming no schema: %d\n",
-    meos_pc_schema_get_srid(999));
-  check(meos_pc_schema_get_ndims(999) == -1, "no schema states no dimensions");
-  check(meos_pc_schema_get_compression(999) == NULL,
+    meos_pc_schema_srid(999));
+  check(meos_pc_schema_ndims(999) == -1, "no schema states no dimensions");
+  check(meos_pc_schema_compression(999) == NULL,
     "no schema states no compression");
 
   /* The cache holds only what the point cloud library accepts, so a schema
@@ -206,8 +204,7 @@ main(void)
     meos_errno_reset();
     meos_pc_schema_register(93, empty);
     check(meos_errno() != 0, "a schema of no dimensions is refused");
-    check(meos_pc_schema_get_ndims(93) == -1,
-      "and no schema answers for its pcid");
+    check(meos_pc_schema_ndims(93) == -1, "and no schema answers for its pcid");
     /* Refused at registration, the schema never reaches the constructor, which
      * keeps its own guard as the last of the two rather than the only one */
     double one = 1.0;
@@ -228,8 +225,7 @@ main(void)
   meos_errno_reset();
   check(! meos_pc_schema_register_dims(94, 4326, "none", noxy, 2),
     "dimensions the library refuses register as false");
-  check(meos_pc_schema_get_ndims(94) == -1,
-    "and no schema answers for that pcid");
+  check(meos_pc_schema_ndims(94) == -1, "and no schema answers for that pcid");
   meos_errno_reset();
 
   printf("%s: %d field(s) disagree\n", failures ? "FAILED" : "PASSED",
