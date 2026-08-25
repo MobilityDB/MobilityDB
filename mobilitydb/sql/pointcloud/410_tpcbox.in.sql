@@ -113,24 +113,23 @@ CREATE FUNCTION tpcbox_zt(xmin float8, ymin float8, zmin float8,
  ******************************************************************************/
 
 -- SRID auto-filled from the pgpointcloud schema via the schema cache.
--- STABLE, not IMMUTABLE, because the schema lives in a PG catalog table.
 CREATE FUNCTION tpcbox(pcpatch)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Pcpatch_to_tpcbox'
-  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Explicit SRID override — IMMUTABLE, takes no catalog detour.
+-- Explicit SRID override — takes no catalog detour.
 CREATE FUNCTION tpcbox(pcpatch, srid integer)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Pcpatch_to_tpcbox_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- pcpoint → TPCBox: degenerate single-point bbox with spatial bounds =
--- the point's X/Y/[Z]. STABLE; needs the schema cache.
+-- the point's X/Y/[Z]; needs the schema cache.
 CREATE FUNCTION tpcbox(pcpoint)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Pcpoint_to_tpcbox'
-  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (pcpatch AS tpcbox) WITH FUNCTION tpcbox(pcpatch);
 CREATE CAST (pcpoint AS tpcbox) WITH FUNCTION tpcbox(pcpoint);
