@@ -467,7 +467,7 @@ meos_pc_schema_clear(void)
  * PCSCHEMA struct definition.
  */
 int32_t
-meos_pc_schema_get_srid(uint32_t pcid)
+meos_pc_schema_srid(uint32_t pcid)
 {
   /* Cache hit */
   for (int i = 0; i < cache_count; i++)
@@ -504,7 +504,7 @@ meos_pc_schema_get_srid(uint32_t pcid)
  *   reads it and never frees it
  */
 const char *
-meos_pc_schema_get_compression(uint32_t pcid)
+meos_pc_schema_compression(uint32_t pcid)
 {
   const PCSCHEMA *s = meos_pc_schema_lookup(pcid);
   return s ? pc_compression_name((int) s->compression) : NULL;
@@ -522,7 +522,7 @@ meos_pc_schema_get_compression(uint32_t pcid)
  *   it and it is a different quantity, not this one under another name
  */
 int32_t
-meos_pc_schema_get_ndims(uint32_t pcid)
+meos_pc_schema_ndims(uint32_t pcid)
 {
   const PCSCHEMA *s = meos_pc_schema_lookup(pcid);
   if (! s)

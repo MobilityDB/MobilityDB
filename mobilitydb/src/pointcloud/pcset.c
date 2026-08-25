@@ -311,7 +311,7 @@ Datum
 Pcpoint_srid(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
-  int32_t srid = meos_pc_schema_get_srid(pcpoint_get_pcid(pt));
+  int32_t srid = meos_pc_schema_srid(pcpoint_get_pcid(pt));
   PG_FREE_IF_COPY(pt, 0);
   PG_RETURN_INT32(srid);
 }
@@ -327,7 +327,7 @@ Datum
 Pcpatch_srid(PG_FUNCTION_ARGS)
 {
   Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
-  int32_t srid = meos_pc_schema_get_srid(pcpatch_get_pcid(pa));
+  int32_t srid = meos_pc_schema_srid(pcpatch_get_pcid(pa));
   PG_FREE_IF_COPY(pa, 0);
   PG_RETURN_INT32(srid);
 }

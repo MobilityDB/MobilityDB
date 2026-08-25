@@ -1103,7 +1103,7 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
     {
       const Pcpatch *pa = DatumGetPcpatchP(d);
       TPCBox *box = pcpatch_to_tpcbox(pa,
-        meos_pc_schema_get_srid(pcpatch_get_pcid(pa)));
+        meos_pc_schema_srid(pcpatch_get_pcid(pa)));
       if (! box)
         return false;
       tpcbox_set_stbox(box, result);

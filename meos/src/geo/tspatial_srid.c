@@ -142,11 +142,11 @@ spatial_srid(Datum d, MeosType basetype)
 #if POINTCLOUD
     case T_PCPOINT: {
       const Pcpoint *pt = DatumGetPcpointP(d);
-      return meos_pc_schema_get_srid(pcpoint_get_pcid(pt));
+      return meos_pc_schema_srid(pcpoint_get_pcid(pt));
     }
     case T_PCPATCH: {
       const Pcpatch *pa = DatumGetPcpatchP(d);
-      return meos_pc_schema_get_srid(pcpatch_get_pcid(pa));
+      return meos_pc_schema_srid(pcpatch_get_pcid(pa));
     }
 #endif
 #if QUADBIN
