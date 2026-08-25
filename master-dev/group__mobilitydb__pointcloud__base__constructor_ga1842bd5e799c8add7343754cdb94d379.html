@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pcpoint_make</title>
+<title>MobilityDB: Pcpatch_make_coords</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__pointcloud__base__constructor.html">Constructor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__mobilitydb__pointcloud__base__constructor.html">Constructor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,58 +79,31 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__constructor_ga56e99ae387361716aacee68d58e78669.html#ga56e99ae387361716aacee68d58e78669">pcpatch_copy</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__constructor_gab6e3403f3fd1ac2bd51f67fab614bc61.html#gab6e3403f3fd1ac2bd51f67fab614bc61">pcpatch_make</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__constructor_gaba33b9098c79dbb4000b2ec05b96ebea.html#gaba33b9098c79dbb4000b2ec05b96ebea">pcpatch_make_coords</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__constructor_gaf91ee581da6603bc2b7e6c21232f2275.html#gaf91ee581da6603bc2b7e6c21232f2275">pcpoint_copy</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__base__constructor_ga8daa93987047d04540e8697ae02dfcd0.html#ga8daa93987047d04540e8697ae02dfcd0">pcpoint_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__constructor_gac4168e0929d8d82fbddc7f9537ee2ba9.html#gac4168e0929d8d82fbddc7f9537ee2ba9">Pcpatch_make</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pointcloud__base__constructor_ga1842bd5e799c8add7343754cdb94d379.html#ga1842bd5e799c8add7343754cdb94d379">Pcpatch_make_coords</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__constructor_ga52382d24fd10f1b08b584f2eaec2250e.html#ga52382d24fd10f1b08b584f2eaec2250e">Pcpoint_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__constructor_ga2cddffb1a2f47d6051c0c8d970b3840d.html#ga2cddffb1a2f47d6051c0c8d970b3840d">Pcpoint_make_coords</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga8daa93987047d04540e8697ae02dfcd0" name="ga8daa93987047d04540e8697ae02dfcd0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8daa93987047d04540e8697ae02dfcd0">&#9670;&#160;</a></span>pcpoint_make()</h2>
+<a id="ga1842bd5e799c8add7343754cdb94d379" name="ga1842bd5e799c8add7343754cdb94d379"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1842bd5e799c8add7343754cdb94d379">&#9670;&#160;</a></span>Pcpatch_make_coords()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structPcpoint.html">Pcpoint</a> * pcpoint_make </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Pcpatch_make_coords </td>
           <td>(</td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>pcid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
-          <td class="paramtype">const double *&#160;</td>
-          <td class="paramname"><em>values</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a pcpoint from the coordinates of the dimensions of the schema a point cloud identifier names. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pcid</td><td>Point cloud identifier naming the schema </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">values</td><td>Coordinate of each dimension, in the order the schema states the dimensions </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of coordinates </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The schema is resolved through the MEOS cache, so a schema stated in SQL and one parsed from an XML document build a value alike. @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__constructor_ga52382d24fd10f1b08b584f2eaec2250e.html#ga52382d24fd10f1b08b584f2eaec2250e" title="Return a pcpoint from a point cloud identifier and the coordinates of the dimensions of the schema it...">Pcpoint_make()</a> </dd></dl>
+<p>Return a pcpatch from a point cloud identifier and the coordinates of the points of the schema it names @sqlfn pcpatch() </p>
 
 </div>
 </div>

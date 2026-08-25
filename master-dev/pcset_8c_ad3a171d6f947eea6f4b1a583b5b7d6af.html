@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: PCPOINT_MAX_COORDS</title>
+<title>MobilityDB: float8arr_extract</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="pcset_8c_ad3a171d6f947eea6f4b1a583b5b7d6af.html#ad3a171d6f947eea6f4b1a583b5b7d6af">float8arr_extract</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pcset_8c_ad3a171d6f947eea6f4b1a583b5b7d6af.html#ad3a171d6f947eea6f4b1a583b5b7d6af">float8arr_extract</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__comp_gaee081ef16d50480cdd7e4b4d4df5e0b1.html#gaee081ef16d50480cdd7e4b4d4df5e0b1">Pcpatch_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__comp_ga175ec2a25429e0e1178003fad3fd5d82.html#ga175ec2a25429e0e1178003fad3fd5d82">Pcpatch_eq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__comp_ga03cf6b8528131d73513678c4514b0325.html#ga03cf6b8528131d73513678c4514b0325">Pcpatch_ge</a></td></tr>
@@ -108,7 +108,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__comp_ga868ecd38369704015b0183d46bf307a8.html#ga868ecd38369704015b0183d46bf307a8">Pcpoint_lt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__constructor_ga52382d24fd10f1b08b584f2eaec2250e.html#ga52382d24fd10f1b08b584f2eaec2250e">Pcpoint_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__constructor_ga2cddffb1a2f47d6051c0c8d970b3840d.html#ga2cddffb1a2f47d6051c0c8d970b3840d">Pcpoint_make_coords</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pcset_8c_a3c40ed8ff8d3b3a3874794eca6acae4a.html#a3c40ed8ff8d3b3a3874794eca6acae4a">PCPOINT_MAX_COORDS</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pcset_8c_a3c40ed8ff8d3b3a3874794eca6acae4a.html#a3c40ed8ff8d3b3a3874794eca6acae4a">PCPOINT_MAX_COORDS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__comp_ga1b6c809bcb99b59c533d50568421f1da.html#ga1b6c809bcb99b59c533d50568421f1da">Pcpoint_ne</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__accessor_gafc449c11f34374e496f1fcf1c2fc0623.html#gafc449c11f34374e496f1fcf1c2fc0623">Pcpoint_pcid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__base__srid_ga9442cc711a4b4088d793d7494c4b89b4.html#ga9442cc711a4b4088d793d7494c4b89b4">Pcpoint_srid</a></td></tr>
@@ -116,19 +116,41 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a3c40ed8ff8d3b3a3874794eca6acae4a" name="a3c40ed8ff8d3b3a3874794eca6acae4a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3c40ed8ff8d3b3a3874794eca6acae4a">&#9670;&#160;</a></span>PCPOINT_MAX_COORDS</h2>
+<a id="ad3a171d6f947eea6f4b1a583b5b7d6af" name="ad3a171d6f947eea6f4b1a583b5b7d6af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3a171d6f947eea6f4b1a583b5b7d6af">&#9670;&#160;</a></span>float8arr_extract()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">#define PCPOINT_MAX_COORDS&#160;&#160;&#160;3</td>
+          <td class="memname">static const double * float8arr_extract </td>
+          <td>(</td>
+          <td class="paramtype">ArrayType *&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Maximum number of coordinates a pcpoint constructor call carries, which is the number of arguments of its widest SQL signature. </p>
+<p>Return the coordinates a float8 array holds. </p>
 
 </div>
 </div>
