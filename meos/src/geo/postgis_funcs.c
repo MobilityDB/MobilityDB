@@ -2160,6 +2160,28 @@ geom_array_areal_union(GSERIALIZED **gsarr, int count)
 }
 
 /**
+ * @brief Return true if every member of an array is a point
+ * @details Which points of a set are equal is read from their coordinates
+ * alone, so the union of an array of points -- the set with its duplicates
+ * removed -- is the same answer whether the coordinates are measured on the
+ * plane or on the sphere. That is what lets a GEODETIC array of points be
+ * answered by a planar engine, where an array carrying a curve or a surface
+ * cannot be
+ */
+static bool
+geom_array_point_only(GSERIALIZED **gsarr, int count)
+{
+  assert(gsarr);
+  for (int i = 0; i < count; i++)
+  {
+    uint32_t gtype = gserialized_get_type(gsarr[i]);
+    if (gtype != POINTTYPE && gtype != MULTIPOINTTYPE)
+      return false;
+  }
+  return true;
+}
+
+/**
  * @brief Return the union of an array of geometries whose members carry
  * linework and points
  * @details The array is presented to #meos_linear_union() as the collection it
@@ -2168,11 +2190,14 @@ geom_array_areal_union(GSERIALIZED **gsarr, int count)
  * collected.  An empty member carries nothing and is left out
  * @param[in] gsarr Array of geometries
  * @param[in] count Number of elements in the array
+ * @param[in] geodetic True when the array is measured on the sphere, which
+ * the answer carries: a collection built here does not inherit the flag its
+ * members hold
  * @return The union, or @p NULL where a member is not linear or a point, or
  * where a pair shares a curve, which leaves the caller to answer it another way
  */
 static GSERIALIZED *
-geom_array_linear_union(GSERIALIZED **gsarr, int count)
+geom_array_linear_union(GSERIALIZED **gsarr, int count, bool geodetic)
 {
   assert(gsarr); assert(count > 1);
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
@@ -2190,9 +2215,17 @@ geom_array_linear_union(GSERIALIZED **gsarr, int count)
   LWCOLLECTION *coll = lwcollection_construct(COLLECTIONTYPE,
     gserialized_get_srid(gsarr[0]), NULL, (uint32_t) ngeoms, geoms);
   LWGEOM *lwresult = meos_linear_union(lwcollection_as_lwgeom(coll));
-  GSERIALIZED *result = lwresult ? geo_serialize(lwresult) : NULL;
+  GSERIALIZED *result = NULL;
   if (lwresult)
+  {
+    /* The members carry the flag already; a collection built here does not,
+     * and a geography whose collection reads as a geometry is a different
+     * value. Only the flag is set: #lwgeom_set_geodetic() walks the tree and
+     * refuses a type this answer may legitimately be */
+    FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
+    result = geo_serialize(lwresult);
     lwgeom_free(lwresult);
+  }
   lwcollection_free(coll);
   return result;
 }
@@ -2255,15 +2288,22 @@ geom_array_union(GSERIALIZED **gsarr, int count)
    * boundaries, which keeps a circular arc on its own circle where a
    * linearization would put the chain of segments approximating it in its
    * place. A member that is not a surface is not what it answers, and neither
-   * is a geodetic value, whose union is measured on the sphere */
-  if (! FLAGS_GET_GEODETIC(gsarr[0]->gflags))
+   * is a geodetic value, whose surfaces are bounded by geodesics rather than
+   * by the segments a planar overlay reads */
+  bool geodetic = FLAGS_GET_GEODETIC(gsarr[0]->gflags);
+  if (! geodetic)
   {
     GSERIALIZED *native = geom_array_areal_union(gsarr, count);
     if (native)
       return native;
-    /* An array whose members carry linework and points is read the same way,
-     * by #meos_linear_union(), which keeps a circular arc on its own circle */
-    native = geom_array_linear_union(gsarr, count);
+  }
+  /* An array whose members carry linework and points is read the same way, by
+   * #meos_linear_union(), which keeps a circular arc on its own circle. A
+   * geodetic array reaches it only when every member is a point, the one case
+   * whose answer does not depend on the metric */
+  if (! geodetic || geom_array_point_only(gsarr, count))
+  {
+    GSERIALIZED *native = geom_array_linear_union(gsarr, count, geodetic);
     if (native)
       return native;
   }
