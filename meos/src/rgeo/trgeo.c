@@ -1089,7 +1089,7 @@ trgeometry_set_interp(const Temporal *temp, interpType interp)
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
- * @csqlfn #Temporal_restrict_value()
+ * @csqlfn #Temporal_at_value(), #Temporal_minus_value()
  */
 Temporal *
 trgeometry_restrict_value(const Temporal *temp, Datum value, bool atfunc)
@@ -1148,7 +1148,7 @@ trgeometry_minus_value(const Temporal *temp, const Pose *pose)
  * @note The base values of a temporal rigid geometry are poses. As the other
  * restrictions do, the function strips the value to its temporal pose,
  * restricts that, and puts the reference geometry back on the result
- * @csqlfn #Temporal_restrict_values()
+ * @csqlfn #Temporal_at_values(), #Temporal_minus_values()
  */
 Temporal *
 trgeometry_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
@@ -1201,7 +1201,7 @@ trgeometry_minus_values(const Temporal *temp, const Set *s)
  * @param[in] temp Temporal rigid geometry
  * @param[in] t Timestamptz
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Temporal_restrict_timestamptz()
+ * @csqlfn #Temporal_at_timestamptz(), #Temporal_minus_timestamptz()
  */
 Temporal *
 trgeometry_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
@@ -1255,7 +1255,7 @@ trgeometry_minus_timestamptz(const Temporal *temp, TimestampTz t)
  * @param[in] temp Temporal rigid geometry
  * @param[in] s Timestamp set
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Temporal_restrict_tstzset()
+ * @csqlfn #Temporal_at_tstzset(), #Temporal_minus_tstzset()
  */
 Temporal *
 trgeometry_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
@@ -1308,7 +1308,7 @@ trgeometry_minus_tstzset(const Temporal *temp, const Set *s)
  * @param[in] temp Temporal rigid geometry
  * @param[in] s Span
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Temporal_restrict_tstzspan()
+ * @csqlfn #Temporal_at_tstzspan(), #Temporal_minus_tstzspan()
  */
 Temporal *
 trgeometry_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
@@ -1361,7 +1361,7 @@ trgeometry_minus_tstzspan(const Temporal *temp, const Span *s)
  * @param[in] temp Temporal rigid geometry
  * @param[in] ss Span set
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Temporal_restrict_tstzspanset()
+ * @csqlfn #Temporal_at_tstzspanset(), #Temporal_minus_tstzspanset()
  */
 Temporal *
 trgeometry_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,

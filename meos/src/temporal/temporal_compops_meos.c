@@ -1685,7 +1685,7 @@ always_ge_ttext_text(const Temporal *temp, const text *txt)
  * @brief Return the temporal equality of a big integer and a temporal big integer
  * @param[in] i Value
  * @param[in] temp Temporal value
- * @csqlfn #TEq_base_temporal()
+ * @csqlfn #Teq_base_temporal()
  */
 Temporal *
 teq_bigint_tbigint(int64 i, const Temporal *temp)
@@ -1762,7 +1762,7 @@ teq_text_ttext(const text *txt, const Temporal *temp)
  * @brief Return the temporal equality of a temporal big integer and a big integer
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @csqlfn #TEq_temporal_base()
+ * @csqlfn #Teq_temporal_base()
  */
 Temporal *
 teq_tbigint_bigint(const Temporal *temp, int64 i)
@@ -1841,7 +1841,7 @@ teq_ttext_text(const Temporal *temp, const text *txt)
  * @brief Return the temporal difference of a big integer and a temporal big integer
  * @param[in] i Value
  * @param[in] temp Temporal value
- * @csqlfn #TNe_base_temporal()
+ * @csqlfn #Tne_base_temporal()
  */
 Temporal *
 tne_bigint_tbigint(int64 i, const Temporal *temp)
@@ -1918,7 +1918,7 @@ tne_text_ttext(const text *txt, const Temporal *temp)
  * @brief Return the temporal difference of a temporal big integer and a big integer
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @csqlfn #TNe_temporal_base()
+ * @csqlfn #Tne_temporal_base()
  */
 Temporal *
 tne_tbigint_bigint(const Temporal *temp, int64 i)
@@ -2012,7 +2012,7 @@ tlt_int_tint(int i, const Temporal *temp)
  * @brief Return the temporal less than of a big integer and a temporal big integer
  * @param[in] i Value
  * @param[in] temp Temporal value
- * @csqlfn #TLt_base_temporal()
+ * @csqlfn #Tlt_base_temporal()
  */
 Temporal *
 tlt_bigint_tbigint(int64 i, const Temporal *temp)
@@ -2059,7 +2059,7 @@ tlt_text_ttext(const text *txt, const Temporal *temp)
  * @brief Return the temporal less than of a temporal big integer and a big integer
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @csqlfn #TLt_temporal_base()
+ * @csqlfn #Tlt_temporal_base()
  */
 Temporal *
 tlt_tbigint_bigint(const Temporal *temp, int64 i)
@@ -2141,7 +2141,7 @@ tle_int_tint(int i, const Temporal *temp)
  * @brief Return the temporal less than or equal to of a big integer and a temporal big integer
  * @param[in] i Value
  * @param[in] temp Temporal value
- * @csqlfn #TLe_base_temporal()
+ * @csqlfn #Tle_base_temporal()
  */
 Temporal *
 tle_bigint_tbigint(int64 i, const Temporal *temp)
@@ -2190,7 +2190,7 @@ tle_text_ttext(const text *txt, const Temporal *temp)
  * @brief Return the temporal less than or equal to of a temporal big integer and a big integer
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @csqlfn #TLe_temporal_base()
+ * @csqlfn #Tle_temporal_base()
  */
 Temporal *
 tle_tbigint_bigint(const Temporal *temp, int64 i)
@@ -2274,7 +2274,7 @@ tgt_int_tint(int i, const Temporal *temp)
  * @brief Return the temporal greater than of a big integer and a temporal big integer
  * @param[in] i Value
  * @param[in] temp Temporal value
- * @csqlfn #TGt_base_temporal()
+ * @csqlfn #Tgt_base_temporal()
  */
 Temporal *
 tgt_bigint_tbigint(int64 i, const Temporal *temp)
@@ -2321,7 +2321,7 @@ tgt_text_ttext(const text *txt, const Temporal *temp)
  * @brief Return the temporal greater than of a temporal big integer and a big integer
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @csqlfn #TGt_temporal_base()
+ * @csqlfn #Tgt_temporal_base()
  */
 Temporal *
 tgt_tbigint_bigint(const Temporal *temp, int64 i)
@@ -2403,7 +2403,7 @@ tge_int_tint(int i, const Temporal *temp)
  * @brief Return the temporal greater than or equal to of a big integer and a temporal big integer
  * @param[in] i Value
  * @param[in] temp Temporal value
- * @csqlfn #TGe_base_temporal()
+ * @csqlfn #Tge_base_temporal()
  */
 Temporal *
 tge_bigint_tbigint(int64 i, const Temporal *temp)
@@ -2452,7 +2452,7 @@ tge_text_ttext(const text *txt, const Temporal *temp)
  * @brief Return the temporal greater than or equal to of a temporal big integer and a big integer
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @csqlfn #TGe_temporal_base()
+ * @csqlfn #Tge_temporal_base()
  */
 Temporal *
 tge_tbigint_bigint(const Temporal *temp, int64 i)
