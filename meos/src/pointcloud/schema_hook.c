@@ -271,7 +271,7 @@ meos_pc_schema_from_dims(uint32_t pcid, int32_t srid,
  * @param[in] dims Dimensions the schema states, in any order
  * @param[in] ndims Number of dimensions
  * @return True on success, false on error
- * @csqlfn #Pointcloud_schema_register_dims()
+ * @sqlfn pointCloudSchemaRegister()
  */
 bool
 meos_pc_schema_register_dims(uint32_t pcid, int32_t srid,
