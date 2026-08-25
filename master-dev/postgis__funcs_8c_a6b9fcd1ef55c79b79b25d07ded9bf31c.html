@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: mec_circle3</title>
+<title>MobilityDB: geom_array_point_only</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -141,7 +141,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ab6476731f7d2ca148769eeec3bc843c3.html#ab6476731f7d2ca148769eeec3bc843c3">geography_valid_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a4066a46461cc6ea897b30f6877399a16.html#a4066a46461cc6ea897b30f6877399a16">geom_array_areal_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ade691ddd1920609e08cbcd1657a2fa75.html#ade691ddd1920609e08cbcd1657a2fa75">geom_array_linear_union</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a6b9fcd1ef55c79b79b25d07ded9bf31c.html#a6b9fcd1ef55c79b79b25d07ded9bf31c">geom_array_point_only</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a6b9fcd1ef55c79b79b25d07ded9bf31c.html#a6b9fcd1ef55c79b79b25d07ded9bf31c">geom_array_point_only</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga5c6b62f78eb896585e14a37b0a67c062.html#ga5c6b62f78eb896585e14a37b0a67c062">geom_array_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga28dca3f4d5f757de8c4d247ce8f25b82.html#ga28dca3f4d5f757de8c4d247ce8f25b82">geom_azimuth</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gae1a691de029d9e78f2efdde304b40751.html#gae1a691de029d9e78f2efdde304b40751">geom_boundary</a></td></tr>
@@ -199,7 +199,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3547f02bc4ce55e1e6d8d43626036369.html#a3547f02bc4ce55e1e6d8d43626036369">MAX_LEN_BOX3D</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3444e9732902eede17476a05b72d2fd5.html#a3444e9732902eede17476a05b72d2fd5">MAX_LEN_GBOX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0dfb1180be7c1bff9c1a434ee68fd678.html#a0dfb1180be7c1bff9c1a434ee68fd678">mec_circle2</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a8d855051480d93060c58489b11dc022d.html#a8d855051480d93060c58489b11dc022d">mec_circle3</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a8d855051480d93060c58489b11dc022d.html#a8d855051480d93060c58489b11dc022d">mec_circle3</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a63f091e415e0f43ba51c2ce7cd180d09.html#a63f091e415e0f43ba51c2ce7cd180d09">mec_circle3_safe</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a290af8198c1b3a6179cce6c8a77d8694.html#a290af8198c1b3a6179cce6c8a77d8694">mec_inside</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_aeece618bd6f2d9400823cb5fd79fb817.html#aeece618bd6f2d9400823cb5fd79fb817">mec_welzl</a></td></tr>
@@ -211,8 +211,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8d855051480d93060c58489b11dc022d" name="a8d855051480d93060c58489b11dc022d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8d855051480d93060c58489b11dc022d">&#9670;&#160;</a></span>mec_circle3()</h2>
+<a id="a6b9fcd1ef55c79b79b25d07ded9bf31c" name="a6b9fcd1ef55c79b79b25d07ded9bf31c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b9fcd1ef55c79b79b25d07ded9bf31c">&#9670;&#160;</a></span>geom_array_point_only()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -221,22 +221,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structCircle.html">Circle</a> mec_circle3 </td>
+          <td class="memname">static bool geom_array_point_only </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structPOINT2D.html">POINT2D</a>&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
+          <td class="paramtype"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
+          <td class="paramname"><em>gsarr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structPOINT2D.html">POINT2D</a>&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structPOINT2D.html">POINT2D</a>&#160;</td>
-          <td class="paramname"><em>c</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -251,7 +245,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="structCircle.html" title="Definition of the 2D circle structure.">Circle</a> constructor for 3 points. </p>
+<p>Return true if every member of an array is a point. </p>
+<p >Which points of a set are equal is read from their coordinates alone, so the union of an array of points &ndash; the set with its duplicates removed &ndash; is the same answer whether the coordinates are measured on the plane or on the sphere. That is what lets a GEODETIC array of points be answered by a planar engine, where an array carrying a curve or a surface cannot be </p>
 
 </div>
 </div>

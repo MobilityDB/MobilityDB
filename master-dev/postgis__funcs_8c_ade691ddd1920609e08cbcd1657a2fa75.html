@@ -140,7 +140,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae526396a025c1acb33c113bd37f7dede.html#ae526396a025c1acb33c113bd37f7dede">geography_centroid_from_wpoints</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ab6476731f7d2ca148769eeec3bc843c3.html#ab6476731f7d2ca148769eeec3bc843c3">geography_valid_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a4066a46461cc6ea897b30f6877399a16.html#a4066a46461cc6ea897b30f6877399a16">geom_array_areal_union</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a9092fa06261caf4666e4de98efbf0666.html#a9092fa06261caf4666e4de98efbf0666">geom_array_linear_union</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_ade691ddd1920609e08cbcd1657a2fa75.html#ade691ddd1920609e08cbcd1657a2fa75">geom_array_linear_union</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a6b9fcd1ef55c79b79b25d07ded9bf31c.html#a6b9fcd1ef55c79b79b25d07ded9bf31c">geom_array_point_only</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga5c6b62f78eb896585e14a37b0a67c062.html#ga5c6b62f78eb896585e14a37b0a67c062">geom_array_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga28dca3f4d5f757de8c4d247ce8f25b82.html#ga28dca3f4d5f757de8c4d247ce8f25b82">geom_azimuth</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gae1a691de029d9e78f2efdde304b40751.html#gae1a691de029d9e78f2efdde304b40751">geom_boundary</a></td></tr>
@@ -210,8 +211,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9092fa06261caf4666e4de98efbf0666" name="a9092fa06261caf4666e4de98efbf0666"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9092fa06261caf4666e4de98efbf0666">&#9670;&#160;</a></span>geom_array_linear_union()</h2>
+<a id="ade691ddd1920609e08cbcd1657a2fa75" name="ade691ddd1920609e08cbcd1657a2fa75"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade691ddd1920609e08cbcd1657a2fa75">&#9670;&#160;</a></span>geom_array_linear_union()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -229,7 +230,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>geodetic</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -249,6 +256,7 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gsarr</td><td>Array of geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">geodetic</td><td>True when the array is measured on the sphere, which the answer carries: a collection built here does not inherit the flag its members hold </td></tr>
   </table>
   </dd>
 </dl>
