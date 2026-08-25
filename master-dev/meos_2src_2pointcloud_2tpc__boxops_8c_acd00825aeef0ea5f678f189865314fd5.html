@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: boxop_tpointcloud_tpointcloud</title>
+<title>MobilityDB: tstzspan_set_tpcbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpc__boxops_8c_aee64702303fa82ba78d36f2f322dde3d.html#aee64702303fa82ba78d36f2f322dde3d">boxop_tpointcloud_tpcbox</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pointcloud_2tpc__boxops_8c_aaadbace3e642bce83782a5651779ca07.html#aaadbace3e642bce83782a5651779ca07">boxop_tpointcloud_tpointcloud</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpc__boxops_8c_aaadbace3e642bce83782a5651779ca07.html#aaadbace3e642bce83782a5651779ca07">boxop_tpointcloud_tpointcloud</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__dist_ga7f473a264c48c490532bd7779a1756e9.html#ga7f473a264c48c490532bd7779a1756e9">nad_tpcbox_tpcbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__dist_gaaea0e1f29c999b3055fba94ce7bf6e10.html#gaaea0e1f29c999b3055fba94ce7bf6e10">nad_tpointcloud_tpcbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__dist_gab3553b611e36dce25ae181e29b603813.html#gab3553b611e36dce25ae181e29b603813">nad_tpointcloud_tpointcloud</a></td></tr>
@@ -92,34 +92,28 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpc__boxops_8c_a912f6ba75a81e21bcf780d9c77c028e6.html#a912f6ba75a81e21bcf780d9c77c028e6">tpointcloudinstarr_set_tpcbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpc__boxops_8c_a0d7bda2861301d64ca4a6e5d6f15ad09.html#a0d7bda2861301d64ca4a6e5d6f15ad09">tpointcloudseq_expand_tpcbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpc__boxops_8c_a29c733747dd22851e2dd782a1bbcc463.html#a29c733747dd22851e2dd782a1bbcc463">tpointcloudseqarr_set_tpcbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpc__boxops_8c_acd00825aeef0ea5f678f189865314fd5.html#acd00825aeef0ea5f678f189865314fd5">tstzspan_set_tpcbox</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pointcloud_2tpc__boxops_8c_acd00825aeef0ea5f678f189865314fd5.html#acd00825aeef0ea5f678f189865314fd5">tstzspan_set_tpcbox</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aaadbace3e642bce83782a5651779ca07" name="aaadbace3e642bce83782a5651779ca07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaadbace3e642bce83782a5651779ca07">&#9670;&#160;</a></span>boxop_tpointcloud_tpointcloud()</h2>
+<a id="acd00825aeef0ea5f678f189865314fd5" name="acd00825aeef0ea5f678f189865314fd5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd00825aeef0ea5f678f189865314fd5">&#9670;&#160;</a></span>tstzspan_set_tpcbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool boxop_tpointcloud_tpointcloud </td>
+          <td class="memname">void tstzspan_set_tpcbox </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structSpan.html">Span</a> *&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool(*)(const <a class="el" href="structTPCBox.html">TPCBox</a> *, const <a class="el" href="structTPCBox.html">TPCBox</a> *)&#160;</td>
-          <td class="paramname"><em>func</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structTPCBox.html">TPCBox</a> *&#160;</td>
+          <td class="paramname"><em>box</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -129,14 +123,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Generic bbox dispatcher between two temporal pointcloud values. </p>
+<p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> a temporal pointcloud bounding box from a timestamptz span. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pointcloud values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>TPCBox-vs-TPCBox predicate to apply </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Timestamptz span </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">box</td><td>Bounding box carrying the span and no spatial dimension </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>Mirrors <code>tstzspan_set_stbox</code>. The span names no schema, so <code>pcid</code> stays 0 — the "unknown" value <code>ensure_same_pcid_tpcbox</code> accepts against any schema, which is what lets a time-only query meet an indexed box. </dd></dl>
 
 </div>
 </div>
