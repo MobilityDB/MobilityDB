@@ -2353,9 +2353,13 @@ geom_array_union(GSERIALIZED **gsarr, int count)
       LWGEOM *lwgeom = lwgeom_from_gserialized(result);
       lwgeom_drop_bbox(lwgeom);
       lwgeom_set_geodetic(lwgeom, true);
-      pfree(result);
+      /* The deserialized value reads its coordinates OUT OF @p result, so the
+       * geodetic serialization below walks that buffer. It is released once
+       * the new value is built, never before */
+      GSERIALIZED *planar = result;
       result = geo_serialize(lwgeom);
       lwgeom_free(lwgeom);
+      pfree(planar);
     }
     GEOSGeom_destroy_r(ctx, g_union);
   }
