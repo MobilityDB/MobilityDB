@@ -465,6 +465,7 @@ meos_pc_schema_clear(void)
  * The SRID is extracted from the PCSCHEMA at registration time so
  * callers (e.g. spatial_srid in tspatial_srid.c) do not need the full
  * PCSCHEMA struct definition.
+ * @sqlfn pointCloudSchemaSRID()
  */
 int32_t
 meos_pc_schema_srid(uint32_t pcid)
@@ -502,6 +503,7 @@ meos_pc_schema_srid(uint32_t pcid)
  *   surface nothing to decode it with
  * @note The result is a string constant owned by that library, so a caller
  *   reads it and never frees it
+ * @sqlfn pointCloudSchemaCompression()
  */
 const char *
 meos_pc_schema_compression(uint32_t pcid)
@@ -520,6 +522,7 @@ meos_pc_schema_compression(uint32_t pcid)
  *   of its layout: an inactive dimension still occupies a slot and still
  *   contributes to the width of a point, so the byte offsets are indexed by
  *   it and it is a different quantity, not this one under another name
+ * @sqlfn pointCloudSchemaNDims()
  */
 int32_t
 meos_pc_schema_ndims(uint32_t pcid)
