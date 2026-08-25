@@ -32,76 +32,6 @@
  */
 
 /******************************************************************************
- * Overlaps (&&)
- ******************************************************************************/
-
--- tpcpoint
-CREATE FUNCTION overlaps(tstzspan, tpcpoint) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tpcpoint, tstzspan) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tpcbox, tpcpoint) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpointcloud'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tpcpoint, tpcbox) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpcbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tpcpoint, tpcpoint) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpointcloud'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tstzspan, RIGHTARG = tpcpoint, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tpcpoint, RIGHTARG = tstzspan, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tpcbox, RIGHTARG = tpcpoint, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tpcpoint, RIGHTARG = tpcbox, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tpcpoint, RIGHTARG = tpcpoint, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-
--- tpcpatch
-CREATE FUNCTION overlaps(tstzspan, tpcpatch) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tpcpatch, tstzspan) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tpcbox, tpcpatch) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpointcloud'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tpcpatch, tpcbox) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpcbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tpcpatch, tpcpatch) RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpointcloud'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tstzspan, RIGHTARG = tpcpatch, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tpcpatch, RIGHTARG = tstzspan, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tpcbox, RIGHTARG = tpcpatch, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tpcpatch, RIGHTARG = tpcbox, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-CREATE OPERATOR && (PROCEDURE = overlaps,
-  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
-
-/******************************************************************************
  * Contains (@>)
  ******************************************************************************/
 
@@ -239,6 +169,76 @@ CREATE OPERATOR <@ (PROCEDURE = contained,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+
+/******************************************************************************
+ * Overlaps (&&)
+ ******************************************************************************/
+
+-- tpcpoint
+CREATE FUNCTION overlaps(tstzspan, tpcpoint) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tpcpoint, tstzspan) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tpcbox, tpcpoint) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpointcloud'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tpcpoint, tpcbox) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpcbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tpcpoint, tpcpoint) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpointcloud'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tstzspan, RIGHTARG = tpcpoint, COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tpcpoint, RIGHTARG = tstzspan, COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tpcbox, RIGHTARG = tpcpoint, COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tpcpoint, RIGHTARG = tpcbox, COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tpcpoint, RIGHTARG = tpcpoint, COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+
+-- tpcpatch
+CREATE FUNCTION overlaps(tstzspan, tpcpatch) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tpcpatch, tstzspan) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tpcbox, tpcpatch) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpointcloud'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tpcpatch, tpcbox) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpcbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tpcpatch, tpcpatch) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpointcloud'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tstzspan, RIGHTARG = tpcpatch, COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tpcpatch, RIGHTARG = tstzspan, COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tpcbox, RIGHTARG = tpcpatch, COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tpcpatch, RIGHTARG = tpcbox, COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
+CREATE OPERATOR && (PROCEDURE = overlaps,
+  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 
 /******************************************************************************
