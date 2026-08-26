@@ -383,11 +383,11 @@ tcbuffersegm_traversed_area(const TInstant *inst1, const TInstant *inst2)
   const POINT2D *p2 = cbuffer_point2d_p(cb_max);
   int32_t srid = cbuffer_srid(cb_min);
 
-  /* If the two points are equal compute the traversed area of the circular
-   * buffer with the bigger radius */
+  /* If the two points are equal the buffer of the smaller radius is covered
+   * by the one of the bigger radius, which is the area traversed */
   if (p1->x == p2->x && p1->y == p2->y)
   {
-    return (cb_min->radius <= cb_max->radius) ?
+    return (cb_min->radius >= cb_max->radius) ?
       cbuffer_traversed_area(cb_min) : cbuffer_traversed_area(cb_max);
   }
 
