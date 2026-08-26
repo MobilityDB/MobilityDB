@@ -31,7 +31,7 @@ traversedArea(tcbuffer, unary_union=false) → geometry
 </pre><pre class="programlisting">
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
--- CURVEPOLYGON(CIRCULARSTRING(0.7 1,1.3 1,0.7 1))
+-- CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
 </pre></li><li class="listitem"><a name="tcbuffer_centroid"></a><a class="indexterm" name="id8125"></a><p>Devuelve el punto geométrico temporal dado por los centros de un búfer circular temporal</p><pre class="programlisting">
 centroid(tcbuffer) → tgeompoint
 </pre><pre class="programlisting">
@@ -40,16 +40,13 @@ SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
 -- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
 </pre></li><li class="listitem"><a name="tcbuffer_convexHull"></a><a class="indexterm" name="id8132"></a><p>Devuelve la envolvente convexa del área atravesada por el búfer circular temporal</p><pre class="programlisting">
 convexHull(tcbuffer) → geometry
-</pre><p>La envolvente convexa se calcula sobre el área atravesada linealizada: los arcos circulares que delimitan la región barrida se convierten primero en segmentos rectos y la envolvente se calcula luego con GEOS. Por lo tanto, el resultado es un <code class="varname">POLYGON</code> lineal que aproxima el contorno circular, no un <code class="varname">CURVEDPOLYGON</code> curvo. Utilice <code class="varname">traversedArea</code> para obtener la región barrida curva exacta.</p><pre class="programlisting">
-SELECT ST_GeometryType(convexHull(tcbuffer
-  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 0), 1)@2001-01-02]'));
--- ST_Polygon
-SELECT ST_NPoints(convexHull(tcbuffer
-  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 0), 1)@2001-01-02]'));
--- 131
-SELECT round(ST_Area(convexHull(tcbuffer
-  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 0), 1)@2001-01-02]'))::numeric, 3);
--- 11.140
--- The exact swept region has area pi + 8 = 11.1416; the stroked hull is
--- slightly smaller because the arcs are replaced by chords.
+</pre><p>La envolvente convexa se calcula sobre el área atravesada exacta, arcos incluidos: un arco alcanza más allá de los puntos que lo definen, por lo que aporta a la envolvente el trozo de su círculo que ninguna otra característica del área alcanza. Por lo tanto, el resultado es un <code class="varname">CURVEPOLYGON</code> curvo delimitado por un <code class="varname">COMPOUNDCURVE</code> de arcos circulares y segmentos rectos, tan exacto como la región que devuelve <code class="varname">traversedArea</code>. La envolvente es lineal solo cuando el búfer mantiene un radio cero, ya que el área atravesada no lleva entonces ningún arco.</p><pre class="programlisting">
+SELECT ST_AsText(convexHull(tcbuffer
+  '[Cbuffer(Point(1 1), 0.5)@2001-01-01, Cbuffer(Point(1 3), 0.5)@2001-01-02]'));
+-- CURVEPOLYGON(COMPOUNDCURVE((1.5 3,1.5 1),CIRCULARSTRING(1.5 1,1 0.5,0.5 1),
+--   (0.5 1,0.5 3),CIRCULARSTRING(0.5 3,1 3.5,1.5 3)))
+SELECT ST_AsText(convexHull(tcbuffer
+  '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffer(Point(1 3), 0)@2001-01-02,
+  Cbuffer(Point(3 3), 0)@2001-01-03]'));
+-- POLYGON((1 1,1 3,3 3,1 1))
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s09.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s11.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Modificaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operaciones de distancia</td></tr></table></div></body></html>
