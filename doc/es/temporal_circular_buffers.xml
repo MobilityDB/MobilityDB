@@ -876,19 +876,16 @@ SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
 				<programlisting xml:space="preserve" format="linespecific">
 convexHull(tcbuffer) → geometry
 </programlisting>
-				<para>La envolvente convexa se calcula sobre el área atravesada linealizada: los arcos circulares que delimitan la región barrida se convierten primero en segmentos rectos y la envolvente se calcula luego con GEOS. Por lo tanto, el resultado es un <varname>POLYGON</varname> lineal que aproxima el contorno circular, no un <varname>CURVEDPOLYGON</varname> curvo. Utilice <varname>traversedArea</varname> para obtener la región barrida curva exacta.</para>
+				<para>La envolvente convexa se calcula sobre el área atravesada exacta, arcos incluidos: un arco alcanza más allá de los puntos que lo definen, por lo que aporta a la envolvente el trozo de su círculo que ninguna otra característica del área alcanza. Por lo tanto, el resultado es un <varname>CURVEPOLYGON</varname> curvo delimitado por un <varname>COMPOUNDCURVE</varname> de arcos circulares y segmentos rectos, tan exacto como la región que devuelve <varname>traversedArea</varname>. La envolvente es lineal solo cuando el búfer mantiene un radio cero, ya que el área atravesada no lleva entonces ningún arco.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_GeometryType(convexHull(tcbuffer
-  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 0), 1)@2001-01-02]'));
--- ST_Polygon
-SELECT ST_NPoints(convexHull(tcbuffer
-  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 0), 1)@2001-01-02]'));
--- 131
-SELECT round(ST_Area(convexHull(tcbuffer
-  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 0), 1)@2001-01-02]'))::numeric, 3);
--- 11.140
--- The exact swept region has area pi + 8 = 11.1416; the stroked hull is
--- slightly smaller because the arcs are replaced by chords.
+SELECT ST_AsText(convexHull(tcbuffer
+  '[Cbuffer(Point(1 1), 0.5)@2001-01-01, Cbuffer(Point(1 3), 0.5)@2001-01-02]'));
+-- CURVEPOLYGON(COMPOUNDCURVE((1.5 3,1.5 1),CIRCULARSTRING(1.5 1,1 0.5,0.5 1),
+--   (0.5 1,0.5 3),CIRCULARSTRING(0.5 3,1 3.5,1.5 3)))
+SELECT ST_AsText(convexHull(tcbuffer
+  '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffer(Point(1 3), 0)@2001-01-02,
+  Cbuffer(Point(3 3), 0)@2001-01-03]'));
+-- POLYGON((1 1,1 3,3 3,1 1))
 </programlisting>
 			</listitem>
 		</itemizedlist>
