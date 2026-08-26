@@ -1,4 +1,16 @@
+# The entry points of the geometry library's GEOS files that the rest of that
+# library still calls, which a build leaving those files out has to answer, and
+# the GEOS entry points the vendored raster core calls directly
+if(NOT GEOS)
+  set(GEO_LWGEOM_NONE geo_lwgeom_none.c)
+  if(RASTER)
+    set(GEO_GEOS_NONE geo_geos_none.c)
+  endif()
+endif()
+
 set(GEO_SOURCES
+  ${GEO_LWGEOM_NONE}
+  ${GEO_GEOS_NONE}
   geo_buffer.c
   geo_cluster.c
   geo_funcs.c

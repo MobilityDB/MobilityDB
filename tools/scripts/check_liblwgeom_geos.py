@@ -70,6 +70,22 @@ def geos_entry_points():
     return result
 
 
+def definition_lines(text):
+    """The lines of a MEOS source that DEFINE one of the entry points.
+
+    A build carrying no GEOS leaves the vendored GEOS files out and supplies
+    what the files that remain still call of them, so a MEOS source may define
+    an entry point rather than call it. Defining one is the opposite of
+    reaching GEOS through it, and it reads the same to a scan of the text. The
+    definition line is skipped and every other line of the file is still read,
+    so a genuine call in the same file is still named.
+    """
+    result = set()
+    for match in DEFINITION.finditer(text):
+        result.add(text.count("\n", 0, match.start(1)))
+    return result
+
+
 def calls(entry_points):
     """Where the MEOS sources call one of them, as (file, symbol) pairs."""
     result = set()
@@ -79,9 +95,14 @@ def calls(entry_points):
                 continue
             path = os.path.join(root, name)
             relative = os.path.relpath(path, REPO)
-            for line in open(path, encoding="utf-8", errors="replace"):
-                # A comment mentioning an entry point is not a call
+            text = open(path, encoding="utf-8", errors="replace").read()
+            defined = definition_lines(text)
+            for number, line in enumerate(text.split("\n")):
+                # A comment mentioning an entry point is not a call, and
+                # neither is the line defining it
                 if line.lstrip().startswith(("*", "/*", "//")):
+                    continue
+                if number in defined:
                     continue
                 for symbol in re.findall(r"\b((?:lw|rt_)[a-z_0-9]+)\s*\(", line):
                     if symbol in entry_points:

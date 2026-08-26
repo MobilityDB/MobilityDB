@@ -2,6 +2,21 @@
   # set(lwgeom_transform.c lwgeom_transform.c)
 # endif()
 
+# The files reaching the GEOS library are the whole of what a build carrying none
+# leaves out; every other file of the geometry library references no GEOS entry
+# point at all. What the files that remain still call of them is answered by
+# meos/src/geo/geo_lwgeom_none.c. /* MEOS */
+if(GEOS)
+  set(LWGEOM_GEOS_SOURCES
+    lwgeom_geos.c
+    lwgeom_geos_clean.c
+    lwgeom_geos_cluster.c
+    lwgeom_geos_node.c
+    lwgeom_geos_split.c)
+else()
+  set(LWGEOM_GEOS_SOURCES)
+endif()
+
 add_library(liblwgeom OBJECT
   bytebuffer.c
   effectivearea.c
@@ -24,11 +39,7 @@ add_library(liblwgeom OBJECT
   lwgeom.c
   lwgeom_api.c
   lwgeom_debug.c
-  lwgeom_geos.c
-  lwgeom_geos_clean.c
-  lwgeom_geos_cluster.c
-  lwgeom_geos_node.c
-  lwgeom_geos_split.c
+  ${LWGEOM_GEOS_SOURCES}
   lwgeom_median.c
   # lwgeom_topo.c
   lwgeom_transform.c
@@ -100,15 +111,3 @@ set_property(TARGET liblwgeom PROPERTY POSITION_INDEPENDENT_CODE ON)
 # standard flags. /* MEOS */
 set_source_files_properties(lwin_wkt_parse.c lwin_wkt_lex.c
   PROPERTIES COMPILE_OPTIONS "-w")
-
-# A build carrying no GEOS reports the version of the library it does not have
-# as 0, which is below every version a guard in these files tests for, so the
-# bodies those guards choose are the ones that return at once and the arguments
-# they were given go unread. The files are vendored, so the parameters are not
-# ours to mark, and the suppression is confined to the build that turns the
-# bodies into stubs: with GEOS present the files are linted as the rest of
-# liblwgeom is. /* MEOS */
-if(NOT GEOS)
-  set_source_files_properties(lwgeom_geos.c lwgeom_geos_clean.c
-    PROPERTIES COMPILE_OPTIONS "-w")
-endif()
