@@ -5891,6 +5891,9 @@ typedef struct
   MeosArray *arr;  /**< Edges of the component, owning their memory */
   Edge **edges;    /**< Pointers into the array above */
   int nedges;      /**< Number of edges */
+  RelateEdges re;  /**< The same edges, with what reading them selectively
+                        needs, so a point is located against a component
+                        without walking it whole */
 } RelateComp;
 
 /**
@@ -5901,7 +5904,7 @@ typedef struct
  */
 static void
 relate_area_comps_iter(const LWGEOM *geom, RelateComp **comps, int *ncomp,
-  int *maxcomp)
+  int *maxcomp, bool index)
 {
   if (! geom || lwgeom_is_empty(geom))
     return;
@@ -5915,7 +5918,7 @@ relate_area_comps_iter(const LWGEOM *geom, RelateComp **comps, int *ncomp,
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
       for (uint32_t i = 0; i < col->ngeoms; i++)
-        relate_area_comps_iter(col->geoms[i], comps, ncomp, maxcomp);
+        relate_area_comps_iter(col->geoms[i], comps, ncomp, maxcomp, index);
       return;
     }
     case POLYGONTYPE:
@@ -5936,6 +5939,7 @@ relate_area_comps_iter(const LWGEOM *geom, RelateComp **comps, int *ncomp,
   c->edges = palloc(sizeof(Edge *) * Max(c->nedges, 1));
   for (int i = 0; i < c->nedges; i++)
     c->edges[i] = (Edge *) meos_array_get(c->arr, i);
+  relate_edges_init(&c->re, c->edges, c->nedges, index);
   return;
 }
 
@@ -5947,6 +5951,7 @@ relate_comps_free(RelateComp *comps, int ncomp)
 {
   for (int i = 0; i < ncomp; i++)
   {
+    relate_edges_clear(&comps[i].re);
     pfree(comps[i].edges);
     meos_array_destroy(comps[i].arr);
   }
@@ -5962,7 +5967,7 @@ static bool
 relate_in_area_union(double x, double y, const RelateComp *comps, int ncomp)
 {
   for (int i = 0; i < ncomp; i++)
-    if (relate_point_in_area(x, y, comps[i].edges, comps[i].nedges) != 2)
+    if (relate_point_in_area_index(x, y, &comps[i].re) != 2)
       return true;
   return false;
 }
@@ -6105,11 +6110,17 @@ relate_same_portion(const Edge *a, const Edge *b)
 static MeosArray *
 relate_union_edges(const LWGEOM *geom)
 {
+  MeosArray *all = geom_extract_edges(geom);
+  int nall = (int) all->count;
+  /* Every edge is located against every component, so a component is read
+   * once for each edge and the two indexes below are worth what the same
+   * threshold is worth anywhere else in this file */
+  bool index = ((int64) nall * (int64) nall >= RELATE_INDEX_MIN_PAIRS);
+
   int ncomp = 0, maxcomp = 8;
   RelateComp *comps = palloc(sizeof(RelateComp) * maxcomp);
-  relate_area_comps_iter(geom, &comps, &ncomp, &maxcomp);
+  relate_area_comps_iter(geom, &comps, &ncomp, &maxcomp, index);
 
-  MeosArray *all = geom_extract_edges(geom);
   /* A collection holding at most one surface has no overlap to resolve */
   if (ncomp < 2)
   {
@@ -6118,7 +6129,6 @@ relate_union_edges(const LWGEOM *geom)
   }
 
   MeosArray *result = meos_array_create(sizeof(Edge));
-  int nall = (int) all->count;
   int maxparams = 2 * nall + 2;
   double *params = palloc(sizeof(double) * maxparams);
   /* Every edge is asked against every other, so the walk costs the SQUARE of
@@ -6129,8 +6139,7 @@ relate_union_edges(const LWGEOM *geom)
   for (int i = 0; i < nall; i++)
     edges[i] = (Edge *) meos_array_get(all, i);
   RelateEdges re;
-  relate_edges_init(&re, edges, nall,
-    (int64) nall * (int64) nall >= RELATE_INDEX_MIN_PAIRS);
+  relate_edges_init(&re, edges, nall, index);
   MeosArray *candidates = re.index ? meos_array_create(sizeof(int64)) : NULL;
   for (int i = 0; i < nall; i++)
   {
@@ -6496,7 +6505,7 @@ relate_stratum(const LWGEOM *geom, int dim, int ncomps, const LWGEOM *area,
     int nareal = 0, maxareal = 8;
     RelateComp *areal = palloc(sizeof(RelateComp) * maxareal);
     if (area)
-      relate_area_comps_iter(area, &areal, &nareal, &maxareal);
+      relate_area_comps_iter(area, &areal, &nareal, &maxareal, false);
     MeosArray *larr = line ? geom_extract_edges(line) : NULL;
     int nledges = larr ? (int) larr->count : 0;
     Edge **ledges = palloc(sizeof(Edge *) * Max(nledges, 1));
