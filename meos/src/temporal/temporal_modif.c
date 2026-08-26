@@ -145,11 +145,21 @@ geoarr_merge(GSERIALIZED **gsarr, int count)
    */
   if (gserialized_get_type(result) == MULTILINETYPE)
   {
+#if GEOS
     LWGEOM *geom = lwgeom_from_gserialized(result);
     LWGEOM *geom1 = lwgeom_linemerge_directed(geom, 0);
     GSERIALIZED *tmp = gserialized_from_lwgeom(geom1, NULL);
     pfree(result);
     result = tmp;
+#else /* ! GEOS */
+    /* Answering the union without sewing its lines is a different geometry,
+     * not the same one built differently, so it is reported rather than given */
+    pfree(result);
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Sewing the lines of a merged geometry is answered by the GEOS library, "
+      "which this build excludes: configure with -DGEOS=ON");
+    return NULL;
+#endif /* GEOS */
   }
   return result;
 }
