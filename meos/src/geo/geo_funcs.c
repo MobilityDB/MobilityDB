@@ -6038,9 +6038,20 @@ relate_union_edges(const LWGEOM *geom)
   int nall = (int) all->count;
   int maxparams = 2 * nall + 2;
   double *params = palloc(sizeof(double) * maxparams);
+  /* Every edge is asked against every other, so the walk costs the SQUARE of
+   * the array while indexing it costs one pass. Two edges that meet have
+   * boxes that meet, so the index answers the pairs the walk would split at
+   * and leaves out the ones it would only reject */
+  Edge **edges = palloc(sizeof(Edge *) * Max(nall, 1));
+  for (int i = 0; i < nall; i++)
+    edges[i] = (Edge *) meos_array_get(all, i);
+  RelateEdges re;
+  relate_edges_init(&re, edges, nall,
+    (int64) nall * (int64) nall >= RELATE_INDEX_MIN_PAIRS);
+  MeosArray *candidates = re.index ? meos_array_create(sizeof(int64)) : NULL;
   for (int i = 0; i < nall; i++)
   {
-    Edge *e = (Edge *) meos_array_get(all, i);
+    Edge *e = edges[i];
     if (! relate_area_boundary_edge(e))
     {
       /* An edge of another dimension bounds no area of the union */
@@ -6051,9 +6062,21 @@ relate_union_edges(const LWGEOM *geom)
     int nparams = 0;
     params[nparams++] = 0.0;
     params[nparams++] = 1.0;
-    for (int j = 0; j < nall; j++)
+    /* The query is grown by the widest tolerance the array asks for, which is
+     * what makes it admit every edge the walk would have solved against */
+    int ncand = nall;
+    if (re.index)
     {
-      Edge *other = (Edge *) meos_array_get(all, j);
+      STBox query;
+      double pad = fmax(re.tol, e->tol);
+      stbox_set(true, false, false, 0, e->xmin - pad, e->xmax + pad,
+        e->ymin - pad, e->ymax + pad, 0, 0, NULL, &query);
+      ncand = rtree_search(re.index, INDEX_OVERLAPS, &query, candidates);
+    }
+    for (int c = 0; c < ncand; c++)
+    {
+      int j = candidates ? (int) *(int64 *) meos_array_get(candidates, c) : c;
+      const Edge *other = edges[j];
       if (j == i || ! relate_area_boundary_edge(other))
         continue;
       double ix[2], iy[2];
@@ -6113,6 +6136,10 @@ relate_union_edges(const LWGEOM *geom)
     }
   }
   pfree(params);
+  if (candidates)
+    meos_array_destroy(candidates);
+  relate_edges_clear(&re);
+  pfree(edges);
 
   relate_comps_free(comps, ncomp);
   meos_array_destroy(all);
