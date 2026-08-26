@@ -189,7 +189,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Compute the family-specific time-weighted precision value of a bin. </p>
-<p >Dispatch to the per-type precision function and return true; return false when the temporal type has no specific implementation so that the caller applies the generic twAvg/twCentroid. Each optional family registers its own case in its own <a class="el" href="meos_2src_2pointcloud_2CMakeLists_8txt_aa6a43ac9baecd234ffb5ffcdd2246831.html#aa6a43ac9baecd234ffb5ffcdd2246831">if</a> block (disjoint), so no family edits the shared dispatch body in the tprecision functions. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Dispatch to the per-type precision function and return true; return false when the temporal type has no specific implementation so that the caller applies the generic twAvg/twCentroid. Each optional family registers its own case in its own <a class="el" href="meos_2src_2geo_2CMakeLists_8txt_a22244963d8d3bcc01d32ca1ecc0b7c56.html#a22244963d8d3bcc01d32ca1ecc0b7c56">if</a> block (disjoint), so no family edits the shared dispatch body in the tprecision functions. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temptype</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> type of the input </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value of the bin </td></tr>
