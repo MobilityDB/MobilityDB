@@ -1675,6 +1675,7 @@ geom_centroid(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return NULL;
 
+#if GEOS
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   LWGEOM *lwresult = lwgeom_centroid(lwgeom);
   lwgeom_free(lwgeom);
@@ -1683,6 +1684,12 @@ geom_centroid(const GSERIALIZED *gs)
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(lwresult);
   return result;
+#else /* ! GEOS */
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "The centroid of a geometry is answered by the GEOS library, which this "
+    "build excludes: configure with -DGEOS=ON");
+  return NULL;
+#endif /* GEOS */
 }
 
 /**
@@ -2084,6 +2091,7 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
     return clip_poly_poly(gs1, gs2, CL_INTERSECTION);
 
+#if GEOS
   /* Other types fall through to GEOS */
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
@@ -2091,6 +2099,13 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(lwresult);
   return result;
+#else /* ! GEOS */
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "The intersection of two geometries that are not both planar and "
+    "polygonal is answered by the GEOS library, which this build excludes: "
+    "configure with -DGEOS=ON");
+  return NULL;
+#endif /* GEOS */
 }
 
 /**
@@ -2111,6 +2126,7 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
     return clip_poly_poly(gs1, gs2, CL_DIFFERENCE);
 
+#if GEOS
   /* Other types fall through to GEOS */
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
@@ -2118,6 +2134,13 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(lwresult);
   return result;
+#else /* ! GEOS */
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "The difference of two geometries that are not both planar and polygonal "
+    "is answered by the GEOS library, which this build excludes: configure "
+    "with -DGEOS=ON");
+  return NULL;
+#endif /* GEOS */
 }
 
 /**
@@ -2457,6 +2480,7 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
   LWGEOM *lwresult = (prec < 0) ? meos_areal_union(lwgeom) : NULL;
   if (! lwresult)
   {
+#if GEOS
     lwresult = lwgeom_unaryunion_prec(lwgeom, prec);
     /* MEOS: the overlay answers NULL for a geometry it cannot read -- a
      * polyhedral surface reaches the default arm of #LWGEOM2GEOS, whose
@@ -2475,6 +2499,14 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
      * this: it is built with the flags it carries, and a geodetic geometry
      * does not reach here */
     lwgeom_set_geodetic(lwresult, FLAGS_GET_GEODETIC(lwgeom->flags));
+#else /* ! GEOS */
+    lwgeom_free(lwgeom);
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The unary union of a geometry whose components are not all surfaces, "
+      "and the one asked for on a precision grid, are answered by the GEOS "
+      "library, which this build excludes: configure with -DGEOS=ON");
+    return NULL;
+#endif /* GEOS */
   }
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(lwgeom); lwgeom_free(lwresult);
@@ -2511,6 +2543,7 @@ geom_is_simple(const GSERIALIZED *gs)
     return result;
   }
 
+#if GEOS
   /* A geometry carrying a circular arc meets itself along an arc, which the
    * segment intersection the answer above rests on does not read */
   int simple = lwgeom_is_simple(geom);
@@ -2522,6 +2555,13 @@ geom_is_simple(const GSERIALIZED *gs)
     return false;
   }
   return simple != 0;
+#else /* ! GEOS */
+  lwgeom_free(geom);
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "Whether a geometry carrying a circular arc is simple is answered by the "
+    "GEOS library, which this build excludes: configure with -DGEOS=ON");
+  return false;
+#endif /* GEOS */
 }
 
 /*****************************************************************************/
