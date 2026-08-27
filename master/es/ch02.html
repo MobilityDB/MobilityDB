@@ -83,7 +83,7 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 			Damos a continuación las funciones de entrada y salida de tipos de conjunto y de rango en formato Well-Known Text (WKT) y Well-Known Binary (WKB). El formato de salida predeterminado de todos los tipos de conjuntos y de rango es el formato de texto conocido. La función <code class="varname">asText</code> que se da a continuación permite determinar la salida de valores de punto flotante.
 		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_asText"></a><a class="indexterm" name="id1722"></a><p>Devuelve la representación de texto conocido (WKT)</p><pre class="programlisting">
 asText({floatset,floatspans},maxdecimaldigits integer=15) → text
-</pre><p>El argumento <code class="varname">maxdecdigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
+</pre><p>El argumento <code class="varname">maxdecimaldigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
 SELECT asText(floatset '{1.123456789,2.123456789}', 3);
 -- {1.123, 2.123}
 SELECT asText(floatspanset '{[1.55,2.55],[4,5]}',0);

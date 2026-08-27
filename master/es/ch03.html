@@ -37,7 +37,7 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 				Damos a continuación las funciones de entrada y salida de tipos de cuadro delimitador en formato Well-Known Text (WKT) y Well-Known Binary (WKB).
 			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_asText"></a><a class="indexterm" name="id2467"></a><p>Devuelve la representación de texto conocido (WKT)</p><pre class="programlisting">
 asText(box,maxdecimaldigits integer=15) → text
-</pre><p>El argumento <code class="varname">maxdecdigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
+</pre><p>El argumento <code class="varname">maxdecimaldigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
 -- TBOXFLOAT XT([1.123, 2.123),[2001-01-01, 2001-01-02))
 SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
