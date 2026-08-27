@@ -3463,6 +3463,87 @@ static int relate_area_edge_intersection(const Edge *a, const Edge *b,
   double ix[2], double iy[2]);
 
 /**
+ * @brief One operand of a relationship, together with the edges it draws
+ */
+typedef struct
+{
+  const LWGEOM *geom;  /**< Geometry the edges are those of */
+  MeosArray *arr;      /**< Edges of that geometry */
+} RelateOperand;
+
+/**
+ * @brief The two operands of a relationship, each carrying its edges
+ * @details Every step of a relationship reads the edges of the same two
+ * geometries, and reading the edges of a multi-surface as those of the union
+ * of its members is what a call on such a geometry mostly costs. The two
+ * operands are therefore extracted ONCE where the relationship begins, and
+ * each step borrows the edges from here rather than extracting them again
+ */
+typedef struct
+{
+  RelateOperand op[2];  /**< The two operands, in the order asked about */
+} RelateOperands;
+
+/**
+ * @brief Extract the edges of both operands of a relationship
+ */
+static void
+relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
+{
+  ops->op[0].geom = g1;
+  ops->op[0].arr = relate_extract_edges(g1);
+  ops->op[1].geom = g2;
+  ops->op[1].arr = relate_extract_edges(g2);
+  return;
+}
+
+/**
+ * @brief Release the edges of both operands of a relationship
+ */
+static void
+relate_operands_free(RelateOperands *ops)
+{
+  meos_array_destroy(ops->op[0].arr);
+  meos_array_destroy(ops->op[1].arr);
+  return;
+}
+
+/**
+ * @brief Return the edges of a geometry, reading the ones a relationship has
+ * already extracted where the geometry is one of its two operands
+ * @param[in] ops Operands of the relationship, NULL where the caller stands
+ * outside one, in which case the edges are extracted as before
+ * @param[in] geom Geometry
+ * @return The edges, which the caller gives back with #relate_return_edges
+ * rather than releasing itself
+ */
+static MeosArray *
+relate_borrow_edges(const RelateOperands *ops, const LWGEOM *geom)
+{
+  if (ops)
+    for (int i = 0; i < 2; i++)
+      if (ops->op[i].geom == geom)
+        return ops->op[i].arr;
+  return relate_extract_edges(geom);
+}
+
+/**
+ * @brief Give back edges #relate_borrow_edges answered
+ * @details Only edges it extracted for this caller are released: the ones the
+ * relationship owns are released once, where it ends
+ */
+static void
+relate_return_edges(const RelateOperands *ops, MeosArray *arr)
+{
+  if (ops)
+    for (int i = 0; i < 2; i++)
+      if (ops->op[i].arr == arr)
+        return;
+  meos_array_destroy(arr);
+  return;
+}
+
+/**
  * @brief Accumulate a dimension into a DE-9IM cell
  * @details A cell records the @b maximum dimension of the corresponding
  * intersection, so a contribution can only raise it. Assigning instead of
@@ -3868,11 +3949,11 @@ relate_point_point(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
  */
 static void
 relate_point_linear(const LWGEOM *point_geom, const LWGEOM *line_geom,
-  MeosDE9IM *m)
+  const RelateOperands *ops, MeosDE9IM *m)
 {
   int np;
   POINT2D *points = relate_extract_points(point_geom, &np);
-  MeosArray *arr = relate_extract_edges(line_geom);
+  MeosArray *arr = relate_borrow_edges(ops, line_geom);
   int nedges = (int) arr->count;
   Edge **edges = palloc(sizeof(Edge *) * (size_t) (nedges + 1));
   for (int i = 0; i < nedges; i++)
@@ -3914,7 +3995,7 @@ relate_point_linear(const LWGEOM *point_geom, const LWGEOM *line_geom,
   }
 
   de9im_add(&m->ee, 2);
-  pfree(bpts); pfree(points); pfree(edges); meos_array_destroy(arr);
+  pfree(bpts); pfree(points); pfree(edges); relate_return_edges(ops, arr);
   return;
 }
 
@@ -3923,11 +4004,11 @@ relate_point_linear(const LWGEOM *point_geom, const LWGEOM *line_geom,
  */
 static void
 relate_point_area(const LWGEOM *point_geom, const LWGEOM *area_geom,
-  MeosDE9IM *m)
+  const RelateOperands *ops, MeosDE9IM *m)
 {
   int np;
   POINT2D *points = relate_extract_points(point_geom, &np);
-  MeosArray *arr = relate_extract_edges(area_geom);
+  MeosArray *arr = relate_borrow_edges(ops, area_geom);
   int nedges = (int) arr->count;
   Edge **edges = palloc(sizeof(Edge *) * (size_t) (nedges + 1));
   for (int i = 0; i < nedges; i++)
@@ -3957,7 +4038,7 @@ relate_point_area(const LWGEOM *point_geom, const LWGEOM *area_geom,
   de9im_add(&m->eb, 1);
   de9im_add(&m->ee, 2);
 
-  pfree(points); pfree(edges); meos_array_destroy(arr);
+  pfree(points); pfree(edges); relate_return_edges(ops, arr);
   return;
 }
 
@@ -3974,11 +4055,11 @@ relate_point_area(const LWGEOM *point_geom, const LWGEOM *area_geom,
  */
 static void
 relate_linear_point(const LWGEOM *line_geom, const LWGEOM *point_geom,
-  MeosDE9IM *m)
+  const RelateOperands *ops, MeosDE9IM *m)
 {
   MeosDE9IM tmp;
   de9im_init(&tmp);
-  relate_point_linear(point_geom, line_geom, &tmp);
+  relate_point_linear(point_geom, line_geom, ops, &tmp);
 
   /*
    * Transpose:
@@ -4052,11 +4133,11 @@ relate_linear_edges_overlap(const Edge *a, const Edge *b, double *t0,
  */
 static void
 relate_area_point(const LWGEOM *area_geom, const LWGEOM *point_geom,
-  MeosDE9IM *m)
+  const RelateOperands *ops, MeosDE9IM *m)
 {
   MeosDE9IM tmp;
   de9im_init(&tmp);
-  relate_point_area(point_geom, area_geom, &tmp);
+  relate_point_area(point_geom, area_geom, ops, &tmp);
 
   /* Transpose the matrix */
   m->ii = tmp.ii;
@@ -4770,10 +4851,11 @@ relate_linear_edge_points(const Edge *a, const Edge *b, POINT2D *out)
  * is related without being stroked into segments first
  */
 static void
-relate_linear_linear(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
+relate_linear_linear(const LWGEOM *g1, const LWGEOM *g2,
+  const RelateOperands *ops, MeosDE9IM *m)
 {
-  MeosArray *a1 = relate_extract_edges(g1);
-  MeosArray *a2 = relate_extract_edges(g2);
+  MeosArray *a1 = relate_borrow_edges(ops, g1);
+  MeosArray *a2 = relate_borrow_edges(ops, g2);
   int n1 = (int) a1->count;
   int n2 = (int) a2->count;
   Edge **e1 = palloc(sizeof(Edge *) * (size_t) (n1 + 1));
@@ -4865,7 +4947,7 @@ relate_linear_linear(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
   de9im_add(&m->ee, 2);
 
   pfree(b1); pfree(b2); pfree(e1); pfree(e2);
-  meos_array_destroy(a1); meos_array_destroy(a2);
+  relate_return_edges(ops, a1); relate_return_edges(ops, a2);
   return;
 }
 
@@ -4875,10 +4957,10 @@ relate_linear_linear(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
  */
 static void
 relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
-  MeosDE9IM *m)
+  const RelateOperands *ops, MeosDE9IM *m)
 {
-  MeosArray *la = relate_extract_edges(line_geom);
-  MeosArray *aa = relate_extract_edges(area_geom);
+  MeosArray *la = relate_borrow_edges(ops, line_geom);
+  MeosArray *aa = relate_borrow_edges(ops, area_geom);
   int nl = (int) la->count;
   int na = (int) aa->count;
   Edge **lines = palloc(sizeof(Edge *) * nl);
@@ -5078,7 +5160,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
   }
 
   pfree(params); pfree(lines); pfree(area_edges);
-  meos_array_destroy(la); meos_array_destroy(aa);
+  relate_return_edges(ops, la); relate_return_edges(ops, aa);
   return;
 }
 
@@ -5091,11 +5173,11 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
  */
 static void
 relate_area_linear(const LWGEOM *area_geom, const LWGEOM *line_geom,
-  MeosDE9IM *m)
+  const RelateOperands *ops, MeosDE9IM *m)
 {
   MeosDE9IM tmp;
   de9im_init(&tmp);
-  relate_linear_area(line_geom, area_geom, &tmp);
+  relate_linear_area(line_geom, area_geom, ops, &tmp);
 
   m->ii = tmp.ii;
   m->ib = tmp.bi;
@@ -5701,10 +5783,11 @@ relate_area_interiors_intersect(const RelateEdges *a, const RelateEdges *b)
  * @brief Compute the DE-9IM matrix for two areal geometries.
  */
 static void
-relate_area_area(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
+relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
+  const RelateOperands *ops, MeosDE9IM *m)
 {
-  MeosArray *a1 = relate_extract_edges(g1);
-  MeosArray *a2 = relate_extract_edges(g2);
+  MeosArray *a1 = relate_borrow_edges(ops, g1);
+  MeosArray *a2 = relate_borrow_edges(ops, g2);
   int n1 = (int) a1->count;
   int n2 = (int) a2->count;
   Edge **e1 = palloc(sizeof(Edge *) * n1);
@@ -5788,7 +5871,7 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
 
   relate_edges_clear(&re1); relate_edges_clear(&re2);
   pfree(e1); pfree(e2);
-  meos_array_destroy(a1); meos_array_destroy(a2);
+  relate_return_edges(ops, a1); relate_return_edges(ops, a2);
   return;
 }
 
@@ -6491,26 +6574,26 @@ relate_count_comps(const LWGEOM *geom)
  */
 static void
 relate_simple(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
-  MeosDE9IM *m)
+  const RelateOperands *ops, MeosDE9IM *m)
 {
   if (mask1 == 1 && mask2 == 1)
     relate_point_point(g1, g2, m);
   else if (mask1 == 1 && mask2 == 2)
-    relate_point_linear(g1, g2, m);
+    relate_point_linear(g1, g2, ops, m);
   else if (mask1 == 2 && mask2 == 1)
-    relate_linear_point(g1, g2, m);
+    relate_linear_point(g1, g2, ops, m);
   else if (mask1 == 1 && mask2 == 4)
-    relate_point_area(g1, g2, m);
+    relate_point_area(g1, g2, ops, m);
   else if (mask1 == 4 && mask2 == 1)
-    relate_area_point(g1, g2, m);
+    relate_area_point(g1, g2, ops, m);
   else if (mask1 == 2 && mask2 == 2)
-    relate_linear_linear(g1, g2, m);
+    relate_linear_linear(g1, g2, ops, m);
   else if (mask1 == 2 && mask2 == 4)
-    relate_linear_area(g1, g2, m);
+    relate_linear_area(g1, g2, ops, m);
   else if (mask1 == 4 && mask2 == 2)
-    relate_area_linear(g1, g2, m);
+    relate_area_linear(g1, g2, ops, m);
   else
-    relate_area_area(g1, g2, m);
+    relate_area_area(g1, g2, ops, m);
   return;
 }
 
@@ -6528,12 +6611,12 @@ relate_simple(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
  */
 static void
 relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
-  MeosDE9IM *m)
+  const RelateOperands *ops, MeosDE9IM *m)
 {
   /* A single dimension on each side is answered directly */
   if ((mask1 & (mask1 - 1)) == 0 && (mask2 & (mask2 - 1)) == 0)
   {
-    relate_simple(g1, g2, mask1, mask2, m);
+    relate_simple(g1, g2, mask1, mask2, ops, m);
     return;
   }
 
@@ -6560,7 +6643,7 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
       if (present[j][k])
       {
         de9im_init(&cells[j][k]);
-        relate_simple(s1[j], s2[k], 1 << j, 1 << k, &cells[j][k]);
+        relate_simple(s1[j], s2[k], 1 << j, 1 << k, ops, &cells[j][k]);
       }
     }
 
@@ -6625,15 +6708,18 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
 }
 
 /**
- * @brief Compute the DE-9IM intersection matrix
- * @details This is the native counterpart of PostGIS @p ST_Relate
+ * @brief Compute the DE-9IM intersection matrix, reading the edges a
+ * relationship has already extracted where it has any
+ * @param[in] g1,g2 Geometries
+ * @param[in] ops Operands of the relationship the matrix answers a step of,
+ * NULL where the matrix is asked for on its own
+ * @param[out] result The matrix
  * @return true if the geometry pair is supported, which is what
- * #geom_meos_supported answers of each geometry. A false return means the
- * pair is outside that coverage, @b not that the geometries are unrelated, so
- * a caller must answer it another way rather than read @p result
+ * #geom_meos_supported answers of each geometry
  */
-bool
-meos_relate(const LWGEOM *g1, const LWGEOM *g2, char result[10])
+static bool
+relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
+  char result[10])
 {
   assert(g1); assert(g2); assert(result);
 
@@ -6669,10 +6755,24 @@ meos_relate(const LWGEOM *g1, const LWGEOM *g2, char result[10])
 
   int mask1 = relate_dim_mask(g1);
   int mask2 = relate_dim_mask(g2);
-  relate_dispatch(g1, g2, mask1, mask2, &m);
+  relate_dispatch(g1, g2, mask1, mask2, ops, &m);
 
   de9im_to_string(&m, result);
   return true;
+}
+
+/**
+ * @brief Compute the DE-9IM intersection matrix
+ * @details This is the native counterpart of PostGIS @p ST_Relate
+ * @return true if the geometry pair is supported, which is what
+ * #geom_meos_supported answers of each geometry. A false return means the
+ * pair is outside that coverage, @b not that the geometries are unrelated, so
+ * a caller must answer it another way rather than read @p result
+ */
+bool
+meos_relate(const LWGEOM *g1, const LWGEOM *g2, char result[10])
+{
+  return relate_matrix(g1, g2, NULL, result);
 }
 
 /**
@@ -7047,27 +7147,14 @@ relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
  * reads from the DE-9IM matrix as the pattern `FF*FF****` failing. Answering
  * it from the edges instead stops at the first witness, where the matrix
  * answers all nine cells whatever the question was
- * @param[in] g1,g2 Geometries
+ * @param[in] ops Operands of the relationship, carrying the edges of each
  * @param[out] result True if the geometries share a point
- * @return True if the pair is covered, which is what #geom_meos_supported
- * answers of each geometry
  */
-static bool
-meos_intersects(const LWGEOM *g1, const LWGEOM *g2, bool *result)
+static void
+meos_intersects(const RelateOperands *ops, bool *result)
 {
-  assert(g1); assert(g2); assert(result);
-  if (! geom_meos_supported(g1) || ! geom_meos_supported(g2))
-    return false;
-
-  /* An empty geometry holds no point to share */
-  if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
-  {
-    *result = false;
-    return true;
-  }
-
-  MeosArray *a1 = relate_extract_edges(g1);
-  MeosArray *a2 = relate_extract_edges(g2);
+  assert(ops); assert(result);
+  MeosArray *a1 = ops->op[0].arr, *a2 = ops->op[1].arr;
   int n1 = (int) a1->count, n2 = (int) a2->count;
   Edge **e1 = palloc(sizeof(Edge *) * (n1 ? n1 : 1));
   Edge **e2 = palloc(sizeof(Edge *) * (n2 ? n2 : 1));
@@ -7089,8 +7176,7 @@ meos_intersects(const LWGEOM *g1, const LWGEOM *g2, bool *result)
 
   relate_edges_clear(&re1); relate_edges_clear(&re2);
   pfree(e1); pfree(e2);
-  meos_array_destroy(a1); meos_array_destroy(a2);
-  return true;
+  return;
 }
 
 /**
@@ -7100,29 +7186,15 @@ meos_intersects(const LWGEOM *g1, const LWGEOM *g2, bool *result)
  * outside the first settles that it does. Reading the edges rejects such a
  * pair without a matrix, and the pairs that survive are few enough that the
  * matrix answers them
- * @param[in] g1,g2 Geometries
- * @param[out] result False where @p g2 draws a point outside @p g1, which is
- * conclusive; true where it draws none, which is not
- * @return True if the pair is covered, which is what #geom_meos_supported
- * answers of each geometry
+ * @param[in] ops Operands of the relationship, carrying the edges of each
+ * @param[out] result False where the second geometry draws a point outside
+ * the first, which is conclusive; true where it draws none, which is not
  */
-static bool
-meos_covers_possible(const LWGEOM *g1, const LWGEOM *g2, bool *result)
+static void
+meos_covers_possible(const RelateOperands *ops, bool *result)
 {
-  assert(g1); assert(g2); assert(result);
-  if (! geom_meos_supported(g1) || ! geom_meos_supported(g2))
-    return false;
-
-  /* An empty geometry stands in no relationship: it holds no point to lie
-   * within another, and none of the patterns admits an empty second operand */
-  if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
-  {
-    *result = false;
-    return true;
-  }
-
-  MeosArray *a1 = relate_extract_edges(g1);
-  MeosArray *a2 = relate_extract_edges(g2);
+  assert(ops); assert(result);
+  MeosArray *a1 = ops->op[0].arr, *a2 = ops->op[1].arr;
   int n1 = (int) a1->count, n2 = (int) a2->count;
   Edge **e1 = palloc(sizeof(Edge *) * (n1 ? n1 : 1));
   Edge **e2 = palloc(sizeof(Edge *) * (n2 ? n2 : 1));
@@ -7134,8 +7206,7 @@ meos_covers_possible(const LWGEOM *g1, const LWGEOM *g2, bool *result)
   *result = relate_edges_cover(e1, n1, e2, n2);
 
   pfree(e1); pfree(e2);
-  meos_array_destroy(a1); meos_array_destroy(a2);
-  return true;
+  return;
 }
 
 /**
@@ -7160,58 +7231,79 @@ meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
 {
   assert(g1); assert(g2); assert(result);
 
-  /* Sharing a point is settled by the first witness found, so it is answered
-   * from the edges rather than from a matrix computed whole */
-  if (rel == INTERSECTS)
-    return meos_intersects(g1, g2, result);
-
-  /* Each of the other three relationships asks for a cell of the interior and
-   * boundary rows, so each holds only where the geometries share a point.
-   * Reading that first leaves the matrix to be computed only for a pair that
-   * meets at all */
-  bool meet;
-  if (! meos_intersects(g1, g2, &meet))
+  /* Every native implementation reads the same predicate: the engine answers
+   * a geometry the edge decomposition reaches, and nothing else */
+  if (! geom_meos_supported(g1) || ! geom_meos_supported(g2))
     return false;
-  if (! meet)
+
+  /* An empty geometry holds no point to share with another, and none of the
+   * four patterns admits an empty operand */
+  if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
   {
     *result = false;
     return true;
   }
 
-  /* Covering and containing both need the second geometry to keep clear of
-   * the exterior of the first, and a boundary of it running outside settles
-   * that it does not. Few pairs survive that, so the matrix answers those */
-  if (rel == COVERS || rel == CONTAINS)
+  /* Each step below reads the edges of the same two geometries, so both are
+   * extracted ONCE here and every step borrows the answer. Reading the edges
+   * of a multi-surface as those of the union of its members is what a call on
+   * such a geometry mostly costs, and it was paid once per step */
+  RelateOperands ops;
+  relate_operands_init(&ops, g1, g2);
+
+  bool covered = true;
+
+  /* Sharing a point is settled by the first witness found, so it is answered
+   * from the edges rather than from a matrix computed whole */
+  bool meet;
+  meos_intersects(&ops, &meet);
+  if (rel == INTERSECTS)
+    *result = meet;
+
+  /* Each of the other three relationships asks for a cell of the interior and
+   * boundary rows, so each holds only where the geometries share a point.
+   * Reading that first leaves the matrix to be computed only for a pair that
+   * meets at all */
+  else if (! meet)
+    *result = false;
+  else
   {
-    bool possible;
-    if (! meos_covers_possible(g1, g2, &possible))
-      return false;
+    /* Covering and containing both need the second geometry to keep clear of
+     * the exterior of the first, and a boundary of it running outside settles
+     * that it does not. Few pairs survive that, so the matrix answers those */
+    bool possible = true;
+    if (rel == COVERS || rel == CONTAINS)
+      meos_covers_possible(&ops, &possible);
     if (! possible)
-    {
       *result = false;
-      return true;
+    else
+    {
+      char m[10];
+      covered = relate_matrix(g1, g2, &ops, m);
+      if (covered)
+        switch (rel)
+        {
+          case CONTAINS:
+            *result = de9im_match(m, "T*****FF*");
+            break;
+          case TOUCHES:
+            *result = de9im_match(m, "FT*******") ||
+              de9im_match(m, "F**T*****") || de9im_match(m, "F***T****");
+            break;
+          case COVERS:
+            *result = de9im_match(m, "T*****FF*") ||
+              de9im_match(m, "*T****FF*") || de9im_match(m, "***T**FF*") ||
+              de9im_match(m, "****T*FF*");
+            break;
+          default:
+            covered = false;
+            break;
+        }
     }
   }
 
-  char m[10];
-  if (! meos_relate(g1, g2, m))
-    return false;
-  switch (rel)
-  {
-    case CONTAINS:
-      *result = de9im_match(m, "T*****FF*");
-      return true;
-    case TOUCHES:
-      *result = de9im_match(m, "FT*******") || de9im_match(m, "F**T*****") ||
-        de9im_match(m, "F***T****");
-      return true;
-    case COVERS:
-      *result = de9im_match(m, "T*****FF*") || de9im_match(m, "*T****FF*") ||
-        de9im_match(m, "***T**FF*") || de9im_match(m, "****T*FF*");
-      return true;
-    default:
-      return false;
-  }
+  relate_operands_free(&ops);
+  return covered;
 }
 
 /**
