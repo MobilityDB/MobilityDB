@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: SetSetTPred</title>
+<title>MobilityDB: spatialrel_tgeo_geo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -179,9 +179,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_afd1319b5c3120de47a55d511a1258ed6.html#afd1319b5c3120de47a55d511a1258ed6">SETSET_INDEX_MIN_PAIRS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a1d69d452e091f72b7172f84538f783fd.html#a1d69d452e091f72b7172f84538f783fd">setset_t_pairs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a8f20375ebd4bd69f7d61074c42f93db2.html#a8f20375ebd4bd69f7d61074c42f93db2">SetSetEAPred</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a560a71ef46c9de1c5e0fba967ba15600.html#a560a71ef46c9de1c5e0fba967ba15600">SetSetTPred</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a560a71ef46c9de1c5e0fba967ba15600.html#a560a71ef46c9de1c5e0fba967ba15600">SetSetTPred</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a10e07161fbb9766a5ae22ec427d4ca8d.html#a10e07161fbb9766a5ae22ec427d4ca8d">spatialrel_datum_geo_geo</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_aa9c41dbb2f607fd831601ca57e610720.html#aa9c41dbb2f607fd831601ca57e610720">spatialrel_tgeo_geo</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_aa9c41dbb2f607fd831601ca57e610720.html#aa9c41dbb2f607fd831601ca57e610720">spatialrel_tgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a589d21c1052351655c0996e99aee71f6.html#a589d21c1052351655c0996e99aee71f6">spatialrel_tgeo_tgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_aac9a90bb16ea48c28871b8a2bb913006.html#aac9a90bb16ea48c28871b8a2bb913006">SpatialRelOp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_adcde75cfdf9300176fac0a69654ab18a.html#adcde75cfdf9300176fac0a69654ab18a">stbox_overlaps_space</a></td></tr>
@@ -196,23 +196,77 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a560a71ef46c9de1c5e0fba967ba15600" name="a560a71ef46c9de1c5e0fba967ba15600"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a560a71ef46c9de1c5e0fba967ba15600">&#9670;&#160;</a></span>SetSetTPred</h2>
+<a id="aa9c41dbb2f607fd831601ca57e610720" name="aa9c41dbb2f607fd831601ca57e610720"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9c41dbb2f607fd831601ca57e610720">&#9670;&#160;</a></span>spatialrel_tgeo_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="meos_2src_2geo_2tgeo__spatialrels_8c_a560a71ef46c9de1c5e0fba967ba15600.html#a560a71ef46c9de1c5e0fba967ba15600">SetSetTPred</a></td>
+          <td class="memname">static int spatialrel_tgeo_geo </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dist</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos_2src_2geo_2tgeo__spatialrels_8c_aac9a90bb16ea48c28871b8a2bb913006.html#aac9a90bb16ea48c28871b8a2bb913006">SpatialRelOp</a>&#160;</td>
+          <td class="paramname"><em>op</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>invert</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>ever</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
-</div><div class="memdoc">
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a560a71ef46c9de1c5e0fba967ba15600ab63a5a5d6064dd267681c501be1a070a" name="a560a71ef46c9de1c5e0fba967ba15600ab63a5a5d6064dd267681c501be1a070a"></a>SS_TDWITHIN&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a560a71ef46c9de1c5e0fba967ba15600ad399bcf6e1a124aebadfbb8c3ebaa599" name="a560a71ef46c9de1c5e0fba967ba15600ad399bcf6e1a124aebadfbb8c3ebaa599"></a>SS_TINTERSECTS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a560a71ef46c9de1c5e0fba967ba15600a186890888e72838295f11e010b28832b" name="a560a71ef46c9de1c5e0fba967ba15600a186890888e72838295f11e010b28832b"></a>SS_TTOUCHES&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a560a71ef46c9de1c5e0fba967ba15600ac12f1fe3f8f53377f17058ee563cf9e9" name="a560a71ef46c9de1c5e0fba967ba15600ac12f1fe3f8f53377f17058ee563cf9e9"></a>SS_TDISJOINT&#160;</td><td class="fielddoc"></td></tr>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
 </table>
+</div><div class="memdoc">
+
+<p>Generic spatial relationship for the trajectory or traversed area of a temporal geo and a geometry. </p>
+<p >The function reads the relationship between the trajectory or the traversed area of the temporal geometry and the geometry. When the traversed area is a geometry collection the function iterates over each composing geometry; the ever flag selects whether the iteration short-circuits on the first true element (EVER) or on the first false element (ALWAYS). </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geo </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dist</td><td>Distance, read by <code>SREL_DWITHIN</code> alone </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">op</td><td>Relationship asked for </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">invert</td><td>True if the arguments should be inverted </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ever</td><td>True for the ever semantics (any element satisfies), false for the always semantics (every element satisfies) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return -1 </dd></dl>
 
 </div>
 </div>
