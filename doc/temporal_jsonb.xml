@@ -146,10 +146,11 @@ SELECT textset(jsonbset '{"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"pri
 
 			<listitem xml:id="jsonbset_concat">
 				<indexterm significance="normal"><primary><varname>||</varname></primary></indexterm>
-				<para>Temporal JSONB concatenation</para>
+				<para>JSONB set concatenation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {jsonb,jsonbset} || {jsonbset,jsonb} → jsonbset
 </programlisting>
+				<para>The value is concatenated with every element of the set, and the operand order is free.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']) || '{"unit":"km"}'::jsonb;
 -- {"{\"unit\": \"km\", \"speed\": 10}", "{\"unit\": \"km\", \"speed\": 20}"}
@@ -160,7 +161,7 @@ SELECT jsonb '{"unit":"km"}' || set(ARRAY[jsonb '{"speed":10}', '{"speed":20}'])
 
 			<listitem xml:id="jsonbset_delete">
 				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
-				<para>Temporal JSONB deletion</para>
+				<para>JSONB set deletion</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 jsonbset - {int,text,text[]} → jsonbset
 jsonbset #- text[] → jsonbset
@@ -178,7 +179,7 @@ SELECT set(ARRAY[jsonb '{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bo
 /* {"{\"PoIs\": [\"Grand Place\"], \"location\": \"Point(1 1)\"}", "{\"PoIs\":
    [\"Palais Royal\"], \"location\": \"Point(2 2)\"}"} */
 </programlisting>
-				<para>As shown below, the result of a delete operation may be an empty record or an empty array. To remove these values, the function <varname>minusValue</varname> can used.</para>
+				<para>As shown below, the result of a delete operation may be an empty record or an empty array. To remove these values, the function <varname>setMinus</varname> can be used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10, "light": true}',
   '{"unit": "km", "speed": 20}']) - ARRAY[text 'unit', 'speed'];
@@ -224,7 +225,7 @@ SELECT jsonbset '{"{\"speed\": 10}",
 			<listitem xml:id="jsonbset_set">
 				<indexterm significance="normal"><primary><varname>jsonbsetSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetSetLax</varname></primary></indexterm>
-				<para>Temporal JSONB set</para>
+				<para>JSONB set assignment</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 jsonbsetSet(jsonbset,path text[],val jsonb,create boolean=true) → jsonbset
 jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
@@ -289,7 +290,7 @@ SELECT jsonbsetStripNulls(set(ARRAY[jsonb
 /* {"{\"road\": \"rue de l'Abbaye\"}", "{\"road\": \"Bvd Gén. Jacques\", \"category\":
    \"primary\"}", "{\"road\": \"Bvd de la Cambre\", \"category\": \"primary\"}"} */
 </programlisting>
-				<para>As shown below, the function does not strip bare null values. Function <varname>minusValue</varname> can be used for this purpose.</para>
+				<para>As shown below, the function does not strip a bare null value. The function <varname>setMinus</varname> can be used for this purpose.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10}', 'null',
   '{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}']));
@@ -961,7 +962,7 @@ SELECT tjsonb
 /* {["{\"PoIs\": [\"Grand Place\"], \"location\": \"Point(1 1)\"}"@2001-01-01,
    "{\"PoIs\": [\"Palais Royal\"], \"location\": \"Point(2 2)\"}"@2001-01-02]} */
 </programlisting>
-				<para>As shown below, the result of a delete operation may be an empty record or an empty array. To remove these values, the function <varname>minusValue</varname> can used.</para>
+				<para>As shown below, the result of a delete operation may be an empty record or an empty array. To remove these values, the function <varname>minusValues</varname> can be used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '{[{"unit": "km", "speed": 10, "light": true}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - ARRAY[text 'unit', 'speed'];
@@ -1095,7 +1096,7 @@ SELECT tjsonbStripNulls(tjsonb '{{"road": "Bvd Gén. Jacques",
    "{\"road\": \"Bvd de la Cambre\", \"category\": \"primary\"}"@2001-01-02,
    "{\"road\": \"rue de l'Abbaye\"}"@2001-01-03} */
 </programlisting>
-				<para>As shown below, the function does not strip bare null values. Function <varname>minusValue</varname> can be used for this purpose.</para>
+				<para>As shown below, the function does not strip bare null values. The function <varname>minusValues</varname> can be used for this purpose.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonStripNulls(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]');

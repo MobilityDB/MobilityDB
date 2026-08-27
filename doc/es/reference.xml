@@ -2543,19 +2543,19 @@
 					<para><link linkend="jsonbset_alphanumset"><varname>intset</varname>, <varname>floatset</varname>, <varname>textset</varname></link>: Extrae un valor alfanumérico de un conjunto JSONB dado por una clave</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="jsonbset_concat"><varname>||</varname></link>: Concatenación JSONB temporal</para>
+					<para><link linkend="jsonbset_concat"><varname>||</varname></link>: Concatenación de un conjunto JSONB</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="jsonbset_delete"><varname>-</varname></link>: Eliminación JSONB temporal</para>
+					<para><link linkend="jsonbset_delete"><varname>-</varname></link>: Eliminación en un conjunto JSONB</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="jsonbset_exists"><varname>?</varname></link>: Existencia en un conjunto JSONB</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="jsonbset_set"><varname>jsonbsetSet</varname>, <varname>jsonbsetSetLax</varname></link>: Asignación JSONB temporal</para>
+					<para><link linkend="jsonbset_set"><varname>jsonbsetSet</varname>, <varname>jsonbsetSetLax</varname></link>: Asignación en un conjunto JSONB</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="jsonbset_insert"><varname>jsonbsetInsert</varname></link>: Inserción JSONB temporal</para>
+					<para><link linkend="jsonbset_insert"><varname>jsonbsetInsert</varname></link>: Devuelve el valor <varname>jsonbset</varname> con <varname>jsonb</varname> insertado</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="jsonbset_strip_nulls"><varname>jsonbsetStripNulls</varname></link>: Devuelve un conjunto JSONB sin nulos</para>
