@@ -2899,7 +2899,7 @@
 			<title>Metrics</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_cell_area"><varname>cellArea</varname></link>: Return the temporal area of each cell in a trajectory, in square metres or in the requested unit</para>
+					<para><link linkend="th3_h3_cell_area"><varname>cellArea</varname>, <varname>th3CellAreaKm2</varname>, <varname>th3CellAreaRads2</varname></link>: Return the temporal area of each cell in a trajectory, in square metres, square kilometres, or square radians</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_edge_length"><varname>th3EdgeLength</varname></link>: Return the temporal length of each directed edge in a trajectory, in the requested unit</para>

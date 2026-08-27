@@ -50,9 +50,14 @@ CREATE FUNCTION cellArea(th3index)
   AS 'MODULE_PATHNAME', 'Th3index_cell_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION cellArea(th3index, text)
+CREATE FUNCTION th3CellAreaKm2(th3index)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Th3index_cell_area_unit'
+  AS 'MODULE_PATHNAME', 'Th3index_cell_area_km2'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION th3CellAreaRads2(th3index)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Th3index_cell_area_rads2'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

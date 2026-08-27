@@ -557,20 +557,25 @@ SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
 
 	<sect1 xml:id="th3_metrics">
 		<title>Métricas</title>
-		<para>Las tres funciones métricas aceptan un argumento opcional de unidad. Para áreas: <varname>m2</varname> (por defecto), <varname>km2</varname>, o <varname>rads2</varname>. Para longitudes: <varname>km</varname> (por defecto), <varname>m</varname>, o <varname>rads</varname>. Pasar una unidad de área a una función de longitud (o viceversa) provoca un error.</para>
+		<para>Un área se devuelve en metros cuadrados mediante <varname>cellArea</varname>, la unidad y el nombre que comparte cada índice de celdas, y en las otras dos unidades que publica libh3 mediante <varname>th3CellAreaKm2</varname> y <varname>th3CellAreaRads2</varname>. Una longitud acepta un argumento de unidad: <varname>km</varname> (por defecto), <varname>m</varname>, o <varname>rads</varname>; pasar una unidad de área a una función de longitud provoca un error.</para>
 		<itemizedlist>
 			<listitem xml:id="th3_h3_cell_area">
 				<indexterm significance="normal"><primary><varname>cellArea</varname></primary></indexterm>
-				<para>Devolver el área temporal de cada celda en una trayectoria, en metros cuadrados o en la unidad solicitada</para>
+				<indexterm significance="normal"><primary><varname>th3CellAreaKm2</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3CellAreaRads2</varname></primary></indexterm>
+				<para>Devolver el área temporal de cada celda en una trayectoria, en metros cuadrados, kilómetros cuadrados o radianes cuadrados</para>
 				<programlisting xml:space="preserve" format="linespecific">
 cellArea(th3index) → tfloat
-cellArea(th3index,text) → tfloat
+th3CellAreaKm2(th3index) → tfloat
+th3CellAreaRads2(th3index) → tfloat
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
 -- 4441914.270110932@2001-01-01
-SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01', 'km2');
+SELECT th3CellAreaKm2(th3index '871fa44a8ffffff@2001-01-01');
 -- 4.441914270110932@2001-01-01
+SELECT th3CellAreaRads2(th3index '871fa44a8ffffff@2001-01-01');
+-- 0.000000109434431@2001-01-01
 </programlisting>
 			</listitem>
 
