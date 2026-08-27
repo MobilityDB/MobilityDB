@@ -116,6 +116,30 @@ SELECT SRID(tpcbox(0, 0, 10, 10, 1, 4326));
  4326
 (1 row)
 
+SELECT xmin(b), xmax(b), ymin(b), ymax(b)
+FROM (SELECT tpcbox(pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0))) AS b) t;
+ xmin | xmax | ymin | ymax 
+------+------+------+------
+    1 |    4 |    2 |    5
+(1 row)
+
+SELECT PC_PatchMin(p, 'X'), PC_PatchMax(p, 'X'),
+  PC_PatchMin(p, 'Y'), PC_PatchMax(p, 'Y')
+FROM (SELECT pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0)) AS p) t;
+ pc_patchmin | pc_patchmax | pc_patchmin | pc_patchmax 
+-------------+-------------+-------------+-------------
+           1 |           4 |           2 |           5
+(1 row)
+
+SELECT xmin(b), xmax(b), ymin(b), ymax(b)
+FROM (SELECT tpcbox(pcpatch(pcpoint(1, 1.0, 2.0, 3.0))) AS b) t;
+ xmin | xmax | ymin | ymax 
+------+------+------+------
+    1 |    1 |    2 |    2
+(1 row)
+
 SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
           ?column?           
 -----------------------------

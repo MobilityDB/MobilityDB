@@ -65,6 +65,26 @@ SELECT pcid(tpcbox(0, 0, 10, 10, 7, 0));
 SELECT SRID(tpcbox(0, 0, 10, 10, 1, 4326));
 
 -------------------------------------------------------------------------------
+-- Conversions
+--
+-- The X and Y extent of the patch below are distinct, so that reading the
+-- PCBOUNDS header of a patch in the wrong order shows in the answer. The two
+-- queries answer the same extent, the second one through pgPointCloud itself.
+-------------------------------------------------------------------------------
+
+SELECT xmin(b), xmax(b), ymin(b), ymax(b)
+FROM (SELECT tpcbox(pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0))) AS b) t;
+SELECT PC_PatchMin(p, 'X'), PC_PatchMax(p, 'X'),
+  PC_PatchMin(p, 'Y'), PC_PatchMax(p, 'Y')
+FROM (SELECT pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0)) AS p) t;
+
+-- The extent of a patch of a single point is that point
+SELECT xmin(b), xmax(b), ymin(b), ymax(b)
+FROM (SELECT tpcbox(pcpatch(pcpoint(1, 1.0, 2.0, 3.0))) AS b) t;
+
+-------------------------------------------------------------------------------
 -- Set operations
 -------------------------------------------------------------------------------
 
