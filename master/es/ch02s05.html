@@ -123,7 +123,7 @@ SELECT textset '{aaa, bbb}' || text 'XX';
 SELECT text 'XX' || textset '{aaa, bbb}';
 -- {"XXaaa", "XXbbb"}
 </pre></li><li class="listitem"><a name="time_tprecision"></a><a class="indexterm" name="id2137"></a><p>Establece la precisión temporal del valor de tiempo al rango con respecto al origen</p><pre class="programlisting">
-tprecision(times,interval,origin timestamptz='2000-01-03') → times
+tprecision(times,duration interval,origin timestamptz='2000-01-03') → times
 </pre><p>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</p><pre class="programlisting">
 SELECT tprecision(timestamptz '2001-12-03', '30 days');
 -- 2001-11-23

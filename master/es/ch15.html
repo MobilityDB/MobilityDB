@@ -43,8 +43,8 @@ SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"
 -- NULL
 </pre></li><li class="listitem"><a name="jsonbset_extract_path"></a><a class="indexterm" name="id10563"></a><a class="indexterm" name="id10566"></a><a class="indexterm" name="id10569"></a><a class="indexterm" name="id10572"></a><p>Extrae un campo de objeto JSON especificado por una ruta</p><pre class="programlisting">
 {textset,jsonbset} #&gt; text[] → {textset,jsonbset}
-jsonbsetExtractPath(jsonbset,text[],null_handle text='use_json_null') → jsonbset
-jsonbsetExtractPathText(jsonbset,text[],null_handle text='use_json_null') → textset
+jsonbsetExtractPath(jsonbset,path text[],null_handle text='use_json_null') → jsonbset
+jsonbsetExtractPathText(jsonbset,path text[],null_handle text='use_json_null') → textset
 </pre><pre class="programlisting">
 SELECT textset '[{"speed": {"unit": "km", "value": 10}},
   {"speed": {"unit": "km", "value": 20}}]' #&gt; ARRAY[text 'speed', 'value'];
@@ -126,8 +126,8 @@ SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' ?&amp; ARRAY[text 'speed', text 'units'];
 -- {t,f}
 </pre></li><li class="listitem"><a name="jsonbset_set"></a><a class="indexterm" name="id10635"></a><a class="indexterm" name="id10638"></a><p>Asignación JSONB temporal</p><pre class="programlisting">
-jsonbsetSet(jsonbset,path text[],jsonb,create boolean=true) → jsonbset
-jsonbsetSetLax(jsonbset,path text[],jsonb,create boolean=true,
+jsonbsetSet(jsonbset,path text[],val jsonb,create boolean=true) → jsonbset
+jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
   handle_null text) → jsonbset
 </pre><p>Devuelve el valor <code class="varname">jsonbset</code> con el elemento especificado por la ruta reemplazado por <code class="varname">jsonb</code>, o añadido si <code class="varname">create</code> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <code class="varname">jsonbsetSetLax</code> se comporta de forma idéntica a <code class="varname">jsonbsetSet</code> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <code class="varname">handle_null</code>, que debe ser uno de <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code> o <code class="varname">'return_source'</code>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <code class="varname">'return_source'</code>, mientras que para todas las demás operaciones de <span class="emphasis"><em>consulta</em></span>, este valor se ha reemplazado por <code class="varname">'return_null'</code>.</p><pre class="programlisting">
 SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
@@ -143,7 +143,7 @@ SELECT jsonbsetSetLax(jsonbset '[{"speed": 10, "units": "km/h"}, {"speed": 20}]'
   ARRAY['units'], 'null'::jsonb, true, 'delete_key');
 -- [{"speed": 10, "units": "km/h"}, {"speed": 20}]
 </pre></li><li class="listitem"><a name="jsonbset_insert"></a><a class="indexterm" name="id10659"></a><p>Inserción JSONB temporal</p><pre class="programlisting">
-jsonbsetInsert(jsonbset,path text[],jsonb,after boolean=false) → jsonbset
+jsonbsetInsert(jsonbset,path text[],val jsonb,after boolean=false) → jsonbset
 </pre><p>Devuelve el valor <code class="varname">jsonbset</code> con <code class="varname">jsonb</code> insertado. Si el elemento especificado por la ruta es un elemento de arreglo, el nuevo valor se insertará antes de ese elemento si <code class="varname">after</code> es falso, o después en caso contrario. Si el elemento especificado por la ruta es un campo de objeto, el nuevo valor se insertará solo si el objeto no contiene ya esa clave. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo.</p><pre class="programlisting">
 SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
   '"km/h"'::jsonb);

@@ -43,8 +43,8 @@ SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"
 -- NULL
 </pre></li><li class="listitem"><a name="jsonbset_extract_path"></a><a class="indexterm" name="id11128"></a><a class="indexterm" name="id11131"></a><a class="indexterm" name="id11134"></a><a class="indexterm" name="id11137"></a><p>Extract a JSON object field specified by a path</p><pre class="programlisting">
 {textset,jsonbset} #&gt; text[] → {textset,jsonbset}
-jsonbsetExtractPath(jsonbset,text[],null_handle text='use_json_null') → jsonbset
-jsonbsetExtractPathText(jsonbset,text[],null_handle text='use_json_null') → textset
+jsonbsetExtractPath(jsonbset,path text[],null_handle text='use_json_null') → jsonbset
+jsonbsetExtractPathText(jsonbset,path text[],null_handle text='use_json_null') → textset
 </pre><pre class="programlisting">
 SELECT textset '[{"speed": {"unit": "km", "value": 10}},
   {"speed": {"unit": "km", "value": 20}}]' #&gt; ARRAY[text 'speed', 'value'];
@@ -126,8 +126,8 @@ SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' ?&amp; ARRAY[text 'speed', text 'units'];
 -- {t,f}
 </pre></li><li class="listitem"><a name="jsonbset_set"></a><a class="indexterm" name="id11200"></a><a class="indexterm" name="id11203"></a><p>Temporal JSONB set</p><pre class="programlisting">
-jsonbsetSet(jsonbset,path text[],jsonb,create boolean=true) → jsonbset
-jsonbsetSetLax(jsonbset,path text[],jsonb,create boolean=true,
+jsonbsetSet(jsonbset,path text[],val jsonb,create boolean=true) → jsonbset
+jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
   handle_null text) → jsonbset
 </pre><p>Return the <code class="varname">jsonbset</code> value with the item specified by path replaced by <code class="varname">jsonb</code>, or added if <code class="varname">create</code> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive. Function <code class="varname">jsonbsetSetLax</code> behaves identically to <code class="varname">jsonbsetSet</code> if the given value is not NULL, Otherwise, it behaves according to the value of <code class="varname">handle_null</code>, which must be one of <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, or <code class="varname">'return_source'</code>. As stated above, we kept PostgreSQL behavior for this function enabling the value <code class="varname">'return_source'</code> whereas for all other <span class="emphasis"><em>query</em></span> operations, this value has been replaced with <code class="varname">'return_null'</code>.</p><pre class="programlisting">
 SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
@@ -143,7 +143,7 @@ SELECT jsonbsetSetLax(jsonbset '[{"speed": 10, "units": "km/h"}, {"speed": 20}]'
   ARRAY['units'], 'null'::jsonb, true, 'delete_key');
 -- [{"speed": 10, "units": "km/h"}, {"speed": 20}]
 </pre></li><li class="listitem"><a name="jsonbset_insert"></a><a class="indexterm" name="id11224"></a><p>Return the <code class="varname">jsonbset</code> value with <code class="varname">jsonb</code> inserted</p><pre class="programlisting">
-jsonbsetInsert(jsonbset,path text[],jsonb,after boolean=false) → jsonbset
+jsonbsetInsert(jsonbset,path text[],val jsonb,after boolean=false) → jsonbset
 </pre><p>If the item specified by the path is an array element, the new value will be inserted before that item if <code class="varname">after</code> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</p><pre class="programlisting">
 SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
   '"km/h"'::jsonb);

@@ -48,9 +48,9 @@ SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 -- NULL
 </pre></li><li class="listitem"><a name="tjson_extract_path"></a><a class="indexterm" name="id11529"></a><a class="indexterm" name="id11532"></a><a class="indexterm" name="id11535"></a><a class="indexterm" name="id11538"></a><a class="indexterm" name="id11541"></a><p>Extract a temporal JSON object field specified by a path</p><pre class="programlisting">
 {ttext,tjsonb} #&gt; text[] → {ttext,tjsonb}
-tjsonExtractPath(ttext,text[],null_handle text='use_json_null') → ttext
-tjsonbExtractPath(tjsonb,text[],null_handle text='use_json_null') → tjsonb
-tjsonbExtractPathText(tjsonb,text[],null_handle text='use_json_null') → ttext
+tjsonExtractPath(ttext,path text[],null_handle text='use_json_null') → ttext
+tjsonbExtractPath(tjsonb,path text[],null_handle text='use_json_null') → tjsonb
+tjsonbExtractPathText(tjsonb,path text[],null_handle text='use_json_null') → ttext
 </pre><pre class="programlisting">
 SELECT ttext '[{"speed": {"unit": "km", "value": 10}}@2001-01-01,
   {"speed": {"unit": "km", "value": 20}}@2001-01-02]' #&gt; ARRAY[text 'speed', 'value'];
@@ -154,8 +154,8 @@ SELECT jsonb '{"geom": "Point(1 1)"}' &lt;@ tjsonb '{[{"geom": "Point(1 1)"}@200
   [{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}';
 -- {[t@2001-01-01, t@2001-01-03], [f@2001-01-04, f@2001-01-05]}
 </pre></li><li class="listitem"><a name="tjsonb_set"></a><a class="indexterm" name="id11620"></a><a class="indexterm" name="id11623"></a><p>Temporal JSONB set</p><pre class="programlisting">
-tjsonbSet(tjsonb,path text[],jsonb,create boolean=true) → tjsonb
-tjsonbSetLax(tjsonb,path text[],jsonb,create boolean=true,handle_null text) → tjsonb
+tjsonbSet(tjsonb,path text[],val jsonb,create boolean=true) → tjsonb
+tjsonbSetLax(tjsonb,path text[],val jsonb,create boolean=true,handle_null text) → tjsonb
 </pre><p>Return the <code class="varname">tjsonb</code> value with the item specified by path replaced by <code class="varname">jsonb</code>, or added if <code class="varname">create</code> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive. Function <code class="varname">tjsonbSetLax</code> behaves identically to <code class="varname">tjsonbSet</code> if the given value is not NULL, Otherwise, it behaves according to the value of <code class="varname">handle_null</code>, which must be one of <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, or <code class="varname">'return_source'</code>. As stated above, we kept PostgreSQL behavior for this function enabling the value <code class="varname">'return_source'</code> whereas for all other <span class="emphasis"><em>query</em></span> operations, this value has been replaced with <code class="varname">'return_null'</code>.</p><pre class="programlisting">
 SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
@@ -170,7 +170,7 @@ SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20}@2001-01-02]', ARRAY['units'], 'null'::jsonb, true, 'delete_key');
 -- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20}@2001-01-02]
 </pre></li><li class="listitem"><a name="tjsonb_insert"></a><a class="indexterm" name="id11644"></a><p>Temporal JSONB insert</p><pre class="programlisting">
-tjsonbInsert(tjsonb,path text[],jsonb,after boolean=false) → tjsonb
+tjsonbInsert(tjsonb,path text[],val jsonb,after boolean=false) → tjsonb
 </pre><p>Return the <code class="varname">tjsonb</code> value with <code class="varname">jsonb</code> inserted. If the item specified by the path is an array element, the new value will be inserted before that item if <code class="varname">after</code> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</p><pre class="programlisting">
 SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
