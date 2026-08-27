@@ -345,7 +345,7 @@
 						<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: Is the first value contained by the second one?</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: Is the first value adjacent to the second one? Two values are adjacent when they touch without overlapping, that is, when they share a boundary and have no value in common inside it. For the continuous base types <varname>float</varname> and <varname>timestamptz</varname> a shared bound is such a touch. For the discrete base types <varname>int</varname>, <varname>bigint</varname> and <varname>date</varname>, whose spans are stored in normal form, it means consecutive values.</para>
+						<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: Is the first value adjacent to the second one?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -597,13 +597,13 @@
 					<para><link linkend="ttype_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (WKB) representation</para>
+					<para><link linkend="ttype_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttypeFromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttypeFromBinary"><varname>ttypeFromBinary</varname>, <varname>ttypeFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					<para><link linkend="ttypeFromBinary"><varname>ttypeFromBinary</varname>, <varname>ttypeFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -721,13 +721,13 @@
 					<para><link linkend="ttype_deleteTime"><varname>deleteTime</varname></link>: Delete the instants of a temporal value that intersect a time value</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_appendInstant"><varname>appendInstant</varname></link>: Append a temporal instant to a temporal value</para>
+					<para><link linkend="ttype_appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname></link>: Append a temporal instant to a temporal value</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_appendSequence"><varname>appendSequence</varname></link>: Append a temporal sequence to a temporal value</para>
+					<para><link linkend="ttype_appendSequence"><varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Append a temporal sequence to a temporal value</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_merge"><varname>merge</varname></link>: Merge the temporal values</para>
+					<para><link linkend="ttype_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal values</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -759,7 +759,7 @@
 				<title>Ever and Always Comparisons</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname>, <varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname>, <varname>?&lt;</varname>, <varname>%&lt;</varname>, <varname>?&gt;</varname>, <varname>%&gt;</varname>, <varname>?&lt;=</varname>, <varname>%&lt;=</varname>, <varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: Ever and always comparisons</para>
+						<para><link linkend="ttype_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>?&lt;</varname>, <varname>?&gt;</varname>, <varname>?&lt;=</varname>, <varname>?&gt;=</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname>, <varname>%&lt;</varname>, <varname>%&gt;</varname>, <varname>%&lt;=</varname>, <varname>%&gt;=</varname></link>: Ever and always comparisons</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -767,7 +767,7 @@
 				<title>Temporal Comparisons</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="ttype_teq"><varname>#=</varname>, <varname>#&lt;&gt;</varname>, <varname>#&lt;</varname>, <varname>#&gt;</varname>, <varname>#&lt;=</varname>, <varname>#&gt;=</varname></link>: Temporal comparisons</para>
+						<para><link linkend="ttype_tcomp"><varname>#=</varname>, <varname>#&lt;&gt;</varname>, <varname>#&lt;</varname>, <varname>#&gt;</varname>, <varname>#&lt;=</varname>, <varname>#&gt;=</varname></link>: Temporal comparisons</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -800,7 +800,7 @@
 					<para><link linkend="tbool_tint"><varname>::</varname>, <varname>tint(tbool)</varname>, <varname>tint</varname></link>: Convert between a temporal Boolean and a temporal integer</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tint_tfloat"><varname>::</varname>, <varname>tnumber(tnumber)</varname></link>: Convert between temporal integers, temporal big integers, and temporal floats</para>
+					<para><link linkend="tint_tfloat"><varname>tnumber</varname>, <varname>::</varname>, <varname>tnumber(tnumber)</varname></link>: Convert between temporal integers, temporal big integers, and temporal floats</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -876,7 +876,7 @@
 					<para><link linkend="tnumber_deltaValue"><varname>deltaValue</varname></link>: Return the value difference between consecutive instants of the temporal number</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tfloat_trend"><varname>trend</varname></link>: Return the trend of a temporal float with linear interpolation, which states whether its value is increasing, constant, or decreasing, represented, respectively, by 1, 0, and -1.</para>
+					<para><link linkend="tfloat_trend"><varname>trend</varname></link>: Return the trend of a temporal float with linear interpolation, which states whether its value is increasing, constant, or decreasing, represented, respectively, by 1, 0, and -1</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tnumber_derivative"><varname>derivative</varname></link>: Return the derivative over time of a temporal float in units per second</para>
@@ -952,7 +952,7 @@
 					<para><link linkend="tspatial_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON representation &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tspatial_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, or the Hexadecimal Extended Well-Known Binary (EWKB) representation &Z_support; &geography_support;</para>
+					<para><link linkend="tspatial_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tspatialFromText"><varname>tspatialFromText</varname>, <varname>tspatialFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation &Z_support; &geography_support;</para>
@@ -969,7 +969,7 @@
 			<title>Conversions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tspatial_bbox"><varname>::</varname>, <varname>stbox(tspatial)</varname></link>: Convert a spatiotemporal value to a spatiotemporal box</para>
+					<para><link linkend="tspatial_bbox"><varname>stbox</varname>, <varname>::</varname>, <varname>stbox(tspatial)</varname></link>: Convert a spatiotemporal value to a spatiotemporal box</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeometry_tgeography"><varname>::</varname></link>: Convert between a temporal geometry and a temporal geography</para>
@@ -1106,50 +1106,47 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Spatial Relationships</title>
-			<sect3>
-				<title>Ever and Always Relationships</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tgeo_eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Ever or always contains</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tgeo_eCovers"><varname>eCovers</varname>, <varname>aCovers</varname></link>: Ever or always covers</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tgeo_eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Is ever or always disjoint &Z_support; &geography_support;</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tgeo_eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Is ever or always at distance within &Z_support; &geography_support;</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tgeo_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever or always intersects &Z_support; &geography_support;</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tgeo_eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever or always touches</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Spatiotemporal Relationships</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tgeo_tContains"><varname>tContains</varname></link>: Temporal contains</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tgeo_tDisjoint"><varname>tDisjoint</varname></link>: Temporal disjoint &Z_support; &geography_support;</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tgeo_tDwithin"><varname>tDwithin</varname></link>: Temporal distance within &Z_support;</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tgeo_tIntersects"><varname>tIntersects</varname></link>: Temporal intersects &Z_support; &geography_support;</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tgeo_tTouches"><varname>tTouches</varname></link>: Temporal touches</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
+			<title>Ever and Always Relationships</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tgeo_eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Ever or always contains</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_eCovers"><varname>eCovers</varname>, <varname>aCovers</varname></link>: Ever or always covers</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Is ever or always disjoint &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Is ever or always at distance within &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever or always intersects &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever or always touches</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Spatiotemporal Relationships</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tgeo_tContains"><varname>tContains</varname></link>: Temporal contains</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_tDisjoint"><varname>tDisjoint</varname></link>: Temporal disjoint &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_tDwithin"><varname>tDwithin</varname></link>: Temporal distance within &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_tIntersects"><varname>tIntersects</varname></link>: Temporal intersects &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_tTouches"><varname>tTouches</varname></link>: Temporal touches</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 	</sect1>
 
@@ -1288,7 +1285,7 @@
 					<para><link linkend="tbool_tAnd"><varname>tAnd</varname>, <varname>tOr</varname></link>: Temporal and, temporal or</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_tMin"><varname>tMin</varname>, <varname>tMax</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Temporal minimum, maximum, sum, and average</para>
+					<para><link linkend="ttype_tMin"><varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Temporal minimum, maximum, sum, and average</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_wCount"><varname>wCount</varname></link>: Window count</para>
@@ -1304,9 +1301,9 @@
 	</sect1>
 
 	<sect1>
-		<title>Temporal Poses</title>
+		<title>Temporal Poses and Pose Chains</title>
 		<sect2>
-			<title>Static Poses</title>
+			<title>Static Poses and Pose Chains</title>
 			<sect3>
 				<title>Input and Output</title>
 				<itemizedlist>
@@ -1347,7 +1344,7 @@
 				<title>Accessors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pose_point"><varname>point</varname></link>: Return the point</para>
+						<para><link linkend="pose_point"><varname>point</varname></link>: Return the point, which for a pose chain is the point of its innermost frame</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pose_quaternion"><varname>quaternion</varname></link>: Return the orientation quaternion of a pose</para>
@@ -1366,7 +1363,7 @@
 				<title>Spatial Reference System</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pose_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier</para>
+						<para><link linkend="pose_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier, which for a pose chain is the identifier of its outer frame</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pose_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
@@ -1377,7 +1374,7 @@
 				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pose_distance_op"><varname>&lt;-&gt;</varname></link>: Return the distance</para>
+						<para><link linkend="pose_distance_op"><varname>distance</varname>, <varname>&lt;-&gt;</varname></link>: Return the distance</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1388,13 +1385,39 @@
 						<para><link linkend="pose_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_same"><varname>~=</varname></link>: Are the poses approximately equal with respect to an epsilon value?</para>
+						<para><link linkend="pose_same"><varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>
 		<sect2>
-			<title>Temporal Poses</title>
+			<title>Pose Chain Composition</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="posechain_constructor"><varname>posechain</varname></link>: Construct a pose chain from an array of poses ordered from the outermost frame inwards</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="pose_to_posechain"><varname>posechain</varname></link>: Convert a pose into a pose chain of a single link</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="posechain_to_pose"><varname>pose</varname></link>: Return the pose of a frame the chain defines, read in the outer frame of the chain</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="posechain_appendPose"><varname>appendPose</varname></link>: Return a pose chain with a pose appended as its innermost link</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="posechain_numPoses"><varname>numPoses</varname></link>: Return the number of links of a pose chain</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="posechain_poseN"><varname>startPose</varname>, <varname>endPose</varname>, <varname>poseN</varname>, <varname>poses</varname></link>: Return the links of a pose chain</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tposechain_numPoses"><varname>numPoses</varname></link>: Return the number of links every value of a temporal pose chain holds</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Temporal Poses and Pose Chains</title>
 			<sect3>
 				<title>Input and Output</title>
 				<itemizedlist>
@@ -1405,16 +1428,16 @@
 						<para><link linkend="tpose_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpose_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, the Hexadecimal Well-Known Binary (HexWKB) representation, or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+						<para><link linkend="tpose_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tposeFromText"><varname>tposeFromText</varname>, <varname>tposeFromEWKT</varname></link>: Input from the Well-Known Text (WKT) representation or from the Extended Well-Known Text (EWKT) representation</para>
+						<para><link linkend="tposeFromText"><varname>tposeFromText</varname>, <varname>tposeFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tposeFromMFJSON"><varname>tposeFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tposeFromBinary"><varname>tposeFromBinary</varname>, <varname>tposeFromEWKB</varname>, <varname>tposeFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB) representation, from the Extended Well-Known Binary (EWKB) representation, or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+						<para><link linkend="tposeFromBinary"><varname>tposeFromBinary</varname>, <varname>tposeFromEWKB</varname>, <varname>tposeFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1467,6 +1490,9 @@
 					<listitem>
 						<para><link linkend="tpose_angular_speed"><varname>angularSpeed</varname></link>: Return the angular speed of a temporal pose as a step-interpolated temporal float (radians per unit time)</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_getValue"><varname>getValue</varname>, <varname>getValues</varname>, <varname>timeSpan</varname></link>: Return the value of a temporal instant, the set of values, or the time span</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -1492,6 +1518,9 @@
 					<listitem>
 						<para><link linkend="tpose_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal poses</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_insert"><varname>insert</varname>, <varname>update</varname>, <varname>deleteTime</varname></link>: Insert or update the second temporal pose chain into the first one, or delete a time value from it</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -1506,13 +1535,16 @@
 					<listitem>
 						<para><link linkend="tpose_atElevation"><varname>atElevation</varname>, <varname>minusElevation</varname></link>: Restrict to (the complement of) an elevation span</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_atTime"><varname>atTime</varname>, <varname>atValue</varname></link>: Restrict a temporal pose chain to a time or to a value</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
 				<title>Spatial Reference System</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpose_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier</para>
+						<para><link linkend="tpose_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier, which for a temporal pose chain is the identifier of its outer frame</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpose_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
@@ -1527,6 +1559,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpose_pos"><varname>::</varname></link>: Position operators</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_expandSpace"><varname>expandSpace</varname>, <varname>stboxes</varname></link>: Return the spatiotemporal bounding box expanded in the spatial dimension, or the array of boxes covering the temporal pose chain</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1548,13 +1583,18 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Spatial Relationships</title>
+				<title>Ever and Always Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpose_espatialrels"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: The <emphasis>ever</emphasis> and <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is ever or always satisfied and result in a <varname>boolean</varname>. A temporal pose answers them at the position it occupies, so a value with linear interpolation is answered along its trajectory rather than at its instants alone. The temporal pose declares the relationships a moving point answers: <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname> and <varname>aCovers</varname> take the geometry first only, and <varname>eTouches</varname> and <varname>aTouches</varname> have no direction between two temporal poses, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
+						<para><link linkend="tpose_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever and always relationships</para>
 					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Spatiotemporal Relationships</title>
+				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpose_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A temporal pose answers them at the position it occupies, so a value with linear interpolation is answered along its trajectory rather than at its instants alone. The temporal pose declares the relationships a moving point answers: <varname>tContains</varname> and <varname>tCovers</varname> take the geometry first only, and <varname>tTouches</varname> has no direction between two temporal poses, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
+						<para><link linkend="tpose_tContains"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Spatiotemporal relationships</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1565,10 +1605,13 @@
 						<para><link linkend="tpose_comp"><varname>::</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpose_ever_always"><varname>?=</varname>, <varname>%=</varname></link>: Ever and always comparisons</para>
+						<para><link linkend="tpose_ever_always"><varname>?=</varname>, <varname>%=</varname>, <varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpose_tcomp"><varname>::</varname></link>: Temporal comparisons</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_eq"><varname>eEq</varname></link>: Compare two temporal pose chains, or a temporal pose chain and a pose chain</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1580,6 +1623,15 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpose_wCount"><varname>wCount</varname></link>: Window count</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_extent"><varname>extent</varname></link>: Bounding box extent</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_appendInstantAgg"><varname>appendInstantAgg</varname></link>: Append the aggregated instants into a sequence</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_appendSequenceAgg"><varname>appendSequenceAgg</varname></link>: Append the aggregated sequences into a sequence set</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1655,233 +1707,14 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
-		</sect2>
-	</sect1>
-
-	<sect1>
-		<title>Pose Chains</title>
-		<sect2>
-			<title>Static Pose Chains</title>
 			<sect3>
-				<title>Input and Output</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="posechain_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechain_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechainFromText"><varname>posechainFromText</varname>, <varname>posechainFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechainFromBinary"><varname>posechainFromBinary</varname>, <varname>posechainFromEWKB</varname>, <varname>posechainFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Constructors</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="posechain_constructor"><varname>posechain</varname></link>: Construct a pose chain from an array of poses ordered from the outermost frame inwards</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechain_appendPose"><varname>appendPose</varname></link>: Return a pose chain with a pose appended as its innermost link</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Conversions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="pose_to_posechain"><varname>posechain</varname></link>: Convert a pose into a pose chain of a single link</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechain_to_pose"><varname>pose</varname></link>: Return the pose of a frame the chain defines, read in the outer frame of the chain</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechain_to_point"><varname>point</varname></link>: Convert a pose chain into the geometry point of its innermost frame</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechain_to_stbox"><varname>stbox</varname></link>: Convert a pose chain into a spatiotemporal box</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Accessors</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="posechain_numPoses"><varname>numPoses</varname></link>: Return the number of links of a pose chain</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechain_poseN"><varname>startPose</varname>, <varname>endPose</varname>, <varname>poseN</varname>, <varname>poses</varname></link>: Return the links of a pose chain</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Transformations</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="posechain_round"><varname>round</varname></link>: Round the values of the links of a pose chain to a number of decimal places</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Spatial Reference System</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="posechain_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier of the outer frame of a pose chain</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechain_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Comparisons</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="posechain_comparisons"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparison operators</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="posechain_same"><varname>~=</varname></link>: Return true if two pose chains are equal up to the tolerance of the comparison of floating-point values</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-		</sect2>
-		<sect2>
-			<title>Temporal Pose Chains</title>
-			<sect3>
-				<title>Input and Output</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_asText_temp"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechainFromText"><varname>tposechainFromText</varname>, <varname>tposechainFromBinary</varname>, <varname>tposechainFromHexEWKB</varname></link>: Return a temporal pose chain from its text or binary representation</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechain_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON representation</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Constructors</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_constructor"><varname>tposechain</varname></link>: Construct a temporal pose chain from a pose chain and a time value</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Conversions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_to_tpose"><varname>tpose</varname></link>: Convert a temporal pose chain into a temporal pose</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Accessor Functions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_numPoses"><varname>numPoses</varname></link>: Return the number of links every value of a temporal pose chain holds</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechain_getValue"><varname>getValue</varname>, <varname>getValues</varname>, <varname>timeSpan</varname></link>: Return the value of a temporal instant, the set of values, or the time span</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechain_stbox"><varname>stbox</varname></link>: Return the spatiotemporal box of a temporal pose chain</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Transformation Functions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_round"><varname>round</varname>, <varname>shiftTime</varname></link>: Round the coordinates to a number of decimal places, or shift the time</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Spatial Reference System</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier of the outer frame of a temporal pose chain</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechain_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>OGC GeoPose Composite Chain</title>
+				<title>Composite Chain and Graph Documents</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tposechain_asGeoPose"><varname>asGeoPose</varname>, <varname>tposechainFromGeoPose</varname></link>: Write or read an OGC GeoPose Composite Chain document</para>
 					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>OGC GeoPose Composite Graph</title>
-				<itemizedlist>
 					<listitem>
 						<para><link linkend="tposechainarr_asGeoPose"><varname>asGeoPose</varname></link>: Write an OGC GeoPose Composite Graph document</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Restriction Functions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_atTime"><varname>atTime</varname>, <varname>atValue</varname></link>: Restrict a temporal pose chain to a time or to a value</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Comparison Functions and Operators</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_eq"><varname>eEq</varname></link>: Compare two temporal pose chains, or a temporal pose chain and a pose chain</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Topological and Position Operators</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_overlaps"><varname>&amp;&amp;</varname>, <varname>&lt;&lt;#</varname></link>: Compare the bounding box of a temporal pose chain with another bounding box</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Temporal Spatial Relationships</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A temporal pose chain answers them at the position its composed pose occupies, so a chain with linear interpolation is answered along its trajectory rather than at its instants alone. The chain declares the relationships a moving point answers: <varname>tContains</varname> and <varname>tCovers</varname> take the geometry first only, and <varname>tTouches</varname> has no direction between two chains, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Aggregations</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tposechain_tCount"><varname>tCount</varname></link>: Temporal count</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechain_wCount"><varname>wCount</varname></link>: Window count</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechain_extent"><varname>extent</varname></link>: Bounding box extent</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechain_mergeAgg"><varname>mergeAgg</varname></link>: Merge the aggregated temporal pose chains. The name <varname>merge</varname> denotes the same aggregate</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechain_appendInstantAgg"><varname>appendInstantAgg</varname></link>: Append the aggregated instants into a sequence. The name <varname>appendInstant</varname> denotes the same aggregate</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tposechain_appendSequenceAgg"><varname>appendSequenceAgg</varname></link>: Append the aggregated sequences into a sequence set. The name <varname>appendSequence</varname> denotes the same aggregate</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1957,7 +1790,7 @@
 						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="npoint_same"><varname>::</varname></link>: Spatial similarity</para>
+						<para><link linkend="npoint_same"><varname>equals</varname>, <varname>::</varname></link>: Spatial similarity</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1998,7 +1831,7 @@
 				<title>MF-JSON Input and Output</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_asMFJSON"><varname>asMFJSON</varname>, <varname>tnpointFromMFJSON</varname></link>: Output a temporal network point as MF-JSON and read it back; the round trip is lossless. The output takes the options, flags, and decimal-digits arguments shared with the other temporal types.</para>
+						<para><link linkend="tnpoint_asMFJSON"><varname>asMFJSON</varname>, <varname>tnpointFromMFJSON</varname></link>: Output a temporal network point as MF-JSON and read it back; the round trip is lossless</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2062,23 +1895,6 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Distance Operations</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tnpoint_nearestApproachDistance"><varname>|=|</varname></link>: Return the smallest distance ever</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tnpoint_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the nearest approach point between the two arguments</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tnpoint_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
 				<title>Spatial Operations</title>
 				<itemizedlist>
 					<listitem>
@@ -2101,13 +1917,35 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Spatial Relationships</title>
+				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_espatialrels"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: The <emphasis>ever</emphasis> and <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is ever or always satisfied and result in a <varname>boolean</varname>. A temporal network point answers them at the position its route and fraction resolve to, so a sequence with linear interpolation is answered along its route rather than at its instants alone. The temporal network point declares the relationships a moving point answers: <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname> and <varname>aCovers</varname> take the geometry first only, and <varname>eTouches</varname> and <varname>aTouches</varname> have no direction between two temporal network points, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
+						<para><link linkend="tnpoint_nearestApproachDistance"><varname>|=|</varname></link>: Return the smallest distance ever</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tnpoint_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A temporal network point answers them at the position its route and fraction resolve to. The temporal network point declares the relationships a moving point answers: <varname>tContains</varname> and <varname>tCovers</varname> take the geometry first only, and <varname>tTouches</varname> has no direction between two temporal network points, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
+						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tnpoint_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the nearest approach point between the two arguments</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tnpoint_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Ever and Always Relationships</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever and always relationships</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Spatiotemporal Relationships</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_tContains"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Spatiotemporal relationships</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2115,13 +1953,13 @@
 				<title>Comparisons</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_comp"><varname>::</varname></link>: Traditional comparisons</para>
+						<para><link linkend="tnpoint_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;,</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tnpoint_ever_always"><varname>?=</varname>, <varname>%=</varname></link>: Ever and always comparisons</para>
+						<para><link linkend="tnpoint_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tnpoint_tcomp"><varname>::</varname></link>: Temporal comparisons</para>
+						<para><link linkend="tnpoint_tcomp"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Temporal comparisons</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2143,7 +1981,7 @@
 				<title>Aggregation</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_extent"><varname>extent</varname></link>: Return the spatiotemporal bounding box covering every materialised position in a set of network points. The aggregate is polymorphic with the <varname>extent</varname> aggregates on the other spatial temporal types, so one query can compute a single box across a heterogeneous set of <varname>tgeompoint</varname>, <varname>tgeometry</varname>, and <varname>tnpoint</varname> columns. Each instant's spatial extent is resolved through the ways registry, which dominates the cost over a large input.</para>
+						<para><link linkend="tnpoint_extent"><varname>extent</varname></link>: Return the spatiotemporal bounding box covering every materialised position in a set of network points</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2164,10 +2002,10 @@
 						<para><link linkend="cbuffer_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="cbufferFromText"><varname>cbufferFromText</varname>, <varname>cbufferFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
+						<para><link linkend="cbuffer_cbufferFromText"><varname>cbufferFromText</varname>, <varname>cbufferFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="cbufferFromBinary"><varname>cbufferFromBinary</varname>, <varname>cbufferFromEWKB</varname>, <varname>cbufferFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+						<para><link linkend="cbuffer_cbufferFromBinary"><varname>cbufferFromBinary</varname>, <varname>cbufferFromEWKB</varname>, <varname>cbufferFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2175,7 +2013,7 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="cbuffer"><varname>cbuffer</varname></link>: Constructor for circular buffers</para>
+						<para><link linkend="cbuffer_cbuffer"><varname>cbuffer</varname></link>: Constructor for circular buffers</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2241,16 +2079,16 @@
 						<para><link linkend="tcbuffer_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbuffer_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, the Hexadecimal Well-Known Binary (HexWKB) representation, or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+						<para><link linkend="tcbuffer_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbufferFromText"><varname>tcbufferFromText</varname>, <varname>tcbufferFromEWKT</varname></link>: Input from the Well-Known Text (WKT) representation or from the Extended Well-Known Text (EWKT) representation</para>
+						<para><link linkend="tcbuffer_tcbufferFromText"><varname>tcbufferFromText</varname>, <varname>tcbufferFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbufferFromMFJSON"><varname>tcbufferFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>
+						<para><link linkend="tcbuffer_tcbufferFromMFJSON"><varname>tcbufferFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbufferFromBinary"><varname>tcbufferFromBinary</varname>, <varname>tcbufferFromEWKB</varname>, <varname>tcbufferFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB) representation, from the Extended Well-Known Binary (EWKB) representation, or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+						<para><link linkend="tcbuffer_tcbufferFromBinary"><varname>tcbufferFromBinary</varname>, <varname>tcbufferFromEWKB</varname>, <varname>tcbufferFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2258,16 +2096,16 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcbuffer_const"><varname>tcbuffer</varname></link>: Constructor for temporal circular buffers having a constant value</para>
+						<para><link linkend="tcbuffer_tcbuffer"><varname>tcbuffer</varname></link>: Constructor for temporal circular buffers having a constant value</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbufferSeq"><varname>tcbufferSeq</varname></link>: Constructor for temporal circular buffers of sequence subtype</para>
+						<para><link linkend="tcbuffer_tcbufferSeq"><varname>tcbufferSeq</varname></link>: Constructor for temporal circular buffers of sequence subtype</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbufferSeqSet"><varname>tcbufferSeqSet</varname>, <varname>tcbufferSeqSetGaps</varname></link>: Constructor for temporal circular buffers of sequence set subtype</para>
+						<para><link linkend="tcbuffer_tcbufferSeqSet"><varname>tcbufferSeqSet</varname>, <varname>tcbufferSeqSetGaps</varname></link>: Constructor for temporal circular buffers of sequence set subtype</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tgeompoint_tfloat_tcbuffer"><varname>tcbuffer</varname></link>: Construct a temporal circular buffer from a temporal geometry point and a temporal float</para>
+						<para><link linkend="tcbuffer_tcbuffer_tgeompoint"><varname>tcbuffer</varname></link>: Construct a temporal circular buffer from a temporal geometry point and a temporal float</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2300,13 +2138,16 @@
 				<title>Transformations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcbuffer_subtype"><varname>tcbufferInst</varname>, <varname>tcbufferSeq</varname>, <varname>tcbufferSeqSet</varname></link>: Transform a temporal circular buffer to another subtype</para>
+						<para><link linkend="tcbuffer_tcbufferInst"><varname>tcbufferInst</varname>, <varname>tcbufferSeq</varname>, <varname>tcbufferSeqSet</varname></link>: Transform a temporal circular buffer to another subtype</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tcbuffer_setInterp"><varname>setInterp</varname></link>: Transform a temporal circular buffer to another interpolation</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tcbuffer_round"><varname>round</varname></link>: Round the points and the radii of the temporal circular buffer to the number of decimal places</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_stops"><varname>stops</varname></link>: Extract the subsequences where the temporal circular buffer stays within an area with a specified maximum size for at least the given duration</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2318,6 +2159,20 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tcbuffer_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal circular buffers</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Restrictions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_atValue"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a value or a set of values</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict a temporal circular buffer to (the complement of) a spatiotemporal box</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2342,6 +2197,20 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
+				<title>Bounding Box Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_topo"><varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_pos"><varname>::</varname></link>: Position operators</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_expandSpace"><varname>expandSpace</varname></link>: Return the spatiotemporal bounding box expanded in the spatial dimension by a float value</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
@@ -2362,16 +2231,18 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Restrictions</title>
+				<title>Ever and Always Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcbuffer_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a value or a set of values</para>
+						<para><link linkend="tcbuffer_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever and always relationships</para>
 					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Spatiotemporal Relationships</title>
+				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcbuffer_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tcbuffer_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict a temporal circular buffer to (the complement of) a spatiotemporal box</para>
+						<para><link linkend="tcbuffer_tContains"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Spatiotemporal relationships</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2382,32 +2253,10 @@
 						<para><link linkend="tcbuffer_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbuffer_ever_always"><varname>?=</varname>, <varname>%=</varname></link>: Ever and always comparisons</para>
+						<para><link linkend="tcbuffer_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbuffer_tcomp"><varname>::</varname></link>: Temporal comparisons</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Bounding Box Operations</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tcbuffer_topo"><varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tcbuffer_pos"><varname>::</varname></link>: Position operators</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Spatial Relationships</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tcbuffer_espatialrels"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: The <emphasis>ever</emphasis> and <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is ever or always satisfied (see <xref linkend="ever_always_comparison"/>) and return a <varname>boolean</varname>. Examples are the <varname>eIntersects</varname> and <varname>aIntersects</varname> functions.</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tcbuffer_tspatialrels"><varname>tContains</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. Examples are the <varname>tIntersects</varname> and <varname>tDwithin</varname> functions.</para>
+						<para><link linkend="tcbuffer_tcomp"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Temporal comparisons</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2432,7 +2281,7 @@
 						<para><link linkend="tcbuffer_minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Return a temporal circular buffer simplified ensuring that consecutive centers are at least a certain distance or time interval apart</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tcbuffer_douglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Return a temporal circular buffer simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink></para>
+						<para><link linkend="tcbuffer_maxDistSimplify"><varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Return a temporal circular buffer simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink></para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2454,10 +2303,10 @@
 					<para><link linkend="trgeometry_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_asEWKB"><varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Extended Well-Known Binary (EWKB) representation</para>
+					<para><link linkend="trgeometry_asEWKB"><varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_fromText"><varname>trgeometryFromText</varname>, <varname>trgeometryFromMFJSON</varname>, <varname>trgeometryFromEWKB</varname>, <varname>trgeometryFromEWKT</varname>, <varname>trgeometryFromHexEWKB</varname></link>: Each output format has a companion parser:</para>
+					<para><link linkend="trgeometry_fromText"><varname>trgeometryFromText</varname>, <varname>trgeometryFromMFJSON</varname>, <varname>trgeometryFromEWKB</varname>, <varname>trgeometryFromEWKT</varname>, <varname>trgeometryFromHexEWKB</varname></link>: Input from the Well-Known Text (WKT), the Extended Well-Known Text (EWKT), the Moving Features JSON (MF-JSON), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2466,12 +2315,6 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="trgeometry_constructor"><varname>trgeometry</varname></link>: Construct a temporal rigid geometry from a reference geometry and a temporal pose</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="trgeometry_appendInstant"><varname>appendInstant</varname></link>: Append a single instant to an existing trgeometry, growing the underlying pose path</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="trgeometry_appendSequence"><varname>appendSequence</varname></link>: Append an entire sequence to an existing trgeometry</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2527,7 +2370,7 @@
 					<para><link linkend="trgeometry_convexHull_func"><varname>convexHull</varname></link>: Return the convex hull of the area traversed by the moving body</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_bodyPointTrajectory_func"><varname>bodyPointTrajectory</varname></link>: Return the world-frame trajectory of a body-frame point carried by the moving rigid geometry. The point is expressed in the reference shape's local frame and the time-varying pose is applied to it at each instant.</para>
+					<para><link linkend="trgeometry_bodyPointTrajectory_func"><varname>bodyPointTrajectory</varname></link>: Return the world-frame trajectory of a body-frame point carried by the moving rigid geometry</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2549,7 +2392,7 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Modifications</title>
+			<title>Transformations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="trgeometry_round"><varname>round</varname></link>: Round all numeric components to a given number of decimal places</para>
@@ -2563,7 +2406,21 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Spatial Restrictions</title>
+			<title>Modifications</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_appendInstant"><varname>appendInstant</varname></link>: Append a single instant to an existing trgeometry, growing the underlying pose path</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_appendSequence"><varname>appendSequence</varname></link>: Append an entire sequence to an existing trgeometry</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combine two trgeometries with the same reference geometry into a single sequence-set</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Restrictions</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="trgeometry_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict a trgeometry to (the complement of) a geometry</para>
@@ -2605,27 +2462,43 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Comparisons</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="trgeometry_eq"><varname>=</varname>, <varname>&lt;&gt;</varname></link>: Test exact (in)equality of two temporal rigid geometries</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="trgeometry_evereq"><varname>?=</varname>, <varname>?&lt;&gt;</varname></link>: Test whether the materialised geometry is ever (not) equal to the operand at any time</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="trgeometry_alwayseq"><varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Test whether the materialised geometry is always (not) equal to the operand</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Bounding-Box Operators</title>
+			<title>Bounding Box Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="trgeometry_topops"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Standard topological operators on bounding boxes</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_posops"><varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname></link>: Spatial and temporal position operators</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Ever and Always Relationships</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever and always relationships</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Spatiotemporal Relationships</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_tContains"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Spatiotemporal relationships</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Comparisons</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_ever_always"><varname>?=</varname>, <varname>%=</varname>, <varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_tcomp"><varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Temporal comparisons</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2656,9 +2529,6 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_extent"><varname>extent</varname></link>: Aggregate bounding box of a column of temporal rigid geometries</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="trgeometry_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combine two trgeometries with the same reference geometry into a single sequence-set</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2694,7 +2564,7 @@
 					<para><link linkend="jsonbset_set"><varname>jsonbsetSet</varname>, <varname>jsonbsetSetLax</varname></link>: Temporal JSONB set</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="jsonbset_insert"><varname>jsonbsetInsert</varname></link>: Temporal JSONB insert</para>
+					<para><link linkend="jsonbset_insert"><varname>jsonbsetInsert</varname></link>: Return the <varname>jsonbset</varname> value with <varname>jsonb</varname> inserted</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="jsonbset_strip_nulls"><varname>jsonbsetStripNulls</varname></link>: Return a JSONB set without nulls</para>
@@ -2720,7 +2590,7 @@
 					<para><link linkend="tjsonb_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tjsonb_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Extended Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="tjsonb_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tjsonb_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
@@ -2845,6 +2715,17 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
+			<title>Bounding Box Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_topo"><varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tjsonb_pos"><varname>::</varname></link>: Position operators</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
 			<title>Comparisons</title>
 			<itemizedlist>
 				<listitem>
@@ -2855,17 +2736,6 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tjsonb_tcomp"><varname>::</varname></link>: Temporal comparisons</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Bounding Box Operations</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tjsonb_topo"><varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tjsonb_pos"><varname>::</varname></link>: Position operators</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3297,38 +3167,35 @@
 	<sect1>
 		<title>Temporal Point Clouds</title>
 		<sect2>
-			<title>Quickstart</title>
-			<sect3>
-				<title>Register a schema</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="pointcloud_schema_srid"><varname>pointCloudSchemaSRID</varname></link>: Return the spatial reference system every value of a schema is expressed in</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="pointcloud_schema_compression"><varname>pointCloudSchemaCompression</varname></link>: Return how a patch of a schema is stored</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="pointcloud_schema_ndims"><varname>pointCloudSchemaNDims</varname></link>: Return how many dimensions of a schema hold values</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
+			<title>Point Cloud Schemas</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="pointcloud_pointCloudSchemaSRID"><varname>pointCloudSchemaSRID</varname></link>: Return the spatial reference system every value of a schema is expressed in</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="pointcloud_pointCloudSchemaCompression"><varname>pointCloudSchemaCompression</varname></link>: Return how a patch of a schema is stored</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="pointcloud_pointCloudSchemaNDims"><varname>pointCloudSchemaNDims</varname></link>: Return how many dimensions of a schema hold values</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Static Types <varname>pcpoint</varname> and <varname>pcpatch</varname></title>
+			<title>Static Point Clouds</title>
 			<sect3>
-				<title>Ergonomic constructors</title>
+				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pcpoint_xy_xyz"><varname>pcpoint</varname></link>: Build a 2D or 3D pcpoint directly from x/y(/z) coordinates</para>
+						<para><link linkend="pcpoint_pcpoint"><varname>pcpoint</varname></link>: Build a 2D or 3D pcpoint directly from x/y(/z) coordinates</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpoint_coordinates"><varname>pcpoint</varname></link>: Build a pcpoint from the coordinates of every dimension of the layout of the schema, inactive dimensions included, which is how a schema of more dimensions than the overloads above reach is given its values. That count is the one <varname>PC_MakePoint</varname> takes and is NOT the count of active dimensions that <varname>pointCloudSchemaNDims</varname> reports</para>
+						<para><link linkend="pcpoint_pcpoint_integer"><varname>pcpoint</varname></link>: Build a pcpoint from the coordinates of every dimension of the schema</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpatch_coordinates"><varname>pcpatch</varname></link>: Build a pcpatch from the coordinates of its points, one point after another, every dimension of the layout of the schema given for each point, inactive dimensions included. That count is the one <varname>PC_MakePatch</varname> takes and is NOT the count of active dimensions that <varname>pointCloudSchemaNDims</varname> reports; a count that divides evenly by the wrong one of the two builds a patch of the wrong points rather than reporting an error. A patch built this way states the schema itself, there being no point to read it from</para>
+						<para><link linkend="pcpatch_pcpatch"><varname>pcpatch</varname></link>: Build a pcpatch from the coordinates of its points, one point after another</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpatch_variadic"><varname>pcpatch</varname></link>: Build a pcpatch from a variadic list of pcpoints sharing the same pcid</para>
+						<para><link linkend="pcpatch_pcpatch_pcpoint"><varname>pcpatch</varname></link>: Build a pcpatch from a variadic list of pcpoints sharing the same pcid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3339,7 +3206,7 @@
 						<para><link linkend="pcpoint_pcid"><varname>pcid</varname></link>: Return the schema id of a pcpoint or pcpatch</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpoint_getXYZ"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Return a coordinate of a pcpoint, NULL if the dimension is absent from the schema</para>
+						<para><link linkend="pcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Return a coordinate of a pcpoint, NULL if the dimension is absent from the schema</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</para>
@@ -3348,13 +3215,13 @@
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier (inherited from the schema)</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpatch_geometry"><varname>geometry</varname></link>: Return the multipoint of the positions the points of a patch occupy. The schema the <varname>pcid</varname> names decides the SRID and whether the result carries a Z dimension</para>
+						<para><link linkend="pcpatch_geometry"><varname>geometry</varname></link>: Return the multipoint of the positions the points of a patch occupy</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>
 		<sect2>
-			<title>Set Types <varname>pcpointset</varname> and <varname>pcpatchset</varname></title>
+			<title>Point Cloud Sets</title>
 			<sect3>
 				<title>Constructors</title>
 				<itemizedlist>
@@ -3365,12 +3232,12 @@
 			</sect3>
 		</sect2>
 		<sect2>
-			<title>Bounding Box <varname>tpcbox</varname></title>
+			<title>Point Cloud Bounding Boxes</title>
 			<sect3>
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_const"><varname>tpcbox</varname>, <varname>tpcbox_z</varname>, <varname>tpcbox_t</varname>, <varname>tpcbox_xt</varname>, <varname>tpcbox_zt</varname></link>: Construct a tpcbox from explicit X/Y/Z/T bounds and a pcid</para>
+						<para><link linkend="tpcbox_tpcbox"><varname>tpcbox</varname>, <varname>tpcbox_z</varname>, <varname>tpcbox_t</varname>, <varname>tpcbox_xt</varname>, <varname>tpcbox_zt</varname></link>: Construct a tpcbox from explicit X/Y/Z/T bounds and a pcid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3378,10 +3245,10 @@
 				<title>Conversions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_pcpoint_to_tpcbox"><varname>tpcbox</varname></link>: Convert a pcpoint to a degenerate (zero-extent) tpcbox; SRID and pcid come from the schema</para>
+						<para><link linkend="tpcbox_tpcbox_pcpoint"><varname>tpcbox</varname></link>: Convert a pcpoint to a degenerate (zero-extent) tpcbox; SRID and pcid come from the schema</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_pcpatch_to_tpcbox"><varname>tpcbox</varname></link>: Convert a pcpatch to a tpcbox using the patch's embedded 2D PCBOUNDS; the second form takes an explicit SRID instead of looking it up from the schema</para>
+						<para><link linkend="tpcbox_tpcbox_pcpatch"><varname>tpcbox</varname></link>: Convert a pcpatch to a tpcbox using the patch's embedded 2D PCBOUNDS; the second form takes an explicit SRID instead of looking it up from the schema</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3389,16 +3256,16 @@
 				<title>Accessors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_hasXZT"><varname>hasX</varname>, <varname>hasZ</varname>, <varname>hasT</varname></link>: Return whether a tpcbox has the X/Y, Z, or T dimensions set</para>
+						<para><link linkend="tpcbox_hasX"><varname>hasX</varname>, <varname>hasZ</varname>, <varname>hasT</varname></link>: Return whether a tpcbox has the X/Y, Z, or T dimensions set</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_xyzminmax"><varname>xmin</varname>, <varname>xmax</varname>, <varname>ymin</varname>, <varname>ymax</varname>, <varname>zmin</varname>, <varname>zmax</varname></link>: Return a coordinate bound, NULL if the corresponding dimension is absent</para>
+						<para><link linkend="tpcbox_xmin"><varname>xmin</varname>, <varname>xmax</varname>, <varname>ymin</varname>, <varname>ymax</varname>, <varname>zmin</varname>, <varname>zmax</varname></link>: Return a coordinate bound, NULL if the corresponding dimension is absent</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_tminmax"><varname>tmin</varname>, <varname>tmax</varname></link>: Return a temporal bound, NULL if the box has no T dimension</para>
+						<para><link linkend="tpcbox_tmin"><varname>tmin</varname>, <varname>tmax</varname></link>: Return a temporal bound, NULL if the box has no T dimension</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_pcid_srid"><varname>pcid</varname>, <varname>SRID</varname></link>: Return the schema id and SRID</para>
+						<para><link linkend="tpcbox_pcid"><varname>pcid</varname>, <varname>SRID</varname></link>: Return the schema id and SRID</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3409,7 +3276,7 @@
 						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Return a tpcbox with coordinates rounded to a given number of decimal digits</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Return a tpcbox with the SRID overwritten. Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</para>
+						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Return a tpcbox with the SRID overwritten</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3417,47 +3284,23 @@
 				<title>Set Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_union"><varname>tpcbox_union</varname></link>: Return the union of two tpcboxes; both must share the same pcid</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcbox_intersection"><varname>tpcbox_intersection</varname></link>: Return the intersection of two tpcboxes, NULL if disjoint or pcid mismatch</para>
+						<para><link linkend="tpcbox_union"><varname>+</varname>, <varname>*</varname></link>: Union and intersection of two tpcboxes</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Topological Operators</title>
+				<title>Topological Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_contains"><varname>@&gt;</varname></link>: Return true if the first tpcbox contains the second</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcbox_contained"><varname>&lt;@</varname></link>: Return true if the first tpcbox is contained in the second</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcbox_overlaps"><varname>&amp;&amp;</varname></link>: Return true if two tpcboxes overlap</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcbox_same"><varname>~=</varname></link>: Return true if two tpcboxes are equal in the dimensions they share</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcbox_adjacent"><varname>-|-</varname></link>: Return true if two tpcboxes are adjacent (share a boundary)</para>
+						<para><link linkend="tpcbox_topo_ops"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Position Operators</title>
+				<title>Position Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_left_right"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname></link>: Test the X-axis ordering of two tpcboxes</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcbox_below_above"><varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>|&amp;&gt;</varname></link>: Test the Y-axis ordering of two tpcboxes</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcbox_front_back"><varname>&lt;&lt;/</varname>, <varname>&amp;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>/&amp;&gt;</varname></link>: Test the Z-axis ordering of two tpcboxes (returns false if either lacks Z)</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcbox_before_after"><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Test the time-axis ordering of two tpcboxes (returns false if either lacks T)</para>
+						<para><link linkend="tpcbox_pos_ops"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>&amp;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Position operators</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3471,18 +3314,37 @@
 			</sect3>
 		</sect2>
 		<sect2>
-			<title>Temporal Type <varname>tpcpoint</varname></title>
+			<title>Temporal Point Cloud Points</title>
+			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_asText"><varname>asText</varname></link>: Return the text representation of a tpcpoint, or of an array of them, and cast a tpcpoint to text</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_asMFJSON"><varname>asMFJSON</varname></link>: For <varname>tpcpoint</varname>, the temporal type is emitted as <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "datetimes":[…]}</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 			<sect3>
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_inst"><varname>tpcpoint</varname></link>: Construct a temporal pcpoint of instant subtype</para>
+						<para><link linkend="tpcpoint_tpcpoint"><varname>tpcpoint</varname></link>: Construct a temporal pcpoint of instant subtype</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_seq"><varname>tpcpointSeq</varname></link>: Construct a temporal pcpoint of sequence subtype from an array of instants. The interpolation is one of <varname>'discrete'</varname>, <varname>'step'</varname>; <varname>'step'</varname> is the default for tpcpoint since pcpoints carry heterogeneous dimensions that do not interpolate linearly</para>
+						<para><link linkend="tpcpoint_tpcpointSeq"><varname>tpcpointSeq</varname></link>: Construct a temporal pcpoint of sequence subtype from an array of instants</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_seqset"><varname>tpcpointSeqSet</varname></link>: Construct a temporal pcpoint of sequence-set subtype from an array of sequences</para>
+						<para><link linkend="tpcpoint_tpcpointSeqSet"><varname>tpcpointSeqSet</varname></link>: Construct a temporal pcpoint of sequence-set subtype from an array of sequences</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_tgeompoint"><varname>::</varname></link>: Cast a tpcpoint to a temporal geometry point, projecting away every non-spatial dimension while preserving timestamps</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3495,13 +3357,8 @@
 					<listitem>
 						<para><link linkend="tpcpoint_SRID"><varname>SRID</varname></link>: Return the SRID inherited from the schema</para>
 					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Per-Dimension Projections</title>
-				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_getXYZ"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Project a tpcpoint onto a spatial dimension, yielding a tfloat</para>
+						<para><link linkend="tpcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Project a tpcpoint onto a spatial dimension, yielding a tfloat</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_getDim"><varname>getDim</varname></link>: Project a tpcpoint onto any named schema dimension, yielding a tfloat</para>
@@ -3509,52 +3366,13 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Conversions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tpcpoint_tgeompoint"><varname>::</varname></link>: Cast a tpcpoint to a temporal geometry point, projecting away every non-spatial dimension while preserving timestamps. The result has the same SRID as the schema; its dimensionality (2D vs. 3D) follows the presence of Z in the schema. A reverse cast is not provided: reconstructing a pcpoint requires a target schema that the temporal value alone cannot supply</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
 				<title>Transformations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_subtype"><varname>tpcpointInst</varname>, <varname>tpcpointSeq</varname>, <varname>tpcpointSeqSet</varname></link>: Transform a tpcpoint to another subtype</para>
+						<para><link linkend="tpcpoint_tpcpointInst"><varname>tpcpointInst</varname>, <varname>tpcpointSeq</varname>, <varname>tpcpointSeqSet</varname></link>: Transform a tpcpoint to another subtype</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_setInterp"><varname>setInterp</varname></link>: Transform a tpcpoint to another interpolation</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Comparisons</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tpcpoint_btree"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>&gt;</varname></link>: Compare two tpcpoints lexicographically over their canonical encodings</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_ever_eq"><varname>eEq</varname>, <varname>aEq</varname>, <varname>eNe</varname>, <varname>aNe</varname>, <varname>?=</varname>, <varname>%=</varname></link>: Test whether the value at any (ever) or every (always) instant equals, or differs from, a pcpoint or another tpcpoint</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_temporal_eq"><varname>tEq</varname>, <varname>tNe</varname>, <varname>#=</varname></link>: Return the temporal equality or inequality of a tpcpoint with a pcpoint or with another tpcpoint, as a tbool</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Restrictions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tpcpoint_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict a tpcpoint to (the complement of) a pcpoint value or a set of pcpoint values</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_atTime"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restrict a tpcpoint to a time selector (timestamp, period, set, or spanset), or remove it</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpoint to the spatial / temporal extent of a tpcbox, or remove it. Returns NULL when the tpcbox's pcid does not match the tpcpoint's. Internally projects to a tgeompoint via the schema cache, restricts the projection by the equivalent stbox, and lifts the result's time span back onto the original tpcpoint to preserve the full pcpoint values</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Restrict a tpcpoint to the instants before or after a timestamp. The strict flag excludes the instant at the timestamp itself</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3573,7 +3391,24 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Splitting</title>
+				<title>Restrictions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_atValue"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict a tpcpoint to (the complement of) a pcpoint value or a set of pcpoint values</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_atTime"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restrict a tpcpoint to a time selector (timestamp, period, set, or spanset), or remove it</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpoint to the spatial / temporal extent of a tpcbox, or remove it</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Restrict a tpcpoint to the instants before or after a timestamp</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Splitting Operations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpcpoint_unnest"><varname>unnest</varname></link>: Return the distinct values of a tpcpoint with the span set on which each of them is taken</para>
@@ -3585,63 +3420,101 @@
 						<para><link linkend="tpcpoint_spans"><varname>spans</varname></link>: Return the array of time spans of a tpcpoint's segments</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_split_spans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the time spans of a tpcpoint split into a given number of bins, or with a given number of segments per bin</para>
+						<para><link linkend="tpcpoint_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the time spans of a tpcpoint split into a given number of bins, or with a given number of segments per bin</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Bounding-box operators</title>
+				<title>Bounding Box Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_topo"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological predicates: <varname>&amp;&amp;</varname> overlaps, <varname>@&gt;</varname> contains, <varname>&lt;@</varname> contained by, <varname>~=</varname> same, <varname>-|-</varname> adjacent.</para>
+						<para><link linkend="tpcpoint_topo"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_pos"><varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname></link>: Strict directional predicates on the X axis (<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>), Y axis (<varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>), Z axis (<varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>), and time axis (<varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>), plus their "overlaps-or-X" variants <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>.</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_knn"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Nearest-approach distance, KNN-orderable through the GiST opclass: <varname>SELECT … ORDER BY temp |=| query LIMIT N</varname> is index-accelerated. Pcid mismatch yields infinity.</para>
+						<para><link linkend="tpcpoint_pos"><varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname></link>: Position operators</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Spatial relationships</title>
+				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_planarrels"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever / always contains, covers and touches</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_intersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever / always intersects.</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_disjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Ever / always disjoint.</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_dwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Ever / always within distance.</para>
+						<para><link linkend="tpcpoint_nearestApproachDistance"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Return the smallest distance ever</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Temporal Spatial Relationships</title>
+				<title>Ever and Always Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Temporal spatial relationships</para>
+						<para><link linkend="tpcpoint_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever / always contains, covers and touches</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever / always intersects</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Ever / always disjoint</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Ever / always within distance</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Spatiotemporal Relationships</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_tDisjoint"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Temporal spatial relationships</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Comparisons</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_btree"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>&gt;</varname></link>: Traditional comparisons</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_ever_eq"><varname>?=</varname>, <varname>%=</varname></link>: Ever and always comparisons</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_temporal_eq"><varname>#=</varname></link>: Temporal comparisons</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>
 		<sect2>
-			<title>Temporal Type <varname>tpcpatch</varname></title>
+			<title>Temporal Point Cloud Patches</title>
+			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_asText"><varname>asText</varname></link>: Return the text representation of a tpcpatch, or of an array of them, and cast a tpcpatch to text</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_asMFJSON"><varname>asMFJSON</varname></link>: For <varname>tpcpatch</varname>, the type tag is <varname>"MovingPCPatch"</varname> and each instant emits a small object <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 			<sect3>
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_inst"><varname>tpcpatch</varname></link>: Construct a temporal pcpatch of instant subtype</para>
+						<para><link linkend="tpcpatch_tpcpatch"><varname>tpcpatch</varname></link>: Construct a temporal pcpatch of instant subtype</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_seq"><varname>tpcpatchSeq</varname></link>: Construct a temporal pcpatch of sequence subtype</para>
+						<para><link linkend="tpcpatch_tpcpatchSeq"><varname>tpcpatchSeq</varname></link>: Construct a temporal pcpatch of sequence subtype</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_seqset"><varname>tpcpatchSeqSet</varname></link>: Construct a temporal pcpatch of sequence-set subtype</para>
+						<para><link linkend="tpcpatch_tpcpatchSeqSet"><varname>tpcpatchSeqSet</varname></link>: Construct a temporal pcpatch of sequence-set subtype</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_tgeometry"><varname>tgeometry</varname></link>: Convert a temporal patch into the temporal geometry of the multipoints its patches occupy</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3649,13 +3522,13 @@
 				<title>Accessors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_numpoints"><varname>startNumPoints</varname>, <varname>endNumPoints</varname></link>: Return the number of points in the patch carried by the first or last instant</para>
+						<para><link linkend="tpcpatch_startNumPoints"><varname>startNumPoints</varname>, <varname>endNumPoints</varname></link>: Return the number of points in the patch carried by the first or last instant</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_total_numpoints"><varname>numPoints</varname></link>: Return the total number of points across every instant's patch. Read directly from each patch's header, no decompression.</para>
+						<para><link linkend="tpcpatch_numPoints"><varname>numPoints</varname></link>: Return the total number of points across every instant's patch</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_points"><varname>points</varname></link>: Set-returning function: emits one row per (instant timestamp, point) by walking each instant's patch and decomposing it through pgPointCloud's in-memory C API. Useful for joining a tpcpatch column against per-point predicates that the bbox-level operators can't express. Cost is O(total points), one per-instant decompression plus one row emission per point.</para>
+						<para><link linkend="tpcpatch_points"><varname>points</varname></link>: Set-returning function: emits one row per (instant timestamp, point) by walking each instant's patch and decomposing it through pgPointCloud's in-memory C API</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3663,30 +3536,10 @@
 				<title>Transformations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_subtype"><varname>tpcpatchInst</varname>, <varname>tpcpatchSeq</varname>, <varname>tpcpatchSeqSet</varname></link>: Transform a tpcpatch to another subtype</para>
+						<para><link linkend="tpcpatch_tpcpatchInst"><varname>tpcpatchInst</varname>, <varname>tpcpatchSeq</varname>, <varname>tpcpatchSeqSet</varname></link>: Transform a tpcpatch to another subtype</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_setInterp"><varname>setInterp</varname></link>: Transform a tpcpatch to another interpolation</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-			<sect3>
-				<title>Restrictions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tpcpatch_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict a tpcpatch to (the complement of) a pcpatch value or a set of pcpatch values</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpatch to the instants whose patch passes a coarse PCBOUNDS overlap test against the tpcbox, or remove them. Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim, with no per-point decompression. Because pgPointCloud's <varname>PCBOUNDS</varname> is 2D, the Z dimension of the box is ignored at this granularity. Returns NULL when the tpcbox's pcid does not match.</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname>, <varname>minusTpcboxFine</varname></link>: Per-point variant of the previous: each surviving instant carries a freshly-built pcpatch holding only the points inside (or outside, for minus) the tpcbox in 2D, and 3D when the box has a Z dimension. Instants whose patch filters to zero points are dropped. Slower than the coarse variant because every patch is decompressed and rebuilt; use when you need point-level fidelity.</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict a tpcpatch to the points whose XY projection intersects (or does not intersect, for minus) a 2D geometry. Z is ignored. SRID compatibility between the patch schema and the geometry must be ensured by the caller.</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpatch_beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Restrict a tpcpatch to the instants before or after a timestamp. The strict flag excludes the instant at the timestamp itself</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3705,7 +3558,27 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Splitting</title>
+				<title>Restrictions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_atValue"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict a tpcpatch to (the complement of) a pcpatch value or a set of pcpatch values</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpatch to the instants whose patch passes a coarse PCBOUNDS overlap test against the tpcbox, or remove them</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname>, <varname>minusTpcboxFine</varname></link>: Restrict a tpcpatch to the points of each instant that the tpcbox holds, or remove them</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict a tpcpatch to the points whose XY projection intersects (or does not intersect, for minus) a 2D geometry</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Restrict a tpcpatch to the instants before or after a timestamp</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Splitting Operations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpcpatch_unnest"><varname>unnest</varname></link>: Return the distinct values of a tpcpatch with the span set on which each of them is taken</para>
@@ -3717,45 +3590,42 @@
 						<para><link linkend="tpcpatch_spans"><varname>spans</varname></link>: Return the array of time spans of a tpcpatch's segments</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_split_spans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the time spans of a tpcpatch split into a given number of bins, or with a given number of segments per bin</para>
+						<para><link linkend="tpcpatch_splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the time spans of a tpcpatch split into a given number of bins, or with a given number of segments per bin</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Spatial relationships</title>
+				<title>Bounding Box Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eTouches</varname>, <varname>aTouches</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Return true iff at least one point in any of the tpcpatch's instants intersects the geometry (XY only).</para>
+						<para><link linkend="tpcpatch_topo"><varname>&amp;&amp;, @&gt;, &lt;@, ~=, -|-</varname></link>: Topological operators</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_pos"><varname>&lt;&lt;, &gt;&gt;, &lt;&lt;|, |&gt;&gt;, &lt;&lt;/, /&gt;&gt;, &lt;&lt;#, #&gt;&gt;</varname></link>: Position operators</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Conversions</title>
+				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_tgeometry"><varname>tgeometry</varname></link>: Convert a temporal patch into the temporal geometry of the multipoints its patches occupy. Each instant's patch becomes the multipoint of the positions its points occupy, read through the schema its <varname>pcid</varname> names</para>
+						<para><link linkend="tpcpatch_nearestApproachDistance"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Return the smallest distance ever</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Temporal Spatial Relationships</title>
+				<title>Ever and Always Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_tspatialrels"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Temporal spatial relationships</para>
+						<para><link linkend="tpcpatch_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eTouches</varname>, <varname>aTouches</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Return true iff at least one point in any of the tpcpatch's instants intersects the geometry (XY only)</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
-				<title>Bounding-box operators</title>
+				<title>Spatiotemporal Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_topo"><varname>&amp;&amp;, @&gt;, &lt;@, ~=, -|-</varname></link>: Topological predicates: <varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>. See <xref linkend="tpcbox_topo" />.</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpatch_pos"><varname>&lt;&lt;, &gt;&gt;, &lt;&lt;|, |&gt;&gt;, &lt;&lt;/, /&gt;&gt;, &lt;&lt;#, #&gt;&gt;</varname></link>: Strict directional predicates on the X / Y / Z / time axes (<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>) and their "overlaps-or-X" variants (<varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>). See <xref linkend="tpcbox_pos" />.</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpatch_knn"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Nearest-approach distance (<varname>|=|</varname>) is KNN-orderable through the GiST opclass.</para>
+						<para><link linkend="tpcpatch_tDisjoint"><varname>tContains</varname>, <varname>tCovers</varname>, <varname>tDisjoint</varname>, <varname>tDwithin</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname></link>: Temporal spatial relationships</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3763,91 +3633,42 @@
 				<title>Comparisons</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_ever_eq"><varname>eEq</varname>, <varname>aEq</varname>, <varname>eNe</varname>, <varname>aNe</varname>, <varname>?=</varname>, <varname>%=</varname></link>: Test whether the value at any (ever) or every (always) instant equals, or differs from, a pcpatch or another tpcpatch</para>
+						<para><link linkend="tpcpatch_ever_eq"><varname>?=</varname>, <varname>%=</varname></link>: Ever and always comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_temporal_eq"><varname>tEq</varname>, <varname>tNe</varname>, <varname>#=</varname></link>: Return the temporal equality or inequality of a tpcpatch with a pcpatch or with another tpcpatch, as a tbool</para>
+						<para><link linkend="tpcpatch_temporal_eq"><varname>#=</varname></link>: Temporal comparisons</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
+		</sect2>
+		<sect2>
+			<title>Aggregations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tpcpoint_extent"><varname>extent</varname></link>: Bounding-box aggregate over a column of tpcpoint, tpcpatch, or tpcbox values</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpcpoint_tCount"><varname>tCount</varname>, <varname>wCount</varname></link>: Temporal count and window count of overlapping rows at each timestamp</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpcpatch_tnpoints"><varname>tnpoints</varname></link>: Per-instant pcpatch point count, summed across rows</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpcpatch_tdensity"><varname>tdensity</varname></link>: Per-instant point density (<varname>numPoints / xy-bbox-area</varname>) summed across rows</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpcpoint_mergeAgg"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combine multiple temporal values into a single one with all input instants merged in temporal order</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpcpoint_appendInstantAgg"><varname>appendInstant</varname>, <varname>appendSequence</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname></link>: Streaming construction aggregates: <varname>appendInstant</varname> assembles instants into a sequence; <varname>appendSequence</varname> assembles sequences into a sequence set</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 		<sect2>
 			<title>Indexes</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tpointcloud_indexes">GiST, SP-GiST, B-tree, and hash opclasses for tpcpoint, tpcpatch, and tpcbox</link></para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Aggregations</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tpcpoint_extent"><varname>extent</varname></link>: Bounding-box aggregate over a column of tpcpoint, tpcpatch, or tpcbox values. Returns the smallest tpcbox containing every input. Aggregating across distinct pcids raises an error, the bbox would be uninterpretable since dimensions are pcid-relative.</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tpcpoint_tCount"><varname>tCount</varname>, <varname>wCount</varname></link>: Temporal count and window count of overlapping rows at each timestamp. Result is a tint. All input rows must share the same temporal subtype (instant / sequence / sequence set).</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tpcpatch_tnpoints"><varname>tnpoints</varname></link>: Per-instant pcpatch point count, summed across rows. Distinct from <varname>tCount(tpcpatch)</varname>, which counts the number of patches (always 1 per instant). <varname>tnpoints</varname> reads as "how many points were in the cloud at time t", the natural primitive for ingest-QC and density-over-time dashboards.</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tpcpatch_tdensity"><varname>tdensity</varname></link>: Per-instant point density (<varname>numPoints / xy-bbox-area</varname>) summed across rows. Each pcpatch carries the inline <varname>PCBOUNDS</varname> (xmin / xmax / ymin / ymax) so the bbox-area term is read directly, no recomputation. A 1-point or co-linear patch yields <varname>+Infinity</varname> for that instant; filter with <varname>isfinite()</varname> in downstream queries if needed.</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tpcpoint_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combine multiple temporal values into a single one with all input instants merged in temporal order. All inputs must share the same pcid and subtype.</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tpcpoint_append"><varname>appendInstant</varname>, <varname>appendSequence</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname></link>: Streaming construction aggregates: <varname>appendInstant</varname> assembles instants into a sequence; <varname>appendSequence</varname> assembles sequences into a sequence set. Useful for trajectory loaders that consume rows in time order.</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Text output</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tpcpoint_asText"><varname>asText</varname></link>: Return the text representation of a tpcpoint, or of an array of them, and cast a tpcpoint to text</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tpcpatch_asText"><varname>asText</varname></link>: Return the text representation of a tpcpatch, or of an array of them, and cast a tpcpatch to text</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>MF-JSON output</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tpcpoint_mfjson"><varname>asMFJSON</varname></link>: For <varname>tpcpoint</varname>, the temporal type is emitted as <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "datetimes":[…]}</varname>. X/Y/[Z] are extracted from each instant's <varname>pcpoint</varname> via the schema cache; if the schema lacks X/Y the coordinate array is empty for that instant.</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tpcpatch_mfjson"><varname>asMFJSON</varname></link>: For <varname>tpcpatch</varname>, the type tag is <varname>"MovingPCPatch"</varname> and each instant emits a small object <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname>. The compressed point payload is intentionally not in the JSON, use <varname>asBinary</varname> / <varname>asHexWKB</varname> for round-trip.</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Binary Representation</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tpointcloud_wkb"><varname>asBinary</varname>, <varname>tpcpointFromBinary</varname>, <varname>tpcpatchFromBinary</varname></link>: Binary I/O with embedded schema for portability</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>PDAL Integration</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tpointcloud_pdal_reader"><varname>readers.tpcpatch</varname></link>: PDAL reader that reads tpcpatch values from a SQL query</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tpointcloud_pdal_writer"><varname>writers.tpcpatch</varname></link>: PDAL writer that writes tpcpatch values to a PostgreSQL table</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>PCL Bridge</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tpointcloud_pcl_bridge"><varname>pcpatch_to_pcd</varname>, <varname>pcpatch_from_pcd</varname>, <varname>pcpatch_voxel_grid</varname>, <varname>pcpatch_sor</varname>, <varname>pcpatch_icp</varname>, <varname>pcpatch_normals</varname></link>: PCL-backed SQL functions for point cloud processing</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3901,13 +3722,13 @@
 					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Return the ASCII hex-encoded Well-Known Binary (HexWKB) representation of a Raquet tile</para>
+					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation of a Raquet tile</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Return a Raquet tile from its Well-Known Binary (WKB) representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Return a Raquet tile from its ASCII hex-encoded Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Return a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

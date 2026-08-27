@@ -35,7 +35,7 @@
 			<listitem xml:id="ttype_tCount">
 				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Temporal count</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCount(ttype) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -47,7 +47,7 @@ SELECT tCount(NoEmps) FROM Department;
 			<listitem xml:id="ttype_extent">
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Bounding box extent</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 extent(temp) → {tstzspan,tbox,stbox}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -62,7 +62,7 @@ SELECT extent(Trip) FROM Trips;
 				<indexterm significance="normal"><primary><varname>tAnd</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tOr</varname></primary></indexterm>
 				<para>Temporal and, temporal or</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tOr(tbool) → tbool
 tAnd(tbool) → tbool
 </programlisting>
@@ -75,21 +75,22 @@ SELECT tOr(NoEmps #&gt; 6) FROM Department;
 			</listitem>
 
 			<listitem xml:id="ttype_tMin">
-				<indexterm significance="normal"><primary><varname>tMin</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tMax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMinAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMaxAgg</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tSum</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tAvg</varname></primary></indexterm>
 				<para>Temporal minimum, maximum, sum, and average</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tMin(ttype) → ttype
-tMax(ttype) → ttype
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tMinAgg(ttype) → ttype
+tMaxAgg(ttype) → ttype
 tSum(tnumber) → {tnumberSeq,tnumberSeqSet}
 tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}
 </programlisting>
+				<para>The names <varname>tMin</varname> and <varname>tMax</varname> name the same aggregates and are kept for backward compatibility.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tMin(NoEmps) FROM Department;
+SELECT tMinAgg(NoEmps) FROM Department;
 -- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
-SELECT tMax(NoEmps) FROM Department;
+SELECT tMaxAgg(NoEmps) FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}
 SELECT tSum(NoEmps) FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
@@ -104,7 +105,7 @@ SELECT tAvg(NoEmps) FROM Department;
 			<listitem xml:id="ttype_wCount">
 				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
 				<para>Window count</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 wCount(tnumber,interval) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -120,7 +121,7 @@ SELECT wCount(NoEmps, interval '2 days') FROM Department;
 				<indexterm significance="normal"><primary><varname>wSum</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>wAvg</varname></primary></indexterm>
 				<para>Window minimum, maximum, sum, and average</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 wMin(tnumber,interval) → {tnumberSeq,tnumberSeqSet}
 wMax(tnumber,interval) → {tnumberDiscSeq,tnumberSeqSet}
 wSum(tint,interval) → {tintSeq,tintSeqSet}
@@ -143,7 +144,7 @@ SELECT round(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
 			<listitem xml:id="tpoint_tCentroid">
 				<indexterm significance="normal"><primary><varname>tCentroid</varname></primary></indexterm>
 				<para>Temporal centroid</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCentroid(tgeompoint) → tgeompoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -230,17 +231,15 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 
 		<para>In order to speed up several of the functions for temporal types, we can add in the <varname>WHERE</varname> clause of queries a bounding box comparison that make uses of the available indexes. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)')
-FROM Trips T
+SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)') FROM Trips T
 -- Bouding box index filtering
 WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </programlisting>
 		</para>
 
-		<para>In the case of temporal points, all spatial relationships with the ever and always semantics (see <xref linkend="tgeo_spatial_rel"/>) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+		<para>In the case of temporal points, all spatial relationships with the ever and always semantics (see <xref linkend="tgeo_spatiotemp_rel"/>) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tIntersects(T.Trip, R.Geom)
-FROM Trips T, Regions R
+SELECT tIntersects(T.Trip, R.Geom) FROM Trips T, Regions R
 -- Bouding box index filtering
 WHERE eIntersects(T.Trip, R.Geom);
 </programlisting>

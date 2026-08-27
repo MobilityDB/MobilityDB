@@ -15,7 +15,7 @@
 
 	<para>This is the natural representation for moving objects whose <emphasis>shape</emphasis> matters, not just their position. The motivating example is AIS maritime traffic, where each ship's hull (a pentagon derived from the antenna offsets <varname>A</varname>, <varname>B</varname>, <varname>C</varname>, <varname>D</varname>) follows a pose path defined by lat/lon and heading reports. The materialised geometry at any instant is the actual ship outline at that moment.</para>
 
-	<para>The <varname>trgeometry</varname> type builds on <xref linkend="temporal_poses"/>. Most accessor, comparison, topological, position, and indexing operators have the same shape as the corresponding <varname>tpose</varname> functions; this chapter covers the trgeometry-specific surface, pose-to-shape materialisation, traversed area, materialised distance, and spatial restrictions on the centroid trajectory.</para>
+	<para>The <varname>trgeometry</varname> type builds on <xref linkend="temporal_pose_types"/>. Most accessor, comparison, topological, position, and indexing operators have the same shape as the corresponding <varname>tpose</varname> functions; this chapter covers the trgeometry-specific surface, pose-to-shape materialisation, traversed area, materialised distance, and spatial restrictions on the centroid trajectory.</para>
 
 	<sect1 xml:id="trgeometry_inout">
 		<title>Input and Output</title>
@@ -26,27 +26,27 @@
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.5)@2001-01-01';
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01,
   Pose(Point(5 0), 0.5)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 1.5)@2001-01-02]';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(5 0), 0.0)@2001-01-02], [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(2 0),
-  0.0)@2001-01-05]}';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 1.5)@2001-01-02]';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  {[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02],
+  [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(2 0), 0.0)@2001-01-05]}';
 </programlisting>
 
 		<para>The reference geometry can be any 2D polygon or polyhedral surface. The pose interpolation is linear in translation and angular-shortest-path in rotation. SRIDs are inherited from the reference geometry and the pose; they must agree.</para>
 
 		<para>An SRID can be specified for a trgeometry either at the begining of the literal or before the reference geometry as shown below.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),
-  0.5)@2001-01-01';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));SRID=25832;Pose(Point(0 0),
-  0.5)@2001-01-01';
+SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(0 0), 0.5)@2001-01-01';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));SRID=25832;
+  Pose(Point(0 0), 0.5)@2001-01-01';
 </programlisting>
 
 		<para>Step interpolation can also be specified in the same way as for other temporal types:</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
-  0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
+SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
 </programlisting>
 
 		<para>The standard wire formats are supported.</para>
@@ -55,12 +55,12 @@ SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
 			<listitem xml:id="trgeometry_asText">
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<para>Return the Well-Known Text (WKT) representation</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.123456789),
-  0.5)@2000-01-01', 6);
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
+  Pose(Point(1.123456789 1.123456789), 0.5)@2000-01-01', 6);
 -- POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1.123457 1.123457),0.5)@2000-01-01
 </programlisting>
 			</listitem>
@@ -68,12 +68,12 @@ SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.12
 			<listitem xml:id="trgeometry_asEWKT">
 				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
 				<para>Return the Extended Well-Known Text (EWKT) representation, prefixed with the SRID</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(trgeometry
-  'SRID=25832;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));
+  Pose(Point(1 1),0.5)@2000-01-01');
 -- SRID=25832;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@2000-01-01
 </programlisting>
 			</listitem>
@@ -81,12 +81,12 @@ SELECT asEWKT(trgeometry
 			<listitem xml:id="trgeometry_asMFJSON">
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>Return the Moving Features JSON representation</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asMFJSON(trgeometry [, options int=0 [, flags int=0 [, maxdecimaldigits int=15]]]) → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asMFJSON(trgeometry
-  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01');
+SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(0 0),0)@2001-01-01');
 </programlisting>
 			</listitem>
 
@@ -94,23 +94,23 @@ SELECT asMFJSON(trgeometry
 				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
-				<para>Return the Extended Well-Known Binary (EWKB) representation</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Return the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asEWKB(trgeometry [, endian text]) → bytea
 asHexWKB(trgeometry [, endian text]) → text
 asHexEWKB(trgeometry [, endian text]) → text
 </programlisting>
 				<para>Companion <varname>asHexWKB</varname> and <varname>asHexEWKB</varname> return the hex-encoded text of, respectively, the plain and the SRID-carrying representation; the two coincide only when the value has no SRID, as in the example below.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT length(asEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1),
-  0.5)@2001-01-01'));
+SELECT length(asEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1 1), 0.5)@2001-01-01'));
 -- 130
 -- The bytes round-trip through the matching input function.
-SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry
-  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
+SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1 1), 0.5)@2001-01-01')));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
-SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry
-  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1 1), 0.5)@2001-01-01')));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
 </programlisting>
 			</listitem>
@@ -121,8 +121,8 @@ SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry
 				<indexterm significance="normal"><primary><varname>trgeometryFromEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromEWKT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromHexEWKB</varname></primary></indexterm>
-				<para>Each output format has a companion parser:</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Input from the Well-Known Text (WKT), the Extended Well-Known Text (EWKT), the Moving Features JSON (MF-JSON), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 trgeometryFromText(text) → trgeometry
 trgeometryFromEWKT(text) → trgeometry
 trgeometryFromMFJSON(text) → trgeometry
@@ -133,8 +133,8 @@ trgeometryFromHexEWKB(text) → trgeometry
 SELECT asText(trgeometryFromEWKT('SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(1 1), 0.5)@2001-01-01'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
-SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry
-  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
+SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1 1), 0.5)@2001-01-01')));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
 </programlisting>
 			</listitem>
@@ -150,47 +150,18 @@ SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry
 			<listitem xml:id="trgeometry_constructor">
 				<indexterm significance="normal"><primary><varname>trgeometry</varname></primary></indexterm>
 				<para>Construct a temporal rigid geometry from a reference geometry and a temporal pose</para>
-				<programlisting xml:space="preserve" format="linespecific">
-trgeometry(geometry, tpose) → trgeometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+trgeometry(geometry,tpose) → trgeometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(trgeometry(
-  geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+SELECT asText(trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
   tpose 'Pose(Point(0 0), 0.0)@2001-01-01'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(0 0),0)@2001-01-01
 </programlisting>
 				<para>Both arguments must share the same SRID. The reference geometry may be a polygon or a polyhedral surface; the pose may be of any temporal subtype.</para>
 			</listitem>
 
-			<listitem xml:id="trgeometry_appendInstant">
-				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
-				<para>Append a single instant to an existing trgeometry, growing the underlying pose path</para>
-				<programlisting xml:space="preserve" format="linespecific">
-appendInstant(trgeometry, trgeometry [, maxdist float [, maxt interval]]) → trgeometry
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT appendInstant(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-02');
-</programlisting>
-			</listitem>
 
-			<listitem xml:id="trgeometry_appendSequence">
-				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
-				<para>Append an entire sequence to an existing trgeometry</para>
-				<programlisting xml:space="preserve" format="linespecific">
-appendSequence(trgeometry, trgeometry) → trgeometry
-</programlisting>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(appendSequence(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(20 0), 0.0)@2001-01-03, Pose(Point(30 0), 0.0)@2001-01-04]'));
--- POLYGON((0 0,1 0,1 1,0 1,0 0));
--- {[Pose(POINT(0 0),0)@2001-01-01, Pose(POINT(10 0),0)@2001-01-02],
---   [Pose(POINT(20 0),0)@2001-01-03, Pose(POINT(30 0),0)@2001-01-04]}
-</programlisting>
-			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -203,12 +174,12 @@ SELECT asText(appendSequence(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 			<listitem xml:id="trgeometry_to_tpose">
 				<indexterm significance="normal"><primary><varname>tpose</varname></primary></indexterm>
 				<para>Return the underlying temporal pose</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpose(trgeometry) → tpose
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(tpose(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
-  0.0)@2001-01-01, Pose(Point(10 0), 0.5)@2001-01-02]'));
+SELECT asText(tpose(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.5)@2001-01-02]'));
 -- [Pose(POINT(0 0),0)@..., Pose(POINT(10 0),0.5)@...]
 </programlisting>
 			</listitem>
@@ -216,12 +187,12 @@ SELECT asText(tpose(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
 			<listitem xml:id="trgeometry_to_tgeompoint">
 				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
 				<para>Return the centroid (antenna) trajectory as a temporal point</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tgeompoint(trgeometry) → tgeompoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
-  0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
+SELECT asText(tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
 -- [POINT(0 0)@..., POINT(10 0)@...]
 </programlisting>
 			</listitem>
@@ -239,19 +210,17 @@ SELECT asText(tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(
 				<indexterm significance="normal"><primary><varname>endValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Return the materialised geometry at the start, end, or a chosen timestamp</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 startValue(trgeometry) → geometry
 endValue(trgeometry) → geometry
-valueAtTimestamp(trgeometry, timestamptz) → geometry
+valueAtTimestamp(trgeometry,timestamptz) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(startValue(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
-  0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
+SELECT asText(startValue(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0))
-
-SELECT asText(valueAtTimestamp(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 0.0)@2001-01-02]',
+SELECT asText(valueAtTimestamp( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
   timestamptz '2001-01-01 12:00:00'));
 -- POLYGON((5 0,6 0,6 1,5 1,5 0))
 </programlisting>
@@ -263,7 +232,7 @@ SELECT asText(valueAtTimestamp(
 				<indexterm significance="normal"><primary><varname>numSequences</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>numTimestamps</varname></primary></indexterm>
 				<para>Return the number of distinct instants, sequences, or timestamps</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 numInstants(trgeometry) → integer
 numSequences(trgeometry) → integer
 numTimestamps(trgeometry) → integer
@@ -286,16 +255,15 @@ SELECT numTimestamps(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>sequences</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>segments</varname></primary></indexterm>
 				<para>Return the array of constituent instants, sequences, or inter-instant segments</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 instants(trgeometry) → trgeometry[]
 sequences(trgeometry) → trgeometry[]
 segments(trgeometry) → trgeometry[]
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT array_length(
-  instants(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(5 0), 0.5)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}'),
-  1);
+SELECT array_length( instants(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  {Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.5)@2001-01-02,
+  Pose(Point(0 0), 0.0)@2001-01-03}'), 1);
 -- 3
 </programlisting>
 			</listitem>
@@ -303,12 +271,13 @@ SELECT array_length(
 			<listitem xml:id="trgeometry_points">
 				<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
 				<para>Return the set of distinct centroid (antenna) points seen along the trgeometry</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 points(trgeometry) → geomset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(points(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0),
-  0.0)@2001-01-01, Pose(Point(5 5), 0.0)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}'));
+SELECT asText(points(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  {Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 5), 0.0)@2001-01-02,
+  Pose(Point(0 0), 0.0)@2001-01-03}'));
 -- {"POINT(0 0)", "POINT(5 5)"}
 </programlisting>
 			</listitem>
@@ -318,18 +287,18 @@ SELECT asText(points(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0)
 				<indexterm significance="normal"><primary><varname>pitch</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>roll</varname></primary></indexterm>
 				<para>Return the yaw, pitch, or roll angle as a temporal float, in radians, under the ZYX intrinsic Tait-Bryan convention required by the OGC GeoPose Basic-YPR conformance class</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 yaw(trgeometry) → tfloat
 pitch(trgeometry) → tfloat
 roll(trgeometry) → tfloat
 </programlisting>
 				<para>A rigid geometry carries its orientation in its poses, so each of these projects onto the temporal pose and asks it, exactly as the <link linkend="pose_yaw_pitch_roll"><varname>tpose</varname></link> accessors of the same name do. A 2D rigid geometry yaws by the stored angle of each pose and neither pitches nor rolls.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(yaw(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
-  0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
+SELECT asText(yaw(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
 -- [0@2001-01-01, 1.5@2001-01-02]
-SELECT asText(pitch(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
-  0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
+SELECT asText(pitch(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
 -- [0@2001-01-01, 0@2001-01-02]
 </programlisting>
 			</listitem>
@@ -337,12 +306,12 @@ SELECT asText(pitch(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
 			<listitem xml:id="trgeometry_geom">
 				<indexterm significance="normal"><primary><varname>geom</varname></primary></indexterm>
 				<para>Return the static reference geometry</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geom(trgeometry) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0),
-  0.5)@2001-01-01'));
+SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(5 0), 0.5)@2001-01-01'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0))
 </programlisting>
 			</listitem>
@@ -358,17 +327,15 @@ SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0)
 			<listitem xml:id="trgeometry_traversedArea_func">
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
 				<para>Return the area traversed by the temporal rigid geometry</para>
-				<programlisting xml:space="preserve" format="linespecific">
-traversedArea(trgeometry, unary_union=false) → geometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+traversedArea(trgeometry,unary_union bool=false) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(traversedArea(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 0.0)@2001-01-02]'));
+SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
 -- MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((10 0,11 0,11 1,10 1,10 0)))
-SELECT ST_AsText(traversedArea(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 0.0)@2001-01-02]', true));
+SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', true));
 -- POLYGON((0 0,0 1,11 1,11 0,0 0))
 </programlisting>
 				<para>The argument is false unless it is given, and the function then answers the placements themselves gathered into one geometry, a multipolygon for a body that is a polygon, which is what a caller that does its own post-processing wants. With <varname>unary_union = true</varname> they are dissolved into the region they cover.</para>
@@ -386,13 +353,12 @@ SELECT ST_AsText(traversedArea(
 			<listitem xml:id="trgeometry_centroid_func">
 				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
 				<para>Return the centroid of the moving body as a temporal point</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 centroid(trgeometry) → tgeompoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(centroid(
-  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2001-01-01,
-  Pose(Point(2 0),0)@2001-01-02]'));
+SELECT asText(centroid( trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]'));
 -- Interp=Step;[POINT(0.5 0.5)@2001-01-01, POINT(2.5 0.5)@2001-01-02]
 </programlisting>
 			</listitem>
@@ -400,27 +366,26 @@ SELECT asText(centroid(
 			<listitem xml:id="trgeometry_convexHull_func">
 				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
 				<para>Return the convex hull of the area traversed by the moving body</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 convexHull(trgeometry) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_GeometryType(convexHull(
-  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2001-01-01,
-  Pose(Point(2 0),0)@2001-01-02]'));
+SELECT ST_GeometryType(convexHull( trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]'));
 -- ST_Polygon
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="trgeometry_bodyPointTrajectory_func">
 				<indexterm significance="normal"><primary><varname>bodyPointTrajectory</varname></primary></indexterm>
-				<para>Return the world-frame trajectory of a body-frame point carried by the moving rigid geometry. The point is expressed in the reference shape's local frame and the time-varying pose is applied to it at each instant.</para>
-				<programlisting xml:space="preserve" format="linespecific">
-bodyPointTrajectory(trgeometry, geometry) → tgeompoint
+				<para>Return the world-frame trajectory of a body-frame point carried by the moving rigid geometry</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+bodyPointTrajectory(trgeometry,geometry) → tgeompoint
 </programlisting>
+				<para>The point is expressed in the reference shape's local frame and the time-varying pose is applied to it at each instant.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(bodyPointTrajectory(
-  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2001-01-01,
-  Pose(Point(2 0),0)@2001-01-02]',
+SELECT asText(bodyPointTrajectory( trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]',
   geometry 'Point(0 0)'));
 -- Interp=Step;[POINT(0 0)@2001-01-01, POINT(2 0)@2001-01-02]
 </programlisting>
@@ -438,13 +403,13 @@ SELECT asText(bodyPointTrajectory(
 				<indexterm significance="normal"><primary><varname>length</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>cumulativeLength</varname></primary></indexterm>
 				<para>Return the total length traversed by the centroid, or its cumulative length over time</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 length(trgeometry) → float
 cumulativeLength(trgeometry) → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT length(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01,
-  Pose(Point(3 4),0)@2001-01-02]');
+SELECT length(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]');
 -- 5
 </programlisting>
 			</listitem>
@@ -452,7 +417,7 @@ SELECT length(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@200
 			<listitem xml:id="trgeometry_speed">
 				<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
 				<para>Return the speed of the centroid as a temporal float</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 speed(trgeometry) → tfloat
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -465,7 +430,7 @@ SELECT speed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 			<listitem xml:id="trgeometry_angular_speed">
 				<indexterm significance="normal"><primary><varname>angularSpeed</varname></primary></indexterm>
 				<para>Return the angular speed as a temporal float</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 angularSpeed(trgeometry) → tfloat
 </programlisting>
 				<para>The shape of a rigid geometry never changes, so its angular speed is the angular speed of the pose that carries it, in radians per unit time.</para>
@@ -479,21 +444,20 @@ SELECT asText(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 			<listitem xml:id="trgeometry_twcentroid">
 				<indexterm significance="normal"><primary><varname>twCentroid</varname></primary></indexterm>
 				<para>Return the time-weighted centroid of the centroid trajectory as a geometry</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 twCentroid(trgeometry) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(twCentroid(trgeometry
-  'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01,
-  Pose(Point(3 4),0)@2001-01-02]'));
+SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]'));
 -- POINT(1.5 2)
 </programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="trgeometry_modifications">
-		<title>Modifications</title>
+	<sect1 xml:id="trgeometry_transformations">
+		<title>Transformations</title>
 
 		<para>The standard sequence-modifying functions apply: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc.</para>
 
@@ -501,14 +465,12 @@ SELECT ST_AsText(twCentroid(trgeometry
 			<listitem xml:id="trgeometry_round">
 				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 				<para>Round all numeric components to a given number of decimal places</para>
-				<programlisting xml:space="preserve" format="linespecific">
-round(trgeometry, integer) → trgeometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+round(trgeometry,integer) → trgeometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(round(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1.123456789 1.123456789),
-  0.123456)@2001-01-01',
-  3));
+SELECT asText(round( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1.123456789 1.123456789), 0.123456)@2001-01-01', 3));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1.123 1.123),0.123)@...
 </programlisting>
 			</listitem>
@@ -516,8 +478,8 @@ SELECT asText(round(
 			<listitem xml:id="trgeometry_setInterp">
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Convert between linear and step interpolations</para>
-				<programlisting xml:space="preserve" format="linespecific">
-setInterp(trgeometry, text) → trgeometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+setInterp(trgeometry,text) → trgeometry
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(setInterp(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -533,10 +495,10 @@ SELECT asText(setInterp(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>scaleTime</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>shiftScaleTime</varname></primary></indexterm>
 				<para>Shift, scale, or both shift and scale the time domain of a trgeometry</para>
-				<programlisting xml:space="preserve" format="linespecific">
-shiftTime(trgeometry, interval) → trgeometry
-scaleTime(trgeometry, interval) → trgeometry
-shiftScaleTime(trgeometry, interval, interval) → trgeometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+shiftTime(trgeometry,interval) → trgeometry
+scaleTime(trgeometry,interval) → trgeometry
+shiftScaleTime(trgeometry,interval,interval) → trgeometry
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(shiftTime(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -559,8 +521,57 @@ SELECT asText(shiftScaleTime(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="trgeometry_modifications">
+		<title>Modifications</title>
+		<itemizedlist>
+			<listitem xml:id="trgeometry_appendInstant">
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+				<para>Append a single instant to an existing trgeometry, growing the underlying pose path</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+appendInstant(trgeometry,trgeometry [, maxdist float [, maxt interval]]) → trgeometry
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT appendInstant( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-02');
+</programlisting>
+			</listitem>
+			<listitem xml:id="trgeometry_appendSequence">
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Append an entire sequence to an existing trgeometry</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+appendSequence(trgeometry,trgeometry) → trgeometry
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(appendSequence(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(20 0), 0.0)@2001-01-03, Pose(Point(30 0), 0.0)@2001-01-04]'));
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));
+-- {[Pose(POINT(0 0),0)@2001-01-01, Pose(POINT(10 0),0)@2001-01-02],
+--   [Pose(POINT(20 0),0)@2001-01-03, Pose(POINT(30 0),0)@2001-01-04]}
+</programlisting>
+			</listitem>
+			<listitem xml:id="trgeometry_merge">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
+				<para>Combine two trgeometries with the same reference geometry into a single sequence-set</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+merge(trgeometry,trgeometry) → trgeometry
+mergeAgg(trgeometry) → trgeometry
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="trgeometry_restrictions">
-		<title>Spatial Restrictions</title>
+		<title>Restrictions</title>
 
 		<para>The <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname>, and <varname>minusStbox</varname> functions restrict a trgeometry to (the complement of) a geometry or a spatiotemporal box. The semantic mirrors <varname>tpose</varname>: a temporal rigid geometry is "in" a region at time <varname>t</varname> iff its centroid (antenna) at <varname>t</varname> lies in that region.</para>
 
@@ -569,20 +580,17 @@ SELECT asText(shiftScaleTime(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
 				<para>Restrict a trgeometry to (the complement of) a geometry</para>
-				<programlisting xml:space="preserve" format="linespecific">
-atGeometry(trgeometry, geometry) → trgeometry
-minusGeometry(trgeometry, geometry) → trgeometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atGeometry(trgeometry,geometry) → trgeometry
+minusGeometry(trgeometry,geometry) → trgeometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT temporalTime(atGeometry(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(4 0), 0.0)@2001-01-05]',
+SELECT temporalTime(atGeometry( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
 -- {[2001-01-02, 2001-01-04]}
-
-SELECT temporalTime(minusGeometry(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(4 0), 0.0)@2001-01-05]',
+SELECT temporalTime(minusGeometry( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
 -- {[2001-01-01, 2001-01-02), (2001-01-04, 2001-01-05]}
 </programlisting>
@@ -593,20 +601,17 @@ SELECT temporalTime(minusGeometry(
 				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
 				<para>Restrict a trgeometry to (the complement of) a spatiotemporal box</para>
-				<programlisting xml:space="preserve" format="linespecific">
-atStbox(trgeometry, stbox [, border_inc boolean = true]) → trgeometry
-minusStbox(trgeometry, stbox [, border_inc boolean = true]) → trgeometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atStbox(trgeometry,stbox[,border_inc boolean=true]) → trgeometry
+minusStbox(trgeometry,stbox[,border_inc boolean=true]) → trgeometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT temporalTime(atStbox(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(4 0), 0.0)@2001-01-05]',
+SELECT temporalTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   stbox 'STBOX X((1, -1), (3, 1))'));
 -- {[2001-01-02, 2001-01-04]}
-
-SELECT temporalTime(atStbox(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(4 0), 0.0)@2001-01-05]',
+SELECT temporalTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   stbox 'STBOX T([2001-01-02, 2001-01-04])'));
 -- {[2001-01-02, 2001-01-04]}
 </programlisting>
@@ -617,22 +622,19 @@ SELECT temporalTime(atStbox(
 				<indexterm significance="normal"><primary><varname>atElevation</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusElevation</varname></primary></indexterm>
 				<para>Restrict a trgeometry to (the complement of) an elevation span</para>
-				<programlisting xml:space="preserve" format="linespecific">
-atElevation(trgeometry, floatspan) → trgeometry
-minusElevation(trgeometry, floatspan) → trgeometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atElevation(trgeometry,floatspan) → trgeometry
+minusElevation(trgeometry,floatspan) → trgeometry
 </programlisting>
 				<para>The elevation is that of the position of the pose, not that of the body: a body extends above and below its position, and the span is tested against the position alone. The reference geometry is carried over to the result. The temporal rigid geometry must have Z dimension.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(atElevation(
-  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
+SELECT asText(atElevation(trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
   [Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
   floatspan '[1, 2]'));
-/* POLYGON Z ((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
-   {[Pose(POINT Z (0 0 1),1,0,0,0)@2001-01-02,
+/* POLYGON Z ((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0)); {[Pose(POINT Z
+   (0 0 1),1,0,0,0)@2001-01-02,
    Pose(POINT Z (0 0 2),1,0,0,0)@2001-01-03]} */
-
-SELECT getTime(minusElevation(
-  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
+SELECT getTime(minusElevation(trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
   [Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
   floatspan '[1, 2]'));
 -- {[2001-01-01, 2001-01-02), (2001-01-03, 2001-01-05]}
@@ -651,21 +653,19 @@ SELECT getTime(minusElevation(
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>
 				<para>Return the temporal distance between two temporal rigid geometries</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {geometry,trgeometry} &lt;-&gt; {geometry,trgeometry} → tfloat
-tDistance({geometry,trgeometry}, {geometry,trgeometry}) → tfloat
+tDistance({geometry,trgeometry},{geometry,trgeometry}) → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(maxValue(tDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+SELECT round(maxValue(tDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(0 0), 0.0)@2001-01-01',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-01')), 6);
 -- 4
-
-SELECT asText(tDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(0 0), 0.0)@2001-01-02]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 0.0)@2001-01-02]'));
+SELECT asText(tDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(2 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
 -- [1@2001-01-01 ..., 9@2001-01-02 ...]
 </programlisting>
 				<para>The dispatcher covers every subtype combination, TINSTANT × TINSTANT, TINSTANT × TSEQUENCE asymmetric, TSEQUENCE × TSEQUENCE, TSEQUENCE × TSEQUENCESET, TSEQUENCESET × TSEQUENCESET. The adaptive sub-sampling kernel underlies every continuous combo; instant combos materialise once. Pure-translation segments converge at depth 0 (two endpoint marks); rotation-heavy segments emit up to 32 marks per inter-instant gap. The bound on the LINEAR-interpolated approximation between marks is <varname>1e-3</varname> by construction.</para>
@@ -675,14 +675,13 @@ SELECT asText(tDistance(
 				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 				<para>Return the smallest distance between two temporal rigid geometries over their shared time domain</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {geometry,trgeometry,stbox} |=| {geometry,trgeometry,stbox} → float
-nearestApproachDistance({geometry,trgeometry,stbox}, {geometry,trgeometry,stbox}) → float
+nearestApproachDistance({geometry,trgeometry,stbox},{geometry,trgeometry,stbox}) → float
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 0.0)@2001-01-02]'
-       |=|
+  Pose(Point(10 0), 0.0)@2001-01-02]' |=|
        trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(50 0), 0.0)@2001-01-01,
   Pose(Point(50 0), 0.0)@2001-01-02]';
 -- 39
@@ -693,13 +692,12 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01
 			<listitem xml:id="trgeometry_nai">
 				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
 				<para>Return the instant at which the two arguments are at their smallest mutual distance</para>
-				<programlisting xml:space="preserve" format="linespecific">
-nearestApproachInstant({geometry,trgeometry}, {geometry,trgeometry}) → trgeometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+nearestApproachInstant({geometry,trgeometry},{geometry,trgeometry}) → trgeometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(nearestApproachInstant(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 0.0)@2001-01-02]',
+SELECT asText(nearestApproachInstant( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
   geometry 'Point(5 5)'));
 -- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00
 </programlisting>
@@ -708,13 +706,12 @@ SELECT asText(nearestApproachInstant(
 			<listitem xml:id="trgeometry_shortestLine">
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Return the line connecting the two arguments at their nearest approach</para>
-				<programlisting xml:space="preserve" format="linespecific">
-shortestLine({geometry,trgeometry}, {geometry,trgeometry}) → geometry
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+shortestLine({geometry,trgeometry},{geometry,trgeometry}) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(shortestLine(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
-  geometry 'Point(10 0)'));
+SELECT ST_AsText(shortestLine( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(0 0), 0.0)@2001-01-01', geometry 'Point(10 0)'));
 -- LINESTRING(1 0,10 0)
 </programlisting>
 			</listitem>
@@ -732,23 +729,21 @@ SELECT ST_AsText(shortestLine(
 				<indexterm significance="normal"><primary><varname>frechetDistance</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>dynTimeWarpDistance</varname></primary></indexterm>
 				<para>Return the discrete Hausdorff distance, the discrete Fréchet distance, or the Dynamic Time Warp distance between two temporal rigid geometries</para>
-				<programlisting xml:space="preserve" format="linespecific">
-hausdorffDistance(trgeometry, trgeometry) → float
-frechetDistance(trgeometry, trgeometry) → float
-dynTimeWarpDistance(trgeometry, trgeometry) → float
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+hausdorffDistance(trgeometry,trgeometry) → float
+frechetDistance(trgeometry,trgeometry) → float
+dynTimeWarpDistance(trgeometry,trgeometry) → float
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(frechetDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01,
-  Pose(Point(2 0),0)@2000-01-03]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01,
-  Pose(Point(0 2),0)@2000-01-03]'), 6);
+SELECT round(frechetDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
 -- 2.828427
-SELECT round(hausdorffDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01,
-  Pose(Point(2 0),0)@2000-01-03]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01,
-  Pose(Point(0 2),0)@2000-01-03]'), 6);
+SELECT round(hausdorffDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
 -- 2
 </programlisting>
 			</listitem>
@@ -757,95 +752,30 @@ SELECT round(hausdorffDistance(
 				<indexterm significance="normal"><primary><varname>frechetDistancePath</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>dynTimeWarpPath</varname></primary></indexterm>
 				<para>Return the correspondence pairs between two temporal rigid geometries with respect to the discrete Fréchet distance or the Dynamic Time Warp distance, as a set of <varname>(i,j)</varname> instant-index pairs</para>
-				<programlisting xml:space="preserve" format="linespecific">
-frechetDistancePath(trgeometry, trgeometry) → {(i,j)}
-dynTimeWarpPath(trgeometry, trgeometry) → {(i,j)}
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+frechetDistancePath(trgeometry,trgeometry) → {(i,j)}
+dynTimeWarpPath(trgeometry,trgeometry) → {(i,j)}
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT frechetDistancePath(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+SELECT frechetDistancePath(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
     [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
     [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(20 0), 0.0)@2001-01-02]');
 -- (0,0)
 -- (1,1)
-SELECT dynTimeWarpPath(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+SELECT dynTimeWarpPath(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
     [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
     [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(20 0), 0.0)@2001-01-02]');
 -- (0,0)
 -- (1,1)
-</programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
-
-	<sect1 xml:id="trgeometry_comparisons">
-		<title>Comparisons</title>
-
-		<para>Equality and ever / always operators compare two temporal rigid geometries on the materialised geometry, both the reference shape and the pose path must agree at every shared instant.</para>
-
-		<itemizedlist>
-			<listitem xml:id="trgeometry_eq">
-				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
-				<para>Test exact (in)equality of two temporal rigid geometries</para>
-				<programlisting xml:space="preserve" format="linespecific">
-trgeometry = trgeometry → boolean
-trgeometry &lt;&gt; trgeometry → boolean
-</programlisting>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0),
-  0.0)@2001-01-02]' = trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
--- t
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0),
-  0.0)@2001-01-02]' &lt;&gt; trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
--- f
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="trgeometry_evereq">
-				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
-				<para>Test whether the materialised geometry is ever (not) equal to the operand at any time</para>
-				<programlisting xml:space="preserve" format="linespecific">
-{geometry,trgeometry} ?= {geometry,trgeometry} → boolean
-{geometry,trgeometry} ?&lt;&gt; {geometry,trgeometry} → boolean
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(5 0), 0.0)@2001-01-02]'
-       ?= geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))';
--- t
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="trgeometry_alwayseq">
-				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
-				<para>Test whether the materialised geometry is always (not) equal to the operand</para>
-				<programlisting xml:space="preserve" format="linespecific">
-{geometry,trgeometry} %= {geometry,trgeometry} → boolean
-{geometry,trgeometry} %&lt;&gt; {geometry,trgeometry} → boolean
-</programlisting>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0),
-  0.0)@2001-01-02]' %= trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
--- t
 </programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
 
 	<sect1 xml:id="trgeometry_bbox_ops">
-		<title>Bounding-Box Operators</title>
+		<title>Bounding Box Operations</title>
 
 		<para>Topological and position operators compare the spatiotemporal bounding boxes of the operands; both can be a <varname>trgeometry</varname>, an <varname>stbox</varname>, a <varname>geometry</varname>, or a <varname>tstzspan</varname>.</para>
 
@@ -858,9 +788,8 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 				<para>Standard topological operators on bounding boxes</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 0.0)@2001-01-02]'
-       &amp;&amp;
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]' &amp;&amp;
        stbox 'STBOX X((5, -1), (15, 1))';
 -- t
 </programlisting>
@@ -897,6 +826,145 @@ SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="trgeometry_everalways_rels">
+		<title>Ever and Always Relationships</title>
+		<itemizedlist>
+			<listitem xml:id="trgeometry_eContains">
+				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+				<para>Ever and always relationships</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+eContains(OPS) → boolean
+aContains(OPS) → boolean
+eCovers(OPS) → boolean
+aCovers(OPS) → boolean
+eDisjoint(OPS) → boolean
+aDisjoint(OPS) → boolean
+eDwithin(OPS,float) → boolean
+aDwithin(OPS,float) → boolean
+eIntersects(OPS) → boolean
+aIntersects(OPS) → boolean
+eTouches(OPS) → boolean
+aTouches(OPS) → boolean
+</programlisting>
+				<para>The <emphasis>ever</emphasis> relationships determine whether the relationship holds at some instant, and the <emphasis>always</emphasis> ones whether it holds at every instant. A temporal rigid geometry answers them at the body its reference geometry places at each instant, so the relationship read is the one of the placed body rather than of the reference geometry at the origin.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- true
+SELECT aIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- false
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_spatiotemp_rels">
+		<title>Spatiotemporal Relationships</title>
+		<itemizedlist>
+			<listitem xml:id="trgeometry_tContains">
+				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+				<para>Spatiotemporal relationships</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tContains({geometry,trgeometry},{geometry,trgeometry}) → tbool
+tCovers({geometry,trgeometry},{geometry,trgeometry}) → tbool
+tDisjoint({geometry,trgeometry},{geometry,trgeometry}) → tbool
+tDwithin({geometry,trgeometry},{geometry,trgeometry},float) → tbool
+tIntersects({geometry,trgeometry},{geometry,trgeometry}) → tbool
+tTouches({geometry,trgeometry},{geometry,trgeometry}) → tbool
+</programlisting>
+				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A rigid geometry covers an area, so every relationship is declared in both directions and between two temporal rigid geometries.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- [t@2001-01-01, f@2001-01-03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_comparisons">
+		<title>Comparisons</title>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_comp">
+				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<para>Traditional comparisons</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+trgeometry {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} trgeometry → boolean
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+    [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]' = 
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+    [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
+-- t
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+    [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0),0.0)@2001-01-02]' &lt;&gt; 
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+    [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
+-- f
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_ever_always">
+				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
+				<para>Ever and always comparisons</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{geometry,trgeometry} {?=, ?&lt;&gt;, %=, %&lt;&gt;} {geometry,trgeometry} &#8594; boolean
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(5 0), 0.0)@2001-01-02]' ?= geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))';
+-- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_tcomp">
+				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
+				<para>Temporal comparisons</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{geometry,trgeometry} {#=, #&lt;&gt;} {geometry,trgeometry} &#8594; tbool
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0),
+  0.0)@2001-01-02]' %= trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
+-- t
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="trgeometry_tile">
 		<title>Tiles</title>
 
@@ -908,21 +976,19 @@ SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
 				<indexterm significance="normal"><primary><varname>timeBoxes</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spaceTimeBoxes</varname></primary></indexterm>
 				<para>Return the spatiotemporal boxes of a temporal rigid geometry split with respect to a spatial, temporal, or spatiotemporal grid</para>
-				<programlisting xml:space="preserve" format="linespecific">
-spaceBoxes(trgeometry, xsize float [, ysize float [, zsize float]],
-  sorigin geometry = 'Point(0 0 0)', bitmatrix boolean = true,
-  borderInc boolean = true) → stbox[]
-timeBoxes(trgeometry, interval, torigin timestamptz = '2000-01-03',
-  bitmatrix boolean = true, borderInc boolean = true) → stbox[]
-spaceTimeBoxes(trgeometry, xsize float [, ysize float [, zsize float]], interval,
-  sorigin geometry = 'Point(0 0 0)', torigin timestamptz = '2000-01-03',
-  bitmatrix boolean = true, borderInc boolean = true) → stbox[]
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+spaceBoxes(trgeometry,xsize float [, ysize float [, zsize float]],
+  sorigin geometry='Point(0 0 0)',bitmatrix boolean=true,
+  borderInc boolean=true) → stbox[]
+timeBoxes(trgeometry,interval,torigin timestamptz='2000-01-03',
+  bitmatrix boolean=true,borderInc boolean=true) → stbox[]
+spaceTimeBoxes(trgeometry,xsize float [, ysize float [, zsize float]],interval,
+  sorigin geometry='Point(0 0 0)',torigin timestamptz='2000-01-03',
+  bitmatrix boolean=true,borderInc boolean=true) → stbox[]
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT array_length(spaceBoxes(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01,
-  Pose(Point(10 0),0)@2001-01-02]',
-  2.0), 1);
+SELECT array_length(spaceBoxes( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', 2.0), 1);
 -- 6
 </programlisting>
 			</listitem>
@@ -939,7 +1005,7 @@ SELECT array_length(spaceBoxes(
 				<indexterm significance="normal"><primary><varname>stboxes</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spans</varname></primary></indexterm>
 				<para>Return the array of spatiotemporal boxes or time spans of the segments of a temporal rigid geometry</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 stboxes(trgeometry) → stbox[]
 spans(trgeometry) → tstzspan[]
 </programlisting>
@@ -959,11 +1025,11 @@ SELECT spans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
 				<para>Return the spatiotemporal boxes or time spans of a temporal rigid geometry split into a given number of bins, or with a given number of segments per bin</para>
-				<programlisting xml:space="preserve" format="linespecific">
-splitNStboxes(trgeometry, integer) → stbox[]
-splitEachNStboxes(trgeometry, integer) → stbox[]
-splitNSpans(trgeometry, integer) → tstzspan[]
-splitEachNSpans(trgeometry, integer) → tstzspan[]
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+splitNStboxes(trgeometry,integer) → stbox[]
+splitEachNStboxes(trgeometry,integer) → stbox[]
+splitNSpans(trgeometry,integer) → tstzspan[]
+splitEachNSpans(trgeometry,integer) → tstzspan[]
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitNStboxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
@@ -984,7 +1050,7 @@ SELECT splitNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 			<listitem xml:id="trgeometry_tCount">
 				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Number of overlapping temporal rigid geometries at each instant, equivalent to <varname>tCount</varname> on the underlying tpose</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCount(trgeometry) → tint
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -997,7 +1063,7 @@ SELECT tCount(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 			<listitem xml:id="trgeometry_extent">
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Aggregate bounding box of a column of temporal rigid geometries</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 extent(trgeometry) → stbox
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1005,22 +1071,6 @@ SELECT extent(temp) FROM tbl_trgeometry;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="trgeometry_merge">
-				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
-				<para>Combine two trgeometries with the same reference geometry into a single sequence-set</para>
-				<programlisting xml:space="preserve" format="linespecific">
-merge(trgeometry, trgeometry) → trgeometry
-mergeAgg(trgeometry) → trgeometry
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(merge(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(5 0), 0.0)@2001-01-02]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-04,
-  Pose(Point(5 0), 0.0)@2001-01-05]'));
-</programlisting>
-			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -1036,20 +1086,13 @@ SELECT asText(merge(
 		</itemizedlist>
 
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE INDEX tbl_trgeometry_gist_idx
-  ON tbl_trgeometry
-  USING GIST(temp);
-
--- topological lookup
-SELECT count(*) FROM tbl_trgeometry
-WHERE temp &amp;&amp; stbox 'STBOX XT(((0, 0), (10, 10)),[2001-01-01, 2001-01-02])';
-
+CREATE INDEX tbl_trgeometry_gist_idx ON tbl_trgeometry USING GIST(temp);
+-- Topological lookup
+SELECT count(*) FROM tbl_trgeometry WHERE temp &amp;&amp; stbox 'STBOX XT(((0, 0),
+  (10, 10)),[2001-01-01, 2001-01-02])';
 -- KNN (ordered scan)
-SELECT mmsi
-FROM tbl_trgeometry
-ORDER BY temp &lt;-&gt; trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(100 100),
-  0.0)@2001-01-01'
-LIMIT 10;
+SELECT mmsi FROM tbl_trgeometry ORDER BY temp &lt;-&gt; trgeometry 'Polygon((0 0,1 0,1 1,
+  0 1,0 0));Pose(Point(100 100), 0.0)@2001-01-01' LIMIT 10;
 </programlisting>
 
 		<para>The kd-tree variant typically wins on workloads dominated by KNN queries with a tight ordering bound; the quad-tree variant is more uniform. The R-tree GiST is the safe default for mixed read/write workloads.</para>

@@ -35,7 +35,7 @@
 			<listitem xml:id="ttype_tCount">
 				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Conteo temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCount(ttype) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -47,7 +47,7 @@ SELECT tCount(NoEmps) FROM Department;
 			<listitem xml:id="ttype_extent">
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Extensión del cuadro delimitador</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 extent(temp) → {tstzspan,tbox,stbox}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -62,9 +62,9 @@ SELECT extent(Trip) FROM Trips;
 				<indexterm significance="normal"><primary><varname>tAnd</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tOr</varname></primary></indexterm>
 				<para>Y, o temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tAnd(tbool) → tbool
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tOr(tbool) → tbool
+tAnd(tbool) → tbool
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tAnd(NoEmps #&gt; 6) FROM Department;
@@ -75,21 +75,22 @@ SELECT tOr(NoEmps #&gt; 6) FROM Department;
 			</listitem>
 
 			<listitem xml:id="ttype_tMin">
-				<indexterm significance="normal"><primary><varname>tMin</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tMax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMinAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMaxAgg</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tSum</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tAvg</varname></primary></indexterm>
 				<para>Mínimo, máximo, suma y promedio temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tMin(ttype) → ttype
-tMax(ttype) → ttype
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tMinAgg(ttype) → ttype
+tMaxAgg(ttype) → ttype
 tSum(tnumber) → {tnumberSeq,tnumberSeqSet}
 tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}
 </programlisting>
+				<para>Los nombres <varname>tMin</varname> y <varname>tMax</varname> designan las mismas funciones de agregación y se mantienen por compatibilidad con versiones anteriores.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tMin(NoEmps) FROM Department;
+SELECT tMinAgg(NoEmps) FROM Department;
 -- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
-SELECT tMax(NoEmps) FROM Department;
+SELECT tMaxAgg(NoEmps) FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}
 SELECT tSum(NoEmps) FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
@@ -104,7 +105,7 @@ SELECT tAvg(NoEmps) FROM Department;
 			<listitem xml:id="ttype_wCount">
 				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
 				<para>Conteo de ventana</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 wCount(tnumber,interval) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -120,11 +121,11 @@ SELECT wCount(NoEmps, interval '2 days') FROM Department;
 				<indexterm significance="normal"><primary><varname>wSum</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>wAvg</varname></primary></indexterm>
 				<para>Mínimo, máximo, suma y promedio de ventana</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 wMin(tnumber,interval) → {tnumberSeq,tnumberSeqSet}
-wMax(tnumber,interval) → {tnumberSeq,tnumberSeqSet}
+wMax(tnumber,interval) → {tnumberDiscSeq,tnumberSeqSet}
 wSum(tint,interval) → {tintSeq,tintSeqSet}
-wAvg(tint,interval) → {tfloatDiscSeq,tfloatSeqSet}
+wAvg(tint,interval) → {tfloatSeq,tfloatSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT wMin(NoEmps, interval '2 days') FROM Department;
@@ -143,7 +144,7 @@ SELECT round(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
 			<listitem xml:id="tpoint_tCentroid">
 				<indexterm significance="normal"><primary><varname>tCentroid</varname></primary></indexterm>
 				<para>Centroide temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCentroid(tgeompoint) → tgeompoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -230,17 +231,15 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 
 		<para>Para acelerar algunas de las funciones de los tipos temporales, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
 			<programlisting language="sql" xml:space="preserve">
-SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)')
-FROM Trips T
+SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)') FROM Trips T
 -- Filtro de índice con cuadro delimitador
 WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </programlisting>
 		</para>
 
-		<para>En el caso de los geometrías temporales, todas las relaciones espaciales con la semántica alguna vez o siempre (ver la <xref linkend="tgeo_spatial_rel" />) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
+		<para>En el caso de los geometrías temporales, todas las relaciones espaciales con la semántica alguna vez o siempre (ver la <xref linkend="tgeo_spatiotemp_rel" />) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
 			<programlisting language="sql" xml:space="preserve">
-SELECT tIntersects(T.Trip, R.Geom)
-FROM Trips T, Regions R
+SELECT tIntersects(T.Trip, R.Geom) FROM Trips T, Regions R
 -- Filtro de índice con cuadro delimitador
 WHERE eIntersects(T.Trip, R.Geom);
 </programlisting>

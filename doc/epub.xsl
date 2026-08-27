@@ -25,5 +25,11 @@ task before
 <!-- Allow controlling individual cell borders -->
 <xsl:param name="table.borders.with.css" select="1" />
 
+<!-- State the role of a verbatim block as a second CSS class, so that a signature block is
+     styled apart from the examples that follow it -->
+<xsl:template match="programlisting[@role]|screen[@role]|synopsis[@role]" mode="class.value">
+	<xsl:value-of select="concat(local-name(.), ' ', @role)"/>
+</xsl:template>
+
 </xsl:stylesheet>
 

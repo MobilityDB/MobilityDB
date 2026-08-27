@@ -88,3 +88,10 @@ FROM trajectories WHERE id = 42;
 | `pcpatch_icp(source pcpatch, target pcpatch, max_iter int, max_corr double) → double[]` | ICP registration. Returns `[tx, ty, tz, qw, qx, qy, qz, fitness]` |
 | `pcpatch_gicp(source pcpatch, target pcpatch, max_iter int, max_corr double) → double[]` | PCL Generalized ICP (Mahalanobis cost over per-point local covariances). Robust on non-planar / noisy surfaces. Same return shape as `pcpatch_icp` |
 | `pcpatch_normals(pcpatch, k int DEFAULT 10) → double[]` | PCL `NormalEstimation<PointXYZ, Normal>`. Returns flat `[nx_0, ny_0, nz_0, curv_0, …]` of length 4 × npoints. A planar fixture round-trips to `(0,0,1)` with zero curvature |
+
+`pcpatch_sor` drops the points whose mean distance to their `k` nearest
+neighbours falls outside `mean ± stddev_mul × stddev`. `pcpatch_icp` /
+`pcpatch_gicp` return an array composable into a MobilityDB pose with
+`pose(r[1], r[2], r[3], r[4], r[5], r[6], r[7], srid)`. For a patch of more
+than ~50 k points, down-sample with `pcpatch_voxel_grid` before
+`pcpatch_normals`.

@@ -255,6 +255,16 @@ inside Unity and benefits from MobilityDB's temporal indexing for the
   far` every 1000 patches plus a final summary; the writer logs
   per-batch `Info` lines and a summary in `done()`.
 
+## Limitations
+
+- **WKB endianness.** `readers.tpcpatch` accepts little-endian (NDR)
+  pcpatch WKB only. A big-endian patch (first byte `0x00`) is rejected
+  with a clear error rather than silently mis-decoded. pgPointCloud
+  emits NDR on every common platform; XDR support would be additive.
+- **Compression of the stored `tpcpatch`.** The `compression` option of
+  `writers.tpcpatch` governs the libpq transport form alone. MobilityDB
+  normalises the on-disk pcpatch storage of a `tpcpatch` to `PC_NONE`.
+
 ## Linkage
 
 The plugins link against:
