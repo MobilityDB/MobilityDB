@@ -158,6 +158,12 @@ static const char *invalid_geoms[] = {
   "NOTAGEOMETRY(1 2)",                            /* unknown keyword       */
   "POINT(1)",                                     /* too few coordinates   */
   "",                                             /* empty string          */
+  /* A leading zero selects the hexadecimal reader and a leading brace the
+   * GeoJSON one, so these reach neither the keyword nor the paren check */
+  "0",                                            /* hexadecimal, too short */
+  "010",                                          /* hexadecimal, odd length */
+  "0101",                                         /* hexadecimal, truncated */
+  "{",                                            /* GeoJSON, unterminated */
 };
 
 int

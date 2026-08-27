@@ -3649,13 +3649,28 @@ geom_in(const char *str, int32 typmod)
   {
     size_t hexsize = strlen(str1);
     unsigned char *wkb = bytes_from_hexbytes(str1, hexsize);
-    /* TODO: 20101206: No parser checks! This is inline with current 1.5 behavior, but needs discussion */
+    /* A string of an odd length, or one carrying a character that is not a
+     * hexadecimal digit, encodes nothing */
+    if (! wkb)
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse geometry value: %s", str);
+      return NULL;
+    }
     lwgeom = lwgeom_from_wkb(wkb, hexsize/2, LW_PARSER_CHECK_NONE);
+    lwfree(wkb);
+    /* The reader is asked for no parser checks, so it answers NULL for bytes
+     * that do not spell a geometry */
+    if (! lwgeom)
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse geometry value: %s", str);
+      return NULL;
+    }
     /* If we picked up an SRID at the head of the WKB set it manually */
     if ( srid ) lwgeom_set_srid(lwgeom, srid);
     /* Add a bbox if necessary */
     if ( lwgeom_needs_bbox(lwgeom) ) lwgeom_add_bbox(lwgeom);
-    lwfree(wkb);
     result = geo_serialize(lwgeom);
     lwgeom_free(lwgeom);
   }
@@ -3663,6 +3678,14 @@ geom_in(const char *str, int32 typmod)
   {
     char *srs = NULL;
     lwgeom = lwgeom_from_geojson(str1, &srs);
+    if (! lwgeom)
+    {
+      if (srs)
+        lwfree(srs);
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse geometry value: %s", str);
+      return NULL;
+    }
     if (srs)
     {
       srid = SRID_DEFAULT; // TODO
