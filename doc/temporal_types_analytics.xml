@@ -759,8 +759,7 @@ SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
 					<indexterm significance="normal"><primary><varname>getValueTile</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>getTboxTimeTile</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>getValueTimeTile</varname></primary></indexterm>
-					<para>Return the temporal tile that covers a value and/or a timestamp &Z_support;
-</para>
+					<para>Return the temporal tile that covers a value and/or a timestamp</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 getValueTile(v float,vsize float,vorigin float=0.0) &#8594; tbox
 getTboxTimeTile(time timestamptz,duration interval,
