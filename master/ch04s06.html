@@ -90,11 +90,11 @@ SELECT tgeogpoint 'Interp=Step;
 			For temporal geometries, it is possible to specify the spatial reference identifier (SRID) using the Extended Well-Known Text (EWKT) representation as follows:
 		</p><pre class="programlisting">
 SELECT tgeompoint 'SRID=5435;[Point(0 0)@2001-01-01,Point(0 1)@2001-01-02]'
-SELECT tgeography 'SRID=7844;[Point(0 0)@2001-01-01,Linestring(1 0,0 1)@2001-01-02]'
+SELECT tgeography 'SRID=7844;[Point(0 0)@2001-01-01,Linestring(1 0,0 1)@2001-01-02]';
 </pre><p>
 			All component geometries of a temporal geometry will then be of the given SRID. Furthermore, each component geometry can specify its SRID with the EWKT format as in the following example
 		</p><pre class="programlisting">
-SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=5435;Point(0 1)@2001-01-02]'
+SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=5435;Point(0 1)@2001-01-02]';
 </pre><p>
 			An error is raised if the component geometries are not all in the same SRID or if the SRID of a component geometry is different from the one of the temporal point, as shown below.
 		</p><pre class="programlisting">

@@ -8,8 +8,8 @@ SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', timestamptz '2001-01-01'));
 -- Cbuffer(POINT(1 1),0.5)@2001-01-01
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.3)',
   tstzset '{2001-01-01, 2001-01-03, 2001-01-05}'));
-/* {Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(1 1),0.3)@2001-01-03, 
-   Cbuffer(Point(1 1),0.3)@2001-01-05} */
+/* {Cbuffer(POINT(1 1),0.3)@2001-01-01, Cbuffer(POINT(1 1),0.3)@2001-01-03, 
+   Cbuffer(POINT(1 1),0.3)@2001-01-05} */
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', tstzspan '[2001-01-01, 2001-01-02]'));
 -- [Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-02]
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.2)',
@@ -21,8 +21,8 @@ tcbufferSeq(tcbufferInst[],interp text='linear',lower_inc boolean=true,
 </pre><pre class="programlisting">
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
   'Cbuffer(Point(2 2), 0.5)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03']));
-/* [Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, 
-   Cbuffer(Point(1 1),0.5)@2001-01-03] */
+/* [Cbuffer(POINT(1 1),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.5)@2001-01-02, 
+   Cbuffer(POINT(1 1),0.5)@2001-01-03] */
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
   'Cbuffer(Point(2 2), 0.5)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03'],
   'discrete'));
@@ -30,8 +30,8 @@ SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
    Cbuffer(POINT(1 1),0.5)@2001-01-03} */
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.2)@2001-01-01',
   'Cbuffer(Point(1 1), 0.4)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03'], 'step'));
-/* Interp=Step;[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(1 1),0.4)@2001-01-02, 
-   Cbuffer(Point(1 1),0.5)@2001-01-03] */
+/* Interp=Step;[Cbuffer(POINT(1 1),0.2)@2001-01-01, Cbuffer(POINT(1 1),0.4)@2001-01-02, 
+   Cbuffer(POINT(1 1),0.5)@2001-01-03] */
 </pre></li><li class="listitem"><a name="tcbuffer_tcbufferSeqSet"></a><a class="indexterm" name="id8446"></a><a class="indexterm" name="id8449"></a><p>Constructor for temporal circular buffers of sequence set subtype</p><pre class="programlisting">
 tcbufferSeqSet(tcbuffer[]) → tcbufferSeqSet
 tcbufferSeqSetGaps(tcbufferInst[],maxt interval=NULL,maxdist float=NULL,
@@ -44,8 +44,8 @@ SELECT asText(tcbufferSeqSet(ARRAY[tcbuffer '[Cbuffer(Point(1 1),0.2)@2001-01-01
    [Cbuffer(Point(2 2),0.6)@2001-01-03, Cbuffer(Point(2 2),0.6)@2001-01-04]} */
 SELECT asText(tcbufferSeqSetGaps(ARRAY[tcbuffer 'Cbuffer(Point(1 1),0.1)@2001-01-01',
   'Cbuffer(Point(1 1),0.3)@2001-01-03', 'Cbuffer(Point(1 1),0.5)@2001-01-05'], '1 day'));
-/* {[Cbuffer(Point(1 1),0.1)@2001-01-01], [Cbuffer(Point(1 1),0.3)@2001-01-03], 
-   [Cbuffer(Point(1 1),0.5)@2001-01-05]} */
+/* {[Cbuffer(POINT(1 1),0.1)@2001-01-01], [Cbuffer(POINT(1 1),0.3)@2001-01-03], 
+   [Cbuffer(POINT(1 1),0.5)@2001-01-05]} */
 </pre></li><li class="listitem"><a name="tcbuffer_tcbuffer_tgeompoint"></a><a class="indexterm" name="id8456"></a><p>Construct a temporal circular buffer from a temporal geometry point and a temporal float</p><pre class="programlisting">
 tcbuffer(tgeompoint,tfloat) → tcbuffer
 </pre><p>The time frame of the result is the intersection of the time frames of the temporal point and the temporal float. If they do not intersect, a null value is returned</p><pre class="programlisting">

@@ -38,8 +38,8 @@ SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.3)@2001-01-01',
    Pose(Point(1 1),0.5)@2001-01-03} */
 SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.2)@2001-01-01',
   'Pose(Point(1 1), 0.4)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
-/* [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(1 1),0.4)@2001-01-02, 
-   Pose(Point(1 1),0.5)@2001-01-03] */
+/* [Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(1 1),0.4)@2001-01-02, 
+   Pose(POINT(1 1),0.5)@2001-01-03] */
 </pre></li><li class="listitem"><a name="tposeSeqSet"></a><a class="indexterm" name="id9521"></a><a class="indexterm" name="id9524"></a><p>Constructor for temporal poses of sequence set subtype</p><pre class="programlisting">
 tposeSeqSet(tpose[]) → tposeSeqSet
 tposeSeqSetGaps(tposeInst[],maxt interval=NULL,maxdist float=NULL,
