@@ -694,6 +694,11 @@ SELECT numSequences(tcbufferSeqSetGaps(ARRAY[
 
 -- tprecision
 SELECT asText(tprecision(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),3)@2001-01-01 00:00:04]', interval '2 secs'));
+-- The end-of-bin instant a step sequence generates carries a base value passed
+-- by reference, so it is read through the instant accessor. Reading the field
+-- directly gave the first eight bytes of the buffer as if they were a pointer,
+-- which faulted as soon as a second bin existed.
+SELECT asText(tprecision(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(5 5),0.6)@2001-01-05]', interval '1 day', '2001-01-01'));
 
 -------------------------------------------------------------------------------
 -- MF-JSON output of the temporal circular buffers built from real AIS data,

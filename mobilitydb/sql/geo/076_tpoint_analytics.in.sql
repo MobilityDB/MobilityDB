@@ -165,6 +165,31 @@ LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
+CREATE FUNCTION tsample(tgeompoint, duration interval,
+  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_tsample'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tprecision(tgeompoint, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tsample(tgeogpoint, duration interval,
+  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_tsample'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tprecision(tgeogpoint, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
 CREATE FUNCTION minDistSimplify(tgeompoint, float)
 RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'

@@ -66,3 +66,14 @@ SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'Linestring(1 1,2 2)'));
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Granularity modification with tsample and tprecision
+
+SELECT asText(tsample(tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
+SELECT asText(tsample(tgeography '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
+
+SELECT asText(tprecision(tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
+SELECT asText(tprecision(tgeography '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
+
+-------------------------------------------------------------------------------
