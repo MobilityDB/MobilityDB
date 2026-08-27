@@ -429,8 +429,10 @@ pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)
   return tpcbox_make(
     /* hasx */ true, /* hasz */ false, /* hast */ false,
     /* geodetic */ false, srid, pa->pcid,
-    pa->bounds[0], pa->bounds[2],  /* xmin, xmax */
-    pa->bounds[1], pa->bounds[3],  /* ymin, ymax */
+    /* PCBOUNDS is {xmin, xmax, ymin, ymax}, the order the bounds field of
+     * struct Pcpatch states and pointcloud-pg/lib/pc_api.h defines */
+    pa->bounds[0], pa->bounds[1],  /* xmin, xmax */
+    pa->bounds[2], pa->bounds[3],  /* ymin, ymax */
     0.0, 0.0,                      /* zmin, zmax (unused) */
     &empty_period);
 }
