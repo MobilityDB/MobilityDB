@@ -218,22 +218,16 @@ th3index_cell_area_rads2(const Temporal *temp)
 }
 
 /*****************************************************************************
- * th3EdgeLength(th3index, text) — lift_with_const
+ * th3EdgeLengthKm, th3EdgeLengthM and th3EdgeLengthRads — lift_with_const
  *****************************************************************************/
 
 /**
- * @ingroup meos_h3_metrics
  * @brief Return the per-instant length of a temporal H3 directed edge in
- * the given unit.
- * @csqlfn #Th3index_edge_length()
+ * the given H3 unit
  */
-Temporal *
-th3index_edge_length(const Temporal *temp, const char *unit)
+static Temporal *
+th3index_edge_length_in(const Temporal *temp, H3Unit u)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL); VALIDATE_NOT_NULL(unit, NULL);
-
-  H3Unit u = h3_unit_from_cstring(unit);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_h3_edge_length;
@@ -245,6 +239,48 @@ th3index_edge_length(const Temporal *temp, const char *unit)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_h3_metrics
+ * @brief Return the per-instant length of a temporal H3 directed edge in
+ * kilometres, the quantity libh3 answers as edgeLengthKm
+ * @csqlfn #Th3index_edge_length_km()
+ */
+Temporal *
+th3index_edge_length_km(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp, NULL);
+  return th3index_edge_length_in(temp, H3_UNIT_KM);
+}
+
+/**
+ * @ingroup meos_h3_metrics
+ * @brief Return the per-instant length of a temporal H3 directed edge in
+ * metres, the quantity libh3 answers as edgeLengthM
+ * @csqlfn #Th3index_edge_length_m()
+ */
+Temporal *
+th3index_edge_length_m(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp, NULL);
+  return th3index_edge_length_in(temp, H3_UNIT_M);
+}
+
+/**
+ * @ingroup meos_h3_metrics
+ * @brief Return the per-instant length of a temporal H3 directed edge in
+ * radians, the quantity libh3 answers as edgeLengthRads
+ * @csqlfn #Th3index_edge_length_rads()
+ */
+Temporal *
+th3index_edge_length_rads(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp, NULL);
+  return th3index_edge_length_in(temp, H3_UNIT_RADS);
 }
 
 /*****************************************************************************

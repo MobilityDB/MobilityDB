@@ -46,47 +46,52 @@ SELECT cellArea(th3index
  t
 (1 row)
 
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
+SELECT round(startValue(th3EdgeLengthKm(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01')) IS NOT NULL;
+    th3index '880326b88dfffff@2001-01-01')))::numeric, 7);
+   round   
+-----------
+ 0.5459490
+(1 row)
+
+SELECT round(startValue(th3EdgeLengthM(th3CellsToDirectedEdge(
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')))::numeric, 4);
+  round   
+----------
+ 545.9490
+(1 row)
+
+SELECT round(startValue(th3EdgeLengthRads(th3CellsToDirectedEdge(
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')))::numeric, 9);
+    round    
+-------------
+ 0.000085693
+(1 row)
+
+SELECT startValue(th3EdgeLengthM(th3CellsToDirectedEdge(
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')))
+  = startValue(th3EdgeLengthKm(th3CellsToDirectedEdge(
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01'))) * 1000;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
+SELECT startValue(th3EdgeLengthRads(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'km') IS NOT NULL;
+    th3index '880326b88dfffff@2001-01-01')))
+  < startValue(th3EdgeLengthKm(th3CellsToDirectedEdge(
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'm') IS NOT NULL;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'rads') IS NOT NULL;
- ?column? 
-----------
- t
-(1 row)
-
-/* Errors */
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'km2');
-ERROR:  h3_edge_length: expected a length unit (km, m, rads)
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'parsec');
-ERROR:  invalid h3 unit "parsec" (expected one of km, m, rads, km2, m2, rads2)
 SELECT greatCircleDistance(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',

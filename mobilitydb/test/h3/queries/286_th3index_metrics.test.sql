@@ -40,34 +40,33 @@ SELECT cellArea(th3index
   IS NOT NULL;
 
 -------------------------------------------------------------------------------
--- th3EdgeLength(th3index, text) — lift_with_const
+-- th3EdgeLengthKm, th3EdgeLengthM and th3EdgeLengthRads — lift_with_const
 -------------------------------------------------------------------------------
 
--- Default unit ('km')
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
+-- The three name the units libh3 names
+SELECT round(startValue(th3EdgeLengthKm(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01')) IS NOT NULL;
+    th3index '880326b88dfffff@2001-01-01')))::numeric, 7);
+SELECT round(startValue(th3EdgeLengthM(th3CellsToDirectedEdge(
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')))::numeric, 4);
+SELECT round(startValue(th3EdgeLengthRads(th3CellsToDirectedEdge(
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')))::numeric, 9);
 
--- All three valid length units
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
+-- The three answer one quantity in three units
+SELECT startValue(th3EdgeLengthM(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'km') IS NOT NULL;
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
+    th3index '880326b88dfffff@2001-01-01')))
+  = startValue(th3EdgeLengthKm(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'm') IS NOT NULL;
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
+    th3index '880326b88dfffff@2001-01-01'))) * 1000;
+SELECT startValue(th3EdgeLengthRads(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'rads') IS NOT NULL;
-
--- Area unit on a length function — must error.
-/* Errors */
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
+    th3index '880326b88dfffff@2001-01-01')))
+  < startValue(th3EdgeLengthKm(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'km2');
--- Invalid unit string
-SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'), 'parsec');
+    th3index '880326b88dfffff@2001-01-01')));
 
 -------------------------------------------------------------------------------
 -- greatCircleDistance(tgeogpoint, tgeogpoint, text) — binary_synced
