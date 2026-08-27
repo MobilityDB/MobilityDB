@@ -83,7 +83,7 @@ Jsonbset_array_length(PG_FUNCTION_ARGS)
 /**
  * @brief Extract a field from a JSONB set value
  * @sqlfn jsonbsetObjectField(), jsonbsetObjectFieldText()
- * @sqlop @p ->, @p ->
+ * @sqlop @p ->, @p ->>
  */
 Datum
 Jsonbset_object_field_common(FunctionCallInfo fcinfo, bool astext)
