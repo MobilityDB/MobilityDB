@@ -90,6 +90,12 @@ pcpatch_filter_per_point(const Pcpatch *pa, pcpatch_pointpred_fn pred,
   Pcpatch *result = NULL;
   if (out->npoints > 0)
   {
+    /* The data area of a serialized patch is read back by length, so it holds
+     * exactly the survivors: pc_patch_uncompressed_make sized it for the upper
+     * bound above, and only the growth path of pc_patch_uncompressed_add_point
+     * keeps that size in step with the point count. */
+    out->maxpoints = out->npoints;
+    out->datasize = (size_t) out->npoints * schema->size;
     /* Recompute extent + stats so the serialized header is consistent
      * with the survivor set (bounds matter for downstream bbox prune). */
     pc_patch_uncompressed_compute_extent(out);

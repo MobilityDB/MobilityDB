@@ -241,6 +241,13 @@ SELECT minusTpcboxFine(:inst1, tpcbox_zt(0, 0, 0, 3, 3, 3,
 SELECT startNumPoints(minusTpcboxFine(:inst1, tpcbox_zt(0, 0, 0, 1, 1, 1,
   tstzspan '[2024-01-01, 2024-01-31]', 1, 0)));
 
+-- The patch a restriction that drops a point answers is read back point by
+-- point, which is what states that its data area holds the survivors alone.
+SELECT PC_AsText(getValue(atTpcboxFine(:inst1, tpcbox_zt(0, 0, 0, 1, 1, 1,
+  tstzspan '[2024-01-01, 2024-01-31]', 1, 0))));
+SELECT PC_AsText(getValue(minusTpcboxFine(:inst1, tpcbox_zt(0, 0, 0, 1, 1, 1,
+  tstzspan '[2024-01-01, 2024-01-31]', 1, 0))));
+
 -------------------------------------------------------------------------------
 -- Per-point restrictions by geometry — atGeometry / minusGeometry.
 -------------------------------------------------------------------------------
@@ -251,6 +258,10 @@ SELECT atGeometry(:inst1,
   geometry 'Polygon((10 10, 10 20, 20 20, 20 10, 10 10))') IS NULL;
 SELECT startNumPoints(minusGeometry(:inst1,
   geometry 'Polygon((0 0, 0 1.5, 1.5 1.5, 1.5 0, 0 0))'));
+SELECT PC_AsText(getValue(atGeometry(:inst1,
+  geometry 'Polygon((0 0, 0 1.5, 1.5 1.5, 1.5 0, 0 0))')));
+SELECT PC_AsText(getValue(minusGeometry(:inst1,
+  geometry 'Polygon((0 0, 0 1.5, 1.5 1.5, 1.5 0, 0 0))')));
 
 -------------------------------------------------------------------------------
 -- Spatial relationships — eIntersects(tpcpatch, geometry).
