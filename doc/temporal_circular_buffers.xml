@@ -355,8 +355,8 @@ SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 SELECT asText(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01,
   Cbuffer(Point(2 2), 0.3)@2001-01-02, Cbuffer(Point(2 2), 0.5)@2001-01-03),
   [Cbuffer(Point(2 2), 0.5)@2001-01-03, Cbuffer(Point(2 2), 0.7)@2001-01-04)}');
-/* {[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.3)@2001-01-02, 
-   Cbuffer(Point(2 2),0.7)@2001-01-04)} */
+/* {[Cbuffer(POINT(1 1),0.2)@2001-01-01, Cbuffer(POINT(2 2),0.3)@2001-01-02, 
+   Cbuffer(POINT(2 2),0.7)@2001-01-04)} */
 </programlisting>
 	</sect1>
 
@@ -528,8 +528,8 @@ SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', timestamptz '2001-01-01'));
 -- Cbuffer(POINT(1 1),0.5)@2001-01-01
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.3)',
   tstzset '{2001-01-01, 2001-01-03, 2001-01-05}'));
-/* {Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(1 1),0.3)@2001-01-03, 
-   Cbuffer(Point(1 1),0.3)@2001-01-05} */
+/* {Cbuffer(POINT(1 1),0.3)@2001-01-01, Cbuffer(POINT(1 1),0.3)@2001-01-03, 
+   Cbuffer(POINT(1 1),0.3)@2001-01-05} */
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', tstzspan '[2001-01-01, 2001-01-02]'));
 -- [Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-02]
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.2)',
@@ -548,8 +548,8 @@ tcbufferSeq(tcbufferInst[],interp text='linear',lower_inc boolean=true,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
   'Cbuffer(Point(2 2), 0.5)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03']));
-/* [Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, 
-   Cbuffer(Point(1 1),0.5)@2001-01-03] */
+/* [Cbuffer(POINT(1 1),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.5)@2001-01-02, 
+   Cbuffer(POINT(1 1),0.5)@2001-01-03] */
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
   'Cbuffer(Point(2 2), 0.5)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03'],
   'discrete'));
@@ -557,8 +557,8 @@ SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
    Cbuffer(POINT(1 1),0.5)@2001-01-03} */
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.2)@2001-01-01',
   'Cbuffer(Point(1 1), 0.4)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03'], 'step'));
-/* Interp=Step;[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(1 1),0.4)@2001-01-02, 
-   Cbuffer(Point(1 1),0.5)@2001-01-03] */
+/* Interp=Step;[Cbuffer(POINT(1 1),0.2)@2001-01-01, Cbuffer(POINT(1 1),0.4)@2001-01-02, 
+   Cbuffer(POINT(1 1),0.5)@2001-01-03] */
 </programlisting>
 			</listitem>
 
@@ -579,8 +579,8 @@ SELECT asText(tcbufferSeqSet(ARRAY[tcbuffer '[Cbuffer(Point(1 1),0.2)@2001-01-01
    [Cbuffer(Point(2 2),0.6)@2001-01-03, Cbuffer(Point(2 2),0.6)@2001-01-04]} */
 SELECT asText(tcbufferSeqSetGaps(ARRAY[tcbuffer 'Cbuffer(Point(1 1),0.1)@2001-01-01',
   'Cbuffer(Point(1 1),0.3)@2001-01-03', 'Cbuffer(Point(1 1),0.5)@2001-01-05'], '1 day'));
-/* {[Cbuffer(Point(1 1),0.1)@2001-01-01], [Cbuffer(Point(1 1),0.3)@2001-01-03], 
-   [Cbuffer(Point(1 1),0.5)@2001-01-05]} */
+/* {[Cbuffer(POINT(1 1),0.1)@2001-01-01], [Cbuffer(POINT(1 1),0.3)@2001-01-03], 
+   [Cbuffer(POINT(1 1),0.5)@2001-01-05]} */
 </programlisting>
 			</listitem>
 
@@ -826,8 +826,8 @@ SELECT asText(atValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 -- {[Cbuffer(POINT(2 2),0.5)@2001-01-02]}
 SELECT asText(minusValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-03]', cbuffer 'Cbuffer(Point(2 2), 0.5)'));
-/* {[Cbuffer(Point(2 2),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02),
-   (Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(2 2),0.7)@2001-01-03]} */
+/* {[Cbuffer(POINT(2 2),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.5)@2001-01-02),
+   (Cbuffer(POINT(2 2),0.5)@2001-01-02, Cbuffer(POINT(2 2),0.7)@2001-01-03]} */
 </programlisting>
 			</listitem>
 
