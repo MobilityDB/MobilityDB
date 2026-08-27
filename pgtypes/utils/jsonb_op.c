@@ -361,8 +361,11 @@ pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2)
       "jsonb comparison: NULL argument");
     return 0;
   }
+  /* The three-way result is the answer, where the sibling predicates above
+   * reduce it to a boolean. A caller ordering values reads the sign, and a
+   * caller matching them reads the zero */
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
-    (JsonbContainer *) &jb2->root) <= 0;
+    (JsonbContainer *) &jb2->root);
 }
 
 /**

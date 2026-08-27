@@ -54,19 +54,19 @@ SELECT MAX(memSize(set(jb))) FROM tbl_jsonb;
 SELECT COUNT(*) FROM tbl_jsonbset WHERE s @> startValue(s);
  count 
 -------
-     0
+    99
 (1 row)
 
 SELECT COUNT(*) FROM tbl_jsonbset WHERE startValue(s) <@ s;
  count 
 -------
-     0
+    99
 (1 row)
 
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s && t2.s;
  count 
 -------
-  5614
+    99
 (1 row)
 
 SELECT MAX(memSize(s || jb)) FROM tbl_jsonbset, tbl_jsonb;
@@ -108,7 +108,7 @@ SELECT MAX(memSize(t1.s - t2.s)) FROM tbl_jsonbset t1, tbl_jsonbset t2;
 SELECT MAX(memSize(t1.s * t2.s)) FROM tbl_jsonbset t1, tbl_jsonbset t2;
  max  
 ------
- 1464
+ 1624
 (1 row)
 
 SELECT MAX(memSize(s)) FROM tbl_jsonbset;
@@ -160,13 +160,13 @@ test2 (k, s) AS (
 SELECT COUNT(*) FROM test2 t1, tbl_jsonbset t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
  count 
 -------
-    35
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE cmp(t1.s, t2.s) = -1;
  count 
 -------
-   557
+  1136
 (1 row)
 
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s = t2.s;
@@ -184,37 +184,37 @@ SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s <> t2.s;
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s < t2.s;
  count 
 -------
-   557
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s <= t2.s;
  count 
 -------
-   718
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s > t2.s;
  count 
 -------
-  9083
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s >= t2.s;
  count 
 -------
-  9244
+  4950
 (1 row)
 
 SELECT MAX(hash(s)) FROM tbl_jsonbset;
     max     
 ------------
- 2107504745
+ 2129107175
 (1 row)
 
 SELECT MAX(hashExtended(s, 1)) FROM tbl_jsonbset;
          max         
 ---------------------
- 9209195217540800445
+ 9160053331433996777
 (1 row)
 
 SELECT numValues(setUnion(jb)) FROM tbl_jsonb;
@@ -232,12 +232,12 @@ SELECT setMinus(jsonb '{"a": 1}', jsonbset '{"{\"b\": 2}"}');
 SELECT setIntersection(jsonb '{"a": 1}', jsonbset '{"{\"a\": 1}", "{\"b\": 2}"}');
  setintersection 
 -----------------
- 
+ {"{\"a\": 1}"}
 (1 row)
 
 SELECT setIntersection(jsonbset '{"{\"a\": 1}", "{\"b\": 2}"}', jsonb '{"a": 1}');
  setintersection 
 -----------------
- 
+ {"{\"a\": 1}"}
 (1 row)
 
