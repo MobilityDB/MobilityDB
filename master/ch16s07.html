@@ -10,11 +10,11 @@ SELECT getResolution(th3index(
 -- 9@2001-01-01
 </pre></li><li class="listitem"><a name="th3_h3_cell_to_latlng"></a><a class="indexterm" name="id12081"></a><a class="indexterm" name="id12084"></a><p>Return the temporal geodetic centroid of each cell in a trajectory</p><pre class="programlisting">
 cellToPoint(th3index) → tgeogpoint
-th3CellToLatlngTgeompoint(th3index) → tgeompoint
-</pre><p>A planar (SRID 4326) overload is available under the name <code class="varname">th3CellToLatlngTgeompoint</code>.</p><pre class="programlisting">
+tgeompoint(th3index) → tgeompoint
+</pre><p>A planar (SRID 4326) overload is available under the name <code class="varname">tgeompoint</code>.</p><pre class="programlisting">
 SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
-SELECT asText(th3CellToLatlngTgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
+SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
 </pre></li><li class="listitem"><a name="th3_h3_cell_to_boundary"></a><a class="indexterm" name="id12093"></a><p>Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</p><pre class="programlisting">
 cellToBoundary(th3index) → tgeography
