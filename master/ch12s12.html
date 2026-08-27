@@ -19,18 +19,19 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 {stbox,tcbuffer} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tcbuffer} → boolean
 {tstzspan,stbox,tcbuffer} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tcbuffer} → boolean
 </pre><pre class="programlisting">
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; cbuffer 'Cbuffer(Point(1 1), 0.2)';
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;
+  stbox(cbuffer 'Cbuffer(Point(1 1), 0.2)');
 -- false
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)');
 -- false
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; cbuffer 'Cbuffer(Point(1 1), 0.3)'::geometry;
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03,
+  Cbuffer(Point(1 1), 0.5)@2001-01-05]' #&amp;&gt; tstzspan '[2001-01-01,2001-01-03]';
 -- true
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &gt;&gt;#
-  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]';
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03,
+  Cbuffer(Point(1 1), 0.5)@2001-01-05]' #&gt;&gt;
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]';
 -- true
 </pre></li><li class="listitem"><a name="tcbuffer_expandSpace"></a><a class="indexterm" name="id8697"></a><p>Return the spatiotemporal bounding box expanded in the spatial dimension by a float value</p><pre class="programlisting">
 expandSpace(tcbuffer,float) → stbox
