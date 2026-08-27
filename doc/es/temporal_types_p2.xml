@@ -303,7 +303,7 @@ SELECT asText(merge(ARRAY[tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
    [Point(6 6)@2001-01-06, Point(7 7)@2001-01-07]} */
 SELECT asText(merge(ARRAY[tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]}',
   '{[Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]}']));
--- [Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]
+-- [POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02, POINT(1 1)@2001-01-03]
 SELECT asText(merge(ARRAY[tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]}',
   '{[Linestring(2 2,1 1)@2001-01-02, Point(1 1)@2001-01-03]}']));
 -- {[POINT(1 1)@2001-01-01, LINESTRING(2 2,1 1)@2001-01-02, POINT(1 1)@2001-01-03]}
