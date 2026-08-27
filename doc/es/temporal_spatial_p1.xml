@@ -281,7 +281,7 @@ asMFJSON(tspatial,options integer=0,flags integer=0,maxdecimaldigits integer=15)
 					<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
 					<listitem><para>2: JSON_C_TO_STRING_PRETTY</para></listitem>
 				</itemizedlist>
-				<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
+				<para>El argumento <varname>maxdecimaldigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asMFJSON(tgeompoint 'Point(1 2)@2019-01-01 18:00:00.15+02');
 /* {"type":"MovingPoint","coordinates":[[1,2]],"datetimes":["2019-01-01T17:00:00.15"],
