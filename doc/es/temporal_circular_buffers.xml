@@ -999,17 +999,17 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; cbuffer 'Cbuffer(Point(1 1), 0.2)'
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; cbuffer 'Cbuffer(Point(1 1), 0.2)';
 -- false
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)')
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)');
 -- false
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; cbuffer 'Cbuffer(Point(1 1), 0.3)'::geometry
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; cbuffer 'Cbuffer(Point(1 1), 0.3)'::geometry;
 -- true
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]' &gt;&gt;#
-  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]'
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]';
 -- true
 </programlisting>
 			</listitem>
@@ -1097,7 +1097,7 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 -- [25.0496666945044@2001-01-01, 26.4085688426232@2001-01-03]
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt;
-  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-04]'
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-04]';
 -- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
 </programlisting>
 			</listitem>
