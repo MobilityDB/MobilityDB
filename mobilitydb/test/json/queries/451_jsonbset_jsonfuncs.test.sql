@@ -176,3 +176,25 @@ SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"d\": \"2001-01-01\"}"}', '$.d.datet
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);
 
 -------------------------------------------------------------------------------
+-- Ordering
+-------------------------------------------------------------------------------
+
+/* The comparison of two JSONB values is a three-way answer, so a set of them
+ * sorts ascending as every other set type does, and each of the assertions
+ * below holds whatever the values are */
+SELECT set(ARRAY[jsonb '1', '2', '3']);
+SELECT startValue(set(ARRAY[jsonb '1', '2', '3'])) <= endValue(set(ARRAY[jsonb '1', '2', '3']));
+SELECT jsonb '{"a": 1}' <= jsonb '{"a": 1}';
+SELECT jsonb '{"a": 1}' < jsonb '{"b": 2}' AND jsonb '{"b": 2}' < jsonb '{"c": 3}';
+
+/* A set contains its own start value and its own end value */
+SELECT set(ARRAY[jsonb '1', '2', '3']) @> startValue(set(ARRAY[jsonb '1', '2', '3']));
+SELECT set(ARRAY[jsonb '1', '2', '3']) @> endValue(set(ARRAY[jsonb '1', '2', '3']));
+
+/* A set minus itself is empty, and a set intersected with itself is itself */
+SELECT setMinus(set(ARRAY[jsonb '1', '2']), set(ARRAY[jsonb '1', '2']));
+SELECT setIntersection(set(ARRAY[jsonb '1', '2']), set(ARRAY[jsonb '1', '2']));
+SELECT setMinus(set(ARRAY[jsonb '1', '2']), set(ARRAY[jsonb '1']));
+SELECT setIntersection(set(ARRAY[jsonb '1', '2']), set(ARRAY[jsonb '2']));
+
+-------------------------------------------------------------------------------
