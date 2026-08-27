@@ -75,7 +75,7 @@ CREATE FUNCTION cellToPoint(th3index)
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_tgeogpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION th3CellToLatlngTgeompoint(th3index)
+CREATE FUNCTION tgeompoint(th3index)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -103,7 +103,7 @@ CREATE FUNCTION cellToBoundary(th3index)
 
 CREATE CAST (th3index AS tgeogpoint) WITH FUNCTION cellToPoint(th3index);
 CREATE CAST (th3index AS tgeompoint)
-  WITH FUNCTION th3CellToLatlngTgeompoint(th3index);
+  WITH FUNCTION tgeompoint(th3index);
 
 /******************************************************************************
  * h3indexset × th3index — ever-equal (sound cell-set prefilter)

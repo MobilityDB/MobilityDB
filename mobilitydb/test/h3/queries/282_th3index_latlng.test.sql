@@ -38,10 +38,10 @@ SELECT th3index(
   = th3index '8a2a1072b59ffff@2001-01-01';
 
 -------------------------------------------------------------------------------
--- th3CellToLatlngTgeompoint — planar (SRID 4326) overload
+-- tgeompoint — planar (SRID 4326) overload
 -------------------------------------------------------------------------------
 
-SELECT th3CellToLatlngTgeompoint(th3index
+SELECT tgeompoint(th3index
   '831c02fffffffff@2001-01-01') IS NOT NULL;
 
 -------------------------------------------------------------------------------
@@ -127,6 +127,6 @@ SELECT (th3index
   '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]')::tgeompoint
   IS NOT NULL;
 SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint
-  ~= th3CellToLatlngTgeompoint(th3index '831c02fffffffff@2001-01-01');
+  ~= tgeompoint(th3index '831c02fffffffff@2001-01-01');
 
 -------------------------------------------------------------------------------
