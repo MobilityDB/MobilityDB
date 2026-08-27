@@ -38,7 +38,7 @@
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCount(ttype) → {tintSeq,tintSeqSet}
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tCount(NoEmps) FROM Department;
 -- {[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}
 </programlisting>
@@ -50,11 +50,11 @@ SELECT tCount(NoEmps) FROM Department;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 extent(temp) → {tstzspan,tbox,stbox}
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT extent(noEmps) FROM Department;
 -- TBOX XT((4,12),[2001-01-01,2001-10-01])
 SELECT extent(Trip) FROM Trips;
--- STBOX XT(((0,0),(3,3),[2001-01-01 08:00:00, 2001-01-01 08:20:00)))
+-- STBOX XT(((0,0),(3,3)),[2001-01-01 08:00:00, 2001-01-01 08:20:00))
 </programlisting>
 			</listitem>
 
@@ -66,7 +66,7 @@ SELECT extent(Trip) FROM Trips;
 tOr(tbool) → tbool
 tAnd(tbool) → tbool
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tAnd(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-04-01, f@2001-10-01)}
 SELECT tOr(NoEmps #&gt; 6) FROM Department;
@@ -87,7 +87,7 @@ tSum(tnumber) → {tnumberSeq,tnumberSeqSet}
 tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}
 </programlisting>
 				<para>Los nombres <varname>tMin</varname> y <varname>tMax</varname> designan las mismas funciones de agregación y se mantienen por compatibilidad con versiones anteriores.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tMinAgg(NoEmps) FROM Department;
 -- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
 SELECT tMaxAgg(NoEmps) FROM Department;
@@ -108,7 +108,7 @@ SELECT tAvg(NoEmps) FROM Department;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 wCount(tnumber,interval) → {tintSeq,tintSeqSet}
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT wCount(NoEmps, interval '2 days') FROM Department;
 /* {[1@2001-01-01, 2@2001-02-01, 3@2001-04-01, 2@2001-04-03, 3@2001-06-01, 2@2001-06-03,
    1@2001-08-03, 1@2001-10-03)} */
@@ -127,7 +127,7 @@ wMax(tnumber,interval) → {tnumberDiscSeq,tnumberSeqSet}
 wSum(tint,interval) → {tintSeq,tintSeqSet}
 wAvg(tint,interval) → {tfloatSeq,tfloatSeqSet}
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT wMin(NoEmps, interval '2 days') FROM Department;
 -- {[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}
 SELECT wMax(NoEmps, interval '2 days') FROM Department;
@@ -147,7 +147,7 @@ SELECT round(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCentroid(tgeompoint) → tgeompoint
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tCentroid(Trip) FROM Trips;
 /* {[POINT(0 0)@2001-01-01 08:00:00, POINT(1 0)@2001-01-01 08:05:00),
    [POINT(0.5 0)@2001-01-01 08:05:00, POINT(1.5 0.5)@2001-01-01 08:10:00,
@@ -162,7 +162,7 @@ SELECT tCentroid(Trip) FROM Trips;
 	<sect1 xml:id="ttype_indexing">
 		<title>Indexación</title>
 		<para>Se pueden crear índices GiST y SP-GiST para columnas de tabla de tipos temporales. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple n-dimensional. Ejemplos de creación de índices son los siguientes:
-			<programlisting language="sql" xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 </programlisting>
@@ -205,7 +205,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		</para>
 
 		<para>Por ejemplo, dado el índice definido anteriormente en la tabla <varname>Department</varname> y una consulta que implica una condición con el operador <varname>&amp;&amp;</varname> (superposición), si el argumento derecho es un flotante temporal, entonces se consideran tanto el valor como las dimensiones de tiempo para filtrar las tuplas de la relación, mientras que si el argumento derecho es un valor flotante, un rango flotante o un tipo de tiempo, entonces el valor o la dimensión de tiempo se utilizará para filtrar las tuplas de la relación. Además, se puede construir un cuadro delimitador a partir de un valor/rango y/o una marca de tiempo/período, que se puede usar para filtrar las tuplas de la relación. Ejemplos de consultas que utilizan el índice en la tabla <varname>Department</varname> definida anteriormente se dan a continuación.
-			<programlisting language="sql" xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; tstzspan '[2001-04-01, 2001-05-01)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
@@ -216,7 +216,7 @@ SELECT * FROM Department WHERE NoEmps &amp;&amp;
 		</para>
 
 		<para>Del mismo modo, los ejemplos de consultas que utilizan el índice en la tabla <varname>Trips</varname> definida anteriormente se dan a continuación.
-			<programlisting language="sql" xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT * FROM Trips WHERE Trip &amp;&amp; geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))';
 SELECT * FROM Trips WHERE Trip &amp;&amp; timestamptz '2001-01-01';
 SELECT * FROM Trips WHERE Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-05)';
@@ -230,7 +230,7 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 		<para>Finalmente, se pueden crear índices de árbol B para columnas de tabla de todos los tipos temporales. Para este tipo de índice, la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos temporales, con los correspondientes operadores <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname> y <varname>&gt;=</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte de árbol B para tipos temporales está destinado principalmente a permitir la clasificación interna en las consultas, en lugar de la creación de índices reales.</para>
 
 		<para>Para acelerar algunas de las funciones de los tipos temporales, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
-			<programlisting language="sql" xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)') FROM Trips T
 -- Filtro de índice con cuadro delimitador
 WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
@@ -238,7 +238,7 @@ WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 		</para>
 
 		<para>En el caso de los geometrías temporales, todas las relaciones espaciales con la semántica alguna vez o siempre (ver la <xref linkend="tgeo_spatiotemp_rel" />) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
-			<programlisting language="sql" xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(T.Trip, R.Geom) FROM Trips T, Regions R
 -- Filtro de índice con cuadro delimitador
 WHERE eIntersects(T.Trip, R.Geom);

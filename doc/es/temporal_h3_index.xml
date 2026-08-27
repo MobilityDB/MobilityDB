@@ -32,7 +32,7 @@ SELECT th3index '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02],
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index(Instant) '831c02fffffffff@2001-01-01';
 SELECT th3index(SequenceSet) '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]}';
--- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
+-- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT th3index(Sequence) '831c02fffffffff@2001-01-01';
 </programlisting>
 		<para>Las funciones <varname>asText</varname>, <varname>asBinary</varname> y <varname>asHexWKB</varname> serializan un valor <varname>th3index</varname>, y <varname>th3indexFromBinary</varname> y <varname>th3indexFromHexWKB</varname> lo reconstruyen. La forma hexadecimal WKB permite que una columna de índice H3 temporal se transfiera de ida y vuelta mediante un <varname>COPY</varname> basado en texto.</para>
@@ -159,6 +159,8 @@ valueN(th3index,integer) → h3index
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueN(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 1);
 -- 831c02fffffffff
+SELECT valueN(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 2);
+-- 831c00fffffffff
 SELECT valueN(th3index '831c02fffffffff@2001-01-01', 99);
 -- NULL
 </programlisting>
@@ -173,6 +175,10 @@ getValues(th3index) → h3indexset
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getValues(th3index '831c02fffffffff@2001-01-01');
 -- {831c02fffffffff}
+SELECT getValues(th3index
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02,
+    880326b885fffff@2001-01-03]');
+-- {831c00fffffffff, 831c02fffffffff, 880326b885fffff}
 </programlisting>
 			</listitem>
 
@@ -204,6 +210,8 @@ th3GetResolution(th3index) → tint
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3GetResolution(th3index '831c02fffffffff@2001-01-01');
 -- 3@2001-01-01
+SELECT th3GetResolution(th3index '880326b885fffff@2001-01-01');
+-- 8@2001-01-01
 </programlisting>
 			</listitem>
 
@@ -225,6 +233,8 @@ SELECT th3GetBaseCellNumber(th3index '831c02fffffffff@2001-01-01');
 isValidCell(th3index) → tbool
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
+-- t@2001-01-01
 SELECT isValidCell(th3index '0@2001-01-01');
 -- f@2001-01-01
 </programlisting>
@@ -641,6 +651,8 @@ SELECT aEq(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44a8ffffff');
 					<programlisting xml:space="preserve" format="linespecific">
 eNe({h3index,th3index},th3index) → boolean
 eNe(th3index,h3index) → boolean
+{h3index,th3index} ?&lt;&gt; th3index
+th3index ?&lt;&gt; h3index
 </programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44aeffffff');
@@ -655,6 +667,8 @@ SELECT eNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44aeffffff');
 					<programlisting xml:space="preserve" format="linespecific">
 aNe({h3index,th3index},th3index) → boolean
 aNe(th3index,h3index) → boolean
+{h3index,th3index} %&lt;&gt; th3index
+th3index %&lt;&gt; h3index
 </programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT aNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44aeffffff');
@@ -678,6 +692,10 @@ tEq({h3index,th3index},th3index) → tbool
 tEq(th3index,h3index) → tbool
 tNe({h3index,th3index},th3index) → tbool
 tNe(th3index,h3index) → tbool
+{h3index,th3index} #= th3index
+th3index #= h3index
+{h3index,th3index} #&lt;&gt; th3index
+th3index #&lt;&gt; h3index
 </programlisting>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tEq(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44a8ffffff');
@@ -1065,7 +1083,7 @@ FROM Temp;
 				<para>Clase de operadores GiST para celdas H3 temporales</para>
 				<para>Indexa una caja envolvente espaciotemporal <varname>stbox</varname> por fila (la extensión geodésica de los límites de las celdas junto con el período temporal).</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE INDEX ON trips USING gist(cells);       -- usa th3_rtree_ops por defecto
+CREATE INDEX ON trips USING gist(cells);       -- uses th3_rtree_ops by default
 CREATE INDEX ON trips USING gist(cells th3_rtree_ops);
 </programlisting>
 			</listitem>
@@ -1076,7 +1094,7 @@ CREATE INDEX ON trips USING gist(cells th3_rtree_ops);
 				<para>Clases de operadores SP-GiST para celdas H3 temporales, indexadas por la caja envolvente espaciotemporal <varname>stbox</varname></para>
 <para><varname>th3_quadtree_ops</varname> es la predeterminada (partición por quadtree); <varname>th3_kdtree_ops</varname> utiliza partición por árbol k-d y debe ser nombrada explícitamente.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE INDEX ON trips USING spgist(cells);     -- usa th3_quadtree_ops por defecto
+CREATE INDEX ON trips USING spgist(cells);     -- uses th3_quadtree_ops by default
 CREATE INDEX ON trips USING spgist(cells th3_kdtree_ops);
 </programlisting>
 			</listitem>

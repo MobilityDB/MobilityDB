@@ -33,7 +33,7 @@ SELECT tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02],
 SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
 SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01,
   48427fffffffffff@2001-01-02]}';
--- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
+-- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
 </programlisting>
 		<para>Las funciones <varname>asText</varname>, <varname>asBinary</varname> y <varname>asHexWKB</varname> serializan un valor <varname>tquadbin</varname>, y <varname>tquadbinFromBinary</varname> y <varname>tquadbinFromHexWKB</varname> lo reconstruyen. La forma hexadecimal WKB permite que una columna de índice QUADBIN temporal se transfiera de ida y vuelta mediante un <varname>COPY</varname> basado en texto.</para>
@@ -392,7 +392,7 @@ tquadbinCellToQuadkey(tquadbin) → ttext
 				<para>La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el quadkey de cada celda de una trayectoria como un <varname>ttext</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT quadbinCellToQuadkey(quadbin '480fffffffffffff');
--- (cadena vacía)
+-- (empty string)
 SELECT quadbinCellToQuadkey(quadbin '48427fffffffffff');
 -- 0213
 SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
@@ -478,7 +478,7 @@ FROM Temp;
 				<indexterm significance="normal"><primary><varname>tquadbin_btree_ops</varname></primary></indexterm>
 				<para>Clase de operadores de árbol B por defecto para las celdas QUADBIN temporales, ordenando por el valor temporal subyacente</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE INDEX ON trips USING btree(cells);       -- usa tquadbin_btree_ops por defecto
+CREATE INDEX ON trips USING btree(cells);       -- uses tquadbin_btree_ops by default
 </programlisting>
 			</listitem>
 
@@ -486,7 +486,7 @@ CREATE INDEX ON trips USING btree(cells);       -- usa tquadbin_btree_ops por de
 				<indexterm significance="normal"><primary><varname>tquadbin_hash_ops</varname></primary></indexterm>
 				<para>Clase de operadores hash por defecto para las celdas QUADBIN temporales, usada por las uniones hash y la agregación hash</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE INDEX ON trips USING hash(cells);        -- usa tquadbin_hash_ops por defecto
+CREATE INDEX ON trips USING hash(cells);        -- uses tquadbin_hash_ops by default
 </programlisting>
 			</listitem>
 		</itemizedlist>

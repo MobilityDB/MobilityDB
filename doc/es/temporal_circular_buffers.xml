@@ -355,8 +355,8 @@ SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 SELECT asText(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01,
   Cbuffer(Point(2 2), 0.3)@2001-01-02, Cbuffer(Point(2 2), 0.5)@2001-01-03),
   [Cbuffer(Point(2 2), 0.5)@2001-01-03, Cbuffer(Point(2 2), 0.7)@2001-01-04)}');
-/* {[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.3)@2001-01-02,
-   Cbuffer(Point(2 2),0.7)@2001-01-04)} */
+/* {[Cbuffer(POINT(1 1),0.2)@2001-01-01, Cbuffer(POINT(2 2),0.3)@2001-01-02, 
+   Cbuffer(POINT(2 2),0.7)@2001-01-04)} */
 </programlisting>
 	</sect1>
 
@@ -528,8 +528,8 @@ SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', timestamptz '2001-01-01'));
 -- Cbuffer(POINT(1 1),0.5)@2001-01-01
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.3)',
   tstzset '{2001-01-01, 2001-01-03, 2001-01-05}'));
-/* {Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(1 1),0.3)@2001-01-03,
-   Cbuffer(Point(1 1),0.3)@2001-01-05} */
+/* {Cbuffer(POINT(1 1),0.3)@2001-01-01, Cbuffer(POINT(1 1),0.3)@2001-01-03, 
+   Cbuffer(POINT(1 1),0.3)@2001-01-05} */
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', tstzspan '[2001-01-01, 2001-01-02]'));
 -- [Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-02]
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.2)',
@@ -548,8 +548,8 @@ tcbufferSeq(tcbufferInst[],interp text='linear',lower_inc boolean=true,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
   'Cbuffer(Point(2 2), 0.5)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03']));
-/* [Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02,
-   Cbuffer(Point(1 1),0.5)@2001-01-03] */
+/* [Cbuffer(POINT(1 1),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.5)@2001-01-02, 
+   Cbuffer(POINT(1 1),0.5)@2001-01-03] */
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
   'Cbuffer(Point(2 2), 0.5)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03'],
   'discrete'));
@@ -557,8 +557,8 @@ SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
    Cbuffer(POINT(1 1),0.5)@2001-01-03} */
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.2)@2001-01-01',
   'Cbuffer(Point(1 1), 0.4)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03'], 'step'));
-/* Interp=Step;[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(1 1),0.4)@2001-01-02,
-   Cbuffer(Point(1 1),0.5)@2001-01-03] */
+/* Interp=Step;[Cbuffer(POINT(1 1),0.2)@2001-01-01, Cbuffer(POINT(1 1),0.4)@2001-01-02, 
+   Cbuffer(POINT(1 1),0.5)@2001-01-03] */
 </programlisting>
 			</listitem>
 
@@ -579,8 +579,8 @@ SELECT asText(tcbufferSeqSet(ARRAY[tcbuffer '[Cbuffer(Point(1 1),0.2)@2001-01-01
    [Cbuffer(Point(2 2),0.6)@2001-01-03, Cbuffer(Point(2 2),0.6)@2001-01-04]} */
 SELECT asText(tcbufferSeqSetGaps(ARRAY[tcbuffer 'Cbuffer(Point(1 1),0.1)@2001-01-01',
   'Cbuffer(Point(1 1),0.3)@2001-01-03', 'Cbuffer(Point(1 1),0.5)@2001-01-05'], '1 day'));
-/* {[Cbuffer(Point(1 1),0.1)@2001-01-01], [Cbuffer(Point(1 1),0.3)@2001-01-03],
-   [Cbuffer(Point(1 1),0.5)@2001-01-05]} */
+/* {[Cbuffer(POINT(1 1),0.1)@2001-01-01], [Cbuffer(POINT(1 1),0.3)@2001-01-03], 
+   [Cbuffer(POINT(1 1),0.5)@2001-01-05]} */
 </programlisting>
 			</listitem>
 
@@ -826,8 +826,8 @@ SELECT asText(atValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 -- {[Cbuffer(POINT(2 2),0.5)@2001-01-02]}
 SELECT asText(minusValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-03]', cbuffer 'Cbuffer(Point(2 2), 0.5)'));
-/* {[Cbuffer(Point(2 2),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02),
-   (Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(2 2),0.7)@2001-01-03]} */
+/* {[Cbuffer(POINT(2 2),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.5)@2001-01-02),
+   (Cbuffer(POINT(2 2),0.5)@2001-01-02, Cbuffer(POINT(2 2),0.7)@2001-01-03]} */
 </programlisting>
 			</listitem>
 
@@ -909,7 +909,7 @@ WITH test(tcbuffer, pipeline) AS (
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
 SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326), pipeline,
   4326, false), 6) FROM test;
-/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01,
+/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01, 
    Cbuffer(POINT(-0.1275 51.507222),2)@2001-01-02} */
 </programlisting>
 			</listitem>
@@ -998,16 +998,16 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 {tstzspan,stbox,tcbuffer} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tcbuffer} → boolean
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; cbuffer 'Cbuffer(Point(1 1), 0.2)';
 -- false
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)');
 -- false
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; cbuffer 'Cbuffer(Point(1 1), 0.3)'::geometry;
 -- true
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-02]' &gt;&gt;#
   tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]';
 -- true
@@ -1105,9 +1105,7 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
 				<para>Devuelve la distancia espacial mínima, ignorando el tiempo</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-minDistance({geometry,cbuffer},tcbuffer) → float
-minDistance(tcbuffer,{geometry,cbuffer}) → float
-minDistance(tcbuffer,tcbuffer) → float
+minDistance({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → float
 </programlisting>
 				<para>El resultado es la distancia espacial entre las áreas barridas por los dos argumentos durante toda su vida útil, igual a <varname>ST_Distance</varname> del <varname>traversedArea</varname> de cada uno. La forma de dos argumentos de búfer circular temporal es un agregado, de modo que una combinación cruzada agrupada por una clave produce el mínimo sobre cada par del grupo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1197,8 +1195,8 @@ tTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → tbool
 SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
 -- {[t@2001-01-01, t@2001-01-03)}
-SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
-  Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01, 
   Cbuffer(Point(1 1), 0.3)@2001-01-03)', 1);
 /* {[t@2001-01-01, t@2001-01-01 22:35:55.379053],
    (f@2001-01-01 22:35:55.379053, t@2001-01-02 01:24:04.620946, t@2001-01-03)} */
@@ -1222,7 +1220,7 @@ SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 tcbuffer {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tcbuffer → boolean
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.1)@2001-01-01,
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
   Cbuffer(Point(1 1), 0.3)@2001-01-02),
   [Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]}' =
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-03]';

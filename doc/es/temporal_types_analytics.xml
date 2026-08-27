@@ -674,9 +674,9 @@ SELECT (gr).index,
   2.0, '2 days') AS gr) t;
 -- 1 | TBOX XT([14,16),[2001-01-15,2001-01-17))
 -- 2 | TBOX XT([16,18),[2001-01-15,2001-01-17))
--- 3 | TBOX XT([18,20),[2001-01-15,2001-01-17),)
+-- 3 | TBOX XT([18,20),[2001-01-15,2001-01-17))
 -- ...
-SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0, '2 days', 11.5);
+SELECT valueTimeTiles(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days', 11.5);
 -- (1,"TBOX XT([13.5,15.5),[2001-01-15,2001-01-17))")
 -- (2,"TBOX XT([15.5,17.5),[2001-01-15,2001-01-17))")
 -- (3,"TBOX XT([17.5,19.5),[2001-01-15,2001-01-17))")
@@ -700,14 +700,12 @@ spaceTimeTiles({stbox,tgeompoint},xsize float,[ysize float,zsize float,]duration
 </programlisting>
 					<para>Si el origen de las dimensiones espacial y/o de tiempo no se especifican, su valor se establece por defecto en <varname>'Point (0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. El argumento opcional <varname>borderInc</varname> indica si se incluye el borde superior de la extensión y, por lo tanto, se generan mosaicos adicionales que contienen el borde. En el caso de una malla espacio-temporal, <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. El SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT spaceTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox,
-  2.0);
+SELECT spaceTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', 2.0);
 -- (1,"STBOX X((2,2),(4,4))")
 -- (2,"STBOX X((4,2),(6,4))")
 -- (3,"STBOX X((6,2),(8,4))")
 -- ...
-SELECT timeTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox,
-  '2 days');
+SELECT timeTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', '2 days');
 -- (1,"STBOX T([2001-01-15, 2001-01-17))")
 -- (2,"STBOX T([2001-01-17, 2001-01-19))")
 -- (3,"STBOX T([2001-01-19, 2001-01-21))")
@@ -724,8 +722,8 @@ SELECT spaceTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
 -- (2,"STBOX Z((5,3,3),(7,5,5))")
 -- (3,"STBOX Z((7,3,3),(9,5,5))")
 -- ...
-SELECT spaceTimeTiles(tgeompoint '[Point(3 3)@2001-01-15,
-  Point(15 15)@2001-01-25]'::stbox, 2.0, interval '2 days');
+SELECT spaceTimeTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', 2.0,
+  interval '2 days');
 -- (1,"STBOX XT(((2,2),(4,4)),[2001-01-15,2001-01-17))")
 -- (2,"STBOX XT(((4,2),(6,4)),[2001-01-15,2001-01-17))")
 -- (3,"STBOX XT(((6,2),(8,4)),[2001-01-15,2001-01-17))")
@@ -734,8 +732,8 @@ SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
   Point(15 15 15)@2001-01-25]'::stbox, 2.0, interval '2 days', 'Point(3 3 3)',
   '2001-01-15');
 -- (1,"STBOX ZT(((3,3,3),(5,5,5)),[2001-01-15,2001-01-17))")
--- (2,"STBOX ZT(((5,3,3),(7,5,5)),[2001-01-15,2001-01-17))")
--- (3,"STBOX ZT(((7,3,3),(9,5,5)),[2001-01-15,2001-01-17))")
+-- (2,"STBOX ZT(((5,3,3),(7,5,5))),[2001-01-15,2001-01-17)")
+-- (3,"STBOX ZT(((7,3,3),(9,5,5))),[2001-01-15,2001-01-17)")
 -- ...
 </programlisting>
 				</listitem>
@@ -759,7 +757,7 @@ SELECT getValueTile(15, 2);
 SELECT getTboxTimeTile('2001-01-15', interval '2 days');
 -- TBOX ([2001-01-15,2001-01-17))
 SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days');
--- TBOX ([14,16),[2001-01-15,2001-01-17))
+-- TBOX XT([14,16),[2001-01-15,2001-01-17))
 SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02');
 -- TBOX XT([15,17),[2001-01-14,2001-01-16))
 </programlisting>
@@ -786,10 +784,10 @@ SELECT getSpaceTile(geometry 'Point(1 1 1)', 2.0);
 SELECT getStboxTimeTile(timestamptz '2001-01-01', interval '2 days');
 -- STBOX T([2001-01-01,2001-01-03))
 SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days');
--- STBOX XT((0,0),(2,2),[2001-01-01,2001-01-03))
-SELECT getSspaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
+-- STBOX XT(((0,0),(2,2)),[2001-01-01, 2001-01-03))
+SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
   'Point(1 1)', '2001-01-02');
--- STBOX XT(((1,1),(3,3)),[2000-12-31,2001-01-02))
+-- STBOX XT(((1,1),(3,3)),[2000-12-31, 2001-01-02))
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -949,7 +947,7 @@ FROM (SELECT timeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', '2 days') AS ts) 
 -- 2001-02-04 | [4@2001-02-04, 6@2001-02-06)
 -- ...
 SELECT (ts).time,
-  asText((ts).temp) AS temp FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01,
+  astext((ts).temp) AS temp FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01,
   Point(10 10)@2001-02-10]', '2 days', '2001-02-01') AS ts) AS t;
 -- 2001-02-01 | [POINT(1 1)@2001-02-01, POINT(3 3)@2001-02-03)
 -- 2001-02-03 | [POINT(3 3)@2001-02-03, POINT(5 5)@2001-02-05)
@@ -1019,14 +1017,14 @@ spaceTimeSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
 </programlisting>
 					<para>Una pose temporal y un punto de nube de puntos temporal responden a estas funciones en el punto geométrico temporal al que se resuelve su posición, de modo que un valor con interpolación lineal se divide en mosaicos a lo largo de su trayectoria y no solo en sus instantes. La segunda columna de una división lleva el tipo del primer argumento, de modo que dividir una pose temporal devuelve poses temporales. El resultado es un conjunto de pares o un conjunto de triples. Si el origen de la dimensión espacial y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. Los argumentos <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso. El argumento opcional <varname>borderInc</varname> indica si se incluye el borde superior de la extensión espacial y, por lo tanto, se generan mosaicos adicionales que contienen el borde.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText((sp).point) AS point, asText((sp).tpoint) AS tpoint
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-03-01, Point(10 10)@2001-03-10]',
   2.0) AS sp) t;
 -- POINT(0 0) | {[POINT(1 1)@2001-03-01, POINT(2 2)@2001-03-02)}
 -- POINT(2 2) | {[POINT(2 2)@2001-03-02, POINT(4 4)@2001-03-04)}
 -- POINT(4 4) | {[POINT(4 4)@2001-03-04, POINT(6 6)@2001-03-06)}
 -- ...
-SELECT ST_AsText((sp).point) AS point, asText((sp).tpoint) AS tpoint
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-03-01,
   Point(10 10 10)@2001-03-10]', 2.0, geometry 'Point(1 1 1)') AS sp) t;
 -- POINT Z(1 1 1) | {[POINT Z (1 1 1)@2001-03-01, POINT Z (3 3 3)@2001-03-03)}
@@ -1051,14 +1049,14 @@ SELECT (sp).time,
 </programlisting>
 
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText((sp).point) AS point, (sp).time, asText((sp).tpoint) AS tpoint
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',
   2.0, interval '2 days') AS sp) t;
 -- POINT(0 0) | 2001-01-31 | {[POINT(1 1)@2001-02-01, POINT(2 2)@2001-02-02)}
 -- POINT(2 2) | 2001-01-31 | {[POINT(2 2)@2001-02-02]}
 -- POINT(2 2) | 2001-02-02 | {[POINT(2 2)@2001-02-02, POINT(4 4)@2001-02-04)}
 -- ...
-SELECT ST_AsText((sp).point) AS point, (sp).time, asText((sp).tpoint) AS tpoint
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2001-02-01,
   Point(10 10 10)@2001-02-10]', 2.0, interval '2 days', 'Point(1 1 1)',
   '2001-03-01') AS sp) t;

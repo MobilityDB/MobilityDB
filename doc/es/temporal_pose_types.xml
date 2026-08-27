@@ -104,6 +104,11 @@ SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
 SELECT pose 'SRID=3812;Pose(Point(1 1), 0.5)';
 SELECT pose 'Pose(SRID=5676;Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
 </programlisting>
+		<para>Al igual que para otros tipos espaciales, un <varname>pose</varname> puede ser planar (geométrico) o geodésico (geográfico). Un pose geodésico se denota con la palabra clave <varname>GeodPose</varname>, de la misma manera que un <varname>stbox</varname> geodésico se denota con <varname>GEODSTBOX</varname>.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pose 'GeodPose(Point(1 1), 0.5)';
+SELECT pose 'SRID=4326;GeodPose(Point Z(1 1 1), 1, 0, 0, 0)';
+</programlisting>
 
 		<para>Los valores del tipo pose deben satisfacer varias restricciones para que estén bien definidos. Ejemplos de valores incorrectos del tipo pose son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -631,9 +636,6 @@ SELECT asEWKT(tposechain(Sequence,5676) 'SRID=5676;
   PoseChain(Pose(Point(1 1), 0.5))@2001-01-03]');
 /* SRID=5676;[PoseChain(Pose(POINT(1 1),0.2))@2001-01-01,
    PoseChain(Pose(POINT(1 1),0.5))@2001-01-03] */
-SELECT tposechain(Sequence) 'PoseChain(Pose(Point(1 1), 0.2))@2001-01-01';
-/* ERROR:  Temporal subtype of the tposechain value (Instant) does not match
-   column subtype (Sequence) */
 </programlisting>
 
 		<para>Los valores de pose temporal del subtipo de secuencia o conjunto de secuencias se convierten en una forma normal para que los valores equivalentes tengan representaciones idénticas. Para ello, los valores instantáneos consecutivos se fusionan cuando es posible. Tres valores instantáneos consecutivos se pueden fusionar en dos si las funciones lineales que definen la evolución de los valores son las mismas. Los ejemplos de transformación a una forma normal son los siguientes.</para>
@@ -644,8 +646,8 @@ SELECT asText(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@20
 SELECT asText(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.3)@2001-01-02,
   Pose(Point(2 2), 0.5)@2001-01-03),
   [Pose(Point(2 2), 0.5)@2001-01-03, Pose(Point(2 2), 0.7)@2001-01-04)}');
-/* {[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.3)@2001-01-02, 
-   Pose(Point(2 2),0.7)@2001-01-04)} */
+/* {[Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(2 2),0.3)@2001-01-02, 
+   Pose(POINT(2 2),0.7)@2001-01-04)} */
 </programlisting>
 	</sect1>
 
@@ -860,8 +862,8 @@ SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.3)@2001-01-01',
    Pose(Point(1 1),0.5)@2001-01-03} */
 SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.2)@2001-01-01',
   'Pose(Point(1 1), 0.4)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
-/* [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(1 1),0.4)@2001-01-02, 
-   Pose(Point(1 1),0.5)@2001-01-03] */
+/* [Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(1 1),0.4)@2001-01-02, 
+   Pose(POINT(1 1),0.5)@2001-01-03] */
 </programlisting>
 			</listitem>
 
@@ -1015,10 +1017,9 @@ speed(tpose) → tfloat
 </programlisting>
 				<para>La orientación no es considerada; para la velocidad angular véase <varname>angularSpeed</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01,
-  Pose(Point(1 1), 0.5)@2000-01-02]'));
--- Interp=Step;[1.6368e-5@2000-01-01, 1.6368e-5@2000-01-02]
--- (sqrt(2) units / 86400 seconds, units depend on the SRID's CRS)
+SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01 08:00,
+  Pose(Point(1 1), 0.5)@2000-01-02 08:00]') * 3600);
+-- Interp=Step;[1.414213562373095@2000-01-01, 1.414213562373095@2000-01-02]
 </programlisting>
 			</listitem>
 
@@ -1166,7 +1167,7 @@ WITH temp(inst) AS (
   SELECT tpose 'Pose(Point(1 1),0.1)@2001-01-01' UNION
   SELECT tpose 'Pose(Point(2 2),0.2)@2001-01-02' UNION
   SELECT tpose 'Pose(Point(3 3),0.3)@2001-01-03' )
-SELECT asText(mergeAgg(inst)) FROM temp;
+SELECT asText(merge(inst)) FROM temp;
 /* {Pose(POINT(1 1),0.1)@2001-01-01, Pose(POINT(2 2),0.2)@2001-01-02, 
    Pose(POINT(3 3),0.3)@2001-01-03} */
 SELECT asText(mergeAgg(temp)) FROM (VALUES
@@ -1870,8 +1871,7 @@ yaw({pose,tpose}) → {float,tfloat}
 pitch({pose,tpose}) → {float,tfloat}
 roll({pose,tpose}) → {float,tfloat}
 </programlisting>
-					<para>Para una pose 2D, <varname>yaw</varname> devuelve la rotación almacenada <varname>theta</varname>,por convención, el yaw del marco del cuerpo— y <varname>pitch</varname> y <varname>roll</varname> devuelven <varname>0</varname>. Para una pose 3D, los tres valores provienen de la descomposición Tait-Bryan intrínseca ZYX del cuaternión de orientación. El término de pitch <varname>asin</varname> se acota a <varname>[-1, 1]</varname> para absorber la pequeña deriva numérica que pueden introducir las composiciones largas de cuaterniones. Sobre una pose temporal, la interpolación del resultado sigue a la dimensión. Una pose 2D interpola linealmente su ángulo almacenado y ese ángulo es su yaw, de modo que un <varname>tpose</varname> 2D lineal se proyecta en un <varname>tfloat</varname> lineal. Una pose 3D interpola mediante SLERP, cuya descomposición Tait-Bryan no es lineal en el tiempo, de modo que un <varname>tpose</varname> 3D se proyecta en un <varname>tfloat</varname> escalonado: leerlo entre dos instantes devuelve el ángulo del instante de la izquierda en lugar de un ángulo que ninguna pose contiene.</para>
-					<programlisting language="sql" xml:space="preserve" format="linespecific">
+<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT yaw(pose 'Pose(Point(1 1), 0.5)');
 -- 0.5
 SELECT pitch(pose 'Pose(Point(1 1), 0.5)');
@@ -1880,6 +1880,11 @@ SELECT roll(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.707106781186547
 -- 0
 SELECT yaw(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)');
 -- 1.5707963267948966
+</programlisting>
+<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
+  Pose(Point(1 1), 0.5)@2000-01-02]'));
+-- [0@2000-01-01, 0.5@2000-01-02]
 </programlisting>
 				</listitem>
 
@@ -1911,9 +1916,11 @@ pitch(tpose) → tfloat
 roll(tpose) → tfloat
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
-  Pose(Point(1 1), 0.5)@2000-01-02]'));
--- [0@2000-01-01, 0.5@2000-01-02]
+SELECT round(yaw(tpose '[Pose(Point(0 0),0.5)@2001-01-01,
+  Pose(Point(1 1),1.5)@2001-01-02]'), 6);
+-- Interp=Step;[0.5@2001-01-01, 1.5@2001-01-02]
+SELECT round(pitch(tpose 'Pose(Point(0 0 0),1,0,0,0)@2001-01-01'), 6);
+-- 0@2001-01-01
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -2064,9 +2071,58 @@ SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
 asGeoPose(tpose,conformance integer=0,maxdecimaldigits integer=-1) → text
 tposeFromGeoPose(text) → tpose
 </programlisting>
-					<para>Cada carga útil por instante es un documento GeoPose de clase Basic estrictamente válido según OGC más un miembro <varname>validTime</varname>; la envoltura registra la clase de conformidad, la interpolación y (para secuencias y conjuntos de secuencias) la inclusión de los límites del período. Un consumidor GeoPose ajeno a MEOS puede iterar sobre <varname>instants[]</varname> (o cada <varname>sequences[].instants[]</varname>) y consumir cada elemento como un documento GeoPose estático.</para>
-					<para>La forma de la envoltura es</para>
-					<programlisting xml:space="preserve" format="linespecific">
+<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02,
+  Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-05]', 0, 6);
+-- {
+--  "header": {
+--   "poseCount": 3,
+--   "startInstant": 1767254400000,
+--   "stopInstant": 1767600000000,
+--   "transitionModel": {
+--    "authority": "/geopose/1.0",
+--    "id": "interpolate",
+--    "parameters": "interpolation=Linear"
+--   }
+--  },
+--  "outerFrame": {
+--   "authority": "/geopose/1.0",
+--   "id": "LTP-ENU",
+--   "parameters": "longitude=0&amp;latitude=0&amp;height=0&amp;crs=EPSG:4979"
+--  },
+--  "innerFrameAndTimeSeries": [
+--   {
+--    "frame": {
+--     "authority": "/geopose/1.0",
+--     "id": "RotateTranslate",
+--     "parameters": "translation=[0, 0, 0]&amp;rotation=[0.5, 0.5, 0.5, 0.5]"
+--    },
+--    "validTime": 1767254400000
+--   },
+--   {
+--    "frame": {
+--     "authority": "/geopose/1.0",
+--     "id": "RotateTranslate",
+--     "parameters": "translation=[0, 0, 100]&amp;rotation=[0.5, 0.5, 0.5, 0.5]"
+--    },
+--    "validTime": 1767340800000
+--   },
+--   {
+--    "frame": {
+--     "authority": "/geopose/1.0",
+--     "id": "RotateTranslate",
+--     "parameters": "translation=[0, 0, 300]&amp;rotation=[0.5, 0.5, 0.5, 0.5]"
+--    },
+--    "validTime": 1767600000000
+--   }
+--  ],
+--  "trailer": {
+--   "poseCount": 3
+--  }
+-- }
+</programlisting>
+<programlisting xml:space="preserve" format="linespecific">
 {
   "type":          "TemporalGeoPose",
   "version":       "1.0",
@@ -2078,7 +2134,7 @@ tposeFromGeoPose(text) → tpose
   "sequences":     [{...}, ...]           // for TSequenceSet only
 }
 </programlisting>
-					<programlisting language="sql" xml:space="preserve" format="linespecific">
+<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
   Pose(Point(9 48), 0.5)@2026-01-02]', 1, 4);
 /* {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-YPR",

@@ -301,7 +301,7 @@
 			Los archivos <varname>create_test_tables_temporal.sql</varname> y <varname>create_test_tables_tpoint.sql</varname> dan ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba. Por ejemplo, el primer archivo define la función siguiente.
 		</para>
 
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE OR REPLACE FUNCTION create_test_tables_temporal(size integer DEFAULT 100)
 RETURNS text AS $$ DECLARE perc integer;
 BEGIN perc := size * 0.01;
@@ -318,9 +318,9 @@ $$ LANGUAGE 'plpgsql';
 		<para>
 			La creación de una tabla <varname>tbl_float</varname> que contiene valores aleatorios <varname>float</varname> en el rango [0,100] con 1% de valores nulos se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_float AS
-/* Add perc NULL valores */
+/* Add perc NULL values */
 SELECT k, NULL AS f FROM generate_series(1, perc) AS k UNION
 SELECT k, random_float(0, 100) FROM generate_series(perc+1, size) AS k;
 </programlisting>
@@ -328,9 +328,9 @@ SELECT k, random_float(0, 100) FROM generate_series(perc+1, size) AS k;
 		<para>
 			La creación de una tabla <varname>tbl_tbox</varname> que contiene valores aleatorios <varname>tbox</varname> donde los límites de los valores están en el rango [0,100] y los límites de las marcas de tiempo están en el rango [2001-01-01, 2001-12-31] se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_tbox AS
-/* Add perc NULL valores */
+/* Add perc NULL values */
 SELECT k, NULL AS b FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10)
 FROM generate_series(perc+1, size) AS k;
@@ -339,9 +339,9 @@ FROM generate_series(perc+1, size) AS k;
 		<para>
 			La creación de una tabla <varname>tbl_floatspan</varname> que contiene valores aleatorios <varname>floatspan</varname> donde los límites de los valores están en el rango [0,100] y la máxima diferencia entre los límites inferiores y superiores es 10 se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_floatspan AS
-/* Add perc NULL valores */
+/* Add perc NULL values */
 SELECT k, NULL AS f FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatspan(0, 100, 10) FROM generate_series(perc+1, size) AS k;
 </programlisting>
@@ -349,9 +349,9 @@ SELECT k, random_floatspan(0, 100, 10) FROM generate_series(perc+1, size) AS k;
 		<para>
 			La creación de una tabla <varname>tbl_tstzset</varname> que contiene valores aleatorios <varname>tstzset</varname> que tienen entre 5 y 10 marcas de tiempo donde las marcas de tiempo están en el rango [2001-01-01, 2001-12-31] y el máximo intervalo entre marcas de tiempo consecutivas es 10 minutos se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_tstzset AS
-/* Add perc NULL valores */
+/* Add perc NULL values */
 SELECT k, NULL AS ts FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tstzset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
@@ -360,9 +360,9 @@ FROM generate_series(perc+1, size) AS k;
 		<para>
 			La creación de una tabla <varname>tbl_tstzspan</varname> que contiene valores aleatorios <varname>tstzspan</varname> donde las marcas de tiempo están en el rango [2001-01-01, 2001-12-31] y la máxima diferencia entre los límites inferiores y superiores es 10 minutos se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_tstzspan AS
-/* Add perc NULL valores */
+/* Add perc NULL values */
 SELECT k, NULL AS p FROM generate_series(1, perc) AS k UNION
 SELECT k,
   random_tstzspan('2001-01-01', '2001-12-31', 10) FROM generate_series(perc+1, size) AS k;
@@ -371,7 +371,7 @@ SELECT k,
 		<para>
 			La creación de una tabla <varname>tbl_geom_point</varname> que contiene valores aleatorios <varname>geometry</varname> 2D point valores, donde las coordenadas x e y están en el rango [0, 100] y en SRID 3812 se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_geom_point AS
 SELECT 1 AS k, geometry 'SRID=3812;point empty' AS g UNION
 SELECT k, random_geom_point(0, 100, 0, 100, 3812) FROM generate_series(2, size) k;
@@ -383,7 +383,7 @@ SELECT k, random_geom_point(0, 100, 0, 100, 3812) FROM generate_series(2, size) 
 		<para>
 			La creación de una tabla <varname>tbl_geog_point3D</varname> que contiene valores aleatorios <varname>geography</varname> 3D point valores, donde las coordenadas x, y, y z están, respectivament, en los rangos [-10, 32], [35, 72] y [0, 1000] y en SRID 7844 se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_geog_point3D AS
 SELECT 1 AS k, geography 'SRID=7844;pointZ empty' AS g UNION
 SELECT k,
@@ -396,7 +396,7 @@ SELECT k,
 		<para>
 			La creación de una tabla <varname>tbl_geom_linestring</varname> que contiene valores aleatorios <varname>geometry</varname> 2D linestring valores que tienen entre 5 y 10 vértices, donde las coordenadas x e y están en el rango [0, 100] y en SRID 3812 y la máxima diferencia entre valores de coordenadas consecutivos es 10 unidades en el SRID subyacente se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_geom_linestring AS
 SELECT 1 AS k, geometry 'linestring empty' AS g UNION
 SELECT k,
@@ -406,7 +406,7 @@ SELECT k,
 		<para>
 			La creación de una tabla <varname>tbl_geom_linestring</varname> que contiene valores aleatorios <varname>geometry</varname> 2D linestring valores que tienen entre 5 y 10 vértices, donde las coordenadas x e y están en el rango [0, 100] y la máxima diferencia entre valores de coordenadas consecutivos es 10 unidades en el SRID subyacente se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_geom_linestring AS
 SELECT 1 AS k, geometry 'linestring empty' AS g UNION
 SELECT k,
@@ -416,7 +416,7 @@ SELECT k,
 		<para>
 			La creación de una tabla <varname>tbl_geom_polygon3D</varname> que contiene valores aleatorios <varname>geometry</varname> 3D polygon valores sin agujeros, que tienen entre 5 y 10 vértices, donde las coordenadas x, y, y z están en el rango [0, 100] y la máxima diferencia entre valores de coordenadas consecutivos es 10 unidades en el SRID subyacente se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_geom_polygon3D AS
 SELECT 1 AS k, geometry 'polygon Z empty' AS g UNION
 SELECT k, random_geom_polygon3D(0, 100, 0, 100, 0, 100, 10, 5, 10)
@@ -426,9 +426,9 @@ FROM generate_series(2, size) k;
 		<para>
 			La creación de una tabla <varname>tbl_geom_multipoint</varname> que contiene valores aleatorios <varname>geometry</varname> 2D multipunto valores que tienen entre 5 y 10 points, donde las coordenadas x e y están en el rango [0, 100] y la máxima diferencia entre valores de coordenadas consecutivos es 10 unidades en el SRID subyacente se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_geom_multipoint AS
-SELECT 1 AS k, geometry 'multipunto empty' AS g UNION
+SELECT 1 AS k, geometry 'multipoint empty' AS g UNION
 SELECT k,
   random_geom_multipoint(0, 100, 0, 100, 10, 5, 10) FROM generate_series(2, size) k;
 </programlisting>
@@ -436,7 +436,7 @@ SELECT k,
 		<para>
 			La creación de una tabla <varname>tbl_geog_multilinestring</varname> que contiene valores aleatorios <varname>geography</varname> 2D multilinestring valores que tienen entre 5 y 10 linestrings, cada una teniendo entre 5 y 10 vértices, donde las coordenadas x e y estan, respectivamente, en el rangos [-10, 32] y [35, 72] y la máxima diferencia entre valores de coordenadas consecutivos es 10 se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_geog_multilinestring AS
 SELECT 1 AS k, geography 'multilinestring empty' AS g UNION
 SELECT k, random_geog_multilinestring(-10, 32, 35, 72, 10, 5, 10, 5, 10)
@@ -446,7 +446,7 @@ FROM generate_series(2, size) k;
 		<para>
 			La creación de una tabla <varname>tbl_geometry3D</varname> que contiene valores aleatorios <varname>geometry</varname> 3D de varios tipos se da a continuación. Esta función requiere que las tablas para los diversos tipos de geometría se hayan creado previamente.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_geometry3D (k serial PRIMARY KEY, g geometry);
 INSERT INTO tbl_geometry3D(g)
 (SELECT g FROM tbl_geom_point3D ORDER BY k LIMIT (size * 0.1)) UNION ALL
@@ -461,9 +461,9 @@ INSERT INTO tbl_geometry3D(g)
 		<para>
 			La creación de una tabla <varname>tbl_tbool_inst</varname> que contiene valores aleatorios <varname>tbool</varname> valores de subtipo instante donde las marcas de tiempo están en el rango [2001-01-01, 2001-12-31] se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_tbool_inst AS
-/* Add perc NULL valores */
+/* Add perc NULL values */
 SELECT k, NULL AS inst FROM generate_series(1, perc) AS k UNION
 SELECT k,
   random_tbool_inst('2001-01-01', '2001-12-31') FROM generate_series(perc+1, size) k;
@@ -471,7 +471,7 @@ SELECT k,
 UPDATE tbl_tbool_inst t1
 SET inst = (SELECT inst FROM tbl_tbool_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
-/* Add perc rows con the same timestamp */
+/* Add perc rows with the same timestamp */
 UPDATE tbl_tbool_inst t1
 SET inst = (SELECT tboolInst(random_bool(), getTimestamp(inst))
   FROM tbl_tbool_inst t2 WHERE t2.k = t1.k+perc)
@@ -484,9 +484,9 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 		<para>
 			La creación de una tabla <varname>tbl_tint_discseq</varname> que contiene valores aleatorios <varname>tint</varname> valores de subtipo secuencia con interpolación discreta que tienen entre 5 y 10 marcas de tiempo donde the integer valores están en el rango [0, 100], las marcas de tiempo están en el rango [2001-01-01, 2001-12-31], la máxima diferencia entre dos valores consecutivos es 10 y el máximo intervalo entre dos instantes consecutivos es 10 minutos se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_tint_discseq AS
-/* Add perc NULL valores */
+/* Add perc NULL values */
 SELECT k, NULL AS ti FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tint_discseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
@@ -494,7 +494,7 @@ FROM generate_series(perc+1, size) k;
 UPDATE tbl_tint_discseq t1
 SET ti = (SELECT ti FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
-/* Add perc rows con the same timestamp */
+/* Add perc rows with the same timestamp */
 UPDATE tbl_tint_discseq t1
 SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
@@ -516,11 +516,11 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 		<para>
 			La creación de una tabla <varname>tbl_tfloat_seq</varname> que contiene valores aleatorios <varname>tfloat</varname> valores de subtipo secuencia que tienen entre 5 y 10 marcas de tiempo donde los valores <varname>float</varname> están en el rango [0, 100], las marcas de tiempo están en el rango [2001-01-01, 2001-12-31], la máxima diferencia entre dos valores consecutivos es 10 y el máximo intervalo entre dos instantes consecutivos es 10 minutos se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_tfloat_seq AS
-/* Add perc NULL valores */
+/* Add perc NULL values */
 SELECT k, NULL AS seq FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloat_contseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
+SELECT k, random_tfloat_seq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloat_seq t1
@@ -544,9 +544,9 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 		<para>
 			La creación de una tabla <varname>tbl_ttext_seqset</varname> que contiene valores aleatorios <varname>ttext</varname> de subtipo conjunto de secuencias que tienen entre 5 y 10 sequences, cada una teniendo entre 5 y 10 marcas de tiempo, donde los valores de texto tienen máximo 10 caracteres, las marcas de tiempo están en el rango [2001-01-01, 2001-12-31] y el máximo intervalo entre dos instantes consecutivos es 10 minutos se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_ttext_seqset AS
-/* Add perc NULL valores */
+/* Add perc NULL values */
 SELECT k, NULL AS ts FROM generate_series(1, perc) AS k UNION
 SELECT k, random_ttext_seqset('2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
@@ -554,7 +554,7 @@ FROM generate_series(perc+1, size) AS k;
 UPDATE tbl_ttext_seqset t1
 SET ts = (SELECT ts FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
-/* Add perc tuples con the same timestamp */
+/* Add perc tuples with the same timestamp */
 UPDATE tbl_ttext_seqset t1
 SET ts = (SELECT ts || text 'A' FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
@@ -572,7 +572,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 		<para>
 			La creación de una tabla <varname>tbl_tgeompoint_discseq</varname> que contiene valores aleatorios <varname>tgeompoint</varname> 2D valores de subtipo secuencia con interpolación discreta que tienen entre 5 y 10 instantes, donde the x e y coordenadas están en el rango [0, 100] y en SRID 3812, las marcas de tiempo están en el rango [2001-01-01, 2001-12-31], la máxima diferencia entre coordenadas successivas máximo 10 unidades en el SRID subyacente y el máximo intervalo entre dos instantes consecutivos es 10 minutos se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE tbl_tgeompoint_discseq AS
 SELECT k, random_tgeompoint_discseq(0, 100, 0, 100, '2001-01-01', '2001-12-31',
   10, 10, 5, 10, 3812) AS ti FROM generate_series(1, size) k;
@@ -580,7 +580,7 @@ SELECT k, random_tgeompoint_discseq(0, 100, 0, 100, '2001-01-01', '2001-12-31',
 UPDATE tbl_tgeompoint_discseq t1
 SET ti = (SELECT ti FROM tbl_tgeompoint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
-/* Add perc tuples con the same timestamp */
+/* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint_discseq t1
 SET ti = (SELECT round(ti,6) FROM tbl_tgeompoint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
@@ -599,7 +599,7 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 		<para>
 			Finalmente, la creación de una tabla <varname>tbl_tgeompoint3D_seqset</varname> que contiene valores aleatorios <varname>tgeompoint</varname> 3D valores de subtipo conjunto de secuencias que tienen entre 5 y 10 sequences, cada una teniendo entre 5 y 10 marcas de tiempo, donde las coordenadas x, y, y z están en el rango [0, 100] y en SRID 3812, las marcas de tiempo están en el rango [2001-01-01, 2001-12-31], la máxima diferencia entre coordenadas successivas máximo 10 unidades en el SRID subyacente y el máximo intervalo entre dos instantes consecutivos es 10 minutos se da a continuación.
 		</para>
-		<programlisting language="sql" xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
 DROP TABLE IF EXISTS tbl_tgeompoint3D_seqset;
 CREATE TABLE tbl_tgeompoint3D_seqset AS
 SELECT k, random_tgeompoint3D_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31',
@@ -608,7 +608,7 @@ SELECT k, random_tgeompoint3D_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001
 UPDATE tbl_tgeompoint3D_seqset t1
 SET ts = (SELECT ts FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
-/* Add perc tuples con the same timestamp */
+/* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint3D_seqset t1
 SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
