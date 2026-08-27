@@ -97,6 +97,47 @@ int main(void)
   assert(merged == NULL);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
 
+  /* Two CONTINUOUS sequences meeting at a shared instant with different
+   * values. This reaches a different merge path from the instant sets above:
+   * the sequences are merged as an array and assembled into a sequence set */
+  Temporal *seq1 = tfloat_in("[77@2000-01-01, 88@2000-01-03]");
+  Temporal *seq2 = tfloat_in("[99@2000-01-03, 44@2000-01-05]");
+  assert(seq1); assert(seq2);
+  meos_errno_reset();
+  merged = temporal_merge(seq1, seq2);
+  printf("temporal_merge(%s, %s): NULL, errno %d\n",
+    "[77@2000-01-01, 88@2000-01-03]", "[99@2000-01-03, 44@2000-01-05]",
+    meos_errno());
+  assert(merged == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+
+  /* The same conflict between two sequence SETS */
+  Temporal *ss1 = tfloat_in("{[77@2000-01-01, 88@2000-01-03]}");
+  Temporal *ss2 = tfloat_in("{[99@2000-01-03, 44@2000-01-05]}");
+  assert(ss1); assert(ss2);
+  meos_errno_reset();
+  merged = temporal_merge(ss1, ss2);
+  printf("temporal_merge({[77@…, 88@…]}, {[99@…, 44@…]}): NULL, errno %d\n",
+    meos_errno());
+  assert(merged == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+
+  /* Two continuous sequences meeting at a shared instant that carries the
+   * SAME value merge into one sequence */
+  Temporal *join1 = tfloat_in("[77@2000-01-01, 88@2000-01-03]");
+  Temporal *join2 = tfloat_in("[88@2000-01-03, 44@2000-01-05]");
+  assert(join1); assert(join2);
+  meos_errno_reset();
+  Temporal *joined = temporal_merge(join1, join2);
+  assert(joined);
+  char *joined_out = tfloat_out(joined, 6);
+  printf("temporal_merge(%s, %s): %s\n", "[77@2000-01-01, 88@2000-01-03]",
+    "[88@2000-01-03, 44@2000-01-05]", joined_out);
+  assert(joined_out[0] == '[');
+
+  free(seq1); free(seq2); free(ss1); free(ss2);
+  free(join1); free(join2); free(joined); free(joined_out);
+
   /* Merging compatible values still succeeds after the reported conflicts */
   Temporal *ok1 = tfloat_in("{77@2000-01-01}");
   Temporal *ok2 = tfloat_in("{88@2000-01-02}");

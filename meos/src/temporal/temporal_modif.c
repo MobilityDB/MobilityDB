@@ -344,6 +344,9 @@ static TSequence **
 tcontseq_merge_array_iter(TSequence **sequences, int count, int *totalcount)
 {
   assert(sequences); assert(totalcount);
+  /* The count is set before any rejection below, so a caller reading it after
+   * a failure finds zero rather than whatever its variable held */
+  *totalcount = 0;
   if (count > 1)
     tseqarr_sort((TSequence **) sequences, count);
 
@@ -398,6 +401,11 @@ tsequence_merge_array(TSequence **sequences, int count)
   /* Continuous sequences */
   int totalcount;
   TSequence **newseqs = tcontseq_merge_array_iter(sequences, count, &totalcount);
+  /* The iterator has already ensured the validity of the sequences; it returns
+   * NULL when they cannot be merged */
+  if (newseqs == NULL)
+    return NULL;
+
   Temporal *result;
   if (totalcount == 1)
   {
@@ -454,6 +462,11 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
   TSequence **newseqs = tcontseq_merge_array_iter(sequences, totalcount,
     &newcount);
   pfree(sequences);
+  /* The iterator has already ensured the validity of the sequences; it returns
+   * NULL when they cannot be merged */
+  if (newseqs == NULL)
+    return NULL;
+
   return tsequenceset_make_free(newseqs, newcount, NORMALIZE);
 }
 
