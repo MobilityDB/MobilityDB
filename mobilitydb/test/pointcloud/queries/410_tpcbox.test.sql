@@ -84,6 +84,15 @@ FROM (SELECT pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
 SELECT xmin(b), xmax(b), ymin(b), ymax(b)
 FROM (SELECT tpcbox(pcpatch(pcpoint(1, 1.0, 2.0, 3.0))) AS b) t;
 
+-- The schema pcid 1 names holds a Z dimension, so the box of a patch of that
+-- schema states the Z extent of its points, as the box of a pcpoint does
+SELECT hasZ(b), zmin(b), zmax(b)
+FROM (SELECT tpcbox(pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0))) AS b) t;
+SELECT PC_PatchMin(p, 'Z'), PC_PatchMax(p, 'Z')
+FROM (SELECT pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0)) AS p) t;
+
 -------------------------------------------------------------------------------
 -- Set operations
 -------------------------------------------------------------------------------

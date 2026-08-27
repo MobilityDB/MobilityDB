@@ -85,10 +85,12 @@ pcpoint_fill_tpcbox_spatial(const Pcpoint *pt, TPCBox *box)
 }
 
 /**
- * @brief Populate the spatial bounds of @p box from a pcpatch, using
- *   the embedded PCBOUNDS (2D). Z is not populated — the per-point Z
- *   values are inside the compressed @c data block and cannot be
- *   summarised at the bbox layer.
+ * @brief Populate the spatial bounds of @p box from a pcpatch
+ * @details The spatial extent of a patch has one reader, @ref
+ *   pcpatch_to_tpcbox, so the box a temporal patch carries states the same
+ *   dimensions as the box the patch converts to, Z included where its schema
+ *   holds one. The period @p box keeps is the caller's, which states it after
+ *   this fills the spatial part.
  */
 static void
 pcpatch_fill_tpcbox_spatial(const Pcpatch *pa, TPCBox *box)
@@ -104,16 +106,13 @@ pcpatch_fill_tpcbox_spatial(const Pcpatch *pa, TPCBox *box)
       "No schema registered for pcid %u", pa->pcid);
     return;
   }
-  /* PCBOUNDS field order is {xmin, xmax, ymin, ymax} — see
-   * pointcloud-pg/lib/pc_api.h. Read by index, not by guess. */
-  box->xmin = pa->bounds[0];
-  box->xmax = pa->bounds[1];
-  box->ymin = pa->bounds[2];
-  box->ymax = pa->bounds[3];
-  box->srid = (int32_t) schema->srid;
-  box->pcid = pa->pcid;
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_Z(box->flags, false);
+  TPCBox *spatial = pcpatch_to_tpcbox(pa, (int32_t) schema->srid);
+  if (! spatial)
+    return;
+  Span period = box->period;
+  memcpy(box, spatial, sizeof(TPCBox));
+  box->period = period;
+  pfree(spatial);
 }
 
 /**

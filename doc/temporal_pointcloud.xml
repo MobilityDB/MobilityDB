@@ -295,13 +295,15 @@ SELECT tpcbox(pcpoint(1, 10.0, 20.0, 30.0));
 
 				<listitem xml:id="tpcbox_tpcbox_pcpatch">
 					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
-					<para>Convert a pcpatch to a tpcbox using the patch's embedded 2D PCBOUNDS; the second form takes an explicit SRID instead of looking it up from the schema</para>
+					<para>Convert a pcpatch to a tpcbox</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpcbox(pcpatch) → tpcbox
 tpcbox(pcpatch,integer) → tpcbox
 </programlisting>
+					<para>The X and Y extent of the result is the PCBOUNDS the patch embeds, and its Z extent, where the schema the pcid names holds a Z dimension, is the one the points of the patch state. The second form takes an explicit SRID instead of looking it up from the schema.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(pcpatch(pcpoint(1, 10.0, 20.0, 30.0)));
+-- TPCBOX(Z((10,20,30),(10,20,30)), 1)
 </programlisting>
 				</listitem>
 			</itemizedlist>

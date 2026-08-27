@@ -56,7 +56,7 @@ WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
  seq_count 
 -----------
-        46
+        45
 (1 row)
 
 SET enable_seqscan = off;
@@ -70,7 +70,7 @@ WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
  idx_count 
 -----------
-        46
+        45
 (1 row)
 
 DROP INDEX tbl_tpcpatch_quadtree_idx;
@@ -83,7 +83,7 @@ WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
  kdtree_count 
 --------------
-           46
+           45
 (1 row)
 
 DROP INDEX tbl_tpcpatch_kdtree_idx;
@@ -134,13 +134,7 @@ WITH test AS (
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
   FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
-   round    
-------------
- 142.497643
-  142.56829
-  142.95671
-(3 rows)
-
+ERROR:  Operation on mixed 2D/3D dimensions
 DROP INDEX tbl_tpcpatch_knn_quadtree_idx;
 DROP INDEX
 CREATE INDEX tbl_tpcpatch_knn_kdtree_idx ON tbl_tpcpatch
@@ -151,13 +145,7 @@ WITH test AS (
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
   FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
-   round    
-------------
- 142.497643
-  142.56829
-  142.95671
-(3 rows)
-
+ERROR:  Operation on mixed 2D/3D dimensions
 DROP INDEX tbl_tpcpatch_knn_kdtree_idx;
 DROP INDEX
 CREATE TABLE tbl_tpcpoint_big_allthesame AS

@@ -49,7 +49,7 @@ WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
  seq_count 
 -----------
-        46
+        45
 (1 row)
 
 SET enable_seqscan = off;
@@ -63,7 +63,7 @@ WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
  idx_count 
 -----------
-        46
+        45
 (1 row)
 
 DROP INDEX tbl_tpcpatch_gist_idx;
@@ -280,7 +280,7 @@ WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
  seq_fn_patch 
 --------------
-           46
+           45
 (1 row)
 
 SET enable_seqscan = off;
@@ -309,7 +309,7 @@ WHERE overlaps(temp, tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
  idx_fn_patch 
 --------------
-           46
+           45
 (1 row)
 
 DROP INDEX tbl_tpcpoint_gist_idx;

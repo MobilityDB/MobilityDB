@@ -140,6 +140,22 @@ FROM (SELECT tpcbox(pcpatch(pcpoint(1, 1.0, 2.0, 3.0))) AS b) t;
     1 |    1 |    2 |    2
 (1 row)
 
+SELECT hasZ(b), zmin(b), zmax(b)
+FROM (SELECT tpcbox(pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0))) AS b) t;
+ hasz | zmin | zmax 
+------+------+------
+ t    |    3 |    6
+(1 row)
+
+SELECT PC_PatchMin(p, 'Z'), PC_PatchMax(p, 'Z')
+FROM (SELECT pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
+  pcpoint(1, 4.0, 5.0, 6.0)) AS p) t;
+ pc_patchmin | pc_patchmax 
+-------------+-------------
+           3 |           6
+(1 row)
+
 SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
           ?column?           
 -----------------------------
