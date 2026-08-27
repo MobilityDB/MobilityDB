@@ -45,9 +45,14 @@
  * cellArea
  ******************************************************************************/
 
-CREATE FUNCTION cellArea(th3index, text DEFAULT 'km2')
+CREATE FUNCTION cellArea(th3index)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Th3index_cell_area'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cellArea(th3index, text)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Th3index_cell_area_unit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

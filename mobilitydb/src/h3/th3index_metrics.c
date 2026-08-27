@@ -44,23 +44,39 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * cellArea(th3index, text)
+ * cellArea(th3index) and cellArea(th3index, text)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_area(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Th3index_cell_area);
 /**
  * @ingroup mobilitydb_h3_metrics
- * @brief Return the per-instant area of a temporal H3 cell in the given unit
+ * @brief Return the per-instant area of a temporal H3 cell in square metres
  * @sqlfn cellArea()
  */
 Datum
 Th3index_cell_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = th3index_cell_area(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Th3index_cell_area_unit(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Th3index_cell_area_unit);
+/**
+ * @ingroup mobilitydb_h3_metrics
+ * @brief Return the per-instant area of a temporal H3 cell in the given unit
+ * @sqlfn cellArea()
+ */
+Datum
+Th3index_cell_area_unit(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *unit_txt = PG_GETARG_TEXT_P(1);
   char *unit = text_to_cstring(unit_txt);
-  Temporal *result = th3index_cell_area(temp, unit);
+  Temporal *result = th3index_cell_area_unit(temp, unit);
   pfree(unit);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);

@@ -275,7 +275,8 @@ extern Temporal *th3index_local_ij_to_cell(const Temporal *origin,
  * Metrics
  *****************************************************************************/
 
-extern Temporal *th3index_cell_area(const Temporal *temp, const char *unit);
+extern Temporal *th3index_cell_area(const Temporal *temp);
+extern Temporal *th3index_cell_area_unit(const Temporal *temp, const char *unit);
 extern Temporal *th3index_edge_length(const Temporal *temp, const char *unit);
 extern Temporal *tgeogpoint_great_circle_distance(const Temporal *a,
   const Temporal *b, const char *unit);

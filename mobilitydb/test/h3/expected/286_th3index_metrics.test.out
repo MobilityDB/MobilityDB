@@ -1,7 +1,21 @@
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01')
+  = cellArea(th3index '831c02fffffffff@2001-01-01', 'm2');
  ?column? 
 ----------
  t
+(1 row)
+
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01')
+  = cellArea(th3index '831c02fffffffff@2001-01-01', 'km2');
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT round(startValue(cellArea(th3index '831c02fffffffff@2001-01-01'))::numeric, 1);
+    round     
+--------------
+ 7725505767.6
 (1 row)
 
 SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'km2')

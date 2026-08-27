@@ -166,17 +166,17 @@ h3_gs_great_circle_distance_meos(const GSERIALIZED *a, const GSERIALIZED *b,
 }
 
 /*****************************************************************************
- * cellArea(th3index, text) — lift_with_const (unit as H3Unit enum)
+ * cellArea(th3index) and cellArea(th3index, text) — lift_with_const
  *****************************************************************************/
 
 /**
  * @ingroup meos_h3_metrics
  * @brief Return the per-instant area of a temporal H3 cell in the given
  * unit.
- * @csqlfn #Th3index_cell_area()
+ * @csqlfn #Th3index_cell_area_unit()
  */
 Temporal *
-th3index_cell_area(const Temporal *temp, const char *unit)
+th3index_cell_area_unit(const Temporal *temp, const char *unit)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL); VALIDATE_NOT_NULL(unit, NULL);
@@ -193,6 +193,17 @@ th3index_cell_area(const Temporal *temp, const char *unit)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_h3_metrics
+ * @brief Return the per-instant area of a temporal H3 cell in square metres
+ * @csqlfn #Th3index_cell_area()
+ */
+Temporal *
+th3index_cell_area(const Temporal *temp)
+{
+  return th3index_cell_area_unit(temp, "m2");
 }
 
 /*****************************************************************************
