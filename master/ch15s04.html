@@ -38,10 +38,10 @@ tjsonbFromHexWKB(text) → tjsonb
 </pre><pre class="programlisting">
 SELECT tjsonbFromBinary(asBinary( tjsonb '[{"vehicleId": 1,
   "location": "Point(1 2)"}@2001-01-01]'));
--- [{"location": "Point(1 2)", "vehicleId": 1}@2001-01-01]
+-- [{"location": "POINT(1 2)", "vehicleId": 1}@2001-01-01]
 SELECT tjsonbFromHexWKB(asHexWKB( tjsonb '[{"vehicleId": 1,
   "location": "Point(1 2)"}@2001-01-01]'));
--- [{"location": "Point(1 2)", "vehicleId": 1}@2001-01-01]
+-- [{"location": "POINT(1 2)", "vehicleId": 1}@2001-01-01]
 </pre></li><li class="listitem"><a name="tjsonbFromMFJSON"></a><a class="indexterm" name="id11366"></a><p>Input from the Moving Features JSON (MF-JSON) representation</p><pre class="programlisting">
 tjsonbFromMFJSON(text) → tjsonb
 </pre><pre class="programlisting">

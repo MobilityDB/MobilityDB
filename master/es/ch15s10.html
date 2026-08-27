@@ -7,7 +7,7 @@ minusValues(tjsonb,valueset) → tjsonb
 SELECT atValue(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03]',
   jsonb '{"vehicleId": 1, "location": "Point(2 2)"}');
--- {[{"location": "Point(2 2)", "vehicleId": 1}@2001-01-03]}
+-- {[{"location": "POINT(2 2)", "vehicleId": 1}@2001-01-03]}
 SELECT minusValue(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03]',
   jsonb '{"vehicleId": 1, "location": "Point(2 2)"}');

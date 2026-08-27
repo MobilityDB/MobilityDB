@@ -4,16 +4,16 @@ tposeSeq(tpose) → tposeSeq
 tposeSeqSet(tpose) → tposeSeqSet
 </pre><pre class="programlisting">
 SELECT asText(tposeSeq(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', 'discrete'));
--- {Pose(Point(1 1),0.5)@2001-01-01}
+-- {Pose(POINT(1 1),0.5)@2001-01-01}
 SELECT asText(tposeSeq(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'));
--- [Pose(Point(1 1),0.5)@2001-01-01]
+-- [Pose(POINT(1 1),0.5)@2001-01-01]
 SELECT asText(tposeSeqSet(tpose 'Pose(PointZ(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01'));
 -- {[Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-01]}
 </pre></li><li class="listitem"><a name="tpose_setInterp"></a><a class="indexterm" name="id9094"></a><p>Transforma a otra interpolación</p><pre class="programlisting">
 setInterp(tpose,interp) → tpose
 </pre><pre class="programlisting">
 SELECT asText(setInterp(tpose 'Pose(Point(1 1),0.2)@2001-01-01','linear'));
--- [Pose(Point(1 1),0.2)@2001-01-01]
+-- [Pose(POINT(1 1),0.2)@2001-01-01]
 SELECT asText(setInterp(tpose '{[Pose(Point Z(1 1 1),1,0,0,0)@2001-01-01],
   [Pose(Point Z(2 2 2),0,0,0,1)@2001-01-02]}', 'discrete'));
 -- {Pose(POINT Z (1 1 1),1,0,0,0)@2001-01-01, Pose(POINT Z (2 2 2),0,0,0,1)@2001-01-02}

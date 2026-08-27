@@ -25,7 +25,7 @@ SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 -- {["10"@2001-01-01, "20"@2001-01-02]}
 SELECT tjsonb '[{"position":"Point(1 1)", "speed":10}@2001-01-01,
   {"position":"Point(2 2)", "speed":20}@2001-01-03]' -&gt;&gt; text 'position';
--- ["Point(1 1)"@2001-01-01, "Point(2 2)"@2001-01-03]
+-- ["POINT(1 1)"@2001-01-01, "POINT(2 2)"@2001-01-03]
 SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01, {"unit": "km"}@2001-01-02,
   {"unit": "km", "speed": 10}@2001-01-03]}' -&gt; text 'speed';
 -- {[10@2001-01-01, null@2001-01-02, 10@2001-01-03]}

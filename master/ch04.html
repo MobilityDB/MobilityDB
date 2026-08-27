@@ -47,12 +47,12 @@ SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
 -- [1@2001-01-01, 2@2001-01-03, 2@2001-01-05)
 SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
   Point(1 1)@2001-01-01 08:10:00)');
--- [Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:10:00)
+-- [POINT(1 1)@2001-01-01 08:00:00, POINT(1 1)@2001-01-01 08:10:00)
 SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
 -- [1@2001-01-01, 3@2001-01-05]
 SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
   Point(3 3)@2001-01-01 08:10:00]');
--- [Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]
+-- [POINT(1 1)@2001-01-01 08:00:00, POINT(3 3)@2001-01-01 08:10:00]
 </pre><p>
 		</p><p>
 			Similary, temporal sequence set values are converted into normal form. For this, consecutive sequence values are merged when possible. Examples of transformation into a normal form are as follows.
@@ -71,10 +71,10 @@ SELECT asText(tgeompoint '{[Point(0 0)@2001-01-01 08:00:00,
 SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00,
   Point(2 2)@2001-01-01 08:05:00),
   [Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:10:00]}');
--- {[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}
+-- {[POINT(1 1)@2001-01-01 08:00:00, POINT(3 3)@2001-01-01 08:10:00]}
 SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00,
   Point(3 3)@2001-01-01 08:10:00), [Point(3 3)@2001-01-01 08:10:00]}');
--- {[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}
+-- {[POINT(1 1)@2001-01-01 08:00:00, POINT(3 3)@2001-01-01 08:10:00]}
 </pre><p>
 		</p><p>
 			Temporal types support <span class="emphasis"><em>type modifiers</em></span> (or <code class="varname">typmod</code> in PostgreSQL terminology), which specify additional information for a column definition. For example, in the following table definition:

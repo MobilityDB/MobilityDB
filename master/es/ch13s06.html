@@ -4,12 +4,12 @@ asEWKT({tpose,tposechain,tpose[],tposechain[]}) → {text,text[]}
 </pre><pre class="programlisting">
 SELECT asText(tpose 'SRID=4326;
   [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)');
--- [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+-- [Pose(POINT(0 0),1)@2001-01-01, Pose(POINT(1 1),2)@2001-01-02)
 SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
 -- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
 SELECT asEWKT(tpose 'SRID=4326;
   [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)');
--- SRID=4326;[Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+-- SRID=4326;[Pose(POINT(0 0),1)@2001-01-01, Pose(POINT(1 1),2)@2001-01-02)
 SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 'Pose(SRID=5676;Point(1 1),2)']);
 -- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
 </pre></li><li class="listitem"><a name="tpose_asMFJSON"></a><a class="indexterm" name="id8904"></a><p>Devuelve la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
@@ -50,7 +50,7 @@ SELECT asEWKT(tposeFromText(text '[Pose(Point(1 2),1)@2001-01-01,
 -- [Pose(POINT(1 2),1)@2001-01-01, Pose(POINT(3 4),2)@2001-01-02]
 SELECT asEWKT(tposeFromEWKT(text 'SRID=3812;
   [Pose(Point(1 2),1)@2001-01-01, Pose(Point(3 4),2)@2001-01-02]'));
--- SRID=3812;[Pose(Point(1 2),1)@2001-01-01, Pose(Point(3 4),2)@2001-01-02]
+-- SRID=3812;[Pose(POINT(1 2),1)@2001-01-01, Pose(POINT(3 4),2)@2001-01-02]
 SELECT asEWKT(tposechainFromText('SRID=5676;PoseChain(Pose(Point(1 1),0.5))@2001-01-01'));
 -- SRID=5676;PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
 SELECT asEWKT(tposechainFromBinary(asBinary(tposechain
@@ -80,7 +80,7 @@ SELECT asEWKT(tposeFromBinary(
 -- Pose(POINT(1 2),1)@2001-01-01
 SELECT asEWKT(tposeFromEWKB(
   '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
--- SRID=7844;Pose(Point(1 1),2)@2001-01-01
+-- SRID=7844;Pose(POINT(1 1),2)@2001-01-01
 SELECT asEWKT(tposeFromHexEWKB(
   '013A0041E40E0000E40E0000000000000000F03F...40000000000000F03F009C57D3C11C0000'));
 -- SRID=3812;Pose(POINT(1 2),1)@2001-01-01

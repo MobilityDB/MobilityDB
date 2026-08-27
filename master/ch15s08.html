@@ -4,18 +4,18 @@ tjsonbSeq(tjsonb,interp text='step') → tjsonbSeq
 tjsonbSeqSet(tjsonb) → tjsonbSeqSet
 </pre><pre class="programlisting">
 SELECT tjsonbSeq(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01');
--- [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01]
+-- [{"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01]
 SELECT tjsonbSeq(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01',
   'discrete');
--- {{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01}
+-- {{"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01}
 SELECT tjsonbSeqSet(tjsonb '"{\"vehicleId\": 1,\"location\":\"Point(1 1)\"}"@2001-01-01');
--- {[{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01]}
+-- {[{"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01]}
 </pre></li><li class="listitem"><a name="tjsonb_setInterp"></a><a class="indexterm" name="id11458"></a><p>Transform a temporal JSONB value to another interpolation</p><pre class="programlisting">
 setInterp(tjsonb,interp) → tjsonb
 </pre><pre class="programlisting">
 SELECT setInterp(tjsonb '"{\"vehicleId\": 1,\"location\": \"Point(1 1)\"}"@2001-01-01',
   'step');
--- [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01]
+-- [{"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01]
 SELECT setInterp(tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01],
   [{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02]}', 'discrete');
 /* {{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,

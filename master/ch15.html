@@ -24,7 +24,7 @@ SELECT textset '{[{"unit": "km", "speed": 10},
 -- {["10", "20"]}
 SELECT jsonbset '[{"position":"Point(1 1)", "speed":10},
   {"position":"Point(2 2)", "speed":20}]' -&gt;&gt; text 'position';
--- ["Point(1 1)", "Point(2 2)"]
+-- ["POINT(1 1)", "POINT(2 2)"]
 SELECT textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
   {"unit": "km", "speed": 10}]}' -&gt; text 'speed';
 -- {[10, null, 10]}
@@ -84,7 +84,7 @@ SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' || '{"unit":"km"}'::jsonb;
 -- {[{"unit": "km", "speed": 10}, {"unit": "km", "speed": 20}]}
 SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' || jsonbset '{[{"Position":"Point(1 1)"},
   {"Position":"Point(2 2)"}]}';
--- {[{"speed": 10, "Position": "Point(1 1)"}, {"speed": 20, "Position": "Point(2 2)"}]}
+-- {[{"speed": 10, "Position": "POINT(1 1)"}, {"speed": 20, "Position": "POINT(2 2)"}]}
 </pre></li><li class="listitem"><a name="jsonbset_delete"></a><a class="indexterm" name="id11170"></a><p>Temporal JSONB deletion</p><pre class="programlisting">
 jsonbset - {int,text,text[]} → jsonbset
 jsonbset #- text[] → jsonbset

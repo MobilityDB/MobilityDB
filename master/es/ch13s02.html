@@ -24,7 +24,7 @@ SELECT asText(pose 'SRID=4326;Pose(Point(0 0),1)');
 SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
 -- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
 SELECT asEWKT(pose 'SRID=4326;Pose(Point(0 0),1)');
--- SRID=4326;Pose(Point(0 0),1)
+-- SRID=4326;Pose(POINT(0 0),1)
 SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 'Pose(SRID=5676;Point(1 1),2)']);
 -- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
 </pre></li><li class="listitem"><a name="pose_asBinary"></a><a class="indexterm" name="id8583"></a><a class="indexterm" name="id8586"></a><a class="indexterm" name="id8589"></a><a class="indexterm" name="id8592"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
@@ -50,7 +50,7 @@ posechainFromEWKT(text) → posechain
 SELECT asEWKT(poseFromText(text 'Pose(Point(1 2),1)'));
 -- Pose(POINT(1 2),1)
 SELECT asEWKT(poseFromEWKT(text 'SRID=3812;Pose(Point(1 2),1)'));
--- SRID=3812;Pose(Point(1 2),1)
+-- SRID=3812;Pose(POINT(1 2),1)
 SELECT asEWKT(posechainFromText('PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),1))'));
 -- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),1))
 SELECT asEWKT(posechainFromEWKT('SRID=3812;PoseChain(Pose(Point(0 0),0))'));
@@ -67,7 +67,7 @@ SELECT asEWKT(poseFromBinary('\x0101000000000000f03f0000000000000040000000000000
 -- Pose(POINT(1 2),1)
 SELECT asEWKT(poseFromEWKB(
   '\x0141a41e0000000000000000f03f0000000000000040000000000000f03f'));
--- SRID=7844;Pose(Point(1 2),1)
+-- SRID=7844;Pose(POINT(1 2),1)
 SELECT asEWKT(poseFromHexEWKB(
   '0141E40E0000000000000000F03F0000000000000040000000000000F03F'));
 -- SRID=3812;Pose(POINT(1 2),1)
@@ -106,14 +106,14 @@ SELECT stbox(pose 'Pose(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
 pose::geompoint
 </pre><pre class="programlisting">
 SELECT ST_AsText(pose(ST_Point(1, 1), 1)::geometry);
--- Point(1 1)
+-- POINT(1 1)
 SELECT ST_AsEWKT(pose(ST_PointZ(1, 1, 1, 5676), 1, 0, 0, 0)::geometry);
 -- SRID=5676;POINT(1 1 1)
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_accessors"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_point"></a><a class="indexterm" name="id8666"></a><p>Devuelve el punto, que para una cadena de poses es el punto de su marco más interior</p><pre class="programlisting">
 point({pose,posechain}) → geometry
 </pre><pre class="programlisting">
 SELECT ST_AsText(point(pose 'Pose(Point(1 1), 0.3)'));
--- Point(1 1)
+-- POINT(1 1)
 </pre></li><li class="listitem"><a name="pose_quaternion"></a><a class="indexterm" name="id8673"></a><p>Devuelve el cuaternión de orientación de una pose</p><pre class="programlisting">
 quaternion(pose) → quaternion
 </pre><p>Las componentes se devuelven en el orden <code class="varname">W</code>, <code class="varname">X</code>, <code class="varname">Y</code>, <code class="varname">Z</code>, la convención de Hamilton en la que una pose 3D las almacena. Esta es una de las dos codificaciones de orientación que prescribe el estándar OGC GeoPose v1.0; la otra, yaw / pitch / roll, la proporciona <a class="link" href="ch13s21.html#pose_ypr"><code class="varname">ypr</code></a>. Ambas están definidas para las dos dimensiones: la orientación de una pose 2D es un giro alrededor de la vertical local por su ángulo almacenado, de modo que coloca la mitad de ese ángulo en <code class="varname">W</code> y <code class="varname">Z</code> y deja <code class="varname">X</code> e <code class="varname">Y</code> en cero. Este es el cuaternión que un documento GeoPose Basic-Quaternion lleva para una pose plana.</p><pre class="programlisting">

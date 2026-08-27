@@ -5,7 +5,7 @@ tjsonb(jsonb,tstzspan) → tjsonbContSeq
 tjsonb(jsonb,tstzspanset) → tjsonbSeqSet
 </pre><pre class="programlisting">
 SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}', timestamptz '2001-01-01');
--- {"location": "Point(1 1)", "vehicleId": 1}@2001-01-01
+-- {"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01
 SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
   tstzset '{2001-01-01, 2001-01-03, 2001-01-05}');
 /* {{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,

@@ -45,12 +45,12 @@ SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
 -- [1@2001-01-01, 2@2001-01-03, 2@2001-01-05)
 SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
   Point(1 1)@2001-01-01 08:10:00)');
--- [Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:10:00)
+-- [POINT(1 1)@2001-01-01 08:00:00, POINT(1 1)@2001-01-01 08:10:00)
 SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
 -- [1@2001-01-01, 3@2001-01-05]
 SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
   Point(3 3)@2001-01-01 08:10:00]');
--- [Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]
+-- [POINT(1 1)@2001-01-01 08:00:00, POINT(3 3)@2001-01-01 08:10:00]
 </pre><p>
 			De manera similar, los valores del conjunto de secuencias temporales se convierten en forma normal. Para ello, los valores de secuencia consecutivos se fusionan cuando es posible. Ejemplos de transformación en forma normal son los siguientes.
 		</p><pre class="programlisting">
@@ -68,10 +68,10 @@ SELECT asText(tgeompoint '{[Point(0 0)@2001-01-01 08:00:00,
 SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00,
   Point(2 2)@2001-01-01 08:05:00),
   [Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:10:00]}');
--- {[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}
+-- {[POINT(1 1)@2001-01-01 08:00:00, POINT(3 3)@2001-01-01 08:10:00]}
 SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00,
   Point(3 3)@2001-01-01 08:10:00), [Point(3 3)@2001-01-01 08:10:00]}');
--- {[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}
+-- {[POINT(1 1)@2001-01-01 08:00:00, POINT(3 3)@2001-01-01 08:10:00]}
 </pre><p>
 		Los tipos temporales soportan <span class="emphasis"><em>modificadores de typo</em></span> (o <code class="varname">typmod</code> en terminología de PostgreSQL), que especifican información adicional para la definición de una columna. Por ejemplo, en la siguiente definición de tabla:
 	</p><pre class="programlisting">
