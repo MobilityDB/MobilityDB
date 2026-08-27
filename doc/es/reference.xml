@@ -2882,7 +2882,7 @@
 					<para><link linkend="th3_tbigint"><varname>::</varname></link>: Convertir entre un <varname>th3index</varname> y un <varname>tbigint</varname> (explícita, sin coste)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_tgeogpoint"><varname>::</varname></link>: Convertir una celda H3 temporal en un punto temporal geodésico o planar de los centroides de las celdas. Las dos sobrecargas dan al usuario una elección entre la representación geodésica (<varname>tgeogpoint</varname>) y la planar SRID 4326 (<varname>tgeompoint</varname>).</para>
+					<para><link linkend="th3_tgeogpoint"><varname>::</varname></link>: Convertir una celda H3 temporal en un punto temporal geodésico o planar de los centroides de las celdas</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2890,13 +2890,13 @@
 			<title>Cobertura de Geometrías Estáticas</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_geoToH3Cell"><varname>geoToH3Cell</varname></link>: Devuelve la celda H3 que contiene una geometría de punto a la resolución dada. La geometría debe ser un <varname>POINT</varname>.</para>
+					<para><link linkend="th3_geoToH3Cell"><varname>geoToH3Cell</varname></link>: Devuelve la celda H3 que contiene una geometría de punto a la resolución dada</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_geoToH3IndexSet"><varname>geoToH3IndexSet</varname></link>: Devuelve el conjunto de celdas H3 que cubren una geometría a la resolución dada. Se admiten todos los tipos de geometría: un <varname>POINT</varname> produce una sola celda, una <varname>LINESTRING</varname> muestrea sus segmentos, un <varname>POLYGON</varname> rellena su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes.</para>
+					<para><link linkend="th3_geoToH3IndexSet"><varname>geoToH3IndexSet</varname></link>: Devuelve el conjunto de celdas H3 que cubren una geometría a la resolución dada</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_ever_eq_set"><varname>eEq</varname></link>: Devuelve si una trayectoria H3 temporal toma alguna vez una de las celdas de un conjunto de celdas. Combinada con <varname>geoToH3IndexSet</varname> responde si un viaje pasa alguna vez por una región, sin materializar la geometría de la trayectoria, el prefiltro robusto y conservador para el predicado exacto <varname>eIntersects(geometry,th3index)</varname>.</para>
+					<para><link linkend="th3_ever_eq_set"><varname>eEq</varname></link>: Devuelve si una trayectoria H3 temporal toma alguna vez una de las celdas de un conjunto de celdas</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2907,7 +2907,7 @@
 					<para><link linkend="th3_startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Devolver el primer o el último identificador de celda H3 de un valor temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_valueN"><varname>valueN</varname></link>: Devolver el <varname>n</varname>-ésimo identificador de celda H3 distinto (indexado desde 1). Devuelve <varname>NULL</varname> si está fuera del rango.</para>
+					<para><link linkend="th3_valueN"><varname>valueN</varname></link>: Devolver el <varname>n</varname>-ésimo identificador de celda H3 distinto (indexado desde 1)</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_getValues"><varname>getValues</varname></link>: Devolver el conjunto de identificadores de celda H3 distintos que toma la trayectoria</para>
@@ -2930,7 +2930,7 @@
 					<para><link linkend="th3_h3_is_valid_cell"><varname>isValidCell</varname></link>: Devolver un booleano temporal que indica en cada instante si el valor es una celda H3 válida</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_is_res_class_iii"><varname>th3IsResClassIii</varname></link>: Devolver un booleano temporal que indica si cada celda tiene orientación de Clase III. La Clase III se alterna con la resolución: las resoluciones impares son de clase III, las pares son de clase II.</para>
+					<para><link linkend="th3_h3_is_res_class_iii"><varname>th3IsResClassIii</varname></link>: Devolver un booleano temporal que indica si cada celda tiene orientación de Clase III</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_is_pentagon"><varname>th3IsPentagon</varname></link>: Devolver un booleano temporal que indica si cada celda es un pentágono (12 celdas por resolución son pentágonos; las restantes 110 en cada celda base descienden como hexágonos)</para>
@@ -2941,16 +2941,16 @@
 			<title>Jerarquía</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>: Devolver la celda padre temporal en la resolución dada. La forma sin argumento desciende a la siguiente resolución más gruesa.</para>
+					<para><link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>: Devolver la celda padre temporal en la resolución dada</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_center_child"><varname>th3CellToCenterChild</varname></link>: Devolver la celda hijo central temporal en la resolución dada. La forma sin argumento desciende a la siguiente resolución más fina.</para>
+					<para><link linkend="th3_h3_cell_to_center_child"><varname>th3CellToCenterChild</varname></link>: Devolver la celda hijo central temporal en la resolución dada</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_cell_to_child_pos"><varname>th3CellToChildPos</varname></link>: Devolver la posición ordinal (basada en 0) de cada celda entre los hijos de su padre en la resolución dada</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_child_pos_to_cell"><varname>th3ChildPosToCell</varname></link>: Devolver la celda hijo temporal en una posición ordinal dada del padre dado, en la resolución de hijo dada. Los dos operandos temporales se sincronizan sobre su eje de tiempo compartido.</para>
+					<para><link linkend="th3_h3_child_pos_to_cell"><varname>th3ChildPosToCell</varname></link>: Devolver la celda hijo temporal en una posición ordinal dada del padre dado, en la resolución de hijo dada</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2961,7 +2961,7 @@
 					<para><link linkend="th3_tgeompoint_to_th3"><varname>th3index</varname></link>: Devolver la celda H3 temporal en la resolución dada que contiene cada punto de un punto temporal geodésico o planar (el SRID debe ser 4326 para la sobrecarga de <varname>tgeompoint</varname>)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_latlng"><varname>th3CellToLatlng</varname>, <varname>th3CellToLatlngTgeompoint</varname></link>: Devolver el centroide geodésico temporal de cada celda en una trayectoria. Una sobrecarga planar (SRID 4326) está disponible bajo el nombre <varname>th3CellToLatlngTgeompoint</varname>.</para>
+					<para><link linkend="th3_h3_cell_to_latlng"><varname>th3CellToLatlng</varname>, <varname>th3CellToLatlngTgeompoint</varname></link>: Devolver el centroide geodésico temporal de cada celda en una trayectoria</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_cell_to_boundary"><varname>th3CellToBoundary</varname></link>: Devolver el límite poligonal temporal de cada celda en una trayectoria, como una geografía temporal</para>
@@ -2972,7 +2972,7 @@
 			<title>Aristas Dirigidas</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_are_neighbor_cells"><varname>th3AreNeighborCells</varname></link>: Devolver un booleano temporal que indica si dos celdas temporales son vecinas en la cuadrícula en cada instante. Los dos operandos se sincronizan.</para>
+					<para><link linkend="th3_h3_are_neighbor_cells"><varname>th3AreNeighborCells</varname></link>: Devolver un booleano temporal que indica si dos celdas temporales son vecinas en la cuadrícula en cada instante</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_cells_to_directed_edge"><varname>th3CellsToDirectedEdge</varname></link>: Devolver un identificador de arista dirigida temporal a partir de un par de celdas temporales origen/destino</para>
@@ -3006,10 +3006,10 @@
 			<title>Recorrido de la Cuadrícula</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_grid_distance"><varname>th3GridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Devolver la distancia temporal de saltos en la cuadrícula (número de pasos de una sola celda) entre dos celdas temporales. De forma equivalente, el operador <varname>&lt;-&gt;</varname> devuelve la misma distancia. Los dos operandos se sincronizan sobre su eje de tiempo compartido.</para>
+					<para><link linkend="th3_h3_grid_distance"><varname>th3GridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Devolver la distancia temporal de saltos en la cuadrícula (número de pasos de una sola celda) entre dos celdas temporales</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_local_ij"><varname>th3CellToLocalIj</varname>, <varname>th3LocalIjToCell</varname></link>: Convertir entre una celda temporal y un par de coordenadas locales (I, J) temporales relativas a una celda temporal de origen. La coordenada local se expone como un <varname>tgeompoint</varname> con el eje I en el slot <varname>x</varname> y J en <varname>y</varname>.</para>
+					<para><link linkend="th3_h3_cell_to_local_ij"><varname>th3CellToLocalIj</varname>, <varname>th3LocalIjToCell</varname></link>: Convertir entre una celda temporal y un par de coordenadas locales (I, J) temporales relativas a una celda temporal de origen</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3023,7 +3023,7 @@
 					<para><link linkend="th3_h3_edge_length"><varname>th3EdgeLength</varname></link>: Devolver la longitud temporal de cada arista dirigida en una trayectoria, en la unidad solicitada</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_great_circle_distance"><varname>greatCircleDistance</varname></link>: Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas). Los dos operandos se sincronizan.</para>
+					<para><link linkend="th3_h3_great_circle_distance"><varname>greatCircleDistance</varname></link>: Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3073,31 +3073,31 @@
 			<title>Funciones que devuelven conjuntos</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_grid_disk"><varname>h3GridDisk</varname></link>: Todas las celdas dentro de <varname>k</varname> pasos de cuadrícula del origen (incluyendo el origen cuando k=0).</para>
+					<para><link linkend="th3_h3_grid_disk"><varname>h3GridDisk</varname></link>: Todas las celdas dentro de <varname>k</varname> pasos de cuadrícula del origen (incluyendo el origen cuando k=0)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_grid_ring"><varname>h3GridRing</varname></link>: Las celdas a <emphasis>exactamente</emphasis> <varname>k</varname> pasos de cuadrícula del origen. Falla cerca de pentágonos.</para>
+					<para><link linkend="th3_h3_grid_ring"><varname>h3GridRing</varname></link>: Las celdas a <emphasis>exactamente</emphasis> <varname>k</varname> pasos de cuadrícula del origen</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_grid_path_cells"><varname>h3GridPathCells</varname></link>: El camino inclusivo de celdas entre dos celdas de la misma resolución.</para>
+					<para><link linkend="th3_h3_grid_path_cells"><varname>h3GridPathCells</varname></link>: El camino inclusivo de celdas entre dos celdas de la misma resolución</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_children"><varname>h3CellToChildren</varname></link>: Todas las celdas hijas de una celda en la resolución objetivo.</para>
+					<para><link linkend="th3_h3_cell_to_children"><varname>h3CellToChildren</varname></link>: Todas las celdas hijas de una celda en la resolución objetivo</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_compact_cells"><varname>h3CompactCells</varname></link>: Representación compactada de un conjunto de celdas, las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente.</para>
+					<para><link linkend="th3_h3_compact_cells"><varname>h3CompactCells</varname></link>: Representación compactada de un conjunto de celdas, las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_uncompact_cells"><varname>h3UncompactCells</varname></link>: Representación descompactada a la resolución dada, la inversa de <varname>h3CompactCells</varname>.</para>
+					<para><link linkend="th3_h3_uncompact_cells"><varname>h3UncompactCells</varname></link>: Representación descompactada a la resolución dada, la inversa de <varname>h3CompactCells</varname></para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_origin_to_directed_edges"><varname>h3OriginToDirectedEdges</varname></link>: Todas las aristas dirigidas salientes de una celda (6 para hexágonos, 5 para pentágonos).</para>
+					<para><link linkend="th3_h3_origin_to_directed_edges"><varname>h3OriginToDirectedEdges</varname></link>: Todas las aristas dirigidas salientes de una celda (6 para hexágonos, 5 para pentágonos)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_vertexes"><varname>h3CellToVertexes</varname></link>: Todos los vértices de una celda (6 para hexágonos, 5 para pentágonos).</para>
+					<para><link linkend="th3_h3_cell_to_vertexes"><varname>h3CellToVertexes</varname></link>: Todos los vértices de una celda (6 para hexágonos, 5 para pentágonos)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_get_icosahedron_faces"><varname>h3GetIcosahedronFaces</varname></link>: Los índices de caras del icosaedro (0..19) intersectadas por una celda.</para>
+					<para><link linkend="th3_h3_get_icosahedron_faces"><varname>h3GetIcosahedronFaces</varname></link>: Los índices de caras del icosaedro (0..19) intersectadas por una celda</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3139,10 +3139,10 @@
 			<title>Indexación</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_rtree_ops"><varname>th3_rtree_ops</varname></link>: Clase de operadores GiST para celdas H3 temporales. Indexa una caja envolvente espaciotemporal <varname>stbox</varname> por fila (la extensión geodésica de los límites de las celdas junto con el período temporal).</para>
+					<para><link linkend="th3_rtree_ops"><varname>th3_rtree_ops</varname></link>: Clase de operadores GiST para celdas H3 temporales</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_quadtree_ops"><varname>th3_quadtree_ops</varname>, <varname>th3_kdtree_ops</varname></link>: Clases de operadores SP-GiST para celdas H3 temporales, indexadas por la caja envolvente espaciotemporal <varname>stbox</varname>. <varname>th3_quadtree_ops</varname> es la predeterminada (partición por quadtree); <varname>th3_kdtree_ops</varname> utiliza partición por árbol k-d y debe ser nombrada explícitamente.</para>
+					<para><link linkend="th3_quadtree_ops"><varname>th3_quadtree_ops</varname>, <varname>th3_kdtree_ops</varname></link>: Clases de operadores SP-GiST para celdas H3 temporales, indexadas por la caja envolvente espaciotemporal <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3157,7 +3157,7 @@
 					<para><link linkend="tquadbin_tbigint"><varname>::</varname></link>: Convertir entre un <varname>tquadbin</varname> y un <varname>tbigint</varname> (explícito, sin coste)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_tgeompoint"><varname>::</varname></link>: Convertir una celda QUADBIN temporal a un punto planar temporal (SRID 4326) de los centroides de las celdas. La conversión delega en <varname>tquadbinCellToPoint</varname>.</para>
+					<para><link linkend="tquadbin_tgeompoint"><varname>::</varname></link>: Convertir una celda QUADBIN temporal a un punto planar temporal (SRID 4326) de los centroides de las celdas</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3179,7 +3179,7 @@
 					<para><link linkend="tquadbin_startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Devuelve el primer o el último identificador de celda QUADBIN de un valor temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_valueN"><varname>valueN</varname></link>: Devuelve el <varname>n</varname>-ésimo identificador de celda QUADBIN distinto (índice base 1). Devuelve <varname>NULL</varname> si está fuera de rango.</para>
+					<para><link linkend="tquadbin_valueN"><varname>valueN</varname></link>: Devuelve el <varname>n</varname>-ésimo identificador de celda QUADBIN distinto (índice base 1)</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tquadbin_getValues"><varname>getValues</varname></link>: Devuelve el conjunto de identificadores de celda QUADBIN distintos que toma la trayectoria</para>
@@ -3193,7 +3193,7 @@
 			<title>Inspección del Índice</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_get_resolution"><varname>quadbinGetResolution</varname>, <varname>tquadbinGetResolution</varname></link>: Devuelve el nivel de resolución (zoom) (0–26) de una celda. La forma estática devuelve un <varname>integer</varname>; la forma temporal devuelve la resolución de cada celda de una trayectoria como un <varname>tint</varname>.</para>
+					<para><link linkend="tquadbin_quadbin_get_resolution"><varname>quadbinGetResolution</varname>, <varname>tquadbinGetResolution</varname></link>: Devuelve el nivel de resolución (zoom) (0–26) de una celda</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tquadbin_quadbin_is_valid_cell"><varname>isValidCell</varname></link>: Devuelve un booleano temporal que indica en cada instante si el valor es una celda QUADBIN válida</para>
@@ -3204,16 +3204,16 @@
 			<title>Jerarquía</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_parent"><varname>quadbinCellToParent</varname>, <varname>tquadbinCellToParent</varname></link>: Devuelve la celda padre en la resolución más gruesa dada. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el padre de cada celda de una trayectoria.</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_parent"><varname>quadbinCellToParent</varname>, <varname>tquadbinCellToParent</varname></link>: Devuelve la celda padre en la resolución más gruesa dada</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_children"><varname>quadbinCellToChildren</varname></link>: Devuelve las cuatro celdas hijas en la resolución más fina solicitada como un <varname>quadbinset</varname>. Es un auxiliar estático que devuelve un conjunto sobre un único <varname>quadbin</varname>; no tiene elevación temporal (los hijos son un conjunto por instante, diferido a la espera de una primitiva <varname>tset&lt;T&gt;</varname>).</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_children"><varname>quadbinCellToChildren</varname></link>: Devuelve las cuatro celdas hijas en la resolución más fina solicitada como un <varname>quadbinset</varname></para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tquadbin_quadbin_cell_sibling"><varname>quadbinCellSibling</varname></link>: Devuelve la celda vecina en la misma resolución en la dirección dada (<varname>up</varname> / <varname>down</varname> / <varname>left</varname> / <varname>right</varname>)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_grid_disk"><varname>quadbinGridDisk</varname></link>: Devuelve todas las celdas dentro de <varname>k</varname> pasos de cuadrícula del origen (inclusive del origen en k=0), como un <varname>quadbinset</varname>. En la cuadrícula cuadrada el disco en el paso <varname>k</varname> es el bloque cuadrado de <varname>(2k+1)</varname>×<varname>(2k+1)</varname> celdas centrado en el origen.</para>
+					<para><link linkend="tquadbin_quadbin_grid_disk"><varname>quadbinGridDisk</varname></link>: Devuelve todas las celdas dentro de <varname>k</varname> pasos de cuadrícula del origen (inclusive del origen en k=0), como un <varname>quadbinset</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3221,13 +3221,13 @@
 			<title>Conversiones de Geometría</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_point_to_cell"><varname>geoToQuadbinCell</varname></link>: Devuelve la celda QUADBIN en la resolución dada que contiene una geometría de punto. La geometría debe ser un <varname>POINT</varname>; las longitudes se interpretan en SRID 4326.</para>
+					<para><link linkend="tquadbin_quadbin_point_to_cell"><varname>geoToQuadbinCell</varname></link>: Devuelve la celda QUADBIN en la resolución dada que contiene una geometría de punto</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_point"><varname>quadbinCellToPoint</varname>, <varname>tquadbinCellToPoint</varname></link>: Devuelve el centroide de una celda como un punto SRID 4326. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el centroide de cada celda de una trayectoria como un <varname>tgeompoint</varname>.</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_point"><varname>quadbinCellToPoint</varname>, <varname>tquadbinCellToPoint</varname></link>: Devuelve el centroide de una celda como un punto SRID 4326</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>quadbinCellToBoundary</varname>, <varname>tquadbinCellToBoundary</varname></link>: Devuelve el contorno poligonal cuadrado de una celda como una geometría SRID 4326. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el contorno de cada celda de una trayectoria como un <varname>tgeometry</varname>.</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>quadbinCellToBoundary</varname>, <varname>tquadbinCellToBoundary</varname></link>: Devuelve el contorno poligonal cuadrado de una celda como una geometría SRID 4326</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3241,7 +3241,7 @@
 					<para><link linkend="tquadbin_quadbin_cell_to_tile"><varname>quadbinCellToTile</varname></link>: Descompone una celda en su triple de coordenadas de tesela, devuelto como un arreglo de enteros <varname>{x, y, z}</varname>, la inversa de <varname>quadbinTileToCell</varname></para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_quadkey"><varname>quadbinCellToQuadkey</varname>, <varname>tquadbinCellToQuadkey</varname></link>: Emite la cadena quadkey en base 4 de una celda (un dígito por nivel de zoom, primero el más significativo; la celda mundial de resolución 0 se corresponde con la cadena vacía). La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el quadkey de cada celda de una trayectoria como un <varname>ttext</varname>.</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_quadkey"><varname>quadbinCellToQuadkey</varname>, <varname>tquadbinCellToQuadkey</varname></link>: Emite la cadena quadkey en base 4 de una celda (un dígito por nivel de zoom, primero el más significativo; la celda mundial de resolución 0 se corresponde con la cadena vacía)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3249,7 +3249,7 @@
 			<title>Métricas</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_area"><varname>quadbinCellArea</varname>, <varname>tquadbinCellArea</varname></link>: Devuelve el área de una celda sobre la esfera, en metros cuadrados. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el área de cada celda de una trayectoria como un <varname>tfloat</varname>. El área de la celda se reduce hacia los polos, ya que los cuadrados web-mercator cubren progresivamente menos terreno a latitudes más altas.</para>
+					<para><link linkend="tquadbin_quadbin_cell_area"><varname>quadbinCellArea</varname>, <varname>tquadbinCellArea</varname></link>: Devuelve el área de una celda sobre la esfera, en metros cuadrados</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3268,10 +3268,10 @@
 			<title>Indexación</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_btree_ops"><varname>tquadbin_btree_ops</varname></link>: Clase de operadores de árbol B por defecto para las celdas QUADBIN temporales, ordenando por el valor temporal subyacente.</para>
+					<para><link linkend="tquadbin_btree_ops"><varname>tquadbin_btree_ops</varname></link>: Clase de operadores de árbol B por defecto para las celdas QUADBIN temporales, ordenando por el valor temporal subyacente</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_hash_ops"><varname>tquadbin_hash_ops</varname></link>: Clase de operadores hash por defecto para las celdas QUADBIN temporales, usada por las uniones hash y la agregación hash.</para>
+					<para><link linkend="tquadbin_hash_ops"><varname>tquadbin_hash_ops</varname></link>: Clase de operadores hash por defecto para las celdas QUADBIN temporales, usada por las uniones hash y la agregación hash</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
