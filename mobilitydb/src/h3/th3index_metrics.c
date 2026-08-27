@@ -153,26 +153,61 @@ Th3index_edge_length_rads(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * greatCircleDistance(tgeogpoint, tgeogpoint, text)
+ * greatCircleDistanceKm, greatCircleDistanceM and greatCircleDistanceRads
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tgeogpoint_great_circle_distance(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tgeogpoint_great_circle_distance);
+PGDLLEXPORT Datum Tgeogpoint_great_circle_distance_km(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeogpoint_great_circle_distance_km);
 /**
  * @ingroup mobilitydb_h3_metrics
  * @brief Return the per-instant great-circle distance between two temporal
- * geodetic points in the given unit
- * @sqlfn greatCircleDistance()
+ * geodetic points in kilometres
+ * @sqlfn greatCircleDistanceKm()
  */
 Datum
-Tgeogpoint_great_circle_distance(PG_FUNCTION_ARGS)
+Tgeogpoint_great_circle_distance_km(PG_FUNCTION_ARGS)
 {
   Temporal *a = PG_GETARG_TEMPORAL_P(0);
   Temporal *b = PG_GETARG_TEMPORAL_P(1);
-  text *unit_txt = PG_GETARG_TEXT_P(2);
-  char *unit = text_to_cstring(unit_txt);
-  Temporal *result = tgeogpoint_great_circle_distance(a, b, unit);
-  pfree(unit);
+  Temporal *result = tgeogpoint_great_circle_distance_km(a, b);
+  PG_FREE_IF_COPY(a, 0);
+  PG_FREE_IF_COPY(b, 1);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeogpoint_great_circle_distance_m(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeogpoint_great_circle_distance_m);
+/**
+ * @ingroup mobilitydb_h3_metrics
+ * @brief Return the per-instant great-circle distance between two temporal
+ * geodetic points in metres
+ * @sqlfn greatCircleDistanceM()
+ */
+Datum
+Tgeogpoint_great_circle_distance_m(PG_FUNCTION_ARGS)
+{
+  Temporal *a = PG_GETARG_TEMPORAL_P(0);
+  Temporal *b = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = tgeogpoint_great_circle_distance_m(a, b);
+  PG_FREE_IF_COPY(a, 0);
+  PG_FREE_IF_COPY(b, 1);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeogpoint_great_circle_distance_rads(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeogpoint_great_circle_distance_rads);
+/**
+ * @ingroup mobilitydb_h3_metrics
+ * @brief Return the per-instant great-circle distance between two temporal
+ * geodetic points in radians
+ * @sqlfn greatCircleDistanceRads()
+ */
+Datum
+Tgeogpoint_great_circle_distance_rads(PG_FUNCTION_ARGS)
+{
+  Temporal *a = PG_GETARG_TEMPORAL_P(0);
+  Temporal *b = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = tgeogpoint_great_circle_distance_rads(a, b);
   PG_FREE_IF_COPY(a, 0);
   PG_FREE_IF_COPY(b, 1);
   PG_RETURN_TEMPORAL_P(result);

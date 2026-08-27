@@ -2896,7 +2896,7 @@
 					<para><link linkend="th3_h3_edge_length"><varname>th3EdgeLengthKm</varname>, <varname>th3EdgeLengthM</varname>, <varname>th3EdgeLengthRads</varname></link>: Devolver la longitud temporal de cada arista dirigida en una trayectoria, en kilómetros, metros o radianes</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_great_circle_distance"><varname>greatCircleDistance</varname></link>: Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas)</para>
+					<para><link linkend="th3_h3_great_circle_distance"><varname>greatCircleDistanceKm</varname>, <varname>greatCircleDistanceM</varname>, <varname>greatCircleDistanceRads</varname></link>: Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas), en kilómetros, metros o radianes</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

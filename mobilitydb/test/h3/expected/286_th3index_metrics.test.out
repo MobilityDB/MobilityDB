@@ -92,54 +92,54 @@ SELECT startValue(th3EdgeLengthRads(th3CellsToDirectedEdge(
  t
 (1 row)
 
-SELECT greatCircleDistance(
+SELECT greatCircleDistanceKm(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  'km');
-      greatcircledistance       
+  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01');
+     greatcircledistancekm      
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT greatCircleDistance(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
-  'km') IS NOT NULL;
+SELECT round(startValue(greatCircleDistanceKm(
+  tgeogpoint 'POINT(0 0)@2001-01-01',
+  tgeogpoint 'POINT(1 0)@2001-01-01'))::numeric, 6);
+   round    
+------------
+ 111.195052
+(1 row)
+
+SELECT round(startValue(greatCircleDistanceM(
+  tgeogpoint 'POINT(0 0)@2001-01-01',
+  tgeogpoint 'POINT(1 0)@2001-01-01'))::numeric, 3);
+   round    
+------------
+ 111195.052
+(1 row)
+
+SELECT round(startValue(greatCircleDistanceRads(
+  tgeogpoint 'POINT(0 0)@2001-01-01',
+  tgeogpoint 'POINT(1 0)@2001-01-01'))::numeric, 9)
+  = round((pi() / 180)::numeric, 9);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT greatCircleDistance(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
-  'm') IS NOT NULL;
+SELECT startValue(greatCircleDistanceM(
+    tgeogpoint 'POINT(0 0)@2001-01-01', tgeogpoint 'POINT(1 0)@2001-01-01'))
+  = startValue(greatCircleDistanceKm(
+    tgeogpoint 'POINT(0 0)@2001-01-01', tgeogpoint 'POINT(1 0)@2001-01-01')) * 1000;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT greatCircleDistance(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
-  'rads') IS NOT NULL;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT greatCircleDistance(
+SELECT greatCircleDistanceKm(
   tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
-  tgeogpoint '[POINT(2.35 48.86)@2001-01-01, POINT(-73.96 40.78)@2001-01-02]',
-  'km') IS NOT NULL;
+  tgeogpoint '[POINT(2.35 48.86)@2001-01-01, POINT(-73.96 40.78)@2001-01-02]')
+  IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-/* Errors */
-SELECT greatCircleDistance(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
-  'km2');
-ERROR:  h3_great_circle_distance: expected a length unit (km, m, rads)

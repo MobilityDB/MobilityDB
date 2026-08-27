@@ -276,7 +276,11 @@ extern Temporal *th3index_cell_area_rads2(const Temporal *temp);
 extern Temporal *th3index_edge_length_km(const Temporal *temp);
 extern Temporal *th3index_edge_length_m(const Temporal *temp);
 extern Temporal *th3index_edge_length_rads(const Temporal *temp);
-extern Temporal *tgeogpoint_great_circle_distance(const Temporal *a,
-  const Temporal *b, const char *unit);
+extern Temporal *tgeogpoint_great_circle_distance_km(const Temporal *a,
+  const Temporal *b);
+extern Temporal *tgeogpoint_great_circle_distance_m(const Temporal *a,
+  const Temporal *b);
+extern Temporal *tgeogpoint_great_circle_distance_rads(const Temporal *a,
+  const Temporal *b);
 
 #endif /* __MEOS_H3_H__ */
