@@ -67,11 +67,12 @@ SELECT ((th3index '831c02fffffffff@2001-01-01')::tbigint)::th3index
 
 			<listitem xml:id="th3_tgeogpoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir una celda H3 temporal en un punto temporal geodésico o planar de los centroides de las celdas. Las dos sobrecargas dan al usuario una elección entre la representación geodésica (<varname>tgeogpoint</varname>) y la planar SRID 4326 (<varname>tgeompoint</varname>).</para>
+				<para>Convertir una celda H3 temporal en un punto temporal geodésico o planar de los centroides de las celdas</para>
 				<programlisting xml:space="preserve" format="linespecific">
 th3index::tgeogpoint
 th3index::tgeompoint
 </programlisting>
+				<para>Las dos sobrecargas dan al usuario una elección entre la representación geodésica (<varname>tgeogpoint</varname>) y la planar SRID 4326 (<varname>tgeompoint</varname>).</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (th3index '831c02fffffffff@2001-01-01')::tgeogpoint;
 SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint;
@@ -88,10 +89,11 @@ SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint;
 		<itemizedlist>
 			<listitem xml:id="th3_geoToH3Cell">
 				<indexterm significance="normal"><primary><varname>geoToH3Cell</varname></primary></indexterm>
-				<para>Devuelve la celda H3 que contiene una geometría de punto a la resolución dada. La geometría debe ser un <varname>POINT</varname>.</para>
+				<para>Devuelve la celda H3 que contiene una geometría de punto a la resolución dada</para>
 				<programlisting xml:space="preserve" format="linespecific">
 geoToH3Cell(geometry,integer) → h3index
 </programlisting>
+				<para>La geometría debe ser un <varname>POINT</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3Cell(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- 871fa4418ffffff
@@ -100,10 +102,11 @@ SELECT geoToH3Cell(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 
 			<listitem xml:id="th3_geoToH3IndexSet">
 				<indexterm significance="normal"><primary><varname>geoToH3IndexSet</varname></primary></indexterm>
-				<para>Devuelve el conjunto de celdas H3 que cubren una geometría a la resolución dada. Se admiten todos los tipos de geometría: un <varname>POINT</varname> produce una sola celda, una <varname>LINESTRING</varname> muestrea sus segmentos, un <varname>POLYGON</varname> rellena su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes.</para>
+				<para>Devuelve el conjunto de celdas H3 que cubren una geometría a la resolución dada</para>
 				<programlisting xml:space="preserve" format="linespecific">
 geoToH3IndexSet(geometry,integer) → h3indexset
 </programlisting>
+				<para>Se admiten todos los tipos de geometría: un <varname>POINT</varname> produce una sola celda, una <varname>LINESTRING</varname> muestrea sus segmentos, un <varname>POLYGON</varname> rellena su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- {"871fa4418ffffff"}
@@ -112,11 +115,12 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 
 			<listitem xml:id="th3_ever_eq_set">
 				<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
-				<para>Devuelve si una trayectoria H3 temporal toma alguna vez una de las celdas de un conjunto de celdas. Combinada con <varname>geoToH3IndexSet</varname> responde si un viaje pasa alguna vez por una región, sin materializar la geometría de la trayectoria, el prefiltro robusto y conservador para el predicado exacto <varname>eIntersects(geometry,th3index)</varname>.</para>
+				<para>Devuelve si una trayectoria H3 temporal toma alguna vez una de las celdas de un conjunto de celdas</para>
 				<programlisting xml:space="preserve" format="linespecific">
 eEq(h3indexset,th3index) → boolean
 h3indexset ?= th3index → boolean
 </programlisting>
+				<para>Combinada con <varname>geoToH3IndexSet</varname> responde si un viaje pasa alguna vez por una región, sin materializar la geometría de la trayectoria, el prefiltro robusto y conservador para el predicado exacto <varname>eIntersects(geometry,th3index)</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7) ?=
   th3index '871fa4418ffffff@2001-01-01';
@@ -147,10 +151,11 @@ SELECT endValue(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-0
 
 			<listitem xml:id="th3_valueN">
 				<indexterm significance="normal"><primary><varname>valueN</varname></primary></indexterm>
-				<para>Devolver el <varname>n</varname>-ésimo identificador de celda H3 distinto (indexado desde 1). Devuelve <varname>NULL</varname> si está fuera del rango.</para>
+				<para>Devolver el <varname>n</varname>-ésimo identificador de celda H3 distinto (indexado desde 1)</para>
 				<programlisting xml:space="preserve" format="linespecific">
 valueN(th3index,integer) → h3index
 </programlisting>
+				<para>Devuelve <varname>NULL</varname> si está fuera del rango.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueN(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 1);
 -- 831c02fffffffff
@@ -227,10 +232,11 @@ SELECT isValidCell(th3index '0@2001-01-01');
 
 			<listitem xml:id="th3_h3_is_res_class_iii">
 				<indexterm significance="normal"><primary><varname>th3IsResClassIii</varname></primary></indexterm>
-				<para>Devolver un booleano temporal que indica si cada celda tiene orientación de Clase III. La Clase III se alterna con la resolución: las resoluciones impares son de clase III, las pares son de clase II.</para>
+				<para>Devolver un booleano temporal que indica si cada celda tiene orientación de Clase III</para>
 				<programlisting xml:space="preserve" format="linespecific">
 th3IsResClassIii(th3index) → tbool
 </programlisting>
+				<para>La Clase III se alterna con la resolución: las resoluciones impares son de clase III, las pares son de clase II.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3IsResClassIii(th3index '871fa44a8ffffff@2001-01-01');
 -- t@2001-01-01
@@ -258,11 +264,12 @@ SELECT th3IsPentagon(th3index '831c02fffffffff@2001-01-01');
 		<itemizedlist>
 			<listitem xml:id="th3_h3_cell_to_parent">
 				<indexterm significance="normal"><primary><varname>th3CellToParent</varname></primary></indexterm>
-				<para>Devolver la celda padre temporal en la resolución dada. La forma sin argumento desciende a la siguiente resolución más gruesa.</para>
+				<para>Devolver la celda padre temporal en la resolución dada</para>
 				<programlisting xml:space="preserve" format="linespecific">
 th3CellToParent(th3index,integer) → th3index
 th3CellToParent(th3index) → th3index
 </programlisting>
+				<para>La forma sin argumento desciende a la siguiente resolución más gruesa.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3GetResolution(
   th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
@@ -272,11 +279,12 @@ SELECT th3GetResolution(
 
 			<listitem xml:id="th3_h3_cell_to_center_child">
 				<indexterm significance="normal"><primary><varname>th3CellToCenterChild</varname></primary></indexterm>
-				<para>Devolver la celda hijo central temporal en la resolución dada. La forma sin argumento desciende a la siguiente resolución más fina.</para>
+				<para>Devolver la celda hijo central temporal en la resolución dada</para>
 				<programlisting xml:space="preserve" format="linespecific">
 th3CellToCenterChild(th3index,integer) → th3index
 th3CellToCenterChild(th3index) → th3index
 </programlisting>
+				<para>La forma sin argumento desciende a la siguiente resolución más fina.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01', 8);
 -- 881fa44a81fffff@2001-01-01
@@ -300,10 +308,11 @@ SELECT th3CellToChildPos(th3index '871fa44a8ffffff@2001-01-01', 6);
 
 			<listitem xml:id="th3_h3_child_pos_to_cell">
 				<indexterm significance="normal"><primary><varname>th3ChildPosToCell</varname></primary></indexterm>
-				<para>Devolver la celda hijo temporal en una posición ordinal dada del padre dado, en la resolución de hijo dada. Los dos operandos temporales se sincronizan sobre su eje de tiempo compartido.</para>
+				<para>Devolver la celda hijo temporal en una posición ordinal dada del padre dado, en la resolución de hijo dada</para>
 				<programlisting xml:space="preserve" format="linespecific">
 th3ChildPosToCell(tbigint,th3index,integer) → th3index
 </programlisting>
+				<para>Los dos operandos temporales se sincronizan sobre su eje de tiempo compartido.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01',
   8);
@@ -336,11 +345,12 @@ SELECT th3GetResolution(th3index(
 			<listitem xml:id="th3_h3_cell_to_latlng">
 				<indexterm significance="normal"><primary><varname>th3CellToLatlng</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>th3CellToLatlngTgeompoint</varname></primary></indexterm>
-				<para>Devolver el centroide geodésico temporal de cada celda en una trayectoria. Una sobrecarga planar (SRID 4326) está disponible bajo el nombre <varname>th3CellToLatlngTgeompoint</varname>.</para>
+				<para>Devolver el centroide geodésico temporal de cada celda en una trayectoria</para>
 				<programlisting xml:space="preserve" format="linespecific">
 th3CellToLatlng(th3index) → tgeogpoint
 th3CellToLatlngTgeompoint(th3index) → tgeompoint
 </programlisting>
+				<para>Una sobrecarga planar (SRID 4326) está disponible bajo el nombre <varname>th3CellToLatlngTgeompoint</varname>.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(th3CellToLatlng(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
@@ -374,10 +384,11 @@ SELECT ST_NPoints(getValue(th3CellToBoundary(th3index
 		<itemizedlist>
 			<listitem xml:id="th3_h3_are_neighbor_cells">
 				<indexterm significance="normal"><primary><varname>th3AreNeighborCells</varname></primary></indexterm>
-				<para>Devolver un booleano temporal que indica si dos celdas temporales son vecinas en la cuadrícula en cada instante. Los dos operandos se sincronizan.</para>
+				<para>Devolver un booleano temporal que indica si dos celdas temporales son vecinas en la cuadrícula en cada instante</para>
 				<programlisting xml:space="preserve" format="linespecific">
 th3AreNeighborCells(th3index,th3index) → tbool
 </programlisting>
+				<para>Los dos operandos se sincronizan.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3AreNeighborCells(
   th3index '880326b885fffff@2001-01-01',
@@ -498,11 +509,12 @@ SELECT isValidVertex(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0));
 			<listitem xml:id="th3_h3_grid_distance">
 				<indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<para>Devolver la distancia temporal de saltos en la cuadrícula (número de pasos de una sola celda) entre dos celdas temporales. De forma equivalente, el operador <varname>&lt;-&gt;</varname> devuelve la misma distancia. Los dos operandos se sincronizan sobre su eje de tiempo compartido.</para>
+				<para>Devolver la distancia temporal de saltos en la cuadrícula (número de pasos de una sola celda) entre dos celdas temporales</para>
 				<programlisting xml:space="preserve" format="linespecific">
 th3GridDistance(th3index,th3index) → tbigint
 th3index &lt;-&gt; th3index → tbigint
 </programlisting>
+				<para>De forma equivalente, el operador <varname>&lt;-&gt;</varname> devuelve la misma distancia. Los dos operandos se sincronizan sobre su eje de tiempo compartido.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index '880326b885fffff@2001-01-01'
    &lt;-&gt; th3index '880326b88dfffff@2001-01-01';
@@ -513,11 +525,12 @@ SELECT th3index '880326b885fffff@2001-01-01'
 			<listitem xml:id="th3_h3_cell_to_local_ij">
 				<indexterm significance="normal"><primary><varname>th3CellToLocalIj</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>th3LocalIjToCell</varname></primary></indexterm>
-				<para>Convertir entre una celda temporal y un par de coordenadas locales (I, J) temporales relativas a una celda temporal de origen. La coordenada local se expone como un <varname>tgeompoint</varname> con el eje I en el slot <varname>x</varname> y J en <varname>y</varname>.</para>
+				<para>Convertir entre una celda temporal y un par de coordenadas locales (I, J) temporales relativas a una celda temporal de origen</para>
 				<programlisting xml:space="preserve" format="linespecific">
 th3CellToLocalIj(th3index,th3index) → tgeompoint
 th3LocalIjToCell(th3index,tgeompoint) → th3index
 </programlisting>
+				<para>La coordenada local se expone como un <varname>tgeompoint</varname> con el eje I en el slot <varname>x</varname> y J en <varname>y</varname>.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
   th3index '871fa44aeffffff@2001-01-01'));
@@ -565,10 +578,11 @@ SELECT th3EdgeLength(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01
 
 			<listitem xml:id="th3_h3_great_circle_distance">
 				<indexterm significance="normal"><primary><varname>greatCircleDistance</varname></primary></indexterm>
-				<para>Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas). Los dos operandos se sincronizan.</para>
+				<para>Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas)</para>
 				<programlisting xml:space="preserve" format="linespecific">
 greatCircleDistance(tgeogpoint,tgeogpoint,text='km') → tfloat
 </programlisting>
+				<para>Los dos operandos se sincronizan.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT greatCircleDistance(tgeogpoint 'Point(0 0)@2001-01-01',
   tgeogpoint 'Point(1 0)@2001-01-01');
@@ -765,7 +779,7 @@ SELECT th3index '871fa44a8ffffff@2001-01-01' #&gt;&gt;
 		<itemizedlist>
 			<listitem xml:id="th3_h3_grid_disk">
 				<indexterm significance="normal"><primary><varname>h3GridDisk</varname></primary></indexterm>
-				<para>Todas las celdas dentro de <varname>k</varname> pasos de cuadrícula del origen (incluyendo el origen cuando k=0).</para>
+				<para>Todas las celdas dentro de <varname>k</varname> pasos de cuadrícula del origen (incluyendo el origen cuando k=0)</para>
 				<programlisting xml:space="preserve" format="linespecific">
 h3GridDisk(h3index, integer) → h3indexset
 </programlisting>
@@ -778,10 +792,11 @@ SELECT h3GridDisk(h3index '871fa44a8ffffff', 1);
 
 			<listitem xml:id="th3_h3_grid_ring">
 				<indexterm significance="normal"><primary><varname>h3GridRing</varname></primary></indexterm>
-				<para>Las celdas a <emphasis>exactamente</emphasis> <varname>k</varname> pasos de cuadrícula del origen. Falla cerca de pentágonos.</para>
+				<para>Las celdas a <emphasis>exactamente</emphasis> <varname>k</varname> pasos de cuadrícula del origen</para>
 				<programlisting xml:space="preserve" format="linespecific">
 h3GridRing(h3index, integer) → h3indexset
 </programlisting>
+				<para>Falla cerca de pentágonos.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT h3GridRing(h3index '871fa44a8ffffff', 1);
 -- {"871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff", "871fa44acffffff",
@@ -791,7 +806,7 @@ SELECT h3GridRing(h3index '871fa44a8ffffff', 1);
 
 			<listitem xml:id="th3_h3_grid_path_cells">
 				<indexterm significance="normal"><primary><varname>h3GridPathCells</varname></primary></indexterm>
-				<para>El camino inclusivo de celdas entre dos celdas de la misma resolución.</para>
+				<para>El camino inclusivo de celdas entre dos celdas de la misma resolución</para>
 				<programlisting xml:space="preserve" format="linespecific">
 h3GridPathCells(h3index, h3index) → h3indexset
 </programlisting>
@@ -804,7 +819,7 @@ SELECT h3GridPathCells(h3index '871fa44a8ffffff', h3index '871fa44b1ffffff');
 
 			<listitem xml:id="th3_h3_cell_to_children">
 				<indexterm significance="normal"><primary><varname>h3CellToChildren</varname></primary></indexterm>
-				<para>Todas las celdas hijas de una celda en la resolución objetivo.</para>
+				<para>Todas las celdas hijas de una celda en la resolución objetivo</para>
 				<programlisting xml:space="preserve" format="linespecific">
 h3CellToChildren(h3index, integer) → h3indexset
 </programlisting>
@@ -817,7 +832,7 @@ SELECT h3CellToChildren(h3index '831c02fffffffff', 4);
 
 			<listitem xml:id="th3_h3_compact_cells">
 				<indexterm significance="normal"><primary><varname>h3CompactCells</varname></primary></indexterm>
-				<para>Representación compactada de un conjunto de celdas, las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente.</para>
+				<para>Representación compactada de un conjunto de celdas, las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente</para>
 				<programlisting xml:space="preserve" format="linespecific">
 h3CompactCells(h3indexset) → h3indexset
 </programlisting>
@@ -829,7 +844,7 @@ SELECT h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4));
 
 			<listitem xml:id="th3_h3_uncompact_cells">
 				<indexterm significance="normal"><primary><varname>h3UncompactCells</varname></primary></indexterm>
-				<para>Representación descompactada a la resolución dada, la inversa de <varname>h3CompactCells</varname>.</para>
+				<para>Representación descompactada a la resolución dada, la inversa de <varname>h3CompactCells</varname></para>
 				<programlisting xml:space="preserve" format="linespecific">
 h3UncompactCells(h3indexset, integer) → h3indexset
 </programlisting>
@@ -842,7 +857,7 @@ SELECT numValues(h3UncompactCells(
 
 			<listitem xml:id="th3_h3_origin_to_directed_edges">
 				<indexterm significance="normal"><primary><varname>h3OriginToDirectedEdges</varname></primary></indexterm>
-				<para>Todas las aristas dirigidas salientes de una celda (6 para hexágonos, 5 para pentágonos).</para>
+				<para>Todas las aristas dirigidas salientes de una celda (6 para hexágonos, 5 para pentágonos)</para>
 				<programlisting xml:space="preserve" format="linespecific">
 h3OriginToDirectedEdges(h3index) → h3indexset
 </programlisting>
@@ -855,7 +870,7 @@ SELECT h3OriginToDirectedEdges(h3index '871fa44a8ffffff');
 
 			<listitem xml:id="th3_h3_cell_to_vertexes">
 				<indexterm significance="normal"><primary><varname>h3CellToVertexes</varname></primary></indexterm>
-				<para>Todos los vértices de una celda (6 para hexágonos, 5 para pentágonos).</para>
+				<para>Todos los vértices de una celda (6 para hexágonos, 5 para pentágonos)</para>
 				<programlisting xml:space="preserve" format="linespecific">
 h3CellToVertexes(h3index) → h3indexset
 </programlisting>
@@ -868,7 +883,7 @@ SELECT h3CellToVertexes(h3index '871fa44a8ffffff');
 
 			<listitem xml:id="th3_h3_get_icosahedron_faces">
 				<indexterm significance="normal"><primary><varname>h3GetIcosahedronFaces</varname></primary></indexterm>
-				<para>Los índices de caras del icosaedro (0..19) intersectadas por una celda.</para>
+				<para>Los índices de caras del icosaedro (0..19) intersectadas por una celda</para>
 				<programlisting xml:space="preserve" format="linespecific">
 h3GetIcosahedronFaces(h3index) → intset
 </programlisting>
@@ -1047,7 +1062,8 @@ FROM Temp;
 		<itemizedlist>
 			<listitem xml:id="th3_rtree_ops">
 				<indexterm significance="normal"><primary><varname>th3_rtree_ops</varname></primary></indexterm>
-				<para>Clase de operadores GiST para celdas H3 temporales. Indexa una caja envolvente espaciotemporal <varname>stbox</varname> por fila (la extensión geodésica de los límites de las celdas junto con el período temporal).</para>
+				<para>Clase de operadores GiST para celdas H3 temporales</para>
+				<para>Indexa una caja envolvente espaciotemporal <varname>stbox</varname> por fila (la extensión geodésica de los límites de las celdas junto con el período temporal).</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX ON trips USING gist(cells);       -- usa th3_rtree_ops por defecto
 CREATE INDEX ON trips USING gist(cells th3_rtree_ops);
@@ -1057,7 +1073,8 @@ CREATE INDEX ON trips USING gist(cells th3_rtree_ops);
 			<listitem xml:id="th3_quadtree_ops">
 				<indexterm significance="normal"><primary><varname>th3_quadtree_ops</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>th3_kdtree_ops</varname></primary></indexterm>
-				<para>Clases de operadores SP-GiST para celdas H3 temporales, indexadas por la caja envolvente espaciotemporal <varname>stbox</varname>. <varname>th3_quadtree_ops</varname> es la predeterminada (partición por quadtree); <varname>th3_kdtree_ops</varname> utiliza partición por árbol k-d y debe ser nombrada explícitamente.</para>
+				<para>Clases de operadores SP-GiST para celdas H3 temporales, indexadas por la caja envolvente espaciotemporal <varname>stbox</varname></para>
+<para><varname>th3_quadtree_ops</varname> es la predeterminada (partición por quadtree); <varname>th3_kdtree_ops</varname> utiliza partición por árbol k-d y debe ser nombrada explícitamente.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX ON trips USING spgist(cells);     -- usa th3_quadtree_ops por defecto
 CREATE INDEX ON trips USING spgist(cells th3_kdtree_ops);
