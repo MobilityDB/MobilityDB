@@ -1610,6 +1610,62 @@ compute_dist_tpoly_poly(cfp_elem *cfp, tdist_array *tda)
 }
 
 /**
+ * @brief Append the time at which a moving polygon first reaches, or first
+ * leaves, a polygon it touches
+ * @details The v-clip oracle answers zero for every pose at which the two
+ * overlap, so the distance of a fixed feature pair is its separation while
+ * they stand apart and a floor of zero once they meet. The join between the
+ * two is a kink, and a kink that carries no point of its own is a straight
+ * line drawn across it: the distance then leaves zero early or reaches it
+ * late, by as much as the gap to the next closest-feature time.
+ *
+ * The separation falls to zero exactly once between a pose that stands apart
+ * and a pose that overlaps, so the time it does is bracketed by the two and
+ * found by halving the bracket. The oracle decides each probe, which keeps
+ * the answer the one v-clip gives rather than a model of it.
+ * @param[in] cfp_s Closest-feature pair opening the interval
+ * @param[in] pose_s,pose_e Poses at the ends of the temporal segment
+ * @param[in] t_lo,t_hi Ends of the temporal segment
+ * @param[in] ta,tb Ends of the bracket, within `[t_lo,t_hi]`
+ * @param[in,out] tda Distance points to append to
+ */
+static void
+compute_contact_tpoly_poly(const cfp_elem *cfp_s, const Pose *pose_s,
+  const Pose *pose_e, TimestampTz t_lo, TimestampTz t_hi, TimestampTz ta,
+  TimestampTz tb, tdist_array *tda)
+{
+  if (t_hi == t_lo || tb <= ta)
+    return;
+  double lo = (double) (ta - t_lo) / (double) (t_hi - t_lo);
+  double hi = (double) (tb - t_lo) / (double) (t_hi - t_lo);
+  /* Halving to the resolution of the timestamp the answer carries: a
+   * microsecond over the segment, and never more than the iterations that
+   * reach it */
+  for (int k = 0; k < 60 && (hi - lo) * (double) (t_hi - t_lo) > 1.0; k++)
+  {
+    double mid = 0.5 * (lo + hi);
+    Pose *pm = posesegm_interpolate(pose_s, pose_e, mid);
+    uint32_t cf_1 = 0, cf_2 = 0;
+    double d;
+    v_clip_tpoly_tpoly((LWPOLY *) cfp_s->geom_1, (LWPOLY *) cfp_s->geom_2,
+      pm, NULL, &cf_1, &cf_2, &d);
+    pfree(pm);
+    if (d > 0.0)
+      lo = mid;
+    else
+      hi = mid;
+  }
+  /* The kink stands where the separation reaches zero, so it carries zero */
+  TimestampTz tc = t_lo + (TimestampTz) llround(hi * (double) (t_hi - t_lo));
+  if (tc > t_lo && tc < t_hi)
+  {
+    tdist_elem td = tdist_make(0.0, tc);
+    append_tdist_elem(tda, td);
+  }
+  return;
+}
+
+/**
  * @brief Append the interior turning points (local extrema) of the distance
  * realized by the fixed closest-feature pair of @p cfp_s while the rigid
  * geometry moves over the temporal segment @p [t_lo,t_hi]
@@ -1840,6 +1896,33 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs,
 
   /* Order the distance points by time before building the result */
   tdist_array_sort(&tda);
+
+  /* The distance of a fixed feature pair is a separation while the polygons
+   * stand apart and a floor of zero once they meet, so where two neighbouring
+   * points stand on either side of that floor the join between them is a
+   * kink. A kink carrying no point of its own is drawn as a straight line
+   * across, which reaches zero late on the way in and leaves it early on the
+   * way out; the time the separation actually reaches zero is a point of the
+   * answer */
+  uint32_t ncontact = tda.count;
+  for (uint32_t i = 0; i + 1 < ncontact; ++i)
+  {
+    if ((tda.arr[i].dist > 0.0) == (tda.arr[i + 1].dist > 0.0))
+      continue;
+    TimestampTz ta = tda.arr[i].t, tb = tda.arr[i + 1].t;
+    int sgi = trgeoseq_segment_index(seq, ta + (tb - ta) / 2);
+    const TInstant *ssi = TSEQUENCE_INST_N(seq, sgi);
+    const TInstant *sei = TSEQUENCE_INST_N(seq, sgi + 1);
+    cfp_elem probe = cfp_make_zero((LWGEOM *) poly1, (LWGEOM *) poly2,
+      NULL, NULL, ta, MEOS_CFP_STORE_NO);
+    compute_contact_tpoly_poly(&probe,
+      DatumGetPoseP(tinstant_value_p(ssi)),
+      DatumGetPoseP(tinstant_value_p(sei)), ssi->t, sei->t,
+      (tda.arr[i].dist > 0.0) ? ta : tb,
+      (tda.arr[i].dist > 0.0) ? tb : ta, &tda);
+  }
+  if (tda.count != ncontact)
+    tdist_array_sort(&tda);
 
   /* Create the result tfloat */
   TInstant **instants = palloc(sizeof(TInstant *) * tda.count);
