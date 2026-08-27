@@ -605,9 +605,9 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01
 					<para>Return an array of bins that cover a value or time span with bins of the same size or duration
 </para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-bins(numspans,size number,origin number=0) → span[]
-bins(datespans,duration interval,origin date='2000-01-03') → span[]
-bins(tstzspans,duration interval,origin timestamptz='2000-01-03') → span[]
+bins(numspans,vsize number,vorigin number=0) → span[]
+bins(datespans,tsize interval,torigin date='2000-01-03') → span[]
+bins(tstzspans,tsize interval,torigin timestamptz='2000-01-03') → span[]
 </programlisting>
 					<para>If the origin is not specified, it is set by default to 0 for value spans and Monday, January 3, 2000 for time spans.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -665,9 +665,9 @@ SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 					<para>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration &SRF;
 </para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueTiles(tbox,vsize float,vorigin float=0) → {(index,tile)}
+valueTiles(tbox,vsize float,vorigin float=0.0) → {(index,tile)}
 timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03') → {(index,tile)}
-valueTimeTiles(tbox,vsize float,duration interval,vorigin float=0,
+valueTimeTiles(tbox,vsize float,duration interval,vorigin float=0.0,
   torigin timestamptz='2000-01-03') → {(index,tile)}
 </programlisting>
 					<para>The result is a set of pairs <varname>(index,tile)</varname>. If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</para>
@@ -762,10 +762,10 @@ SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
 					<para>Return the temporal tile that covers a value and/or a timestamp &Z_support;
 </para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-getValueTile(value float,vsize float,vorigin float=0.0) &#8594; tbox
+getValueTile(v float,vsize float,vorigin float=0.0) &#8594; tbox
 getTboxTimeTile(time timestamptz,duration interval,
   torigin timestamptz='2000-01-03') &#8594; tbox
-getValueTimeTile(value float,time timestamptz,size float,duration interval,
+getValueTimeTile(v float,t timestamptz,vsize float,duration interval,
   vorigin float=0.0,torigin timestamptz='2000-01-03') &#8594; tbox
 </programlisting>
 					<para>If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</para>
@@ -851,7 +851,7 @@ SELECT timeBins(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 valueBoxes(tnumber,size number,vorigin number=0) → tbox[]
 timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]
-valueTimeBoxes(tnumber,size number,duration interval,vorigin number=0,
+valueTimeBoxes(tnumber,vsize number,tsize interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → tbox[]
 </programlisting>
 					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</para>

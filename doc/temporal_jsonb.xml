@@ -592,7 +592,7 @@ SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
 				<indexterm significance="normal"><primary><varname>tjsonbSeq</varname></primary></indexterm>
 				<para>Constructor for temporal JSONB values of sequence subtype</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tjsonbSeq(tjsonbInst[]},leftInc boolean=true,rightInc boolean=true) →tjsonbSeq
+tjsonbSeq(tjsonbInst[],lowerInc boolean=true,upperInc boolean=true) → tjsonbSeq
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSeq(ARRAY[tjsonb '"{\"vehicleId\": 1,

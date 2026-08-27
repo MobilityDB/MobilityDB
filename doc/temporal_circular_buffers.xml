@@ -265,7 +265,7 @@ SELECT asEWKT(setSRID(cbuffer 'Cbuffer(Point(0 0),1)', 4326));
 					<para>Transform to a spatial reference identifier</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 transform(cbuffer,integer) → cbuffer
-transformPipeline(cbuffer,pipeline text,to_srid integer,
+transformPipeline(cbuffer,pipeline text,srid integer,
   is_forward boolean=true) → cbuffer
 </programlisting>
 					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input circular buffer has an unknown SRID (represented by 0).</para>
@@ -542,8 +542,8 @@ SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.2)',
 				<indexterm significance="normal"><primary><varname>tcbufferSeq</varname></primary></indexterm>
 				<para>Constructor for temporal circular buffers of sequence subtype</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tcbufferSeq(tcbufferInst[],interp text='linear',leftInc boolean=true,
-  rightInc boolean=true) → tcbufferSeq
+tcbufferSeq(tcbufferInst[],interp text='linear',lower_inc boolean=true,
+  upper_inc boolean=true) → tcbufferSeq
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
@@ -894,7 +894,7 @@ SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01,
 				<para>Transform to a spatial reference identifier</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 transform(tcbuffer,integer) → tcbuffer
-transformPipeline(tcbuffer,pipeline text,to_srid integer,
+transformPipeline(tcbuffer,pipeline text,srid integer,
   is_forward boolean=true) → tcbuffer
 </programlisting>
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0). The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
