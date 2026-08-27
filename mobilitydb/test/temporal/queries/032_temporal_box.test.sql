@@ -543,6 +543,15 @@ SELECT splitEachNTboxes(tfloat '{[1@2000-01-01, 2@2000-01-02, 3@2000-01-03,
 /* Errors */
 SELECT splitEachNTboxes(tfloat '1@2000-01-01', -1);
 
+-- A box of a value carries the bound inclusivity the value gives that bound,
+-- so every box is contained in the box of the whole value
+SELECT tboxes(tfloat '(1@2000-01-01, 3@2000-01-02, 2@2000-01-03)');
+SELECT splitNTboxes(tfloat '(1@2000-01-01, 3@2000-01-02, 2@2000-01-03)', 1);
+SELECT splitNTboxes(tfloat '(1@2000-01-01, 3@2000-01-02, 2@2000-01-03)', 2);
+SELECT splitEachNTboxes(tfloat '(1@2000-01-01, 3@2000-01-02, 2@2000-01-03)', 1);
+SELECT (tfloat '(1@2000-01-01, 3@2000-01-02, 2@2000-01-03)')::tbox @>
+  ALL (splitNTboxes(tfloat '(1@2000-01-01, 3@2000-01-02, 2@2000-01-03)', 2));
+
 -- tbigint: the span/tbox split count is an integer, as for the other temporal types
 SELECT spans(tbigint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}');
 SELECT splitNSpans(tbigint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}', 2);

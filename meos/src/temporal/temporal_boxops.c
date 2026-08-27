@@ -563,6 +563,36 @@ tinstarr_set_bbox(TInstant **instants, int count, bool lower_inc,
 }
 
 /**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return in the last argument the bounding box of the instants of a
+ * temporal sequence between two positions
+ * @param[in] seq Temporal sequence
+ * @param[in] first,last Positions of the first and of the last instant
+ * @param[out] box Bounding box
+ * @note A bound interior to the sequence is inclusive, since the instant it
+ * names belongs to both of the segments meeting there, while a bound at an
+ * end of the sequence carries the inclusivity the sequence gives that end.
+ * The box of a slice is thus contained in the box of the sequence, which is
+ * what an index keyed on the slices of a value relies on
+ */
+void
+tsequence_set_bbox_slice(const TSequence *seq, int first, int last, void *box)
+{
+  assert(seq); assert(box);
+  assert(first >= 0); assert(last < seq->count); assert(first <= last);
+  int count = last - first + 1;
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < count; i++)
+    instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, first + i);
+  tinstarr_set_bbox(instants, count,
+    (first == 0) ? seq->period.lower_inc : true,
+    (last == seq->count - 1) ? seq->period.upper_inc : true,
+    MEOS_FLAGS_GET_INTERP(seq->flags), box);
+  pfree(instants);
+  return;
+}
+
+/**
  * @brief Expand the bounding box of a temporal number sequence with an instant
  * @param[inout] seq Temporal sequence
  * @param[in] inst Temporal instant
@@ -1362,20 +1392,13 @@ tnumberseq_cont_tboxes_iter(const TSequence *seq, TBox *result)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
+    tsequence_set_bbox_slice(seq, 0, 0, &result[0]);
     return 1;
   }
 
   /* One bounding box per segment */
-  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   for (int i = 0; i < seq->count - 1; i++)
-  {
-    tnumberinst_set_tbox(inst, &result[i]);
-    inst = TSEQUENCE_INST_N(seq, i + 1);
-    TBox box;
-    tnumberinst_set_tbox(inst, &box);
-    tbox_expand(&box, &result[i]);
-  }
+    tsequence_set_bbox_slice(seq, i, i + 1, &result[i]);
   return seq->count - 1;
 }
 
@@ -1531,7 +1554,7 @@ tnumberseq_cont_split_n_tboxes_iter(const TSequence *seq, int box_count,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
+    tsequence_set_bbox_slice(seq, 0, 0, &result[0]);
     return 1;
   }
 
@@ -1551,13 +1574,7 @@ tnumberseq_cont_split_n_tboxes_iter(const TSequence *seq, int box_count,
     int j = i + size;
     if (k < remainder)
       j++;
-    tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &result[k]);
-    for (int l = i + 1; l <= j; l++)
-    {
-      TBox box;
-      tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, l), &box);
-      tbox_expand(&box, &result[k]);
-    }
+    tsequence_set_bbox_slice(seq, i, j, &result[k]);
     i = j;
   }
   assert(i == nsegs);
@@ -1770,18 +1787,13 @@ tnumberseq_cont_split_each_n_tboxes_iter(const TSequence *seq,
   }
 
   /* General case */
-  int k = 0;
-  tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
-  for (int i = 1; i < seq->count; ++i)
-  {
-    TBox box;
-    tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &box);
-    tbox_expand(&box, &result[k]);
-    if ((i % elems_per_box == 0) && (i < seq->count - 1))
-      result[++k] = box;
-  }
   int nboxes = ceil((double) (seq->count - 1) / (double) elems_per_box);
-  assert(k + 1 == nboxes);
+  for (int k = 0; k < nboxes; k++)
+  {
+    int first = k * elems_per_box;
+    int last = Min(first + elems_per_box, seq->count - 1);
+    tsequence_set_bbox_slice(seq, first, last, &result[k]);
+  }
   return nboxes;
 }
 
