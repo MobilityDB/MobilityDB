@@ -86,7 +86,9 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__rgeo_8h_source.html">meos_rgeo.h</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="tgeo__tile_8h_source.html">geo/tgeo_tile.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="trgeo_8h_source.html">rgeo/trgeo.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="trgeo__spatialfuncs_8h_source.html">rgeo/trgeo_spatialfuncs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -99,7 +101,8 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Spatial and spatiotemporal grid tiling for temporal rigid geometries. </p>
-<p >The boxes are computed on the temporal centroid trajectory (<code>trgeometry_to_tgeompoint</code>) and thus reuse the <code>tgeo</code> tiling kernel, keeping the trgeometry tiling surface aligned with the temporal geometry one. </p>
+<p >A rigid geometry occupies the region its body covers, so the tiles are the ones that body reaches, which <a class="el" href="group__meos__internal__rgeo__restrict_ga7a14263e0a5a262617b1ca4c1a62af8a.html#ga7a14263e0a5a262617b1ca4c1a62af8a" title="Return a temporal rigid geometry restricted to (the complement of) a spatiotemporal box.">trgeo_restrict_stbox</a> answers by solving for the times the body meets a box. The grid itself is the <code>tgeo</code> one, reached through <a class="el" href="tgeo__tile_8h_a0f73d6e999c63a9609428bd829101699.html#a0f73d6e999c63a9609428bd829101699" title="Return the spatiotemporal boxes of a temporal value with a spatial bounding box, split with respect t...">tspatial_space_time_boxes</a>, so the two families lay values on the same grid and differ only in how a value is read against one tile.</p>
+<p >Reading the centroid trajectory instead answers the tiles a POINT visits: a value holding one placement of a 4 by 4 square answers a single box of zero extent, and a square carried past four grid columns answers none of them. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
