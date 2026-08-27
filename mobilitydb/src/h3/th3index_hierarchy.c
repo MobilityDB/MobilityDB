@@ -43,7 +43,7 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * th3CellToParent(th3index, integer)
+ * cellToParent(th3index, integer)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_to_parent(PG_FUNCTION_ARGS);
@@ -51,7 +51,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_parent);
 /**
  * @ingroup mobilitydb_h3_hierarchy
  * @brief Return the temporal parent cell at the given resolution
- * @sqlfn th3CellToParent()
+ * @sqlfn cellToParent()
  */
 Datum
 Th3index_cell_to_parent(PG_FUNCTION_ARGS)
@@ -68,7 +68,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_parent_next);
 /**
  * @ingroup mobilitydb_h3_hierarchy
  * @brief Return the temporal parent cell at the next-coarser resolution
- * @sqlfn th3CellToParent()
+ * @sqlfn cellToParent()
  */
 Datum
 Th3index_cell_to_parent_next(PG_FUNCTION_ARGS)

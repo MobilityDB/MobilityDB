@@ -37,10 +37,10 @@
  */
 
 /******************************************************************************
- * th3GetResolution
+ * getResolution
  ******************************************************************************/
 
-CREATE FUNCTION th3GetResolution(th3index)
+CREATE FUNCTION getResolution(th3index)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Th3index_get_resolution'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

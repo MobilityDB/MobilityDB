@@ -1,64 +1,64 @@
-SELECT th3GetResolution(
-  th3CellToParent(th3index '831c02fffffffff@2001-01-01', 2));
-        th3getresolution        
+SELECT getResolution(
+  cellToParent(th3index '831c02fffffffff@2001-01-01', 2));
+         getresolution          
 --------------------------------
  2@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT th3GetResolution(
-  th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
-        th3getresolution        
+SELECT getResolution(
+  cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
+         getresolution          
 --------------------------------
  5@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT th3GetResolution(th3CellToParent(th3index
+SELECT getResolution(cellToParent(th3index
   '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]', 1));
-                         th3getresolution                         
+                          getresolution                           
 ------------------------------------------------------------------
  [1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 /* Errors */
-SELECT th3CellToParent(th3index '831c02fffffffff@2001-01-01', 5);
+SELECT cellToParent(th3index '831c02fffffffff@2001-01-01', 5);
 ERROR:  h3 library error
-SELECT th3GetResolution(
-  th3CellToParent(th3index '831c02fffffffff@2001-01-01'));
-        th3getresolution        
+SELECT getResolution(
+  cellToParent(th3index '831c02fffffffff@2001-01-01'));
+         getresolution          
 --------------------------------
  2@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT th3GetResolution(
-  th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01'));
-        th3getresolution        
+SELECT getResolution(
+  cellToParent(th3index '8a2a1072b59ffff@2001-01-01'));
+         getresolution          
 --------------------------------
  9@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT th3CellToParent(th3CellToParent(
+SELECT cellToParent(cellToParent(
     th3index '8a2a1072b59ffff@2001-01-01'))
-  = th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01', 8);
+  = cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 8);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT th3GetResolution(
+SELECT getResolution(
   th3CellToCenterChild(th3index '831c02fffffffff@2001-01-01', 5));
-        th3getresolution        
+         getresolution          
 --------------------------------
  5@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT th3GetResolution(
+SELECT getResolution(
   th3CellToCenterChild(th3index '831c02fffffffff@2001-01-01', 10));
-        th3getresolution         
+          getresolution          
 ---------------------------------
  10@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT th3CellToParent(
+SELECT cellToParent(
   th3CellToCenterChild(th3index '831c02fffffffff@2001-01-01', 7), 3)
   = th3index '831c02fffffffff@2001-01-01';
  ?column? 
@@ -66,9 +66,9 @@ SELECT th3CellToParent(
  t
 (1 row)
 
-SELECT th3GetResolution(
+SELECT getResolution(
   th3CellToCenterChild(th3index '831c02fffffffff@2001-01-01'));
-        th3getresolution        
+         getresolution          
 --------------------------------
  4@Mon Jan 01 00:00:00 2001 PST
 (1 row)
@@ -90,7 +90,7 @@ SELECT th3CellToChildPos(th3index
 
 SELECT th3ChildPosToCell(
     th3CellToChildPos(th3index '8a2a1072b59ffff@2001-01-01', 9),
-    th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01', 9),
+    cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 9),
     10)
   = th3index '8a2a1072b59ffff@2001-01-01';
  ?column? 

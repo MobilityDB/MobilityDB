@@ -4,7 +4,7 @@ SELECT (quadbinTileToCell(0, 0, 0))::bigint = 5192650370358181887;
  t
 (1 row)
 
-SELECT quadbinGetResolution(quadbinTileToCell(0, 0, 0)) = 0;
+SELECT getResolution(quadbinTileToCell(0, 0, 0)) = 0;
  ?column? 
 ----------
  t
@@ -61,13 +61,13 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(-73.985 40.748)', 18)
  t
 (1 row)
 
-SELECT round(ST_X(quadbinCellToPoint(quadbin '48a6227affffffff'))::numeric, 6) = 4.394531;
+SELECT round(ST_X(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6) = 4.394531;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT round(ST_Y(quadbinCellToPoint(quadbin '48a6227affffffff'))::numeric, 6) = 50.847573;
+SELECT round(ST_Y(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6) = 50.847573;
  ?column? 
 ----------
  t
@@ -97,7 +97,7 @@ SELECT round(yMax(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 50.958427;
  t
 (1 row)
 
-SELECT quadbinCellToParent(quadbin '48a6227affffffff', 5) = quadbin '485623ffffffffff';
+SELECT cellToParent(quadbin '48a6227affffffff', 5) = quadbin '485623ffffffffff';
  ?column? 
 ----------
  t

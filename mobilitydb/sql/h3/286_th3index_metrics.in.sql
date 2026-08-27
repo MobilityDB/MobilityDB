@@ -42,10 +42,10 @@
  */
 
 /******************************************************************************
- * th3CellArea
+ * cellArea
  ******************************************************************************/
 
-CREATE FUNCTION th3CellArea(th3index, text DEFAULT 'km2')
+CREATE FUNCTION cellArea(th3index, text DEFAULT 'km2')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Th3index_cell_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

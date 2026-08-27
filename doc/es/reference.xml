@@ -2791,7 +2791,7 @@
 			<title>Inspección de Índices</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_get_resolution"><varname>th3GetResolution</varname></link>: Devolver la resolución temporal (0–15) de cada celda en una trayectoria</para>
+					<para><link linkend="th3_h3_get_resolution"><varname>getResolution</varname></link>: Devolver la resolución temporal (0–15) de cada celda en una trayectoria</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_get_base_cell_number"><varname>th3GetBaseCellNumber</varname></link>: Devolver el número de celda base temporal (0–121) de cada celda en una trayectoria</para>
@@ -2811,7 +2811,7 @@
 			<title>Jerarquía</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>: Devolver la celda padre temporal en la resolución dada</para>
+					<para><link linkend="th3_h3_cell_to_parent"><varname>cellToParent</varname></link>: Devolver la celda padre temporal en la resolución dada</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_cell_to_center_child"><varname>th3CellToCenterChild</varname></link>: Devolver la celda hijo central temporal en la resolución dada</para>
@@ -2831,10 +2831,10 @@
 					<para><link linkend="th3_tgeompoint_to_th3"><varname>th3index</varname></link>: Devolver la celda H3 temporal en la resolución dada que contiene cada punto de un punto temporal geodésico o planar (el SRID debe ser 4326 para la sobrecarga de <varname>tgeompoint</varname>)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_latlng"><varname>th3CellToLatlng</varname>, <varname>th3CellToLatlngTgeompoint</varname></link>: Devolver el centroide geodésico temporal de cada celda en una trayectoria</para>
+					<para><link linkend="th3_h3_cell_to_latlng"><varname>cellToPoint</varname>, <varname>tgeompoint</varname></link>: Devolver el centroide geodésico temporal de cada celda en una trayectoria</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_boundary"><varname>th3CellToBoundary</varname></link>: Devolver el límite poligonal temporal de cada celda en una trayectoria, como una geografía temporal</para>
+					<para><link linkend="th3_h3_cell_to_boundary"><varname>cellToBoundary</varname></link>: Devolver el límite poligonal temporal de cada celda en una trayectoria, como una geografía temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2865,7 +2865,7 @@
 					<para><link linkend="th3_h3_cell_to_vertex"><varname>th3CellToVertex</varname></link>: Devolver el vértice H3 temporal en el número de vértice dado (0–5 para hexágonos, 0–4 para pentágonos)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_vertex_to_latlng"><varname>th3VertexToLatlng</varname></link>: Devolver las coordenadas geodésicas temporales de cada vértice en una trayectoria</para>
+					<para><link linkend="th3_h3_vertex_to_latlng"><varname>th3VertexToPoint</varname></link>: Devolver las coordenadas geodésicas temporales de cada vértice en una trayectoria</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_is_valid_vertex"><varname>isValidVertex</varname></link>: Devolver un booleano temporal que indica en cada instante si el valor es un vértice H3 válido</para>
@@ -2887,7 +2887,7 @@
 			<title>Métricas</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_cell_area"><varname>th3CellArea</varname></link>: Devolver el área temporal de cada celda en una trayectoria, en la unidad solicitada</para>
+					<para><link linkend="th3_h3_cell_area"><varname>cellArea</varname></link>: Devolver el área temporal de cada celda en una trayectoria, en metros cuadrados o en la unidad solicitada</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_edge_length"><varname>th3EdgeLength</varname></link>: Devolver la longitud temporal de cada arista dirigida en una trayectoria, en la unidad solicitada</para>
@@ -3063,7 +3063,7 @@
 			<title>Inspección del Índice</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_get_resolution"><varname>quadbinGetResolution</varname>, <varname>tquadbinGetResolution</varname></link>: Devuelve el nivel de resolución (zoom) (0–26) de una celda</para>
+					<para><link linkend="tquadbin_quadbin_get_resolution"><varname>getResolution</varname>, <varname>getResolution</varname></link>: Devuelve el nivel de resolución (zoom) (0–26) de una celda</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tquadbin_quadbin_is_valid_cell"><varname>isValidCell</varname></link>: Devuelve un booleano temporal que indica en cada instante si el valor es una celda QUADBIN válida</para>
@@ -3074,7 +3074,7 @@
 			<title>Jerarquía</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_parent"><varname>quadbinCellToParent</varname>, <varname>tquadbinCellToParent</varname></link>: Devuelve la celda padre en la resolución más gruesa dada</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_parent"><varname>cellToParent</varname>, <varname>cellToParent</varname></link>: Devuelve la celda padre en la resolución más gruesa dada</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tquadbin_quadbin_cell_to_children"><varname>quadbinCellToChildren</varname></link>: Devuelve las cuatro celdas hijas en la resolución más fina solicitada como un <varname>quadbinset</varname></para>
@@ -3094,10 +3094,10 @@
 					<para><link linkend="tquadbin_quadbin_point_to_cell"><varname>geoToQuadbinCell</varname></link>: Devuelve la celda QUADBIN en la resolución dada que contiene una geometría de punto</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_point"><varname>quadbinCellToPoint</varname>, <varname>tquadbinCellToPoint</varname></link>: Devuelve el centroide de una celda como un punto SRID 4326</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_point"><varname>cellToPoint</varname>, <varname>cellToPoint</varname></link>: Devuelve el centroide de una celda como un punto SRID 4326</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>quadbinCellToBoundary</varname>, <varname>tquadbinCellToBoundary</varname></link>: Devuelve el contorno poligonal cuadrado de una celda como una geometría SRID 4326</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>cellToBoundary</varname>, <varname>cellToBoundary</varname></link>: Devuelve el contorno poligonal cuadrado de una celda como una geometría SRID 4326</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3119,7 +3119,7 @@
 			<title>Métricas</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_area"><varname>quadbinCellArea</varname>, <varname>tquadbinCellArea</varname></link>: Devuelve el área de una celda sobre la esfera, en metros cuadrados</para>
+					<para><link linkend="tquadbin_quadbin_cell_area"><varname>cellArea</varname>, <varname>cellArea</varname></link>: Devuelve el área de una celda sobre la esfera, en metros cuadrados</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -202,15 +202,15 @@ SELECT valueAtTimestamp(th3index
 		<title>Index Inspection</title>
 		<itemizedlist>
 			<listitem xml:id="th3_h3_get_resolution">
-				<indexterm significance="normal"><primary><varname>th3GetResolution</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>getResolution</varname></primary></indexterm>
 				<para>Return the temporal resolution level (0–15) of each cell in a trajectory</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3GetResolution(th3index) → tint
+getResolution(th3index) → tint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3GetResolution(th3index '831c02fffffffff@2001-01-01');
+SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
 -- 3@2001-01-01
-SELECT th3GetResolution(th3index '880326b885fffff@2001-01-01');
+SELECT getResolution(th3index '880326b885fffff@2001-01-01');
 -- 8@2001-01-01
 </programlisting>
 			</listitem>
@@ -273,16 +273,16 @@ SELECT th3IsPentagon(th3index '831c02fffffffff@2001-01-01');
 		<title>Hierarchy</title>
 		<itemizedlist>
 			<listitem xml:id="th3_h3_cell_to_parent">
-				<indexterm significance="normal"><primary><varname>th3CellToParent</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToParent</varname></primary></indexterm>
 				<para>Return the temporal parent cell at the given resolution</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3CellToParent(th3index,integer) → th3index
-th3CellToParent(th3index) → th3index
+cellToParent(th3index,integer) → th3index
+cellToParent(th3index) → th3index
 </programlisting>
 				<para>The no-argument form drops to the next-coarser resolution.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3GetResolution(
-  th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
+SELECT getResolution(
+  cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
 -- 5@2001-01-01
 </programlisting>
 			</listitem>
@@ -343,26 +343,26 @@ th3index(tgeogpoint,integer) → th3index
 th3index(tgeompoint,integer) → th3index
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3GetResolution(th3index(
+SELECT getResolution(th3index(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
-SELECT th3GetResolution(th3index(
+SELECT getResolution(th3index(
   tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_cell_to_latlng">
-				<indexterm significance="normal"><primary><varname>th3CellToLatlng</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>th3CellToLatlngTgeompoint</varname></primary></indexterm>
 				<para>Return the temporal geodetic centroid of each cell in a trajectory</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3CellToLatlng(th3index) → tgeogpoint
+cellToPoint(th3index) → tgeogpoint
 th3CellToLatlngTgeompoint(th3index) → tgeompoint
 </programlisting>
 				<para>A planar (SRID 4326) overload is available under the name <varname>th3CellToLatlngTgeompoint</varname>.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(th3CellToLatlng(th3index '871fa44a8ffffff@2001-01-01'), 6);
+SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
 SELECT asText(th3CellToLatlngTgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
@@ -370,17 +370,17 @@ SELECT asText(th3CellToLatlngTgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 
 			</listitem>
 
 			<listitem xml:id="th3_h3_cell_to_boundary">
-				<indexterm significance="normal"><primary><varname>th3CellToBoundary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToBoundary</varname></primary></indexterm>
 				<para>Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3CellToBoundary(th3index) → tgeography
+cellToBoundary(th3index) → tgeography
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_GeometryType(getValue(th3CellToBoundary(th3index
+SELECT ST_GeometryType(getValue(cellToBoundary(th3index
   '871fa44a8ffffff@2001-01-01'))::geometry);
 -- ST_Polygon
 -- A hexagon closes on its first vertex, so it has seven points.
-SELECT ST_NPoints(getValue(th3CellToBoundary(th3index
+SELECT ST_NPoints(getValue(cellToBoundary(th3index
   '871fa44a8ffffff@2001-01-01'))::geometry);
 -- 7
 </programlisting>
@@ -487,13 +487,13 @@ SELECT th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0);
 			</listitem>
 
 			<listitem xml:id="th3_h3_vertex_to_latlng">
-				<indexterm significance="normal"><primary><varname>th3VertexToLatlng</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3VertexToPoint</varname></primary></indexterm>
 				<para>Return the temporal geodetic coordinates of each vertex in a trajectory</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3VertexToLatlng(th3index) → tgeogpoint
+th3VertexToPoint(th3index) → tgeogpoint
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(th3VertexToLatlng(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
+SELECT asText(th3VertexToPoint(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
   0)), 6);
 -- POINT(4.280027 50.807655)@2001-01-01
 </programlisting>
@@ -560,15 +560,15 @@ SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
 		<para>The three metric functions take an optional unit argument. For areas: <varname>km2</varname> (default), <varname>m2</varname>, or <varname>rads2</varname>. For lengths: <varname>km</varname> (default), <varname>m</varname>, or <varname>rads</varname>. Passing an area unit to a length function (or vice-versa) raises an error.</para>
 		<itemizedlist>
 			<listitem xml:id="th3_h3_cell_area">
-				<indexterm significance="normal"><primary><varname>th3CellArea</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellArea</varname></primary></indexterm>
 				<para>Return the temporal area of each cell in a trajectory, in the requested unit</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3CellArea(th3index,text='km2') → tfloat
+cellArea(th3index,text='km2') → tfloat
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3CellArea(th3index '871fa44a8ffffff@2001-01-01');
+SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
 -- 4.441914270110932@2001-01-01
-SELECT th3CellArea(th3index '871fa44a8ffffff@2001-01-01', 'm2');
+SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01', 'm2');
 -- 4441914.270110932@2001-01-01
 </programlisting>
 			</listitem>
@@ -713,7 +713,7 @@ SELECT tNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44a8ffffff');
 		<para>The following operators compare the spatiotemporal <emphasis>bounding box</emphasis> of temporal H3 cells, not cell-hierarchy containment. <varname>th3index</varname> is a spatial temporal type: its bounding box is an <varname>stbox</varname> that combines the geodetic spatial extent of the cell boundaries (their longitude/latitude envelope in SRID 4326) with the trajectory's <varname>tstzspan</varname> time period. The operators below compare that box along the spatial and/or temporal axes. See the indexing section for the opclasses that make these operators index-capable.</para>
 
 		<note>
-			<para>The <varname>@&gt;</varname> operator tests spatiotemporal bounding-box containment (spatial extent and time together), <emphasis>not</emphasis> H3 hierarchical containment. To test whether one cell is the parent of another at a given resolution, use <link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>.</para>
+			<para>The <varname>@&gt;</varname> operator tests spatiotemporal bounding-box containment (spatial extent and time together), <emphasis>not</emphasis> H3 hierarchical containment. To test whether one cell is the parent of another at a given resolution, use <link linkend="th3_h3_cell_to_parent"><varname>cellToParent</varname></link>.</para>
 		</note>
 
 		<itemizedlist>
@@ -916,7 +916,7 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 	<sect1 xml:id="th3_spatialrels">
 		<title>Spatial Relationships</title>
 
-		<para>The spatial relationships evaluate a <varname>th3index</varname> argument through its per-instant cell-boundary geometry, the hexagonal footprint of each cell, as returned by <varname>th3CellToBoundary</varname>, and then apply the corresponding relationship of the temporal geometry types. Each relationship has three quantified forms: the <varname>e</varname>-prefixed <emphasis>ever</emphasis> form returns <varname>true</varname> when the relationship holds at some instant, the <varname>a</varname>-prefixed <emphasis>always</emphasis> form when it holds at every instant, and the <varname>t</varname>-prefixed <emphasis>temporal</emphasis> form returns a <varname>tbool</varname> of the instant-by-instant result. Every form accepts the three argument orderings <varname>(geometry, th3index)</varname>, <varname>(th3index, geometry)</varname>, and <varname>(th3index, th3index)</varname>.</para>
+		<para>The spatial relationships evaluate a <varname>th3index</varname> argument through its per-instant cell-boundary geometry, the hexagonal footprint of each cell, as returned by <varname>cellToBoundary</varname>, and then apply the corresponding relationship of the temporal geometry types. Each relationship has three quantified forms: the <varname>e</varname>-prefixed <emphasis>ever</emphasis> form returns <varname>true</varname> when the relationship holds at some instant, the <varname>a</varname>-prefixed <emphasis>always</emphasis> form when it holds at every instant, and the <varname>t</varname>-prefixed <emphasis>temporal</emphasis> form returns a <varname>tbool</varname> of the instant-by-instant result. Every form accepts the three argument orderings <varname>(geometry, th3index)</varname>, <varname>(th3index, geometry)</varname>, and <varname>(th3index, th3index)</varname>.</para>
 
 		<itemizedlist>
 			<listitem xml:id="th3_rel_contains">

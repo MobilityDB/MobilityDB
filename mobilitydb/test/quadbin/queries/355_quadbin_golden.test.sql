@@ -36,7 +36,7 @@
 -------------------------------------------------------------------------------
 
 SELECT (quadbinTileToCell(0, 0, 0))::bigint = 5192650370358181887;
-SELECT quadbinGetResolution(quadbinTileToCell(0, 0, 0)) = 0;
+SELECT getResolution(quadbinTileToCell(0, 0, 0)) = 0;
 
 -- tile_to_cell((3, 5, 4)) -> the cell whose hex is 48427fffffffffff
 SELECT quadbinTileToCell(3, 5, 4) = quadbin '48427fffffffffff';
@@ -74,8 +74,8 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(-73.985 40.748)', 18)
 -- quadbin-py: cell_to_point(48a6227affffffff) centroid (4.394531, 50.847573)
 -------------------------------------------------------------------------------
 
-SELECT round(ST_X(quadbinCellToPoint(quadbin '48a6227affffffff'))::numeric, 6) = 4.394531;
-SELECT round(ST_Y(quadbinCellToPoint(quadbin '48a6227affffffff'))::numeric, 6) = 50.847573;
+SELECT round(ST_X(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6) = 4.394531;
+SELECT round(ST_Y(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6) = 50.847573;
 
 -------------------------------------------------------------------------------
 -- cell_to_bounding_box golden vector (quadbin-py cell_to_boundary bbox)
@@ -96,7 +96,7 @@ SELECT round(yMax(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 50.958427;
 --   {4813ffffffffffff, 4817ffffffffffff, 481bffffffffffff, 481fffffffffffff}
 -------------------------------------------------------------------------------
 
-SELECT quadbinCellToParent(quadbin '48a6227affffffff', 5) = quadbin '485623ffffffffff';
+SELECT cellToParent(quadbin '48a6227affffffff', 5) = quadbin '485623ffffffffff';
 SELECT quadbinCellToChildren(quadbin '480fffffffffffff', 1)
   = quadbinset '{4813ffffffffffff, 4817ffffffffffff, 481bffffffffffff, 481fffffffffffff}';
 

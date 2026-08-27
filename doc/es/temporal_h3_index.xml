@@ -202,15 +202,15 @@ SELECT valueAtTimestamp(th3index
 		<title>Inspección de Índices</title>
 		<itemizedlist>
 			<listitem xml:id="th3_h3_get_resolution">
-				<indexterm significance="normal"><primary><varname>th3GetResolution</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>getResolution</varname></primary></indexterm>
 				<para>Devolver la resolución temporal (0–15) de cada celda en una trayectoria</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3GetResolution(th3index) → tint
+getResolution(th3index) → tint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3GetResolution(th3index '831c02fffffffff@2001-01-01');
+SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
 -- 3@2001-01-01
-SELECT th3GetResolution(th3index '880326b885fffff@2001-01-01');
+SELECT getResolution(th3index '880326b885fffff@2001-01-01');
 -- 8@2001-01-01
 </programlisting>
 			</listitem>
@@ -273,16 +273,16 @@ SELECT th3IsPentagon(th3index '831c02fffffffff@2001-01-01');
 		<title>Jerarquía</title>
 		<itemizedlist>
 			<listitem xml:id="th3_h3_cell_to_parent">
-				<indexterm significance="normal"><primary><varname>th3CellToParent</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToParent</varname></primary></indexterm>
 				<para>Devolver la celda padre temporal en la resolución dada</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3CellToParent(th3index,integer) → th3index
-th3CellToParent(th3index) → th3index
+cellToParent(th3index,integer) → th3index
+cellToParent(th3index) → th3index
 </programlisting>
 				<para>La forma sin argumento desciende a la siguiente resolución más gruesa.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3GetResolution(
-  th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
+SELECT getResolution(
+  cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
 -- 5@2001-01-01
 </programlisting>
 			</listitem>
@@ -343,44 +343,44 @@ th3index(tgeogpoint,integer) → th3index
 th3index(tgeompoint,integer) → th3index
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3GetResolution(th3index(
+SELECT getResolution(th3index(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
-SELECT th3GetResolution(th3index(
+SELECT getResolution(th3index(
   tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_cell_to_latlng">
-				<indexterm significance="normal"><primary><varname>th3CellToLatlng</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>th3CellToLatlngTgeompoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
 				<para>Devolver el centroide geodésico temporal de cada celda en una trayectoria</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3CellToLatlng(th3index) → tgeogpoint
-th3CellToLatlngTgeompoint(th3index) → tgeompoint
+cellToPoint(th3index) → tgeogpoint
+tgeompoint(th3index) → tgeompoint
 </programlisting>
-				<para>Una sobrecarga planar (SRID 4326) está disponible bajo el nombre <varname>th3CellToLatlngTgeompoint</varname>.</para>
+				<para>Una sobrecarga planar (SRID 4326) está disponible bajo el nombre <varname>tgeompoint</varname>.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(th3CellToLatlng(th3index '871fa44a8ffffff@2001-01-01'), 6);
+SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
-SELECT asText(th3CellToLatlngTgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
+SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_cell_to_boundary">
-				<indexterm significance="normal"><primary><varname>th3CellToBoundary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToBoundary</varname></primary></indexterm>
 				<para>Devolver el límite poligonal temporal de cada celda en una trayectoria, como una geografía temporal</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3CellToBoundary(th3index) → tgeography
+cellToBoundary(th3index) → tgeography
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_GeometryType(getValue(th3CellToBoundary(th3index
+SELECT ST_GeometryType(getValue(cellToBoundary(th3index
   '871fa44a8ffffff@2001-01-01'))::geometry);
 -- ST_Polygon
 -- A hexagon closes on its first vertex, so it has seven points.
-SELECT ST_NPoints(getValue(th3CellToBoundary(th3index
+SELECT ST_NPoints(getValue(cellToBoundary(th3index
   '871fa44a8ffffff@2001-01-01'))::geometry);
 -- 7
 </programlisting>
@@ -487,13 +487,13 @@ SELECT th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0);
 			</listitem>
 
 			<listitem xml:id="th3_h3_vertex_to_latlng">
-				<indexterm significance="normal"><primary><varname>th3VertexToLatlng</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3VertexToPoint</varname></primary></indexterm>
 				<para>Devolver las coordenadas geodésicas temporales de cada vértice en una trayectoria</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3VertexToLatlng(th3index) → tgeogpoint
+th3VertexToPoint(th3index) → tgeogpoint
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(th3VertexToLatlng(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
+SELECT asText(th3VertexToPoint(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
   0)), 6);
 -- POINT(4.280027 50.807655)@2001-01-01
 </programlisting>
@@ -557,19 +557,20 @@ SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
 
 	<sect1 xml:id="th3_metrics">
 		<title>Métricas</title>
-		<para>Las tres funciones métricas aceptan un argumento opcional de unidad. Para áreas: <varname>km2</varname> (por defecto), <varname>m2</varname>, o <varname>rads2</varname>. Para longitudes: <varname>km</varname> (por defecto), <varname>m</varname>, o <varname>rads</varname>. Pasar una unidad de área a una función de longitud (o viceversa) provoca un error.</para>
+		<para>Las tres funciones métricas aceptan un argumento opcional de unidad. Para áreas: <varname>m2</varname> (por defecto), <varname>km2</varname>, o <varname>rads2</varname>. Para longitudes: <varname>km</varname> (por defecto), <varname>m</varname>, o <varname>rads</varname>. Pasar una unidad de área a una función de longitud (o viceversa) provoca un error.</para>
 		<itemizedlist>
 			<listitem xml:id="th3_h3_cell_area">
-				<indexterm significance="normal"><primary><varname>th3CellArea</varname></primary></indexterm>
-				<para>Devolver el área temporal de cada celda en una trayectoria, en la unidad solicitada</para>
+				<indexterm significance="normal"><primary><varname>cellArea</varname></primary></indexterm>
+				<para>Devolver el área temporal de cada celda en una trayectoria, en metros cuadrados o en la unidad solicitada</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3CellArea(th3index,text='km2') → tfloat
+cellArea(th3index) → tfloat
+cellArea(th3index,text) → tfloat
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3CellArea(th3index '871fa44a8ffffff@2001-01-01');
--- 4.441914270110932@2001-01-01
-SELECT th3CellArea(th3index '871fa44a8ffffff@2001-01-01', 'm2');
+SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
 -- 4441914.270110932@2001-01-01
+SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01', 'km2');
+-- 4.441914270110932@2001-01-01
 </programlisting>
 			</listitem>
 
@@ -713,7 +714,7 @@ SELECT tNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44a8ffffff');
 		<para>Los siguientes operadores comparan la <emphasis>caja envolvente</emphasis> espaciotemporal de las celdas H3 temporales, no la inclusión jerárquica de celdas. <varname>th3index</varname> es un tipo temporal espacial: su caja envolvente es un <varname>stbox</varname> que combina la extensión espacial geodésica de los límites de las celdas (su envolvente de longitud/latitud en SRID 4326) con el período temporal <varname>tstzspan</varname> de la trayectoria. Los operadores a continuación comparan esa caja a lo largo de los ejes espacial y/o temporal. Consulte la sección de indexación para las clases de operadores que hacen estos operadores indexables.</para>
 
 		<note>
-			<para>El operador <varname>@&gt;</varname> prueba la inclusión de la caja envolvente espaciotemporal (extensión espacial y tiempo juntos), <emphasis>no</emphasis> la inclusión jerárquica de H3. Para probar si una celda es el padre de otra en una resolución dada, use <link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>.</para>
+			<para>El operador <varname>@&gt;</varname> prueba la inclusión de la caja envolvente espaciotemporal (extensión espacial y tiempo juntos), <emphasis>no</emphasis> la inclusión jerárquica de H3. Para probar si una celda es el padre de otra en una resolución dada, use <link linkend="th3_h3_cell_to_parent"><varname>cellToParent</varname></link>.</para>
 		</note>
 
 		<itemizedlist>
@@ -916,7 +917,7 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 	<sect1 xml:id="th3_spatialrels">
 		<title>Relaciones Espaciales</title>
 
-		<para>Las relaciones espaciales evalúan un argumento <varname>th3index</varname> a través de la geometría de frontera de celda en cada instante,la huella hexagonal de cada celda, devuelta por <varname>th3CellToBoundary</varname>— y luego aplican la relación correspondiente de los tipos geométricos temporales. Cada relación tiene tres formas cuantificadas: la forma <emphasis>alguna vez</emphasis> con prefijo <varname>e</varname> devuelve <varname>true</varname> cuando la relación se cumple en algún instante, la forma <emphasis>siempre</emphasis> con prefijo <varname>a</varname> cuando se cumple en todos los instantes, y la forma <emphasis>temporal</emphasis> con prefijo <varname>t</varname> devuelve un <varname>tbool</varname> con el resultado instante a instante. Todas las formas aceptan los tres órdenes de argumentos <varname>(geometry, th3index)</varname>, <varname>(th3index, geometry)</varname> y <varname>(th3index, th3index)</varname>.</para>
+		<para>Las relaciones espaciales evalúan un argumento <varname>th3index</varname> a través de la geometría de frontera de celda en cada instante,la huella hexagonal de cada celda, devuelta por <varname>cellToBoundary</varname>— y luego aplican la relación correspondiente de los tipos geométricos temporales. Cada relación tiene tres formas cuantificadas: la forma <emphasis>alguna vez</emphasis> con prefijo <varname>e</varname> devuelve <varname>true</varname> cuando la relación se cumple en algún instante, la forma <emphasis>siempre</emphasis> con prefijo <varname>a</varname> cuando se cumple en todos los instantes, y la forma <emphasis>temporal</emphasis> con prefijo <varname>t</varname> devuelve un <varname>tbool</varname> con el resultado instante a instante. Todas las formas aceptan los tres órdenes de argumentos <varname>(geometry, th3index)</varname>, <varname>(th3index, geometry)</varname> y <varname>(th3index, th3index)</varname>.</para>
 
 		<itemizedlist>
 			<listitem xml:id="th3_rel_contains">

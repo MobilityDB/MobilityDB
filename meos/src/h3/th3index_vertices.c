@@ -100,7 +100,7 @@ th3index_cell_to_vertex(const Temporal *temp, int32 vertex_num)
 }
 
 /*****************************************************************************
- * th3VertexToLatlng — needs h3_adapter.c body
+ * th3VertexToPoint — needs h3_adapter.c body
  *****************************************************************************/
 
 /**

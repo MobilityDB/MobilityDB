@@ -41,17 +41,17 @@ SELECT valueAtTimestamp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff
 -- Resolution + validity (lifted)
 -------------------------------------------------------------------------------
 
-SELECT tquadbinGetResolution(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT getResolution(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
 SELECT isValidCell(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
 
 -------------------------------------------------------------------------------
 -- Hierarchy (lifted parent at a constant resolution)
 -------------------------------------------------------------------------------
 
-SELECT tquadbinCellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0);
+SELECT cellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0);
 
 -- Every instant's parent at res 0 is the z0 world cell
-SELECT getValues(tquadbinCellToParent(
+SELECT getValues(cellToParent(
   tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0))
   = quadbinset '{480fffffffffffff}';
 
@@ -59,15 +59,15 @@ SELECT getValues(tquadbinCellToParent(
 -- Centroid point / boundary (lifted)
 -------------------------------------------------------------------------------
 
-SELECT tquadbinCellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
-SELECT asText(tquadbinCellToPoint(tquadbin '{48a6227affffffff@2001-01-01}'), 6);
-SELECT tquadbinCellToBoundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
+SELECT cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
+SELECT asText(cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}'), 6);
+SELECT cellToBoundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Area (lifted, tfloat)
 -------------------------------------------------------------------------------
 
-SELECT round(startValue(tquadbinCellArea(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
+SELECT round(startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
 
 -------------------------------------------------------------------------------
 -- Quadkey (lifted, ttext)
@@ -80,7 +80,7 @@ SELECT tquadbinCellToQuadkey(tquadbin '{480fffffffffffff@2001-01-01, 48427ffffff
 -------------------------------------------------------------------------------
 
 SELECT (tquadbin '{48a6227affffffff@2001-01-01}')::tgeompoint
-  = tquadbinCellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
+  = cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
 SELECT asText((tquadbin '{48a6227affffffff@2001-01-01}')::tgeompoint, 6);
 
 -------------------------------------------------------------------------------

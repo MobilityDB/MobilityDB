@@ -31,30 +31,30 @@
 -- Resolution
 -------------------------------------------------------------------------------
 
-SELECT quadbinGetResolution(quadbin '480fffffffffffff');  -- z0 world cell -> 0
-SELECT quadbinGetResolution(quadbin '48427fffffffffff');  -- tile(3,5,4) -> 4
-SELECT quadbinGetResolution(quadbin '48a6227affffffff');  -- res 10
+SELECT getResolution(quadbin '480fffffffffffff');  -- z0 world cell -> 0
+SELECT getResolution(quadbin '48427fffffffffff');  -- tile(3,5,4) -> 4
+SELECT getResolution(quadbin '48a6227affffffff');  -- res 10
 
 -------------------------------------------------------------------------------
 -- Hierarchy: parent / children / sibling
 -------------------------------------------------------------------------------
 
 -- Parent of a res-4 cell at res 0 is the z0 world cell
-SELECT quadbinCellToParent(quadbin '48427fffffffffff', 0) = quadbin '480fffffffffffff';
-SELECT quadbinGetResolution(quadbinCellToParent(quadbin '48427fffffffffff', 2));
+SELECT cellToParent(quadbin '48427fffffffffff', 0) = quadbin '480fffffffffffff';
+SELECT getResolution(cellToParent(quadbin '48427fffffffffff', 2));
 
 -- Children: exactly 4 per finer level
 SELECT numValues(quadbinCellToChildren(quadbin '480fffffffffffff', 1));
 SELECT quadbinCellToChildren(quadbin '480fffffffffffff', 1);
 
 -- Round-trip: each child's parent is the origin cell
-SELECT bool_and(quadbinCellToParent(c, 0) = quadbin '480fffffffffffff')
+SELECT bool_and(cellToParent(c, 0) = quadbin '480fffffffffffff')
   FROM unnest(quadbinCellToChildren(quadbin '480fffffffffffff', 1)) AS c;
 
 -- Sibling: moving right then left returns to the origin (same resolution)
 SELECT quadbinCellSibling(quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
   = quadbin '48427fffffffffff';
-SELECT quadbinGetResolution(quadbinCellSibling(quadbin '48427fffffffffff', 'up'));
+SELECT getResolution(quadbinCellSibling(quadbin '48427fffffffffff', 'up'));
 
 -------------------------------------------------------------------------------
 -- Grid disk (k-ring): (2k+1)^2 cells, origin included
@@ -77,36 +77,36 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 0)
   = quadbin '480fffffffffffff';
 
 -- Centroid of a cell is inside that cell -> mapping back recovers the cell
-SELECT geoToQuadbinCell(quadbinCellToPoint(quadbin '48a6227affffffff'), 10)
+SELECT geoToQuadbinCell(cellToPoint(quadbin '48a6227affffffff'), 10)
   = quadbin '48a6227affffffff';
 
 -- Centroid coordinates (SRID 4326)
-SELECT round(ST_X(quadbinCellToPoint(quadbin '48a6227affffffff'))::numeric, 6);
-SELECT round(ST_Y(quadbinCellToPoint(quadbin '48a6227affffffff'))::numeric, 6);
-SELECT ST_SRID(quadbinCellToPoint(quadbin '48a6227affffffff'));
+SELECT round(ST_X(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6);
+SELECT round(ST_Y(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6);
+SELECT ST_SRID(cellToPoint(quadbin '48a6227affffffff'));
 
 -------------------------------------------------------------------------------
 -- Boundary
 -------------------------------------------------------------------------------
 
-SELECT ST_GeometryType(quadbinCellToBoundary(quadbin '48a6227affffffff'));
+SELECT ST_GeometryType(cellToBoundary(quadbin '48a6227affffffff'));
 SELECT round(xMax(stbox(quadbin '48a6227affffffff'))::numeric, 6);
-SELECT ST_SRID(quadbinCellToBoundary(quadbin '48a6227affffffff'));
+SELECT ST_SRID(cellToBoundary(quadbin '48a6227affffffff'));
 
 -- The centroid point lies inside the cell boundary polygon
 SELECT ST_Contains(
-  quadbinCellToBoundary(quadbin '48a6227affffffff'),
-  quadbinCellToPoint(quadbin '48a6227affffffff'));
+  cellToBoundary(quadbin '48a6227affffffff'),
+  cellToPoint(quadbin '48a6227affffffff'));
 
 -------------------------------------------------------------------------------
 -- Area (square metres)
 -------------------------------------------------------------------------------
 
 -- The whole-world z0 cell area
-SELECT round(quadbinCellArea(quadbin '480fffffffffffff')::numeric, 1);
+SELECT round(cellArea(quadbin '480fffffffffffff')::numeric, 1);
 -- A finer cell has strictly smaller area than a coarser one
-SELECT quadbinCellArea(quadbin '48a6227affffffff')
-  < quadbinCellArea(quadbin '48427fffffffffff');
+SELECT cellArea(quadbin '48a6227affffffff')
+  < cellArea(quadbin '48427fffffffffff');
 
 -------------------------------------------------------------------------------
 -- Tile / quadkey conversion (quadbin-unique, no H3 analogue)

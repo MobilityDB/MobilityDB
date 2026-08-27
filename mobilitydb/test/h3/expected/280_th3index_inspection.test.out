@@ -1,33 +1,33 @@
-SELECT th3GetResolution(th3index '831c02fffffffff@2001-01-01');
-        th3getresolution        
+SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
+         getresolution          
 --------------------------------
  3@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT th3GetResolution(th3index '880326b885fffff@2001-01-01');
-        th3getresolution        
+SELECT getResolution(th3index '880326b885fffff@2001-01-01');
+         getresolution          
 --------------------------------
  8@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT th3GetResolution(th3index
+SELECT getResolution(th3index
   '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
-                         th3getresolution                         
+                          getresolution                           
 ------------------------------------------------------------------
  {3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
-SELECT th3GetResolution(th3index
+SELECT getResolution(th3index
   '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]');
-                         th3getresolution                         
+                          getresolution                           
 ------------------------------------------------------------------
  [3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT th3GetResolution(th3index
+SELECT getResolution(th3index
   '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02],
     [880326b885fffff@2001-01-03, 880326b88dfffff@2001-01-04]}');
-                                                           th3getresolution                                                           
+                                                            getresolution                                                             
 --------------------------------------------------------------------------------------------------------------------------------------
  {[3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST], [8@Wed Jan 03 00:00:00 2001 PST, 8@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)

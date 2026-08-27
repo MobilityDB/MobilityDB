@@ -60,7 +60,7 @@ PG_FUNCTION_INFO_V1(Tquadbin_get_resolution);
  * @ingroup mobilitydb_quadbin_accessor
  * @brief Return the temporal resolution (zoom level) of a temporal
  * quadbin cell
- * @sqlfn tquadbinGetResolution()
+ * @sqlfn getResolution()
  */
 Datum
 Tquadbin_get_resolution(PG_FUNCTION_ARGS)
@@ -96,7 +96,7 @@ PG_FUNCTION_INFO_V1(Tquadbin_cell_to_parent);
 /**
  * @ingroup mobilitydb_quadbin_hierarchy
  * @brief Return the temporal parent cell at the given coarser resolution
- * @sqlfn tquadbinCellToParent()
+ * @sqlfn cellToParent()
  */
 Datum
 Tquadbin_cell_to_parent(PG_FUNCTION_ARGS)
@@ -117,7 +117,7 @@ PG_FUNCTION_INFO_V1(Tquadbin_cell_to_point);
 /**
  * @ingroup mobilitydb_quadbin_conversion
  * @brief Return the per-instant cell centroid as a temporal point
- * @sqlfn tquadbinCellToPoint()
+ * @sqlfn cellToPoint()
  */
 Datum
 Tquadbin_cell_to_point(PG_FUNCTION_ARGS)
@@ -134,7 +134,7 @@ PG_FUNCTION_INFO_V1(Tquadbin_cell_to_boundary);
  * @ingroup mobilitydb_quadbin_conversion
  * @brief Return the per-instant square cell boundary as a temporal
  * geometry
- * @sqlfn tquadbinCellToBoundary()
+ * @sqlfn cellToBoundary()
  */
 Datum
 Tquadbin_cell_to_boundary(PG_FUNCTION_ARGS)
@@ -155,7 +155,7 @@ PG_FUNCTION_INFO_V1(Tquadbin_cell_area);
  * @ingroup mobilitydb_quadbin_accessor
  * @brief Return the per-instant cell area (square metres) as a temporal
  * float
- * @sqlfn tquadbinCellArea()
+ * @sqlfn cellArea()
  */
 Datum
 Tquadbin_cell_area(PG_FUNCTION_ARGS)

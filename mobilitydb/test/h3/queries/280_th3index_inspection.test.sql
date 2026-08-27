@@ -15,18 +15,18 @@
 --   0                  = invalid
 
 -------------------------------------------------------------------------------
--- th3GetResolution
+-- getResolution
 -------------------------------------------------------------------------------
 
-SELECT th3GetResolution(th3index '831c02fffffffff@2001-01-01');
-SELECT th3GetResolution(th3index '880326b885fffff@2001-01-01');
+SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
+SELECT getResolution(th3index '880326b885fffff@2001-01-01');
 
 -- All four temporal subtypes
-SELECT th3GetResolution(th3index
+SELECT getResolution(th3index
   '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
-SELECT th3GetResolution(th3index
+SELECT getResolution(th3index
   '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]');
-SELECT th3GetResolution(th3index
+SELECT getResolution(th3index
   '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02],
     [880326b885fffff@2001-01-03, 880326b88dfffff@2001-01-04]}');
 

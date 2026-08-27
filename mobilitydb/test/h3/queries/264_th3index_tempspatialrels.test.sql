@@ -30,7 +30,7 @@
 --
 -- Each function returns a tbool whose value at instant t is the static
 -- spatial relation applied to the boundary of the cell the value holds at t:
--- take the boundary with th3CellToBoundary, cast it to tgeometry, and delegate to
+-- take the boundary with cellToBoundary, cast it to tgeometry, and delegate to
 -- the temporal spatial-rel kernel of tgeometry
 -- (072_tgeo_tempspatialrels.in.sql). Each block checks that the direct th3index
 -- overload agrees with the equivalent manual chain.
@@ -42,7 +42,7 @@
 
 -- Test for NULL inputs since the functions are not STRICT
 SELECT tIntersects(NULL::geometry, th3index '831c00fffffffff@2001-01-01');
-SELECT tIntersects(getValue(th3CellToBoundary(th3index '831c00fffffffff@2001-01-01')::tgeometry), NULL::th3index);
+SELECT tIntersects(getValue(cellToBoundary(th3index '831c00fffffffff@2001-01-01')::tgeometry), NULL::th3index);
 
 -------------------------------------------------------------------------------
 -- tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin
@@ -51,27 +51,27 @@ SELECT tIntersects(getValue(th3CellToBoundary(th3index '831c00fffffffff@2001-01-
 WITH t AS (
   SELECT th3index '{831c00fffffffff@2001-01-01, 831c02fffffffff@2001-01-02}' AS seq1,
          th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}' AS seq2,
-         getValue(th3CellToBoundary(th3index '831c00fffffffff@2001-01-01')::tgeometry) AS cell_geom
+         getValue(cellToBoundary(th3index '831c00fffffffff@2001-01-01')::tgeometry) AS cell_geom
 )
 SELECT
-  asText(tContains(cell_geom, seq1)) = asText(tContains(cell_geom, th3CellToBoundary(seq1)::tgeometry)) AS tc_geo_c,
-  asText(tContains(seq1, cell_geom)) = asText(tContains(th3CellToBoundary(seq1)::tgeometry, cell_geom)) AS tc_c_geo,
-  asText(tContains(seq1, seq2)) = asText(tContains(th3CellToBoundary(seq1)::tgeometry, th3CellToBoundary(seq2)::tgeometry)) AS tc_c_c,
-  asText(tCovers(cell_geom, seq1)) = asText(tCovers(cell_geom, th3CellToBoundary(seq1)::tgeometry)) AS tcv_geo_c,
-  asText(tCovers(seq1, cell_geom)) = asText(tCovers(th3CellToBoundary(seq1)::tgeometry, cell_geom)) AS tcv_c_geo,
-  asText(tCovers(seq1, seq2)) = asText(tCovers(th3CellToBoundary(seq1)::tgeometry, th3CellToBoundary(seq2)::tgeometry)) AS tcv_c_c,
-  asText(tDisjoint(cell_geom, seq1)) = asText(tDisjoint(cell_geom, th3CellToBoundary(seq1)::tgeometry)) AS tdj_geo_c,
-  asText(tDisjoint(seq1, cell_geom)) = asText(tDisjoint(th3CellToBoundary(seq1)::tgeometry, cell_geom)) AS tdj_c_geo,
-  asText(tDisjoint(seq1, seq2)) = asText(tDisjoint(th3CellToBoundary(seq1)::tgeometry, th3CellToBoundary(seq2)::tgeometry)) AS tdj_c_c,
-  asText(tIntersects(cell_geom, seq1)) = asText(tIntersects(cell_geom, th3CellToBoundary(seq1)::tgeometry)) AS ti_geo_c,
-  asText(tIntersects(seq1, cell_geom)) = asText(tIntersects(th3CellToBoundary(seq1)::tgeometry, cell_geom)) AS ti_c_geo,
-  asText(tIntersects(seq1, seq2)) = asText(tIntersects(th3CellToBoundary(seq1)::tgeometry, th3CellToBoundary(seq2)::tgeometry)) AS ti_c_c,
-  asText(tTouches(cell_geom, seq1)) = asText(tTouches(cell_geom, th3CellToBoundary(seq1)::tgeometry)) AS ttc_geo_c,
-  asText(tTouches(seq1, cell_geom)) = asText(tTouches(th3CellToBoundary(seq1)::tgeometry, cell_geom)) AS ttc_c_geo,
-  asText(tTouches(seq1, seq2)) = asText(tTouches(th3CellToBoundary(seq1)::tgeometry, th3CellToBoundary(seq2)::tgeometry)) AS ttc_c_c,
-  asText(tDwithin(cell_geom, seq1, 0.1)) = asText(tDwithin(cell_geom, th3CellToBoundary(seq1)::tgeometry, 0.1)) AS tdw_geo_c,
-  asText(tDwithin(seq1, cell_geom, 0.1)) = asText(tDwithin(th3CellToBoundary(seq1)::tgeometry, cell_geom, 0.1)) AS tdw_c_geo,
-  asText(tDwithin(seq1, seq2, 0.1)) = asText(tDwithin(th3CellToBoundary(seq1)::tgeometry, th3CellToBoundary(seq2)::tgeometry, 0.1)) AS tdw_c_c
+  asText(tContains(cell_geom, seq1)) = asText(tContains(cell_geom, cellToBoundary(seq1)::tgeometry)) AS tc_geo_c,
+  asText(tContains(seq1, cell_geom)) = asText(tContains(cellToBoundary(seq1)::tgeometry, cell_geom)) AS tc_c_geo,
+  asText(tContains(seq1, seq2)) = asText(tContains(cellToBoundary(seq1)::tgeometry, cellToBoundary(seq2)::tgeometry)) AS tc_c_c,
+  asText(tCovers(cell_geom, seq1)) = asText(tCovers(cell_geom, cellToBoundary(seq1)::tgeometry)) AS tcv_geo_c,
+  asText(tCovers(seq1, cell_geom)) = asText(tCovers(cellToBoundary(seq1)::tgeometry, cell_geom)) AS tcv_c_geo,
+  asText(tCovers(seq1, seq2)) = asText(tCovers(cellToBoundary(seq1)::tgeometry, cellToBoundary(seq2)::tgeometry)) AS tcv_c_c,
+  asText(tDisjoint(cell_geom, seq1)) = asText(tDisjoint(cell_geom, cellToBoundary(seq1)::tgeometry)) AS tdj_geo_c,
+  asText(tDisjoint(seq1, cell_geom)) = asText(tDisjoint(cellToBoundary(seq1)::tgeometry, cell_geom)) AS tdj_c_geo,
+  asText(tDisjoint(seq1, seq2)) = asText(tDisjoint(cellToBoundary(seq1)::tgeometry, cellToBoundary(seq2)::tgeometry)) AS tdj_c_c,
+  asText(tIntersects(cell_geom, seq1)) = asText(tIntersects(cell_geom, cellToBoundary(seq1)::tgeometry)) AS ti_geo_c,
+  asText(tIntersects(seq1, cell_geom)) = asText(tIntersects(cellToBoundary(seq1)::tgeometry, cell_geom)) AS ti_c_geo,
+  asText(tIntersects(seq1, seq2)) = asText(tIntersects(cellToBoundary(seq1)::tgeometry, cellToBoundary(seq2)::tgeometry)) AS ti_c_c,
+  asText(tTouches(cell_geom, seq1)) = asText(tTouches(cell_geom, cellToBoundary(seq1)::tgeometry)) AS ttc_geo_c,
+  asText(tTouches(seq1, cell_geom)) = asText(tTouches(cellToBoundary(seq1)::tgeometry, cell_geom)) AS ttc_c_geo,
+  asText(tTouches(seq1, seq2)) = asText(tTouches(cellToBoundary(seq1)::tgeometry, cellToBoundary(seq2)::tgeometry)) AS ttc_c_c,
+  asText(tDwithin(cell_geom, seq1, 0.1)) = asText(tDwithin(cell_geom, cellToBoundary(seq1)::tgeometry, 0.1)) AS tdw_geo_c,
+  asText(tDwithin(seq1, cell_geom, 0.1)) = asText(tDwithin(cellToBoundary(seq1)::tgeometry, cell_geom, 0.1)) AS tdw_c_geo,
+  asText(tDwithin(seq1, seq2, 0.1)) = asText(tDwithin(cellToBoundary(seq1)::tgeometry, cellToBoundary(seq2)::tgeometry, 0.1)) AS tdw_c_c
 FROM t;
 
 -------------------------------------------------------------------------------

@@ -78,7 +78,7 @@ SELECT ((tquadbin '480fffffffffffff@2001-01-01')::tbigint)::tquadbin
 				<programlisting xml:space="preserve" format="linespecific">
 tquadbin::tgeompoint
 </programlisting>
-				<para>La conversión delega en <varname>tquadbinCellToPoint</varname>.</para>
+				<para>La conversión delega en <varname>cellToPoint</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (tquadbin '480fffffffffffff@2001-01-01')::tgeompoint;
 </programlisting>
@@ -196,18 +196,18 @@ SELECT valueAtTimestamp(tquadbin
 		<title>Inspección del Índice</title>
 		<itemizedlist>
 			<listitem xml:id="tquadbin_quadbin_get_resolution">
-				<indexterm significance="normal"><primary><varname>quadbinGetResolution</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tquadbinGetResolution</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>getResolution</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>getResolution</varname></primary></indexterm>
 				<para>Devuelve el nivel de resolución (zoom) (0–26) de una celda</para>
 				<programlisting xml:space="preserve" format="linespecific">
-quadbinGetResolution(quadbin) → integer
-tquadbinGetResolution(tquadbin) → tint
+getResolution(quadbin) → integer
+getResolution(tquadbin) → tint
 </programlisting>
 				<para>La forma estática devuelve un <varname>integer</varname>; la forma temporal devuelve la resolución de cada celda de una trayectoria como un <varname>tint</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT quadbinGetResolution(quadbin '480fffffffffffff');
+SELECT getResolution(quadbin '480fffffffffffff');
 -- 0
-SELECT tquadbinGetResolution(tquadbin '48427fffffffffff@2001-01-01');
+SELECT getResolution(tquadbin '48427fffffffffff@2001-01-01');
 -- 4@2001-01-01
 </programlisting>
 			</listitem>
@@ -230,19 +230,19 @@ SELECT isValidCell(tquadbin '480fffffffffffff@2001-01-01');
 		<title>Jerarquía</title>
 		<itemizedlist>
 			<listitem xml:id="tquadbin_quadbin_cell_to_parent">
-				<indexterm significance="normal"><primary><varname>quadbinCellToParent</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tquadbinCellToParent</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToParent</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToParent</varname></primary></indexterm>
 				<para>Devuelve la celda padre en la resolución más gruesa dada</para>
 				<programlisting xml:space="preserve" format="linespecific">
-quadbinCellToParent(quadbin,integer) → quadbin
-tquadbinCellToParent(tquadbin,integer) → tquadbin
+cellToParent(quadbin,integer) → quadbin
+cellToParent(tquadbin,integer) → tquadbin
 </programlisting>
 				<para>La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el padre de cada celda de una trayectoria.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT quadbinCellToParent(quadbin '48a6227affffffff', 5);
+SELECT cellToParent(quadbin '48a6227affffffff', 5);
 -- 485623ffffffffff
-SELECT tquadbinGetResolution(
-  tquadbinCellToParent(tquadbin '48a6227affffffff@2001-01-01', 5));
+SELECT getResolution(
+  cellToParent(tquadbin '48a6227affffffff@2001-01-01', 5));
 -- 5@2001-01-01
 </programlisting>
 			</listitem>
@@ -308,18 +308,18 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
 			</listitem>
 
 			<listitem xml:id="tquadbin_quadbin_cell_to_point">
-				<indexterm significance="normal"><primary><varname>quadbinCellToPoint</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tquadbinCellToPoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
 				<para>Devuelve el centroide de una celda como un punto SRID 4326</para>
 				<programlisting xml:space="preserve" format="linespecific">
-quadbinCellToPoint(quadbin) → geometry
-tquadbinCellToPoint(tquadbin) → tgeompoint
+cellToPoint(quadbin) → geometry
+cellToPoint(tquadbin) → tgeompoint
 </programlisting>
 				<para>La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el centroide de cada celda de una trayectoria como un <varname>tgeompoint</varname>.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(quadbinCellToPoint(quadbin '48427fffffffffff'));
+SELECT ST_AsText(cellToPoint(quadbin '48427fffffffffff'));
 -- POINT(-101.25 48.92249926375824)
-SELECT asText(tquadbinCellToPoint(tquadbin
+SELECT asText(cellToPoint(tquadbin
   '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'));
 -- {POINT(0 0)@2001-01-01,
 --  POINT(-101.25 48.92249926375824)@2001-01-02}
@@ -327,16 +327,16 @@ SELECT asText(tquadbinCellToPoint(tquadbin
 			</listitem>
 
 			<listitem xml:id="tquadbin_quadbin_cell_to_boundary">
-				<indexterm significance="normal"><primary><varname>quadbinCellToBoundary</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tquadbinCellToBoundary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToBoundary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToBoundary</varname></primary></indexterm>
 				<para>Devuelve el contorno poligonal cuadrado de una celda como una geometría SRID 4326</para>
 				<programlisting xml:space="preserve" format="linespecific">
-quadbinCellToBoundary(quadbin) → geometry
-tquadbinCellToBoundary(tquadbin) → tgeometry
+cellToBoundary(quadbin) → geometry
+cellToBoundary(tquadbin) → tgeometry
 </programlisting>
 				<para>La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el contorno de cada celda de una trayectoria como un <varname>tgeometry</varname>.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(quadbinCellToBoundary(quadbin '480fffffffffffff'));
+SELECT ST_AsText(cellToBoundary(quadbin '480fffffffffffff'));
 -- POLYGON((-180 -85.0511287798066,180 -85.0511287798066,
 --          180 85.0511287798066,-180 85.0511287798066,
 --          -180 -85.0511287798066))
@@ -406,18 +406,18 @@ SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
 		<title>Métricas</title>
 		<itemizedlist>
 			<listitem xml:id="tquadbin_quadbin_cell_area">
-				<indexterm significance="normal"><primary><varname>quadbinCellArea</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tquadbinCellArea</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellArea</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellArea</varname></primary></indexterm>
 				<para>Devuelve el área de una celda sobre la esfera, en metros cuadrados</para>
 				<programlisting xml:space="preserve" format="linespecific">
-quadbinCellArea(quadbin) → float8
-tquadbinCellArea(tquadbin) → tfloat
+cellArea(quadbin) → float8
+cellArea(tquadbin) → tfloat
 </programlisting>
 				<para>La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el área de cada celda de una trayectoria como un <varname>tfloat</varname>. El área de la celda se reduce hacia los polos, ya que los cuadrados web-mercator cubren progresivamente menos terreno a latitudes más altas.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(quadbinCellArea(quadbin '480fffffffffffff')::numeric, 0);
+SELECT round(cellArea(quadbin '480fffffffffffff')::numeric, 0);
 -- 508164135963886
-SELECT round(quadbinCellArea(quadbin '48427fffffffffff')::numeric, 0);
+SELECT round(cellArea(quadbin '48427fffffffffff')::numeric, 0);
 -- 2726563416104
 </programlisting>
 			</listitem>

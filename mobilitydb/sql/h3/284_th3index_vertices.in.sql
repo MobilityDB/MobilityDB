@@ -50,10 +50,10 @@ CREATE FUNCTION th3CellToVertex(th3index, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * th3VertexToLatlng
+ * th3VertexToPoint
  ******************************************************************************/
 
-CREATE FUNCTION th3VertexToLatlng(th3index)
+CREATE FUNCTION th3VertexToPoint(th3index)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Th3index_vertex_to_latlng'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

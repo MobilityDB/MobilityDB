@@ -2800,7 +2800,7 @@
 			<title>Index Inspection</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_get_resolution"><varname>th3GetResolution</varname></link>: Return the temporal resolution level (0–15) of each cell in a trajectory</para>
+					<para><link linkend="th3_h3_get_resolution"><varname>getResolution</varname></link>: Return the temporal resolution level (0–15) of each cell in a trajectory</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_get_base_cell_number"><varname>th3GetBaseCellNumber</varname></link>: Return the temporal base-cell number (0–121) of each cell in a trajectory</para>
@@ -2820,7 +2820,7 @@
 			<title>Hierarchy</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>: Return the temporal parent cell at the given resolution</para>
+					<para><link linkend="th3_h3_cell_to_parent"><varname>cellToParent</varname></link>: Return the temporal parent cell at the given resolution</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_cell_to_center_child"><varname>th3CellToCenterChild</varname></link>: Return the temporal center-child cell at the given resolution</para>
@@ -2840,10 +2840,10 @@
 					<para><link linkend="th3_tgeompoint_to_th3"><varname>th3index</varname></link>: Return the temporal H3 cell at the given resolution that contains each point in a temporal geodetic or planar point (SRID must be 4326 for the <varname>tgeompoint</varname> overload)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_latlng"><varname>th3CellToLatlng</varname>, <varname>th3CellToLatlngTgeompoint</varname></link>: Return the temporal geodetic centroid of each cell in a trajectory</para>
+					<para><link linkend="th3_h3_cell_to_latlng"><varname>cellToPoint</varname>, <varname>th3CellToLatlngTgeompoint</varname></link>: Return the temporal geodetic centroid of each cell in a trajectory</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_boundary"><varname>th3CellToBoundary</varname></link>: Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</para>
+					<para><link linkend="th3_h3_cell_to_boundary"><varname>cellToBoundary</varname></link>: Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2874,7 +2874,7 @@
 					<para><link linkend="th3_h3_cell_to_vertex"><varname>th3CellToVertex</varname></link>: Return the temporal H3 vertex at the given vertex number (0–5 for hexagons, 0–4 for pentagons)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_vertex_to_latlng"><varname>th3VertexToLatlng</varname></link>: Return the temporal geodetic coordinates of each vertex in a trajectory</para>
+					<para><link linkend="th3_h3_vertex_to_latlng"><varname>th3VertexToPoint</varname></link>: Return the temporal geodetic coordinates of each vertex in a trajectory</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_is_valid_vertex"><varname>isValidVertex</varname></link>: Return a temporal boolean stating at each instant whether the value is a valid H3 vertex</para>
@@ -2896,7 +2896,7 @@
 			<title>Metrics</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_cell_area"><varname>th3CellArea</varname></link>: Return the temporal area of each cell in a trajectory, in the requested unit</para>
+					<para><link linkend="th3_h3_cell_area"><varname>cellArea</varname></link>: Return the temporal area of each cell in a trajectory, in the requested unit</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_edge_length"><varname>th3EdgeLength</varname></link>: Return the temporal length of each directed edge in a trajectory, in the requested unit</para>
@@ -3072,7 +3072,7 @@
 			<title>Index Inspection</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_get_resolution"><varname>quadbinGetResolution</varname>, <varname>tquadbinGetResolution</varname></link>: Return the resolution (zoom) level (0–26) of a cell</para>
+					<para><link linkend="tquadbin_quadbin_get_resolution"><varname>getResolution</varname>, <varname>getResolution</varname></link>: Return the resolution (zoom) level (0–26) of a cell</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tquadbin_quadbin_is_valid_cell"><varname>isValidCell</varname></link>: Return a temporal boolean stating at each instant whether the value is a valid QUADBIN cell</para>
@@ -3083,7 +3083,7 @@
 			<title>Hierarchy</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_parent"><varname>quadbinCellToParent</varname>, <varname>tquadbinCellToParent</varname></link>: Return the parent cell at the given coarser resolution</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_parent"><varname>cellToParent</varname>, <varname>cellToParent</varname></link>: Return the parent cell at the given coarser resolution</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tquadbin_quadbin_cell_to_children"><varname>quadbinCellToChildren</varname></link>: Return the four child cells at the requested finer resolution as a <varname>quadbinset</varname></para>
@@ -3103,10 +3103,10 @@
 					<para><link linkend="tquadbin_quadbin_point_to_cell"><varname>geoToQuadbinCell</varname></link>: Return the QUADBIN cell at the given resolution that contains a point geometry</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_point"><varname>quadbinCellToPoint</varname>, <varname>tquadbinCellToPoint</varname></link>: Return the centroid of a cell as an SRID-4326 point</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_point"><varname>cellToPoint</varname>, <varname>cellToPoint</varname></link>: Return the centroid of a cell as an SRID-4326 point</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>quadbinCellToBoundary</varname>, <varname>tquadbinCellToBoundary</varname></link>: Return the square polygon boundary of a cell as an SRID-4326 geometry</para>
+					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>cellToBoundary</varname>, <varname>cellToBoundary</varname></link>: Return the square polygon boundary of a cell as an SRID-4326 geometry</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3128,7 +3128,7 @@
 			<title>Metrics</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_area"><varname>quadbinCellArea</varname>, <varname>tquadbinCellArea</varname></link>: Return the area of a cell on the sphere, in square metres</para>
+					<para><link linkend="tquadbin_quadbin_cell_area"><varname>cellArea</varname>, <varname>cellArea</varname></link>: Return the area of a cell on the sphere, in square metres</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -30,9 +30,9 @@ Five hazards reliably bite workloads using H3 cells. Each is a property of the H
 
   **Mitigation**: `th3index` deliberately has no `h3span` / `h3spanset` companion types (precedent: `geometry` has no `geometryspan`), and the bbox indexes capture the cells' spatiotemporal extent (`stbox`), not the cell-id value. Value-range filtering must go through `h3_*` inspection functions (resolution, base cell, hierarchy checks) or explicit set enumeration via `h3indexset`. Code that assumes `cell_a < cell_b` reflects spatial proximity will silently produce wrong results.
 
-- **Resolution mixing in operations**. H3 cells at different resolutions (0&#x2013;15) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; `th3CellToParent(cell, coarser_res)` coarsens, `h3CellToChildren(parent, finer_res)` refines, and `h3CompactCells` / `h3UncompactCells` round-trip correctly only when input resolutions are compatible.
+- **Resolution mixing in operations**. H3 cells at different resolutions (0&#x2013;15) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; `cellToParent(cell, coarser_res)` coarsens, `h3CellToChildren(parent, finer_res)` refines, and `h3CompactCells` / `h3UncompactCells` round-trip correctly only when input resolutions are compatible.
 
-  **Mitigation**: consumers should document the resolution invariant per trajectory (e.g. "all cells are resolution 9") and validate inputs at the ingestion boundary. The `th3GetResolution` accessor lets a CHECK constraint enforce this.
+  **Mitigation**: consumers should document the resolution invariant per trajectory (e.g. "all cells are resolution 9") and validate inputs at the ingestion boundary. The `getResolution` accessor lets a CHECK constraint enforce this.
 
 - **Pentagon cells**. The H3 grid has 12 pentagonal (instead of hexagonal) cells per resolution &#x2014; the Eisenstein duals of the icosahedron's 12 vertices. `h3GridRing` may fail near these pentagons; `h3GridPathCells` fails if the path crosses one. The error is loud (libh3 raises an explicit failure), but workloads that expect ring / path operations to always succeed need a guard.
 
@@ -42,7 +42,7 @@ Five hazards reliably bite workloads using H3 cells. Each is a property of the H
 
   **Mitigation**: re-sort post-compaction if order matters (e.g. `ORDER BY cell` in SQL or `ARRAY_AGG ... ORDER BY 1` when materialising). For temporal sets, prefer the `h3indexset` set-equality semantics over array-equality semantics.
 
-- **Antimeridian and pole behaviour**. H3's base cells are positioned on an icosahedron; at high resolutions some cells near the antimeridian or poles can have counter-intuitive geometry. `th3CellToLatlng` / `h3_latlng_to_cell` round-trip correctly, but coordinates near &#xb1;180&#xb0; longitude or near the poles may resolve to cells in unexpected base-cell groups.
+- **Antimeridian and pole behaviour**. H3's base cells are positioned on an icosahedron; at high resolutions some cells near the antimeridian or poles can have counter-intuitive geometry. `cellToPoint` / `h3_latlng_to_cell` round-trip correctly, but coordinates near &#xb1;180&#xb0; longitude or near the poles may resolve to cells in unexpected base-cell groups.
 
   **Mitigation**: workloads at polar latitudes or that cross the antimeridian should validate representative cells against the libh3 reference implementation directly and add fixtures for the specific edge cases the workload encounters.
 

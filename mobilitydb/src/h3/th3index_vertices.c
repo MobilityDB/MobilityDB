@@ -65,7 +65,7 @@ Th3index_cell_to_vertex(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * th3VertexToLatlng
+ * th3VertexToPoint
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_vertex_to_latlng(PG_FUNCTION_ARGS);
@@ -73,7 +73,7 @@ PG_FUNCTION_INFO_V1(Th3index_vertex_to_latlng);
 /**
  * @ingroup mobilitydb_h3_vertex
  * @brief Return the geodetic coordinates of a temporal H3 vertex
- * @sqlfn th3VertexToLatlng()
+ * @sqlfn th3VertexToPoint()
  */
 Datum
 Th3index_vertex_to_latlng(PG_FUNCTION_ARGS)

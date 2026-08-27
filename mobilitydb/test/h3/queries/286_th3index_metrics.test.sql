@@ -16,30 +16,30 @@
 -- per-instant adapters being filled in.
 
 -------------------------------------------------------------------------------
--- th3CellArea(th3index, text) — lift_with_const
+-- cellArea(th3index, text) — lift_with_const
 -------------------------------------------------------------------------------
 
 -- Default unit ('km2')
-SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
 
 -- All three valid area units
-SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'km2')
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'km2')
   IS NOT NULL;
-SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'm2')
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'm2')
   IS NOT NULL;
-SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'rads2')
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'rads2')
   IS NOT NULL;
 
 -- Sequence form
-SELECT th3CellArea(th3index
+SELECT cellArea(th3index
   '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]', 'km2')
   IS NOT NULL;
 
 -- Length unit on an area function — h3-pg behaviour: error.
 /* Errors */
-SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'km');
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'km');
 -- Invalid unit string
-SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'lightyears');
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'lightyears');
 
 -------------------------------------------------------------------------------
 -- th3EdgeLength(th3index, text) — lift_with_const

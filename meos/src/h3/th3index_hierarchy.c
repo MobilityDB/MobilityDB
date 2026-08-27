@@ -91,7 +91,7 @@ h3_cell_to_center_child_next_meos(H3Index cell)
 }
 
 /*****************************************************************************
- * th3CellToParent(th3index, integer)
+ * cellToParent(th3index, integer)
  *****************************************************************************/
 
 /**
@@ -108,7 +108,7 @@ th3index_cell_to_parent(const Temporal *temp, int32 resolution)
 }
 
 /*****************************************************************************
- * th3CellToParent(th3index)
+ * cellToParent(th3index)
  *****************************************************************************/
 
 /**
