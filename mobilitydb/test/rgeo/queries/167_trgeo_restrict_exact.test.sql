@@ -213,3 +213,44 @@ SELECT asText(atStbox(
   stbox 'STBOX X((1, -1), (3, 1))'));
 
 -------------------------------------------------------------------------------
+-- A box asked for without its upper border is half-open, so a body standing
+-- entirely at or beyond that border meets the closed box and no point of the
+-- half-open one. This is what lets the tiles either side of a grid line claim
+-- a body lying on that line once rather than twice. The body below occupies
+-- [0,1] x [0,1], so it touches each of the three boxes along a border only.
+-------------------------------------------------------------------------------
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((-2, 0), (0, 2))', false));
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((0, -2), (2, 0))', false));
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((-2, -2), (0, 0))', false));
+
+-- Asked for WITH the upper border the same three boxes hold the body, which is
+-- what separates the border being honoured from the box being smaller.
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((-2, 0), (0, 2))', true));
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((0, -2), (2, 0))', true));
+
+-- A box the body genuinely enters answers the same either way.
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((0, 0), (2, 2))', false));
+
+SELECT asText(minusStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((-2, 0), (0, 2))', false));
+
+-------------------------------------------------------------------------------
