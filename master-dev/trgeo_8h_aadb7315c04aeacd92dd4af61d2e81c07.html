@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_valid_trgeo_geo</title>
+<title>MobilityDB: trgeometry_merge</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="trgeo_8h_a2d21946b740521ac5d2f735cd6752530.html#a2d21946b740521ac5d2f735cd6752530">ensure_has_geom</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="trgeo_8h_a0f59741fdfc9067303df4d357bc9c81e.html#a0f59741fdfc9067303df4d357bc9c81e">ensure_valid_trgeo_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo_8h_a0f59741fdfc9067303df4d357bc9c81e.html#a0f59741fdfc9067303df4d357bc9c81e">ensure_valid_trgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo_8h_a5e097770d775ca464b938ba3327d1dc2.html#a5e097770d775ca464b938ba3327d1dc2">ensure_valid_trgeo_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo_8h_a0550150fc7509f3fd4114a27f05b0ef6.html#a0550150fc7509f3fd4114a27f05b0ef6">ensure_valid_trgeo_tpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo_8h_a37bf76fb6c748432a9cafb02f28c1da4.html#a37bf76fb6c748432a9cafb02f28c1da4">ensure_valid_trgeo_trgeo</a></td></tr>
@@ -91,7 +91,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__rgeo__conversion_ga514b01b0228d878695b3605e4d860b6d.html#ga514b01b0228d878695b3605e4d860b6d">trgeo_geom_p</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__rgeo__accessor_gaddbd2ab154def97913aa806a72ca3257.html#gaddbd2ab154def97913aa806a72ca3257">trgeo_value_at_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__rgeo__inout_gadc04bf2817114fee93a436cc6ee2dd9d.html#gadc04bf2817114fee93a436cc6ee2dd9d">trgeo_wkt_out</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="trgeo_8h_aadb7315c04aeacd92dd4af61d2e81c07.html#aadb7315c04aeacd92dd4af61d2e81c07">trgeometry_merge</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="trgeo_8h_aadb7315c04aeacd92dd4af61d2e81c07.html#aadb7315c04aeacd92dd4af61d2e81c07">trgeometry_merge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo_8h_ae76a980152dbc3bebf54168a0de54e2f.html#ae76a980152dbc3bebf54168a0de54e2f">trgeometry_merge_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__rgeo__restrict_ga2da745c49183cd3c1eaab9e742c4bc6a.html#ga2da745c49183cd3c1eaab9e742c4bc6a">trgeometry_restrict_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo_8h_aa03c2c862ea80cfefa8402842a72a3e4.html#aa03c2c862ea80cfefa8402842a72a3e4">WITH_GEOM</a></td></tr>
@@ -99,23 +99,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a0f59741fdfc9067303df4d357bc9c81e" name="a0f59741fdfc9067303df4d357bc9c81e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f59741fdfc9067303df4d357bc9c81e">&#9670;&#160;</a></span>ensure_valid_trgeo_geo()</h2>
+<a id="aadb7315c04aeacd92dd4af61d2e81c07" name="aadb7315c04aeacd92dd4af61d2e81c07"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aadb7315c04aeacd92dd4af61d2e81c07">&#9670;&#160;</a></span>trgeometry_merge()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool ensure_valid_trgeo_geo </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * trgeometry_merge </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
+          <td class="paramname"><em>temp1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -125,7 +125,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Ensure the validity of a temporal rigid geometry and a geometry. </p>
+<p>Return two temporal rigid geometries merged into one. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometries</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>A temporal rigid geometry is a temporal pose carrying a reference geometry, and a merge rebuilds the temporal value from the poses of both. The rebuilt value carries no reference geometry of its own, so the body the operands share is attached to it: the merge of two rigid geometries is a rigid geometry, and reading its body is what a caller does next. @csqlfn <a class="el" href="group__mobilitydb__temporal__modif_ga93df26440f6ca8ef835be0b4435d0371.html#ga93df26440f6ca8ef835be0b4435d0371" title="Merge two temporal values @sqlfn merge()">Temporal_merge()</a> </p>
 
 </div>
 </div>
