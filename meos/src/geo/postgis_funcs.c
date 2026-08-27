@@ -2119,7 +2119,7 @@ GSERIALIZED *
 geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_geo_geo(gs1, gs2))
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
     return NULL;
 
   /* Clipper2 fast-path for 2D polygonal inputs */
@@ -2272,13 +2272,20 @@ geom_array_union(GSERIALIZED **gsarr, int count)
   VALIDATE_NOT_NULL(gsarr, NULL);
   if (! ensure_positive(count))
     return NULL;
+  /* This entry answers on the plane; #geog_array_union() answers a geodetic
+   * array. The flag is read from one member, so the array is turned away
+   * before the SRID test walks all of them */
+  if (! ensure_not_geodetic_geo(gsarr[0]))
+    return NULL;
   /* The members of the array carry one SRID */
   if (! ensure_same_srid_geoarr((const GSERIALIZED **) gsarr, count))
     return NULL;
 
-  /* One geom geom? Return it */
+  /* A single member is its own union, returned as a value of its own: the
+   * array belongs to the caller, and a result aliasing a member of it is
+   * released when the caller releases the array */
   if (count == 1)
-    return gsarr[0];
+    return geo_copy(gsarr[0]);
 
   /* An array holding nothing but empties has an empty union, which is read
    * from the array alone. It is answered here so that a build carrying no
@@ -2454,6 +2461,48 @@ geom_array_union(GSERIALIZED **gsarr, int count)
     "configure with -DGEOS=ON");
   return NULL;
 #endif /* GEOS */
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return the union of an array of geographies
+ * @param[in] gsarr Array of geographies
+ * @param[in] count Number of elements in the array
+ * @return On error return @p NULL
+ * @details The union of a set of positions is the set with its duplicates
+ * removed, and two positions are the same when their coordinates are, so the
+ * answer is read without measuring anything and holds on the spheroid as it
+ * does on the plane. A geodetic array carrying anything else is a different
+ * question: a geodesic is not the segment joining two positions in degree
+ * space, and two geodesics meet where those segments need not, so the answer
+ * awaits an overlay that works on the spheroid.
+ * @csqlfn #Geo_union()
+ */
+GSERIALIZED *
+geog_array_union(GSERIALIZED **gsarr, int count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gsarr, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  if (! ensure_geodetic_geo(gsarr[0]))
+    return NULL;
+  /* The members of the array carry one SRID */
+  if (! ensure_same_srid_geoarr((const GSERIALIZED **) gsarr, count))
+    return NULL;
+
+  /* A single member is its own union, returned as a value of its own, as on
+   * the planar side */
+  if (count == 1)
+    return geo_copy(gsarr[0]);
+
+  if (! geom_array_point_only(gsarr, count))
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The union of a geodetic array is answered for positions only");
+    return NULL;
+  }
+  return geom_array_linear_union(gsarr, count, true);
 }
 
 /**
