@@ -1,10 +1,10 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Tipo Temporal tpcpatch</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch19.html" title="Capítulo 19. Nubes de Puntos Temporales"><link rel="prev" href="ch19s05.html" title="Tipo Temporal tpcpoint"><link rel="next" href="ch19s07.html" title="Índices"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Tipo Temporal <code class="varname">tpcpatch</code></th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch19s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 19. Nubes de Puntos Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch19s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpcpatch"></a>Tipo Temporal <code class="varname">tpcpatch</code></h2></div></div></div><p>Un <code class="varname">tpcpatch</code> es la elevación temporal de <code class="varname">pcpatch</code>. Es el espejo de <code class="varname">tpcpoint</code> en todos los aspectos, mismos subtipos, mismas funciones de acceso, mismas conversiones y operadores, excepto que cada instante contiene un lote comprimido completo de puntos en lugar de un único punto. La caja delimitadora es de nuevo un <code class="varname">tpcbox</code>, calculada en O(1) por instante a partir del <code class="varname">PCBOUNDS</code> embebido en el parche.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_inst"></a><a class="indexterm" name="id13720"></a><p>Construir un pcpatch temporal de subtipo instante</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Tipo Temporal tpcpatch</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch19.html" title="Capítulo 19. Nubes de Puntos Temporales"><link rel="prev" href="ch19s05.html" title="Tipo Temporal tpcpoint"><link rel="next" href="ch19s07.html" title="Índices"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Tipo Temporal <code class="varname">tpcpatch</code></th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch19s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 19. Nubes de Puntos Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch19s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpcpatch"></a>Tipo Temporal <code class="varname">tpcpatch</code></h2></div></div></div><p>Un <code class="varname">tpcpatch</code> es la elevación temporal de <code class="varname">pcpatch</code>. Es el espejo de <code class="varname">tpcpoint</code> en todos los aspectos, mismos subtipos, mismas funciones de acceso, mismas conversiones y operadores, excepto que cada instante contiene un lote comprimido completo de puntos en lugar de un único punto. La caja delimitadora es de nuevo un <code class="varname">tpcbox</code>, calculada en O(1) por instante a partir del <code class="varname">PCBOUNDS</code> embebido en el parche.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_inst"></a><a class="indexterm" name="id13748"></a><p>Construir un pcpatch temporal de subtipo instante</p><pre class="programlisting">
 tpcpatch(pcpatch,timestamptz) → tpcpatch
 </pre><pre class="programlisting">
 SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz));
 -- Instant
-</pre></li><li class="listitem"><a name="tpcpatch_seq"></a><a class="indexterm" name="id13727"></a><p>Construir un pcpatch temporal de subtipo secuencia</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_seq"></a><a class="indexterm" name="id13755"></a><p>Construir un pcpatch temporal de subtipo secuencia</p><pre class="programlisting">
 tpcpatchSeq(tpcpatch[]) → tpcpatch
 tpcpatchSeq(tpcpatch[],text) → tpcpatch
 </pre><pre class="programlisting">
@@ -18,7 +18,7 @@ SELECT numInstants(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
   '2001-01-02'::timestamptz)]));
 -- 2 | Step
-</pre></li><li class="listitem"><a name="tpcpatch_seqset"></a><a class="indexterm" name="id13734"></a><p>Construir un pcpatch temporal de subtipo conjunto de secuencias</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_seqset"></a><a class="indexterm" name="id13762"></a><p>Construir un pcpatch temporal de subtipo conjunto de secuencias</p><pre class="programlisting">
 tpcpatchSeqSet(tpcpatch[]) → tpcpatch
 </pre><pre class="programlisting">
 SELECT numSequences(tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[
@@ -27,14 +27,14 @@ SELECT numSequences(tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
   '2001-01-02'::timestamptz)])]));
 -- 1
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_accessors"></a>Accesores</h3></div></div></div><p>Se aplican todos los accesores temporales genéricos, además del <code class="varname">pcid</code> y el <code class="varname">SRID</code> al estilo de <code class="varname">tpcpoint</code>. Adicionalmente:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_numpoints"></a><a class="indexterm" name="id13748"></a><a class="indexterm" name="id13751"></a><p>Devolver el número de puntos del parche contenido en el primer o último instante</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_accessors"></a>Accesores</h3></div></div></div><p>Se aplican todos los accesores temporales genéricos, además del <code class="varname">pcid</code> y el <code class="varname">SRID</code> al estilo de <code class="varname">tpcpoint</code>. Adicionalmente:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_numpoints"></a><a class="indexterm" name="id13776"></a><a class="indexterm" name="id13779"></a><p>Devolver el número de puntos del parche contenido en el primer o último instante</p><pre class="programlisting">
 startNumPoints(tpcpatch) → integer
 endNumPoints(tpcpatch) → integer
 </pre><pre class="programlisting">
 SELECT startNumPoints(tpcpatch(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
   '2024-02-01'::timestamptz));
 -- 1
-</pre></li><li class="listitem"><a name="tpcpatch_total_numpoints"></a><a class="indexterm" name="id13758"></a><p>Devolver el número total de puntos de todos los parches de todos los instantes. Se lee directamente de la cabecera de cada parche, sin descompresión.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_total_numpoints"></a><a class="indexterm" name="id13786"></a><p>Devolver el número total de puntos de todos los parches de todos los instantes. Se lee directamente de la cabecera de cada parche, sin descompresión.</p><pre class="programlisting">
 numPoints(tpcpatch) → bigint
 </pre><pre class="programlisting">
 SELECT numPoints(tpcpatchSeq(ARRAY[
@@ -44,7 +44,7 @@ SELECT numPoints(tpcpatchSeq(ARRAY[
   tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0])]),
            '2024-01-02'::timestamptz)]));
 -- 3
-</pre></li><li class="listitem"><a name="tpcpatch_points"></a><a class="indexterm" name="id13765"></a><p>Función devuelve-conjunto: emite una fila por cada (marca de tiempo de instante, punto) recorriendo el parche de cada instante y descomponiéndolo mediante la API C en memoria de pgPointCloud. Útil para combinar una columna tpcpatch con predicados por punto que los operadores de nivel de caja delimitadora no pueden expresar. El coste es O(total de puntos), una descompresión por instante más una emisión de fila por punto.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_points"></a><a class="indexterm" name="id13793"></a><p>Función devuelve-conjunto: emite una fila por cada (marca de tiempo de instante, punto) recorriendo el parche de cada instante y descomponiéndolo mediante la API C en memoria de pgPointCloud. Útil para combinar una columna tpcpatch con predicados por punto que los operadores de nivel de caja delimitadora no pueden expresar. El coste es O(total de puntos), una descompresión por instante más una emisión de fila por punto.</p><pre class="programlisting">
 points(tpcpatch) → setof (t timestamptz, point pcpoint)
 </pre><pre class="programlisting">
 SELECT t, point FROM points(tpcpatch(
@@ -55,7 +55,7 @@ SELECT t, point FROM points(tpcpatch(
 -- '01:0000000000000000000000F03F0000000000000000F03F00000000000000F03F'::pcpoint)
 -- ('2024-01-01',
 -- '01:0000000000000000000000004000000000000000400000000000000040'::pcpoint)
-</pre></li></ul></div><p>Véase <a class="xref" href="ch19s06.html#tpcpatch_perpoint_roadmap" title="Operaciones por punto: qué está y qué no está disponible">“Operaciones por punto: qué está y qué no está disponible”</a> para conocer los límites de estos accesores y qué está y qué no está disponible a nivel de granularidad por punto.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_subtype"></a><a class="indexterm" name="id13777"></a><a class="indexterm" name="id13780"></a><a class="indexterm" name="id13783"></a><p>Transformar un tpcpatch en otro subtipo</p><pre class="programlisting">
+</pre></li></ul></div><p>Véase <a class="xref" href="ch19s06.html#tpcpatch_perpoint_roadmap" title="Operaciones por punto: qué está y qué no está disponible">“Operaciones por punto: qué está y qué no está disponible”</a> para conocer los límites de estos accesores y qué está y qué no está disponible a nivel de granularidad por punto.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_subtype"></a><a class="indexterm" name="id13805"></a><a class="indexterm" name="id13808"></a><a class="indexterm" name="id13811"></a><p>Transformar un tpcpatch en otro subtipo</p><pre class="programlisting">
 tpcpatchInst(tpcpatch) → tpcpatch
 tpcpatchSeq(tpcpatch,interp='step') → tpcpatch
 tpcpatchSeqSet(tpcpatch) → tpcpatch
@@ -63,7 +63,7 @@ tpcpatchSeqSet(tpcpatch) → tpcpatch
 SELECT tempSubtype(tpcpatchSeq(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2,
   2)), '2001-01-01'::timestamptz)));
 -- Sequence
-</pre></li><li class="listitem"><a name="tpcpatch_setInterp"></a><a class="indexterm" name="id13790"></a><p>Transformar un tpcpatch a otra interpolación</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_setInterp"></a><a class="indexterm" name="id13818"></a><p>Transformar un tpcpatch a otra interpolación</p><pre class="programlisting">
 setInterp(tpcpatch,interp) → tpcpatch
 </pre><pre class="programlisting">
 SELECT interp(setInterp(tpcpatchSeq(ARRAY[
@@ -72,7 +72,7 @@ SELECT interp(setInterp(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
   '2001-01-02'::timestamptz)], 'discrete'), 'step'));
 -- Step
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_restrictions"></a>Restricciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_atValues"></a><a class="indexterm" name="id13800"></a><a class="indexterm" name="id13803"></a><a class="indexterm" name="id13806"></a><a class="indexterm" name="id13809"></a><p>Restringir un tpcpatch a (al complemento de) un valor pcpatch o un conjunto de valores pcpatch</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_restrictions"></a>Restricciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_atValues"></a><a class="indexterm" name="id13828"></a><a class="indexterm" name="id13831"></a><a class="indexterm" name="id13834"></a><a class="indexterm" name="id13837"></a><p>Restringir un tpcpatch a (al complemento de) un valor pcpatch o un conjunto de valores pcpatch</p><pre class="programlisting">
 atValue(tpcpatch,pcpatch) → tpcpatch
 minusValue(tpcpatch,pcpatch) → tpcpatch
 atValues(tpcpatch,pcpatchset) → tpcpatch
@@ -94,7 +94,7 @@ SELECT numInstants(minusValue(tpcpatchSeq(ARRAY[
   '2001-01-02'::timestamptz)]),
   pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
 -- 1
-</pre></li><li class="listitem"><a name="tpcpatch_atTpcbox"></a><a class="indexterm" name="id13816"></a><a class="indexterm" name="id13819"></a><p>Restringir un tpcpatch a los instantes cuyo parche supera una prueba de superposición aproximada de PCBOUNDS frente al tpcbox, o eliminarlos. La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente, sin descompresión por punto. Como el <code class="varname">PCBOUNDS</code> de pgPointCloud es 2D, la dimensión Z de la caja se ignora a esta granularidad. Devuelve NULL cuando el pcid del tpcbox no coincide.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_atTpcbox"></a><a class="indexterm" name="id13844"></a><a class="indexterm" name="id13847"></a><p>Restringir un tpcpatch a los instantes cuyo parche supera una prueba de superposición aproximada de PCBOUNDS frente al tpcbox, o eliminarlos. La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente, sin descompresión por punto. Como el <code class="varname">PCBOUNDS</code> de pgPointCloud es 2D, la dimensión Z de la caja se ignora a esta granularidad. Devuelve NULL cuando el pcid del tpcbox no coincide.</p><pre class="programlisting">
 atTpcbox(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch
 minusTpcbox(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch
 </pre><pre class="programlisting">
@@ -114,7 +114,7 @@ SELECT numInstants(minusTpcbox(tpcpatchSeq(ARRAY[
   '2001-01-02'::timestamptz)]),
   tpcbox_xt(0, 0, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 2
-</pre></li><li class="listitem"><a name="tpcpatch_atTpcboxFine"></a><a class="indexterm" name="id13827"></a><a class="indexterm" name="id13830"></a><p>Variante por punto de la anterior: cada instante superviviente contiene un pcpatch recién construido que incluye solo los puntos dentro (o fuera, en el caso de minus) del tpcbox en 2D, y en 3D cuando la caja tiene dimensión Z. Los instantes cuyo parche filtra hasta cero puntos se descartan. Más lenta que la variante aproximada porque cada parche se descomprime y reconstruye; úsela cuando se necesite fidelidad a nivel de punto.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_atTpcboxFine"></a><a class="indexterm" name="id13855"></a><a class="indexterm" name="id13858"></a><p>Variante por punto de la anterior: cada instante superviviente contiene un pcpatch recién construido que incluye solo los puntos dentro (o fuera, en el caso de minus) del tpcbox en 2D, y en 3D cuando la caja tiene dimensión Z. Los instantes cuyo parche filtra hasta cero puntos se descartan. Más lenta que la variante aproximada porque cada parche se descomprime y reconstruye; úsela cuando se necesite fidelidad a nivel de punto.</p><pre class="programlisting">
 atTpcboxFine(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch
 minusTpcboxFine(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch
 </pre><pre class="programlisting">
@@ -125,7 +125,7 @@ SELECT numInstants(atTpcboxFine(tpcpatchSeq(ARRAY[
   '2001-01-02'::timestamptz)]),
   tpcbox_xt(0, 0, 1, 1, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 1
-</pre></li><li class="listitem"><a name="tpcpatch_atGeometry"></a><a class="indexterm" name="id13837"></a><a class="indexterm" name="id13840"></a><p>Restringir un tpcpatch a los puntos cuya proyección XY intersecta (o no intersecta, en el caso de minus) una geometría 2D. Z se ignora. El llamador debe garantizar la compatibilidad de SRID entre el esquema del parche y la geometría.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_atGeometry"></a><a class="indexterm" name="id13865"></a><a class="indexterm" name="id13868"></a><p>Restringir un tpcpatch a los puntos cuya proyección XY intersecta (o no intersecta, en el caso de minus) una geometría 2D. Z se ignora. El llamador debe garantizar la compatibilidad de SRID entre el esquema del parche y la geometría.</p><pre class="programlisting">
 atGeometry(tpcpatch,geometry) → tpcpatch
 minusGeometry(tpcpatch,geometry) → tpcpatch
 </pre><pre class="programlisting">
@@ -145,7 +145,7 @@ SELECT numInstants(minusGeometry(tpcpatchSeq(ARRAY[
   '2001-01-02'::timestamptz)]),
   geometry 'POLYGON((0 0, 0 3, 3 3, 3 0, 0 0))'));
 -- 1
-</pre></li><li class="listitem"><a name="tpcpatch_beforeTimestamp"></a><a class="indexterm" name="id13847"></a><a class="indexterm" name="id13850"></a><p>Restringir un tpcpatch a los instantes anteriores o posteriores a una marca de tiempo. El indicador strict excluye el instante en la marca de tiempo misma</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_beforeTimestamp"></a><a class="indexterm" name="id13875"></a><a class="indexterm" name="id13878"></a><p>Restringir un tpcpatch a los instantes anteriores o posteriores a una marca de tiempo. El indicador strict excluye el instante en la marca de tiempo misma</p><pre class="programlisting">
 beforeTimestamp(tpcpatch,timestamptz,strict boolean=TRUE) → tpcpatch
 afterTimestamp(tpcpatch,timestamptz,strict boolean=TRUE) → tpcpatch
 </pre><pre class="programlisting">
@@ -165,7 +165,7 @@ SELECT timeSpan(afterTimestamp(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5)), '2001-01-03'::timestamptz)]),
   timestamptz '2001-01-02'));
 -- (2001-01-02, 2001-01-03]
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_modifications"></a>Modificaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_insert"></a><a class="indexterm" name="id13860"></a><a class="indexterm" name="id13863"></a><p>Insertar un tpcpatch en otro, o actualizar otro con él</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_modifications"></a>Modificaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_insert"></a><a class="indexterm" name="id13888"></a><a class="indexterm" name="id13891"></a><p>Insertar un tpcpatch en otro, o actualizar otro con él</p><pre class="programlisting">
 insert(tpcpatch,tpcpatch,connect boolean=TRUE) → tpcpatch
 update(tpcpatch,tpcpatch,connect boolean=TRUE) → tpcpatch
 </pre><pre class="programlisting">
@@ -178,7 +178,7 @@ SELECT numInstants(insert(tpcpatchSeq(ARRAY[
   '2001-01-02'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5)), '2001-01-03'::timestamptz)])));
 -- 3
-</pre></li><li class="listitem"><a name="tpcpatch_deleteTime"></a><a class="indexterm" name="id13870"></a><p>Eliminar un selector de tiempo (marca de tiempo, conjunto, período o conjunto de spans) de un tpcpatch</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_deleteTime"></a><a class="indexterm" name="id13898"></a><p>Eliminar un selector de tiempo (marca de tiempo, conjunto, período o conjunto de spans) de un tpcpatch</p><pre class="programlisting">
 deleteTime(tpcpatch,timestamptz,connect boolean=TRUE) → tpcpatch
 deleteTime(tpcpatch,tstzset,connect boolean=TRUE) → tpcpatch
 deleteTime(tpcpatch,tstzspan,connect boolean=TRUE) → tpcpatch
@@ -195,7 +195,7 @@ SELECT numInstants(deleteTime(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5)), '2001-01-03'::timestamptz)]),
   timestamptz '2001-01-02'));
 -- 4
-</pre></li><li class="listitem"><a name="tpcpatch_appendInstant"></a><a class="indexterm" name="id13877"></a><a class="indexterm" name="id13880"></a><p>Añadir un instante o una secuencia a un tpcpatch</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_appendInstant"></a><a class="indexterm" name="id13905"></a><a class="indexterm" name="id13908"></a><p>Añadir un instante o una secuencia a un tpcpatch</p><pre class="programlisting">
 appendInstant(tpcpatch,tpcpatch) → tpcpatch
 appendSequence(tpcpatch,tpcpatch) → tpcpatch
 </pre><pre class="programlisting">
@@ -206,7 +206,7 @@ SELECT numInstants(appendInstant(tpcpatchSeq(ARRAY[
   '2001-01-02'::timestamptz)]),
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5)), '2001-01-03'::timestamptz)));
 -- 3
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_splitting"></a>Fragmentación</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_unnest"></a><a class="indexterm" name="id13890"></a><p>Devolver los valores distintos de un tpcpatch con el conjunto de spans durante el cual toma cada uno de ellos</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_splitting"></a>Fragmentación</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_unnest"></a><a class="indexterm" name="id13918"></a><p>Devolver los valores distintos de un tpcpatch con el conjunto de spans durante el cual toma cada uno de ellos</p><pre class="programlisting">
 unnest(tpcpatch) → {(value,time)}
 </pre><pre class="programlisting">
 SELECT (un).time
@@ -219,7 +219,7 @@ FROM (SELECT unnest(tpcpatchSeq(ARRAY[
   '2024-01-03'::timestamptz)])) AS un) t;
 -- {[2024-01-02, 2024-01-03)}
 -- {[2024-01-01, 2024-01-02), [2024-01-03, 2024-01-03]}
-</pre></li><li class="listitem"><a name="tpcpatch_timeSplit"></a><a class="indexterm" name="id13897"></a><p>Fragmentar un tpcpatch en fragmentos, uno por cada intervalo de tiempo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_timeSplit"></a><a class="indexterm" name="id13925"></a><p>Fragmentar un tpcpatch en fragmentos, uno por cada intervalo de tiempo</p><pre class="programlisting">
 timeSplit(tpcpatch,bin_width interval,
   origin timestamptz='2000-01-03') → {(time,tpcpatch)}
 </pre><pre class="programlisting">
@@ -235,7 +235,7 @@ FROM (SELECT timeSplit(tpcpatchSeq(ARRAY[
 -- 2024-01-01 | 2
 -- 2024-01-02 | 2
 -- 2024-01-03 | 1
-</pre></li><li class="listitem"><a name="tpcpatch_spans"></a><a class="indexterm" name="id13904"></a><p>Devuelve el arreglo de lapsos de tiempo de los segmentos de un tpcpatch</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_spans"></a><a class="indexterm" name="id13932"></a><p>Devuelve el arreglo de lapsos de tiempo de los segmentos de un tpcpatch</p><pre class="programlisting">
 spans(tpcpatch) → tstzspan[]
 </pre><pre class="programlisting">
 SELECT spans(tpcpatchSeq(ARRAY[
@@ -246,7 +246,7 @@ SELECT spans(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2024-01-03'::timestamptz)]));
 -- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
-</pre></li><li class="listitem"><a name="tpcpatch_split_spans"></a><a class="indexterm" name="id13911"></a><a class="indexterm" name="id13914"></a><p>Devuelve los lapsos de tiempo de un tpcpatch dividido en un número dado de contenedores, o con un número dado de segmentos por contenedor</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_split_spans"></a><a class="indexterm" name="id13939"></a><a class="indexterm" name="id13942"></a><p>Devuelve los lapsos de tiempo de un tpcpatch dividido en un número dado de contenedores, o con un número dado de segmentos por contenedor</p><pre class="programlisting">
 splitNSpans(tpcpatch, integer) → tstzspan[]
 splitEachNSpans(tpcpatch, integer) → tstzspan[]
 </pre><pre class="programlisting">
@@ -258,7 +258,7 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2024-01-03'::timestamptz)]), 2);
 -- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_spatialrels"></a>Relaciones espaciales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_eIntersects"></a><a class="indexterm" name="id13924"></a><a class="indexterm" name="id13927"></a><a class="indexterm" name="id13930"></a><a class="indexterm" name="id13933"></a><a class="indexterm" name="id13936"></a><a class="indexterm" name="id13939"></a><a class="indexterm" name="id13942"></a><a class="indexterm" name="id13945"></a><a class="indexterm" name="id13948"></a><a class="indexterm" name="id13951"></a><a class="indexterm" name="id13954"></a><a class="indexterm" name="id13957"></a><p>Devolver verdadero si y solo si al menos un punto de alguno de los instantes del tpcpatch intersecta la geometría (solo XY).</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_spatialrels"></a>Relaciones espaciales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_eIntersects"></a><a class="indexterm" name="id13952"></a><a class="indexterm" name="id13955"></a><a class="indexterm" name="id13958"></a><a class="indexterm" name="id13961"></a><a class="indexterm" name="id13964"></a><a class="indexterm" name="id13967"></a><a class="indexterm" name="id13970"></a><a class="indexterm" name="id13973"></a><a class="indexterm" name="id13976"></a><a class="indexterm" name="id13979"></a><a class="indexterm" name="id13982"></a><a class="indexterm" name="id13985"></a><p>Devolver verdadero si y solo si al menos un punto de alguno de los instantes del tpcpatch intersecta la geometría (solo XY).</p><pre class="programlisting">
 eIntersects(tpcpatch,geometry) → boolean
 </pre><p>Las relaciones alguna vez y siempre cubren la misma matriz: <code class="varname">eContains</code>, <code class="varname">eCovers</code>, <code class="varname">eDisjoint</code>, <code class="varname">eIntersects</code>, <code class="varname">eTouches</code> y <code class="varname">eDwithin</code>, cada una en los tres órdenes de argumentos, y sus gemelas siempre. <code class="varname">eIntersects(tpcpatch,geometry)</code> es la que el tipo responde de forma nativa, recorriendo los puntos de cada instante y deteniéndose en el primer acierto; las demás convierten el parche a la geometría temporal de sus multipuntos.</p><pre class="programlisting">
 SELECT eIntersects(tpcpatchSeq(ARRAY[
@@ -267,13 +267,13 @@ SELECT eIntersects(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
   '2001-01-02'::timestamptz)]), geometry 'POINT(1 1)');
 -- t
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_conversions"></a>Conversiones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tgeometry"></a><a class="indexterm" name="id13975"></a><p>Convierte un parche temporal en la geometría temporal de los multipuntos que ocupan sus parches. El parche de cada instante se convierte en el multipunto de las posiciones que ocupan sus puntos, leídas a través del esquema que nombra su <code class="varname">pcid</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_conversions"></a>Conversiones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tgeometry"></a><a class="indexterm" name="id14003"></a><p>Convierte un parche temporal en la geometría temporal de los multipuntos que ocupan sus parches. El parche de cada instante se convierte en el multipunto de las posiciones que ocupan sus puntos, leídas a través del esquema que nombra su <code class="varname">pcid</code></p><pre class="programlisting">
 tgeometry(tpcpatch) → tgeometry
 </pre><pre class="programlisting">
 SELECT asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz)::tgeometry);
 -- MULTIPOINT Z ((1 1 1),(2 2 2))@2001-01-01
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_tempspatialrels"></a>Relaciones espaciales temporales</h3></div></div></div><p>Las relaciones <span class="emphasis"><em>temporales</em></span> calculan la relación topológica o de distancia en cada instante y dan como resultado un <code class="varname">tbool</code>. Un parche llega al motor de geometría a través de la conversión a <code class="varname">tgeometry</code> anterior, por lo que basta con que un punto del parche esté dentro del argumento para que el parche lo intersecte. Un tpcpatch lleva la Z que declara su esquema, y <code class="varname">tContains</code>, <code class="varname">tCovers</code> y <code class="varname">tTouches</code> son relaciones planas que rechazan una dimensión Z, de modo que el tipo responde las tres que un valor con Z puede responder.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tspatialrels"></a><a class="indexterm" name="id13993"></a><a class="indexterm" name="id13996"></a><a class="indexterm" name="id13999"></a><a class="indexterm" name="id14002"></a><a class="indexterm" name="id14005"></a><a class="indexterm" name="id14008"></a><p>Relaciones espaciales temporales</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_tempspatialrels"></a>Relaciones espaciales temporales</h3></div></div></div><p>Las relaciones <span class="emphasis"><em>temporales</em></span> calculan la relación topológica o de distancia en cada instante y dan como resultado un <code class="varname">tbool</code>. Un parche llega al motor de geometría a través de la conversión a <code class="varname">tgeometry</code> anterior, por lo que basta con que un punto del parche esté dentro del argumento para que el parche lo intersecte. Un tpcpatch lleva la Z que declara su esquema, y <code class="varname">tContains</code>, <code class="varname">tCovers</code> y <code class="varname">tTouches</code> son relaciones planas que rechazan una dimensión Z, de modo que el tipo responde las tres que un valor con Z puede responder.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tspatialrels"></a><a class="indexterm" name="id14021"></a><a class="indexterm" name="id14024"></a><a class="indexterm" name="id14027"></a><a class="indexterm" name="id14030"></a><a class="indexterm" name="id14033"></a><a class="indexterm" name="id14036"></a><p>Relaciones espaciales temporales</p><pre class="programlisting">
 tDisjoint({geometry,tpcpatch},{geometry,tpcpatch}) → tbool
 tDwithin({geometry,tpcpatch},{geometry,tpcpatch},float) → tbool
 tIntersects({geometry,tpcpatch},{geometry,tpcpatch}) → tbool
@@ -295,10 +295,10 @@ SELECT tIntersects(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz)]),
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
 -- [t@2001-01-01, f@2001-01-02]
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_bbox_ops"></a>Operadores de caja delimitadora</h3></div></div></div><p>La misma superficie de operadores de caja que en <a class="xref" href="ch19s05.html#tpcpoint_bbox_ops" title="Operadores de caja delimitadora">“Operadores de caja delimitadora”</a> se aplica a <code class="varname">tpcpatch</code>. El predicado se evalúa sobre el <code class="varname">tpcbox</code> del valor, calculado en O(1) por instante a partir del <code class="varname">PCBOUNDS</code> embebido en el parche.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_topo"></a><a class="indexterm" name="id14025"></a><p>Predicados topológicos: <code class="varname">&amp;&amp;</code>, <code class="varname">@&gt;</code>, <code class="varname">&lt;@</code>, <code class="varname">~=</code>, <code class="varname">-|-</code>. Véase <a class="xref" href="ch19s04.html#tpcbox_topo" title="Operadores Topológicos">“Operadores Topológicos”</a>.</p></li><li class="listitem"><a name="tpcpatch_pos"></a><a class="indexterm" name="id14036"></a><p>Predicados direccionales estrictos sobre los ejes X / Y / Z / tiempo (<code class="varname">&lt;&lt;</code>, <code class="varname">&gt;&gt;</code>, <code class="varname">&lt;&lt;|</code>, <code class="varname">|&gt;&gt;</code>, <code class="varname">&lt;&lt;/</code>, <code class="varname">/&gt;&gt;</code>, <code class="varname">&lt;&lt;#</code>, <code class="varname">#&gt;&gt;</code>) y sus variantes «solapa-o-X» (<code class="varname">&amp;&lt;</code>, <code class="varname">&amp;&gt;</code>, <code class="varname">&amp;&lt;|</code>, <code class="varname">|&amp;&gt;</code>, <code class="varname">&amp;&lt;/</code>, <code class="varname">/&amp;&gt;</code>, <code class="varname">&amp;&lt;#</code>, <code class="varname">#&amp;&gt;</code>). Véase <a class="xref" href="ch19s04.html#tpcbox_pos" title="Operadores de Posición">“Operadores de Posición”</a>.</p></li><li class="listitem"><a name="tpcpatch_knn"></a><a class="indexterm" name="id14058"></a><a class="indexterm" name="id14061"></a><p>La distancia de aproximación más cercana (<code class="varname">|=|</code>) es ordenable KNN a través de la clase de operador GiST.</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_bbox_ops"></a>Operadores de caja delimitadora</h3></div></div></div><p>La misma superficie de operadores de caja que en <a class="xref" href="ch19s05.html#tpcpoint_bbox_ops" title="Operadores de caja delimitadora">“Operadores de caja delimitadora”</a> se aplica a <code class="varname">tpcpatch</code>. El predicado se evalúa sobre el <code class="varname">tpcbox</code> del valor, calculado en O(1) por instante a partir del <code class="varname">PCBOUNDS</code> embebido en el parche.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_topo"></a><a class="indexterm" name="id14053"></a><p>Predicados topológicos: <code class="varname">&amp;&amp;</code>, <code class="varname">@&gt;</code>, <code class="varname">&lt;@</code>, <code class="varname">~=</code>, <code class="varname">-|-</code>. Véase <a class="xref" href="ch19s04.html#tpcbox_topo" title="Operadores Topológicos">“Operadores Topológicos”</a>.</p></li><li class="listitem"><a name="tpcpatch_pos"></a><a class="indexterm" name="id14064"></a><p>Predicados direccionales estrictos sobre los ejes X / Y / Z / tiempo (<code class="varname">&lt;&lt;</code>, <code class="varname">&gt;&gt;</code>, <code class="varname">&lt;&lt;|</code>, <code class="varname">|&gt;&gt;</code>, <code class="varname">&lt;&lt;/</code>, <code class="varname">/&gt;&gt;</code>, <code class="varname">&lt;&lt;#</code>, <code class="varname">#&gt;&gt;</code>) y sus variantes «solapa-o-X» (<code class="varname">&amp;&lt;</code>, <code class="varname">&amp;&gt;</code>, <code class="varname">&amp;&lt;|</code>, <code class="varname">|&amp;&gt;</code>, <code class="varname">&amp;&lt;/</code>, <code class="varname">/&amp;&gt;</code>, <code class="varname">&amp;&lt;#</code>, <code class="varname">#&amp;&gt;</code>). Véase <a class="xref" href="ch19s04.html#tpcbox_pos" title="Operadores de Posición">“Operadores de Posición”</a>.</p></li><li class="listitem"><a name="tpcpatch_knn"></a><a class="indexterm" name="id14086"></a><a class="indexterm" name="id14089"></a><p>La distancia de aproximación más cercana (<code class="varname">|=|</code>) es ordenable KNN a través de la clase de operador GiST.</p><pre class="programlisting">
 nearestApproachDistance(tpcpatch,tpcbox) → float
 nearestApproachDistance(tpcpatch,tpcpatch) → float
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_comparisons"></a>Comparaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_ever_eq"></a><a class="indexterm" name="id14071"></a><a class="indexterm" name="id14074"></a><a class="indexterm" name="id14077"></a><a class="indexterm" name="id14080"></a><a class="indexterm" name="id14083"></a><a class="indexterm" name="id14086"></a><p>Comprobar si el valor en algún instante (alguna vez) o en todos los instantes (siempre) es igual a, o distinto de, un pcpatch u otro tpcpatch</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_comparisons"></a>Comparaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_ever_eq"></a><a class="indexterm" name="id14099"></a><a class="indexterm" name="id14102"></a><a class="indexterm" name="id14105"></a><a class="indexterm" name="id14108"></a><a class="indexterm" name="id14111"></a><a class="indexterm" name="id14114"></a><p>Comprobar si el valor en algún instante (alguna vez) o en todos los instantes (siempre) es igual a, o distinto de, un pcpatch u otro tpcpatch</p><pre class="programlisting">
 eEq(pcpatch,tpcpatch) → boolean
 eEq(tpcpatch,pcpatch) → boolean
 eEq(tpcpatch,tpcpatch) → boolean
@@ -319,7 +319,7 @@ SELECT aEq(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
   '2001-01-02'::timestamptz)]), pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)));
 -- f
-</pre></li><li class="listitem"><a name="tpcpatch_temporal_eq"></a><a class="indexterm" name="id14102"></a><a class="indexterm" name="id14105"></a><a class="indexterm" name="id14108"></a><p>Devolver la igualdad o desigualdad temporal de un tpcpatch con un pcpatch o con otro tpcpatch, como un tbool</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_temporal_eq"></a><a class="indexterm" name="id14130"></a><a class="indexterm" name="id14133"></a><a class="indexterm" name="id14136"></a><p>Devolver la igualdad o desigualdad temporal de un tpcpatch con un pcpatch o con otro tpcpatch, como un tbool</p><pre class="programlisting">
 tEq(pcpatch,tpcpatch) → tbool
 tEq(tpcpatch,pcpatch) → tbool
 tEq(tpcpatch,tpcpatch) → tbool

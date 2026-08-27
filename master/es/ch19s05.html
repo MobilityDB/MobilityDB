@@ -7,18 +7,18 @@ INSERT INTO scans VALUES (1,
            '2024-01-01'::timestamptz));
 -- rejects any other pcid:
 -- ERROR: Pcid of tpcpoint value (2) does not match column typmod pcid (1)
-</pre><p>Omitir el typmod (<code class="varname">tpcpoint</code> sin pcid entre paréntesis) deja la columna sin restricción de esquema. La comprobación en tiempo de ejecución del agregado <code class="varname">extent</code> sigue rechazando entradas con pcid mixtos a mitad de consulta incluso en columnas sin restricciones.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_inst"></a><a class="indexterm" name="id13169"></a><p>Construir un pcpoint temporal de subtipo instante</p><pre class="programlisting">
+</pre><p>Omitir el typmod (<code class="varname">tpcpoint</code> sin pcid entre paréntesis) deja la columna sin restricción de esquema. La comprobación en tiempo de ejecución del agregado <code class="varname">extent</code> sigue rechazando entradas con pcid mixtos a mitad de consulta incluso en columnas sin restricciones.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_inst"></a><a class="indexterm" name="id13197"></a><p>Construir un pcpoint temporal de subtipo instante</p><pre class="programlisting">
 tpcpoint(pcpoint,timestamptz) → tpcpoint
 </pre><pre class="programlisting">
 SELECT tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), '2024-01-01 12:00+00');
-</pre></li><li class="listitem"><a name="tpcpoint_seq"></a><a class="indexterm" name="id13176"></a><p>Construir un pcpoint temporal de subtipo secuencia a partir de un array de instantes. La interpolación es una de <code class="varname">'discrete'</code>, <code class="varname">'step'</code>; <code class="varname">'step'</code> es el valor predeterminado para tpcpoint, ya que los pcpoints llevan dimensiones heterogéneas que no se interpolan de manera lineal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_seq"></a><a class="indexterm" name="id13204"></a><p>Construir un pcpoint temporal de subtipo secuencia a partir de un array de instantes. La interpolación es una de <code class="varname">'discrete'</code>, <code class="varname">'step'</code>; <code class="varname">'step'</code> es el valor predeterminado para tpcpoint, ya que los pcpoints llevan dimensiones heterogéneas que no se interpolan de manera lineal</p><pre class="programlisting">
 tpcpointSeq(tpcpoint[]) → tpcpoint
 tpcpointSeq(tpcpoint[],text) → tpcpoint
 </pre><pre class="programlisting">
 SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]),
   '2024-01-01'::timestamptz),
   tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]), '2024-01-02'::timestamptz)], 'step');
-</pre></li><li class="listitem"><a name="tpcpoint_seqset"></a><a class="indexterm" name="id13186"></a><p>Construir un pcpoint temporal de subtipo conjunto de secuencias a partir de un array de secuencias</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_seqset"></a><a class="indexterm" name="id13214"></a><p>Construir un pcpoint temporal de subtipo conjunto de secuencias a partir de un array de secuencias</p><pre class="programlisting">
 tpcpointSeqSet(tpcpoint[]) → tpcpoint
 </pre><pre class="programlisting">
 SELECT numSequences(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
@@ -29,12 +29,12 @@ SELECT numInstants(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)])]));
 -- 2
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_accessors"></a>Funciones de Acceso</h3></div></div></div><p>Se aplican todas las funciones de acceso temporales genéricas (véase <a class="xref" href="ch04.html" title="Capítulo 4. Tipos temporales (Parte 1)">Capítulo 4, <i>Tipos temporales (Parte 1)</i></a>): <code class="varname">numInstants</code>, <code class="varname">startInstant</code>, <code class="varname">endInstant</code>, <code class="varname">instantN</code>, <code class="varname">instants</code>, <code class="varname">startValue</code>, <code class="varname">endValue</code>, <code class="varname">getValues</code>, <code class="varname">numTimestamps</code>, <code class="varname">startTimestamp</code>, <code class="varname">endTimestamp</code>, <code class="varname">getTime</code>, <code class="varname">duration</code>, <code class="varname">memSize</code>, <code class="varname">interp</code>. Adicionalmente:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_pcid"></a><a class="indexterm" name="id13213"></a><p>Devolver el id de esquema de pgPointCloud compartido por todos los instantes</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_accessors"></a>Funciones de Acceso</h3></div></div></div><p>Se aplican todas las funciones de acceso temporales genéricas (véase <a class="xref" href="ch04.html" title="Capítulo 4. Tipos temporales (Parte 1)">Capítulo 4, <i>Tipos temporales (Parte 1)</i></a>): <code class="varname">numInstants</code>, <code class="varname">startInstant</code>, <code class="varname">endInstant</code>, <code class="varname">instantN</code>, <code class="varname">instants</code>, <code class="varname">startValue</code>, <code class="varname">endValue</code>, <code class="varname">getValues</code>, <code class="varname">numTimestamps</code>, <code class="varname">startTimestamp</code>, <code class="varname">endTimestamp</code>, <code class="varname">getTime</code>, <code class="varname">duration</code>, <code class="varname">memSize</code>, <code class="varname">interp</code>. Adicionalmente:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_pcid"></a><a class="indexterm" name="id13241"></a><p>Devolver el id de esquema de pgPointCloud compartido por todos los instantes</p><pre class="programlisting">
 pcid(tpcpoint) → integer
 </pre><pre class="programlisting">
 SELECT pcid(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- 1
-</pre></li><li class="listitem"><a name="tpcpoint_SRID"></a><a class="indexterm" name="id13220"></a><p>Devolver el SRID heredado del esquema</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_SRID"></a><a class="indexterm" name="id13248"></a><p>Devolver el SRID heredado del esquema</p><pre class="programlisting">
 SRID(tpcpoint) → integer
 SRID(tpcpatch) → integer
 </pre><pre class="programlisting">
@@ -44,7 +44,7 @@ SELECT SRID(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 SELECT SRID(tpcpatch(PC_Patch(ARRAY[pcpoint(1, 1, 1, 1)]),
   '2001-01-01'::timestamptz));
 -- 0
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_projections"></a>Proyecciones por Dimensión</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_getXYZ"></a><a class="indexterm" name="id13230"></a><a class="indexterm" name="id13233"></a><a class="indexterm" name="id13236"></a><p>Proyectar un tpcpoint sobre una dimensión espacial, produciendo un tfloat</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_projections"></a>Proyecciones por Dimensión</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_getXYZ"></a><a class="indexterm" name="id13258"></a><a class="indexterm" name="id13261"></a><a class="indexterm" name="id13264"></a><p>Proyectar un tpcpoint sobre una dimensión espacial, produciendo un tfloat</p><pre class="programlisting">
 getX(tpcpoint) → tfloat
 getY(tpcpoint) → tfloat
 getZ(tpcpoint) → tfloat
@@ -52,20 +52,20 @@ getZ(tpcpoint) → tfloat
 SELECT startValue(getX(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
   '2024-01-01'::timestamptz)));
 -- 10
-</pre></li><li class="listitem"><a name="tpcpoint_getDim"></a><a class="indexterm" name="id13243"></a><p>Proyectar un tpcpoint sobre cualquier dimensión de esquema con nombre, produciendo un tfloat</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_getDim"></a><a class="indexterm" name="id13271"></a><p>Proyectar un tpcpoint sobre cualquier dimensión de esquema con nombre, produciendo un tfloat</p><pre class="programlisting">
 getDim(tpcpoint,text) → tfloat
 </pre><pre class="programlisting">
 SELECT getDim(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)]), 'X');
 -- Interp=Step;[1@2001-01-01, 2@2001-01-02]
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_conversions"></a>Conversiones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_tgeompoint"></a><a class="indexterm" name="id13253"></a><p>Convertir un tpcpoint a un punto de geometría temporal, proyectando todas las dimensiones no espaciales mientras se preservan las marcas temporales. El resultado tiene el mismo SRID que el esquema; su dimensionalidad (2D frente a 3D) sigue la presencia de Z en el esquema. No se proporciona una conversión inversa: reconstruir un pcpoint requiere un esquema destino que el valor temporal solo no puede suministrar</p><p><code class="varname">tgeompoint::tpcpoint</code> no está definida</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_conversions"></a>Conversiones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_tgeompoint"></a><a class="indexterm" name="id13281"></a><p>Convertir un tpcpoint a un punto de geometría temporal, proyectando todas las dimensiones no espaciales mientras se preservan las marcas temporales. El resultado tiene el mismo SRID que el esquema; su dimensionalidad (2D frente a 3D) sigue la presencia de Z en el esquema. No se proporciona una conversión inversa: reconstruir un pcpoint requiere un esquema destino que el valor temporal solo no puede suministrar</p><p><code class="varname">tgeompoint::tpcpoint</code> no está definida</p><pre class="programlisting">
 tpcpoint::tgeompoint
 </pre><pre class="programlisting">
 SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
   '2024-01-01'::timestamptz)::tgeompoint));
 -- POINT Z (10 20 30)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_subtype"></a><a class="indexterm" name="id13265"></a><a class="indexterm" name="id13268"></a><a class="indexterm" name="id13271"></a><p>Transformar un tpcpoint en otro subtipo</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_subtype"></a><a class="indexterm" name="id13293"></a><a class="indexterm" name="id13296"></a><a class="indexterm" name="id13299"></a><p>Transformar un tpcpoint en otro subtipo</p><pre class="programlisting">
 tpcpointInst(tpcpoint) → tpcpoint
 tpcpointSeq(tpcpoint,interp='step') → tpcpoint
 tpcpointSeqSet(tpcpoint) → tpcpoint
@@ -77,7 +77,7 @@ SELECT numInstants(tpcpointSeq(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)])));
 -- 2
-</pre></li><li class="listitem"><a name="tpcpoint_setInterp"></a><a class="indexterm" name="id13278"></a><p>Transformar un tpcpoint a otra interpolación</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_setInterp"></a><a class="indexterm" name="id13306"></a><p>Transformar un tpcpoint a otra interpolación</p><pre class="programlisting">
 setInterp(tpcpoint,interp) → tpcpoint
 </pre><pre class="programlisting">
 -- A tpcpoint carries step interpolation.
@@ -89,7 +89,7 @@ SELECT interp(setInterp(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)], 'discrete'), 'step'));
 -- Step
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_compops"></a>Comparaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_btree"></a><a class="indexterm" name="id13288"></a><a class="indexterm" name="id13291"></a><a class="indexterm" name="id13294"></a><a class="indexterm" name="id13297"></a><a class="indexterm" name="id13300"></a><a class="indexterm" name="id13303"></a><p>Comparar dos tpcpoints lexicográficamente sobre sus codificaciones canónicas</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_compops"></a>Comparaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_btree"></a><a class="indexterm" name="id13316"></a><a class="indexterm" name="id13319"></a><a class="indexterm" name="id13322"></a><a class="indexterm" name="id13325"></a><a class="indexterm" name="id13328"></a><a class="indexterm" name="id13331"></a><p>Comparar dos tpcpoints lexicográficamente sobre sus codificaciones canónicas</p><pre class="programlisting">
 tpcpoint = tpcpoint → boolean
 tpcpoint &lt;&gt; tpcpoint → boolean
 tpcpoint &lt; tpcpoint → boolean
@@ -106,7 +106,7 @@ SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) &lt;&gt; tpcpoin
 SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) &lt; tpcpoint(pcpoint(1, 2,
   2, 2), '2001-01-02'::timestamptz);
 -- t
-</pre></li><li class="listitem"><a name="tpcpoint_ever_eq"></a><a class="indexterm" name="id13310"></a><a class="indexterm" name="id13313"></a><a class="indexterm" name="id13316"></a><a class="indexterm" name="id13319"></a><a class="indexterm" name="id13322"></a><a class="indexterm" name="id13325"></a><p>Comprobar si el valor en algún instante (alguna vez) o en todos los instantes (siempre) es igual a, o distinto de, un pcpoint u otro tpcpoint</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_ever_eq"></a><a class="indexterm" name="id13338"></a><a class="indexterm" name="id13341"></a><a class="indexterm" name="id13344"></a><a class="indexterm" name="id13347"></a><a class="indexterm" name="id13350"></a><a class="indexterm" name="id13353"></a><p>Comprobar si el valor en algún instante (alguna vez) o en todos los instantes (siempre) es igual a, o distinto de, un pcpoint u otro tpcpoint</p><pre class="programlisting">
 eEq(pcpoint,tpcpoint) → boolean
 eEq(tpcpoint,pcpoint) → boolean
 eEq(tpcpoint,tpcpoint) → boolean
@@ -125,7 +125,7 @@ SELECT aEq(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), pcpoint(1, 1, 1, 1));
 -- f
-</pre></li><li class="listitem"><a name="tpcpoint_temporal_eq"></a><a class="indexterm" name="id13341"></a><a class="indexterm" name="id13344"></a><a class="indexterm" name="id13347"></a><p>Devolver la igualdad o desigualdad temporal de un tpcpoint con un pcpoint o con otro tpcpoint, como un tbool</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_temporal_eq"></a><a class="indexterm" name="id13369"></a><a class="indexterm" name="id13372"></a><a class="indexterm" name="id13375"></a><p>Devolver la igualdad o desigualdad temporal de un tpcpoint con un pcpoint o con otro tpcpoint, como un tbool</p><pre class="programlisting">
 tEq(pcpoint,tpcpoint) → tbool
 tEq(tpcpoint,pcpoint) → tbool
 tEq(tpcpoint,tpcpoint) → tbool
@@ -139,7 +139,7 @@ SELECT tEq(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), pcpoint(1, 1, 1, 1));
 -- [t@2001-01-01, f@2001-01-02, f@2001-01-03]
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_restrictions"></a>Restricciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_atValues"></a><a class="indexterm" name="id13362"></a><a class="indexterm" name="id13365"></a><a class="indexterm" name="id13368"></a><a class="indexterm" name="id13371"></a><p>Restringir un tpcpoint a (al complemento de) un valor pcpoint o un conjunto de valores pcpoint</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_restrictions"></a>Restricciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_atValues"></a><a class="indexterm" name="id13390"></a><a class="indexterm" name="id13393"></a><a class="indexterm" name="id13396"></a><a class="indexterm" name="id13399"></a><p>Restringir un tpcpoint a (al complemento de) un valor pcpoint o un conjunto de valores pcpoint</p><pre class="programlisting">
 atValue(tpcpoint,pcpoint) → tpcpoint
 minusValue(tpcpoint,pcpoint) → tpcpoint
 atValues(tpcpoint,pcpointset) → tpcpoint
@@ -157,7 +157,7 @@ SELECT numInstants(minusValue(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), pcpoint(1, 1, 1, 1)));
 -- 2
-</pre></li><li class="listitem"><a name="tpcpoint_atTime"></a><a class="indexterm" name="id13378"></a><a class="indexterm" name="id13381"></a><p>Restringir un tpcpoint a un selector temporal (marca de tiempo, periodo, conjunto o spanset), o eliminarlo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_atTime"></a><a class="indexterm" name="id13406"></a><a class="indexterm" name="id13409"></a><p>Restringir un tpcpoint a un selector temporal (marca de tiempo, periodo, conjunto o spanset), o eliminarlo</p><pre class="programlisting">
 atTime(tpcpoint,timestamptz) → tpcpoint
 atTime(tpcpoint,tstzspan) → tpcpoint
 atTime(tpcpoint,tstzset) → tpcpoint
@@ -178,7 +178,7 @@ SELECT numInstants(atTime(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]),
   tstzspan '[2001-01-01, 2001-01-02]'));
 -- 2
-</pre></li><li class="listitem"><a name="tpcpoint_atTpcbox"></a><a class="indexterm" name="id13388"></a><a class="indexterm" name="id13391"></a><p>Restringir un tpcpoint al extent espacial / temporal de un tpcbox, o eliminarlo. Devuelve NULL cuando el pcid del tpcbox no coincide con el del tpcpoint. Internamente proyecta a un tgeompoint a través de la caché de esquemas, restringe la proyección mediante el stbox equivalente y devuelve el span temporal del resultado al tpcpoint original para preservar los valores pcpoint completos</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_atTpcbox"></a><a class="indexterm" name="id13416"></a><a class="indexterm" name="id13419"></a><p>Restringir un tpcpoint al extent espacial / temporal de un tpcbox, o eliminarlo. Devuelve NULL cuando el pcid del tpcbox no coincide con el del tpcpoint. Internamente proyecta a un tgeompoint a través de la caché de esquemas, restringe la proyección mediante el stbox equivalente y devuelve el span temporal del resultado al tpcpoint original para preservar los valores pcpoint completos</p><pre class="programlisting">
 atTpcbox(tpcpoint,tpcbox,border_inc boolean=TRUE) → tpcpoint
 minusTpcbox(tpcpoint,tpcbox,border_inc boolean=TRUE) → tpcpoint
 </pre><pre class="programlisting">
@@ -195,7 +195,7 @@ SELECT numInstants(minusTpcbox(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]),
   tpcbox_zt(10, 10, 10, 12, 12, 12, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 3
-</pre></li><li class="listitem"><a name="tpcpoint_beforeTimestamp"></a><a class="indexterm" name="id13398"></a><a class="indexterm" name="id13401"></a><p>Restringir un tpcpoint a los instantes anteriores o posteriores a una marca de tiempo. El indicador strict excluye el instante en la marca de tiempo misma</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_beforeTimestamp"></a><a class="indexterm" name="id13426"></a><a class="indexterm" name="id13429"></a><p>Restringir un tpcpoint a los instantes anteriores o posteriores a una marca de tiempo. El indicador strict excluye el instante en la marca de tiempo misma</p><pre class="programlisting">
 beforeTimestamp(tpcpoint,timestamptz,strict boolean=TRUE) → tpcpoint
 afterTimestamp(tpcpoint,timestamptz,strict boolean=TRUE) → tpcpoint
 </pre><pre class="programlisting">
@@ -209,7 +209,7 @@ SELECT timeSpan(afterTimestamp(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), timestamptz '2001-01-02'));
 -- (2001-01-02, 2001-01-03]
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_modifications"></a>Modificaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_insert"></a><a class="indexterm" name="id13411"></a><a class="indexterm" name="id13414"></a><p>Insertar un tpcpoint en otro, o actualizar otro con él</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_modifications"></a>Modificaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_insert"></a><a class="indexterm" name="id13439"></a><a class="indexterm" name="id13442"></a><p>Insertar un tpcpoint en otro, o actualizar otro con él</p><pre class="programlisting">
 insert(tpcpoint,tpcpoint,connect boolean=TRUE) → tpcpoint
 update(tpcpoint,tpcpoint,connect boolean=TRUE) → tpcpoint
 </pre><pre class="programlisting">
@@ -219,7 +219,7 @@ SELECT numInstants(insert(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)])));
 -- 3
-</pre></li><li class="listitem"><a name="tpcpoint_deleteTime"></a><a class="indexterm" name="id13421"></a><p>Eliminar un selector de tiempo (marca de tiempo, conjunto, período o conjunto de spans) de un tpcpoint</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_deleteTime"></a><a class="indexterm" name="id13449"></a><p>Eliminar un selector de tiempo (marca de tiempo, conjunto, período o conjunto de spans) de un tpcpoint</p><pre class="programlisting">
 deleteTime(tpcpoint,timestamptz,connect boolean=TRUE) → tpcpoint
 deleteTime(tpcpoint,tstzset,connect boolean=TRUE) → tpcpoint
 deleteTime(tpcpoint,tstzspan,connect boolean=TRUE) → tpcpoint
@@ -233,7 +233,7 @@ SELECT numInstants(deleteTime(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), timestamptz '2001-01-02'));
 -- 4
-</pre></li><li class="listitem"><a name="tpcpoint_appendInstant"></a><a class="indexterm" name="id13428"></a><a class="indexterm" name="id13431"></a><p>Añadir un instante o una secuencia a un tpcpoint</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_appendInstant"></a><a class="indexterm" name="id13456"></a><a class="indexterm" name="id13459"></a><p>Añadir un instante o una secuencia a un tpcpoint</p><pre class="programlisting">
 appendInstant(tpcpoint,tpcpoint) → tpcpoint
 appendSequence(tpcpoint,tpcpoint) → tpcpoint
 </pre><pre class="programlisting">
@@ -242,7 +242,7 @@ SELECT numInstants(appendInstant(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)]),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)));
 -- 3
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_splitting"></a>Fragmentación</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_unnest"></a><a class="indexterm" name="id13441"></a><p>Devolver los valores distintos de un tpcpoint con el conjunto de spans durante el cual toma cada uno de ellos</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_splitting"></a>Fragmentación</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_unnest"></a><a class="indexterm" name="id13469"></a><p>Devolver los valores distintos de un tpcpoint con el conjunto de spans durante el cual toma cada uno de ellos</p><pre class="programlisting">
 unnest(tpcpoint) → {(value,time)}
 </pre><pre class="programlisting">
 SELECT (un).time
@@ -252,7 +252,7 @@ FROM (SELECT unnest(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-03'::timestamptz)])) AS un) t;
 -- {[2024-01-01, 2024-01-02), [2024-01-03, 2024-01-03]}
 -- {[2024-01-02, 2024-01-03)}
-</pre></li><li class="listitem"><a name="tpcpoint_timeSplit"></a><a class="indexterm" name="id13448"></a><p>Fragmentar un tpcpoint en fragmentos, uno por cada intervalo de tiempo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_timeSplit"></a><a class="indexterm" name="id13476"></a><p>Fragmentar un tpcpoint en fragmentos, uno por cada intervalo de tiempo</p><pre class="programlisting">
 timeSplit(tpcpoint,bin_width interval,
   origin timestamptz='2000-01-03') → {(time,tpcpoint)}
 </pre><pre class="programlisting">
@@ -265,7 +265,7 @@ FROM (SELECT timeSplit(tpcpointSeq(ARRAY[
 -- 2024-01-01 | 2
 -- 2024-01-02 | 2
 -- 2024-01-03 | 1
-</pre></li><li class="listitem"><a name="tpcpoint_spans"></a><a class="indexterm" name="id13455"></a><p>Devuelve el arreglo de lapsos de tiempo de los segmentos de un tpcpoint</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_spans"></a><a class="indexterm" name="id13483"></a><p>Devuelve el arreglo de lapsos de tiempo de los segmentos de un tpcpoint</p><pre class="programlisting">
 spans(tpcpoint) → tstzspan[]
 </pre><pre class="programlisting">
 SELECT spans(tpcpointSeq(ARRAY[
@@ -273,7 +273,7 @@ SELECT spans(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]));
 -- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
-</pre></li><li class="listitem"><a name="tpcpoint_split_spans"></a><a class="indexterm" name="id13462"></a><a class="indexterm" name="id13465"></a><p>Devuelve los lapsos de tiempo de un tpcpoint dividido en un número dado de contenedores, o con un número dado de segmentos por contenedor</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_split_spans"></a><a class="indexterm" name="id13490"></a><a class="indexterm" name="id13493"></a><p>Devuelve los lapsos de tiempo de un tpcpoint dividido en un número dado de contenedores, o con un número dado de segmentos por contenedor</p><pre class="programlisting">
 splitNSpans(tpcpoint, integer) → tstzspan[]
 splitEachNSpans(tpcpoint, integer) → tstzspan[]
 </pre><pre class="programlisting">
@@ -282,7 +282,7 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2024-01-03'::timestamptz)]), 2);
 -- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_bbox_ops"></a>Operadores de caja delimitadora</h3></div></div></div><p>Los operadores de caja delimitadora evalúan contra el <code class="varname">tpcbox</code> del valor; véase <a class="xref" href="ch19s04.html#tpcbox_topo" title="Operadores Topológicos">“Operadores Topológicos”</a> y <a class="xref" href="ch19s04.html#tpcbox_pos" title="Operadores de Posición">“Operadores de Posición”</a> para la geometría por operador. Cada operador a continuación está conectado contra <code class="varname">tpcbox</code>, <code class="varname">tstzspan</code> y el propio <code class="varname">tpcpoint</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_topo"></a><a class="indexterm" name="id13482"></a><a class="indexterm" name="id13485"></a><a class="indexterm" name="id13488"></a><a class="indexterm" name="id13491"></a><a class="indexterm" name="id13494"></a><p>Predicados topológicos: <code class="varname">&amp;&amp;</code> solapa, <code class="varname">@&gt;</code> contiene, <code class="varname">&lt;@</code> contenido en, <code class="varname">~=</code> mismo, <code class="varname">-|-</code> adyacente.</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_bbox_ops"></a>Operadores de caja delimitadora</h3></div></div></div><p>Los operadores de caja delimitadora evalúan contra el <code class="varname">tpcbox</code> del valor; véase <a class="xref" href="ch19s04.html#tpcbox_topo" title="Operadores Topológicos">“Operadores Topológicos”</a> y <a class="xref" href="ch19s04.html#tpcbox_pos" title="Operadores de Posición">“Operadores de Posición”</a> para la geometría por operador. Cada operador a continuación está conectado contra <code class="varname">tpcbox</code>, <code class="varname">tstzspan</code> y el propio <code class="varname">tpcpoint</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_topo"></a><a class="indexterm" name="id13510"></a><a class="indexterm" name="id13513"></a><a class="indexterm" name="id13516"></a><a class="indexterm" name="id13519"></a><a class="indexterm" name="id13522"></a><p>Predicados topológicos: <code class="varname">&amp;&amp;</code> solapa, <code class="varname">@&gt;</code> contiene, <code class="varname">&lt;@</code> contenido en, <code class="varname">~=</code> mismo, <code class="varname">-|-</code> adyacente.</p><pre class="programlisting">
 SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-03]), 1)' &amp;&amp;
   tpcbox 'TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-02, 2024-01-04]), 1)';
 -- true
@@ -295,7 +295,7 @@ SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-03]), 1)' ~=
 SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-02)), 1)' -|-
   tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-02, 2024-01-03]), 1)';
 -- true
-</pre></li><li class="listitem"><a name="tpcpoint_pos"></a><a class="indexterm" name="id13505"></a><a class="indexterm" name="id13508"></a><a class="indexterm" name="id13511"></a><a class="indexterm" name="id13514"></a><a class="indexterm" name="id13517"></a><a class="indexterm" name="id13520"></a><a class="indexterm" name="id13523"></a><a class="indexterm" name="id13526"></a><p>Predicados direccionales estrictos sobre el eje X (<code class="varname">&lt;&lt;</code>, <code class="varname">&gt;&gt;</code>), eje Y (<code class="varname">&lt;&lt;|</code>, <code class="varname">|&gt;&gt;</code>), eje Z (<code class="varname">&lt;&lt;/</code>, <code class="varname">/&gt;&gt;</code>) y eje temporal (<code class="varname">&lt;&lt;#</code>, <code class="varname">#&gt;&gt;</code>), más sus variantes "solapa o X": <code class="varname">&amp;&lt;</code>, <code class="varname">&amp;&gt;</code>, <code class="varname">&amp;&lt;|</code>, <code class="varname">|&amp;&gt;</code>, <code class="varname">&amp;&lt;/</code>, <code class="varname">/&amp;&gt;</code>, <code class="varname">&amp;&lt;#</code>, <code class="varname">#&amp;&gt;</code>.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_pos"></a><a class="indexterm" name="id13533"></a><a class="indexterm" name="id13536"></a><a class="indexterm" name="id13539"></a><a class="indexterm" name="id13542"></a><a class="indexterm" name="id13545"></a><a class="indexterm" name="id13548"></a><a class="indexterm" name="id13551"></a><a class="indexterm" name="id13554"></a><p>Predicados direccionales estrictos sobre el eje X (<code class="varname">&lt;&lt;</code>, <code class="varname">&gt;&gt;</code>), eje Y (<code class="varname">&lt;&lt;|</code>, <code class="varname">|&gt;&gt;</code>), eje Z (<code class="varname">&lt;&lt;/</code>, <code class="varname">/&gt;&gt;</code>) y eje temporal (<code class="varname">&lt;&lt;#</code>, <code class="varname">#&gt;&gt;</code>), más sus variantes "solapa o X": <code class="varname">&amp;&lt;</code>, <code class="varname">&amp;&gt;</code>, <code class="varname">&amp;&lt;|</code>, <code class="varname">|&amp;&gt;</code>, <code class="varname">&amp;&lt;/</code>, <code class="varname">/&amp;&gt;</code>, <code class="varname">&amp;&lt;#</code>, <code class="varname">#&amp;&gt;</code>.</p><pre class="programlisting">
 SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;
   tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
 -- true
@@ -308,7 +308,7 @@ SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&l
 SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;#
   tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
 -- true
-</pre></li><li class="listitem"><a name="tpcpoint_knn"></a><a class="indexterm" name="id13548"></a><a class="indexterm" name="id13551"></a><p>Distancia de aproximación más cercana, ordenable KNN mediante la clase de operadores GiST: <code class="varname">SELECT … ORDER BY temp |=| query LIMIT N</code> se acelera con índice. El desajuste de pcid produce infinito.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_knn"></a><a class="indexterm" name="id13576"></a><a class="indexterm" name="id13579"></a><p>Distancia de aproximación más cercana, ordenable KNN mediante la clase de operadores GiST: <code class="varname">SELECT … ORDER BY temp |=| query LIMIT N</code> se acelera con índice. El desajuste de pcid produce infinito.</p><pre class="programlisting">
 nearestApproachDistance(tpcpoint,tpcbox) → float
 nearestApproachDistance(tpcpoint,tpcpoint) → float
 </pre><pre class="programlisting">
@@ -326,7 +326,7 @@ SELECT round(nearestApproachDistance(tpcpointSeq(ARRAY[
 SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
   tpcpoint(pcpoint(1, 10, 10, 10), '2001-01-01'::timestamptz))::numeric, 4);
 -- 15.5885
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_btree_ordering"></a>Ordenación B-tree, qué significa <code class="varname">ORDER BY tpcpoint</code></h3></div></div></div><p>La clase de operadores <code class="varname">tpcpoint_btree_ops</code> produce un orden total sobre los valores <code class="varname">tpcpoint</code>, pero el orden es byte a byte sobre la serialización <code class="varname">pcpoint</code> subyacente, no geométrico. Se aplican las mismas advertencias que al <a class="link" href="ch19s06.html#tpcpatch_btree" title="Ordenación B-tree, qué significa ORDER BY tpcpatch">B-tree de <code class="varname">tpcpatch</code></a>:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="bold"><strong><code class="varname">pcid</code> es el discriminador primario.</strong></span> Los puntos con <code class="varname">pcid</code> menor se ordenan antes que los puntos con <code class="varname">pcid</code> mayor, independientemente de las coordenadas. La mezcla de pcids en una única columna agrupa las filas por esquema primero al ordenar.</p></li><li class="listitem"><p><span class="bold"><strong>Dentro de un único <code class="varname">pcid</code>, el orden sigue la disposición de dimensiones en disco del esquema</strong></span>, típicamente X, Y, Z codificados como int32 (tras aplicar la escala por dimensión del esquema). Dos puntos cuya distancia euclidiana es pequeña pueden ordenarse muy separados si sus dimensiones X difieren, ya que X se compara primero.</p></li><li class="listitem"><p><span class="bold"><strong>La igualdad es igualdad exacta de bytes.</strong></span> Dos pcpoints con los mismos valores de dimensión en el mismo esquema son iguales; el mismo conjunto de coordenadas codificado en un esquema con escala u orden de dimensiones diferente no lo es.</p></li></ul></div><p>Para una ordenación con significado espacial, proyecte a un <code class="varname">tgeompoint</code> mediante la conversión con conocimiento de esquema y use el KNN <code class="varname">&lt;-&gt;</code> de PostGIS sobre la geometría resultante, o use el operador KNN GiST <a class="link" href="ch19s05.html#tpcpoint_knn"><code class="varname">|=|</code></a> directamente sobre el tpcpoint. Para una ordenación con significado temporal, proyecte a <code class="varname">startTimestamp</code> o <code class="varname">timespan</code> y ordene sobre ese valor.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_spatialrels"></a>Relaciones espaciales</h3></div></div></div><p>Se evalúan proyectando el tpcpoint a un <code class="varname">tgeompoint</code> a través de la caché de esquemas y delegando en la relación tgeompoint correspondiente. Cada función está conectada en tres órdenes de argumentos: <code class="varname">(geometry, tpcpoint)</code>, <code class="varname">(tpcpoint, geometry)</code> y <code class="varname">(tpcpoint, tpcpoint)</code>. Las relaciones ever/always están conectadas solo para tpcpoint; un tpcpatch responde en cambio las relaciones temporales, leyendo un parche como el multipunto de las posiciones que ocupan sus puntos. Un tpcpoint declara las relaciones que declara su destino de conversión, de modo que <code class="varname">eContains</code>, <code class="varname">eCovers</code> y <code class="varname">eTouches</code> y sus gemelas siempre también están conectadas: un esquema cuyas dimensiones no incluyen Z las responde, y uno que lleva Z encuentra el rechazo planar <code class="varname">The tgeompoint cannot have Z dimension</code>, exactamente como lo hace un punto geométrico temporal tridimensional.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_planarrels"></a><a class="indexterm" name="id13601"></a><a class="indexterm" name="id13604"></a><a class="indexterm" name="id13607"></a><a class="indexterm" name="id13610"></a><a class="indexterm" name="id13613"></a><a class="indexterm" name="id13616"></a><p>Contiene, cubre y toca alguna vez / siempre</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_btree_ordering"></a>Ordenación B-tree, qué significa <code class="varname">ORDER BY tpcpoint</code></h3></div></div></div><p>La clase de operadores <code class="varname">tpcpoint_btree_ops</code> produce un orden total sobre los valores <code class="varname">tpcpoint</code>, pero el orden es byte a byte sobre la serialización <code class="varname">pcpoint</code> subyacente, no geométrico. Se aplican las mismas advertencias que al <a class="link" href="ch19s06.html#tpcpatch_btree" title="Ordenación B-tree, qué significa ORDER BY tpcpatch">B-tree de <code class="varname">tpcpatch</code></a>:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="bold"><strong><code class="varname">pcid</code> es el discriminador primario.</strong></span> Los puntos con <code class="varname">pcid</code> menor se ordenan antes que los puntos con <code class="varname">pcid</code> mayor, independientemente de las coordenadas. La mezcla de pcids en una única columna agrupa las filas por esquema primero al ordenar.</p></li><li class="listitem"><p><span class="bold"><strong>Dentro de un único <code class="varname">pcid</code>, el orden sigue la disposición de dimensiones en disco del esquema</strong></span>, típicamente X, Y, Z codificados como int32 (tras aplicar la escala por dimensión del esquema). Dos puntos cuya distancia euclidiana es pequeña pueden ordenarse muy separados si sus dimensiones X difieren, ya que X se compara primero.</p></li><li class="listitem"><p><span class="bold"><strong>La igualdad es igualdad exacta de bytes.</strong></span> Dos pcpoints con los mismos valores de dimensión en el mismo esquema son iguales; el mismo conjunto de coordenadas codificado en un esquema con escala u orden de dimensiones diferente no lo es.</p></li></ul></div><p>Para una ordenación con significado espacial, proyecte a un <code class="varname">tgeompoint</code> mediante la conversión con conocimiento de esquema y use el KNN <code class="varname">&lt;-&gt;</code> de PostGIS sobre la geometría resultante, o use el operador KNN GiST <a class="link" href="ch19s05.html#tpcpoint_knn"><code class="varname">|=|</code></a> directamente sobre el tpcpoint. Para una ordenación con significado temporal, proyecte a <code class="varname">startTimestamp</code> o <code class="varname">timespan</code> y ordene sobre ese valor.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_spatialrels"></a>Relaciones espaciales</h3></div></div></div><p>Se evalúan proyectando el tpcpoint a un <code class="varname">tgeompoint</code> a través de la caché de esquemas y delegando en la relación tgeompoint correspondiente. Cada función está conectada en tres órdenes de argumentos: <code class="varname">(geometry, tpcpoint)</code>, <code class="varname">(tpcpoint, geometry)</code> y <code class="varname">(tpcpoint, tpcpoint)</code>. Las relaciones ever/always están conectadas solo para tpcpoint; un tpcpatch responde en cambio las relaciones temporales, leyendo un parche como el multipunto de las posiciones que ocupan sus puntos. Un tpcpoint declara las relaciones que declara su destino de conversión, de modo que <code class="varname">eContains</code>, <code class="varname">eCovers</code> y <code class="varname">eTouches</code> y sus gemelas siempre también están conectadas: un esquema cuyas dimensiones no incluyen Z las responde, y uno que lleva Z encuentra el rechazo planar <code class="varname">The tgeompoint cannot have Z dimension</code>, exactamente como lo hace un punto geométrico temporal tridimensional.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_planarrels"></a><a class="indexterm" name="id13629"></a><a class="indexterm" name="id13632"></a><a class="indexterm" name="id13635"></a><a class="indexterm" name="id13638"></a><a class="indexterm" name="id13641"></a><a class="indexterm" name="id13644"></a><p>Contiene, cubre y toca alguna vez / siempre</p><pre class="programlisting">
 {eContains,aContains}(geometry,tpcpoint) → boolean
 {eCovers,aCovers}(geometry,tpcpoint) → boolean
 {eTouches,aTouches}(geometry,tpcpoint) → boolean
@@ -335,7 +335,7 @@ SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
 SELECT eContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))',
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- ERROR:  The tgeompoint cannot have Z dimension
-</pre></li><li class="listitem"><a name="tpcpoint_intersects"></a><a class="indexterm" name="id13626"></a><a class="indexterm" name="id13629"></a><p>Alguna vez / siempre intersecta.</p><p><code class="varname">eIntersects(tpcpoint,geometry) → boolean</code>, <code class="varname">aIntersects(tpcpoint,geometry) → boolean</code></p><p><code class="varname">eIntersects(tpcpoint,tpcpoint) → boolean</code>, <code class="varname">aIntersects(tpcpoint,tpcpoint) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_intersects"></a><a class="indexterm" name="id13654"></a><a class="indexterm" name="id13657"></a><p>Alguna vez / siempre intersecta.</p><p><code class="varname">eIntersects(tpcpoint,geometry) → boolean</code>, <code class="varname">aIntersects(tpcpoint,geometry) → boolean</code></p><p><code class="varname">eIntersects(tpcpoint,tpcpoint) → boolean</code>, <code class="varname">aIntersects(tpcpoint,tpcpoint) → boolean</code></p><pre class="programlisting">
 SELECT eIntersects(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
@@ -354,7 +354,7 @@ SELECT eIntersects(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]));
 -- t
-</pre></li><li class="listitem"><a name="tpcpoint_disjoint"></a><a class="indexterm" name="id13641"></a><a class="indexterm" name="id13644"></a><p>Alguna vez / siempre disjunto.</p><p><code class="varname">eDisjoint(tpcpoint,geometry) → boolean</code>, <code class="varname">aDisjoint(tpcpoint,geometry) → boolean</code></p><p><code class="varname">eDisjoint(tpcpoint,tpcpoint) → boolean</code>, <code class="varname">aDisjoint(tpcpoint,tpcpoint) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_disjoint"></a><a class="indexterm" name="id13669"></a><a class="indexterm" name="id13672"></a><p>Alguna vez / siempre disjunto.</p><p><code class="varname">eDisjoint(tpcpoint,geometry) → boolean</code>, <code class="varname">aDisjoint(tpcpoint,geometry) → boolean</code></p><p><code class="varname">eDisjoint(tpcpoint,tpcpoint) → boolean</code>, <code class="varname">aDisjoint(tpcpoint,tpcpoint) → boolean</code></p><pre class="programlisting">
 SELECT eDisjoint(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
@@ -365,7 +365,7 @@ SELECT aDisjoint(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), geometry 'POINT Z (1 1 1)');
 -- f
-</pre></li><li class="listitem"><a name="tpcpoint_dwithin"></a><a class="indexterm" name="id13656"></a><a class="indexterm" name="id13659"></a><p>Alguna vez / siempre dentro de la distancia.</p><p><code class="varname">eDwithin(tpcpoint,geometry,float) → boolean</code>, <code class="varname">aDwithin(tpcpoint,geometry,float) → boolean</code></p><p><code class="varname">eDwithin(tpcpoint,tpcpoint,float) → boolean</code>, <code class="varname">aDwithin(tpcpoint,tpcpoint,float) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_dwithin"></a><a class="indexterm" name="id13684"></a><a class="indexterm" name="id13687"></a><p>Alguna vez / siempre dentro de la distancia.</p><p><code class="varname">eDwithin(tpcpoint,geometry,float) → boolean</code>, <code class="varname">aDwithin(tpcpoint,geometry,float) → boolean</code></p><p><code class="varname">eDwithin(tpcpoint,tpcpoint,float) → boolean</code>, <code class="varname">aDwithin(tpcpoint,tpcpoint,float) → boolean</code></p><pre class="programlisting">
 SELECT eDwithin(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
@@ -378,7 +378,7 @@ SELECT aDwithin(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), geometry 'POINT Z (5 5 5)',
   4);
 -- f
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_tempspatialrels"></a>Relaciones espaciales temporales</h3></div></div></div><p>Las relaciones <span class="emphasis"><em>temporales</em></span> calculan la relación topológica o de distancia en cada instante y dan como resultado un <code class="varname">tbool</code>. Leen la misma proyección a <code class="varname">tgeompoint</code> que leen las relaciones ever/always, y están conectadas en los mismos tres órdenes de argumentos. Un tpcpoint lleva la Z que declara su esquema, si la hay: <code class="varname">tContains</code>, <code class="varname">tCovers</code> y <code class="varname">tTouches</code> son relaciones planares, de modo que un esquema cuyas dimensiones no incluyen Z las responde y uno que lleva Z es rechazado. Esa proyección lleva la interpolación de su origen, de modo que una secuencia tpcpoint se responde a lo largo de su trayectoria y no solo en sus instantes.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_tspatialrels"></a><a class="indexterm" name="id13681"></a><a class="indexterm" name="id13684"></a><a class="indexterm" name="id13687"></a><a class="indexterm" name="id13690"></a><a class="indexterm" name="id13693"></a><a class="indexterm" name="id13696"></a><p>Relaciones espaciales temporales</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_tempspatialrels"></a>Relaciones espaciales temporales</h3></div></div></div><p>Las relaciones <span class="emphasis"><em>temporales</em></span> calculan la relación topológica o de distancia en cada instante y dan como resultado un <code class="varname">tbool</code>. Leen la misma proyección a <code class="varname">tgeompoint</code> que leen las relaciones ever/always, y están conectadas en los mismos tres órdenes de argumentos. Un tpcpoint lleva la Z que declara su esquema, si la hay: <code class="varname">tContains</code>, <code class="varname">tCovers</code> y <code class="varname">tTouches</code> son relaciones planares, de modo que un esquema cuyas dimensiones no incluyen Z las responde y uno que lleva Z es rechazado. Esa proyección lleva la interpolación de su origen, de modo que una secuencia tpcpoint se responde a lo largo de su trayectoria y no solo en sus instantes.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_tspatialrels"></a><a class="indexterm" name="id13709"></a><a class="indexterm" name="id13712"></a><a class="indexterm" name="id13715"></a><a class="indexterm" name="id13718"></a><a class="indexterm" name="id13721"></a><a class="indexterm" name="id13724"></a><p>Relaciones espaciales temporales</p><pre class="programlisting">
 tDisjoint({geometry,tpcpoint},{geometry,tpcpoint}) → tbool
 tDwithin({geometry,tpcpoint},{geometry,tpcpoint},float) → tbool
 tIntersects({geometry,tpcpoint},{geometry,tpcpoint}) → tbool

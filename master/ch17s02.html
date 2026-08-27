@@ -7,10 +7,10 @@ SELECT (tbigint '590464338553208831@2001-01-01')::th3index;
 SELECT ((th3index '831c02fffffffff@2001-01-01')::tbigint)::th3index
   = th3index '831c02fffffffff@2001-01-01';
 -- true
-</pre></li><li class="listitem"><a name="th3_tgeogpoint"></a><a class="indexterm" name="id12143"></a><p>Cast a temporal H3 cell to a temporal geodetic / planar point of cell centroids. The two overloads give the caller a choice between the geodetic (<code class="varname">tgeogpoint</code>) and SRID-4326 planar (<code class="varname">tgeompoint</code>) representations.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_tgeogpoint"></a><a class="indexterm" name="id12143"></a><p>Cast a temporal H3 cell to a temporal geodetic / planar point of cell centroids</p><pre class="programlisting">
 th3index::tgeogpoint
 th3index::tgeompoint
-</pre><pre class="programlisting">
+</pre><p>The two overloads give the caller a choice between the geodetic (<code class="varname">tgeogpoint</code>) and SRID-4326 planar (<code class="varname">tgeompoint</code>) representations.</p><pre class="programlisting">
 SELECT (th3index '831c02fffffffff@2001-01-01')::tgeogpoint;
 SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint;
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch17s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 17. Temporal H3 Cell Indices </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Static Geometry Coverage</td></tr></table></div></body></html>
