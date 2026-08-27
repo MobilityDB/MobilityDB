@@ -9,13 +9,21 @@ SELECT th3CellAreaKm2(th3index '871fa44a8ffffff@2001-01-01');
 -- 4.441914270110932@2001-01-01
 SELECT th3CellAreaRads2(th3index '871fa44a8ffffff@2001-01-01');
 -- 0.000000109434431@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_edge_length"></a><a class="indexterm" name="id11680"></a><p>Devolver la longitud temporal de cada arista dirigida en una trayectoria, en la unidad solicitada</p><pre class="programlisting">
-th3EdgeLength(th3index,text='km') → tfloat
+</pre></li><li class="listitem"><a name="th3_h3_edge_length"></a><a class="indexterm" name="id11680"></a><a class="indexterm" name="id11683"></a><a class="indexterm" name="id11686"></a><p>Devolver la longitud temporal de cada arista dirigida en una trayectoria, en kilómetros, metros o radianes</p><pre class="programlisting">
+th3EdgeLengthKm(th3index) → tfloat
+th3EdgeLengthM(th3index) → tfloat
+th3EdgeLengthRads(th3index) → tfloat
 </pre><pre class="programlisting">
-SELECT th3EdgeLength(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+SELECT th3EdgeLengthKm(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01'));
 -- 1.272084901305088@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_great_circle_distance"></a><a class="indexterm" name="id11687"></a><p>Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas)</p><pre class="programlisting">
+SELECT th3EdgeLengthM(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 1272.0849013050881@2001-01-01
+SELECT th3EdgeLengthRads(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 0.000199667786455@2001-01-01
+</pre></li><li class="listitem"><a name="th3_h3_great_circle_distance"></a><a class="indexterm" name="id11693"></a><p>Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas)</p><pre class="programlisting">
 greatCircleDistance(tgeogpoint,tgeogpoint,text='km') → tfloat
 </pre><p>Los dos operandos se sincronizan.</p><pre class="programlisting">
 SELECT greatCircleDistance(tgeogpoint 'Point(0 0)@2001-01-01',

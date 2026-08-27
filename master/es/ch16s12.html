@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s11.html" title="Métricas"><link rel="next" href="ch16s13.html" title="Operadores de Caja Envolvente"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s11.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s13.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_comparisons"></a>Comparaciones</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="th3_ever_always"></a>Comparaciones Siempre y Alguna Vez</h3></div></div></div><p>El operando de prueba puede ser un identificador de celda H3 <code class="varname">h3index</code> simple o otra trayectoria <code class="varname">th3index</code>; ambos son soportados en cualquier posición de operando.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_ever_eq"></a><a class="indexterm" name="id11703"></a><a class="indexterm" name="id11706"></a><p>Devolver <code class="varname">true</code> si una celda H3 temporal es alguna vez igual a la prueba en al menos un instante</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s11.html" title="Métricas"><link rel="next" href="ch16s13.html" title="Operadores de Caja Envolvente"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s11.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s13.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_comparisons"></a>Comparaciones</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="th3_ever_always"></a>Comparaciones Siempre y Alguna Vez</h3></div></div></div><p>El operando de prueba puede ser un identificador de celda H3 <code class="varname">h3index</code> simple o otra trayectoria <code class="varname">th3index</code>; ambos son soportados en cualquier posición de operando.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_ever_eq"></a><a class="indexterm" name="id11709"></a><a class="indexterm" name="id11712"></a><p>Devolver <code class="varname">true</code> si una celda H3 temporal es alguna vez igual a la prueba en al menos un instante</p><pre class="programlisting">
 eEq({h3index,th3index},th3index) → boolean
 eEq(th3index,h3index) → boolean
 {h3index,th3index} ?= th3index
@@ -8,7 +8,7 @@ SELECT th3index
   '[831c02fffffffff@2001-01-01, 880326b885fffff@2001-01-05]'
   ?= 880326b885fffff::h3index;
 -- true
-</pre></li><li class="listitem"><a name="th3_always_eq"></a><a class="indexterm" name="id11714"></a><a class="indexterm" name="id11717"></a><p>Devolver <code class="varname">true</code> si una celda H3 temporal es siempre igual a la prueba a lo largo de todo su eje de tiempo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_always_eq"></a><a class="indexterm" name="id11720"></a><a class="indexterm" name="id11723"></a><p>Devolver <code class="varname">true</code> si una celda H3 temporal es siempre igual a la prueba a lo largo de todo su eje de tiempo</p><pre class="programlisting">
 aEq({h3index,th3index},th3index) → boolean
 aEq(th3index,h3index) → boolean
 {h3index,th3index} %= th3index
@@ -16,7 +16,7 @@ th3index %= h3index
 </pre><pre class="programlisting">
 SELECT aEq(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44a8ffffff');
 -- t
-</pre></li><li class="listitem"><a name="th3_ever_ne"></a><a class="indexterm" name="id11725"></a><a class="indexterm" name="id11728"></a><p>Devolver <code class="varname">true</code> si una celda H3 temporal es alguna vez diferente de la prueba</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_ever_ne"></a><a class="indexterm" name="id11731"></a><a class="indexterm" name="id11734"></a><p>Devolver <code class="varname">true</code> si una celda H3 temporal es alguna vez diferente de la prueba</p><pre class="programlisting">
 eNe({h3index,th3index},th3index) → boolean
 eNe(th3index,h3index) → boolean
 {h3index,th3index} ?&lt;&gt; th3index
@@ -24,7 +24,7 @@ th3index ?&lt;&gt; h3index
 </pre><pre class="programlisting">
 SELECT eNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44aeffffff');
 -- t
-</pre></li><li class="listitem"><a name="th3_always_ne"></a><a class="indexterm" name="id11736"></a><a class="indexterm" name="id11739"></a><p>Devolver <code class="varname">true</code> si una celda H3 temporal es siempre diferente de la prueba</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_always_ne"></a><a class="indexterm" name="id11742"></a><a class="indexterm" name="id11745"></a><p>Devolver <code class="varname">true</code> si una celda H3 temporal es siempre diferente de la prueba</p><pre class="programlisting">
 aNe({h3index,th3index},th3index) → boolean
 aNe(th3index,h3index) → boolean
 {h3index,th3index} %&lt;&gt; th3index
@@ -32,7 +32,7 @@ th3index %&lt;&gt; h3index
 </pre><pre class="programlisting">
 SELECT aNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44aeffffff');
 -- t
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="th3_temp_comparisons"></a>Comparaciones Temporales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_temporal_teq"></a><a class="indexterm" name="id11750"></a><a class="indexterm" name="id11753"></a><a class="indexterm" name="id11756"></a><a class="indexterm" name="id11759"></a><p>Devolver un booleano temporal que da la igualdad (o desigualdad) por instante entre una celda H3 temporal y una prueba</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="th3_temp_comparisons"></a>Comparaciones Temporales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_temporal_teq"></a><a class="indexterm" name="id11756"></a><a class="indexterm" name="id11759"></a><a class="indexterm" name="id11762"></a><a class="indexterm" name="id11765"></a><p>Devolver un booleano temporal que da la igualdad (o desigualdad) por instante entre una celda H3 temporal y una prueba</p><pre class="programlisting">
 tEq({h3index,th3index},th3index) → tbool
 tEq(th3index,h3index) → tbool
 tNe({h3index,th3index},th3index) → tbool
