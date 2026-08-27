@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: relate_area_area</title>
+<title>MobilityDB: relate_simple</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -176,8 +176,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aeec9014e50aa8ed6dc802c2dc61f9037.html#aeec9014e50aa8ed6dc802c2dc61f9037">lwpoly_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af958b0911baf74e5b417c26dbc8143d6.html#af958b0911baf74e5b417c26dbc8143d6">make_geometry_hull</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a84a63dfcc5e61e41accb0f451f835b35.html#a84a63dfcc5e61e41accb0f451f835b35">make_geometry_points</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4220d6c6c61b1c382a737d10b6e15fde.html#a4220d6c6c61b1c382a737d10b6e15fde">meos_covers_possible</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1da446ea06e5b7e598c71d0acc712454.html#a1da446ea06e5b7e598c71d0acc712454">meos_intersects</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6aeffe40f0df110c11cda4694596d65a.html#a6aeffe40f0df110c11cda4694596d65a">meos_covers_possible</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a040c4f12501344e1625c980e371e2eec.html#a040c4f12501344e1625c980e371e2eec">meos_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a38854768ea292512f58c42c2456c7816.html#a38854768ea292512f58c42c2456c7816">meos_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__spatial_ga52c41fa0570f10cf6bb6fe06cf166f84.html#ga52c41fa0570f10cf6bb6fe06cf166f84">meos_linear_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a78778cbf1e8fa22bdf5127d123fa9581.html#a78778cbf1e8fa22bdf5127d123fa9581">meos_oriented_envelope</a></td></tr>
@@ -206,7 +206,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a94c1beafa2baa755c527a031061709b8.html#a94c1beafa2baa755c527a031061709b8">relate_arc_parameter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a46769ca8ba5fab45ee55cdb981c43a0f.html#a46769ca8ba5fab45ee55cdb981c43a0f">relate_arcs_overlap</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a49893ce18a51041f7f2f68c1de5a1a03.html#a49893ce18a51041f7f2f68c1de5a1a03">relate_area_add_parameter</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a82a7d5e77bf97b46e53a0ecccd2eacb2.html#a82a7d5e77bf97b46e53a0ecccd2eacb2">relate_area_area</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a17980cef898b272c8a056140fed1b8f7.html#a17980cef898b272c8a056140fed1b8f7">relate_area_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af3732e0bc2f904e50de09ec4b8fd29c7.html#af3732e0bc2f904e50de09ec4b8fd29c7">relate_area_boundary_edge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a392d7c4440b4d18dd10151ab9a85873f.html#a392d7c4440b4d18dd10151ab9a85873f">relate_area_boundary_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3d6567cfe77f6f8b7a28a9f48c01ca09.html#a3d6567cfe77f6f8b7a28a9f48c01ca09">relate_area_comps_iter</a></td></tr>
@@ -220,9 +220,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aced718268fde118cf0bc2bf6dfa6a440.html#aced718268fde118cf0bc2bf6dfa6a440">relate_area_interior_point_located</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac8c24e9250f11e8d58ab89cf0c58065b.html#ac8c24e9250f11e8d58ab89cf0c58065b">relate_area_interiors_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae393b812c139f08d131e5bf250fc2e3c.html#ae393b812c139f08d131e5bf250fc2e3c">relate_area_line_overlap</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3285f35dc3f5a7e2ac8fdd62d0b09de3.html#a3285f35dc3f5a7e2ac8fdd62d0b09de3">relate_area_linear</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa625698faa631402ecbb890578da9a81.html#aa625698faa631402ecbb890578da9a81">relate_area_linear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4cd9ddc3093fc5eb854d4a64f0baac71.html#a4cd9ddc3093fc5eb854d4a64f0baac71">relate_area_parameter_cmp</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1c8c75d6da781029b25dfa269d952c8f.html#a1c8c75d6da781029b25dfa269d952c8f">relate_area_point</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a28cf941f9c6baefd6ea0f94bf293e82c.html#a28cf941f9c6baefd6ea0f94bf293e82c">relate_area_point</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_abd62867fb5398eaa6843cbfc7e30ddad.html#abd62867fb5398eaa6843cbfc7e30ddad">relate_borrow_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa672f66f364df58e5321c23c7791cf15.html#aa672f66f364df58e5321c23c7791cf15">relate_boundary_dimension</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a7311f157fc72909f9b9994c818506cf8.html#a7311f157fc72909f9b9994c818506cf8">relate_clearance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae3d4d0a61729d1da533162a6283a52af.html#ae3d4d0a61729d1da533162a6283a52af">relate_comp_covered</a></td></tr>
@@ -231,7 +232,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aef66fd76c31e15636e33b7ccd7716653.html#aef66fd76c31e15636e33b7ccd7716653">relate_count_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aedaa1fc1d8b92f4e55f5a0e05cc99c8c.html#aedaa1fc1d8b92f4e55f5a0e05cc99c8c">relate_dim_mask</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4a229ab5b677bb53e1fec84ef763483d.html#a4a229ab5b677bb53e1fec84ef763483d">relate_dimension</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a05009eaf7b42fbd5a62cd9576730e583.html#a05009eaf7b42fbd5a62cd9576730e583">relate_dispatch</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af600a55eafe6cd46eab651b52972faa1.html#af600a55eafe6cd46eab651b52972faa1">relate_dispatch</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a49f6df13883bc0ddbe35dc1d8bf99a55.html#a49f6df13883bc0ddbe35dc1d8bf99a55">relate_edge_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a83d02153b0878513efa950b76a7264e4.html#a83d02153b0878513efa950b76a7264e4">relate_edge_inside_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a7a459afae3bba0d825112f083c588f32.html#a7a459afae3bba0d825112f083c588f32">relate_edge_nonempty</a></td></tr>
@@ -258,24 +259,27 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_acade5ce69ee307aa096061c38f56f1f0.html#acade5ce69ee307aa096061c38f56f1f0">relate_is_areal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a544c8a84542f65f576a9f07786fb3546.html#a544c8a84542f65f576a9f07786fb3546">relate_is_linear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_abf8a2f30b8b5d57ffd02951342bc9fdf.html#abf8a2f30b8b5d57ffd02951342bc9fdf">relate_is_point</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_adb194fd41f0b8287fb4e25c6a676628f.html#adb194fd41f0b8287fb4e25c6a676628f">relate_linear_area</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aacc3c2241ca8f3944d58c6678e0836ac.html#aacc3c2241ca8f3944d58c6678e0836ac">relate_linear_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a563d12b96c1f10ad67748a7f7d12f2c5.html#a563d12b96c1f10ad67748a7f7d12f2c5">relate_linear_area_edge_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a07ff96b9daafaf788dabf3ffb2f200d0.html#a07ff96b9daafaf788dabf3ffb2f200d0">relate_linear_area_interval</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aba997983d54ebe71bc180f3a8efad0ae.html#aba997983d54ebe71bc180f3a8efad0ae">relate_linear_boundary_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a719c785231eaafd4181f5aa69e718975.html#a719c785231eaafd4181f5aa69e718975">relate_linear_covered</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a31275c915f64dd3a4c7b5b44ca191bb7.html#a31275c915f64dd3a4c7b5b44ca191bb7">relate_linear_edge_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a308b0d27620efd902c1b1c7d9d53b287.html#a308b0d27620efd902c1b1c7d9d53b287">relate_linear_edges_overlap</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_adc98a2df780fd069f963280e3083018e.html#adc98a2df780fd069f963280e3083018e">relate_linear_linear</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa0ffac9406057df88e789b326ddc07ee.html#aa0ffac9406057df88e789b326ddc07ee">relate_linear_point</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af469766771ff85870d945a2426200b28.html#af469766771ff85870d945a2426200b28">relate_linear_linear</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a90795496ea2ca2ffbc9a82df92cddf6b.html#a90795496ea2ca2ffbc9a82df92cddf6b">relate_linear_point</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6cfd261d1b265efdf1f145d5e1d5d649.html#a6cfd261d1b265efdf1f145d5e1d5d649">relate_matrix</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a66919a683ba953cf1c6b25e55e80c416.html#a66919a683ba953cf1c6b25e55e80c416">relate_operands_free</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_afb80fb6cd64311db01697996111a5d03.html#afb80fb6cd64311db01697996111a5d03">relate_operands_init</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a06ab86c18cc47e337cdfab5c4d4145ce.html#a06ab86c18cc47e337cdfab5c4d4145ce">relate_parameter_cmp</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af2dac39ec8611e887638e507dec75761.html#af2dac39ec8611e887638e507dec75761">relate_point_area</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ab141ee05a0fe82a006ecc41c9a2a30a5.html#ab141ee05a0fe82a006ecc41c9a2a30a5">relate_point_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a08be10ef2330152347ddb1cbdcedb09b.html#a08be10ef2330152347ddb1cbdcedb09b">relate_point_in_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a0c3b2c33e57157550e6a09edf5c4a9ab.html#a0c3b2c33e57157550e6a09edf5c4a9ab">relate_point_in_area_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af61fbb285c283990c056586e666b1674.html#af61fbb285c283990c056586e666b1674">relate_point_in_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_abb3acaeecc11e9d983c246610bf82eee.html#abb3acaeecc11e9d983c246610bf82eee">relate_point_in_linear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa556ae5cd717554ed80bdc1e982ede90.html#aa556ae5cd717554ed80bdc1e982ede90">relate_point_in_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae237541732824ea8d47621e191aa88cc.html#ae237541732824ea8d47621e191aa88cc">relate_point_is_edge_endpoint</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8579721bb13e43769c518cf441613795.html#a8579721bb13e43769c518cf441613795">relate_point_linear</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a50fa4bc71add857043cfa0655ca9c381.html#a50fa4bc71add857043cfa0655ca9c381">relate_point_linear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4981e7f01ce79efa96d106aa04f30315.html#a4981e7f01ce79efa96d106aa04f30315">relate_point_on_any_edge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae2592a4a4fca991cb150c22827e8ad20.html#ae2592a4a4fca991cb150c22827e8ad20">relate_point_on_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6bac3ef053f1c36662239ea4acb6e8cc.html#a6bac3ef053f1c36662239ea4acb6e8cc">relate_point_on_boundary_index</a></td></tr>
@@ -283,10 +287,11 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5e319c63e50e6adbc92b20de7981bedd.html#a5e319c63e50e6adbc92b20de7981bedd">relate_point_on_linear_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a421b507abaf379805af106bf70d128ac.html#a421b507abaf379805af106bf70d128ac">relate_point_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a7afe511e0f9a7663ac21ca8ed6d66795.html#a7afe511e0f9a7663ac21ca8ed6d66795">relate_portion_inside_union</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a036522e4930ba2526324e120def1db7b.html#a036522e4930ba2526324e120def1db7b">relate_return_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a77f3394d992308bb0dc05f0b81735df3.html#a77f3394d992308bb0dc05f0b81735df3">relate_same_circle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a437bce15ee6e0cdeeae5b793c614d22f.html#a437bce15ee6e0cdeeae5b793c614d22f">relate_same_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a06081d73d1db5d519a1ba234b03da756.html#a06081d73d1db5d519a1ba234b03da756">relate_same_portion</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad4e84ac0e9889938721ef905a09f9386.html#ad4e84ac0e9889938721ef905a09f9386">relate_simple</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a56d630b7e57ce3f665d409572119f314.html#a56d630b7e57ce3f665d409572119f314">relate_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6f7685cbb11903c88370d911ca4f6470.html#a6f7685cbb11903c88370d911ca4f6470">relate_stratum</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a7046d95b47f2c8f49a0b019addfae36e.html#a7046d95b47f2c8f49a0b019addfae36e">relate_stratum_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ab522427698de3443783a838bff0b92db.html#ab522427698de3443783a838bff0b92db">relate_stratum_iter</a></td></tr>
@@ -299,8 +304,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a82a7d5e77bf97b46e53a0ecccd2eacb2" name="a82a7d5e77bf97b46e53a0ecccd2eacb2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a82a7d5e77bf97b46e53a0ecccd2eacb2">&#9670;&#160;</a></span>relate_area_area()</h2>
+<a id="a56d630b7e57ce3f665d409572119f314" name="a56d630b7e57ce3f665d409572119f314"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56d630b7e57ce3f665d409572119f314">&#9670;&#160;</a></span>relate_simple()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -309,7 +314,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void relate_area_area </td>
+          <td class="memname">static void relate_simple </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
           <td class="paramname"><em>g1</em>, </td>
@@ -319,6 +324,24 @@ $(function() {
           <td></td>
           <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
           <td class="paramname"><em>g2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>mask1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>mask2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structRelateOperands.html">RelateOperands</a> *&#160;</td>
+          <td class="paramname"><em>ops</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -339,7 +362,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Compute the DE-9IM matrix for two areal geometries. </p>
+<p>Compute the DE-9IM matrix of two geometries of one dimension each. </p>
 
 </div>
 </div>
