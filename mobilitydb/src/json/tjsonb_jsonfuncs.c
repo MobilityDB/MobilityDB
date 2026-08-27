@@ -244,7 +244,7 @@ Tjson_object_field_opr(PG_FUNCTION_ARGS)
 /**
  * @brief Extract a field from a temporal JSONB value
  * @sqlfn tjsonbObjectField(), tjsonbObjectFieldText()
- * @sqlop @p ->, @p ->
+ * @sqlop @p ->, @p ->>
  */
 Datum
 Tjsonb_object_field_common(FunctionCallInfo fcinfo, bool astext)
