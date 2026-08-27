@@ -55,9 +55,9 @@ LAYOUT = [
      "chapters": ["temporal_spatial_p1.xml", "temporal_spatial_p2.xml"]},
     {"title": "Operations for Temporal Types: Analytics Operations",
      "chapters": ["temporal_types_analytics.xml", "temporal_types_aggregation.xml"]},
-    {"title": "Temporal Poses", "chapters": ["temporal_poses.xml"],
-     "parts": ["Static Poses", "Temporal Poses", "OGC GeoPose v1.0 Support"]},
-    {"title": "Pose Chains", "chapters": ["temporal_pose_chains.xml"]},
+    {"title": "Temporal Poses and Pose Chains", "chapters": ["temporal_pose_types.xml"],
+     "parts": ["Static Poses and Pose Chains", "Temporal Poses and Pose Chains",
+               "Pose Chain Composition", "OGC GeoPose v1.0 Support"]},
     {"title": "Temporal Network Points", "chapters": ["temporal_network_points.xml"],
      "parts": ["Static Network Types", "Temporal Network Points"]},
     {"title": "Temporal Circular Buffers", "chapters": ["temporal_circular_buffers.xml"],
@@ -81,18 +81,7 @@ LAYOUT = [
          "Indexes": [("tpointcloud_indexes",
                       ["GiST, SP-GiST, B-tree, and hash opclasses for tpcpoint, "
                        "tpcpatch, and tpcbox"], None)],
-         "Binary Representation": [("tpointcloud_wkb",
-                                    ["asBinary", "tpcpointFromBinary", "tpcpatchFromBinary"],
-                                    "Binary I/O with embedded schema for portability")],
-         "PDAL Integration": [
-             ("tpointcloud_pdal_reader", ["readers.tpcpatch"],
-              "PDAL reader that reads tpcpatch values from a SQL query"),
-             ("tpointcloud_pdal_writer", ["writers.tpcpatch"],
-              "PDAL writer that writes tpcpatch values to a PostgreSQL table")],
-         "PCL Bridge": [("tpointcloud_pcl_bridge",
-                         ["pcpatch_to_pcd", "pcpatch_from_pcd", "pcpatch_voxel_grid",
-                          "pcpatch_sor", "pcpatch_icp", "pcpatch_normals"],
-                         "PCL-backed SQL functions for point cloud processing")]}},
+         }},
     {"title": "Raster Sampling", "chapters": ["temporal_raster.xml"]},
 ]
 

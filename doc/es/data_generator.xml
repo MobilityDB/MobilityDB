@@ -303,15 +303,10 @@
 
 		<programlisting language="sql" xml:space="preserve">
 CREATE OR REPLACE FUNCTION create_test_tables_temporal(size integer DEFAULT 100)
-RETURNS text AS $$
-DECLARE
-  perc integer;
-BEGIN
-perc := size * 0.01;
+RETURNS text AS $$ DECLARE perc integer;
+BEGIN perc := size * 0.01;
 IF perc &lt; 1 THEN perc := 1; END IF;
-
 -- ... Table generation ...
-
 RETURN 'The End';
 END;
 $$ LANGUAGE 'plpgsql';
@@ -326,10 +321,8 @@ $$ LANGUAGE 'plpgsql';
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_float AS
 /* Add perc NULL valores */
-SELECT k, NULL AS f
-FROM generate_series(1, perc) AS k UNION
-SELECT k, random_float(0, 100)
-FROM generate_series(perc+1, size) AS k;
+SELECT k, NULL AS f FROM generate_series(1, perc) AS k UNION
+SELECT k, random_float(0, 100) FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
 		<para>
@@ -338,8 +331,7 @@ FROM generate_series(perc+1, size) AS k;
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_tbox AS
 /* Add perc NULL valores */
-SELECT k, NULL AS b
-FROM generate_series(1, perc) AS k UNION
+SELECT k, NULL AS b FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
@@ -350,10 +342,8 @@ FROM generate_series(perc+1, size) AS k;
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_floatspan AS
 /* Add perc NULL valores */
-SELECT k, NULL AS f
-FROM generate_series(1, perc) AS k UNION
-SELECT k, random_floatspan(0, 100, 10)
-FROM generate_series(perc+1, size) AS k;
+SELECT k, NULL AS f FROM generate_series(1, perc) AS k UNION
+SELECT k, random_floatspan(0, 100, 10) FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
 		<para>
@@ -362,8 +352,7 @@ FROM generate_series(perc+1, size) AS k;
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_tstzset AS
 /* Add perc NULL valores */
-SELECT k, NULL AS ts
-FROM generate_series(1, perc) AS k UNION
+SELECT k, NULL AS ts FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tstzset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
@@ -374,10 +363,9 @@ FROM generate_series(perc+1, size) AS k;
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_tstzspan AS
 /* Add perc NULL valores */
-SELECT k, NULL AS p
-FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tstzspan('2001-01-01', '2001-12-31', 10)
-FROM generate_series(perc+1, size) AS k;
+SELECT k, NULL AS p FROM generate_series(1, perc) AS k UNION
+SELECT k,
+  random_tstzspan('2001-01-01', '2001-12-31', 10) FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
 		<para>
@@ -386,8 +374,7 @@ FROM generate_series(perc+1, size) AS k;
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_geom_point AS
 SELECT 1 AS k, geometry 'SRID=3812;point empty' AS g UNION
-SELECT k, random_geom_point(0, 100, 0, 100, 3812)
-FROM generate_series(2, size) k;
+SELECT k, random_geom_point(0, 100, 0, 100, 3812) FROM generate_series(2, size) k;
 </programlisting>
 		<para>
 			Observe que la tabla contiene un valor de punto vacío. Si no se proporciona el SRID, se establece de forma predeterminada en 0.
@@ -399,8 +386,8 @@ FROM generate_series(2, size) k;
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_geog_point3D AS
 SELECT 1 AS k, geography 'SRID=7844;pointZ empty' AS g UNION
-SELECT k, random_geog_point3D(-10, 32, 35, 72, 0, 1000, 7844)
-FROM generate_series(2, size) k;
+SELECT k,
+  random_geog_point3D(-10, 32, 35, 72, 0, 1000, 7844) FROM generate_series(2, size) k;
 </programlisting>
 		<para>
 			Nótese que los valores de latitud y longitud se eligen para cubrir aproximadamente la Europa continental. Si no se proporciona el SRID, se establece de forma predeterminada en 4326.
@@ -412,8 +399,8 @@ FROM generate_series(2, size) k;
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_geom_linestring AS
 SELECT 1 AS k, geometry 'linestring empty' AS g UNION
-SELECT k, random_geom_linestring(0, 100, 0, 100, 10, 5, 10, 3812)
-FROM generate_series(2, size) k;
+SELECT k,
+  random_geom_linestring(0, 100, 0, 100, 10, 5, 10, 3812) FROM generate_series(2, size) k;
 </programlisting>
 
 		<para>
@@ -422,8 +409,8 @@ FROM generate_series(2, size) k;
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_geom_linestring AS
 SELECT 1 AS k, geometry 'linestring empty' AS g UNION
-SELECT k, random_geom_linestring(0, 100, 0, 100, 10, 5, 10)
-FROM generate_series(2, size) k;
+SELECT k,
+  random_geom_linestring(0, 100, 0, 100, 10, 5, 10) FROM generate_series(2, size) k;
 </programlisting>
 
 		<para>
@@ -442,8 +429,8 @@ FROM generate_series(2, size) k;
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_geom_multipoint AS
 SELECT 1 AS k, geometry 'multipunto empty' AS g UNION
-SELECT k, random_geom_multipoint(0, 100, 0, 100, 10, 5, 10)
-FROM generate_series(2, size) k;
+SELECT k,
+  random_geom_multipoint(0, 100, 0, 100, 10, 5, 10) FROM generate_series(2, size) k;
 </programlisting>
 
 		<para>
@@ -460,9 +447,7 @@ FROM generate_series(2, size) k;
 			La creación de una tabla <varname>tbl_geometry3D</varname> que contiene valores aleatorios <varname>geometry</varname> 3D de varios tipos se da a continuación. Esta función requiere que las tablas para los diversos tipos de geometría se hayan creado previamente.
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-CREATE TABLE tbl_geometry3D (
-  k serial PRIMARY KEY,
-  g geometry);
+CREATE TABLE tbl_geometry3D (k serial PRIMARY KEY, g geometry);
 INSERT INTO tbl_geometry3D(g)
 (SELECT g FROM tbl_geom_point3D ORDER BY k LIMIT (size * 0.1)) UNION ALL
 (SELECT g FROM tbl_geom_linestring3D ORDER BY k LIMIT (size * 0.1)) UNION ALL
@@ -479,10 +464,9 @@ INSERT INTO tbl_geometry3D(g)
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_tbool_inst AS
 /* Add perc NULL valores */
-SELECT k, NULL AS inst
-FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tbool_inst('2001-01-01', '2001-12-31')
-FROM generate_series(perc+1, size) k;
+SELECT k, NULL AS inst FROM generate_series(1, perc) AS k UNION
+SELECT k,
+  random_tbool_inst('2001-01-01', '2001-12-31') FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tbool_inst t1
 SET inst = (SELECT inst FROM tbl_tbool_inst t2 WHERE t2.k = t1.k+perc)
@@ -503,8 +487,7 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_tint_discseq AS
 /* Add perc NULL valores */
-SELECT k, NULL AS ti
-FROM generate_series(1, perc) AS k UNION
+SELECT k, NULL AS ti FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tint_discseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
@@ -536,8 +519,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_tfloat_seq AS
 /* Add perc NULL valores */
-SELECT k, NULL AS seq
-FROM generate_series(1, perc) AS k UNION
+SELECT k, NULL AS seq FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tfloat_contseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
@@ -565,8 +547,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_ttext_seqset AS
 /* Add perc NULL valores */
-SELECT k, NULL AS ts
-FROM generate_series(1, perc) AS k UNION
+SELECT k, NULL AS ts FROM generate_series(1, perc) AS k UNION
 SELECT k, random_ttext_seqset('2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
@@ -594,8 +575,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_tgeompoint_discseq AS
 SELECT k, random_tgeompoint_discseq(0, 100, 0, 100, '2001-01-01', '2001-12-31',
-  10, 10, 5, 10, 3812) AS ti
-FROM generate_series(1, size) k;
+  10, 10, 5, 10, 3812) AS ti FROM generate_series(1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tgeompoint_discseq t1
 SET ti = (SELECT ti FROM tbl_tgeompoint_discseq t2 WHERE t2.k = t1.k+perc)
@@ -623,8 +603,7 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 DROP TABLE IF EXISTS tbl_tgeompoint3D_seqset;
 CREATE TABLE tbl_tgeompoint3D_seqset AS
 SELECT k, random_tgeompoint3D_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31',
-  10, 10, 5, 10, 5, 10, 3812) AS ts
-FROM generate_series(1, size) AS k;
+  10, 10, 5, 10, 5, 10, 3812) AS ts FROM generate_series(1, size) AS k;
 /* Add perc duplicates */
 UPDATE tbl_tgeompoint3D_seqset t1
 SET ts = (SELECT ts FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)

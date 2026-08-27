@@ -448,7 +448,7 @@ When you reach for a NOTICE on a tier-C hazard "just in case", stop. The right f
 
 ## 6. Documentation requirements
 
-Every type needs a DocBook chapter with a dedicated `<sect1 xml:id="foo_type_guidance">` section. The `tpose` chapter (`doc/temporal_poses.xml`) and the `tcbuffer` chapter (`doc/temporal_circular_buffers.xml`) are the templates; those use the id `foo_production_guidance` (historical naming — new chapters should use `foo_type_guidance`).
+Every type needs a DocBook chapter with a dedicated `<sect1 xml:id="foo_type_guidance">` section. The `tpose` chapter (`doc/temporal_pose_types.xml`) and the `tcbuffer` chapter (`doc/temporal_circular_buffers.xml`) are the templates; those use the id `foo_production_guidance` (historical naming — new chapters should use `foo_type_guidance`).
 
 This section tells you what to put in it.
 

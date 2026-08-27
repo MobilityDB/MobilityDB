@@ -93,8 +93,8 @@ SELECT npoint 'Npoint(99999999, 1.0)';
 				<listitem xml:id="npoint_asText">
 					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
-					<para>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<para>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText({npoint,npoint[]}) → {text,text[]}
 asEWKT({npoint,npoint[]}) → {text,text[]}
 </programlisting>
@@ -115,8 +115,8 @@ SELECT asEWKT(ARRAY[npoint 'SRID=5676;Npoint(1,0.2)', 'SRID=5676;Npoint(1,0.5)']
 					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
-					<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), la representación hexadecimal binaria conocida (Hexadecimal Well-Known Binary o HexWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<para>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asBinary(npoint,endian text='') → bytea
 asEWKB(npoint,endian text='') → bytea
 asHexWKB(npoint,endian text='') → text
@@ -138,8 +138,8 @@ SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 				<listitem xml:id="npointFromText">
 					<indexterm significance="normal"><primary><varname>npointFromText</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>npointFromEWKT</varname></primary></indexterm>
-					<para>Entrada desde la representación de texto conocido (Well-Known Text o WKT) o desde la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<para>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 npointFromText(text) → npoint
 npointFromEWKT(text) → npoint
 </programlisting>
@@ -155,25 +155,23 @@ SELECT asEWKT(npointFromEWKT(text 'SRID=5676;Npoint(1,0.5)'));
 					<indexterm significance="normal"><primary><varname>npointFromBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>npointFromEWKB</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>npointFromHexEWKB</varname></primary></indexterm>
-					<para>Entrada desde la representación binaria conocida (Well-Known Binary o WKB), desde la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o desde la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<para>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 npointFromBinary(bytea) → npoint
 npointFromEWKB(bytea) → npoint
 npointFromHexEWKB(text) → npoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(npointFromEWKB(
-  '\x01412c1600000100000000000000000000000000e03f'));
+SELECT asEWKT(npointFromEWKB('\x01412c1600000100000000000000000000000000e03f'));
 -- SRID=5676;NPoint(1,0.5)
-SELECT asEWKT(npointFromHexEWKB(
-  '01412C1600000100000000000000000000000000E03F'));
+SELECT asEWKT(npointFromHexEWKB('01412C1600000100000000000000000000000000E03F'));
 -- SRID=5676;NPoint(1,0.5)
 </programlisting>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="constructor_functions">
+		<sect2 xml:id="npoint_constructor_functions">
 			<title>Constructores</title>
 
 			<itemizedlist>
@@ -181,9 +179,9 @@ SELECT asEWKT(npointFromHexEWKB(
 					<indexterm significance="normal"><primary><varname>npoint</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>nsegment</varname></primary></indexterm>
 					<para>Constructores de puntos o segmentos de red</para>
-					<programlisting xml:space="preserve" format="linespecific">
-npoint(bigint,double precision) → npoint
-nsegment(bigint,double precision,double precision) → nsegment
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+npoint(bigint,float) → npoint
+nsegment(bigint,float,float) → nsegment
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
 SELECT npoint(76, 0.3);
@@ -199,8 +197,8 @@ SELECT nsegment(76, 0.3, 0.5);
 			<itemizedlist>
 				<listitem xml:id="npoint_geometry">
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-					<para>Convertir entre un punto o un segmento de red y una geometría</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<para>Convierte entre un punto o un segmento de red y una geometría</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {npoint,nsegment}::geometry
 geometry::{npoint,nsegment}
 </programlisting>
@@ -227,8 +225,8 @@ SELECT geometry 'SRID=5676;LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 
 				<listitem xml:id="npoint_stbox">
 					<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
-					<para>Construir una caja espaciotemporal a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<para>Construye una caja espaciotemporal a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 stbox(npoint) → stbox
 stbox(npoint,{timestamptz,tstzspan}) → stbox
 </programlisting>
@@ -236,24 +234,24 @@ stbox(npoint,{timestamptz,tstzspan}) → stbox
 SELECT stbox(npoint 'NPoint(1,0.3)');
 -- SRID=5676;STBOX X((62.786633,80.143556),(62.786633,80.143556))
 SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2001-01-01');
--- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
--- 2001-01-01])
+/* SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
+   2001-01-01]) */
 SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2001-01-01,2001-01-02]');
--- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
--- 2001-01-02])
+/* SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
+   2001-01-02]) */
 </programlisting>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="accessor_functions">
+		<sect2 xml:id="npoint_accessor_functions">
 			<title>Accesores</title>
 
 			<itemizedlist>
 				<listitem xml:id="npoint_route">
 					<indexterm significance="normal"><primary><varname>route</varname></primary></indexterm>
 					<para>Devuelve el identificador de ruta</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 route({npoint,nsegment}) → bigint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
@@ -267,7 +265,7 @@ SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 				<listitem xml:id="npoint_getPosition">
 					<indexterm significance="normal"><primary><varname>getPosition</varname></primary></indexterm>
 					<para>Devuelve la posición</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 getPosition(npoint) → float
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
@@ -280,7 +278,7 @@ SELECT getPosition(npoint 'Npoint(63, 0.3)');
 					<indexterm significance="normal"><primary><varname>startPosition</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>endPosition</varname></primary></indexterm>
 					<para>Devuelve la posición inicial/final</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 startPosition(nsegment) → float
 endPosition(nsegment) → float
 </programlisting>
@@ -294,13 +292,13 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 			</itemizedlist>
 		</sect2>
 
-		<sect2>
+		<sect2 xml:id="npoint_transformation_functions">
 			<title>Transformaciones</title>
 			<itemizedlist>
 				<listitem xml:id="npoint_round">
 					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
-					<para>Redondear la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<para>Redondea la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 round({npoint,nsegment},integer=0) → {npoint,nsegment}
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
@@ -313,14 +311,14 @@ SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="spatial_functions">
+		<sect2 xml:id="npoint_spatial_operations">
 			<title>Operaciones espaciales</title>
 
 			<itemizedlist>
 				<listitem xml:id="npoint_srid">
 					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
 					<para>Devuelve el identificador de referencia espacial</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 SRID({npoint,nsegment}) → integer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
@@ -335,16 +333,16 @@ SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 			<para>Dos valores <varname>npoint</varname> pueden tener diferentes identificadores de ruta pero pueden representar el mismo punto espacial en la intersección de las dos rutas. La función <varname>equals</varname> se utiliza para verificar la igualdad espacial de los puntos de la red.</para>
 			<itemizedlist>
 				<listitem xml:id="npoint_same">
+					<indexterm significance="normal"><primary><varname>equals</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Igualdad espacial para puntos de red</para>
-					<programlisting xml:space="preserve" format="linespecific">
-equals(npoint, npoint)::Boolean
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+equals(npoint,npoint)::Boolean
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
 WITH inter(geom) AS (
   SELECT st_intersection(t1.the_geom, t2.the_geom)
-  FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2),
-fractions(f1, f2) AS (
+  FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2), fractions(f1, f2) AS (
   SELECT ST_LineLocatePoint(t1.the_geom, i.geom), ST_LineLocatePoint(t2.the_geom, i.geom)
   FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)
 SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
@@ -354,7 +352,7 @@ SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="static_operators">
+		<sect2 xml:id="npoint_comparisons">
 			<title>Comparaciones</title>
 			<para>Los operadores de comparación (=, &lt; y así sucesivamente) para tipos de red estáticos requieren que los argumentos izquierdo y derecho sean del mismo tipo. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en tipos de red estáticos.</para>
 
@@ -367,7 +365,7 @@ SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
 					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 					<para>Comparaciones tradicionales</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 npoint {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} npoint
 nsegment {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} nsegment
 </programlisting>
@@ -441,7 +439,7 @@ SELECT tnpoint 'Point(0 0)@2001-01-01 08:05:00';
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 09:05:00)';
 </programlisting>
 		<para>Damos a continuación las funciones y operadores para los tipos de puntos de red. La mayoría de las funciones para tipos temporales descritas en los capítulos precendentes se pueden aplicar para tipos de puntos de red temporales. Por lo tanto, en las firmas de las funciones, la notación <varname>base</varname> también representa un <varname>npoint</varname> y las notaciones <varname>ttype</varname>, <varname>tpoint</varname> y <varname>tgeompoint</varname> también representan un <varname>tnpoint</varname>. Además, las funciones que tienen un argumento de tipo <varname>geometry</varname> aceptan además un argumento de tipo <varname>npoint</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para puntos de red temporales.</para>
-</sect1>
+	</sect1>
 
 	<sect1 xml:id="tnpoint_constructors">
 		<title>Constructores</title>
@@ -451,11 +449,11 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 					<indexterm significance="normal"><primary><varname>tnpointSeq</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tnpointSeqSet</varname></primary></indexterm>
 					<para>Constructor para puntos de red temporales con valor constante</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tnpoint(npoint,timestamptz) → tnpointInst
 tnpoint(npoint,tstzset) → tnpointDiscSeq
-tnpoint(npoint,tstzspan,interp='linear') → tnpointContSeq
-tnpoint(npoint,tstzspanset,interp='linear') → tnpointSeqSet
+tnpoint(npoint,tstzspan,interp text='linear') → tnpointContSeq
+tnpoint(npoint,tstzspanset,interp text='linear') → tnpointSeqSet
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint('Npoint(1, 0.5)', timestamptz '2001-01-01');
@@ -472,16 +470,16 @@ SELECT tnpoint('Npoint(1, 0.2)', tstzspanset '{[2001-01-01, 2001-01-03]}', 'step
 				<listitem xml:id="tnpointSeq">
 					<indexterm significance="normal"><primary><varname>tnpointSeq</varname></primary></indexterm>
 					<para>Constructor para puntos de red temporal de subtipo secuencia</para>
-					<programlisting xml:space="preserve" format="linespecific">
-tnpointSeq(tnpointInst[],interp={'step','linear'},leftInc boolean=true,
-  rightInc boolean=true) → tnpointSeq
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tnpointSeq(tnpointInst[],interp text={'step','linear'},leftInc boolean=true,
+  rightInc boolean=true) &#8594; tnpointSeq
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tnpointSeq(ARRAY[tnpoint 'Npoint(1, 0.3)@2001-01-01',
-  'Npoint(1, 0.5)@2001-01-02', 'Npoint(1, 0.5)@2001-01-03']);
+SELECT tnpointSeq(ARRAY[tnpoint 'Npoint(1, 0.3)@2001-01-01', 'Npoint(1, 0.5)@2001-01-02',
+  'Npoint(1, 0.5)@2001-01-03']);
 -- {NPoint(1,0.3)@2001-01-01, NPoint(1,0.5)@2001-01-02, NPoint(1,0.5)@2001-01-03}
-SELECT tnpointSeq(ARRAY[tnpoint 'Npoint(1, 0.2)@2001-01-01',
-  'Npoint(1, 0.4)@2001-01-02', 'Npoint(1, 0.5)@2001-01-03']);
+SELECT tnpointSeq(ARRAY[tnpoint 'Npoint(1, 0.2)@2001-01-01', 'Npoint(1, 0.4)@2001-01-02',
+  'Npoint(1, 0.5)@2001-01-03']);
 -- [NPoint(1,0.2)@2001-01-01, NPoint(1,0.4)@2001-01-02, NPoint(1,0.5)@2001-01-03]
 </programlisting>
 				</listitem>
@@ -490,10 +488,10 @@ SELECT tnpointSeq(ARRAY[tnpoint 'Npoint(1, 0.2)@2001-01-01',
 					<indexterm significance="normal"><primary><varname>tnpointSeqSet</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tnpointSeqSetGaps</varname></primary></indexterm>
 					<para>Constructor para puntos de red temporal de subtipo conjunto de secuencias</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tnpointSeqSet(tnpoint[]) → tnpointSeqSet
-tnpointSeqSetGaps(tnpointInst[],maxt=NULL,maxdist=NULL,interp='linear') →
-  tnpointSeqSet
+tnpointSeqSetGaps(tnpointInst[],maxt interval=NULL,maxdist float=NULL,
+  interp text='linear') → tnpointSeqSet
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tnpointSeqSet(ARRAY[tnpoint '[Npoint(1,0.2)@2001-01-01, Npoint(1,0.4)@2001-01-02,
@@ -514,10 +512,9 @@ SELECT tnpointSeqSetGaps(ARRAY[tnpoint 'NPoint(1,0.1)@2001-01-01',
 		<itemizedlist>
 			<listitem xml:id="tnpoint_tgeompoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir entre un punto de red temporal y un punto de geometría temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tnpoint::tgeompoint
-tgeompoint::tnpoint
+				<para>Convierte entre un punto de red temporal y un punto de geometría temporal</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tnpoint,tgeompoint}::{tgeompoint,tnpoint}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT astext((tnpoint '[NPoint(1, 0.2)@2001-01-01,
@@ -543,11 +540,12 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 			<listitem xml:id="tnpoint_asMFJSON">
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tnpointFromMFJSON</varname></primary></indexterm>
-				<para>Genera un punto de red temporal como MF-JSON y lo lee de vuelta; el ciclo de ida y vuelta es sin pérdida. La salida toma los argumentos de opciones, banderas y dígitos decimales compartidos con los demás tipos temporales.</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Genera un punto de red temporal como MF-JSON y lo lee de vuelta; el ciclo de ida y vuelta es sin pérdida</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asMFJSON(tnpoint,integer,integer,integer) → text
 tnpointFromMFJSON(text) → tnpoint
 </programlisting>
+				<para>La salida toma los argumentos de opciones, banderas y dígitos decimales compartidos con los demás tipos temporales.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tnpointFromMFJSON(asMFJSON(tnpoint 'NPoint(1, 0.5)@2001-01-01'))
   = tnpoint 'NPoint(1, 0.5)@2001-01-01';
@@ -564,8 +562,8 @@ SELECT tnpointFromMFJSON(asMFJSON(tnpoint 'NPoint(1, 0.5)@2001-01-01'))
 			<listitem xml:id="tnpoint_getValues">
 				<indexterm significance="normal"><primary><varname>getValues</varname></primary></indexterm>
 				<para>Devuelve los valores</para>
-				<programlisting xml:space="preserve" format="linespecific">
-getValues(tnpoint) → npoint[]
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+getValues(tnpoint) → npointset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02)}');
@@ -578,7 +576,7 @@ SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.3)@2001-01-02
 			<listitem xml:id="tnpoint_routes">
 				<indexterm significance="normal"><primary><varname>routes</varname></primary></indexterm>
 				<para>Devuelve los identificadores de ruta</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 routes(tnpoint) → bigintset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -590,7 +588,7 @@ SELECT routes(tnpoint '{NPoint(3, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02}');
 			<listitem xml:id="tnpoint_valueAtTimestamp">
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Devuelve el valor en una marca de tiempo</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 valueAtTimestamp(tnpoint,timestamptz) → npoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -603,7 +601,7 @@ SELECT valueAtTimestamp(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001
 			<listitem xml:id="tnpoint_length">
 				<indexterm significance="normal"><primary><varname>length</varname></primary></indexterm>
 				<para>Devuelve la longitud atravesada por el punto de red temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 length(tnpoint) → float
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -615,7 +613,7 @@ SELECT length(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]');
 			<listitem xml:id="tnpoint_cumulativeLength">
 				<indexterm significance="normal"><primary><varname>cumulativeLength</varname></primary></indexterm>
 				<para>Devuelve la longitud acumulada atravesada por el punto de red temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cumulativeLength(tnpoint) → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -629,8 +627,8 @@ SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@200
 			<listitem xml:id="tnpoint_speed">
 				<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
 				<para>Devuelve la velocidad del punto de red temporal en unidades por segundo</para>
-				<programlisting xml:space="preserve" format="linespecific">
-speed({tnpointSeq, tnpointSeqSet}) → tfloatSeqSet
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+speed({tnpointSeq,tnpointSeqSet}) → tfloatSeqSet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT speed(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.4)@2001-01-02,
@@ -649,10 +647,10 @@ SELECT speed(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.4)@2001-01-02,
 				<indexterm significance="normal"><primary><varname>tnpointInst</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tnpointSeq</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tnpointSeqSet</varname></primary></indexterm>
-				<para>Transformar un punto de red temporal en otro subtipo</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Transforma un punto de red temporal en otro subtipo</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tnpointInst(tnpoint) → tnpointInst
-tnpointSeq(tnpoint,interp) → tnpointSeq
+tnpointSeq(tnpoint) → tnpointSeq
 tnpointSeqSet(tnpoint) → tnpointSeqSet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -667,9 +665,9 @@ SELECT tnpointSeqSet(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 
 			<listitem xml:id="tnpoint_setInterp">
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
-				<para>Transformar un punto de red temporal en otra interpolación</para>
-				<programlisting xml:space="preserve" format="linespecific">
-setInterp(tnpoint, interp) → tnpoint
+				<para>Transforma un punto de red temporal en otra interpolación</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+setInterp(tnpoint,interp) → tnpoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT setInterp(tnpoint 'NPoint(1,0.2)@2001-01-01','linear');
@@ -682,9 +680,9 @@ SELECT setInterp(tnpoint '{[NPoint(1,0.1)@2001-01-01], [NPoint(1,0.2)@2001-01-02
 
 			<listitem xml:id="tnpoint_round">
 				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
-				<para>Redondear la fracción del punto de red temporal en el número de lugares decimales</para>
-				<programlisting xml:space="preserve" format="linespecific">
-round(tnpoint,integer=0) → tnpoint
+				<para>Redondea la fracción del punto de red temporal en el número de lugares decimales</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+round(tnpoint,integer=0) &#8594; tnpoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}', 6);
@@ -700,8 +698,8 @@ SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-
 			<listitem xml:id="tnpoint_appendInstant">
 				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
-				<para>Agregar un instante temporal o una secuencia temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Agrega un instante temporal o una secuencia temporal</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 appendInstant(tnpoint,tnpointInst) → tnpoint
 appendSequence(tnpoint,tnpointSeq) → tnpoint
 </programlisting>
@@ -718,8 +716,8 @@ SELECT asText(appendSequence(tnpoint '[Npoint(1, 0.1)@2001-01-01]',
 			<listitem xml:id="tnpoint_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
-				<para>Fusionar los puntos de red temporales</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Fusiona los puntos de red temporales</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 merge(tnpoint,tnpoint) → tnpoint
 merge(tnpoint[]) → tnpoint
 mergeAgg(tnpoint) → tnpoint
@@ -728,8 +726,8 @@ mergeAgg(tnpoint) → tnpoint
 SELECT asText(merge(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
   '[Npoint(1, 0.3)@2001-01-03, Npoint(1, 0.5)@2001-01-05]'));
 -- [NPoint(1,0.1)@2001-01-01, NPoint(1,0.5)@2001-01-05]
-SELECT asText(merge(ARRAY[tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1,
-  0.2)@2001-01-02]',
+SELECT asText(merge(ARRAY[tnpoint '[Npoint(1, 0.1)@2001-01-01,
+  Npoint(1, 0.2)@2001-01-02]',
   '[Npoint(1, 0.2)@2001-01-02, Npoint(1, 0.3)@2001-01-03]']));
 -- [NPoint(1,0.1)@2001-01-01, NPoint(1,0.3)@2001-01-03]
 WITH temp(inst) AS (
@@ -751,8 +749,8 @@ SELECT asText(mergeAgg(inst)) FROM temp;
 				<indexterm significance="normal"><primary><varname>minusValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
-				<para>Restringir al (complemento de) un valor o un conjunto de valores</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Restringe al (complemento de) un valor o un conjunto de valores</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atValue(tnpoint,value) → tnpoint
 minusValue(tnpoint,value) → tnpoint
 atValues(tnpoint,valueset) → tnpoint
@@ -772,8 +770,8 @@ SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03
 			<listitem xml:id="tnpoint_atGeometry">
 				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
-				<para>Restringir al (complemento de) una geometría</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Restringe al (complemento de) una geometría</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atGeometry(tnpoint,geometry) → tnpoint
 minusGeometry(tnpoint,geometry) → tnpoint
 </programlisting>
@@ -782,85 +780,7 @@ SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
 SELECT minusGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
-/* {(NPoint(2,0.342593)@2001-01-01 05:06:40.364673,
-   NPoint(2,0.7)@2001-01-03]} */
-</programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
-
-	<sect1 xml:id="tnpoint_distance">
-		<title>Operaciones de distancia</title>
-		<itemizedlist>
-			<listitem xml:id="tnpoint_nearestApproachDistance">
-				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
-				<para>Devuelve la distancia más cercana</para>
-				<programlisting xml:space="preserve" format="linespecific">
-{geo,npoint,tnpoint,stbox} |=| {geo,npoint,tnpoint,stbox} → float
-</programlisting>
-				<para>El operador <varname>|=|</varname> se puede utilizar para realizar búsquedas más cercanas utilizando un índice GiST o SP-GIST (ver <xref linkend="ttype_indexing" />).</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]' |=|
-   geometry 'SRID=5676;Linestring(50 50,55 55)';
--- 31.69220882252415
-SELECT tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]' |=|
-  npoint 'NPoint(1, 0.5)';
--- 19.49691305292373
-SELECT tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]' |=|
-  tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.7)@2001-01-02]';
--- 5.231180723735304
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tnpoint_nearestApproachInstant">
-				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
-				<para>Devuelve el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</para>
-				<programlisting xml:space="preserve" format="linespecific">
-nearestApproachInstant({geo,npoint,tnpoint},{geo,npoint,tnpoint}) → tnpoint
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
-SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
-  NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
--- NPoint(2,0.349928)@2001-01-01 02:59:44.402905
-SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
-  NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)');
--- NPoint(2,0.592181)@2001-01-01 17:31:51.080405
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tnpoint_shortestLine">
-				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
-				<para>Devuelve la línea que conecta el punto de aproximación más cercano entre los dos argumentos</para>
-				<programlisting xml:space="preserve" format="linespecific">
-shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}) → geometry
-</programlisting>
-				<para>La función devuelve la primera línea que encuentre si hay más de una.</para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT ST_AsText(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
-  NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
--- LINESTRING(50.7960725266492 48.8266286733015,50 50)
-SELECT ST_AsText(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
-  NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)'));
--- LINESTRING(77.0902838115125 66.6659083092593,90.8134936900394 46.4385792121146)
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tnpoint_tdistance">
-				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<para>Devuelve la distancia temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tgeompoint &lt;-&gt; tnpoint → tfloat
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
-  npoint 'NPoint(1, 0.2)';
--- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
-SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
-  geometry 'Point(50 50)';
--- [25.0496666945044@2001-01-01, 26.4085688426232@2001-01-03]
-SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
-  tnpoint '[NPoint(1, 0.3)@2001-01-02, NPoint(1, 0.5)@2001-01-04]'
--- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
+-- {(NPoint(2,0.342593)@2001-01-01 05:06:40.364673, NPoint(2,0.7)@2001-01-03]}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -872,7 +792,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt
 			<listitem xml:id="tnpoint_twCentroid">
 				<indexterm significance="normal"><primary><varname>twCentroid</varname></primary></indexterm>
 				<para>Devuelve el centroide ponderado en el tiempo</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 twCentroid(tnpoint) → geometry(Point)
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -893,7 +813,7 @@ SELECT ST_AsText(twCentroid(tnpoint '{[NPoint(1, 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>@@</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>@=</varname></primary></indexterm>
 				<para>Operadores de rutas, que comparan los identificadores de ruta que visita un punto de red temporal: contenido en, contiene, se superpone e igual</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {bigint,bigintset,npoint,tnpoint} {?@, @?, @@, @=} {bigint,bigintset,npoint,
   tnpoint} → boolean
 </programlisting>
@@ -902,14 +822,14 @@ SELECT bigint '1' ?@ tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01
 -- true
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' @? bigint '1';
 -- true
-SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01, NPoint(3, 0.5)@2001-01-02}' @@
-  bigintset '{3, 7}';
+SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01, NPoint(3, 0.5)@2001-01-02}' @@ bigintset '{3,
+  7}';
 -- true
-SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01, NPoint(3, 0.5)@2001-01-02}' @=
-  bigintset '{1, 3}';
+SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01, NPoint(3, 0.5)@2001-01-02}' @= bigintset '{1,
+  3}';
 -- true
-SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01, NPoint(3, 0.5)@2001-01-02}' @=
-  bigintset '{1}';
+SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01,
+  NPoint(3, 0.5)@2001-01-02}' @= bigintset '{1}';
 -- false
 </programlisting>
 			</listitem>
@@ -921,7 +841,7 @@ SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01, NPoint(3, 0.5)@2001-01-02}' @=
 				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 				<para>Operadores topológicos</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {tstzspan,stbox,tnpoint} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} {tstzspan,stbox,tnpoint} → boolean
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -931,9 +851,9 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &amp;&am
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' @&gt;
   stbox(npoint 'NPoint(1, 0.5)');
 -- true
-SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' ~=
-  tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.35)@2001-01-02,
-  NPoint(1, 0.5)@2001-01-03]';
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01,
+  NPoint(1, 0.5)@2001-01-03]' ~= tnpoint '[NPoint(1, 0.3)@2001-01-01,
+  NPoint(1, 0.35)@2001-01-02, NPoint(1, 0.5)@2001-01-03]';
 -- true
 </programlisting>
 			</listitem>
@@ -941,7 +861,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' ~=
 			<listitem xml:id="tnpoint_pos">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Operadores de posición</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {stbox,tnpoint} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tnpoint} → boolean
 {stbox,tnpoint} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tnpoint} → boolean
 {tstzspan,stbox,tnpoint} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tnpoint} → boolean
@@ -950,8 +870,8 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' ~=
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &lt;&lt;
   stbox(npoint 'NPoint(1, 0.2)');
 -- true
-SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &lt;&lt;|
-  stbox(npoint 'NPoint(1, 0.5)');
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01,
+  NPoint(1, 0.5)@2001-01-02]' &lt;&lt;| stbox(npoint 'NPoint(1, 0.5)');
 -- false
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05]' #&amp;&gt;
   tstzspan '[2001-01-01,2001-01-03]';
@@ -964,14 +884,87 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="tnpoint_spatial_rels">
-		<title>Relaciones espaciales</title>
-		<para>
-			Las relaciones topológicas y de distancia descritas en <xref linkend="tgeo_spatial_rel"/>, como <varname>eIntersects</varname>, <varname>aDwithin</varname> o <varname>tContains</varname>, se definen en el espacio geográfico, mientras que los puntos de la red temporal se definen en el espacio de la red. Cada una de estas relaciones también acepta directamente un argumento <varname>tnpoint</varname>: cada operando de punto de red se convierte en un punto geométrico temporal mediante la conversión estándar <varname>tnpoint::tgeompoint</varname> (el punto resuelto a lo largo de su ruta) y la relación correspondiente del punto geométrico temporal calcula el resultado, exactamente como si la conversión se hubiera escrito manualmente. Una secuencia conserva la interpolación que lleva, de modo que una con la interpolación lineal predeterminada se responde a lo largo de su ruta y no solo en sus instantes.
-		</para>
-
+	<sect1 xml:id="tnpoint_distance_ops">
+		<title>Operaciones de distancia</title>
 		<itemizedlist>
-			<listitem xml:id="tnpoint_espatialrels">
+			<listitem xml:id="tnpoint_nearestApproachDistance">
+				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+				<para>Devuelve la distancia más cercana</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{geo,npoint,tnpoint,stbox} |=| {geo,npoint,tnpoint,stbox} → float
+</programlisting>
+				<para>El operador <varname>|=|</varname> se puede utilizar para realizar búsquedas más cercanas utilizando un índice GiST o SP-GIST (ver <xref linkend="ttype_indexing" />).</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]' |=| geometry 'SRID=5676;Linestring(50 50,55 55)';
+-- 31.69220882252415
+SELECT tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]' |=| npoint 'NPoint(1, 0.5)';
+-- 19.49691305292373
+SELECT tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]' |=|
+  tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.7)@2001-01-02]';
+-- 5.231180723735304
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnpoint_nearestApproachInstant">
+				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
+				<para>Devuelve el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+nearestApproachInstant({geo,npoint,tnpoint},{geo,npoint,tnpoint}) → tnpoint
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
+-- NPoint(2,0.349928)@2001-01-01 02:59:44.402905
+SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)');
+-- NPoint(2,0.592181)@2001-01-01 17:31:51.080405
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnpoint_shortestLine">
+				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
+				<para>Devuelve la línea que conecta el punto de aproximación más cercano entre los dos argumentos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}) → geometry
+</programlisting>
+				<para>La función devuelve la primera línea que encuentre si hay más de una.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT ST_AsText(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
+-- LINESTRING(50.7960725266492 48.8266286733015,50 50)
+SELECT ST_AsText(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)'));
+-- LINESTRING(77.0902838115125 66.6659083092593,90.8134936900394 46.4385792121146)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnpoint_tdistance">
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Devuelve la distancia temporal</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tnpoint &lt;-&gt; tnpoint → tfloat
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
+  npoint 'NPoint(1, 0.2)';
+-- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
+  geometry 'Point(50 50)';
+-- [25.0496666945044@2001-01-01, 26.4085688426232@2001-01-03]
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
+  tnpoint '[NPoint(1, 0.3)@2001-01-02, NPoint(1, 0.5)@2001-01-04]'
+-- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tnpoint_everalways_rels">
+		<title>Relaciones siempre y alguna vez</title>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_eContains">
 				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
@@ -984,23 +977,24 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
-				<para>Las relaciones <emphasis>alguna vez</emphasis> y <emphasis>siempre</emphasis> determinan si la relación topológica o de distancia se satisface alguna vez o siempre y dan como resultado un <varname>boolean</varname>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción, de modo que una secuencia con interpolación lineal se responde a lo largo de su ruta y no solo en sus instantes. El punto de red temporal declara las relaciones que responde un punto en movimiento: <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname> y <varname>aCovers</varname> toman la geometría en primer lugar únicamente, y <varname>eTouches</varname> y <varname>aTouches</varname> no tienen dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</para>
-				<programlisting xml:space="preserve" format="linespecific">
-eContains(geometry,tnpoint) → boolean
-eCovers(geometry,tnpoint) → boolean
-eDisjoint({geometry,tnpoint},{geometry,tnpoint}) → boolean
-eDwithin({geometry,tnpoint},{geometry,tnpoint},float) → boolean
-eIntersects({geometry,tnpoint},{geometry,tnpoint}) → boolean
-eTouches(geometry,tnpoint) → boolean
-eTouches(tnpoint,geometry) → boolean
-aContains(geometry,tnpoint) → boolean
-aCovers(geometry,tnpoint) → boolean
-aDisjoint({geometry,tnpoint},{geometry,tnpoint}) → boolean
-aDwithin({geometry,tnpoint},{geometry,tnpoint},float) → boolean
-aIntersects({geometry,tnpoint},{geometry,tnpoint}) → boolean
-aTouches(geometry,tnpoint) → boolean
-aTouches(tnpoint,geometry) → boolean
+				<para>Relaciones alguna vez y siempre</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+eContains(geometry,tnpoint) &#8594; boolean
+eCovers(geometry,tnpoint) &#8594; boolean
+eDisjoint({geometry,tnpoint},{geometry,tnpoint}) &#8594; boolean
+eDwithin({geometry,tnpoint},{geometry,tnpoint},float) &#8594; boolean
+eIntersects({geometry,tnpoint},{geometry,tnpoint}) &#8594; boolean
+eTouches(geometry,tnpoint) &#8594; boolean
+eTouches(tnpoint,geometry) &#8594; boolean
+aContains(geometry,tnpoint) &#8594; boolean
+aCovers(geometry,tnpoint) &#8594; boolean
+aDisjoint({geometry,tnpoint},{geometry,tnpoint}) &#8594; boolean
+aDwithin({geometry,tnpoint},{geometry,tnpoint},float) &#8594; boolean
+aIntersects({geometry,tnpoint},{geometry,tnpoint}) &#8594; boolean
+aTouches(geometry,tnpoint) &#8594; boolean
+aTouches(tnpoint,geometry) &#8594; boolean
 </programlisting>
+				<para>Las relaciones <emphasis>alguna vez</emphasis> y <emphasis>siempre</emphasis> determinan si la relación topológica o de distancia se satisface alguna vez o siempre y dan como resultado un <varname>boolean</varname>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción, de modo que una secuencia con interpolación lineal se responde a lo largo de su ruta y no solo en sus instantes. El punto de red temporal declara las relaciones que responde un punto en movimiento: <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname> y <varname>aCovers</varname> toman la geometría en primer lugar únicamente, y <varname>eTouches</varname> y <varname>aTouches</varname> no tienen dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
@@ -1014,32 +1008,38 @@ SELECT eDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
 SELECT eIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
   tnpoint '[Npoint(2, 0.0)@2001-01-01, Npoint(2, 1)@2001-01-03]');
 -- false
-SELECT eTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01',
-  geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))');
+SELECT eTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01', geometry 'SRID=5676;
+  Polygon((0 0,0 50,50 50,50 0,0 0))');
 -- false
 SELECT aDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
   tnpoint '[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
 -- false
 </programlisting>
 			</listitem>
+		</itemizedlist>
+	</sect1>
 
-			<listitem xml:id="tnpoint_tspatialrels">
+	<sect1 xml:id="tnpoint_spatiotemp_rels">
+		<title>Relaciones espaciotemporales</title>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_tContains">
 				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
-				<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción. El punto de red temporal declara las relaciones que responde un punto en movimiento: <varname>tContains</varname> y <varname>tCovers</varname> toman la geometría en primer lugar únicamente, y <varname>tTouches</varname> no tiene dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tContains(geometry,tnpoint) → tbool
-tCovers(geometry,tnpoint) → tbool
-tDisjoint({geometry,tnpoint},{geometry,tnpoint}) → tbool
-tDwithin({geometry,tnpoint},{geometry,tnpoint},float) → tbool
-tIntersects({geometry,tnpoint},{geometry,tnpoint}) → tbool
-tTouches(geometry,tnpoint) → tbool
-tTouches(tnpoint,geometry) → tbool
+				<para>Relaciones espaciotemporales</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tContains(geometry,tnpoint) &#8594; tbool
+tCovers(geometry,tnpoint) &#8594; tbool
+tDisjoint({geometry,tnpoint},{geometry,tnpoint}) &#8594; tbool
+tDwithin({geometry,tnpoint},{geometry,tnpoint},float) &#8594; tbool
+tIntersects({geometry,tnpoint},{geometry,tnpoint}) &#8594; tbool
+tTouches(geometry,tnpoint) &#8594; tbool
+tTouches(tnpoint,geometry) &#8594; tbool
 </programlisting>
+				<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción. El punto de red temporal declara las relaciones que responde un punto en movimiento: <varname>tContains</varname> y <varname>tCovers</varname> toman la geometría en primer lugar únicamente, y <varname>tTouches</varname> no tiene dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
@@ -1050,8 +1050,8 @@ SELECT tCovers(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
 SELECT tDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
   tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
 -- {[t@2001-01-01, t@2001-01-03]}
-SELECT tTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01',
-  geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))');
+SELECT tTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01', geometry 'SRID=5676;
+  Polygon((0 0,0 50,50 50,50 0,0 0))');
 -- f@2001-01-01
 SELECT tIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
   tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.1)@2001-01-03]');
@@ -1059,8 +1059,7 @@ SELECT tIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-0
 SELECT tDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
   tnpoint '[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
 /* {[f@2001-01-01, t@2001-01-01 22:19:04.400634,
-  t@2001-01-02 01:40:55.599365], (f@2001-01-02 01:40:55.599365,
-  f@2001-01-03]} */
+   t@2001-01-02 01:40:55.599365], (f@2001-01-02 01:40:55.599365, f@2001-01-03]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1072,7 +1071,7 @@ SELECT tDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]'
 			<listitem xml:id="tnpoint_comp">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Comparaciones tradicionales</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tnpoint {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tnpoint → boolean
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -1091,10 +1090,12 @@ SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;
 
 			<listitem xml:id="tnpoint_ever_always">
 				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
 				<para>Comparaciones alguna vez y siempre</para>
-				<programlisting xml:space="preserve" format="linespecific">
-{npoint,tnpoint} {?=, %=} {npoint,tnpoint} → boolean
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{npoint,tnpoint} {?=, ?&lt;&gt;, %=, %&lt;&gt;} {npoint,tnpoint} → boolean
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-04)' ?= Npoint(1, 0.3);
@@ -1105,14 +1106,15 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-04)' &amp;= N
 			</listitem>
 
 			<listitem xml:id="tnpoint_tcomp">
-				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>#&lt;&gt;</varname></primary></indexterm>
 				<para>Comparaciones temporales</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {npoint,tnpoint} {#=, #&lt;&gt;} {npoint,tnpoint} → tbool
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-03)' #=
-  npoint 'NPoint(1, 0.3)';
+SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01,
+  NPoint(1, 0.4)@2001-01-03)' #= npoint 'NPoint(1, 0.3)';
 -- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
 SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.8)@2001-01-03)' #&lt;&gt;
   tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.7)@2001-01-03)';
@@ -1131,7 +1133,7 @@ SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.8)@2001-01-03)' #&lt;&gt
 			<listitem xml:id="tnpoint_tCount">
 				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Conteo temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCount(tnpoint) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -1139,8 +1141,7 @@ WITH Temp(temp) AS (
 SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)' UNION
 SELECT tnpoint '[NPoint(1, 0.2)@2001-01-02, NPoint(1, 0.4)@2001-01-04)' UNION
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05)' )
-SELECT tCount(Temp)
-FROM Temp
+SELECT tCount(Temp) FROM Temp
 -- {[1@2001-01-01, 2@2001-01-02, 1@2001-01-04, 1@2001-01-05)}
 </programlisting>
 			</listitem>
@@ -1148,7 +1149,7 @@ FROM Temp
 			<listitem xml:id="tnpoint_wCount">
 				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
 				<para>Conteo de ventana</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 wCount(tnpoint) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -1156,8 +1157,7 @@ WITH Temp(temp) AS (
 SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)' UNION
 SELECT tnpoint '[NPoint(1, 0.2)@2001-01-02, NPoint(1, 0.4)@2001-01-04)' UNION
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05)' )
-SELECT wCount(Temp, '1 day')
-FROM Temp
+SELECT wCount(Temp, '1 day') FROM Temp
 /* {[1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 2@2001-01-04, 1@2001-01-05,
    1@2001-01-06)} */
 </programlisting>
@@ -1166,7 +1166,7 @@ FROM Temp
 			<listitem xml:id="tnpoint_tCentroid">
 				<indexterm significance="normal"><primary><varname>tCentroid</varname></primary></indexterm>
 				<para>Centroide temporal</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCentroid(tnpoint) → tgeompoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
@@ -1174,8 +1174,7 @@ WITH Temp(temp) AS (
 SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)' UNION
 SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-03)' UNION
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)' )
-SELECT astext(tCentroid(Temp))
-FROM Temp
+SELECT astext(tCentroid(Temp)) FROM Temp
 /* {[POINT(72.451531682218 76.5231414472853)@2001-01-01,
    POINT(55.7001249027598 72.9552602410653)@2001-01-03)} */
 </programlisting>
@@ -1212,10 +1211,11 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		<itemizedlist>
 			<listitem xml:id="tnpoint_extent">
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
-				<para>Devuelve el cuadro delimitador espaciotemporal que cubre cada posición materializada en un conjunto de puntos de red. El agregado es polimórfico con los agregados <varname>extent</varname> de los demás tipos temporales espaciales, por lo que una sola consulta puede calcular un único cuadro a través de un conjunto heterogéneo de columnas <varname>tgeompoint</varname>, <varname>tgeometry</varname> y <varname>tnpoint</varname>. La extensión espacial de cada instante se resuelve a través del registro de ways, lo que domina el coste sobre una entrada grande.</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Devuelve el cuadro delimitador espaciotemporal que cubre cada posición materializada en un conjunto de puntos de red</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 extent(tnpoint) → stbox
 </programlisting>
+				<para>El agregado es polimórfico con los agregados <varname>extent</varname> de los demás tipos temporales espaciales, por lo que una sola consulta puede calcular un único cuadro a través de un conjunto heterogéneo de columnas <varname>tgeompoint</varname>, <varname>tgeometry</varname> y <varname>tnpoint</varname>. La extensión espacial de cada instante se resuelve a través del registro de ways, lo que domina el coste sobre una entrada grande.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT extent(temp) FROM tbl_tnpoint;
 </programlisting>

@@ -17,7 +17,7 @@
 				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a geometry &Z_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atGeometry(tgeom,geometry) → tgeom
 minusGeometry(tgeom,geometry) → tgeom
 </programlisting>
@@ -32,7 +32,7 @@ SELECT astext(atGeometry(tgeompoint '[Point(0 0 0)@2001-01-01, Point(4 4 4)@2001
 SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-01-03,
   Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))'));
 -- {[POINT Z (2 1 1)@2001-01-02, POINT Z (3 1 1)@2001-01-03, POINT Z (3 1 3)@2001-01-05]}
-SELECT asText(atGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01', 
+SELECT asText(atGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01',
   'Polygon((0 0,0 5,5 5,5 0,0 0))'));
 -- LINESTRING(1 1,5 1)@2001-01-01
 </programlisting>
@@ -48,7 +48,7 @@ SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2001-01-01,
 SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-01-03,
   Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))'));
 -- {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 1 1)@2001-01-02)}
-SELECT asText(minusGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01', 
+SELECT asText(minusGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01',
   'Polygon((0 0,0 5,5 5,5 0,0 0))'));
 -- LINESTRING(5 1,10 1)@2001-01-01
 </programlisting>
@@ -58,7 +58,7 @@ SELECT asText(minusGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01',
 				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
 				<para>Restrict to (the complement of) an <varname>stbox</varname> &Z_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
 minusStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
 </programlisting>
@@ -70,7 +70,7 @@ SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)
 SELECT asText(atStbox(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03,
   Point(3 3 2)@2001-01-04, Point(3 3 7)@2001-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
 /* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03, POINT Z (3 3 2)@2001-01-04,
-  POINT Z (3 3 3)@2001-01-05]} */
+   POINT Z (3 3 3)@2001-01-05]} */
 SELECT asText(atStbox(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,3 3)@2001-01-03,
   Point(2 2)@2001-01-04, Linestring(3 3,4 4)@2001-01-09]', stbox 'STBOX X((2,2),(3,3))'));
 -- {[LINESTRING(2 2,3 3)@2001-01-03, POINT(2 2)@2001-01-04, POINT(3 3)@2001-01-09]}
@@ -83,10 +83,10 @@ SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-
 SELECT asText(minusStbox(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03,
   Point(3 3 2)@2001-01-04, Point(3 3 7)@2001-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
 /* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02), 
-    (POINT Z (3 3 3)@2001-01-05, POINT Z (3 3 7)@2001-01-09]} */
-SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01, 
-  Linestring(1 1,3 3)@2001-01-03, Point(2 2)@2001-01-04, 
-  Linestring(1 1,4 4)@2001-01-09]', stbox 'STBOX X((2,2),(3,3))'));
+   (POINT Z (3 3 3)@2001-01-05, POINT Z (3 3 7)@2001-01-09]} */
+SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01,
+  Linestring(1 1,3 3)@2001-01-03, Point(2 2)@2001-01-04, Linestring(1 1,4 4)@2001-01-09]',
+  stbox 'STBOX X((2,2),(3,3))'));
 /* {[POINT(1 1)@2001-01-01, LINESTRING(1 1,2 2)@2001-01-03, 
    LINESTRING(1 1,2 2)@2001-01-04),[MULTILINESTRING((1 1,2 2),(3 3,4 4))@2001-01-09]} */
 </programlisting>
@@ -96,19 +96,19 @@ SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>atElevation</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusElevation</varname></primary></indexterm>
 				<para>Restrict to (the complement of) an elevation span &Z_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atElevation(tgeom,zspan) → tgeom
 minusElevation(tgeom,zspan) → tgeom
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT astext(atElevation(tgeompoint '[Point(1 1 1)@2001-01-01,
-  Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
+SELECT astext(atElevation(tgeompoint '[Point(1 1 1)@2001-01-01, Point(4 4 4)@2001-01-04,
+  Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
 /* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03],
-  [POINT Z (3 3 3)@2001-01-05, POINT Z (2 2 2)@2001-01-06]} */
+   [POINT Z (3 3 3)@2001-01-05, POINT Z (2 2 2)@2001-01-06]} */
 SELECT astext(minusElevation(tgeompoint '[Point(1 1 1)@2001-01-01,
   Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
 /* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03],
-  [POINT Z (3 3 3)@2001-01-05, POINT Z (2 2 2)@2001-01-06]} */
+   [POINT Z (3 3 3)@2001-01-05, POINT Z (2 2 2)@2001-01-06]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -121,7 +121,7 @@ SELECT astext(minusElevation(tgeompoint '[Point(1 1 1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
 				<para>Return or set the spatial reference identifier &Z_support; &geography_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 SRID(tspatial) → integer
 setSRID(tspatial) → tspatial
 </programlisting>
@@ -137,7 +137,7 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)
 				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transform to a spatial reference identifier &Z_support; &geography_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 transform(tspatial,integer) → tspatial
 transformPipeline(tspatial,pipeline text,to_srid integer,
   is_forward boolean=true) → tspatial
@@ -155,9 +155,8 @@ WITH test(tgeo, pipeline) AS (
   SELECT tgeogpoint 'SRID=4326;{Point(4.3525 50.846667 100.0)@2001-01-01,
     Point(-0.1275 51.507222 100.0)@2001-01-02}',
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(tgeo, pipeline, 4326),
-  pipeline, 4326, false), 6)
-FROM test;
+SELECT asEWKT(transformPipeline(transformPipeline(tgeo, pipeline, 4326), pipeline, 4326,
+  false), 6) FROM test;
 /* SRID=4326;{POINT Z (4.3525 50.846667 100)@2001-01-01,
    POINT Z (-0.1275 51.507222 100)@2001-01-02} */
 </programlisting>
@@ -172,7 +171,7 @@ FROM test;
 			<listitem xml:id="tpoint_expandSpace">
 				<indexterm significance="normal"><primary><varname>expandSpace</varname></primary></indexterm>
 				<para>Return the spatiotemporal bounding box expanded in the spatial dimension by a float value &Z_support; &geography_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 expandSpace({spatial,tspatial},float) → stbox
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -192,12 +191,12 @@ SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
 			<listitem xml:id="tgeo_nearestApproachDistance">
 				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
 				<para>Return the smallest distance ever &Z_support; &geography_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {geo,tgeo,stbox} |=| {geo,tgeo,stbox} → float
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tgeompoint '[Point(0 0)@2001-01-02, Point(1 1)@2001-01-04, Point(0 0)@2001-01-06)'
-  |=| geometry 'Linestring(2 2,2 1,3 1)';
+SELECT tgeompoint '[Point(0 0)@2001-01-02, Point(1 1)@2001-01-04,
+  Point(0 0)@2001-01-06)' |=| geometry 'Linestring(2 2,2 1,3 1)';
 -- 1
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03, Point(0 0)@2001-01-05)'
   |=| tgeompoint '[Point(2 0)@2001-01-02, Point(1 1)@2001-01-04, Point(2 2)@2001-01-06)';
@@ -206,18 +205,17 @@ SELECT tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
   Point(0 0 0)@2001-01-05)' |=| tgeompoint '[Point(2 0 0)@2001-01-02,
   Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06)';
 -- 0.5
-SELECT tgeometry '(Point(1 1)@2001-01-01, Linestring(3 1,1 1)@2001-01-03]' |=|
-  geometry 'Linestring(1 3,2 2,3 3)';
+SELECT tgeometry '(Point(1 1)@2001-01-01,
+  Linestring(3 1,1 1)@2001-01-03]' |=| geometry 'Linestring(1 3,2 2,3 3)';
 -- 1
 </programlisting>
 				<para>The operator <varname>|=|</varname> can be used for doing nearest neighbor searches using a GiST or an SP-GiST index (see <xref linkend="ttype_indexing"/>). This operator corresponds to the PostGIS function <varname>ST_DistanceCPA</varname>, altough the latter requires both arguments to be a trajectory.</para>
 				<para>When one argument is a spatiotemporal box carrying a period, the distance is measured from the part of the temporal value inside that period, and the result is <varname>NULL</varname> when no part of it is. A box carrying no period measures the whole temporal value.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_DistanceCPA(
-  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
-    Point(0 0 0)@2001-01-05)'::geometry,
+SELECT ST_DistanceCPA(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
+  Point(0 0 0)@2001-01-05)'::geometry,
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
-    Point(2 2 2)@2001-01-06)'::geometry);
+  Point(2 2 2)@2001-01-06)'::geometry);
 -- 0.5
 </programlisting>
 			</listitem>
@@ -225,7 +223,7 @@ SELECT ST_DistanceCPA(
 			<listitem xml:id="tgeo_nearestApproachInstant">
 				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
 				<para>Return the instant of the first temporal point at which the two arguments are at the nearest distance &Z_support; &geography_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 nearestApproachInstant({geo,tgeo},{geo,tgeo}) → tgeo
 </programlisting>
 				<para>The function will only return the first instant that it finds if there are more than one. The resulting instant may be at an exclusive bound.</para>
@@ -233,8 +231,8 @@ nearestApproachInstant({geo,tgeo},{geo,tgeo}) → tgeo
 SELECT asText(nearestApproachInstant(tgeompoint '(Point(1 1)@2001-01-01,
   Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- POINT(2 1)@2001-01-02
-SELECT asText(nearestApproachInstant(tgeompoint 'Interp=Step;(Point(1 1)@2001-01-01,
-  Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+SELECT asText(nearestApproachInstant(tgeompoint 'Interp=Step;
+  (Point(1 1)@2001-01-01, Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- POINT(1 1)@2001-01-01
 SELECT asText(nearestApproachInstant(tgeompoint '(Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-03]', tgeompoint '(Point(1 1)@2001-01-01, Point(4 1)@2001-01-03]'));
@@ -246,11 +244,10 @@ SELECT asText(nearestApproachInstant(tgeometry
 </programlisting>
 				<para>Function <varname>nearestApproachInstant</varname> generalizes the PostGIS function <varname>ST_ClosestPointOfApproach</varname>. First, the latter function requires both arguments to be trajectories. Second, function <varname>nearestApproachInstant</varname> returns both the point and the timestamp of the nearest point of approach while the PostGIS function only provides the timestamp as shown next.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT to_timestamp(ST_ClosestPointOfApproach(
-  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
-    Point(0 0 0)@2001-01-05)'::geometry,
+SELECT to_timestamp(ST_ClosestPointOfApproach( tgeompoint '[Point(0 0 0)@2001-01-01,
+  Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-05)'::geometry,
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
-    Point(2 2 2)@2001-01-06)'::geometry));
+  Point(2 2 2)@2001-01-06)'::geometry));
 -- 2001-01-03 12:00:00
 </programlisting>
 			</listitem>
@@ -258,25 +255,22 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
 			<listitem xml:id="tgeo_minDistance">
 				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
 				<para>Return the minimum spatial distance between two temporal geometries over the union of their temporal extents</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minDistance({tgeo,geo},{tgeo,geo}) → float
 minDistance(tgeo[],tgeo[]) → float
+minDistance(tgeo,tgeo) → float
 </programlisting>
-				<para><varname>minDistance(tgeo,tgeo) → float</varname> (aggregate)</para>
 				<para>The scalar form returns the minimum distance reached between the two arguments over the intersection of their temporal extents, equivalent to the minimum value of the temporal distance <varname>&lt;-&gt;</varname>. The array form generalises this to two sets of temporal geometries and returns the minimum across all pairs. The aggregate form, used with <varname>GROUP BY</varname>, returns the minimum distance reached over all aggregated pairs in the group.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
   geometry 'Point(0 1)');
 -- 0.707106781186548
-SELECT minDistance(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
-        tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03)'],
+SELECT minDistance(ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
+  tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03)'],
   ARRAY[tgeompoint '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-03)']);
 -- 0
-SELECT g, minDistance(t1.Trip, t2.Trip)
-FROM Trips t1, Trips t2, Groups g
-WHERE t1.GroupId = g AND t2.GroupId = g AND t1.TripId &lt; t2.TripId
-GROUP BY g;
+SELECT g, minDistance(t1.Trip, t2.Trip) FROM Trips t1, Trips t2, Groups g
+WHERE t1.GroupId = g AND t2.GroupId = g AND t1.TripId &lt; t2.TripId GROUP BY g;
 </programlisting>
 				<para>The aggregate form is well suited to BerlinMOD-style queries that compute the minimum approach distance between trip pairs grouped by license or vehicle class. On a single-row group the aggregate degenerates to the scalar minimum distance between the pair.</para>
 			</listitem>
@@ -295,19 +289,19 @@ GROUP BY g;
 				<indexterm significance="normal"><primary><varname>aTouchesPairs</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tTouchesPairs</varname></primary></indexterm>
 				<para>Return the qualifying index pairs of two arrays of temporal geometries, generalising the scalar spatial relationships to a set-set spatial join</para>
-				<programlisting xml:space="preserve" format="linespecific">
-eDwithinPairs(tgeo[],tgeo[],float) → setof(i integer, j integer)
-aDwithinPairs(tgeo[],tgeo[],float) → setof(i integer, j integer)
-eIntersectsPairs(tgeo[],tgeo[]) → setof(i integer, j integer)
-aIntersectsPairs(tgeo[],tgeo[]) → setof(i integer, j integer)
-eDisjointPairs(tgeo[],tgeo[]) → setof(i integer, j integer)
-aDisjointPairs(tgeo[],tgeo[]) → setof(i integer, j integer)
-eTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer, j integer)
-aTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer, j integer)
-tDwithinPairs(tgeo[],tgeo[],float) → setof(i integer, j integer, periods tstzspanset)
-tIntersectsPairs(tgeo[],tgeo[]) → setof(i integer, j integer, periods tstzspanset)
-tDisjointPairs(tgeo[],tgeo[]) → setof(i integer, j integer, periods tstzspanset)
-tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer, j integer, periods tstzspanset)
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+eDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer)
+aDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer)
+eIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+aIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+eDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+aDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+eTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+tDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer,periods tstzspanset)
+tIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
+tDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
+tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 				<para>Each function resolves the pruned cross product of the two input arrays inside a single call and returns the one-based indexes <varname>i</varname> and <varname>j</varname> of the qualifying pairs. The <varname>e</varname>-prefixed functions return the pairs for which the relationship ever holds, the <varname>a</varname>-prefixed functions the pairs for which it always holds, and the <varname>t</varname>-prefixed functions additionally return the periods during which it holds. Each input's spatiotemporal box is used as a bounding-box prefilter so that the exact relationship is computed only on the surviving candidate pairs, and pairs whose temporal extents do not overlap are excluded, matching the scalar relationships. The functions are defined for temporal points and temporal geometries in both the planar and geodetic cases, except the touches relationship, which is defined for planar geometries only. The indexes map back to the original identities through a parallel <varname>array_agg(identity ORDER BY ...)</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -330,16 +324,16 @@ SELECT i, j FROM aDisjointPairs(
 			<listitem xml:id="tgeo_shortestLine">
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Return the line connecting the nearest approach point &Z_support; &geography_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 shortestLine({geo,tgeo},{geo,tgeo}) → geo
 </programlisting>
 				<para>The function will only return the first line that it finds if there are more than one.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2001-01-01,
-  Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2001-01-01, Point(3 1)@2001-01-03]',
+  geometry 'Linestring(1 3,2 2,3 3)'));
 -- LINESTRING(2 1,2 2)
-SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Step;(Point(1 1)@2001-01-01,
-  Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Step;
+  (Point(1 1)@2001-01-01, Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- LINESTRING(1 1,2 2)
 SELECT ST_AsText(shortestLine(tgeometry
   '[Linestring(0 0 0,1 1 1)@2001-01-01, Point(0 0 0)@2001-01-03]', tgeometry
@@ -348,17 +342,15 @@ SELECT ST_AsText(shortestLine(tgeometry
 </programlisting>
 				<para>Function <varname>shortestLine</varname> can be used to obtain the result provided by the PostGIS function <varname>ST_CPAWithin</varname> when both arguments are trajectories as shown next.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_Length(shortestLine(
-  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
-    Point(0 0 0)@2001-01-05)',
+SELECT ST_Length(shortestLine( tgeompoint '[Point(0 0 0)@2001-01-01,
+  Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-05)',
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
-    Point(2 2 2)@2001-01-06)')) &lt;= 0.5;
+  Point(2 2 2)@2001-01-06)')) &lt;= 0.5;
 -- true
-SELECT ST_CPAWithin(
-  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
-    Point(0 0 0)@2001-01-05)'::geometry,
+SELECT ST_CPAWithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
+  Point(0 0 0)@2001-01-05)'::geometry,
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
-    Point(2 2 2)@2001-01-06)'::geometry, 0.5);
+  Point(2 2 2)@2001-01-06)'::geometry, 0.5);
 -- true
 </programlisting>
 			</listitem>
@@ -372,7 +364,7 @@ SELECT ST_CPAWithin(
 			<listitem xml:id="tgeo_tdistance">
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 				<para>Return the temporal distance &Z_support; &geography_support;</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {geo,tgeo} &lt;-&gt; {geo,tgeo} → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -393,97 +385,14 @@ SELECT tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,1 1)@2001-01-02]' &lt;-
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="tgeo_spatial_rel">
-		<title>Spatial Relationships</title>
-
-		<para>The topological relationships such as <varname>ST_Intersects</varname> and the distance relationships such as <varname>ST_DWithin</varname> can be generalized for temporal geometries. The arguments of these generalized functions are either a temporal geometry (that is, a <varname>tgeometry</varname>, a <varname>tgeography</varname>, a <varname>tgeompoint</varname>, or a <varname>tgeogpoint)</varname> and a base type (that is, a <varname>geometry</varname> or a <varname>geography</varname>) or two temporal geometries. Furthermore, both arguments must be of the same base type or the same temporal type, for example, these functions do not allow to mix a <varname>tgeometry</varname> and a <varname>geography</varname> or a <varname>tgeometry</varname> and a <varname>tgeompoint</varname>.</para>
-
-		<para>There are three versions of the relationships:</para>
+	<sect1 xml:id="tgeo_everalways_rels">
+		<title>Ever and Always Relationships</title>
 		<itemizedlist>
-			<listitem>
-				<para>The <emphasis>ever</emphasis> relationships determine whether the topological or distance relationship is ever satisfied (see <xref linkend="ever_always_comparison"/>) and returns a <varname>boolean</varname>. Examples are the <varname>eIntersects</varname> and <varname>eDwithin</varname> functions.</para>
-			</listitem>
-
-			<listitem>
-				<para>The <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is always satisfied (see <xref linkend="ever_always_comparison"/>) and returns a <varname>boolean</varname>. Examples are the <varname>aIntersects</varname> and <varname>aDwithin</varname> functions.</para>
-			</listitem>
-
-			<listitem>
-				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and results in a <varname>tbool</varname>. Examples are the <varname>tIntersects</varname> and <varname>tDwithin</varname> functions.</para>
-			</listitem>
-		</itemizedlist>
-
-		<para>
-				For example, the following query
-		</para>
-		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT eIntersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
-  tgeompoint '[Point(0 2)@2001-01-01, Point(4 2)@2001-01-05)');
--- t
-</programlisting>
-		<para>
-			tests whether the temporal point ever intersects the geometry. In this case, the query is equivalent to the following one
-		</para>
-		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_Intersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
-  geometry 'Linestring(0 2,4 2)');
-</programlisting>
-		<para>
-			where the second geometry is obtained by applying the <varname>trajectory</varname> function to the temporal point.
-		</para>
-		<para>
-			In contrast, the query
-		</para>
-		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tIntersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
-  tgeompoint '[Point(0 2)@2001-01-01, Point(4 2)@2001-01-05)');
--- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, f@2001-01-05)}
-</programlisting>
-		<para>
-			computes at each instant whether the temporal point intersects the geometry. Similarly, the following query
-		</para>
-		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT eDwithin(tgeompoint '[Point(3 1)@2001-01-01, Point(5 1)@2001-01-03)',
-  tgeompoint '[Point(3 1)@2001-01-01, Point(1 1)@2001-01-03)', 2);
--- t
-</programlisting>
-		<para>
-			tests whether the distance between the temporal points was ever less than or equal to 2, while the following query
-		</para>
-		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tDwithin(tgeompoint '[Point(3 1)@2001-01-01, Point(5 1)@2001-01-03)',
-  tgeompoint '[Point(3 1)@2001-01-01, Point(1 1)@2001-01-03)', 2);
--- {[t@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
-</programlisting>
-		<para>
-			computes at each instant whether the distance between the temporal points is less than or equal to 2.
-		</para>
-
-		<para>
-		The ever or always relationships are sometimes used in combination with a spatiotemporal index when computing the temporal relationships. For example, the following query
-		</para>
-		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT T.TripId, R.RegionId, tIntersects(T.Trip, R.Geom)
-FROM Trips T, Regions R
-WHERE eIntersects(T.Trip, R.Geom)
-</programlisting>
-		<para>
-			which verifies whether a trip <varname>T</varname> (which is a temporal point) intersects a region <varname>R</varname> (which is a geometry), will benefit from a spatiotemporal index on the column <varname>T.Trip</varname> since the <varname>eIntersects</varname> function will automatically perform the bounding box comparison <varname>T.Trip &amp;&amp; R.Geom</varname>. This is further explained later in this document.
-		</para>
-
-		<para>Not all spatial relationships available in PostGIS have been generalized for temporal geometries, only those derived from the following functions: <varname>ST_Contains</varname>, <varname>ST_Covers</varname>, <varname>ST_Disjoint</varname>, <varname>ST_Intersects</varname>, <varname>ST_Touches</varname>, and <varname>ST_DWithin</varname>. These functions only suport 2D geometries and only the functions <varname>ST_Covers</varname>, <varname>ST_Intersects</varname>, and <varname>ST_DWithin</varname> suport geographies. Consequently, the same applies for the MobilityDB functions derived from them, excepted that they support 3D for temporal points, that is, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>. As stated above, each of the above PostGIS functions, such as <varname>ST_Contains</varname>, has three generalized versions in MobilityDB, namely <varname>eContains</varname>, <varname>aContains</varname>, and <varname>tContains</varname>. Furthermore, not all combinations of parameters are meaningful for the generalized functions. For example, <varname>tContains(tpoint, geometry)</varname> is meaningful only when the geometry is a single point, and <varname>tContains(tpoint, tpoint)</varname> is equivalent to <varname>tintersects(tpoint, geometry)</varname>.</para>
-
-		<sect2>
-			<title>Ever and Always Relationships</title>
-
-			<para>We present next the ever and always relationships. These relationships automatically include a bounding box comparison that makes use of any spatial indexes that are available on the arguments.</para>
-
-			<itemizedlist>
 				<listitem xml:id="tgeo_eContains">
 					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
 					<para>Ever or always contains</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eContains({geometry,tgeom},{geometry,tgeom}) → boolean
 aContains({geometry,tgeom},{geometry,tgeom}) → boolean
 </programlisting>
@@ -496,19 +405,18 @@ SELECT eContains(geometry 'Linestring(1 1,3 3,1 1)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-03]');
 -- true
 SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
- tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
+  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
 -- false
 SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
 </programlisting>
 				</listitem>
-
 				<listitem xml:id="tgeo_eCovers">
 					<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
 					<para>Ever or always covers</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 aCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 </programlisting>
@@ -521,19 +429,18 @@ SELECT eCovers(geometry 'Linestring(1 1,3 3,1 1)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-03]');
 -- true
 SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
- tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
+  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
 -- false
 SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
 </programlisting>
 				</listitem>
-
 				<listitem xml:id="tgeo_eDisjoint">
 					<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
 					<para>Is ever or always disjoint &Z_support; &geography_support;</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eDisjoint({geo,tgeo},{geo,tgeo}) → boolean
 aDisjoint({geo,tgeo},{geo,tgeo}) → boolean
 </programlisting>
@@ -546,12 +453,11 @@ SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 -- true
 </programlisting>
 				</listitem>
-
 				<listitem xml:id="tgeo_eDwithin">
 					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
 					<para>Is ever or always at distance within &Z_support; &geography_support;</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
 aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean
 </programlisting>
@@ -564,12 +470,11 @@ SELECT eDwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 -- false
 </programlisting>
 				</listitem>
-
 				<listitem xml:id="tgeo_eIntersects">
 					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
 					<para>Ever or always intersects &Z_support; &geography_support;</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eIntersects({geo,tgeo},{geo,tgeo}) → boolean
 aIntersects({geometry,tgeom},{geometry,tgeom}) → boolean
 </programlisting>
@@ -582,12 +487,11 @@ SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 -- true
 </programlisting>
 				</listitem>
-
 				<listitem xml:id="tgeo_eTouches">
 					<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
 					<para>Ever or always touches</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eTouches({geometry,tgeom},{geometry,tgeom}) → boolean
 aTouches({geometry,tgeom},{geometry,tgeom}) → boolean
 </programlisting>
@@ -597,18 +501,16 @@ SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 -- true
 </programlisting>
 				</listitem>
-			</itemizedlist>
+		</itemizedlist>
+	</sect1>
 
-		</sect2>
-
-		<sect2>
-			<title>Spatiotemporal Relationships</title>
-
-			<itemizedlist>
+	<sect1 xml:id="tgeo_spatiotemp_rel">
+		<title>Spatiotemporal Relationships</title>
+		<itemizedlist>
 				<listitem xml:id="tgeo_tContains">
 					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
 					<para>Temporal contains</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tContains(geometry,tgeom) → tbool
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -626,11 +528,10 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, f@2001-01-03, f@2001-01-04]}
 </programlisting>
 				</listitem>
-
 				<listitem xml:id="tgeo_tDisjoint">
 					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 					<para>Temporal disjoint &Z_support; &geography_support;</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tDisjoint({geo,tgeo},{geo,tgeo}) → tbool
 </programlisting>
 					<para>The function only supports 3D or geographies for two temporal points</para>
@@ -643,11 +544,10 @@ SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
 -- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
 </programlisting>
 				</listitem>
-
 				<listitem xml:id="tgeo_tDwithin">
 					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 					<para>Temporal distance within &Z_support;</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tDwithin({geo,tgeo},{geo,tgeo},float) → tbool
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -659,11 +559,10 @@ SELECT tDwithin(tgeompoint '[Point(1 0)@2001-01-01, Point(1 4)@2001-01-05]',
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, t@2001-01-05]}
 </programlisting>
 				</listitem>
-
 				<listitem xml:id="tgeo_tIntersects">
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 					<para>Temporal intersects &Z_support; &geography_support;</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tIntersects({geo,tgeo},{geo,tgeo}) → tbool
 </programlisting>
 					<para>The function only supports 3D or geographies for two temporal points</para>
@@ -677,11 +576,10 @@ SELECT tIntersects(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
 -- {[f@2001-01-01, t@2001-01-03], (f@2001-01-03, f@2001-01-05)}
 </programlisting>
 				</listitem>
-
 				<listitem xml:id="tgeo_tTouches">
 					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
 					<para>Temporal touches</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tTouches({geometry,tgeom},{geometry,tgeom}) → tbool
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -690,8 +588,7 @@ SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
 </programlisting>
 				</listitem>
-			</itemizedlist>
-		</sect2>
+		</itemizedlist>
 	</sect1>
 </chapter>
 

@@ -105,7 +105,7 @@ CREATE FUNCTION pcpatch_icp(source pcpatch, target pcpatch,
 COMMENT ON FUNCTION pcpatch_icp(pcpatch, pcpatch, integer, double precision) IS
   'PCL IterativeClosestPoint registration. Returns an 8-element double[]:
    [tx, ty, tz, qw, qx, qy, qz, fitness]. Source and target must share pcid.
-   Compose into a MobilityDB pose with pose_make_3d(r[1], r[2], r[3], r[4], r[5], r[6], r[7], srid).';
+   Compose into a MobilityDB pose with pose(r[1], r[2], r[3], r[4], r[5], r[6], r[7], srid).';
 
 CREATE FUNCTION pcpatch_gicp(source pcpatch, target pcpatch,
                              max_iterations integer DEFAULT 50,

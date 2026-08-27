@@ -173,6 +173,8 @@ if(DOC_HTML OR DOC_PDF OR DOC_EPUB OR DOC_ALL)
 
   # Generating the user's documentation in HTML format
   if(LIBXSLT_FOUND)
+    # Set the ${DOCBOOK_XSL} variable in the html.xsl file
+    configure_file(html.xsl ${CMAKE_CURRENT_BINARY_DIR}/html.xsl)
     # Add an empty main html target
     add_custom_target(doc_html
       COMMENT "Generating the user's documentation in HTML format" VERBATIM
@@ -212,7 +214,7 @@ if(DOC_HTML OR DOC_PDF OR DOC_EPUB OR DOC_ALL)
           --stringparam formal.title.placement "figure after table after"
           # Allow controlling individual cell borders
           --stringparam table.borders.with.css 1
-          --xinclude ${DOCBOOK_XSL}/html/chunk.xsl ${CMAKE_CURRENT_SOURCE_DIR}${locale}/mobilitydb-manual.xml
+          --xinclude ${CMAKE_CURRENT_BINARY_DIR}/html.xsl ${CMAKE_CURRENT_SOURCE_DIR}${locale}/mobilitydb-manual.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating the ${lang_str} user's documentation in HTML format" VERBATIM
       )
@@ -263,6 +265,7 @@ if(DOC_HTML OR DOC_PDF OR DOC_EPUB OR DOC_ALL)
       # Add pdf target for every language and make the main pdf target dependent on it
       add_custom_target(doc_pdf_${lang}
         ${DBLATEX_COMMAND} -s ${CMAKE_CURRENT_SOURCE_DIR}${locale}/texstyle.sty
+          -p ${CMAKE_CURRENT_SOURCE_DIR}/dblatex.xsl
           ${CMAKE_CURRENT_SOURCE_DIR}${locale}/mobilitydb-manual.xml
           -o ${CMAKE_CURRENT_BINARY_DIR}${locale}/mobilitydb-manual.pdf
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

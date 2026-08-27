@@ -37,11 +37,11 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 10.0)';
 
 		<para>Values of the circular buffer type must satisfy several constraints so that they are well defined. Examples of incorrect circular buffer type values are as follows.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- incorrect point value
+-- Incorrect point value
 SELECT cbuffer 'Cbuffer(Linestring(1 1,2 2), 1.0)';
--- incorrect 3D point
+-- Incorrect 3D point
 SELECT cbuffer 'Cbuffer(Point Z(1 1 1), 1.0)';
--- incorrect radius value
+-- Incorrect radius value
 SELECT cbuffer 'Cbuffer(Point(1 1), -2.0)';
 </programlisting>
 		<para>We give next the functions and operators for the circular buffer type.</para>
@@ -54,7 +54,7 @@ SELECT cbuffer 'Cbuffer(Point(1 1), -2.0)';
 					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
 					<para>Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText({cbuffer,cbuffer[]}) → {text,text[]}
 asEWKT({cbuffer,cbuffer[]}) → {text,text[]}
 </programlisting>
@@ -77,7 +77,7 @@ SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.2)',
 					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
 					<para>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asBinary(cbuffer,endian text='') → bytea
 asEWKB(cbuffer,endian text='') → bytea
 asHexWKB(cbuffer,endian text='') → text
@@ -96,11 +96,11 @@ SELECT asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="cbufferFromText">
+				<listitem xml:id="cbuffer_cbufferFromText">
 					<indexterm significance="normal"><primary><varname>cbufferFromText</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>cbufferFromEWKT</varname></primary></indexterm>
 					<para>Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cbufferFromText(text) → cbuffer
 cbufferFromEWKT(text) → cbuffer
 </programlisting>
@@ -112,12 +112,12 @@ SELECT asEWKT(cbufferFromEWKT(text 'SRID=5676;Cbuffer(Point(1 1),0.5)'));
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="cbufferFromBinary">
+				<listitem xml:id="cbuffer_cbufferFromBinary">
 					<indexterm significance="normal"><primary><varname>cbufferFromBinary</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>cbufferFromEWKB</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>cbufferFromHexEWKB</varname></primary></indexterm>
 					<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cbufferFromBinary(bytea) → cbuffer
 cbufferFromEWKB(bytea) → cbuffer
 cbufferFromHexEWKB(text) → cbuffer
@@ -137,13 +137,13 @@ SELECT asEWKT(cbufferFromHexEWKB(
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="cbuffer_constructors">
+				<sect2 xml:id="cbuffer_constructors">
 			<title>Constructors</title>
 			<itemizedlist>
-				<listitem xml:id="cbuffer">
+				<listitem xml:id="cbuffer_cbuffer">
 					<indexterm significance="normal"><primary><varname>cbuffer</varname></primary></indexterm>
 					<para>Constructor for circular buffers</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cbuffer(geompoint,float) → cbuffer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -154,16 +154,15 @@ SELECT asText(cbuffer(ST_Point(1,1), 0.3));
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="cbuffer_conversions">
+				<sect2 xml:id="cbuffer_conversions">
 			<title>Conversions</title>
 			<para>Values of the <varname>cbuffer</varname> type can be converted to the <varname>geometry</varname> type using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation as shown below. Similarly, a <varname>geometry</varname> can be converted to a <varname>cbuffer</varname> value using the <ulink url="https://postgis.net/docs/ST_MinimumBoundingRadius.html"><varname>ST_MinimumBoundingRadius</varname></ulink> function in PostGIS.</para>
 			<itemizedlist>
 				<listitem xml:id="cbuffer_geometry">
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Convert between a circular buffer and a geometry</para>
-					<programlisting xml:space="preserve" format="linespecific">
-geometry::cbuffer
-cbuffer::geometry
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{geometry,cbuffer}::{cbuffer,geometry}
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(cbuffer(ST_Point(1,1), 1)::geometry);
@@ -178,7 +177,7 @@ SELECT asText(geometry 'SRID=5676;LINESTRING(0 0,2 2)'::cbuffer);
 			<listitem xml:id="cbuffer_stbox">
 				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
 				<para>Convert a circular buffer and, optionally, a timestamp or a period, to a spatiotemporal box</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 stbox(cbuffer) → stbox
 stbox(cbuffer,{timestamptz,tstzspan}) → stbox
 </programlisting>
@@ -194,13 +193,13 @@ SELECT stbox(cbuffer 'Cbuffer(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="cbuffer_accessors">
+				<sect2 xml:id="cbuffer_accessors">
 			<title>Accessors</title>
 			<itemizedlist>
 				<listitem xml:id="cbuffer_point">
 					<indexterm significance="normal"><primary><varname>point</varname></primary></indexterm>
 					<para>Return the point</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 point(cbuffer) → geompoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -212,7 +211,7 @@ SELECT ST_AsText(point(cbuffer 'Cbuffer(Point(1 1), 0.3)'));
 				<listitem xml:id="cbuffer_radius">
 					<indexterm significance="normal"><primary><varname>radius</varname></primary></indexterm>
 					<para>Return the radius</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 radius(cbuffer) → float
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -223,13 +222,13 @@ SELECT radius(cbuffer 'Cbuffer(Point(1 1), 0.3)');
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="cbuffer_transformations">
+				<sect2 xml:id="cbuffer_transformations">
 			<title>Transformations</title>
 			<itemizedlist>
 				<listitem xml:id="cbuffer_round">
 					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 					<para>Round the point and the radius of the circular buffer to the number of decimal places</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 round(cbuffer,integer=0) → cbuffer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -240,7 +239,7 @@ SELECT asText(round(cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789), 6))
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="cbuffer_spatial_functions">
+				<sect2 xml:id="cbuffer_spatial_functions">
 			<title>Spatial Operations</title>
 
 			<itemizedlist>
@@ -248,7 +247,7 @@ SELECT asText(round(cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789), 6))
 					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
 					<para>Return or set the spatial reference identifier</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 SRID(cbuffer) → integer
 setSRID(cbuffer) → cbuffer
 </programlisting>
@@ -264,10 +263,10 @@ SELECT asEWKT(setSRID(cbuffer 'Cbuffer(Point(0 0),1)', 4326));
 					<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 					<para>Transform to a spatial reference identifier</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 transform(cbuffer,integer) → cbuffer
-transformPipeline(cbuffer,pipeline text,to_srid integer,is_forward boolean=true) → 
-  cbuffer
+transformPipeline(cbuffer,pipeline text,to_srid integer,
+  is_forward boolean=true) → cbuffer
 </programlisting>
 					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input circular buffer has an unknown SRID (represented by 0).</para>
 					<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
@@ -282,15 +281,14 @@ WITH test(cbuffer, pipeline) AS (
   SELECT cbuffer 'Cbuffer(SRID=4326;Point(4.3525 50.846667),1)',
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
 SELECT asEWKT(transformPipeline(transformPipeline(cbuffer, pipeline, 4326), pipeline,
-  4326, false), 6)
-FROM test;
+  4326, false), 6) FROM test;
 -- SRID=4326;Cbuffer(POINT(4.3525 50.846667),1)
 </programlisting>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="cbuffer_static_operators">
+				<sect2 xml:id="cbuffer_static_operators">
 			<title>Comparisons</title>
 
 			<para>The comparison operators (=, &lt;, and so on) are available for circular buffers. They compare first the points and then the radius of the arguments. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on circular buffers.</para>
@@ -304,7 +302,7 @@ FROM test;
 					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 					<para>Traditional comparisons</para>
-					<programlisting xml:space="preserve" format="linespecific">
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cbuffer {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} cbuffer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -331,19 +329,17 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.6)' &gt;= cbuffer 'Cbuffer(Point(1 1), 0.5
 		<para>The temporal circular buffer type <varname>tcbuffer</varname> allows to represent the movement of objects together with a circular radius around them. As all temporal types, it comes in three subtypes, namely, instant, sequence, and sequence set. Examples of <varname>tcbuffer</varname> values in these subtypes are given next.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
-SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1),
-  0.5)@2001-01-02,
-  Cbuffer(Point(1 1), 0.5)@2001-01-03}';
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1),
-  0.4)@2001-01-02,
-  Cbuffer(Point(1 1), 0.5)@2001-01-03]';
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}';
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
+  Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 1)@2001-01-01, Cbuffer(Point(2 2), 1)@2001-01-02],
   [Cbuffer(Point(2 2), 2)@2001-01-04, Cbuffer(Point(2 2), 3)@2001-01-05]}';
 </programlisting>
 		<para>The temporal circular buffer type accepts type modifiers (or <varname>typmod</varname> in PostgreSQL terminology) to specify the subtype and/or the spatial reference identifier (SRID). The possible values for the subtype are <varname>Instant</varname>, <varname>Sequence</varname>, and <varname>SequenceSet</varname>. The two arguments are optional and if any of them is not specified for a column, values of any subtype and/or SRID are allowed.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(tcbuffer(Sequence,5676) 'SRID=5676;[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-03]');
+SELECT asEWKT(tcbuffer(Sequence,5676) 'SRID=5676;
+  [Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-03]');
 -- SRID=5676;[Cbuffer(POINT(1 1),0.2)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-03]
 SELECT tcbuffer(Sequence) 'Cbuffer(Point(1 1), 0.2)@2001-01-01';
 -- ERROR: Temporal type (Instant) does not match column type (Sequence)
@@ -356,8 +352,8 @@ SELECT tcbuffer(5676) 'Cbuffer(Point(1 1), 0.2)@2001-01-01';
 SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
   Cbuffer(Point(2 2), 0.4)@2001-01-02, Cbuffer(Point(3 3), 0.6)@2001-01-03)');
 -- [Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(3 3),0.6)@2001-01-03)
-SELECT asText(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
-  Cbuffer(Point(2 2), 0.3)@2001-01-02, Cbuffer(Point(2 2), 0.5)@2001-01-03), 
+SELECT asText(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01,
+  Cbuffer(Point(2 2), 0.3)@2001-01-02, Cbuffer(Point(2 2), 0.5)@2001-01-03),
   [Cbuffer(Point(2 2), 0.5)@2001-01-03, Cbuffer(Point(2 2), 0.7)@2001-01-04)}');
 /* {[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.3)@2001-01-02, 
    Cbuffer(Point(2 2),0.7)@2001-01-04)} */
@@ -386,18 +382,18 @@ SELECT tcbuffer 'Point(0 0)@2001-01-01 08:05:00';
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
 				<para>Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText({tcbuffer,tcbuffer[],cbuffer[]}) → {text,text[]}
 asEWKT({tcbuffer,tcbuffer[],cbuffer[]}) → {text,text[]}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(tcbuffer 'SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, 
-  Cbuffer(Point(1 1),2)@2001-01-02)');
+SELECT asText(tcbuffer 'SRID=4326;
+  [Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)');
 -- [Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
 SELECT asText(ARRAY[cbuffer 'Cbuffer(Point(0 0),1)', 'Cbuffer(Point(1 1),2)']);
 -- {"Cbuffer(POINT(0 0),1)","Cbuffer(POINT(1 1),2)"}
-SELECT asEWKT(tcbuffer 'SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, 
-  Cbuffer(Point(1 1),2)@2001-01-02)');
+SELECT asEWKT(tcbuffer 'SRID=4326;
+  [Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)');
 -- SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
 SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)',
   'Cbuffer(SRID=5676;Point(1 1),2)']);
@@ -408,26 +404,25 @@ SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)',
 			<listitem xml:id="tcbuffer_asMFJSON">
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>Return the Moving Features JSON (MF-JSON) representation</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asMFJSON(tcbuffer) → text
 </programlisting>
 				<para>A circular buffer is always planar 2D. Each value is an object with a <varname>point</varname> member, an <varname>[x, y]</varname> coordinate array, and a numeric <varname>radius</varname> member, mirroring the <varname>point</varname> and <varname>radius</varname> accessors.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tcbuffer 'Cbuffer(Point(1 2),0.5)@2001-01-01', 3);
 /* {"type":"MovingCircularBuffer","bbox":[[0.5,1.5],[1.5,2.5]],
-  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-01T00:00:00",
-  "lower_inc":true,"upper_inc":true},
-  "values":[{"point":[1,2],"radius":0.5}],
-  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
-SELECT asMFJSON(tcbuffer 'SRID=4326;[Cbuffer(Point(1 1),0.2)@2001-01-01,
-  Cbuffer(Point(2 2),0.4)@2001-01-02)', 3);
+   "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-01T00:00:00",
+   "lower_inc":true,"upper_inc":true}, "values":[{"point":[1,2],"radius":0.5}],
+   "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
+SELECT asMFJSON(tcbuffer 'SRID=4326;
+  [Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.4)@2001-01-02)', 3);
 /* {"type":"MovingCircularBuffer","crs":{"type":"Name",
-  "properties":{"name":"EPSG:4326"}},"bbox":[[0.8,0.8],[2.4,2.4]],
-  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-02T00:00:00",
-  "lower_inc":true,"upper_inc":false},
-  "values":[{"point":[1,1],"radius":0.2},{"point":[2,2],"radius":0.4}],
-  "datetimes":["2001-01-01T00:00:00","2001-01-02T00:00:00"],
-  "lower_inc":true,"upper_inc":false,"interpolation":"Linear"} */
+   "properties":{"name":"EPSG:4326"}},"bbox":[[0.8,0.8],[2.4,2.4]],
+   "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-02T00:00:00",
+   "lower_inc":true,"upper_inc":false},
+   "values":[{"point":[1,1],"radius":0.2},{"point":[2,2],"radius":0.4}],
+   "datetimes":["2001-01-01T00:00:00","2001-01-02T00:00:00"],
+   "lower_inc":true,"upper_inc":false,"interpolation":"Linear"} */
 </programlisting>
 			</listitem>
 
@@ -436,8 +431,8 @@ SELECT asMFJSON(tcbuffer 'SRID=4326;[Cbuffer(Point(1 1),0.2)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
-				<para>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, the Hexadecimal Well-Known Binary (HexWKB) representation, or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), the Hexadecimal Well-Known Binary (HexWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asBinary(tcbuffer,endian text='') → bytea
 asEWKB(tcbuffer,endian text='') → bytea
 asHexWKB(tcbuffer,endian text='') → text
@@ -456,46 +451,46 @@ SELECT asHexEWKB(tcbuffer 'SRID=3812;Cbuffer(Point(1 2),1)@2001-01-01');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tcbufferFromText">
+			<listitem xml:id="tcbuffer_tcbufferFromText">
 				<indexterm significance="normal"><primary><varname>tcbufferFromText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferFromEWKT</varname></primary></indexterm>
-				<para>Input from the Well-Known Text (WKT) representation or from the Extended Well-Known Text (EWKT) representation</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbufferFromText(text) → tcbuffer
 tcbufferFromEWKT(text) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(tcbufferFromText(text '[Cbuffer(Point(1 2),1)@2001-01-01, 
+SELECT asEWKT(tcbufferFromText(text '[Cbuffer(Point(1 2),1)@2001-01-01,
   Cbuffer(Point(3 4),2)@2001-01-02]'));
 -- [Cbuffer(POINT(1 2),1)@2001-01-01, Cbuffer(POINT(3 4),2)@2001-01-02]
-SELECT asEWKT(tcbufferFromEWKT(text 'SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01,
-  Cbuffer(Point(3 4),2)@2001-01-02]'));
+SELECT asEWKT(tcbufferFromEWKT(text 'SRID=3812;
+  [Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]'));
 -- SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tcbufferFromMFJSON">
+			<listitem xml:id="tcbuffer_tcbufferFromMFJSON">
 				<indexterm significance="normal"><primary><varname>tcbufferFromMFJSON</varname></primary></indexterm>
 				<para>Input from the Moving Features JSON (MF-JSON) representation</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbufferFromMFJSON(text) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer
-  'SRID=3812;Cbuffer(Point(1 2),0.5)@2001-01-01', 3)));
+SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer 'SRID=3812;
+  Cbuffer(Point(1 2),0.5)@2001-01-01', 3)));
 -- SRID=3812;Cbuffer(POINT(1 2),0.5)@2001-01-01
-SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer
-  'SRID=5676;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]', 3)));
+SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer 'SRID=5676;
+  [Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]', 3)));
 -- SRID=5676;[Cbuffer(POINT(1 2),1)@2001-01-01, Cbuffer(POINT(3 4),2)@2001-01-02]
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tcbufferFromBinary">
+			<listitem xml:id="tcbuffer_tcbufferFromBinary">
 				<indexterm significance="normal"><primary><varname>tcbufferFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferFromEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferFromHexEWKB</varname></primary></indexterm>
-				<para>Input from the Well-Known Binary (WKB) representation, from the Extended Well-Known Binary (EWKB) representation, or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbufferFromBinary(bytea) → tcbuffer
 tcbufferFromEWKB(bytea) → tcbuffer
 tcbufferFromHexEWKB(text) → tcbuffer
@@ -519,37 +514,36 @@ SELECT asEWKT(tcbufferFromHexEWKB(
 		<title>Constructors</title>
 
 		<itemizedlist>
-			<listitem xml:id="tcbuffer_const">
+			<listitem xml:id="tcbuffer_tcbuffer">
 				<indexterm significance="normal"><primary><varname>tcbuffer</varname></primary></indexterm>
 				<para>Constructor for temporal circular buffers having a constant value</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbuffer(cbuffer,timestamptz) → tcbufferInst
 tcbuffer(cbuffer,tstzset) → tcbufferDiscSeq
-tcbuffer(cbuffer,tstzspan,interp='linear') → tcbufferContSeq
-tcbuffer(cbuffer,tstzspanset,interp='linear') → tcbufferSeqSet
+tcbuffer(cbuffer,tstzspan,interp text='linear') → tcbufferContSeq
+tcbuffer(cbuffer,tstzspanset,interp text='linear') → tcbufferSeqSet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', timestamptz '2001-01-01'));
 -- Cbuffer(Point(1 1),0.5)@2001-01-01
-SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.3)', 
+SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.3)',
   tstzset '{2001-01-01, 2001-01-03, 2001-01-05}'));
 /* {Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(1 1),0.3)@2001-01-03, 
    Cbuffer(Point(1 1),0.3)@2001-01-05} */
-SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', 
-  tstzspan '[2001-01-01, 2001-01-02]'));
+SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', tstzspan '[2001-01-01, 2001-01-02]'));
 -- [Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02]
-SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.2)', 
+SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.2)',
   tstzspanset '{[2001-01-01, 2001-01-03]}', 'step'));
 -- Interp=Step;{[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(1 1),0.2)@2001-01-03]}
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tcbufferSeq">
+			<listitem xml:id="tcbuffer_tcbufferSeq">
 				<indexterm significance="normal"><primary><varname>tcbufferSeq</varname></primary></indexterm>
 				<para>Constructor for temporal circular buffers of sequence subtype</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tcbufferSeq(tcbufferInst[],interp='linear',leftInc boolean=true,
-  rightInc boolean=true) →tcbufferSeq
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcbufferSeq(tcbufferInst[],interp text='linear',leftInc boolean=true,
+  rightInc boolean=true) → tcbufferSeq
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
@@ -568,18 +562,18 @@ SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.2)@2001-01-01',
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tcbufferSeqSet">
+			<listitem xml:id="tcbuffer_tcbufferSeqSet">
 				<indexterm significance="normal"><primary><varname>tcbufferSeqSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferSeqSetGaps</varname></primary></indexterm>
 				<para>Constructor for temporal circular buffers of sequence set subtype</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbufferSeqSet(tcbuffer[]) → tcbufferSeqSet
-tcbufferSeqSetGaps(tcbufferInst[],maxt=NULL,maxdist=NULL,interp='linear') →
-  tcbufferSeqSet
+tcbufferSeqSetGaps(tcbufferInst[],maxt interval=NULL,maxdist float=NULL,
+  interp text='linear') → tcbufferSeqSet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(tcbufferSeqSet(ARRAY[tcbuffer 
-  '[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.4)@2001-01-02]', 
+SELECT asText(tcbufferSeqSet(ARRAY[tcbuffer '[Cbuffer(Point(1 1),0.2)@2001-01-01,
+  Cbuffer(Point(2 2),0.4)@2001-01-02]',
   '[Cbuffer(Point(2 2),0.6)@2001-01-03, Cbuffer(Point(2 2),0.8)@2001-01-04]']));
 /* {[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.4)@2001-01-02],
    [Cbuffer(Point(2 2),0.6)@2001-01-03, Cbuffer(Point(2 2),0.6)@2001-01-04]} */
@@ -590,11 +584,11 @@ SELECT asText(tcbufferSeqSetGaps(ARRAY[tcbuffer 'Cbuffer(Point(1 1),0.1)@2001-01
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tgeompoint_tfloat_tcbuffer">
+			<listitem xml:id="tcbuffer_tcbuffer_tgeompoint">
 				<indexterm significance="normal"><primary><varname>tcbuffer</varname></primary></indexterm>
 				<para>Construct a temporal circular buffer from a temporal geometry point and a temporal float</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tcbuffer(tgeompoint, tfloat) → tcbuffer
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcbuffer(tgeompoint,tfloat) → tcbuffer
 </programlisting>
 				<para>The time frame of the result is the intersection of the time frames of the temporal point and the temporal float. If they do not intersect, a null value is returned</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -616,7 +610,7 @@ SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02
 			<listitem xml:id="tcbuffer_tgeompoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convert a temporal circular buffer to a temporal geometry point</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbuffer::tgeompoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -629,7 +623,7 @@ SELECT asText((tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 			<listitem xml:id="tcbuffer_tfloat">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convert a temporal circular buffer to a temporal float</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbuffer::tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -647,15 +641,15 @@ SELECT (tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 			<listitem xml:id="tcbuffer_getValues">
 				<indexterm significance="normal"><primary><varname>getValues</varname></primary></indexterm>
 				<para>Return the values</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 getValues(tcbuffer) → cbufferset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(getValues(tcbuffer '{[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+SELECT asText(getValues(tcbuffer '{[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02)}'));
 -- {"Cbuffer(Point(1 1),0.3)","Cbuffer(Point(1 1),0.5)"}
-SELECT asEWKT(getValues(tcbuffer 'SRID=5676;{[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.3)@2001-01-02)}'));
+SELECT asEWKT(getValues(tcbuffer 'SRID=5676;
+  {[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-02)}'));
 -- SRID=5676;{"Cbuffer(Point(1 1),0.3)"}
 </programlisting>
 			</listitem>
@@ -664,16 +658,16 @@ SELECT asEWKT(getValues(tcbuffer 'SRID=5676;{[Cbuffer(Point(1 1), 0.3)@2001-01-0
 				<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>radius</varname></primary></indexterm>
 				<para>Return the points or the radii</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 points(tcbuffer) → geomset
 radius(tcbuffer) → floatset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(points(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02}'));
+SELECT asEWKT(points(tcbuffer 'SRID=5676;
+  {Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}'));
 -- SRID=5676;{Point(1 1), Point(3 3)}
-SELECT radius(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02}');
+SELECT radius(tcbuffer 'SRID=5676;
+  {Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}');
 -- {0.3, 0.5}
 </programlisting>
 			</listitem>
@@ -681,11 +675,11 @@ SELECT radius(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01,
 			<listitem xml:id="tcbuffer_valueAtTimestamp">
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Return the value at a timestamp</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 valueAtTimestamp(tcbuffer,timestamptz) → cbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(valueAtTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+SELECT asText(valueAtTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(3 3), 0.5)@2001-01-03)', '2001-01-02'));
 -- Cbuffer(Point(2 2),0.4)
 </programlisting>
@@ -696,12 +690,12 @@ SELECT asText(valueAtTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 	<sect1 xml:id="tcbuffer_transformations">
 		<title>Transformations</title>
 		<itemizedlist>
-			<listitem xml:id="tcbuffer_subtype">
+			<listitem xml:id="tcbuffer_tcbufferInst">
 				<indexterm significance="normal"><primary><varname>tcbufferInst</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferSeq</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferSeqSet</varname></primary></indexterm>
 				<para>Transform a temporal circular buffer to another subtype</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbufferInst(tcbuffer) → tcbufferInst
 tcbufferSeq(tcbuffer) → tcbufferSeq
 tcbufferSeqSet(tcbuffer) → tcbufferSeqSet
@@ -719,13 +713,13 @@ SELECT asText(tcbufferSeqSet(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'));
 			<listitem xml:id="tcbuffer_setInterp">
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Transform a temporal circular buffer to another interpolation</para>
-				<programlisting xml:space="preserve" format="linespecific">
-setInterp(tcbuffer, interp) → tcbuffer
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+setInterp(tcbuffer,interp) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(setInterp(tcbuffer 'Cbuffer(Point(1 1),0.2)@2001-01-01','linear'));
 -- [Cbuffer(Point(1 1),0.2)@2001-01-01]
-SELECT asText(setInterp(tcbuffer '{[Cbuffer(Point(1 1),0.1)@2001-01-01], 
+SELECT asText(setInterp(tcbuffer '{[Cbuffer(Point(1 1),0.1)@2001-01-01],
   [Cbuffer(Point(1 1),0.2)@2001-01-02]}', 'discrete'));
 -- {Cbuffer(Point(1 1),0.1)@2001-01-01, Cbuffer(Point(1 1),0.2)@2001-01-02}
 </programlisting>
@@ -734,13 +728,29 @@ SELECT asText(setInterp(tcbuffer '{[Cbuffer(Point(1 1),0.1)@2001-01-01],
 			<listitem xml:id="tcbuffer_round">
 				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 				<para>Round the points and the radii of the temporal circular buffer to the number of decimal places</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 round(tcbuffer,integer) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-01-01, 
+SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-01-01,
   Cbuffer(Point(1 1),0.5)@2001-01-02)}', 3));
 -- {[Cbuffer(Point(1 1.123),0.123)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02)}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_stops">
+				<indexterm significance="normal"><primary><varname>stops</varname></primary></indexterm>
+				<para>Extract the subsequences where the temporal circular buffer stays within an area with a specified maximum size for at least the given duration</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stops(tcbuffer,maxdist float=0.0,minduration interval='0 minutes') → tcbuffer
+</programlisting>
+				<para>The size of the area is the greatest distance between two centres of the subsequence, as stated for a temporal point in <link linkend="tgeo_stops"><varname>stops</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(stops(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(2 2), 0.5)@2001-01-03,
+  Cbuffer(Point(2 2), 0.5)@2001-01-04]'));
+/* {[Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-02],
+   [Cbuffer(POINT(2 2),0.5)@2001-01-03, Cbuffer(POINT(2 2),0.5)@2001-01-04]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -753,7 +763,7 @@ SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-0
 				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Append a temporal instant or a temporal sequence</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 appendInstant(tcbuffer,tcbufferInst) → tcbuffer
 appendSequence(tcbuffer,tcbufferSeq) → tcbuffer
 </programlisting>
@@ -771,14 +781,14 @@ SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]',
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
 				<para>Merge the temporal circular buffers</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 merge(tcbuffer,tcbuffer) → tcbuffer
 merge(tcbuffer[]) → tcbuffer
 mergeAgg(tcbuffer) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(merge(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1),
-  0.3)@2001-01-03]',
+SELECT asText(merge(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
+  Cbuffer(Point(1 1), 0.3)@2001-01-03]',
   '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]'));
 -- [Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-05]
 SELECT asText(merge(ARRAY[tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
@@ -795,210 +805,16 @@ SELECT asText(mergeAgg(inst)) FROM temp;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="tcbuffer_spatial">
-		<title>Spatial Operations</title>
-		<itemizedlist>
-			<listitem xml:id="tcbuffer_SRID">
-				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
-				<para>Return or set the spatial reference identifier</para>
-				<programlisting xml:space="preserve" format="linespecific">
-SRID(tcbuffer) → integer
-setSRID(tcbuffer) → tcbuffer
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT SRID(tcbuffer 'SRID=5676;[Cbuffer(Point(0 0),1)@2001-01-01, 
-  Cbuffer(Point(1 1),2)@2001-01-02)');
--- 5676
-SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, 
-  Cbuffer(Point(1 1),2)@2001-01-02)', 5676));
--- SRID=5676;[Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tcbuffer_transform">
-				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
-				<para>Transform to a spatial reference identifier</para>
-				<programlisting xml:space="preserve" format="linespecific">
-transform(tcbuffer,integer) → tcbuffer
-transformPipeline(tcbuffer,pipeline text,to_srid integer,is_forward boolean=true) →
-  tcbuffer
-</programlisting>
-				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0).</para>
-				<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(transform(tcbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)@2001-01-01', 
-  3812));
--- SRID=3812;Cbuffer(POINT(648679.0180353033 671067.0556381135),1)@2001-01-01
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH test(tcbuffer, pipeline) AS (
-  SELECT tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
-    Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
-    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326),  pipeline,
-  4326, false), 6)
-FROM test;
-/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01, 
-   Cbuffer(POINT(-0.1275 51.507222),2)@2001-01-02} */
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tcbuffer_traversedArea">
-				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
-				<para>Return the area traversed by the temporal circular buffer</para>
-				<programlisting xml:space="preserve" format="linespecific">
-traversedArea(tcbuffer, unary_union=false) → geometry
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
--- CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tcbuffer_centroid">
-				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
-				<para>Return the temporal geometric point given by the centers of a temporal circular buffer</para>
-				<programlisting xml:space="preserve" format="linespecific">
-centroid(tcbuffer) → tgeompoint
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
-  Cbuffer(Point(3 3), 0.5)@2001-01-03]'));
--- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tcbuffer_convexHull">
-				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
-				<para>Return the convex hull of the area traversed by the temporal circular buffer</para>
-				<programlisting xml:space="preserve" format="linespecific">
-convexHull(tcbuffer) → geometry
-</programlisting>
-				<para>The convex hull is computed on the exact traversed area, arcs included: an arc reaches past the points that define it, so it contributes to the hull the piece of its circle that no other feature of the area reaches past. The result is therefore a curved <varname>CURVEPOLYGON</varname> bounded by a <varname>COMPOUNDCURVE</varname> of circular arcs and straight segments, as exact as the region returned by <varname>traversedArea</varname>. The hull is linear only when the buffer keeps a zero radius, since the traversed area then carries no arc.</para>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(convexHull(tcbuffer
-  '[Cbuffer(Point(1 1), 0.5)@2001-01-01, Cbuffer(Point(1 3), 0.5)@2001-01-02]'));
--- CURVEPOLYGON(COMPOUNDCURVE((1.5 3,1.5 1),CIRCULARSTRING(1.5 1,1 0.5,0.5 1),
---   (0.5 1,0.5 3),CIRCULARSTRING(0.5 3,1 3.5,1.5 3)))
-SELECT ST_AsText(convexHull(tcbuffer
-  '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffer(Point(1 3), 0)@2001-01-02,
-  Cbuffer(Point(3 3), 0)@2001-01-03]'));
--- POLYGON((1 1,1 3,3 3,1 1))
-</programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
-
-	<sect1 xml:id="tcbuffer_distance">
-		<title>Distance Operations</title>
-		<itemizedlist>
-			<listitem xml:id="tcbuffer_nearestApproachDistance">
-				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
-				<para>Return the smallest distance ever</para>
-				<programlisting xml:space="preserve" format="linespecific">
-{geo,cbuffer,tcbuffer,stbox} |=| {geo,cbuffer,tcbuffer,stbox} → float
-</programlisting>
-				<para>The operator <varname>|=|</varname> that can be used for doing nearest neightbor searches using a GiST or an SP-GiST index (see <xref linkend="ttype_indexing"/>).</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-02]' |=| geometry 'Linestring(50 50,55 55)';
--- 67.58225099390856
-SELECT tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-02]' |=| cbuffer 'Cbuffer(Point(1 1), 0.5)';
--- 0.6142135623730951
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tcbuffer_nearestApproachInstant">
-				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
-				<para>Return the instant of the first temporal circular buffer at which the two arguments are at the nearest distance</para>
-				<programlisting xml:space="preserve" format="linespecific">
-nearestApproachInstant({geo,cbuffer,tcbuffer},{geo,cbuffer,tcbuffer}) → tcbuffer
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
--- Cbuffer(Point(2 2),0.349928)@2001-01-01 02:59:44.402905
-SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)');
--- Cbuffer(Point(2 2),0.592181)@2001-01-01 17:31:51.080405
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tcbuffer_shortestLine">
-				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
-				<para>Return the line connecting the nearest approach point between the two arguments</para>
-				<programlisting xml:space="preserve" format="linespecific">
-shortestLine({geo,cbuffer,tcbuffer},{geo,cbuffer,tcbuffer}) → geometry
-</programlisting>
-				<para>The function will only return the first line that it finds if there are more than one</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
--- LINESTRING(50 50,2.212132034355964 2.212132034355964)
-SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
--- LINESTRING(1.353553390593274 1.353553390593274,1.787867965644036 1.787867965644036)
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tcbuffer_tdistance">
-				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<para>Return the temporal distance</para>
-				<programlisting xml:space="preserve" format="linespecific">
-{geo,cbuffer,tcbuffer} &lt;-&gt; {geo,cbuffer,tcbuffer} → tfloat
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; cbuffer 'Cbuffer(Point(1 1), 0.2)';
--- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; geometry 'Point(50 50)';
--- [25.0496666945044@2001-01-01, 26.4085688426232@2001-01-03]
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt;
-  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-04]'
--- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tcbuffer_minDistance">
-				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
-				<para>Return the minimum spatial distance, ignoring time</para>
-				<programlisting xml:space="preserve" format="linespecific">
-minDistance(tcbuffer,{geo,cbuffer}) → float
-</programlisting>
-				<para><varname>minDistance(tcbuffer,tcbuffer) → float</varname> (aggregate)</para>
-				<para>The result is the spatial distance between the areas swept by the two arguments over their whole lifespans, equal to <varname>ST_Distance(traversedArea(...), traversedArea(...))</varname>. The two-argument temporal-circular-buffer form is an aggregate so that a cross join grouped by a key yields the minimum over every pair in the group.</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01,
-  Cbuffer(Point(10 0), 0.5)@2001-01-02]', geometry 'Point(5 5)');
--- 4.5
-SELECT minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01,
-  Cbuffer(Point(10 0), 0.5)@2001-01-02]', cbuffer 'Cbuffer(Point(5 5), 1)');
--- 3.5
-SELECT g, minDistance(t1.Noise, t2.Noise)
-FROM Vessel v1, VesselTrip t1, Vessel v2, VesselTrip t2
-WHERE v1.MMSI = t1.MMSI AND v2.MMSI = t2.MMSI
-GROUP BY t1.ShipTypeLabel, t2.ShipTypeLabel;
-</programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
-
 	<sect1 xml:id="tcbuffer_restrictions">
 		<title>Restrictions</title>
 		<itemizedlist>
-			<listitem xml:id="tcbuffer_atValues">
+			<listitem xml:id="tcbuffer_atValue">
 				<indexterm significance="normal"><primary><varname>atValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a value or a set of values</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atValue(tcbuffer,value) → tcbuffer
 minusValue(tcbuffer,value) → tcbuffer
 atValues(tcbuffer,valueset) → tcbuffer
@@ -1019,15 +835,15 @@ SELECT asText(minusValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a geometry</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atGeometry(tcbuffer,geometry) → tcbuffer
 minusGeometry(tcbuffer,geometry) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(atGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01, 
+SELECT asText(atGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
 -- {[Cbuffer(POINT(2 2),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.7)@2001-01-03]}
-SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01, 
+SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
 /* {(Cbuffer(Point(2 2),0.342593)@2001-01-01 05:06:40.364673,
    Cbuffer(Point(2 2),0.7)@2001-01-03]} */
@@ -1038,7 +854,7 @@ SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
 				<para>Restrict a temporal circular buffer to (the complement of) a spatiotemporal box</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer
 minusStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer
 </programlisting>
@@ -1051,72 +867,95 @@ SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2000-01-01,
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="tcbuffer_comparisons">
-		<title>Comparisons</title>
+	<sect1 xml:id="tcbuffer_spatial">
+		<title>Spatial Operations</title>
 		<itemizedlist>
-			<listitem xml:id="tcbuffer_comp">
-				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
-				<para>Traditional comparisons</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tcbuffer {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tcbuffer → boolean
+			<listitem xml:id="tcbuffer_SRID">
+				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+				<para>Return or set the spatial reference identifier</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+SRID(tcbuffer) → integer
+setSRID(tcbuffer) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.3)@2001-01-02),
-  [Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]}' =
-  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
--- true
-SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-03]}' &lt;&gt;
-  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
--- false
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;
-  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.6)@2001-01-03]';
--- false
+SELECT SRID(tcbuffer 'SRID=5676;
+  [Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)');
+-- 5676
+SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01,
+  Cbuffer(Point(1 1),2)@2001-01-02)', 5676));
+-- SRID=5676;[Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tcbuffer_ever_always">
-				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
-				<para>Ever and always comparisons</para>
-				<programlisting xml:space="preserve" format="linespecific">
-{tcbuffer,cbuffer} {?=, %=} {tcbuffer,cbuffer} → boolean
+			<listitem xml:id="tcbuffer_transform">
+				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
+				<para>Transform to a spatial reference identifier</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+transform(tcbuffer,integer) → tcbuffer
+transformPipeline(tcbuffer,pipeline text,to_srid integer,
+  is_forward boolean=true) → tcbuffer
+</programlisting>
+				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0). The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(transform(tcbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)@2001-01-01',
+  3812));
+-- SRID=3812;Cbuffer(POINT(648679.0180353033 671067.0556381135),1)@2001-01-01
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.4)@2001-01-03)' ?= cbuffer 'Cbuffer(Point(1 1), 0.3)';
--- true
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.4)@2001-01-03)' ?=
-  tcbuffer '[Cbuffer(Point(1 1), 0.4)@2001-01-01, Cbuffer(Point(1 1), 0.2)@2001-01-03)';
--- true
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.2)@2001-01-04)' %= cbuffer 'Cbuffer(Point(1 1), 0.2)';
--- true
+WITH test(tcbuffer, pipeline) AS (
+  SELECT tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
+    Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326), pipeline,
+  4326, false), 6) FROM test;
+/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01, 
+   Cbuffer(POINT(-0.1275 51.507222),2)@2001-01-02} */
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tcbuffer_tcomp">
-				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<para>Temporal comparisons</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tcbuffer {#=, #&lt;&gt;} tcbuffer → tbool
+			<listitem xml:id="tcbuffer_traversedArea">
+				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
+				<para>Return the area traversed by the temporal circular buffer</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+traversedArea(tcbuffer,unary_union bool=false) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.4)@2001-01-03)' #= cbuffer 'Cbuffer(Point(1 1), 0.3)';
--- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.8)@2001-01-03)' #&lt;&gt;
-  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.7)@2001-01-03)';
--- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
+-- CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_centroid">
+				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
+				<para>Return the temporal geometric point given by the centers of a temporal circular buffer</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+centroid(tcbuffer) → tgeompoint
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(3 3), 0.5)@2001-01-03]'));
+-- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_convexHull">
+				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
+				<para>Return the convex hull of the area traversed by the temporal circular buffer</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+convexHull(tcbuffer) → geometry
+</programlisting>
+				<para>The convex hull is computed on the exact traversed area, arcs included: an arc reaches past the points that define it, so it contributes to the hull the piece of its circle that no other feature of the area reaches past. The result is therefore a curved <varname>CURVEPOLYGON</varname> bounded by a <varname>COMPOUNDCURVE</varname> of circular arcs and straight segments, as exact as the region returned by <varname>traversedArea</varname>. The hull is linear only when the buffer keeps a zero radius, since the traversed area then carries no arc.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(convexHull(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(1 3), 0.5)@2001-01-02]'));
+/* CURVEPOLYGON(COMPOUNDCURVE((1.5 3,1.5 1),CIRCULARSTRING(1.5 1,1 0.5,0.5 1),
+   (0.5 1,0.5 3),CIRCULARSTRING(0.5 3,1 3.5,1.5 3))) */
+SELECT ST_AsText(convexHull(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01,
+  Cbuffer(Point(1 3), 0)@2001-01-02, Cbuffer(Point(3 3), 0)@2001-01-03]'));
+-- POLYGON((1 1,1 3,3 3,1 1))
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1132,22 +971,21 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 				<para>Topological operators</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {tstzspan,stbox,tcbuffer} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} {tstzspan,stbox,tcbuffer} → boolean
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&amp; cbuffer 'Cbuffer(Point(1 1), 0.5)';
 -- true
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)');
 -- true
 SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)'::geometry &lt;@
   tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]';
 -- true
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-03]' ~= tcbuffer '[Cbuffer(Point(1 1),
-  0.3)@2001-01-01, 
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' ~= tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.35)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
 -- true
 </programlisting>
@@ -1156,7 +994,7 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 			<listitem xml:id="tcbuffer_pos">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Position operators</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {stbox,tcbuffer} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tcbuffer} → boolean
 {stbox,tcbuffer} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tcbuffer} → boolean
 {tstzspan,stbox,tcbuffer} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tcbuffer} → boolean
@@ -1177,13 +1015,121 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 -- true
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tcbuffer_expandSpace">
+				<indexterm significance="normal"><primary><varname>expandSpace</varname></primary></indexterm>
+				<para>Return the spatiotemporal bounding box expanded in the spatial dimension by a float value</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+expandSpace(tcbuffer,float) → stbox
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT expandSpace(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(3 3), 0.5)@2001-01-03]', 2);
+-- STBOX XT(((-1.5,-1.5),(5.5,5.5)),[2001-01-01, 2001-01-03])
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="tcbuffer_spatial_rels">
-		<title>Spatial Relationships</title>
+	<sect1 xml:id="tcbuffer_distance">
+		<title>Distance Operations</title>
 		<itemizedlist>
-			<listitem xml:id="tcbuffer_espatialrels">
+			<listitem xml:id="tcbuffer_nearestApproachDistance">
+				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+				<para>Return the smallest distance ever</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{geo,cbuffer,tcbuffer,stbox} |=| {geo,cbuffer,tcbuffer,stbox} → float
+</programlisting>
+				<para>The operator <varname>|=|</varname> that can be used for doing nearest neightbor searches using a GiST or an SP-GiST index (see <xref linkend="ttype_indexing"/>).</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]' |=| geometry 'Linestring(50 50,55 55)';
+-- 67.58225099390856
+SELECT tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]' |=| cbuffer 'Cbuffer(Point(1 1), 0.5)';
+-- 0.6142135623730951
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_nearestApproachInstant">
+				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
+				<para>Return the instant of the first temporal circular buffer at which the two arguments are at the nearest distance</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+nearestApproachInstant({geo,cbuffer,tcbuffer},{geo,cbuffer,tcbuffer}) → tcbuffer
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
+-- Cbuffer(Point(2 2),0.349928)@2001-01-01 02:59:44.402905
+SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)');
+-- Cbuffer(Point(2 2),0.592181)@2001-01-01 17:31:51.080405
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_shortestLine">
+				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
+				<para>Return the line connecting the nearest approach point between the two arguments</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+shortestLine({geo,cbuffer,tcbuffer},{geo,cbuffer,tcbuffer}) → geometry
+</programlisting>
+				<para>The function will only return the first line that it finds if there are more than one</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
+-- LINESTRING(50 50,2.212132034355964 2.212132034355964)
+SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+-- LINESTRING(1.353553390593274 1.353553390593274,1.787867965644036 1.787867965644036)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_tdistance">
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Return the temporal distance</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{geo,cbuffer,tcbuffer} &lt;-&gt; {geo,cbuffer,tcbuffer} → tfloat
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; cbuffer 'Cbuffer(Point(1 1), 0.2)';
+-- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; geometry 'Point(50 50)';
+-- [25.0496666945044@2001-01-01, 26.4085688426232@2001-01-03]
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt;
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-04]'
+-- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_minDistance">
+				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
+				<para>Return the minimum spatial distance, ignoring time</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+minDistance({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → float
+</programlisting>
+				<para>The result is the spatial distance between the areas swept by the two arguments over their whole lifespans, equal to <varname>ST_Distance</varname> of the <varname>traversedArea</varname> of each. The form taking two temporal circular buffers is an aggregate so that a cross join grouped by a key yields the minimum over every pair in the group.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01,
+  Cbuffer(Point(10 0), 0.5)@2001-01-02]', geometry 'Point(5 5)');
+-- 4.5
+SELECT minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01,
+  Cbuffer(Point(10 0), 0.5)@2001-01-02]', cbuffer 'Cbuffer(Point(5 5), 1)');
+-- 3.5
+SELECT g, minDistance(t1.Noise, t2.Noise) FROM Vessel v1, VesselTrip t1, Vessel v2,
+  VesselTrip t2 WHERE v1.MMSI = t1.MMSI AND v2.MMSI = t2.MMSI GROUP BY t1.ShipTypeLabel,
+  t2.ShipTypeLabel;
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tcbuffer_everalways_rels">
+		<title>Ever and Always Relationships</title>
+		<itemizedlist>
+			<listitem xml:id="tcbuffer_eContains">
 				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
@@ -1196,10 +1142,10 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
-				<para>The <emphasis>ever</emphasis> and <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is ever or always satisfied (see <xref linkend="ever_always_comparison"/>) and return a <varname>boolean</varname>. Examples are the <varname>eIntersects</varname> and <varname>aIntersects</varname> functions.</para>
-				<programlisting xml:space="preserve" format="linespecific">
-eContains(geometry,tcbuffer) → boolean
-aContains(geometry,tcbuffer) → boolean
+				<para>Ever and always relationships</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+eContains({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+aContains({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 eCovers({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 aCovers({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 eDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
@@ -1211,6 +1157,7 @@ aIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 eTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 aTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 </programlisting>
+				<para>The <emphasis>ever</emphasis> and <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is ever or always satisfied and return a <varname>boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
@@ -1218,27 +1165,35 @@ SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(2 2), 0.0)',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
 -- true
-SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
   Cbuffer(Point(1 1), 0.3)@2001-01-03)',
   tcbuffer '[Cbuffer(Point(2 2), 0.0)@2001-01-01, Cbuffer(Point(2 2), 1)@2001-01-03)');
 -- false
 </programlisting>
 			</listitem>
+		</itemizedlist>
+	</sect1>
 
-			<listitem xml:id="tcbuffer_tspatialrels">
+	<sect1 xml:id="tcbuffer_spatiotemp_rels">
+		<title>Spatiotemporal Relationships</title>
+		<itemizedlist>
+			<listitem xml:id="tcbuffer_tContains">
 				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
-				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. Examples are the <varname>tIntersects</varname> and <varname>tDwithin</varname> functions.</para>
-				<programlisting xml:space="preserve" format="linespecific">
-tContains(geometry,tcbuffer) → boolean
-tDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
-tDwithin({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer},float) → boolean
-tIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
-tTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+				<para>Spatiotemporal relationships</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tContains({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → tbool
+tCovers({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → tbool
+tDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → tbool
+tDwithin({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer},float) → tbool
+tIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → tbool
+tTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → tbool
 </programlisting>
+				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A circular buffer covers an area, so every relationship is declared in both directions and between two temporal circular buffers, which is what distinguishes this family from the moving-point ones.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
@@ -1247,8 +1202,81 @@ SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01, 
   Cbuffer(Point(1 1), 0.3)@2001-01-03)', 1);
 /* {[t@2001-01-01, t@2001-01-01 22:35:55.379053],
-   (f@2001-01-01 22:35:55.379053, t@2001-01-02 01:24:04.620946,
-   t@2001-01-03)} */
+   (f@2001-01-01 22:35:55.379053, t@2001-01-02 01:24:04.620946, t@2001-01-03)} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tcbuffer_comparisons">
+		<title>Comparisons</title>
+		<itemizedlist>
+			<listitem xml:id="tcbuffer_comp">
+				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<para>Traditional comparisons</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcbuffer {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tcbuffer → boolean
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.3)@2001-01-02),
+  [Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]}' =
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
+-- true
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.1)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]}' &lt;&gt;
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
+-- false
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.6)@2001-01-03]';
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_ever_always">
+				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
+				<para>Ever and always comparisons</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tcbuffer,cbuffer} {?=, ?&lt;&gt;, %=, %&lt;&gt;} {tcbuffer,cbuffer} → boolean
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
+  Cbuffer(Point(1 1), 0.4)@2001-01-03)' ?= cbuffer 'Cbuffer(Point(1 1), 0.3)';
+-- true
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
+  Cbuffer(Point(1 1), 0.4)@2001-01-03)' ?= tcbuffer '[Cbuffer(Point(1 1), 0.4)@2001-01-01,
+  Cbuffer(Point(1 1), 0.2)@2001-01-03)';
+-- true
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
+  Cbuffer(Point(1 1), 0.2)@2001-01-04)' %= cbuffer 'Cbuffer(Point(1 1), 0.2)';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_tcomp">
+				<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>#&lt;&gt;</varname></primary></indexterm>
+				<para>Temporal comparisons</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tcbuffer,cbuffer} {#=, #&lt;&gt;} {tcbuffer,cbuffer} → tbool
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
+  Cbuffer(Point(1 1), 0.4)@2001-01-03)' #= cbuffer 'Cbuffer(Point(1 1), 0.3)';
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
+  Cbuffer(Point(1 1), 0.8)@2001-01-03)' #&lt;&gt;
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.7)@2001-01-03)';
+-- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1262,19 +1290,18 @@ SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 			<listitem xml:id="tcbuffer_tCount">
 				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Temporal count</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCount(tcbuffer) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH Temp(temp) AS (
-  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
     Cbuffer(Point(1 1), 0.3)@2001-01-03)' UNION
-  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-02, 
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-02,
     Cbuffer(Point(1 1), 0.4)@2001-01-04)' UNION
-  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, 
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03,
     Cbuffer(Point(1 1), 0.5)@2001-01-05)' )
-SELECT tCount(Temp)
-FROM Temp;
+SELECT tCount(Temp) FROM Temp;
 -- {[1@2001-01-01, 2@2001-01-02, 1@2001-01-04, 1@2001-01-05)}
 </programlisting>
 			</listitem>
@@ -1282,19 +1309,18 @@ FROM Temp;
 			<listitem xml:id="tcbuffer_wCount">
 				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
 				<para>Window count</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 wCount(tcbuffer) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH Temp(temp) AS (
-  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
     Cbuffer(Point(1 1), 0.3)@2001-01-03)' UNION
-  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-02, 
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-02,
     Cbuffer(Point(1 1), 0.4)@2001-01-04)' UNION
-  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, 
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03,
     Cbuffer(Point(1 1), 0.5)@2001-01-05)' )
-SELECT wCount(Temp, '1 day')
-FROM Temp;
+SELECT wCount(Temp, '1 day') FROM Temp;
 /* {[1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 2@2001-01-04, 1@2001-01-05,
    1@2001-01-06)} */
 </programlisting>
@@ -1303,7 +1329,7 @@ FROM Temp;
 			<listitem xml:id="tcbuffer_tCentroid">
 				<indexterm significance="normal"><primary><varname>tCentroid</varname></primary></indexterm>
 				<para>Aggregate the centres of a set of temporal circular buffers into their temporal centroid, by casting to <varname>tgeompoint</varname></para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tCentroid(tcbuffer::tgeompoint) → tgeompoint
 </programlisting>
 				<para>The aggregate belongs to the <varname>tgeompoint</varname> type: a circular buffer's centre trajectory is a temporal point, so the cast reaches the aggregate rather than the buffer type carrying its own copy of it.</para>
@@ -1327,35 +1353,33 @@ SELECT asText(tCentroid(temp::tgeompoint)) FROM Temp;
 				<indexterm significance="normal"><primary><varname>minDistSimplify</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
 				<para>Return a temporal circular buffer simplified ensuring that consecutive centers are at least a certain distance or time interval apart</para>
-				<programlisting xml:space="preserve" format="linespecific">
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minDistSimplify(tcbuffer,mindist float) → tcbuffer
 minTimeDeltaSimplify(tcbuffer,mint interval) → tcbuffer
 </programlisting>
 				<para>The simplification operates on the center trajectory of the temporal circular buffer and preserves the radius at each surviving instant. Simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given value is returned.</para>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(minDistSimplify(tcbuffer
-  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(1 0), 1)@2001-01-02,
-    Cbuffer(Point(4 0), 1)@2001-01-03]', 2));
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(minDistSimplify(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01,
+  Cbuffer(Point(1 0), 1)@2001-01-02, Cbuffer(Point(4 0), 1)@2001-01-03]', 2));
 -- [Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(4 0),1)@2001-01-03]
 -- The result keeps the interpolation of the value it simplifies.
-SELECT interp(minDistSimplify(tcbuffer
-  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(1 0), 1)@2001-01-02,
-    Cbuffer(Point(4 0), 1)@2001-01-03]', 2));
+SELECT interp(minDistSimplify(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01,
+  Cbuffer(Point(1 0), 1)@2001-01-02, Cbuffer(Point(4 0), 1)@2001-01-03]', 2));
 -- Linear
-SELECT asText(minTimeDeltaSimplify(tcbuffer
-  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(1 0), 1)@2001-01-02,
-    Cbuffer(Point(4 0), 1)@2001-01-04]', interval '2 days'));
+SELECT asText(minTimeDeltaSimplify(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01,
+  Cbuffer(Point(1 0), 1)@2001-01-02, Cbuffer(Point(4 0), 1)@2001-01-04]',
+  interval '2 days'));
 -- [Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(4 0),1)@2001-01-04]
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tcbuffer_douglasPeuckerSimplify">
+			<listitem xml:id="tcbuffer_maxDistSimplify">
 				<indexterm significance="normal"><primary><varname>maxDistSimplify</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
 				<para>Return a temporal circular buffer simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink></para>
-				<programlisting xml:space="preserve" format="linespecific">
-maxDistSimplify(tcbuffer,maxdist float,syncdist=true) → tcbuffer
-douglasPeuckerSimplify(tcbuffer,maxdist float,syncdist=true) → tcbuffer
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+maxDistSimplify(tcbuffer,maxdist float,syncdist bool=true) → tcbuffer
+douglasPeuckerSimplify(tcbuffer,maxdist float,syncdist bool=true) → tcbuffer
 </programlisting>
 				<para>The difference between the two functions is that <varname>maxDistSimplify</varname> uses a single-pass version of the algorithm whereas <varname>douglasPeuckerSimplify</varname> uses the standard recursive algorithm. As for the functions above, the simplification operates on the center trajectory and preserves the radius at each surviving instant.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
