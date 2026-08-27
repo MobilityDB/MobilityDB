@@ -137,7 +137,7 @@ tempspatialrel_families:
       - {l: geometry, r: tquadbin}
       - {l: tquadbin, r: geometry}
       - {l: tquadbin, r: tquadbin}
-    convert: "@extschema@.tquadbinCellToBoundary(@N@)::@extschema@.tgeometry"
+    convert: "@extschema@.cellToBoundary(@N@)::@extschema@.tgeometry"
 
   - family:  th3index
     impl:    cast
@@ -147,7 +147,7 @@ tempspatialrel_families:
       - {l: geometry,  r: th3index}
       - {l: th3index,  r: geometry}
       - {l: th3index,  r: th3index}
-    convert: "@extschema@.th3CellToBoundary(@N@)::@extschema@.tgeometry"
+    convert: "@extschema@.cellToBoundary(@N@)::@extschema@.tgeometry"
 
   # tpose/trgeometry are not cell indexes, so `convert` chains a direct cast
   # (or, for tpose, the tgeompoint cast chain) instead of a boundary function,

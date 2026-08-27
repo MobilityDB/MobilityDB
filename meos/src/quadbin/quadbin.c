@@ -554,7 +554,7 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 
 /**
  * @brief Return the lon/lat centroid of a quadbin cell
- * @details Out-parameter kernel; the geometry projection quadbinCellToPoint
+ * @details Out-parameter kernel; the geometry projection cellToPoint
  * is backed by quadbin_cell_to_geompoint in quadbin_geo.c.
  * @param[in] cell Quadbin cell
  * @param[out] longitude Longitude of the centroid
@@ -576,7 +576,7 @@ quadbin_cell_point(Quadbin cell, double *longitude, double *latitude)
 /**
  * @brief Return the lon/lat bounding box (xmin, ymin, xmax, ymax) of a cell
  * @details Out-parameter kernel shared by the geometry boundary projection
- * quadbinCellToBoundary (via quadbin_cell_to_geom in quadbin_geo.c) and the
+ * cellToBoundary (via quadbin_cell_to_geom in quadbin_geo.c) and the
  * stbox(quadbin) cast (via quadbin_set_stbox).
  * @param[in] cell Quadbin cell
  * @param[out] xmin Minimum X coordinate

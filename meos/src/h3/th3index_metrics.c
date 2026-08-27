@@ -166,7 +166,7 @@ h3_gs_great_circle_distance_meos(const GSERIALIZED *a, const GSERIALIZED *b,
 }
 
 /*****************************************************************************
- * th3CellArea(th3index, text) — lift_with_const (unit as H3Unit enum)
+ * cellArea(th3index, text) — lift_with_const (unit as H3Unit enum)
  *****************************************************************************/
 
 /**

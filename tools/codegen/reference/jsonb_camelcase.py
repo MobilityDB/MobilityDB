@@ -5,7 +5,7 @@ The JSON family lifts PostgreSQL's ``jsonb`` functions over ``jsonbset``,
 ``tjsonb`` and -- for the text-based ``json`` operations -- ``ttext``. It carries
 the vendor's snake_case spelling, while every other lifted family transliterates
 the vendor's words into the camelCase the public SQL API uses: h3-pg's
-``h3_cell_to_parent`` is ``th3CellToParent`` here, and OGC GeoPose's
+``h3_cell_to_parent`` is ``cellToParent`` here, and OGC GeoPose's
 ``pose_from_geopose`` is ``poseFromGeoPose``. This script applies that same
 transliteration to the JSON family, so the word sequence is untouched and a
 reader of PostgreSQL's documentation still recognises every name.

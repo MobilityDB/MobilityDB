@@ -34,7 +34,7 @@
  * The point-to-cell and cell-to-point/boundary conversions, the temporal
  * value accessors, and the `h3indexset` ⇄ `th3index` ever-equal prefilter
  * for the `th3index` type. The cell-to-boundary function declared here
- * (`th3CellToBoundary`) is the boundary provider consumed by the generated
+ * (`cellToBoundary`) is the boundary provider consumed by the generated
  * spatial-relationship surface (`262_th3index_spatialrels`), so it must load
  * before it.
  *
@@ -63,14 +63,14 @@ CREATE FUNCTION th3index(tgeogpoint, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * th3CellToLatlng
+ * cellToPoint
  *
  * Primary output is `tgeogpoint` (geodetic, matches h3-pg semantics);
  * `tgeompoint` overload is a convenience for pipelines that index
  * into planar storage.
  ******************************************************************************/
 
-CREATE FUNCTION th3CellToLatlng(th3index)
+CREATE FUNCTION cellToPoint(th3index)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_tgeogpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -81,12 +81,12 @@ CREATE FUNCTION th3CellToLatlngTgeompoint(th3index)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * th3CellToBoundary
+ * cellToBoundary
  *
  * Per-instant polygon boundary of the cell, carried as a `tgeography`.
  ******************************************************************************/
 
-CREATE FUNCTION th3CellToBoundary(th3index)
+CREATE FUNCTION cellToBoundary(th3index)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_boundary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -101,7 +101,7 @@ CREATE FUNCTION th3CellToBoundary(th3index)
  * `tbigint :: th3index` casts live with the type in `253_th3index.in.sql`.
  ******************************************************************************/
 
-CREATE CAST (th3index AS tgeogpoint) WITH FUNCTION th3CellToLatlng(th3index);
+CREATE CAST (th3index AS tgeogpoint) WITH FUNCTION cellToPoint(th3index);
 CREATE CAST (th3index AS tgeompoint)
   WITH FUNCTION th3CellToLatlngTgeompoint(th3index);
 

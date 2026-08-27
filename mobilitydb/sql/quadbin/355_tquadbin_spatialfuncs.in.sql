@@ -50,7 +50,7 @@
  * Resolution + validity (unary_scalar lifts)
  ******************************************************************************/
 
-CREATE FUNCTION tquadbinGetResolution(tquadbin)
+CREATE FUNCTION getResolution(tquadbin)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tquadbin_get_resolution'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -63,11 +63,11 @@ CREATE FUNCTION isValidCell(tquadbin)
 /******************************************************************************
  * Hierarchy
  *
- * `tquadbinCellToParent` lifts via `lift_with_const` — the integer
+ * `cellToParent` lifts via `lift_with_const` — the integer
  * resolution is constant across the time axis.
  ******************************************************************************/
 
-CREATE FUNCTION tquadbinCellToParent(tquadbin, integer)
+CREATE FUNCTION cellToParent(tquadbin, integer)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Tquadbin_cell_to_parent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -75,17 +75,17 @@ CREATE FUNCTION tquadbinCellToParent(tquadbin, integer)
 /******************************************************************************
  * Centroid point / boundary (Web-Mercator lon/lat, SRID 4326)
  *
- * `tquadbinCellToPoint` emits the per-instant cell centroid as a
- * `tgeompoint`; `tquadbinCellToBoundary` emits the per-instant
+ * `cellToPoint` emits the per-instant cell centroid as a
+ * `tgeompoint`; `cellToBoundary` emits the per-instant
  * square polygon as a `tgeometry`.
  ******************************************************************************/
 
-CREATE FUNCTION tquadbinCellToPoint(tquadbin)
+CREATE FUNCTION cellToPoint(tquadbin)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tquadbin_cell_to_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tquadbinCellToBoundary(tquadbin)
+CREATE FUNCTION cellToBoundary(tquadbin)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Tquadbin_cell_to_boundary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -93,11 +93,11 @@ CREATE FUNCTION tquadbinCellToBoundary(tquadbin)
 /******************************************************************************
  * Area
  *
- * `tquadbinCellArea` lifts the per-cell area (square metres) over the
+ * `cellArea` lifts the per-cell area (square metres) over the
  * time axis.
  ******************************************************************************/
 
-CREATE FUNCTION tquadbinCellArea(tquadbin)
+CREATE FUNCTION cellArea(tquadbin)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tquadbin_cell_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -117,7 +117,7 @@ CREATE FUNCTION tquadbinCellToQuadkey(tquadbin)
 /******************************************************************************
  * Convenience cast: tquadbin :: tgeompoint
  *
- * Reuses the lifted `tquadbinCellToPoint` centroid conversion.
+ * Reuses the lifted `cellToPoint` centroid conversion.
  * EXPLICIT (not IMPLICIT nor ASSIGNMENT): typing a cell trajectory as
  * a point trajectory should not happen by accident. The
  * `tquadbin :: tbigint` and `tbigint :: tquadbin` casts are declared
@@ -125,6 +125,6 @@ CREATE FUNCTION tquadbinCellToQuadkey(tquadbin)
  ******************************************************************************/
 
 CREATE CAST (tquadbin AS tgeompoint)
-  WITH FUNCTION tquadbinCellToPoint(tquadbin);
+  WITH FUNCTION cellToPoint(tquadbin);
 
 /******************************************************************************/

@@ -30,11 +30,11 @@ A few hazards reliably bite workloads using QUADBIN cells. Each is a property of
 
   **Mitigation**: `tquadbin` deliberately has no `quadbinspan` / `quadbinspanset` companion types (precedent: `geometry` has no `geometryspan`). Value-range filtering must go through the `quadbin_*` inspection functions (resolution, validity, hierarchy) or explicit set enumeration via `quadbinset`. Code that assumes `cell_a < cell_b` reflects spatial proximity will silently produce wrong results.
 
-- **Resolution mixing in operations**. QUADBIN cells at different resolutions (0&#x2013;26) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; `quadbinCellToParent(cell, coarser_res)` coarsens and `quadbinCellToChildren(parent, finer_res)` refines.
+- **Resolution mixing in operations**. QUADBIN cells at different resolutions (0&#x2013;26) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; `cellToParent(cell, coarser_res)` coarsens and `quadbinCellToChildren(parent, finer_res)` refines.
 
-  **Mitigation**: consumers should document the resolution invariant per trajectory (e.g. "all cells are resolution 10") and validate inputs at the ingestion boundary. The `quadbinGetResolution` accessor lets a CHECK constraint enforce this.
+  **Mitigation**: consumers should document the resolution invariant per trajectory (e.g. "all cells are resolution 10") and validate inputs at the ingestion boundary. The `getResolution` accessor lets a CHECK constraint enforce this.
 
-- **Web-mercator latitude limit**. QUADBIN inherits the web-mercator projection, which is defined only between approximately &#xb1;85.05&#xb0; latitude. Points outside this band have no QUADBIN cell, and cell area shrinks toward the poles &#x2014; `quadbinCellArea` returns progressively smaller values at higher latitudes for cells of the same resolution.
+- **Web-mercator latitude limit**. QUADBIN inherits the web-mercator projection, which is defined only between approximately &#xb1;85.05&#xb0; latitude. Points outside this band have no QUADBIN cell, and cell area shrinks toward the poles &#x2014; `cellArea` returns progressively smaller values at higher latitudes for cells of the same resolution.
 
   **Mitigation**: workloads near the poles should clamp or reject latitudes outside the web-mercator band at the ingestion boundary; do not rely on QUADBIN cells for polar coverage.
 

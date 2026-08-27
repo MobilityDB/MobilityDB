@@ -83,7 +83,7 @@ Tgeogpoint_to_th3index(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * th3CellToLatlng
+ * cellToPoint
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_to_tgeogpoint(PG_FUNCTION_ARGS);
@@ -91,7 +91,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_tgeogpoint);
 /**
  * @ingroup mobilitydb_h3_latlng
  * @brief Return the geodetic centroid trajectory of a temporal H3 cell
- * @sqlfn th3CellToLatlng()
+ * @sqlfn cellToPoint()
  */
 Datum
 Th3index_cell_to_tgeogpoint(PG_FUNCTION_ARGS)
@@ -120,7 +120,7 @@ Th3index_cell_to_tgeompoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * th3CellToBoundary
+ * cellToBoundary
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_to_boundary(PG_FUNCTION_ARGS);
@@ -129,7 +129,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_boundary);
  * @ingroup mobilitydb_h3_latlng
  * @brief Return the per-instant polygon boundary of a temporal H3 cell as
  * a temporal geography
- * @sqlfn th3CellToBoundary()
+ * @sqlfn cellToBoundary()
  */
 Datum
 Th3index_cell_to_boundary(PG_FUNCTION_ARGS)

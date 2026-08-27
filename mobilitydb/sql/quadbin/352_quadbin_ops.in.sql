@@ -49,7 +49,7 @@
  * Resolution
  ******************************************************************************/
 
-CREATE FUNCTION quadbinGetResolution(quadbin)
+CREATE FUNCTION getResolution(quadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Quadbin_get_resolution'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -57,14 +57,14 @@ CREATE FUNCTION quadbinGetResolution(quadbin)
 /******************************************************************************
  * Hierarchy
  *
- * `quadbinCellToParent` drops to the requested coarser resolution;
+ * `cellToParent` drops to the requested coarser resolution;
  * `quadbinCellToChildren` returns the four child cells at the
  * requested finer resolution as a `quadbinset`. `quadbinCellSibling`
  * returns the neighbouring cell at the same resolution in the given
  * direction (`up` / `down` / `left` / `right`).
  ******************************************************************************/
 
-CREATE FUNCTION quadbinCellToParent(quadbin, integer)
+CREATE FUNCTION cellToParent(quadbin, integer)
   RETURNS quadbin
   AS 'MODULE_PATHNAME', 'Quadbin_cell_to_parent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -96,7 +96,7 @@ CREATE FUNCTION quadbinGridDisk(quadbin, integer)
  * Point ↔ cell
  *
  * `geoToQuadbinCell` maps a lon/lat point (SRID 4326) at the
- * given resolution to its quadbin cell; `quadbinCellToPoint`
+ * given resolution to its quadbin cell; `cellToPoint`
  * returns the cell centroid as a lon/lat point.
  ******************************************************************************/
 
@@ -105,7 +105,7 @@ CREATE FUNCTION geoToQuadbinCell(geometry, integer)
   AS 'MODULE_PATHNAME', 'Quadbin_point_to_cell'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbinCellToPoint(quadbin)
+CREATE FUNCTION cellToPoint(quadbin)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Quadbin_cell_to_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -113,13 +113,13 @@ CREATE FUNCTION quadbinCellToPoint(quadbin)
 /******************************************************************************
  * Boundary
  *
- * `quadbinCellToBoundary` returns the cell as a polygon (the four
+ * `cellToBoundary` returns the cell as a polygon (the four
  * corners of the square tile) in lon/lat SRID 4326. The axis-aligned
  * envelope of a cell is obtained through the inherited `stbox(quadbin)`
  * cast (see the topological-operators file).
  ******************************************************************************/
 
-CREATE FUNCTION quadbinCellToBoundary(quadbin)
+CREATE FUNCTION cellToBoundary(quadbin)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Quadbin_cell_to_boundary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -127,10 +127,10 @@ CREATE FUNCTION quadbinCellToBoundary(quadbin)
 /******************************************************************************
  * Area
  *
- * `quadbinCellArea` returns the cell area in square metres.
+ * `cellArea` returns the cell area in square metres.
  ******************************************************************************/
 
-CREATE FUNCTION quadbinCellArea(quadbin)
+CREATE FUNCTION cellArea(quadbin)
   RETURNS double precision
   AS 'MODULE_PATHNAME', 'Quadbin_cell_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

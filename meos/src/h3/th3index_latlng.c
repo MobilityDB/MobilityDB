@@ -402,7 +402,7 @@ tgeogpoint_to_th3index(const Temporal *temp, int32 resolution)
 }
 
 /*****************************************************************************
- * th3CellToLatlng (geodetic output)
+ * cellToPoint (geodetic output)
  *****************************************************************************/
 
 /**
@@ -419,7 +419,7 @@ th3index_to_tgeogpoint(const Temporal *temp)
 }
 
 /*****************************************************************************
- * th3CellToLatlng (planar output, SRID 4326 overload)
+ * cellToPoint (planar output, SRID 4326 overload)
  *
  * Both overloads share the same static adapter `h3_cell_to_geompoint`,
  * which emits an SRID-4326 point. The geography-vs-geometry nature
@@ -452,7 +452,7 @@ th3index_to_tgeompoint(const Temporal *temp)
 }
 
 /*****************************************************************************
- * th3CellToBoundary — polygon per instant, emitted as tgeography
+ * cellToBoundary — polygon per instant, emitted as tgeography
  *****************************************************************************/
 
 /**

@@ -28,8 +28,8 @@ SELECT valueAtTimestamp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff
  480fffffffffffff
 (1 row)
 
-SELECT tquadbinGetResolution(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
-                      tquadbingetresolution                       
+SELECT getResolution(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+                          getresolution                           
 ------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
@@ -40,13 +40,13 @@ SELECT isValidCell(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001
  {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
-SELECT tquadbinCellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0);
-                                      tquadbincelltoparent                                      
+SELECT cellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0);
+                                          celltoparent                                          
 ------------------------------------------------------------------------------------------------
  {480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
-SELECT getValues(tquadbinCellToParent(
+SELECT getValues(cellToParent(
   tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0))
   = quadbinset '{480fffffffffffff}';
  ?column? 
@@ -54,25 +54,25 @@ SELECT getValues(tquadbinCellToParent(
  t
 (1 row)
 
-SELECT tquadbinCellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
-                                tquadbincelltopoint                                
+SELECT cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
+                                    celltopoint                                    
 -----------------------------------------------------------------------------------
  {0101000020E61000000000000000941140727542457D6C4940@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(tquadbinCellToPoint(tquadbin '{48a6227affffffff@2001-01-01}'), 6);
+SELECT asText(cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}'), 6);
                           astext                          
 ----------------------------------------------------------
  {POINT(4.394531 50.847573)@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
-SELECT tquadbinCellToBoundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
+SELECT cellToBoundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT round(startValue(tquadbinCellArea(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
+SELECT round(startValue(cellArea(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
        round       
 -------------------
  508164135963886.0
@@ -85,7 +85,7 @@ SELECT tquadbinCellToQuadkey(tquadbin '{480fffffffffffff@2001-01-01, 48427ffffff
 (1 row)
 
 SELECT (tquadbin '{48a6227affffffff@2001-01-01}')::tgeompoint
-  = tquadbinCellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
+  = cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
  ?column? 
 ----------
  t

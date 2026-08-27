@@ -54,10 +54,10 @@ SELECT isValidVertex(th3index '880326b885fffff@2001-01-01');
 SELECT isValidVertex(th3index '0@2001-01-01');
 
 -------------------------------------------------------------------------------
--- th3VertexToLatlng — needs h3_vertex_to_gs_point adapter
+-- th3VertexToPoint — needs h3_vertex_to_gs_point adapter
 -------------------------------------------------------------------------------
 
-SELECT th3VertexToLatlng(
+SELECT th3VertexToPoint(
   th3CellToVertex(th3index '880326b885fffff@2001-01-01', 0))
   IS NOT NULL;
 

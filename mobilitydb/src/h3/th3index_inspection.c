@@ -43,7 +43,7 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * th3GetResolution
+ * getResolution
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_get_resolution(PG_FUNCTION_ARGS);
@@ -51,7 +51,7 @@ PG_FUNCTION_INFO_V1(Th3index_get_resolution);
 /**
  * @ingroup mobilitydb_h3_inspection
  * @brief Return a temporal integer of the resolution of a temporal H3 cell
- * @sqlfn th3GetResolution()
+ * @sqlfn getResolution()
  */
 Datum
 Th3index_get_resolution(PG_FUNCTION_ARGS)

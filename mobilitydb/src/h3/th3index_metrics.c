@@ -44,7 +44,7 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * th3CellArea(th3index, text)
+ * cellArea(th3index, text)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_area(PG_FUNCTION_ARGS);
@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_area);
 /**
  * @ingroup mobilitydb_h3_metrics
  * @brief Return the per-instant area of a temporal H3 cell in the given unit
- * @sqlfn th3CellArea()
+ * @sqlfn cellArea()
  */
 Datum
 Th3index_cell_area(PG_FUNCTION_ARGS)

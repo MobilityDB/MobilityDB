@@ -75,7 +75,7 @@ PG_FUNCTION_INFO_V1(Quadbin_get_resolution);
 /**
  * @ingroup mobilitydb_quadbin_accessor
  * @brief Return the resolution (zoom level) of a quadbin cell
- * @sqlfn quadbinGetResolution()
+ * @sqlfn getResolution()
  */
 Datum
 Quadbin_get_resolution(PG_FUNCTION_ARGS)
@@ -92,7 +92,7 @@ PG_FUNCTION_INFO_V1(Quadbin_cell_to_parent);
 /**
  * @ingroup mobilitydb_quadbin_hierarchy
  * @brief Return the parent cell at the given coarser resolution
- * @sqlfn quadbinCellToParent()
+ * @sqlfn cellToParent()
  */
 Datum
 Quadbin_cell_to_parent(PG_FUNCTION_ARGS)
@@ -191,7 +191,7 @@ PG_FUNCTION_INFO_V1(Quadbin_cell_to_point);
 /**
  * @ingroup mobilitydb_quadbin_conversion
  * @brief Return the cell centroid as a lon/lat point (SRID 4326)
- * @sqlfn quadbinCellToPoint()
+ * @sqlfn cellToPoint()
  */
 Datum
 Quadbin_cell_to_point(PG_FUNCTION_ARGS)
@@ -213,7 +213,7 @@ PG_FUNCTION_INFO_V1(Quadbin_cell_to_boundary);
 /**
  * @ingroup mobilitydb_quadbin_conversion
  * @brief Return the cell boundary as a square polygon (SRID 4326)
- * @sqlfn quadbinCellToBoundary()
+ * @sqlfn cellToBoundary()
  */
 Datum
 Quadbin_cell_to_boundary(PG_FUNCTION_ARGS)
@@ -281,7 +281,7 @@ PG_FUNCTION_INFO_V1(Quadbin_cell_area);
 /**
  * @ingroup mobilitydb_quadbin_accessor
  * @brief Return the cell area in square metres
- * @sqlfn quadbinCellArea()
+ * @sqlfn cellArea()
  */
 Datum
 Quadbin_cell_area(PG_FUNCTION_ARGS)

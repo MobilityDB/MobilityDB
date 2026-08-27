@@ -17,24 +17,24 @@
 --   622236750694711295 = res 10 NYC hexagon
 
 -------------------------------------------------------------------------------
--- th3CellToLatlng — geodetic centroid trajectory
+-- cellToPoint — geodetic centroid trajectory
 -------------------------------------------------------------------------------
 
 -- Result is non-NULL and is a tgeogpoint.
-SELECT th3CellToLatlng(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
-SELECT th3CellToLatlng(th3index '8a2a1072b59ffff@2001-01-01') IS NOT NULL;
+SELECT cellToPoint(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
+SELECT cellToPoint(th3index '8a2a1072b59ffff@2001-01-01') IS NOT NULL;
 
 -- All four temporal subtypes
-SELECT th3CellToLatlng(th3index
+SELECT cellToPoint(th3index
   '{831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02}') IS NOT NULL;
-SELECT th3CellToLatlng(th3index
+SELECT cellToPoint(th3index
   '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]') IS NOT NULL;
 
 -- Round trip: latlng -> cell at the same resolution gives the original cell
 -- back. This holds because cellToLatLng yields the centroid, and
 -- latLngToCell maps the centroid to the same cell.
 SELECT th3index(
-  th3CellToLatlng(th3index '8a2a1072b59ffff@2001-01-01'), 10)
+  cellToPoint(th3index '8a2a1072b59ffff@2001-01-01'), 10)
   = th3index '8a2a1072b59ffff@2001-01-01';
 
 -------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ SELECT th3CellToLatlngTgeompoint(th3index
 
 -- A geodetic point indexed at resolution R yields a cell whose
 -- resolution is R.
-SELECT th3GetResolution(th3index(
+SELECT getResolution(th3index(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 
 -- Sequence form. The densifying conversion resamples the trajectory into the
@@ -76,7 +76,7 @@ FROM densified;
 -- expected to raise on mismatch.
 -------------------------------------------------------------------------------
 
-SELECT th3GetResolution(th3index(
+SELECT getResolution(th3index(
   tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
 
 -- Sequence input on the planar (SRID 4326) overload exercises the densify
@@ -101,13 +101,13 @@ SELECT th3index(
   tgeompoint 'SRID=3857;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7);
 
 -------------------------------------------------------------------------------
--- th3CellToBoundary — per-instant polygon as tgeography
+-- cellToBoundary — per-instant polygon as tgeography
 -------------------------------------------------------------------------------
 
-SELECT th3CellToBoundary(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
-SELECT th3CellToBoundary(th3index '8a2a1072b59ffff@2001-01-01') IS NOT NULL;
+SELECT cellToBoundary(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
+SELECT cellToBoundary(th3index '8a2a1072b59ffff@2001-01-01') IS NOT NULL;
 
-SELECT th3CellToBoundary(th3index
+SELECT cellToBoundary(th3index
   '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]') IS NOT NULL;
 
 -------------------------------------------------------------------------------
@@ -120,7 +120,7 @@ SELECT (th3index
   IS NOT NULL;
 -- Equivalence with the explicit function call
 SELECT (th3index '831c02fffffffff@2001-01-01')::tgeogpoint
-  ~= th3CellToLatlng(th3index '831c02fffffffff@2001-01-01');
+  ~= cellToPoint(th3index '831c02fffffffff@2001-01-01');
 
 SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint IS NOT NULL;
 SELECT (th3index

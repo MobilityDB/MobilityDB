@@ -1,23 +1,23 @@
-SELECT th3CellToLatlng(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
+SELECT cellToPoint(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT th3CellToLatlng(th3index '8a2a1072b59ffff@2001-01-01') IS NOT NULL;
+SELECT cellToPoint(th3index '8a2a1072b59ffff@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT th3CellToLatlng(th3index
+SELECT cellToPoint(th3index
   '{831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02}') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT th3CellToLatlng(th3index
+SELECT cellToPoint(th3index
   '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]') IS NOT NULL;
  ?column? 
 ----------
@@ -25,7 +25,7 @@ SELECT th3CellToLatlng(th3index
 (1 row)
 
 SELECT th3index(
-  th3CellToLatlng(th3index '8a2a1072b59ffff@2001-01-01'), 10)
+  cellToPoint(th3index '8a2a1072b59ffff@2001-01-01'), 10)
   = th3index '8a2a1072b59ffff@2001-01-01';
  ?column? 
 ----------
@@ -39,9 +39,9 @@ SELECT th3CellToLatlngTgeompoint(th3index
  t
 (1 row)
 
-SELECT th3GetResolution(th3index(
+SELECT getResolution(th3index(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
-        th3getresolution        
+         getresolution          
 --------------------------------
  9@Mon Jan 01 00:00:00 2001 PST
 (1 row)
@@ -60,9 +60,9 @@ FROM densified;
  t                    | t                  | t
 (1 row)
 
-SELECT th3GetResolution(th3index(
+SELECT getResolution(th3index(
   tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
-        th3getresolution        
+         getresolution          
 --------------------------------
  9@Mon Jan 01 00:00:00 2001 PST
 (1 row)
@@ -87,19 +87,19 @@ ERROR:  Only lon/lat coordinate systems are supported in geography
 SELECT th3index(
   tgeompoint 'SRID=3857;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7);
 ERROR:  Only lon/lat coordinate systems are supported in geography
-SELECT th3CellToBoundary(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
+SELECT cellToBoundary(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT th3CellToBoundary(th3index '8a2a1072b59ffff@2001-01-01') IS NOT NULL;
+SELECT cellToBoundary(th3index '8a2a1072b59ffff@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT th3CellToBoundary(th3index
+SELECT cellToBoundary(th3index
   '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]') IS NOT NULL;
  ?column? 
 ----------
@@ -121,7 +121,7 @@ SELECT (th3index
 (1 row)
 
 SELECT (th3index '831c02fffffffff@2001-01-01')::tgeogpoint
-  ~= th3CellToLatlng(th3index '831c02fffffffff@2001-01-01');
+  ~= cellToPoint(th3index '831c02fffffffff@2001-01-01');
  ?column? 
 ----------
  t

@@ -187,11 +187,9 @@ def render(behaviour: str, sub: dict) -> str:
         return BANNER.format(tmpl="compops.sql.tmpl") + render_compops_body(
             _compops_spec_from_subtype(sub))
     tmpl = apply_conditionals((TEMPLATES / f"{behaviour}.sql.tmpl").read_text(), sub)
-    # The cell-boundary function name defaults to `<temp>CellToBoundary`
-    # (e.g. tquadbinCellToBoundary), but the h3 family - whose cell functions carry
-    # the pg-h3 name temporalized by a bare `t` prefix (h3CellToBoundary ->
-    # th3CellToBoundary, NOT th3indexCellToBoundary) - overrides it via `boundary_fn`.
-    boundary = sub.get("boundary_fn", sub["temp"] + "CellToBoundary")
+    # `cellToBoundary` is a slot of the DggsCellOps descriptor, so it is one bare
+    # polymorphic name overloaded by argument type across every cell-index family.
+    boundary = "cellToBoundary"
     # Capitalized base = the C-symbol stem for the scalar base::stbox cast
     # (Cbuffer_to_stbox, Pose_to_stbox, Npoint_to_stbox — all base.capitalize()).
     # Families whose C symbol does not follow that rule override it via `cbase`.

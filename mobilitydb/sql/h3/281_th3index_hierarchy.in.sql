@@ -42,15 +42,15 @@
  */
 
 /******************************************************************************
- * th3CellToParent
+ * cellToParent
  ******************************************************************************/
 
-CREATE FUNCTION th3CellToParent(th3index, integer)
+CREATE FUNCTION cellToParent(th3index, integer)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_parent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION th3CellToParent(th3index)
+CREATE FUNCTION cellToParent(th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_parent_next'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
