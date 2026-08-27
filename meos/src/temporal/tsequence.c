@@ -154,7 +154,7 @@ datum_collinear(Datum value1, Datum value2, Datum value3, MeosType basetype,
     return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
       DatumGetNpointP(value3), ratio);
 #endif
-#if POSE || RGEO
+#if POSE
   if (basetype == T_POSE)
     return pose_collinear(DatumGetPoseP(value1), DatumGetPoseP(value2),
       DatumGetPoseP(value3), ratio);
@@ -231,7 +231,7 @@ datumsegm_locate(Datum value1, Datum value2, Datum value, MeosType basetype)
     return npointsegm_locate(DatumGetNpointP(value1), DatumGetNpointP(value2),
       DatumGetNpointP(value));
 #endif
-#if POSE || RGEO
+#if POSE
   if (basetype == T_POSE)
     return posesegm_locate(DatumGetPoseP(value1), DatumGetPoseP(value2),
       DatumGetPoseP(value));
@@ -311,8 +311,10 @@ datumsegm_interpolate(Datum start, Datum end, MeosType temptype,
     return PointerGetDatum(posechainsegm_interpolate(
       DatumGetPoseChainP(start), DatumGetPoseChainP(end), ratio));
 #endif
-#if POSE || RGEO
-  else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
+#if POSE
+  /* Interpolating a segment is an operation of the base type, so every
+   * temporal type over the pose reaches it, the rigid geometry among them */
+  else if (temptype_basetype(temptype) == T_POSE)
     return PointerGetDatum(posesegm_interpolate(DatumGetPoseP(start),
       DatumGetPoseP(end), (double) ratio));
 #endif
@@ -2742,8 +2744,10 @@ tsegment_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
     result = tnpointsegm_intersection(start1, end1, start2, end2, lower,
       upper, t1, t2);
 #endif
-#if POSE || RGEO
-  else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
+#if POSE
+  /* Intersecting two segments is an operation of the base type, so every
+   * temporal type over the pose reaches it, the rigid geometry among them */
+  else if (temptype_basetype(temptype) == T_POSE)
     result = tposesegm_intersection(start1, end1, start2, end2, lower,
       upper, t1, t2);
 #endif
