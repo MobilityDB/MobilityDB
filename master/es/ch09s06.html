@@ -302,7 +302,9 @@ SELECT (sp).number, (sp).time,
   '5 days', 1.0, '2001-02-01') AS sp) t;
 -- 1 | 2001-01-01 | [1@2001-01-01, 6@2001-01-06)
 -- 6 | 2001-01-06 | [6@2001-01-06, 10@2001-01-10)
-</pre></li><li class="listitem"><a name="tspatial_spaceSplit"></a><a class="indexterm" name="id6435"></a><a class="indexterm" name="id6438"></a><a class="indexterm" name="id6441"></a><p>Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tspatial_spaceSplit"></a><a class="indexterm" name="id6435"></a><a class="indexterm" name="id6438"></a><a class="indexterm" name="id6441"></a><p>Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+
+ <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 spaceSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]

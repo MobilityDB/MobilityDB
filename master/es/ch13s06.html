@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Entrada y salida</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s05.html" title="Validez de las poses temporales y de las cadenas de poses"><link rel="next" href="ch13s07.html" title="Constructores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Entrada y salida</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_inout"></a>Entrada y salida</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_asText"></a><a class="indexterm" name="id8887"></a><a class="indexterm" name="id8890"></a><p>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Entrada y salida</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s05.html" title="Validez de las poses temporales y de las cadenas de poses"><link rel="next" href="ch13s07.html" title="Constructores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Entrada y salida</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_inout"></a>Entrada y salida</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_asText"></a><a class="indexterm" name="id8894"></a><a class="indexterm" name="id8897"></a><p>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
 asText({tpose,tposechain,tpose[],tposechain[]}) → {text,text[]}
 asEWKT({tpose,tposechain,tpose[],tposechain[]}) → {text,text[]}
 </pre><pre class="programlisting">
@@ -12,7 +12,7 @@ SELECT asEWKT(tpose 'SRID=4326;
 -- SRID=4326;[Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
 SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 'Pose(SRID=5676;Point(1 1),2)']);
 -- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
-</pre></li><li class="listitem"><a name="tpose_asMFJSON"></a><a class="indexterm" name="id8897"></a><p>Devuelve la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_asMFJSON"></a><a class="indexterm" name="id8904"></a><p>Devuelve la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
 asMFJSON({tpose,tposechain}) → text
 </pre><p>Una cadena se escribe como el arreglo de sus eslabones, en el orden que indica en el marco de quién se lee cada uno de ellos.</p><pre class="programlisting">
 SELECT asMFJSON(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 3);
@@ -26,7 +26,7 @@ SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
    "lower_inc":true,"upper_inc":true},
    "values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],
    "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
-</pre></li><li class="listitem"><a name="tpose_asBinary"></a><a class="indexterm" name="id8905"></a><a class="indexterm" name="id8908"></a><a class="indexterm" name="id8911"></a><a class="indexterm" name="id8914"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_asBinary"></a><a class="indexterm" name="id8912"></a><a class="indexterm" name="id8915"></a><a class="indexterm" name="id8918"></a><a class="indexterm" name="id8921"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 asBinary({tpose,tposechain},endian text='') → bytea
 asEWKB({tpose,tposechain},endian text='') → bytea
 asHexWKB({tpose,tposechain},endian text='') → text
@@ -40,7 +40,7 @@ SELECT asHexWKB(tpose 'Pose(Point(1 2),1)@2001-01-01');
 -- 0138000101000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
 SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
 -- 01380041E40E000041E40E0000000000000000F03F00000000000000400000000000...009C57D3C11C0000
-</pre></li><li class="listitem"><a name="tposeFromText"></a><a class="indexterm" name="id8922"></a><a class="indexterm" name="id8925"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposeFromText"></a><a class="indexterm" name="id8929"></a><a class="indexterm" name="id8932"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
 tposeFromText(text) → tpose
 tposeFromEWKT(text) → tpose
 tposechainFromText(text) → tposechain
@@ -59,7 +59,7 @@ SELECT asEWKT(tposechainFromBinary(asBinary(tposechain
 SELECT asEWKT(tposechainFromHexEWKB(asHexEWKB(tposechain 'SRID=5676;
   PoseChain(Pose(Point(1 1), 0.5))@2001-01-01')));
 -- SRID=5676;PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
-</pre></li><li class="listitem"><a name="tposeFromMFJSON"></a><a class="indexterm" name="id8932"></a><p>Entrada desde la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposeFromMFJSON"></a><a class="indexterm" name="id8939"></a><p>Entrada desde la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
 tposeFromMFJSON(bytea) → tpose
 </pre><pre class="programlisting">
 SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=3812;Pose(Point(1 2),0.5)@2001-01-01',
@@ -68,7 +68,7 @@ SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=3812;Pose(Point(1 2),0.5)@200
 SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=5676;
   Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3)));
 -- SRID=5676;Pose(POINT Z(1 2 3),1,0,0,0)@2001-01-01
-</pre></li><li class="listitem"><a name="tposeFromBinary"></a><a class="indexterm" name="id8939"></a><a class="indexterm" name="id8942"></a><a class="indexterm" name="id8945"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposeFromBinary"></a><a class="indexterm" name="id8946"></a><a class="indexterm" name="id8949"></a><a class="indexterm" name="id8952"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 tposeFromBinary(bytea) → tpose
 tposeFromEWKB(bytea) → tpose
 tposeFromHexEWKB(text) → tpose
