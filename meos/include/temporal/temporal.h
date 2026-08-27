@@ -489,6 +489,8 @@ extern void *temporal_bbox_ptr(const Temporal *temp);
 extern Temporal *temporal_strip_geom(const Temporal *temp,
   const GSERIALIZED **geom);
 extern Temporal *temporal_attach_geom(const GSERIALIZED *geom, Temporal *temp);
+extern bool temporal_geom_combinable(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2);
 
 extern bool intersection_temporal_temporal(const Temporal *temp1,
 const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);

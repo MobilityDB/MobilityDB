@@ -426,6 +426,71 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* Inserting one temporal rigid geometry into another, and updating one with
+   * another, answer a rigid geometry carrying the body the two share. Two
+   * values carrying DIFFERENT bodies combine into nothing, since the result
+   * carries a single one */
+  {
+    const char *body = "POLYGON((0 0,1 0,1 1,0 1,0 0))";
+    Temporal *i1 = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]");
+    Temporal *i2 = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]");
+    Temporal *i3 = trgeometry_in("Polygon((0 0,2 0,2 2,0 2,0 0));"
+      "[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]");
+    if (! i1 || ! i2 || ! i3)
+    {
+      printf("FAILED: the rigid geometries to insert did not parse\n");
+      result = 1;
+    }
+    else
+    {
+      meos_errno_reset();
+      Temporal *ins = temporal_insert(i1, i2, true);
+      GSERIALIZED *igeo = ins ? trgeometry_geom(ins) : NULL;
+      char *iwkt = igeo ? geo_as_text(igeo, 6) : NULL;
+      if (! iwkt || strcmp(iwkt, body) != 0)
+      {
+        printf("FAILED: inserting a rigid geometry answers body %s, wanted "
+          "%s\n", iwkt ? iwkt : "none", body);
+        result = 1;
+      }
+      else
+        printf("OK: inserting a rigid geometry keeps the body\n");
+      free(iwkt); free(igeo); free(ins);
+
+      meos_errno_reset();
+      Temporal *upd = temporal_update(i1, i2, true);
+      GSERIALIZED *ugeo = upd ? trgeometry_geom(upd) : NULL;
+      char *uwkt = ugeo ? geo_as_text(ugeo, 6) : NULL;
+      if (! uwkt || strcmp(uwkt, body) != 0)
+      {
+        printf("FAILED: updating a rigid geometry answers body %s, wanted "
+          "%s\n", uwkt ? uwkt : "none", body);
+        result = 1;
+      }
+      else
+        printf("OK: updating a rigid geometry keeps the body\n");
+      free(uwkt); free(ugeo); free(upd);
+
+      /* Two different bodies do not combine, and say so rather than answering
+       * a value that carries neither */
+      meos_errno_reset();
+      Temporal *bad = temporal_insert(i1, i3, true);
+      if (bad)
+      {
+        printf("FAILED: inserting a rigid geometry of another body answered "
+          "a value\n");
+        result = 1;
+        free(bad);
+      }
+      else
+        printf("OK: two rigid geometries of different bodies do not insert\n");
+    }
+    free(i1); free(i2); free(i3);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 

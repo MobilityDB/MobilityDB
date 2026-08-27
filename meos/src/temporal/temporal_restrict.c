@@ -597,18 +597,29 @@ temporal_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
   bool atfunc)
 {
   assert(temp); assert(ss);
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_restrict_tstzspanset(
-        (TInstant *) temp, ss, atfunc);
+      result = (Temporal *) tinstant_restrict_tstzspanset(
+        (TInstant *) work, ss, atfunc);
+      break;
     case TSEQUENCE:
-      return tsequence_restrict_tstzspanset((TSequence *) temp, ss, atfunc);
+      result = tsequence_restrict_tstzspanset((TSequence *) work, ss, atfunc);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_restrict_tstzspanset(
-        (TSequenceSet *) temp, ss, atfunc);
+      result = (Temporal *) tsequenceset_restrict_tstzspanset(
+        (TSequenceSet *) work, ss, atfunc);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /*****************************************************************************/
