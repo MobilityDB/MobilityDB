@@ -23,10 +23,18 @@ SELECT th3EdgeLengthM(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-0
 SELECT th3EdgeLengthRads(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01'));
 -- 0.000199667786455@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_great_circle_distance"></a><a class="indexterm" name="id12251"></a><p>Return the temporal great-circle distance between two temporal geodetic points (not between cells)</p><pre class="programlisting">
-greatCircleDistance(tgeogpoint,tgeogpoint,text='km') → tfloat
+</pre></li><li class="listitem"><a name="th3_h3_great_circle_distance"></a><a class="indexterm" name="id12251"></a><a class="indexterm" name="id12254"></a><a class="indexterm" name="id12257"></a><p>Return the temporal great-circle distance between two temporal geodetic points (not between cells), in kilometres, metres, or radians</p><pre class="programlisting">
+greatCircleDistanceKm(tgeogpoint,tgeogpoint) → tfloat
+greatCircleDistanceM(tgeogpoint,tgeogpoint) → tfloat
+greatCircleDistanceRads(tgeogpoint,tgeogpoint) → tfloat
 </pre><p>The two operands are synchronised.</p><pre class="programlisting">
-SELECT greatCircleDistance(tgeogpoint 'Point(0 0)@2001-01-01',
+SELECT greatCircleDistanceKm(tgeogpoint 'Point(0 0)@2001-01-01',
   tgeogpoint 'Point(1 0)@2001-01-01');
 -- 111.19505197522943@2001-01-01
+SELECT greatCircleDistanceM(tgeogpoint 'Point(0 0)@2001-01-01',
+  tgeogpoint 'Point(1 0)@2001-01-01');
+-- 111195.05197522943@2001-01-01
+SELECT greatCircleDistanceRads(tgeogpoint 'Point(0 0)@2001-01-01',
+  tgeogpoint 'Point(1 0)@2001-01-01');
+-- 0.017453292519943@2001-01-01
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s10.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s12.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Grid Traversal </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Comparisons</td></tr></table></div></body></html>

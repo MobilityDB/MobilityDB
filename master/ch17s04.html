@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch17.html" title="Chapter 17. Temporal QUADBIN Cell Indices"><link rel="prev" href="ch17s03.html" title="Static Cells"><link rel="next" href="ch17s05.html" title="Index Inspection"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s03.html">Prev</a> </td><th width="60%" align="center">Chapter 17. Temporal QUADBIN Cell Indices</th><td width="20%" align="right"> <a accesskey="n" href="ch17s05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tquadbin_accessors"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tquadbin_startValue"></a><a class="indexterm" name="id12721"></a><a class="indexterm" name="id12724"></a><p>Return the first or last QUADBIN cell identifier of a temporal value</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch17.html" title="Chapter 17. Temporal QUADBIN Cell Indices"><link rel="prev" href="ch17s03.html" title="Static Cells"><link rel="next" href="ch17s05.html" title="Index Inspection"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s03.html">Prev</a> </td><th width="60%" align="center">Chapter 17. Temporal QUADBIN Cell Indices</th><td width="20%" align="right"> <a accesskey="n" href="ch17s05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tquadbin_accessors"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tquadbin_startValue"></a><a class="indexterm" name="id12727"></a><a class="indexterm" name="id12730"></a><p>Return the first or last QUADBIN cell identifier of a temporal value</p><pre class="programlisting">
 startValue(tquadbin) → quadbin
 endValue(tquadbin) → quadbin
 </pre><pre class="programlisting">
@@ -6,7 +6,7 @@ SELECT startValue(tquadbin '480fffffffffffff@2001-01-01');
 -- 480fffffffffffff
 SELECT endValue(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
 -- 48427fffffffffff
-</pre></li><li class="listitem"><a name="tquadbin_valueN"></a><a class="indexterm" name="id12731"></a><p>Return the <code class="varname">n</code>th distinct QUADBIN cell identifier (1-indexed)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tquadbin_valueN"></a><a class="indexterm" name="id12737"></a><p>Return the <code class="varname">n</code>th distinct QUADBIN cell identifier (1-indexed)</p><pre class="programlisting">
 valueN(tquadbin,integer) → quadbin
 </pre><p>Returns <code class="varname">NULL</code> if out of range.</p><pre class="programlisting">
 SELECT valueN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}', 1);
@@ -15,7 +15,7 @@ SELECT valueN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-0
 -- 48427fffffffffff
 SELECT valueN(tquadbin '480fffffffffffff@2001-01-01', 99);
 -- NULL
-</pre></li><li class="listitem"><a name="tquadbin_getValues"></a><a class="indexterm" name="id12741"></a><p>Return the set of distinct QUADBIN cell identifiers the trajectory takes</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tquadbin_getValues"></a><a class="indexterm" name="id12747"></a><p>Return the set of distinct QUADBIN cell identifiers the trajectory takes</p><pre class="programlisting">
 getValues(tquadbin) → quadbinset
 </pre><pre class="programlisting">
 SELECT getValues(tquadbin '480fffffffffffff@2001-01-01');
@@ -24,7 +24,7 @@ SELECT getValues(tquadbin
   '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02,
     48a6227affffffff@2001-01-03]');
 -- {480fffffffffffff, 48427fffffffffff, 48a6227affffffff}
-</pre></li><li class="listitem"><a name="tquadbin_valueAtTimestamp"></a><a class="indexterm" name="id12748"></a><p>Return the QUADBIN cell identifier at a given timestamp, using step interpolation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tquadbin_valueAtTimestamp"></a><a class="indexterm" name="id12754"></a><p>Return the QUADBIN cell identifier at a given timestamp, using step interpolation</p><pre class="programlisting">
 valueAtTimestamp(tquadbin,timestamptz) → quadbin
 </pre><pre class="programlisting">
 SELECT valueAtTimestamp(tquadbin

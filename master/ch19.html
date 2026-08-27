@@ -4,7 +4,7 @@ The types <code class="varname">uint64</code> and <code class="varname">int64</c
 CREATE EXTENSION mobilitydb CASCADE;
 -- NOTICE:  installing required extension "postgis"
 -- NOTICE:  installing required extension "postgis_raster"
-</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raster_sampling_operator"></a>Sampling Operator</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_rasterValue"></a><a class="indexterm" name="id14489"></a><p>Sample a raster band at each instant of a trajectory</p><pre class="programlisting">
+</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raster_sampling_operator"></a>Sampling Operator</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_rasterValue"></a><a class="indexterm" name="id14495"></a><p>Sample a raster band at each instant of a trajectory</p><pre class="programlisting">
 rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
 </pre><p>Evaluates pixel <code class="varname">band</code> at every instant of <code class="varname">traj</code> using bilinear-nearest sampling (<code class="varname">ST_Value</code> with <code class="varname">resample=false</code>). Returns an instant-set <code class="varname">tfloat</code> whose values are rounded to four decimal places. Returns <code class="varname">NULL</code> when no instant intersects the raster.</p><pre class="programlisting">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)

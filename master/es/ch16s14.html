@@ -1,51 +1,51 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Funciones que devuelven conjuntos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s13.html" title="Operadores de Caja Envolvente"><link rel="next" href="ch16s15.html" title="Relaciones Espaciales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Funciones que devuelven conjuntos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_set_returning"></a>Funciones que devuelven conjuntos</h2></div></div></div><p>Las siguientes funciones estáticas devuelven un <code class="varname">h3indexset</code> (o <code class="varname">intset</code> para <code class="varname">h3GetIcosahedronFaces</code>), el tipo compañero de colección finita de <code class="varname">h3index</code>. Operan sobre un <code class="varname">h3index</code> estático (o un <code class="varname">h3indexset</code>) y no están elevadas a <code class="varname">th3index</code>; el levantamiento temporal está diferido a la espera de una primitiva <code class="varname">tset&lt;T&gt;</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_h3_grid_disk"></a><a class="indexterm" name="id11861"></a><p>Todas las celdas dentro de <code class="varname">k</code> pasos de cuadrícula del origen (incluyendo el origen cuando k=0)</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Funciones que devuelven conjuntos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s13.html" title="Operadores de Caja Envolvente"><link rel="next" href="ch16s15.html" title="Relaciones Espaciales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Funciones que devuelven conjuntos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_set_returning"></a>Funciones que devuelven conjuntos</h2></div></div></div><p>Las siguientes funciones estáticas devuelven un <code class="varname">h3indexset</code> (o <code class="varname">intset</code> para <code class="varname">h3GetIcosahedronFaces</code>), el tipo compañero de colección finita de <code class="varname">h3index</code>. Operan sobre un <code class="varname">h3index</code> estático (o un <code class="varname">h3indexset</code>) y no están elevadas a <code class="varname">th3index</code>; el levantamiento temporal está diferido a la espera de una primitiva <code class="varname">tset&lt;T&gt;</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_h3_grid_disk"></a><a class="indexterm" name="id11867"></a><p>Todas las celdas dentro de <code class="varname">k</code> pasos de cuadrícula del origen (incluyendo el origen cuando k=0)</p><pre class="programlisting">
 h3GridDisk(h3index, integer) → h3indexset
 </pre><pre class="programlisting">
 SELECT h3GridDisk(h3index '871fa44a8ffffff', 1);
 -- {"871fa44a8ffffff", "871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff",
 --  "871fa44acffffff", "871fa44adffffff", "871fa44aeffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_grid_ring"></a><a class="indexterm" name="id11869"></a><p>Las celdas a <span class="emphasis"><em>exactamente</em></span> <code class="varname">k</code> pasos de cuadrícula del origen</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_h3_grid_ring"></a><a class="indexterm" name="id11875"></a><p>Las celdas a <span class="emphasis"><em>exactamente</em></span> <code class="varname">k</code> pasos de cuadrícula del origen</p><pre class="programlisting">
 h3GridRing(h3index, integer) → h3indexset
 </pre><p>Falla cerca de pentágonos.</p><pre class="programlisting">
 SELECT h3GridRing(h3index '871fa44a8ffffff', 1);
 -- {"871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff", "871fa44acffffff",
 --  "871fa44adffffff", "871fa44aeffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_grid_path_cells"></a><a class="indexterm" name="id11879"></a><p>El camino inclusivo de celdas entre dos celdas de la misma resolución</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_h3_grid_path_cells"></a><a class="indexterm" name="id11885"></a><p>El camino inclusivo de celdas entre dos celdas de la misma resolución</p><pre class="programlisting">
 h3GridPathCells(h3index, h3index) → h3indexset
 </pre><pre class="programlisting">
 SELECT h3GridPathCells(h3index '871fa44a8ffffff', h3index '871fa44b1ffffff');
 -- {"871fa4484ffffff", "871fa44a3ffffff", "871fa44a8ffffff", "871fa44aeffffff",
 --  "871fa44b1ffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_children"></a><a class="indexterm" name="id11886"></a><p>Todas las celdas hijas de una celda en la resolución objetivo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_h3_cell_to_children"></a><a class="indexterm" name="id11892"></a><p>Todas las celdas hijas de una celda en la resolución objetivo</p><pre class="programlisting">
 h3CellToChildren(h3index, integer) → h3indexset
 </pre><pre class="programlisting">
 SELECT h3CellToChildren(h3index '831c02fffffffff', 4);
 -- {"841c021ffffffff", "841c023ffffffff", "841c025ffffffff", "841c027ffffffff",
 --  "841c029ffffffff", "841c02bffffffff", "841c02dffffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_compact_cells"></a><a class="indexterm" name="id11893"></a><p>Representación compactada de un conjunto de celdas, las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_h3_compact_cells"></a><a class="indexterm" name="id11899"></a><p>Representación compactada de un conjunto de celdas, las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente</p><pre class="programlisting">
 h3CompactCells(h3indexset) → h3indexset
 </pre><pre class="programlisting">
 SELECT h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4));
 -- {"831c02fffffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_uncompact_cells"></a><a class="indexterm" name="id11900"></a><p>Representación descompactada a la resolución dada, la inversa de <code class="varname">h3CompactCells</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_h3_uncompact_cells"></a><a class="indexterm" name="id11906"></a><p>Representación descompactada a la resolución dada, la inversa de <code class="varname">h3CompactCells</code></p><pre class="programlisting">
 h3UncompactCells(h3indexset, integer) → h3indexset
 </pre><pre class="programlisting">
 SELECT numValues(h3UncompactCells(
   h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4)), 4));
 -- 7
-</pre></li><li class="listitem"><a name="th3_h3_origin_to_directed_edges"></a><a class="indexterm" name="id11908"></a><p>Todas las aristas dirigidas salientes de una celda (6 para hexágonos, 5 para pentágonos)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_h3_origin_to_directed_edges"></a><a class="indexterm" name="id11914"></a><p>Todas las aristas dirigidas salientes de una celda (6 para hexágonos, 5 para pentágonos)</p><pre class="programlisting">
 h3OriginToDirectedEdges(h3index) → h3indexset
 </pre><pre class="programlisting">
 SELECT h3OriginToDirectedEdges(h3index '871fa44a8ffffff');
 -- {"1171fa44a8ffffff", "1271fa44a8ffffff", "1371fa44a8ffffff",
 --  "1471fa44a8ffffff", "1571fa44a8ffffff", "1671fa44a8ffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_vertexes"></a><a class="indexterm" name="id11915"></a><p>Todos los vértices de una celda (6 para hexágonos, 5 para pentágonos)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_h3_cell_to_vertexes"></a><a class="indexterm" name="id11921"></a><p>Todos los vértices de una celda (6 para hexágonos, 5 para pentágonos)</p><pre class="programlisting">
 h3CellToVertexes(h3index) → h3indexset
 </pre><pre class="programlisting">
 SELECT h3CellToVertexes(h3index '871fa44a8ffffff');
 -- {"2071fa44a8ffffff", "2171fa44a8ffffff", "2271fa44a8ffffff",
 --  "2371fa44a8ffffff", "2471fa44a8ffffff", "2571fa44a8ffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_get_icosahedron_faces"></a><a class="indexterm" name="id11922"></a><p>Los índices de caras del icosaedro (0..19) intersectadas por una celda</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="th3_h3_get_icosahedron_faces"></a><a class="indexterm" name="id11928"></a><p>Los índices de caras del icosaedro (0..19) intersectadas por una celda</p><pre class="programlisting">
 h3GetIcosahedronFaces(h3index) → intset
 </pre><pre class="programlisting">
 SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
