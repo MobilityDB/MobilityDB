@@ -661,3 +661,22 @@ SELECT numSequences(trgeometrySeqSetGaps(ARRAY[
 
 -- tprecision (extended-shape seqset)
 SELECT asText(tprecision(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-01 00:00:04],[Pose(Point(0 0),0)@2001-01-01 00:00:06, Pose(Point(2 0),0)@2001-01-01 00:00:08]}', interval '2 secs'));
+
+-------------------------------------------------------------------------------
+-- merge: the answer of merging rigid geometries is a rigid geometry, so it
+-- carries the body its operands share
+-------------------------------------------------------------------------------
+
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-03]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(5 0), 0.0)@2001-01-03, Pose(Point(9 0), 0.0)@2001-01-05]'));
+SELECT asText(merge(ARRAY[
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]']));
+-- two bodies that differ do not merge into one
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));

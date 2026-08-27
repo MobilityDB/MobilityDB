@@ -58,6 +58,9 @@
   #include "npoint/tnpoint_distance.h"
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
+#if RGEO
+  #include "rgeo/trgeo_all.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -556,6 +559,14 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
       ! ensure_spatial_validity(temp1, temp2))
     return NULL;
 
+#if RGEO
+  /* A temporal rigid geometry carries a reference geometry that a value
+   * rebuilt from instants does not reproduce, so it merges as the poses it is
+   * made of and takes its body back afterwards */
+  if (temp1->temptype == T_TRGEOMETRY)
+    return trgeometry_merge(temp1, temp2);
+#endif /* RGEO */
+
   /* Convert to the same subtype */
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
@@ -634,6 +645,13 @@ temporal_merge_array(Temporal **temparr, int count)
 
   if (count == 1)
     return temporal_copy(temparr[0]);
+
+#if RGEO
+  /* A temporal rigid geometry carries a reference geometry that a value
+   * rebuilt from instants does not reproduce */
+  if (temparr[0]->temptype == T_TRGEOMETRY)
+    return trgeometry_merge_array(temparr, count);
+#endif /* RGEO */
 
   /* Ensure all values have the same interpolation and, if they are spatial,
    * have the same SRID and dimensionality, and determine subtype of the
