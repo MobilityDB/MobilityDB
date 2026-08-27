@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: trgeo_overlap_spanset</title>
+<title>MobilityDB: TRGEO_OVERLAP_ANGLE_TOL</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -93,8 +93,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a06238c248a30d774ae558b4df228ff17.html#a06238c248a30d774ae558b4df228ff17">segment_overlap_spans_rotating</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_ae5f97f3eec1ff62d6095478374ad19c8.html#ae5f97f3eec1ff62d6095478374ad19c8">trgeo_convex_sweep</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a4eacab99ebf97ca526af39e5ff3b5fca.html#a4eacab99ebf97ca526af39e5ff3b5fca">trgeo_geoms_merge</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a071f3076d44dbb7aafa448d891830c24.html#a071f3076d44dbb7aafa448d891830c24">TRGEO_OVERLAP_ANGLE_TOL</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a5ad877f8e7089ceb6a720e94d2da15a0.html#a5ad877f8e7089ceb6a720e94d2da15a0">trgeo_overlap_spanset</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a071f3076d44dbb7aafa448d891830c24.html#a071f3076d44dbb7aafa448d891830c24">TRGEO_OVERLAP_ANGLE_TOL</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a5ad877f8e7089ceb6a720e94d2da15a0.html#a5ad877f8e7089ceb6a720e94d2da15a0">trgeo_overlap_spanset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a6b68d25743dcc9a88b40e2c267047ea0.html#a6b68d25743dcc9a88b40e2c267047ea0">trgeo_placement_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a532c40532a123d78728473a0768f81bb.html#a532c40532a123d78728473a0768f81bb">trgeo_placements</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_ac61b90ff44000673384af76f5ccae9fb.html#ac61b90ff44000673384af76f5ccae9fb">trgeo_ref_is_convex</a></td></tr>
@@ -130,61 +130,21 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a5ad877f8e7089ceb6a720e94d2da15a0" name="a5ad877f8e7089ceb6a720e94d2da15a0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ad877f8e7089ceb6a720e94d2da15a0">&#9670;&#160;</a></span>trgeo_overlap_spanset()</h2>
+<a id="a071f3076d44dbb7aafa448d891830c24" name="a071f3076d44dbb7aafa448d891830c24"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a071f3076d44dbb7aafa448d891830c24">&#9670;&#160;</a></span>TRGEO_OVERLAP_ANGLE_TOL</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structSpanSet.html">SpanSet</a> * trgeo_overlap_spanset </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>lwgs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>excl</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>err</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
+          <td class="memname">#define TRGEO_OVERLAP_ANGLE_TOL&#160;&#160;&#160;0.05</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Compute the timestamps at which a trgeometry body overlaps a target geometry, returning a tstzspanset (or NULL if no overlap). </p>
-<p >Iterates the trgeometry instants. Each linear segment is required to be a pure translation; any rotating segment raises FEATURE_NOT_SUPPORTED. The caller has already rejected holey targets.</p>
-<dl class="section return"><dt>Returns</dt><dd>The overlap spanset on success. On error (rotation) the MEOS error handler is invoked; <code>*err</code> is set to true and NULL is returned. </dd></dl>
+<p>Test the posed body overlap at a single instant timestamp, appending an instantaneous span to the buffer if it overlaps. </p>
+<p >Turn a rotating segment carries before it is read as one piece</p>
+<p >A vertex of a rotating body travels an arc, and the swept-edge clip the translating path solves reads straight travel alone, so a rotating segment is read in pieces short enough that the overlap holds or fails throughout each. The same turn bounds the pieces of the traversed area </p>
 
 </div>
 </div>
