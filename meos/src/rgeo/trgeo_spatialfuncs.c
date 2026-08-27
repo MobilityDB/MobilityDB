@@ -201,10 +201,51 @@ restrict_double_cmp(const void *a, const void *b)
  * @param[in] lwtarget LWGEOM view of @p target (for the clip primitive)
  * @return true on success, false if the error handler returned (error set)
  */
+/**
+ * @brief Return true where a body meets a box only along the borders the box
+ * leaves out
+ * @details A box of a grid is half-open, `[xmin,xmax) x [ymin,ymax)`, so the
+ * tiles either side of a grid line claim a value lying on that line exactly
+ * once. The overlap of two geometries is a closed test and answers true for a
+ * body that merely touches, so a body every point of which stands at or beyond
+ * one of the two upper borders meets the closed box while meeting no point of
+ * the half-open one
+ * @param[in] body Body, already placed in the world
+ * @param[in] box Box whose upper borders are left out
+ * @note A body reaching past an upper border and back is admitted, so this
+ * decides exactly the case where the contact is confined to a border and never
+ * withholds a box the body genuinely reaches
+ */
+static bool
+body_on_excluded_border(const GSERIALIZED *body, const STBox *box)
+{
+  STBox bbox;
+  if (! geo_set_stbox(body, &bbox))
+    return false;
+  return (bbox.xmin >= box->xmax) || (bbox.ymin >= box->ymax);
+}
+
+/**
+ * @brief Return whether a body meets a target, leaving out the upper borders
+ * of @p excl where it is given
+ * @param[in] body Body, already placed in the world
+ * @param[in] target Target geometry
+ * @param[in] excl Box whose upper borders are left out, NULL to meet the
+ * target as a closed region
+ */
+static bool
+body_meets_target(const GSERIALIZED *body, const GSERIALIZED *target,
+  const STBox *excl)
+{
+  if (! geom_intersects2d(body, target))
+    return false;
+  return excl ? ! body_on_excluded_border(body, excl) : true;
+}
+
 static bool
 segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
   const Pose *pose2, TimestampTz t1, TimestampTz t2,
-  const GSERIALIZED *target, const LWGEOM *lwtarget,
+  const GSERIALIZED *target, const LWGEOM *lwtarget, const STBox *excl,
   Span **spans, int *nspans, int *spancap)
 {
   /* Pure translation: orientation is fixed over the segment (the caller has
@@ -245,7 +286,7 @@ segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
     double tm = 0.5 * (ta + tb);
     Pose *posem = posesegm_interpolate(pose1, pose2, tm);
     GSERIALIZED *bodym = pose_apply_geo(posem, ref);
-    bool ov = geom_intersects2d(bodym, target);
+    bool ov = body_meets_target(bodym, target, excl);
     pfree(bodym);
     pfree(posem);
     if (ov && ! prev_overlap)
@@ -294,10 +335,11 @@ segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
  */
 static void
 instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
-  const GSERIALIZED *target, Span **spans, int *nspans, int *spancap)
+  const GSERIALIZED *target, const STBox *excl, Span **spans, int *nspans,
+  int *spancap)
 {
   GSERIALIZED *body = pose_apply_geo(pose, ref);
-  bool ov = geom_intersects2d(body, target);
+  bool ov = body_meets_target(body, target, excl);
   pfree(body);
   if (! ov)
     return;
@@ -324,7 +366,7 @@ instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
  */
 static SpanSet *
 trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
-  const LWGEOM *lwgs, bool *err)
+  const LWGEOM *lwgs, const STBox *excl, bool *err)
 {
   *err = false;
   const GSERIALIZED *ref = trgeo_geom_p(temp);
@@ -335,7 +377,7 @@ trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
   {
     const TInstant *inst = (const TInstant *) temp;
     instant_overlap_span(ref, DatumGetPoseP(tinstant_value_p(inst)),
-      inst->t, gs, &spans, &nspans, &spancap);
+      inst->t, gs, excl, &spans, &nspans, &spancap);
   }
   else
   {
@@ -365,7 +407,7 @@ trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
       {
         const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
         instant_overlap_span(ref, DatumGetPoseP(tinstant_value_p(inst)),
-          inst->t, gs, &spans, &nspans, &spancap);
+          inst->t, gs, excl, &spans, &nspans, &spancap);
         continue;
       }
       if (! linear)
@@ -378,7 +420,7 @@ trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
           const TInstant *inst = TSEQUENCE_INST_N(seq, i);
           const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
           GSERIALIZED *body = pose_apply_geo(pose, ref);
-          bool ov = geom_intersects2d(body, gs);
+          bool ov = body_meets_target(body, gs, excl);
           pfree(body);
           if (! ov)
             continue;
@@ -415,7 +457,7 @@ trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
           return NULL;
         }
         if (! segment_overlap_spans(ref, pose1, pose2, inst1->t, inst2->t,
-            gs, lwgs, &spans, &nspans, &spancap))
+            gs, lwgs, excl, &spans, &nspans, &spancap))
         {
           pfree(spans);
           if (temp->subtype == TSEQUENCESET)
@@ -505,7 +547,9 @@ trgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
   }
 
   bool err;
-  SpanSet *ss = trgeo_overlap_spanset(temp, gs, lwgs, &err);
+  /* A geometry is met as a closed region: only a box of a grid leaves its
+   * upper borders out */
+  SpanSet *ss = trgeo_overlap_spanset(temp, gs, lwgs, NULL, &err);
   lwgeom_free(lwgs);
   if (err)
     return NULL;
@@ -560,10 +604,12 @@ trgeometry_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @note @p border_inc governs the temporal upper border (carried in the box
- * period). The spatial footprint is the closed box region: an area body
- * overlaps it on a positive-measure set of times, so border-only spatial
- * contact (a measure-zero boundary touch) does not change the result.
+ * @note @p border_inc governs the upper border of BOTH dimensions. The time
+ * span carries it directly. On the spatial side the box is closed where the
+ * upper border is asked for and half-open where it is not, so a body meeting
+ * the box only along an upper border stands outside it -- which is what lets
+ * the tiles either side of a grid line claim a body lying on that line once
+ * rather than twice.
  */
 Temporal *
 trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
@@ -575,9 +621,11 @@ trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
-  /* The box period already encodes its temporal-border inclusivity; the
-   * spatial overlap is an exact closed-region area test (see @note). */
-  (void) border_inc;
+  /* The box period already carries its temporal-border inclusivity. On the
+   * spatial side the box is closed where the upper border is asked for, and
+   * half-open where it is not, so that the tiles either side of a grid line
+   * claim a body lying on that line exactly once */
+  const STBox *excl = border_inc ? NULL : box;
 
   /* Spatial overlap spans (whole time domain if the box has no X bounds). */
   SpanSet *spatial = NULL;
@@ -586,7 +634,7 @@ trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
     GSERIALIZED *geo = stbox_geo(box);
     LWGEOM *lwgeo = lwgeom_from_gserialized(geo);
     bool err;
-    spatial = trgeo_overlap_spanset(temp, geo, lwgeo, &err);
+    spatial = trgeo_overlap_spanset(temp, geo, lwgeo, excl, &err);
     lwgeom_free(lwgeo);
     pfree(geo);
     if (err)

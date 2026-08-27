@@ -161,3 +161,59 @@ SELECT asText(atStbox(
  POLYGON((0 0,1 0,1 1,0 1,0 0));{[Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 0),0)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((-2, 0), (0, 2))', false));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((0, -2), (2, 0))', false));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((-2, -2), (0, 0))', false));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((-2, 0), (0, 2))', true));
+                                      astext                                      
+----------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((0, -2), (2, 0))', true));
+                                      astext                                      
+----------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((0, 0), (2, 2))', false));
+                                      astext                                      
+----------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(minusStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
+  stbox 'STBOX X((-2, 0), (0, 2))', false));
+                                      astext                                      
+----------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
