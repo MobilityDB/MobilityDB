@@ -717,7 +717,9 @@ meostype_length(MeosType type)
     return -1;
 #endif
 #if JSON
-  if (type == T_JSONB)
+  /* Both JSON types are varlena: Jsonb carries a varlena header and JsonPath is
+   * `int32 vl_len_; uint32 header; char data[]`. */
+  if (type == T_JSONB || type == T_JSONPATH)
     return -1;
 #endif
 #if NPOINT
