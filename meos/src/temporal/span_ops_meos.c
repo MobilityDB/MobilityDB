@@ -1363,7 +1363,7 @@ distance_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPAN(s, INT_MAX);
-  return distance_span_value(s, Int32GetDatum(i));
+  return DatumGetInt32(distance_span_value(s, Int32GetDatum(i)));
 }
 
 /**
@@ -1379,7 +1379,7 @@ distance_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPAN(s, INT64_MAX);
-  return distance_span_value(s, Int64GetDatum(i));
+  return DatumGetInt64(distance_span_value(s, Int64GetDatum(i)));
 }
 
 /**
@@ -1395,7 +1395,7 @@ distance_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, DBL_MAX);
-  return distance_span_value(s, Float8GetDatum(d));
+  return DatumGetFloat8(distance_span_value(s, Float8GetDatum(d)));
 }
 
 /**
@@ -1411,7 +1411,7 @@ distance_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, INT_MAX);
-  return distance_span_value(s, DateADTGetDatum(d));
+  return DatumGetInt32(distance_span_value(s, DateADTGetDatum(d)));
 }
 
 /**
@@ -1428,7 +1428,7 @@ distance_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, DBL_MAX);
-  return distance_span_value(s, TimestampTzGetDatum(t));
+  return DatumGetFloat8(distance_span_value(s, TimestampTzGetDatum(t)));
 }
 
 /******************************************************************************/
