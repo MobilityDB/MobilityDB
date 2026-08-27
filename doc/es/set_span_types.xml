@@ -337,7 +337,7 @@ SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
 				<indexterm significance="normal"><primary><varname>span</varname></primary></indexterm>
 				<para>Constructor para tipos de rango</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-span(lower base,upper base,leftInc boolean=true,rightInc boolean=false) → span
+span(lower base,upper base,lower_inc boolean=true,upper_inc boolean=false) → span
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT span(20.5, 25);
@@ -980,7 +980,7 @@ SELECT text 'XX' || textset '{aaa, bbb}';
 				<indexterm significance="normal"><primary><varname>tprecision</varname></primary></indexterm>
 				<para>Establece la precisión temporal del valor de tiempo al rango con respecto al origen</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tprecision(times,interval,origin timestamptz=’2000-01-03’) → times
+tprecision(times,interval,origin timestamptz='2000-01-03') → times
 </programlisting>
 				<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -1043,8 +1043,8 @@ SELECT asEWKT(setSRID(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transforma a una referencia espacial diferente</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-transform(spatialset,to_srid integer) → spatialset
-transformPipeline(spatialset,pipeline text,to_srid integer,
+transform(spatialset,srid integer) → spatialset
+transformPipeline(spatialset,pipeline text,srid integer,
   is_forward boolean=true) → spatialset
 </programlisting>
 				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el conjunto tiene un SRID desconocido (representado por 0). La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas en el siguiente formato:</para>

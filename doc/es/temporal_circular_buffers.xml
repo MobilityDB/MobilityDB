@@ -265,7 +265,7 @@ SELECT asEWKT(setSRID(cbuffer 'Cbuffer(Point(0 0),1)', 4326));
 					<para>Transforma a una referencia espacial diferente</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 transform(cbuffer,integer) → cbuffer
-transformPipeline(cbuffer,pipeline text,to_srid integer,
+transformPipeline(cbuffer,pipeline text,srid integer,
   is_forward boolean=true) → cbuffer
 </programlisting>
 					<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el búfer circular de entrada tiene un SRID desconocido (representado por 0).</para>
@@ -542,8 +542,8 @@ SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.2)',
 				<indexterm significance="normal"><primary><varname>tcbufferSeq</varname></primary></indexterm>
 				<para>Constructor para búferes circulares temporales de subtipo secuencia</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tcbufferSeq(tcbufferInst[],interp text='linear',leftInc boolean=true,
-  rightInc boolean=true) → tcbufferSeq
+tcbufferSeq(tcbufferInst[],interp text='linear',lower_inc boolean=true,
+  upper_inc boolean=true) → tcbufferSeq
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
@@ -893,7 +893,7 @@ SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01,
 				<para>Transforma a una referencia espacial diferente</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 transform(tcbuffer,integer) → tcbuffer
-transformPipeline(tcbuffer,pipeline text,to_srid integer,
+transformPipeline(tcbuffer,pipeline text,srid integer,
   is_forward boolean=true) → tcbuffer
 </programlisting>
 				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el búfer circular temporal de entrada tiene un SRID desconocido (representado por 0). La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. El SRID del búfer circular temporal de entrada se ignora y el SRID del búfer circular temporal de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>

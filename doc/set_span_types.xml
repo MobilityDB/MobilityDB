@@ -329,7 +329,7 @@ SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
 				<indexterm significance="normal"><primary><varname>span</varname></primary></indexterm>
 				<para>Constructor for span types</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-span(lower base,upper base,leftInc boolean=true,rightInc boolean=false) → span
+span(lower base,upper base,lower_inc boolean=true,upper_inc boolean=false) → span
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT span(20.5, 25);
@@ -971,7 +971,7 @@ SELECT text 'XX' || textset '{aaa, bbb}';
 				<indexterm significance="normal"><primary><varname>tprecision</varname></primary></indexterm>
 				<para>Set the temporal precision of the time value to the interval with respect to the origin</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tprecision(times,interval,origin timestamptz=’2000-01-03’) → times
+tprecision(times,interval,origin timestamptz='2000-01-03') → times
 </programlisting>
 				<para>If the origin is not specified, it is set by default to Monday, January 3, 2000</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1034,8 +1034,8 @@ SELECT asEWKT(setSRID(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transform to a spatial reference identifier</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-transform(spatialset,to_srid integer) → spatialset
-transformPipeline(spatialset,pipeline text,to_srid integer,
+transform(spatialset,srid integer) → spatialset
+transformPipeline(spatialset,pipeline text,srid integer,
   is_forward boolean=true) → spatialset
 </programlisting>
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input set has an unknown SRID (represented by 0). The <varname>transformPipeline</varname> function specifies the transformation with a coordinate transformation pipeline in the following format:</para>

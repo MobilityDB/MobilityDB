@@ -642,8 +642,8 @@ SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)), [2001-01-01,2001-0
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transform to a spatial reference identifier</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-transform(stbox,to_srid integer) → stbox
-transformPipeline(stbox,pipeline text,to_srid integer,is_forward boolean=true) → stbox
+transform(stbox,srid integer) → stbox
+transformPipeline(stbox,pipeline text,srid integer,is_forward boolean=true) → stbox
 </programlisting>
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input box has an unknown SRID (represented by 0). The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>

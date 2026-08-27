@@ -859,8 +859,8 @@ SELECT asEWKT(tposechain(posechain 'PoseChain(Pose(Point(1 1), 0.5))',
 				<indexterm significance="normal"><primary><varname>tposeSeq</varname></primary></indexterm>
 				<para>Constructor for temporal poses of sequence subtype</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tposeSeq(tposeInst[],interp text={'step','linear'},leftInc boolean=true,
-  rightInc boolean=true) → tposeSeq
+tposeSeq(tposeInst[],interp text={'step','linear'},lower_inc boolean=true,
+  upper_inc boolean=true) → tposeSeq
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.3)@2001-01-01',
