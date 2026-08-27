@@ -14,7 +14,7 @@ SELECT RoomNo, valueAtTimestamp(Temp, '2001-01-01 08:10:00') FROM temperature;
 -- Restricción a un valor
 SELECT DeptNo, atValue(NoEmps, 10) FROM Department;
 -- 10 | [10@2001-01-01, 10@2001-04-01)
--- 20 | 
+-- 20 |
 -- Restricción a un período
 SELECT DeptNo, atTime(NoEmps, tstzspan '[2001-01-01, 2001-04-01]') FROM Department;
 -- 10 | [10@2001-01-01, 12@2001-04-01]
@@ -42,7 +42,7 @@ SELECT CarId,
 -- Restricción a un valor
 SELECT CarId, asText(atValue(Trip, geometry 'Point(2 0)')) FROM Trips;
 -- 10 | {"[POINT(2 0)@2001-01-01 08:10:00]"}
--- 20 |
+-- 20 | 
 -- Restricción a un período
 SELECT CarId,
   asText(atTime(Trip, tstzspan '[2001-01-01 08:05:00,2001-01-01 08:10:00]')) FROM Trips;

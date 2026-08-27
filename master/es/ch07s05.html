@@ -2,8 +2,6 @@
 tspatial::stbox
 stbox(tspatial)
 </pre><pre class="programlisting">
-SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::tstzspan;
--- [2001-01-01, 2001-01-03]
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
 -- STBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03])
 SELECT tgeography '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
@@ -25,7 +23,7 @@ SELECT ST_AsText((tgeompoint 'Point(0 0)@2001-01-01')::geometry);
 -- POINT M (0 0 978307200)
 SELECT ST_AsText((tgeompoint '{Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 1)@2001-01-03}')::geometry);
--- MULTIPOINT M (0 0 978307200,1 1 978393600,1 1 978480000)
+-- MULTIPOINT M (0 0 978307200,1 1 978393600,1 1 978480000)"
 SELECT ST_AsText((tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')::geometry);
 -- LINESTRING M (0 0 978307200,1 1 978393600)
 SELECT ST_AsText((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
@@ -40,7 +38,7 @@ SELECT ST_AsText((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
 </pre><pre class="programlisting">
 SELECT asText(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
   1 1 978480000)'::tgeompoint);
--- [POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02, POINT(1 1)@2001-01-03]
+-- [POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02, POINT(1 1)@2001-01-03];
 SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
   POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoint);
 /* {[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02], [POINT(1 1)@2001-01-03],

@@ -9,8 +9,8 @@ SELECT asText(atValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 -- {[Cbuffer(POINT(2 2),0.5)@2001-01-02]}
 SELECT asText(minusValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-03]', cbuffer 'Cbuffer(Point(2 2), 0.5)'));
-/* {[Cbuffer(Point(2 2),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02),
-   (Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(2 2),0.7)@2001-01-03]} */
+/* {[Cbuffer(POINT(2 2),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.5)@2001-01-02),
+   (Cbuffer(POINT(2 2),0.5)@2001-01-02, Cbuffer(POINT(2 2),0.7)@2001-01-03]} */
 </pre></li><li class="listitem"><a name="tcbuffer_atGeometry"></a><a class="indexterm" name="id8060"></a><a class="indexterm" name="id8063"></a><p>Restringe al (complemento de) una geometría</p><pre class="programlisting">
 atGeometry(tcbuffer,geometry) → tcbuffer
 minusGeometry(tcbuffer,geometry) → tcbuffer

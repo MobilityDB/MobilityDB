@@ -39,9 +39,7 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-04]';
 -- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
 </pre></li><li class="listitem"><a name="tcbuffer_minDistance"></a><a class="indexterm" name="id8205"></a><p>Devuelve la distancia espacial mínima, ignorando el tiempo</p><pre class="programlisting">
-minDistance({geometry,cbuffer},tcbuffer) → float
-minDistance(tcbuffer,{geometry,cbuffer}) → float
-minDistance(tcbuffer,tcbuffer) → float
+minDistance({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → float
 </pre><p>El resultado es la distancia espacial entre las áreas barridas por los dos argumentos durante toda su vida útil, igual a <code class="varname">ST_Distance</code> del <code class="varname">traversedArea</code> de cada uno. La forma de dos argumentos de búfer circular temporal es un agregado, de modo que una combinación cruzada agrupada por una clave produce el mínimo sobre cada par del grupo.</p><pre class="programlisting">
 SELECT minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01,
   Cbuffer(Point(10 0), 0.5)@2001-01-02]', geometry 'Point(5 5)');

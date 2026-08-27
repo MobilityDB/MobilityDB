@@ -82,6 +82,7 @@ CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint(Sequen
 			Por otro lado, en el caso de tipos de puntos temporales (es decir, <code class="varname">tgeompoint</code> o <code class="varname">tgeogpoint</code>) el modificador de tipo se puede utilizar para especificar el subtipo, la dimensionalidad y/o el identificador de referencia espacial (SRID). Por ejemplo, en la siguiente definición de tabla:
 		</p><pre class="programlisting">
 CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
+CREATE TABLE Storm(StormId integer, Route tgeography(Sequence, Linestring, 4326));
 </pre><p>
 			el modificador de typo para el tipo <code class="varname">tgeogpoint</code> se compone de tres valores, el primero indica el subtipo como arriba, el segundo el tipo espacial de las geografías que componen el punto temporal y el último el SRID de las geografías que componen. Para los puntos temporales, los valores posibles para el primer argumento del modificador de tipo son los anteriores, los del segundo argumento son <code class="varname">Point</code> o <code class="varname">PointZ</code> y los del tercer argumento son SRID válidos. Los tres argumentos son opcionales y si alguno de ellos no se especifica para una columna, se permiten valores de cualquier subtipo, dimensionalidad y/o SRID.
 		</p><p>

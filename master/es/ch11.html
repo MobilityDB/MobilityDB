@@ -8,11 +8,11 @@ SELECT nsegment 'Nsegment(76, 0.3, 0.5)';
 SELECT nsegment 'Nsegment(64, 0.5, 0.5)';
 SELECT nsegment 'Nsegment(64, 0.0, 1.0)';
 SELECT nsegment 'Nsegment(64, 1.0, 0.0)';
--- convertido a nsegment 'Nsegment(64, 0.0, 1.0)';
+-- converted to nsegment 'Nsegment(64, 0.0, 1.0)';
 </pre><p>Como se puede ver en el último ejemplo, los valores <code class="varname">startPosition</code> y <code class="varname">endPosition</code> se invertirán para asegurar que la condición <code class="varname">startPosition ≤ endPosition</code> siempre se satisface. La función de constructor para segmentos de red tiene un argumento para el identificador de ruta y dos argumentos opcionales para las posiciones inicial y final. Los ejemplos de valores de segmento de red definidos con la función constructora son los siguientes:</p><pre class="programlisting">
 SELECT nsegment(76, 0.3, 0.3);
-SELECT nsegment(76); -- se asume que las posiciones inicial y final son 0 y 1
-SELECT nsegment(76, 0.5); -- se asume que la posición final es 1
+SELECT nsegment(76); -- start and end position assumed to be 0 and 1 respectively
+SELECT nsegment(76, 0.5); -- end position assumed to be 1
 </pre><p>Los valores del tipo <code class="varname">npoint</code> se pueden convertir al tipo <code class="varname">nsegment</code> usando un <code class="varname">CAST</code> explícito o usando la notación <code class="varname">::</code> como se muestra a continuación.</p><pre class="programlisting">
 SELECT npoint(76, 0.33)::nsegment;
 </pre><p>Los valores de los tipos de red estáticos deben satisfacer varias restricciones para que estén bien definidos. Estas restricciones se dan a continuación.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>El identificador de ruta <code class="varname">rid</code> debe encontrarse en la columna <code class="varname">gid</code> de la tabla <code class="varname">ways</code>.</p></li><li class="listitem"><p>Los valores de <code class="varname">position</code>, <code class="varname">startPosition</code> y <code class="varname">endPosition</code> deben estar en el rango [0,1]. Se genera un error cuando no se cumple una de estas restricciones.</p></li></ul></div><p>Ejemplos de valores de tipo de red estática incorrectos son los siguientes.</p><pre class="programlisting">
@@ -153,8 +153,8 @@ nsegment {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} nsegment
 </pre><pre class="programlisting">
 SELECT npoint 'Npoint(3, 0.5)' = npoint 'Npoint(3, 0.5)';
 -- true
-SELECT npoint 'Npoint(3, 0.5)' &lt;&gt; npoint 'Npoint(3, 0.6)';
--- true
+SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt;&gt; nsegment 'Nsegment(3, 0.5, 0.5)';
+-- false
 SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt; nsegment 'Nsegment(3, 0.5, 0.6)';
 -- true
 SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &gt; nsegment 'Nsegment(2, 0.5, 0.5)';

@@ -33,7 +33,7 @@ SELECT tfloat '[-1@2001-01-04, 1@2001-01-05]' / tfloat '[-1@2001-01-01, 1@2001-0
 abs(tnumber) → tnumber
 </pre><pre class="programlisting">
 SELECT abs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
--- [1@2001-01-01, 0@2001-01-02, 1@2001-01-03, 0@2001-01-04, 1@2001-01-05],
+-- [1@2001-01-01, 0@2001-01-02, 1@2001-01-03, 0@2001-01-04, 1@2001-01-05]
 SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 1@2001-01-05]
 </pre></li><li class="listitem"><a name="tnumber_floor"></a><a class="indexterm" name="id4400"></a><a class="indexterm" name="id4403"></a><p>Redondea al entero inferior o superior</p><pre class="programlisting">
@@ -57,7 +57,8 @@ SELECT degrees(pi() * 5);
 -- 900
 SELECT degrees(pi() * 5, true);
 -- 180
-SELECT round(degrees(tfloat '[0.7853981633974@2001-01-01, 2.3561944901923@2001-01-02]'));
+SELECT round(degrees(tfloat '[0.785398163397448@2001-01-01,
+  2.356194490192345@2001-01-02]'));
 -- [45@2001-01-01, 135@2001-01-02]
 SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 -- [0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]

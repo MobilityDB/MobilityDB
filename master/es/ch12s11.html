@@ -23,7 +23,7 @@ WITH test(tcbuffer, pipeline) AS (
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
 SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326), pipeline,
   4326, false), 6) FROM test;
-/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01,
+/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01, 
    Cbuffer(POINT(-0.1275 51.507222),2)@2001-01-02} */
 </pre></li><li class="listitem"><a name="tcbuffer_traversedArea"></a><a class="indexterm" name="id8109"></a><p>Devuelve el área atravesada por el búfer circular temporal</p><pre class="programlisting">
 traversedArea(tcbuffer,unary_union bool=false) → geometry

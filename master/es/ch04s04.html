@@ -10,12 +10,12 @@ SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt; tfloat '[3@2001-01-03, 1@2001
 SELECT tint '[1@2001-01-01, 1@2001-01-03)' + tint '[2@2001-01-02, 2@2001-01-05)';
 -- [3@2001-01-02, 3@2001-01-03)
 -- Intersección temporal
-SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+SELECT tIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
 -- Distancia temporal
 SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
-tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
+  tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
 -- [0.5@2001-01-02 08:05:00, 0.745184033794557@2001-01-03 08:10:00)
 </pre><p>
 			Otro requisito común es determinar si los operandos satisfacen <span class="emphasis"><em>alguna vez</em></span> o <span class="emphasis"><em>siempre</em></span> una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez o siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <code class="varname">?</code> (alguna vez) y <code class="varname">%</code> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
@@ -29,11 +29,11 @@ SELECT aIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
 -- ¿Es el operando izquierdo alguna vez menor que el derecho?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' ?&lt;
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
   tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
 -- true
 -- ¿Es el operando izquierdo siempre menor que el derecho?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' %&lt;
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
   tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
 -- true
 </pre><p>

@@ -13,10 +13,10 @@ upper(ttext) → ttext
 lower(ttext) → ttext
 initcap(ttext) → ttext
 </pre><pre class="programlisting">
-SELECT upper(ttext '[AA@2001-01-01, bb@2001-01-02]');
--- ["AA"@2001-01-01, "BB"@2001-01-02]
 SELECT lower(ttext '[AA@2001-01-01, bb@2001-01-02]');
 -- ["aa"@2001-01-01, "bb"@2001-01-02]
+SELECT upper(ttext '[AA@2001-01-01, bb@2001-01-02]');
+-- ["AA"@2001-01-01, "BB"@2001-01-02]
 SELECT initcap(ttext '[AA@2001-01-01, bb@2001-01-02]');
--- ["aa"@2001-01-01, "bb"@2001-01-02]
+-- ["Aa"@2001-01-01, "Bb"@2001-01-02]
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06s07.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch06.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch07.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones matemáticas </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Capítulo 7. Tipos temporales geométricos (Parte 1)</td></tr></table></div></body></html>

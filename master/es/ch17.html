@@ -8,7 +8,7 @@ SELECT tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02],
 SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
 SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01,
   48427fffffffffff@2001-01-02]}';
--- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
+-- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
 </pre><p>Las funciones <code class="varname">asText</code>, <code class="varname">asBinary</code> y <code class="varname">asHexWKB</code> serializan un valor <code class="varname">tquadbin</code>, y <code class="varname">tquadbinFromBinary</code> y <code class="varname">tquadbinFromHexWKB</code> lo reconstruyen. La forma hexadecimal WKB permite que una columna de índice QUADBIN temporal se transfiera de ida y vuelta mediante un <code class="varname">COPY</code> basado en texto.</p><pre class="programlisting">
 SELECT asHexWKB(tquadbin '480fffffffffffff@2001-01-01');

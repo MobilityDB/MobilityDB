@@ -9,8 +9,8 @@ tTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → tbool
 SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
 -- {[t@2001-01-01, t@2001-01-03)}
-SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
-  Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01, 
   Cbuffer(Point(1 1), 0.3)@2001-01-03)', 1);
 /* {[t@2001-01-01, t@2001-01-01 22:35:55.379053],
    (f@2001-01-01 22:35:55.379053, t@2001-01-02 01:24:04.620946, t@2001-01-03)} */

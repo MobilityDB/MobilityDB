@@ -15,7 +15,7 @@ SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001
 -- LINESTRING(0 0,0 1)
 SELECT ST_AsText(trajectory(tgeompoint 'Interp=Step;{[Point(0 0)@2001-01-01,
   Point(0 1)@2001-01-02], [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04]}'));
--- MULTIPOINT((0 0),(0 1),(1 1))
+-- MULTIPOINT((0 0),(1 1),(0 1))
 </pre><pre class="programlisting">
 SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
   Linestring(1 1,2 2)@2001-01-02, Point(1 1)@2001-01-03]'));

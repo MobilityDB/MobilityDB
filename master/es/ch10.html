@@ -9,7 +9,7 @@ extent(temp) → {tstzspan,tbox,stbox}
 SELECT extent(noEmps) FROM Department;
 -- TBOX XT((4,12),[2001-01-01,2001-10-01])
 SELECT extent(Trip) FROM Trips;
--- STBOX XT(((0,0),(3,3),[2001-01-01 08:00:00, 2001-01-01 08:20:00)))
+-- STBOX XT(((0,0),(3,3)),[2001-01-01 08:00:00, 2001-01-01 08:20:00))
 </pre></li><li class="listitem"><a name="tbool_tAnd"></a><a class="indexterm" name="id6556"></a><a class="indexterm" name="id6559"></a><p>Y, o temporal</p><pre class="programlisting">
 tOr(tbool) → tbool
 tAnd(tbool) → tbool
