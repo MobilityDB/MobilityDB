@@ -298,6 +298,10 @@ geo_parse(const char **str, MeosType basetype, char delim, int *srid,
   GSERIALIZED **result)
 {
   p_whitespace(str);
+  /* A geography that writes no SRID is parsed as SRID_DEFAULT, so afterwards
+   * the value cannot say whether 4326 was asserted or merely defaulted. The
+   * text still can, and it is in hand only here */
+  bool srid_written = (pg_strncasecmp(*str, "SRID=", 5) == 0);
   /* The next instruction will throw an exception if it fails */
   Datum geo;
   if (! basetype_parse(str, basetype, delim, &geo))
@@ -313,8 +317,8 @@ geo_parse(const char **str, MeosType basetype, char delim, int *srid,
   int gs_srid = gserialized_get_srid(gs);
   if (*srid == SRID_UNKNOWN && gs_srid != SRID_UNKNOWN)
     *srid = gs_srid;
-  else if (*srid != SRID_UNKNOWN &&
-    ( gs_srid == SRID_UNKNOWN || gs_srid == SRID_DEFAULT ))
+  else if (*srid != SRID_UNKNOWN && (gs_srid == SRID_UNKNOWN ||
+    (basetype == T_GEOGRAPHY && ! srid_written && gs_srid == SRID_DEFAULT)))
     gserialized_set_srid(gs, *srid);
   /* If the SRID of the temporal point and of the geometry do not match */
   else if (*srid != SRID_UNKNOWN && gs_srid != SRID_UNKNOWN &&
@@ -350,6 +354,9 @@ spatial_parse_elem(const char **str, MeosType temptype, char delim,
   int *temp_srid, Datum *result)
 {
   p_whitespace(str);
+  /* See #geo_parse: only the text distinguishes a geography that asserted
+   * 4326 from one that said nothing and was defaulted to it */
+  bool srid_written = (pg_strncasecmp(*str, "SRID=", 5) == 0);
   /* The next instruction will throw an exception if it fails */
   Datum d;
   MeosType basetype = temptype_basetype(temptype);
@@ -361,8 +368,8 @@ spatial_parse_elem(const char **str, MeosType temptype, char delim,
   int base_srid = spatial_srid(d, basetype);
   if (*temp_srid == SRID_UNKNOWN && base_srid != SRID_UNKNOWN)
     *temp_srid = base_srid;
-  else if (*temp_srid != SRID_UNKNOWN &&
-    ( base_srid == SRID_UNKNOWN || base_srid == SRID_DEFAULT ))
+  else if (*temp_srid != SRID_UNKNOWN && (base_srid == SRID_UNKNOWN ||
+    (basetype == T_GEOGRAPHY && ! srid_written && base_srid == SRID_DEFAULT)))
       spatial_set_srid(d, basetype, *temp_srid);
   /* If the SRID of the spatiotemporal value and of the spatial value
    * do not match */
