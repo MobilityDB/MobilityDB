@@ -118,7 +118,6 @@ extern H3Index h3_local_ij_to_cell_meos(H3Index origin,
   const GSERIALIZED *coord);
 
 /* Metrics — bodies in th3index_metrics.c. */
-extern H3Unit h3_unit_from_cstring(const char *unit);
 extern double h3_cell_area_meos(H3Index cell, H3Unit unit);
 extern double h3_edge_length_meos(H3Index edge, H3Unit unit);
 extern double h3_gs_great_circle_distance_meos(const GSERIALIZED *a,

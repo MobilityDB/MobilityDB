@@ -58,30 +58,6 @@
  * Unit-string dispatcher (h3-pg: miscellaneous.c)
  *****************************************************************************/
 
-/**
- * @brief 
- */
-H3Unit
-h3_unit_from_cstring(const char *unit)
-{
-  if (unit == NULL)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "unit must not be null");
-    return H3_UNIT_KM;  /* unreachable */
-  }
-  if (strcasecmp(unit, "km") == 0)    return H3_UNIT_KM;
-  if (strcasecmp(unit, "m") == 0)     return H3_UNIT_M;
-  if (strcasecmp(unit, "rads") == 0)  return H3_UNIT_RADS;
-  if (strcasecmp(unit, "km2") == 0)   return H3_UNIT_KM2;
-  if (strcasecmp(unit, "m2") == 0)    return H3_UNIT_M2;
-  if (strcasecmp(unit, "rads2") == 0) return H3_UNIT_RADS2;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "invalid h3 unit \"%s\" (expected one of km, m, rads, km2, m2, rads2)",
-    unit);
-  return H3_UNIT_KM;  /* unreachable */
-}
-
 /*****************************************************************************
  * Static adapters — libh3 metric dispatch by unit
  *****************************************************************************/
@@ -284,7 +260,8 @@ th3index_edge_length_rads(const Temporal *temp)
 }
 
 /*****************************************************************************
- * greatCircleDistance(tgeogpoint, tgeogpoint, text) — binary_synced
+ * greatCircleDistanceKm, greatCircleDistanceM and greatCircleDistanceRads —
+ * binary_synced
  *
  * Two temporal geodetic points are synchronised over their shared
  * time axis; the unit is constant across instants and is threaded
@@ -294,20 +271,13 @@ th3index_edge_length_rads(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_h3_metrics
  * @brief Return the per-instant great-circle distance between two temporal
- * geodetic points in the given unit.
- * @csqlfn #Tgeogpoint_great_circle_distance()
+ * geodetic points in the given H3 unit
  */
-Temporal *
-tgeogpoint_great_circle_distance(const Temporal *a, const Temporal *b,
-  const char *unit)
+static Temporal *
+tgeogpoint_great_circle_distance_in(const Temporal *a, const Temporal *b,
+  H3Unit u)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEOGPOINT(a, NULL); VALIDATE_TGEOGPOINT(b, NULL);
-  VALIDATE_NOT_NULL(unit, NULL);
-
-  H3Unit u = h3_unit_from_cstring(unit);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_h3_great_circle_distance;
@@ -320,6 +290,51 @@ tgeogpoint_great_circle_distance(const Temporal *a, const Temporal *b,
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_temporal(a, b, &lfinfo);
+}
+
+/**
+ * @ingroup meos_h3_metrics
+ * @brief Return the per-instant great-circle distance between two temporal
+ * geodetic points in kilometres, the quantity libh3 answers as
+ * greatCircleDistanceKm
+ * @csqlfn #Tgeogpoint_great_circle_distance_km()
+ */
+Temporal *
+tgeogpoint_great_circle_distance_km(const Temporal *a, const Temporal *b)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(a, NULL); VALIDATE_TGEOGPOINT(b, NULL);
+  return tgeogpoint_great_circle_distance_in(a, b, H3_UNIT_KM);
+}
+
+/**
+ * @ingroup meos_h3_metrics
+ * @brief Return the per-instant great-circle distance between two temporal
+ * geodetic points in metres, the quantity libh3 answers as
+ * greatCircleDistanceM
+ * @csqlfn #Tgeogpoint_great_circle_distance_m()
+ */
+Temporal *
+tgeogpoint_great_circle_distance_m(const Temporal *a, const Temporal *b)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(a, NULL); VALIDATE_TGEOGPOINT(b, NULL);
+  return tgeogpoint_great_circle_distance_in(a, b, H3_UNIT_M);
+}
+
+/**
+ * @ingroup meos_h3_metrics
+ * @brief Return the per-instant great-circle distance between two temporal
+ * geodetic points in radians, the quantity libh3 answers as
+ * greatCircleDistanceRads
+ * @csqlfn #Tgeogpoint_great_circle_distance_rads()
+ */
+Temporal *
+tgeogpoint_great_circle_distance_rads(const Temporal *a, const Temporal *b)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(a, NULL); VALIDATE_TGEOGPOINT(b, NULL);
+  return tgeogpoint_great_circle_distance_in(a, b, H3_UNIT_RADS);
 }
 
 /*****************************************************************************/

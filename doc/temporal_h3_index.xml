@@ -603,16 +603,26 @@ SELECT th3EdgeLengthRads(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-0
 			</listitem>
 
 			<listitem xml:id="th3_h3_great_circle_distance">
-				<indexterm significance="normal"><primary><varname>greatCircleDistance</varname></primary></indexterm>
-				<para>Return the temporal great-circle distance between two temporal geodetic points (not between cells)</para>
+				<indexterm significance="normal"><primary><varname>greatCircleDistanceKm</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>greatCircleDistanceM</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>greatCircleDistanceRads</varname></primary></indexterm>
+				<para>Return the temporal great-circle distance between two temporal geodetic points (not between cells), in kilometres, metres, or radians</para>
 				<programlisting xml:space="preserve" format="linespecific">
-greatCircleDistance(tgeogpoint,tgeogpoint,text='km') → tfloat
+greatCircleDistanceKm(tgeogpoint,tgeogpoint) → tfloat
+greatCircleDistanceM(tgeogpoint,tgeogpoint) → tfloat
+greatCircleDistanceRads(tgeogpoint,tgeogpoint) → tfloat
 </programlisting>
 				<para>The two operands are synchronised.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT greatCircleDistance(tgeogpoint 'Point(0 0)@2001-01-01',
+SELECT greatCircleDistanceKm(tgeogpoint 'Point(0 0)@2001-01-01',
   tgeogpoint 'Point(1 0)@2001-01-01');
 -- 111.19505197522943@2001-01-01
+SELECT greatCircleDistanceM(tgeogpoint 'Point(0 0)@2001-01-01',
+  tgeogpoint 'Point(1 0)@2001-01-01');
+-- 111195.05197522943@2001-01-01
+SELECT greatCircleDistanceRads(tgeogpoint 'Point(0 0)@2001-01-01',
+  tgeogpoint 'Point(1 0)@2001-01-01');
+-- 0.017453292519943@2001-01-01
 </programlisting>
 			</listitem>
 		</itemizedlist>

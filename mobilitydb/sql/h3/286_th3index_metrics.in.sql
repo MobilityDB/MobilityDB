@@ -31,14 +31,16 @@
  * @file
  * @brief Cell-metric functions for `th3index`.
  *
- * All three functions take a textual `unit` argument (`km`, `km2`,
- * `m`, `m2`, `rads`, `rads2` as in h3-pg). The unit string is
- * validated at bind time by the MEOS implementation; an invalid
- * value raises an error before any per-instant work happens.
+ * Each function names the unit it answers, the way libh3 names its own
+ * (`cellAreaKm2`, `edgeLengthM`, `greatCircleDistanceRads`), so a unit is
+ * chosen by calling the function that answers it rather than by passing a
+ * string. `cellArea` is the exception and not an omission: the square metre
+ * is the unit the DggsCellOps `cell_area` slot declares, so it carries the
+ * bare name every cell index shares.
  *
- * `greatCircleDistance(tgeogpoint, tgeogpoint, text)` is the
- * `binary_synced` form of the scalar h3-pg helper — both geodetic
- * points are synchronised over their shared time axis.
+ * The `greatCircleDistance*` functions are the `binary_synced` form of the
+ * scalar libh3 helper — both geodetic points are synchronised over their
+ * shared time axis.
  */
 
 /******************************************************************************
@@ -80,13 +82,22 @@ CREATE FUNCTION th3EdgeLengthRads(th3index)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * greatCircleDistance
+ * greatCircleDistanceKm, greatCircleDistanceM and greatCircleDistanceRads
  ******************************************************************************/
 
-CREATE FUNCTION greatCircleDistance(tgeogpoint, tgeogpoint,
-  text DEFAULT 'km')
+CREATE FUNCTION greatCircleDistanceKm(tgeogpoint, tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tgeogpoint_great_circle_distance'
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_great_circle_distance_km'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION greatCircleDistanceM(tgeogpoint, tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_great_circle_distance_m'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION greatCircleDistanceRads(tgeogpoint, tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_great_circle_distance_rads'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

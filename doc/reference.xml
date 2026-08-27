@@ -2905,7 +2905,7 @@
 					<para><link linkend="th3_h3_edge_length"><varname>th3EdgeLengthKm</varname>, <varname>th3EdgeLengthM</varname>, <varname>th3EdgeLengthRads</varname></link>: Return the temporal length of each directed edge in a trajectory, in kilometres, metres, or radians</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_great_circle_distance"><varname>greatCircleDistance</varname></link>: Return the temporal great-circle distance between two temporal geodetic points (not between cells)</para>
+					<para><link linkend="th3_h3_great_circle_distance"><varname>greatCircleDistanceKm</varname>, <varname>greatCircleDistanceM</varname>, <varname>greatCircleDistanceRads</varname></link>: Return the temporal great-circle distance between two temporal geodetic points (not between cells), in kilometres, metres, or radians</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

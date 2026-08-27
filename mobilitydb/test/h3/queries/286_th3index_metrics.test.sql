@@ -69,40 +69,38 @@ SELECT startValue(th3EdgeLengthRads(th3CellsToDirectedEdge(
     th3index '880326b88dfffff@2001-01-01')));
 
 -------------------------------------------------------------------------------
--- greatCircleDistance(tgeogpoint, tgeogpoint, text) — binary_synced
+-- greatCircleDistanceKm, greatCircleDistanceM and greatCircleDistanceRads —
+-- binary_synced
 -------------------------------------------------------------------------------
 
 -- Distance from a point to itself is 0
-SELECT greatCircleDistance(
+SELECT greatCircleDistanceKm(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  'km');
+  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01');
 
--- All three valid length units
-SELECT greatCircleDistance(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
-  'km') IS NOT NULL;
-SELECT greatCircleDistance(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
-  'm') IS NOT NULL;
-SELECT greatCircleDistance(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
-  'rads') IS NOT NULL;
+-- One degree of longitude at the equator, in the three units libh3 names.
+-- The radian answer is pi/180 exactly, which is the oracle for the trio.
+SELECT round(startValue(greatCircleDistanceKm(
+  tgeogpoint 'POINT(0 0)@2001-01-01',
+  tgeogpoint 'POINT(1 0)@2001-01-01'))::numeric, 6);
+SELECT round(startValue(greatCircleDistanceM(
+  tgeogpoint 'POINT(0 0)@2001-01-01',
+  tgeogpoint 'POINT(1 0)@2001-01-01'))::numeric, 3);
+SELECT round(startValue(greatCircleDistanceRads(
+  tgeogpoint 'POINT(0 0)@2001-01-01',
+  tgeogpoint 'POINT(1 0)@2001-01-01'))::numeric, 9)
+  = round((pi() / 180)::numeric, 9);
+
+-- The three answer one quantity in three units
+SELECT startValue(greatCircleDistanceM(
+    tgeogpoint 'POINT(0 0)@2001-01-01', tgeogpoint 'POINT(1 0)@2001-01-01'))
+  = startValue(greatCircleDistanceKm(
+    tgeogpoint 'POINT(0 0)@2001-01-01', tgeogpoint 'POINT(1 0)@2001-01-01')) * 1000;
 
 -- Sequence form
-SELECT greatCircleDistance(
+SELECT greatCircleDistanceKm(
   tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
-  tgeogpoint '[POINT(2.35 48.86)@2001-01-01, POINT(-73.96 40.78)@2001-01-02]',
-  'km') IS NOT NULL;
-
--- Area unit on a length function — error
-/* Errors */
-SELECT greatCircleDistance(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
-  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
-  'km2');
+  tgeogpoint '[POINT(2.35 48.86)@2001-01-01, POINT(-73.96 40.78)@2001-01-02]')
+  IS NOT NULL;
 
 -------------------------------------------------------------------------------
