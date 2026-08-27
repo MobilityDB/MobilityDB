@@ -4,9 +4,9 @@ th3CellToVertex(th3index,integer) → th3index
 SELECT th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0);
 -- 2071fa44a8ffffff@2001-01-01
 </pre></li><li class="listitem"><a name="th3_h3_vertex_to_latlng"></a><a class="indexterm" name="id12155"></a><p>Return the temporal geodetic coordinates of each vertex in a trajectory</p><pre class="programlisting">
-th3VertexToLatlng(th3index) → tgeogpoint
+th3VertexToPoint(th3index) → tgeogpoint
 </pre><pre class="programlisting">
-SELECT asText(th3VertexToLatlng(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
+SELECT asText(th3VertexToPoint(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
   0)), 6);
 -- POINT(4.280027 50.807655)@2001-01-01
 </pre></li><li class="listitem"><a name="th3_h3_is_valid_vertex"></a><a class="indexterm" name="id12162"></a><p>Return a temporal boolean stating at each instant whether the value is a valid H3 vertex</p><pre class="programlisting">

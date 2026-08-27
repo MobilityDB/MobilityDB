@@ -9,6 +9,6 @@ SELECT ((tquadbin '480fffffffffffff@2001-01-01')::tbigint)::tquadbin
 -- true
 </pre></li><li class="listitem"><a name="tquadbin_tgeompoint"></a><a class="indexterm" name="id12104"></a><p>Convertir una celda QUADBIN temporal a un punto planar temporal (SRID 4326) de los centroides de las celdas</p><pre class="programlisting">
 tquadbin::tgeompoint
-</pre><p>La conversión delega en <code class="varname">tquadbinCellToPoint</code>.</p><pre class="programlisting">
+</pre><p>La conversión delega en <code class="varname">cellToPoint</code>.</p><pre class="programlisting">
 SELECT (tquadbin '480fffffffffffff@2001-01-01')::tgeompoint;
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch17s03.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Capítulo 17. Índices de Celdas QUADBIN Temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Celdas Estáticas</td></tr></table></div></body></html>

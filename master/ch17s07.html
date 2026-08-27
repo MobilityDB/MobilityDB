@@ -5,20 +5,20 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
   = quadbin '48a6227affffffff';
 -- true
 </pre></li><li class="listitem"><a name="tquadbin_quadbin_cell_to_point"></a><a class="indexterm" name="id12811"></a><a class="indexterm" name="id12814"></a><p>Return the centroid of a cell as an SRID-4326 point</p><pre class="programlisting">
-quadbinCellToPoint(quadbin) → geometry
-tquadbinCellToPoint(tquadbin) → tgeompoint
+cellToPoint(quadbin) → geometry
+cellToPoint(tquadbin) → tgeompoint
 </pre><p>The static form takes a single <code class="varname">quadbin</code>; the temporal form returns the centroid of each cell in a trajectory as a <code class="varname">tgeompoint</code>.</p><pre class="programlisting">
-SELECT ST_AsText(quadbinCellToPoint(quadbin '48427fffffffffff'));
+SELECT ST_AsText(cellToPoint(quadbin '48427fffffffffff'));
 -- POINT(-101.25 48.92249926375824)
-SELECT asText(tquadbinCellToPoint(tquadbin
+SELECT asText(cellToPoint(tquadbin
   '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'));
 -- {POINT(0 0)@2001-01-01,
 --  POINT(-101.25 48.92249926375824)@2001-01-02}
 </pre></li><li class="listitem"><a name="tquadbin_quadbin_cell_to_boundary"></a><a class="indexterm" name="id12824"></a><a class="indexterm" name="id12827"></a><p>Return the square polygon boundary of a cell as an SRID-4326 geometry</p><pre class="programlisting">
-quadbinCellToBoundary(quadbin) → geometry
-tquadbinCellToBoundary(tquadbin) → tgeometry
+cellToBoundary(quadbin) → geometry
+cellToBoundary(tquadbin) → tgeometry
 </pre><p>The static form takes a single <code class="varname">quadbin</code>; the temporal form returns the boundary of each cell in a trajectory as a <code class="varname">tgeometry</code>.</p><pre class="programlisting">
-SELECT ST_AsText(quadbinCellToBoundary(quadbin '480fffffffffffff'));
+SELECT ST_AsText(cellToBoundary(quadbin '480fffffffffffff'));
 -- POLYGON((-180 -85.0511287798066,180 -85.0511287798066,
 --          180 85.0511287798066,-180 85.0511287798066,
 --          -180 -85.0511287798066))

@@ -1,11 +1,11 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Jerarquía</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Índices de Celdas QUADBIN Temporales"><link rel="prev" href="ch17s05.html" title="Inspección del Índice"><link rel="next" href="ch17s07.html" title="Conversiones de Geometría"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Jerarquía</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Índices de Celdas QUADBIN Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tquadbin_hierarchy"></a>Jerarquía</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tquadbin_quadbin_cell_to_parent"></a><a class="indexterm" name="id12196"></a><a class="indexterm" name="id12199"></a><p>Devuelve la celda padre en la resolución más gruesa dada</p><pre class="programlisting">
-quadbinCellToParent(quadbin,integer) → quadbin
-tquadbinCellToParent(tquadbin,integer) → tquadbin
+cellToParent(quadbin,integer) → quadbin
+cellToParent(tquadbin,integer) → tquadbin
 </pre><p>La forma estática toma un único <code class="varname">quadbin</code>; la forma temporal devuelve el padre de cada celda de una trayectoria.</p><pre class="programlisting">
-SELECT quadbinCellToParent(quadbin '48a6227affffffff', 5);
+SELECT cellToParent(quadbin '48a6227affffffff', 5);
 -- 485623ffffffffff
-SELECT tquadbinGetResolution(
-  tquadbinCellToParent(tquadbin '48a6227affffffff@2001-01-01', 5));
+SELECT getResolution(
+  cellToParent(tquadbin '48a6227affffffff@2001-01-01', 5));
 -- 5@2001-01-01
 </pre></li><li class="listitem"><a name="tquadbin_quadbin_cell_to_children"></a><a class="indexterm" name="id12208"></a><p>Devuelve las cuatro celdas hijas en la resolución más fina solicitada como un <code class="varname">quadbinset</code></p><pre class="programlisting">
 quadbinCellToChildren(quadbin,integer) → quadbinset

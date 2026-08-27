@@ -9,6 +9,6 @@ SELECT ((tquadbin '480fffffffffffff@2001-01-01')::tbigint)::tquadbin
 -- true
 </pre></li><li class="listitem"><a name="tquadbin_tgeompoint"></a><a class="indexterm" name="id12660"></a><p>Cast a temporal QUADBIN cell to a temporal planar (SRID 4326) point of cell centroids</p><pre class="programlisting">
 tquadbin::tgeompoint
-</pre><p>The cast delegates to <code class="varname">tquadbinCellToPoint</code>.</p><pre class="programlisting">
+</pre><p>The cast delegates to <code class="varname">cellToPoint</code>.</p><pre class="programlisting">
 SELECT (tquadbin '480fffffffffffff@2001-01-01')::tgeompoint;
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch17s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 17. Temporal QUADBIN Cell Indices </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Static Cells</td></tr></table></div></body></html>
