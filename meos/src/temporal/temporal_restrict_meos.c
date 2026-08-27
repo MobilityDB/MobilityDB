@@ -331,6 +331,8 @@ temporal_at_min(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_torder_type(temp->temptype))
+    return NULL;
   return temporal_restrict_minmax(temp, GET_MIN, REST_AT);
 }
 
@@ -346,6 +348,8 @@ temporal_minus_min(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_torder_type(temp->temptype))
+    return NULL;
   return temporal_restrict_minmax(temp, GET_MIN, REST_MINUS);
 }
 
@@ -360,6 +364,8 @@ temporal_at_max(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_torder_type(temp->temptype))
+    return NULL;
   return temporal_restrict_minmax(temp, GET_MAX, REST_AT);
 }
 
@@ -375,6 +381,8 @@ temporal_minus_max(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_torder_type(temp->temptype))
+    return NULL;
   return temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
 }
 
