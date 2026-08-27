@@ -195,17 +195,6 @@ th3index_cell_area_unit(const Temporal *temp, const char *unit)
   return tfunc_temporal(temp, &lfinfo);
 }
 
-/**
- * @ingroup meos_h3_metrics
- * @brief Return the per-instant area of a temporal H3 cell in square metres
- * @csqlfn #Th3index_cell_area()
- */
-Temporal *
-th3index_cell_area(const Temporal *temp)
-{
-  return th3index_cell_area_unit(temp, "m2");
-}
-
 /*****************************************************************************
  * th3EdgeLength(th3index, text) — lift_with_const
  *****************************************************************************/

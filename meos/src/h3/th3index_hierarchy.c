@@ -94,19 +94,6 @@ h3_cell_to_center_child_next_meos(H3Index cell)
  * cellToParent(th3index, integer)
  *****************************************************************************/
 
-/**
- * @ingroup meos_h3_hierarchy
- * @brief Return the temporal parent cell at the given resolution.
- * @csqlfn #Th3index_cell_to_parent()
- */
-Temporal *
-th3index_cell_to_parent(const Temporal *temp, int32 resolution)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL);
-  return tcellindex_cell_to_parent(temp, resolution);
-}
-
 /*****************************************************************************
  * cellToParent(th3index)
  *****************************************************************************/

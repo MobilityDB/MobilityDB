@@ -202,9 +202,7 @@ extern Temporal *tne_th3index_th3index(const Temporal *temp1,
  * Inspection
  *****************************************************************************/
 
-extern Temporal *th3index_get_resolution(const Temporal *temp);
 extern Temporal *th3index_get_base_cell_number(const Temporal *temp);
-extern Temporal *th3index_is_valid_cell(const Temporal *temp);
 extern Temporal *th3index_is_res_class_iii(const Temporal *temp);
 extern Temporal *th3index_is_pentagon(const Temporal *temp);
 
@@ -212,7 +210,6 @@ extern Temporal *th3index_is_pentagon(const Temporal *temp);
  * Hierarchy
  *****************************************************************************/
 
-extern Temporal *th3index_cell_to_parent(const Temporal *temp, int32 resolution);
 extern Temporal *th3index_cell_to_parent_next(const Temporal *temp);
 extern Temporal *th3index_cell_to_center_child(const Temporal *temp, int32 resolution);
 extern Temporal *th3index_cell_to_center_child_next(const Temporal *temp);
@@ -228,7 +225,6 @@ extern Temporal *tgeogpoint_to_th3index(const Temporal *temp, int32 resolution);
 extern Temporal *tgeompoint_to_th3index(const Temporal *temp, int32 resolution);
 extern Temporal *th3index_to_tgeogpoint(const Temporal *temp);
 extern Temporal *th3index_to_tgeompoint(const Temporal *temp);
-extern Temporal *th3index_cell_to_boundary(const Temporal *temp);
 
 /* Static geometry → H3 cell / cell set.  See meos/src/h3/h3_geo.c. */
 extern H3Index geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution);
@@ -275,7 +271,6 @@ extern Temporal *th3index_local_ij_to_cell(const Temporal *origin,
  * Metrics
  *****************************************************************************/
 
-extern Temporal *th3index_cell_area(const Temporal *temp);
 extern Temporal *th3index_cell_area_unit(const Temporal *temp, const char *unit);
 extern Temporal *th3index_edge_length(const Temporal *temp, const char *unit);
 extern Temporal *tgeogpoint_great_circle_distance(const Temporal *a,

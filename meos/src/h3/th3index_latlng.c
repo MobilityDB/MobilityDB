@@ -455,18 +455,4 @@ th3index_to_tgeompoint(const Temporal *temp)
  * cellToBoundary — polygon per instant, emitted as tgeography
  *****************************************************************************/
 
-/**
- * @ingroup meos_h3_latlng
- * @brief Return the per-instant polygon boundary of a temporal H3 cell as
- * a temporal geography.
- * @csqlfn #Th3index_cell_to_boundary()
- */
-Temporal *
-th3index_cell_to_boundary(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL);
-  return tcellindex_cell_to_boundary(temp);
-}
-
 /*****************************************************************************/
