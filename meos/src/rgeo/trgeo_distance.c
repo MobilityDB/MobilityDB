@@ -576,6 +576,61 @@ static int trgeoseq_segment_index(const TSequence *seq, TimestampTz t);
 /**
  * @brief
  */
+/**
+ * @brief Append the time at which a translating polygon reaches a point it
+ * meets, where that time carries no point of its own
+ * @details The twin of #compute_contact_tpoly_poly for a point target: the
+ * oracle answers the separation while the point stands outside the polygon
+ * and zero once it is inside, so the same kink stands between the two and the
+ * same fit through two readings taken while they stand apart gives its time
+ * @param[in] geom_1,geom_2 Reference polygon and target point
+ * @param[in] pose_s,pose_e Poses at the ends of the temporal segment
+ * @param[in] t_lo,t_hi Ends of the temporal segment
+ * @param[in] ta,tb Ends of the interval, @p ta standing apart
+ * @param[in] da Separation at @p ta
+ * @param[in,out] tda Distance points to append to
+ */
+static void
+compute_contact_tpoly_point(const LWGEOM *geom_1, const LWGEOM *geom_2,
+  const Pose *pose_s, const Pose *pose_e, TimestampTz t_lo, TimestampTz t_hi,
+  TimestampTz ta, TimestampTz tb, double da, tdist_array *tda)
+{
+  if (t_hi <= t_lo || tb <= ta || da <= 0.0)
+    return;
+  if (fabs(pose_e->data[2] - pose_s->data[2]) > MEOS_GEOM_TOLERANCE)
+    return;
+
+  double span = (double) (t_hi - t_lo);
+  double fa = (double) (ta - t_lo) / span;
+  double fb = (double) (tb - t_lo) / span;
+
+  double fm = 0.0, dm = 0.0;
+  for (double frac = 0.5; frac > 1e-9; frac *= 0.5)
+  {
+    double f = fa + (fb - fa) * frac;
+    Pose *pm = posesegm_interpolate(pose_s, pose_e, f);
+    uint32_t cf = 0;
+    double d;
+    v_clip_tpoly_point((LWPOLY *) geom_1, (LWPOINT *) geom_2, pm, &cf, &d);
+    pfree(pm);
+    if (d > 0.0)
+    {
+      fm = f; dm = d;
+      break;
+    }
+  }
+  if (dm <= 0.0 || dm >= da)
+    return;
+
+  double froot = fa + (fm - fa) * da / (da - dm);
+  TimestampTz tc = t_lo + (TimestampTz) llround(froot * span);
+  if (tc <= ta || tc >= tb)
+    return;
+  tdist_elem td = tdist_make(0.0, tc);
+  append_tdist_elem(tda, td);
+  return;
+}
+
 static void
 compute_dist_tpoly_point(cfp_elem *cfp, tdist_array *tda)
 {
@@ -861,6 +916,33 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs,
 
   /* Order the distance points by time before building the result */
   tdist_array_sort(&tda);
+
+  /* Where two neighbouring points stand on either side of the floor the
+   * oracle imposes, the join between them is a kink, and the time the
+   * separation reaches zero is a point of the answer */
+  uint32_t nbefore = tda.count;
+  for (uint32_t i = 0; i + 1 < nbefore; ++i)
+  {
+    double d1 = tda.arr[i].dist, d2 = tda.arr[i + 1].dist;
+    if ((d1 > 0.0) == (d2 > 0.0))
+      continue;
+    int sgi = trgeoseq_segment_index(seq,
+      tda.arr[i].t + (tda.arr[i + 1].t - tda.arr[i].t) / 2);
+    const TInstant *ssi = TSEQUENCE_INST_N(seq, sgi);
+    const TInstant *sei = TSEQUENCE_INST_N(seq, sgi + 1);
+    if (d1 > 0.0)
+      compute_contact_tpoly_point((LWGEOM *) poly, (LWGEOM *) point,
+        DatumGetPoseP(tinstant_value_p(ssi)),
+        DatumGetPoseP(tinstant_value_p(sei)), ssi->t, sei->t,
+        tda.arr[i].t, tda.arr[i + 1].t, d1, &tda);
+    else
+      compute_contact_tpoly_point((LWGEOM *) poly, (LWGEOM *) point,
+        DatumGetPoseP(tinstant_value_p(sei)),
+        DatumGetPoseP(tinstant_value_p(ssi)), sei->t, ssi->t,
+        tda.arr[i + 1].t, tda.arr[i].t, d2, &tda);
+  }
+  if (tda.count != nbefore)
+    tdist_array_sort(&tda);
 
   /* Create the result tfloat */
   TInstant **instants = palloc(sizeof(TInstant *) * tda.count);
@@ -1610,6 +1692,82 @@ compute_dist_tpoly_poly(cfp_elem *cfp, tdist_array *tda)
 }
 
 /**
+ * @brief Append the time at which a translating polygon reaches a polygon it
+ * meets, where that time carries no point of its own
+ * @details The v-clip oracle answers the separation of two polygons while they
+ * stand apart and zero for every pose at which they overlap, so the distance
+ * of a fixed closest-feature pair falls to a floor and stays there. The join
+ * is a kink, and a kink carrying no point is drawn as a straight line across
+ * it, which leaves zero early on the way in and reaches it late on the way
+ * out.
+ *
+ * Along a segment on which the body only translates, the separation of a fixed
+ * feature pair is linear in the ratio, so two readings taken while the
+ * polygons STAND APART give the line whose root is the contact. No reading
+ * taken after they meet enters the fit, which is what keeps the answer off the
+ * floor the oracle imposes: halving a bracket on that floor instead converges
+ * on the boundary of the oracle's answer, which stands before the contact.
+ *
+ * A contact that a change of closest features already carries is answered by
+ * the walk exactly, and the root then falls on that point rather than inside
+ * the interval, so nothing is added. A body that only grazes reaches the floor
+ * at a single instant, and its root falls on that instant for the same reason.
+ * @param[in] geom_1,geom_2 Reference polygon and target polygon
+ * @param[in] pose_s,pose_e Poses at the ends of the temporal segment
+ * @param[in] t_lo,t_hi Ends of the temporal segment
+ * @param[in] ta,tb Ends of the interval, @p ta standing apart
+ * @param[in] da Separation at @p ta
+ * @param[in,out] tda Distance points to append to
+ */
+static void
+compute_contact_tpoly_poly(const LWGEOM *geom_1, const LWGEOM *geom_2,
+  const Pose *pose_s, const Pose *pose_e, TimestampTz t_lo, TimestampTz t_hi,
+  TimestampTz ta, TimestampTz tb, double da, tdist_array *tda)
+{
+  if (t_hi <= t_lo || tb <= ta || da <= 0.0)
+    return;
+  /* A rotating segment moves each vertex along an arc, so its separation is
+   * not linear in the ratio and two readings do not give its root */
+  if (fabs(pose_e->data[2] - pose_s->data[2]) > MEOS_GEOM_TOLERANCE)
+    return;
+
+  double span = (double) (t_hi - t_lo);
+  double fa = (double) (ta - t_lo) / span;
+  double fb = (double) (tb - t_lo) / span;
+
+  /* The second reading of the fit, taken as far from the first as it can be
+   * while the polygons still stand apart */
+  double fm = 0.0, dm = 0.0;
+  for (double frac = 0.5; frac > 1e-9; frac *= 0.5)
+  {
+    double f = fa + (fb - fa) * frac;
+    Pose *pm = posesegm_interpolate(pose_s, pose_e, f);
+    uint32_t c1 = 0, c2 = 0;
+    double d;
+    v_clip_tpoly_tpoly((LWPOLY *) geom_1, (LWPOLY *) geom_2, pm, NULL, &c1,
+      &c2, &d);
+    pfree(pm);
+    if (d > 0.0)
+    {
+      fm = f; dm = d;
+      break;
+    }
+  }
+  if (dm <= 0.0 || dm >= da)
+    return;
+
+  /* The root of the line through the two readings that stand apart */
+  double froot = fa + (fm - fa) * da / (da - dm);
+  TimestampTz tc = t_lo + (TimestampTz) llround(froot * span);
+  /* A contact the walk already carries needs no point of its own */
+  if (tc <= ta || tc >= tb)
+    return;
+  tdist_elem td = tdist_make(0.0, tc);
+  append_tdist_elem(tda, td);
+  return;
+}
+
+/**
  * @brief Append the interior turning points (local extrema) of the distance
  * realized by the fixed closest-feature pair of @p cfp_s while the rigid
  * geometry moves over the temporal segment @p [t_lo,t_hi]
@@ -1840,6 +1998,35 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs,
 
   /* Order the distance points by time before building the result */
   tdist_array_sort(&tda);
+
+  /* Where two neighbouring points stand on either side of the floor the
+   * oracle imposes, the join between them is a kink, and the time the
+   * separation reaches zero is a point of the answer */
+  uint32_t nbefore = tda.count;
+  for (uint32_t i = 0; i + 1 < nbefore; ++i)
+  {
+    double d1 = tda.arr[i].dist, d2 = tda.arr[i + 1].dist;
+    if ((d1 > 0.0) == (d2 > 0.0))
+      continue;
+    int sgi = trgeoseq_segment_index(seq,
+      tda.arr[i].t + (tda.arr[i + 1].t - tda.arr[i].t) / 2);
+    const TInstant *ssi = TSEQUENCE_INST_N(seq, sgi);
+    const TInstant *sei = TSEQUENCE_INST_N(seq, sgi + 1);
+    /* The reading that stands apart opens the interval on the way in and
+     * closes it on the way out, so the fit runs from it either way */
+    if (d1 > 0.0)
+      compute_contact_tpoly_poly((LWGEOM *) poly1, (LWGEOM *) poly2,
+        DatumGetPoseP(tinstant_value_p(ssi)),
+        DatumGetPoseP(tinstant_value_p(sei)), ssi->t, sei->t,
+        tda.arr[i].t, tda.arr[i + 1].t, d1, &tda);
+    else
+      compute_contact_tpoly_poly((LWGEOM *) poly1, (LWGEOM *) poly2,
+        DatumGetPoseP(tinstant_value_p(sei)),
+        DatumGetPoseP(tinstant_value_p(ssi)), sei->t, ssi->t,
+        tda.arr[i + 1].t, tda.arr[i].t, d2, &tda);
+  }
+  if (tda.count != nbefore)
+    tdist_array_sort(&tda);
 
   /* Create the result tfloat */
   TInstant **instants = palloc(sizeof(TInstant *) * tda.count);
