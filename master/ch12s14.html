@@ -1,36 +1,25 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch12.html" title="Chapter 12. Temporal Circular Buffers"><link rel="prev" href="ch12s13.html" title="Comparisons"><link rel="next" href="ch12s15.html" title="Spatial Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s13.html">Prev</a> </td><th width="60%" align="center">Chapter 12. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch12s15.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_bbox_ops"></a>Bounding Box Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_topo"></a><a class="indexterm" name="id8817"></a><a class="indexterm" name="id8820"></a><a class="indexterm" name="id8823"></a><a class="indexterm" name="id8826"></a><a class="indexterm" name="id8829"></a><p>Topological operators</p><pre class="programlisting">
-{tstzspan,stbox,tcbuffer} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} {tstzspan,stbox,tcbuffer} → boolean
-</pre><pre class="programlisting">
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&amp; cbuffer 'Cbuffer(Point(1 1), 0.5)';
--- true
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)');
--- true
-SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)'::geometry &lt;@
-  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]';
--- true
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-03]' ~= tcbuffer '[Cbuffer(Point(1 1),
-  0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.35)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
--- true
-</pre></li><li class="listitem"><a name="tcbuffer_pos"></a><a class="indexterm" name="id8836"></a><p>Position operators</p><pre class="programlisting">
-{stbox,tcbuffer} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tcbuffer} → boolean
-{stbox,tcbuffer} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tcbuffer} → boolean
-{tstzspan,stbox,tcbuffer} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tcbuffer} → boolean
-</pre><pre class="programlisting">
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; cbuffer 'Cbuffer(Point(1 1), 0.2)'
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Ever and Always Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch12.html" title="Chapter 12. Temporal Circular Buffers"><link rel="prev" href="ch12s13.html" title="Distance Operations"><link rel="next" href="ch12s15.html" title="Spatiotemporal Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Ever and Always Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s13.html">Prev</a> </td><th width="60%" align="center">Chapter 12. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch12s15.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_everalways_rels"></a>Ever and Always Relationships</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_eContains"></a><a class="indexterm" name="id8759"></a><a class="indexterm" name="id8762"></a><a class="indexterm" name="id8765"></a><a class="indexterm" name="id8768"></a><a class="indexterm" name="id8771"></a><a class="indexterm" name="id8774"></a><a class="indexterm" name="id8777"></a><a class="indexterm" name="id8780"></a><a class="indexterm" name="id8783"></a><a class="indexterm" name="id8786"></a><a class="indexterm" name="id8789"></a><a class="indexterm" name="id8792"></a><p>Ever and always relationships</p><pre class="programlisting">
+eContains({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+aContains({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+eCovers({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+aCovers({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+eDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+aDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+eDwithin({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer},float) → boolean
+aDwithin({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer},float) → boolean
+eIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+aIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+eTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+aTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
+</pre><p>The <span class="emphasis"><em>ever</em></span> and <span class="emphasis"><em>always</em></span> relationships determine whether the topological or distance relationship is ever or always satisfied and return a <code class="varname">boolean</code></p><pre class="programlisting">
+SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
 -- false
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)')
+SELECT eDisjoint(cbuffer 'Cbuffer(Point(2 2), 0.0)',
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
+-- true
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
+  Cbuffer(Point(1 1), 0.3)@2001-01-03)',
+  tcbuffer '[Cbuffer(Point(2 2), 0.0)@2001-01-01, Cbuffer(Point(2 2), 1)@2001-01-03)');
 -- false
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; cbuffer 'Cbuffer(Point(1 1), 0.3)'::geometry
--- true
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &gt;&gt;#
-  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]'
--- true
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s13.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s15.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Comparisons </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Spatial Relationships</td></tr></table></div></body></html>
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s13.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s15.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Distance Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Spatiotemporal Relationships</td></tr></table></div></body></html>

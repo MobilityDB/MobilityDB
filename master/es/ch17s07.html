@@ -1,29 +1,25 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversiones de Latitud/Longitud</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Índices de Celdas H3 Temporales"><link rel="prev" href="ch17s06.html" title="Jerarquía"><link rel="next" href="ch17s08.html" title="Aristas Dirigidas"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversiones de Latitud/Longitud</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_latlng"></a>Conversiones de Latitud/Longitud</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_tgeompoint_to_th3"></a><a class="indexterm" name="id11722"></a><p>Devolver la celda H3 temporal en la resolución dada que contiene cada punto de un punto temporal geodésico o planar (el SRID debe ser 4326 para la sobrecarga de <code class="varname">tgeompoint</code>)</p><pre class="programlisting">
-th3index(tgeogpoint,integer) → th3index
-th3index(tgeompoint,integer) → th3index
-</pre><pre class="programlisting">
-SELECT th3GetResolution(th3index(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
--- 9@2001-01-01
-SELECT th3GetResolution(th3index(
-  tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
--- 9@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_latlng"></a><a class="indexterm" name="id11730"></a><a class="indexterm" name="id11733"></a><p>Devolver el centroide geodésico temporal de cada celda en una trayectoria</p><pre class="programlisting">
-th3CellToLatlng(th3index) → tgeogpoint
-th3CellToLatlngTgeompoint(th3index) → tgeompoint
-</pre><p>Una sobrecarga planar (SRID 4326) está disponible bajo el nombre <code class="varname">th3CellToLatlngTgeompoint</code>.</p><pre class="programlisting">
-SELECT asText(th3CellToLatlng(th3index '871fa44a8ffffff@2001-01-01'), 6);
--- POINT(4.297401 50.8043)@2001-01-01
-SELECT asText(th3CellToLatlngTgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
--- POINT(4.297401 50.8043)@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_boundary"></a><a class="indexterm" name="id11742"></a><p>Devolver el límite poligonal temporal de cada celda en una trayectoria, como una geografía temporal</p><pre class="programlisting">
-th3CellToBoundary(th3index) → tgeography
-</pre><pre class="programlisting">
-SELECT ST_GeometryType(getValue(th3CellToBoundary(th3index
-  '871fa44a8ffffff@2001-01-01'))::geometry);
--- ST_Polygon
--- A hexagon closes on its first vertex, so it has seven points.
-SELECT ST_NPoints(getValue(th3CellToBoundary(th3index
-  '871fa44a8ffffff@2001-01-01'))::geometry);
--- 7
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch17s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Jerarquía </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Aristas Dirigidas</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversiones de Geometría</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Índices de Celdas QUADBIN Temporales"><link rel="prev" href="ch17s06.html" title="Jerarquía"><link rel="next" href="ch17s08.html" title="Teselas y Quadkeys"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversiones de Geometría</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Índices de Celdas QUADBIN Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tquadbin_latlng"></a>Conversiones de Geometría</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tquadbin_quadbin_point_to_cell"></a><a class="indexterm" name="id12247"></a><p>Devuelve la celda QUADBIN en la resolución dada que contiene una geometría de punto</p><pre class="programlisting">
+geoToQuadbinCell(geometry,integer) → quadbin
+</pre><p>La geometría debe ser un <code class="varname">POINT</code>; las longitudes se interpretan en SRID 4326.</p><pre class="programlisting">
+SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
+  = quadbin '48a6227affffffff';
+-- true
+</pre></li><li class="listitem"><a name="tquadbin_quadbin_cell_to_point"></a><a class="indexterm" name="id12256"></a><a class="indexterm" name="id12259"></a><p>Devuelve el centroide de una celda como un punto SRID 4326</p><pre class="programlisting">
+quadbinCellToPoint(quadbin) → geometry
+tquadbinCellToPoint(tquadbin) → tgeompoint
+</pre><p>La forma estática toma un único <code class="varname">quadbin</code>; la forma temporal devuelve el centroide de cada celda de una trayectoria como un <code class="varname">tgeompoint</code>.</p><pre class="programlisting">
+SELECT ST_AsText(quadbinCellToPoint(quadbin '48427fffffffffff'));
+-- POINT(-101.25 48.92249926375824)
+SELECT asText(tquadbinCellToPoint(tquadbin
+  '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'));
+-- {POINT(0 0)@2001-01-01,
+--  POINT(-101.25 48.92249926375824)@2001-01-02}
+</pre></li><li class="listitem"><a name="tquadbin_quadbin_cell_to_boundary"></a><a class="indexterm" name="id12269"></a><a class="indexterm" name="id12272"></a><p>Devuelve el contorno poligonal cuadrado de una celda como una geometría SRID 4326</p><pre class="programlisting">
+quadbinCellToBoundary(quadbin) → geometry
+tquadbinCellToBoundary(tquadbin) → tgeometry
+</pre><p>La forma estática toma un único <code class="varname">quadbin</code>; la forma temporal devuelve el contorno de cada celda de una trayectoria como un <code class="varname">tgeometry</code>.</p><pre class="programlisting">
+SELECT ST_AsText(quadbinCellToBoundary(quadbin '480fffffffffffff'));
+-- POLYGON((-180 -85.0511287798066,180 -85.0511287798066,
+--          180 85.0511287798066,-180 85.0511287798066,
+--          -180 -85.0511287798066))
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch17s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Jerarquía </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Teselas y Quadkeys</td></tr></table></div></body></html>

@@ -1,0 +1,23 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Ever and Always Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch14.html" title="Chapter 14. Temporal Rigid Geometries"><link rel="prev" href="ch14s13.html" title="Bounding Box Operations"><link rel="next" href="ch14s15.html" title="Spatiotemporal Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Ever and Always Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s13.html">Prev</a> </td><th width="60%" align="center">Chapter 14. Temporal Rigid Geometries</th><td width="20%" align="right"> <a accesskey="n" href="ch14s15.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_everalways_rels"></a>Ever and Always Relationships</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_eContains"></a><a class="indexterm" name="id10857"></a><a class="indexterm" name="id10860"></a><a class="indexterm" name="id10863"></a><a class="indexterm" name="id10866"></a><a class="indexterm" name="id10869"></a><a class="indexterm" name="id10872"></a><a class="indexterm" name="id10875"></a><a class="indexterm" name="id10878"></a><a class="indexterm" name="id10881"></a><a class="indexterm" name="id10884"></a><a class="indexterm" name="id10887"></a><a class="indexterm" name="id10890"></a><p>Ever and always relationships</p><pre class="programlisting">
+eContains(OPS) → boolean
+aContains(OPS) → boolean
+eCovers(OPS) → boolean
+aCovers(OPS) → boolean
+eDisjoint(OPS) → boolean
+aDisjoint(OPS) → boolean
+eDwithin(OPS,float) → boolean
+aDwithin(OPS,float) → boolean
+eIntersects(OPS) → boolean
+aIntersects(OPS) → boolean
+eTouches(OPS) → boolean
+aTouches(OPS) → boolean
+</pre><p>The <span class="emphasis"><em>ever</em></span> relationships determine whether the relationship holds at some instant, and the <span class="emphasis"><em>always</em></span> ones whether it holds at every instant. A temporal rigid geometry answers them at the body its reference geometry places at each instant, so the relationship read is the one of the placed body rather than of the reference geometry at the origin.</p><pre class="programlisting">
+SELECT eIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- true
+SELECT aIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+-- false
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s13.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s15.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Bounding Box Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Spatiotemporal Relationships</td></tr></table></div></body></html>

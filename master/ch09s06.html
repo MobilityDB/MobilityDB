@@ -6,7 +6,7 @@
 			<a class="xref" href="ch09s06.html#tiling" title="Figure 9.4. Multidimensional tiling for temporal floats.">Figure 9.4, “Multidimensional tiling for temporal floats.”</a> illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <span class="emphasis"><em>reshuffling</em></span>.
 		</p><p>Many of the functions in this section are <span class="emphasis"><em>set-returning functions</em></span> (also known as a <span class="emphasis"><em>table functions</em></span>) since they typically return more than one value. In this case, the functions are marked with the <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
- symbol.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="bin_functions"></a>Bin Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_bins"></a><a class="indexterm" name="id6835"></a><p>Return an array of bins that cover a value or time span with bins of the same size or duration
+ symbol.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="bin_functions"></a>Bin Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_bins"></a><a class="indexterm" name="id6750"></a><p>Return an array of bins that cover a value or time span with bins of the same size or duration
 </p><pre class="programlisting">
 bins(numspans,size number,origin number=0) → span[]
 bins(datespans,duration interval,origin date='2000-01-03') → span[]
@@ -16,8 +16,7 @@ SELECT bins(floatspan '[-10, -1]', 2.5, -7);
 -- {"[-12, -9.5)","[-9.5, -7)","[-7, -4.5)","[-4.5, -2)","[-2, 0.5)"}
 SELECT bins(intspan '[15, 25]', 2);
 -- {"[14, 16)","[16, 18)","[18, 20)","[20, 22)","[22, 24)","[24, 26)","[26, 28)"}
-SELECT index, span
-FROM unnest(bins(datespan '[2001-01-15, 2001-01-25]', '2 days'))
+SELECT index, span FROM unnest(bins(datespan '[2001-01-15, 2001-01-25]', '2 days'))
   WITH ORDINALITY t(span, index);
 -- 1 | [2001-01-15, 2001-01-17)
 -- 2 | [2001-01-17, 2001-01-19)
@@ -30,7 +29,7 @@ FROM unnest(bins(tstzspanset '{[2001-01-15, 2001-01-17],[2001-01-22, 2001-01-25]
 -- 2 | [2001-01-16, 2001-01-17]
 -- 3 | [2001-01-22, 2001-01-24)
 -- 4 | [2001-01-24, 2001-01-25]
-</pre></li><li class="listitem"><a name="setspan_getBin"></a><a class="indexterm" name="id6843"></a><p>Return the bin that contains a number or a timestamp</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_getBin"></a><a class="indexterm" name="id6758"></a><p>Return the bin that contains a number or a timestamp</p><pre class="programlisting">
 getBin(number,size number,origin number=0) → span
 getBin(date,duration interval,origin date='2000-01-03') → datespan
 getBin(timestamptz,duration interval,origin timestamptz='2000-01-03') → tstzspan
@@ -43,12 +42,11 @@ SELECT getBin('2001-01-04', interval '1 week');
 -- [2001-01-01, 2001-01-08)
 SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 -- [2000-12-31, 2001-01-07)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tile_functions"></a>Tile Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_valueTimeTiles"></a><a class="indexterm" name="id6854"></a><a class="indexterm" name="id6857"></a><a class="indexterm" name="id6860"></a><p>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tile_functions"></a>Tile Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_valueTimeTiles"></a><a class="indexterm" name="id6769"></a><a class="indexterm" name="id6772"></a><a class="indexterm" name="id6775"></a><p>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
 </p><pre class="programlisting">
 valueTiles(tbox,vsize float,vorigin float=0) → {(index,tile)}
-timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03')  →
-  {(index,tile)}
+timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03') → {(index,tile)}
 valueTimeTiles(tbox,vsize float,duration interval,vorigin float=0,
   torigin timestamptz='2000-01-03') → {(index,tile)}
 </pre><p>The result is a set of pairs <code class="varname">(index,tile)</code>. If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</p><pre class="programlisting">
@@ -64,9 +62,9 @@ FROM (SELECT timeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, '2 days') 
 -- 2 | TBOX T([2001-01-17, 2001-01-19))
 -- 3 | TBOX T([2001-01-19, 2001-01-21))
 -- ...
-SELECT (gr).index, (gr).tile
-FROM (SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0, '2 days')
-  AS gr) t;
+SELECT (gr).index,
+  (gr).tile FROM (SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox,
+  2.0, '2 days') AS gr) t;
 -- 1 | TBOX XT([14,16),[2001-01-15,2001-01-17))
 -- 2 | TBOX XT([16,18),[2001-01-15,2001-01-17))
 -- 3 | TBOX XT([18,20),[2001-01-15,2001-01-17))
@@ -76,7 +74,7 @@ SELECT valueTimeTiles(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days
 -- (2,"TBOX XT([15.5,17.5),[2001-01-15,2001-01-17))")
 -- (3,"TBOX XT([17.5,19.5),[2001-01-15,2001-01-17))")
 -- ...
-</pre></li><li class="listitem"><a name="stbox_spaceTimeTiles"></a><a class="indexterm" name="id6876"></a><a class="indexterm" name="id6879"></a><a class="indexterm" name="id6882"></a><p>Return the set of tiles that covers a spatiotemporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="stbox_spaceTimeTiles"></a><a class="indexterm" name="id6791"></a><a class="indexterm" name="id6794"></a><a class="indexterm" name="id6797"></a><p>Return the set of tiles that covers a spatiotemporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
  <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
@@ -88,21 +86,19 @@ timeTiles({stbox,tgeompoint},duration interval,torigin timestamptz='2000-01-03',
 spaceTimeTiles({stbox,tgeompoint},xsize float,[ysize float,zsize float,]duration interval,
   sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03',
   borderInc boolean=true) → {(index,tile)}
-</pre><p>The result is a set of pairs <code class="varname">(index,tile)</code>. If the origin of the space and/or time dimension is not specified, it is set by default to <code class="varname">'Point(0 0 0)'</code> and to Monday, January 3, 2000, respectively. The optional argument <code class="varname">borderInc</code> states whether the upper border of the extent is included and thus, extra tiles containing the border are generated. When the first argument is a <code class="varname">tgeompoint</code>, the bounding spatiotemporal box is derived implicitly via <code class="varname">stbox(temp)</code>.</p><p>In the case of a spatiotemporal grid, <code class="varname">ysize</code> and <code class="varname">zsize</code> are optional, the size for the missing dimensions is assumed to be equal to <code class="varname">xsize</code>. The SRID of the tile coordinates is determined by the input box and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</p><pre class="programlisting">
-SELECT spaceTiles(tgeompoint '[Point(3 3)@2001-01-15,
-  Point(15 15)@2001-01-25]', 2.0);
+</pre><p>The result is a set of pairs <code class="varname">(index,tile)</code>. If the origin of the space and/or time dimension is not specified, it is set by default to <code class="varname">'Point(0 0 0)'</code> and to Monday, January 3, 2000, respectively. The optional argument <code class="varname">borderInc</code> states whether the upper border of the extent is included and thus, extra tiles containing the border are generated. When the first argument is a <code class="varname">tgeompoint</code>, the bounding spatiotemporal box is derived implicitly via <code class="varname">stbox(temp)</code>. In the case of a spatiotemporal grid, <code class="varname">ysize</code> and <code class="varname">zsize</code> are optional, the size for the missing dimensions is assumed to be equal to <code class="varname">xsize</code>. The SRID of the tile coordinates is determined by the input box and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</p><pre class="programlisting">
+SELECT spaceTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', 2.0);
 -- (1,"STBOX X((2,2),(4,4))")
 -- (2,"STBOX X((4,2),(6,4))")
 -- (3,"STBOX X((6,2),(8,4))")
 -- ...
-SELECT timeTiles(tgeompoint '[Point(3 3)@2001-01-15,
-  Point(15 15)@2001-01-25]', '2 days');
+SELECT timeTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', '2 days');
 -- (1,"STBOX T([2001-01-15, 2001-01-17))")
 -- (2,"STBOX T([2001-01-17, 2001-01-19))")
 -- (3,"STBOX T([2001-01-19, 2001-01-21))")
 -- ...
-SELECT spaceTiles(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15,
-  Point(15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
+SELECT spaceTiles(tgeompoint 'SRID=3812;
+  [Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
 -- (1,"SRID=3812;STBOX X((3,3),(5,5))")
 -- (2,"SRID=3812;STBOX X((5,3),(7,5))")
 -- (3,"SRID=3812;STBOX X((7,3),(9,5))")
@@ -113,23 +109,23 @@ SELECT spaceTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
 -- (2,"STBOX Z((5,3,3),(7,5,5))")
 -- (3,"STBOX Z((7,3,3),(9,5,5))")
 -- ...
-SELECT spaceTimeTiles(tgeompoint '[Point(3 3)@2001-01-15,
-  Point(15 15)@2001-01-25]', 2.0, interval '2 days');
+SELECT spaceTimeTiles(tgeompoint '[Point(3 3)@2001-01-15, Point(15 15)@2001-01-25]', 2.0,
+  interval '2 days');
 -- (1,"STBOX XT(((2,2),(4,4)),[2001-01-15,2001-01-17))")
 -- (2,"STBOX XT(((4,2),(6,4)),[2001-01-15,2001-01-17))")
 -- (3,"STBOX XT(((6,2),(8,4)),[2001-01-15,2001-01-17))")
 -- ...
 SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
-  Point(15 15 15)@2001-01-25]'::stbox, 2.0, interval '2 days',
-  'Point(3 3 3)', '2001-01-15');
+  Point(15 15 15)@2001-01-25]'::stbox, 2.0, interval '2 days', 'Point(3 3 3)',
+  '2001-01-15');
 -- (1,"STBOX ZT(((3,3,3),(5,5,5)),[2001-01-15,2001-01-17))")
 -- (2,"STBOX ZT(((5,3,3),(7,5,5))),[2001-01-15,2001-01-17)")
 -- (3,"STBOX ZT(((7,3,3),(9,5,5))),[2001-01-15,2001-01-17)")
 -- ...
-</pre></li><li class="listitem"><a name="tbox_getValueTimeTile"></a><a class="indexterm" name="id6913"></a><a class="indexterm" name="id6916"></a><a class="indexterm" name="id6919"></a><p>Return the temporal tile that covers a value and/or a timestamp <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tbox_getValueTimeTile"></a><a class="indexterm" name="id6827"></a><a class="indexterm" name="id6830"></a><a class="indexterm" name="id6833"></a><p>Return the temporal tile that covers a value and/or a timestamp <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
 </p><pre class="programlisting">
-getValueTile(value float,vsize float,vorigin float=0.0,) → tbox
+getValueTile(value float,vsize float,vorigin float=0.0) → tbox
 getTboxTimeTile(time timestamptz,duration interval,
   torigin timestamptz='2000-01-03') → tbox
 getValueTimeTile(value float,time timestamptz,size float,duration interval,
@@ -143,7 +139,7 @@ SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days');
 -- TBOX XT([14,16),[2001-01-15,2001-01-17))
 SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02');
 -- TBOX XT([15,17),[2001-01-14,2001-01-16))
-</pre></li><li class="listitem"><a name="stbox_getSpaceTimeTile"></a><a class="indexterm" name="id6934"></a><a class="indexterm" name="id6937"></a><a class="indexterm" name="id6940"></a><p>Return the spatiotemporal tile that covers a point and/or a timestamp <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="stbox_getSpaceTimeTile"></a><a class="indexterm" name="id6848"></a><a class="indexterm" name="id6851"></a><a class="indexterm" name="id6854"></a><p>Return the spatiotemporal tile that covers a point and/or a timestamp <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
 </p><pre class="programlisting">
 getSpaceTile(point geometry,xsize float,[ysize float,zsize float],
@@ -153,7 +149,7 @@ getStboxTimeTile(time timestamptz,duration interval,
 getSpaceTimeTile(point geometry,time timestamptz,xsize float,
   [ysize float,zsize float,]duration,interval,sorigin geompoint='Point(0 0 0)',
   torigin timestamptz='2000-01-03') → stbox
-</pre><p>If the origin of the space and/or time dimension is not specified, it is set by default to <code class="varname">Point(0 0 0)</code> and to Monday, January 3, 2000, respectively.</p><p>In the case of a spatiotemporal grid, <code class="varname">ysize</code> and <code class="varname">zsize</code> are optional, the size for the missing dimensions is assumed to be equal to <code class="varname">xsize</code>. The SRID of the tile coordinates is determined by the input point and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</p><pre class="programlisting">
+</pre><p>If the origin of the space and/or time dimension is not specified, it is set by default to <code class="varname">Point(0 0 0)</code> and to Monday, January 3, 2000, respectively. In the case of a spatiotemporal grid, <code class="varname">ysize</code> and <code class="varname">zsize</code> are optional, the size for the missing dimensions is assumed to be equal to <code class="varname">xsize</code>. The SRID of the tile coordinates is determined by the input point and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</p><pre class="programlisting">
 SELECT getSpaceTile(geometry 'Point(1 1 1)', 2.0);
 -- STBOX Z((0,0,0),(2,2,2))
 SELECT getStboxTimeTile(timestamptz '2001-01-01', interval '2 days');
@@ -163,7 +159,7 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
   'Point(1 1)', '2001-01-02');
 -- STBOX XT(((1,1),(3,3)),[2000-12-31, 2001-01-02))
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="boxes_functions"></a>Bounding Box Operations</h3></div></div></div><p>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <a class="xref" href="ch09s05.html" title="Splitting Operations">the section called “Splitting Operations”</a> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueTimeBins"></a><a class="indexterm" name="id6965"></a><a class="indexterm" name="id6968"></a><p>Return an array of value or time spans obtained from the instants or segments of a temporal number with respect to a value or time grid</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="boxes_functions"></a>Bounding Box Operations</h3></div></div></div><p>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <a class="xref" href="ch09s05.html" title="Splitting Operations">the section called “Splitting Operations”</a> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueTimeBins"></a><a class="indexterm" name="id6878"></a><a class="indexterm" name="id6881"></a><p>Return an array of value or time spans obtained from the instants or segments of a temporal number with respect to a value or time grid</p><pre class="programlisting">
 valueBins(tnumber,vsize number,vorigin number=0) → numspan[]
 timeBins(temp,duration interval,torigin timestamptz='2000-01-03') → tstzspan[]
 </pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of values or time is not specified, it is set by default to 0 for value spans or to Monday, January 3, 2000 for time spans.</p><pre class="programlisting">
@@ -180,31 +176,31 @@ SELECT timeBins(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03, CCC@2000
 SELECT timeBins(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05]', '3 days', '2000-01-01');
 -- {"[2000-01-01, 2000-01-04)","[2000-01-04, 2000-01-05)"}
-</pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6977"></a><a class="indexterm" name="id6980"></a><a class="indexterm" name="id6983"></a><p>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6890"></a><a class="indexterm" name="id6893"></a><a class="indexterm" name="id6896"></a><p>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</p><pre class="programlisting">
 valueBoxes(tnumber,size number,vorigin number=0) → tbox[]
 timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]
 valueTimeBoxes(tnumber,size number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → tbox[]
 </pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</p><pre class="programlisting">
 SELECT valueBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
-1@2000-01-05}', 3);
+  1@2000-01-05}', 3);
 /* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-05])",
-    "TBOXINT XT([4, 5),[2000-01-04, 2000-01-04])"} */
+   "TBOXINT XT([4, 5),[2000-01-04, 2000-01-04])"} */
 SELECT timeBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
-1@2000-01-05}', '3 days');
+  1@2000-01-05}', '3 days');
 /* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-02])",
-    "TBOXINT XT([1, 5),[2000-01-03, 2000-01-05])"} */
+   "TBOXINT XT([1, 5),[2000-01-03, 2000-01-05])"} */
 SELECT valueTimeBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}', 3, '3 days');
 /* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-02])",
-    "TBOXINT XT([1, 2),[2000-01-03, 2000-01-05])",
-    "TBOXINT XT([4, 5),[2000-01-04, 2000-01-04])"} */
+   "TBOXINT XT([1, 2),[2000-01-03, 2000-01-05])",
+   "TBOXINT XT([4, 5),[2000-01-04, 2000-01-04])"} */
 SELECT valueTimeBoxes(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05]', 3, '3 days', 1, '2000-01-01');
 /* {"TBOXFLOAT XT([1, 4),[2000-01-01, 2000-01-04))",
-    "TBOXFLOAT XT([1, 4),(2000-01-04, 2000-01-05])",
-    "TBOXFLOAT XT([4, 4],[2000-01-04, 2000-01-04])"} */
-</pre></li><li class="listitem"><a name="tspatial_spaceTimeBoxes"></a><a class="indexterm" name="id6991"></a><a class="indexterm" name="id6994"></a><a class="indexterm" name="id6997"></a><p>Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+   "TBOXFLOAT XT([1, 4),(2000-01-04, 2000-01-05])",
+   "TBOXFLOAT XT([4, 4],[2000-01-04, 2000-01-04])"} */
+</pre></li><li class="listitem"><a name="tspatial_spaceTimeBoxes"></a><a class="indexterm" name="id6904"></a><a class="indexterm" name="id6907"></a><a class="indexterm" name="id6910"></a><p>Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
 </p><pre class="programlisting">
 spaceBoxes({tgeompoint,tgeometry,tpose,tpcpoint,trgeometry},xsize float,
@@ -226,34 +222,33 @@ SELECT timeBoxes(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
   Point(1 1 1)@2000-01-03, Point(4 4 4)@2000-01-04, Point(1 1 1)@2000-01-05}',
   interval '2 days', '2000-01-01');
 /* {"STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01, 2000-01-02])",
-    "STBOX ZT(((1,1,1),(4,4,4)),[2000-01-03, 2000-01-04])",
-    "STBOX ZT(((1,1,1),(1,1,1)),[2000-01-05, 2000-01-05])"} */
+   "STBOX ZT(((1,1,1),(4,4,4)),[2000-01-03, 2000-01-04])",
+   "STBOX ZT(((1,1,1),(1,1,1)),[2000-01-05, 2000-01-05])"} */
 SELECT spaceTimeBoxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
   Point(1 1)@2000-01-03, Point(4 4)@2000-01-04, Point(1 1)@2000-01-05}', 3, '3 days');
 /* {"STBOX XT(((1,1),(2,2)),[2000-01-01, 2000-01-02])",
-    "STBOX XT(((1,1),(1,1)),[2000-01-03, 2000-01-05])",
-    "STBOX XT(((4,4),(4,4)),[2000-01-04, 2000-01-04])"} */
+   "STBOX XT(((1,1),(1,1)),[2000-01-03, 2000-01-05])",
+   "STBOX XT(((4,4),(4,4)),[2000-01-04, 2000-01-04])"} */
 SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
-  Point(1 1 1)@2000-01-03, Point(4 4 4)@2000-01-04, Point(1 1 1)@2000-01-05]',
-  3, interval '3 days', 'Point(1 1 1)', '2000-01-01');
+  Point(1 1 1)@2000-01-03, Point(4 4 4)@2000-01-04, Point(1 1 1)@2000-01-05]', 3,
+  interval '3 days', 'Point(1 1 1)', '2000-01-01');
 /* {"STBOX ZT(((1,1,1),(4,4,4)),[2000-01-01, 2000-01-04))",
-    "STBOX ZT(((1,1,1),(4,4,4)),(2000-01-04, 2000-01-05])",
-    "STBOX ZT(((4,4,4),(4,4,4)),[2000-01-04, 2000-01-04])"} */
+   "STBOX ZT(((1,1,1),(4,4,4)),(2000-01-04, 2000-01-05])",
+   "STBOX ZT(((4,4,4),(4,4,4)),[2000-01-04, 2000-01-04])"} */
 SELECT spaceBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', 2.0);
 /* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02))",
-    "STBOX XT(((2,2),(3,3)),[2001-01-02, 2001-01-03])"} */
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="split_functions"></a>Splitting Operations</h3></div></div></div><p>These functions split a temporal value with respect to a sequence of bins (see <a class="xref" href="ch09s06.html#bin_functions" title="Bin Operations">the section called “Bin Operations”</a>) or tiles (see <a class="xref" href="ch09s06.html#tile_functions" title="Tile Operations">the section called “Tile Operations”</a>).</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueSplit"></a><a class="indexterm" name="id7023"></a><a class="indexterm" name="id7026"></a><a class="indexterm" name="id7029"></a><p>Split a temporal number with respect to value and/or time bins <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+   "STBOX XT(((2,2),(3,3)),[2001-01-02, 2001-01-03])"} */
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="split_functions"></a>Splitting Operations</h3></div></div></div><p>These functions split a temporal value with respect to a sequence of bins (see <a class="xref" href="ch09s06.html#bin_functions" title="Bin Operations">the section called “Bin Operations”</a>) or tiles (see <a class="xref" href="ch09s06.html#tile_functions" title="Tile Operations">the section called “Tile Operations”</a>).</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueSplit"></a><a class="indexterm" name="id6936"></a><a class="indexterm" name="id6939"></a><a class="indexterm" name="id6942"></a><p>Split a temporal number with respect to value and/or time bins <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 valueSplit(tnumber,size number,origin number=0) → {(number,tnumber)}
-timeSplit(ttype,duration interval,origin timestamptz='2000-01-03') → 
-  {(time,temp)}
+timeSplit(ttype,duration interval,origin timestamptz='2000-01-03') → {(time,temp)}
 valueTimeSplit(tnumber,size number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → {(number,time,tnumber}
 </pre><p>The result is a set of pairs or a set of triples. If the origin of the value and/or the time dimension is not specified, they are set by default to 0 and to Monday, January 3, 2000, respectively.</p><pre class="programlisting">
-SELECT (sp).number, (sp).tnumber
-FROM (SELECT valueSplit(tint '[1@2001-01-01, 2@2001-01-02, 5@2001-01-05, 10@2001-01-10]',
-  2) AS sp) t;
+SELECT (sp).number,
+  (sp).tnumber FROM (SELECT valueSplit(tint '[1@2001-01-01, 2@2001-01-02, 5@2001-01-05,
+  10@2001-01-10]', 2) AS sp) t;
 --  0 | {[1@2001-01-01, 1@2001-01-02)}
 --  2 | {[2@2001-01-02, 2@2001-01-05)}
 --  4 | {[5@2001-01-05, 5@2001-01-10)}
@@ -271,67 +266,66 @@ FROM (SELECT timeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', '2 days') AS ts) 
 -- 2001-02-02 | [2@2001-02-02, 4@2001-02-04)
 -- 2001-02-04 | [4@2001-02-04, 6@2001-02-06)
 -- ...
-SELECT (ts).time, astext((ts).temp) AS temp
-FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',
-  '2 days', '2001-02-01') AS ts) AS t;
+SELECT (ts).time,
+  astext((ts).temp) AS temp FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01,
+  Point(10 10)@2001-02-10]', '2 days', '2001-02-01') AS ts) AS t;
 -- 2001-02-01 | [POINT(1 1)@2001-02-01, POINT(3 3)@2001-02-03)
 -- 2001-02-03 | [POINT(3 3)@2001-02-03, POINT(5 5)@2001-02-05)
 -- 2001-02-05 | [POINT(5 5)@2001-02-05, POINT(7 7)@2001-02-07)
 -- ...
 </pre><p>Notice that we can split a temporal value in cyclic (instead of linear) time bins. The following two examples show how to split a temporal value by hour and by day of the week.</p><pre class="programlisting">
-SELECT (ts).time::time AS hour, merge((ts).temp) AS temp
-FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-03]', '1 hour') AS ts) t
-GROUP BY hour ORDER BY hour;
+SELECT (ts).time::time AS hour,
+  merge((ts).temp) AS temp FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-03]',
+  '1 hour') AS ts) t GROUP BY hour ORDER BY hour;
 /* 00:00:00 | {[1@2001-01-01, 1.1875@2001-01-01 01:00:00),
-               [5.5@2001-01-02, 5.6875@2001-01-02 01:00:00)} */
+   [5.5@2001-01-02, 5.6875@2001-01-02 01:00:00)} */
 /* 01:00:00 | {[1.1875@2001-01-01 01:00:00, 1.375@2001-01-01 02:00:00),
-               [5.6875@2001-01-02 01:00:00, 5.875@2001-01-02 02:00:00)} */
+   [5.6875@2001-01-02 01:00:00, 5.875@2001-01-02 02:00:00)} */
 /* 02:00:00 | {[1.375@2001-01-01 02:00:00, 1.5625@2001-01-01 03:00:00),
-               [5.875@2001-01-02 02:00:00, 6.0625@2001-01-02 03:00:00)} */
+   [5.875@2001-01-02 02:00:00, 6.0625@2001-01-02 03:00:00)} */
 /* 03:00:00 | {[1.5625@2001-01-01 03:00:00, 1.75@2001-01-01 04:00:00),
-               [6.0625@2001-01-02 03:00:00, 6.25@2001-01-02 04:00:00)} */
-/* ... */
+   [6.0625@2001-01-02 03:00:00, 6.25@2001-01-02 04:00:00)} */
+-- ...
 SELECT EXTRACT(DOW FROM (ts).time) AS dow_no, TO_CHAR((ts).time, 'Dy') AS dow,
-  asText(round(merge((ts).temp), 2)) AS temp
-FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-14)',
-  '1 hour') AS ts) t
-GROUP BY dow, dow_no ORDER BY dow_no;
+  asText(round(merge((ts).temp),
+  2)) AS temp FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-01-01,
+  Point(10 10)@2001-01-14)', '1 hour') AS ts) t GROUP BY dow, dow_no ORDER BY dow_no;
 /* 0 | Sun | {[POINT(1 1)@2001-01-01, POINT(1.69 1.69)@2001-01-02),
-             [POINT(5.85 5.85)@2001-01-08, POINT(6.54 6.54)@2001-01-09)} */
+   [POINT(5.85 5.85)@2001-01-08, POINT(6.54 6.54)@2001-01-09)} */
 /* 1 | Mon | {[POINT(1.69 1.69)@2001-01-02, POINT(2.38 2.38)@2001-01-03),
-             [POINT(6.54 6.54)@2001-01-09, POINT(7.23 7.23)@2001-01-10)} */
+   [POINT(6.54 6.54)@2001-01-09, POINT(7.23 7.23)@2001-01-10)} */
 /* 2 | Tue | {[POINT(2.38 2.38)@2001-01-03, POINT(3.08 3.08)@2001-01-04),
-             [POINT(7.23 7.23)@2001-01-10, POINT(7.92 7.92)@2001-01-11)} */
-/* ... */
+   [POINT(7.23 7.23)@2001-01-10, POINT(7.92 7.92)@2001-01-11)} */
+-- ...
 </pre><pre class="programlisting">
-SELECT (sp).number, (sp).time, (sp).tnumber
-FROM (SELECT valueTimeSplit(tint '[1@2001-02-01, 2@2001-02-02, 5@2001-02-05,
-  10@2001-02-10]', 5, '5 days') AS sp) t;
+SELECT (sp).number, (sp).time,
+  (sp).tnumber FROM (SELECT valueTimeSplit(tint '[1@2001-02-01, 2@2001-02-02,
+  5@2001-02-05, 10@2001-02-10]', 5, '5 days') AS sp) t;
 --  0 | 2001-02-01 | {[1@2001-02-01, 2@2001-02-02, 2@2001-02-05)}
 --  5 | 2001-02-01 | {[5@2001-02-05, 5@2001-02-06)}
 --  5 | 2001-02-06 | {[5@2001-02-06, 5@2001-02-10)}
 -- 10 | 2001-02-06 | {[10@2001-02-10]}
-SELECT (sp).number, (sp).time, (sp).tnumber
-FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0, '5 days', 1.0,
-  '2001-02-01') AS sp) t;
+SELECT (sp).number, (sp).time,
+  (sp).tnumber FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0,
+  '5 days', 1.0, '2001-02-01') AS sp) t;
 -- 1 | 2001-01-01 | [1@2001-01-01, 6@2001-01-06)
 -- 6 | 2001-01-06 | [6@2001-01-06, 10@2001-01-10)
-</pre></li><li class="listitem"><a name="tspatial_spaceSplit"></a><a class="indexterm" name="id7048"></a><a class="indexterm" name="id7051"></a><a class="indexterm" name="id7054"></a><p>Split a temporal point with respect to a spatial grid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tspatial_spaceSplit"></a><a class="indexterm" name="id6961"></a><a class="indexterm" name="id6964"></a><a class="indexterm" name="id6967"></a><p>Split a temporal point with respect to a spatial grid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
  <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
 </p><pre class="programlisting">
 spaceSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
-</pre><p><code class="varname">  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,borderInc boolean=true) →</code> A temporal pose and a temporal point cloud point answer these at the temporal geometry point their position resolves to, so a value carrying linear interpolation is tiled along its trajectory rather than at its instants alone. The second column of a split carries the type of the first argument, so splitting a temporal pose returns temporal poses.</p><pre class="programlisting">
-  {(point,tpoint)}
+  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,
+  borderInc boolean=true) → {(point,tpoint)}
 timeSplit(tpoint,duration interval,torigin timestamptz='2000-01-03') → {(time,tpoint)}
 spaceTimeSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
   duration interval,sorigin geompoint='Point(0 0 0)',
-  torigin timestamptz='2000-01-03',bitmatrix boolean=true,borderInc boolean=true) →
-  {(point,time,tpoint)}
-</pre><p>The result is a set of pairs or a set of triples. If the origin of the space and/or time dimension is not specified, it is set by default to <code class="varname">'Point(0 0 0)'</code> and to Monday, January 3, 2000, respectively. The arguments <code class="varname">ysize</code> and <code class="varname">zsize</code> are optional, the size for the missing dimensions is assumed to be equal to <code class="varname">xsize</code>. If the argument <code class="varname">bitmatrix</code> is not specified, then the computation will use a bit matrix to speed up the process. The optional argument <code class="varname">borderInc</code> states whether the upper border of the extent is included and thus extra tiles containing the border are generated.</p><pre class="programlisting">
+  torigin timestamptz='2000-01-03',bitmatrix boolean=true,
+  borderInc boolean=true) → {(point,time,tpoint)}
+</pre><p>A temporal pose and a temporal point cloud point answer these at the temporal geometry point their position resolves to, so a value carrying linear interpolation is tiled along its trajectory rather than at its instants alone. The second column of a split carries the type of the first argument, so splitting a temporal pose returns temporal poses. The result is a set of pairs or a set of triples. If the origin of the space and/or time dimension is not specified, it is set by default to <code class="varname">'Point(0 0 0)'</code> and to Monday, January 3, 2000, respectively. The arguments <code class="varname">ysize</code> and <code class="varname">zsize</code> are optional, the size for the missing dimensions is assumed to be equal to <code class="varname">xsize</code>. If the argument <code class="varname">bitmatrix</code> is not specified, then the computation will use a bit matrix to speed up the process. The optional argument <code class="varname">borderInc</code> states whether the upper border of the extent is included and thus extra tiles containing the border are generated.</p><pre class="programlisting">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-03-01, Point(10 10)@2001-03-10]',
   2.0) AS sp) t;
@@ -352,9 +346,9 @@ FROM (SELECT spaceSplit(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
 -- POINT(0 0) | {[Pose(POINT(1 1),0.1)@2001-01-01, Pose(POINT(2 2),0.1)@2001-01-02)}
 -- POINT(2 2) | {[Pose(POINT(2 2),0.1)@2001-01-02, Pose(POINT(3 3),0.1)@2001-01-03]}
 </pre><pre class="programlisting">
-SELECT (sp).time, astext((sp).temp) AS tpoint
-FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',
-  interval '2 days') AS sp) t;
+SELECT (sp).time,
+  astext((sp).temp) AS tpoint FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01,
+  Point(10 10)@2001-02-10]', interval '2 days') AS sp) t;
 -- 2001-01-31 | [POINT(1 1)@2001-02-01, POINT(2 2)@2001-02-02)
 -- 2001-02-02 | [POINT(2 2)@2001-02-02, POINT(4 4)@2001-02-04)
 -- 2001-02-04 | [POINT(4 4)@2001-02-04, POINT(6 6)@2001-02-06)

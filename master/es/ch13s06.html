@@ -1,16 +1,87 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversión de tipos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales"><link rel="prev" href="ch13s05.html" title="Constructores"><link rel="next" href="ch13s07.html" title="Accesores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversión de tipos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch13s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_conversions"></a>Conversión de tipos</h2></div></div></div><p>Un valor de pose temporal se puede convertir hacia y desde un punto temporal, que es un punto geométrico temporal para una pose planar y un punto geográfico temporal para una pose geodésica. Esto se puede hacer utilizando un <code class="varname">CAST</code> explícito o utilizando la notación <code class="varname">::</code>. Convertir una pose temporal al tipo de punto temporal del otro marco de referencia genera un error. Se devuelve un valor nulo si alguno de los valores de punto geométrico que lo componen no se puede convertir en un valor <code class="varname">pose</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_tgeompoint"></a><a class="indexterm" name="id8889"></a><p>Convertir una pose temporal en un punto geométrico temporal</p><pre class="programlisting">
-tpose::tgeompoint
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Entrada y salida</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s05.html" title="Validez de las poses temporales y de las cadenas de poses"><link rel="next" href="ch13s07.html" title="Constructores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Entrada y salida</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_inout"></a>Entrada y salida</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_asText"></a><a class="indexterm" name="id8887"></a><a class="indexterm" name="id8890"></a><p>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+asText({tpose,tposechain,tpose[],tposechain[]}) → {text,text[]}
+asEWKT({tpose,tposechain,tpose[],tposechain[]}) → {text,text[]}
 </pre><pre class="programlisting">
-SELECT asText((tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
-  Pose(Point(1 1), 0.3)@2001-01-02)')::tgeompoint);
--- [POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02)
-SELECT asEWKT((tpose '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
-  Pose(Point Z(2 2 2), 1, 0, 0, 0)@2001-01-02)')::tgeompoint);
--- [POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02)
-</pre></li><li class="listitem"><a name="tpose_tgeogpoint"></a><a class="indexterm" name="id8896"></a><p>Convertir una pose temporal geodésica en un punto geográfico temporal</p><pre class="programlisting">
-tpose::tgeogpoint
+SELECT asText(tpose 'SRID=4326;
+  [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)');
+-- [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
+-- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
+SELECT asEWKT(tpose 'SRID=4326;
+  [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)');
+-- SRID=4326;[Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 'Pose(SRID=5676;Point(1 1),2)']);
+-- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
+</pre></li><li class="listitem"><a name="tpose_asMFJSON"></a><a class="indexterm" name="id8897"></a><p>Devuelve la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
+asMFJSON({tpose,tposechain}) → text
+</pre><p>Una cadena se escribe como el arreglo de sus eslabones, en el orden que indica en el marco de quién se lee cada uno de ellos.</p><pre class="programlisting">
+SELECT asMFJSON(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 3);
+/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00",
+   "end":"2001-01-01T00:00:00","lower_inc":true,"upper_inc":true},
+   "values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],
+   "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
+SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
+/* {"type":"MovingPose","bbox":[[1,2,3],[1,2,3]],
+   "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-01T00:00:00",
+   "lower_inc":true,"upper_inc":true},
+   "values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],
+   "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
+</pre></li><li class="listitem"><a name="tpose_asBinary"></a><a class="indexterm" name="id8905"></a><a class="indexterm" name="id8908"></a><a class="indexterm" name="id8911"></a><a class="indexterm" name="id8914"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+asBinary({tpose,tposechain},endian text='') → bytea
+asEWKB({tpose,tposechain},endian text='') → bytea
+asHexWKB({tpose,tposechain},endian text='') → text
+asHexEWKB({tpose,tposechain},endian text='') → text
+</pre><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+SELECT asBinary(tpose 'Pose(Point(1 2),1)@2001-01-01');
+-- \x0138000101000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+SELECT asEWKB(tpose 'SRID=7844;Pose(Point(1 2),1)@2001-01-01');
+-- \x01380041a41e000041a41e0000000000000000f03f000000000000004000000000...009c57d3c11c0000
+SELECT asHexWKB(tpose 'Pose(Point(1 2),1)@2001-01-01');
+-- 0138000101000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
+SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
+-- 01380041E40E000041E40E0000000000000000F03F00000000000000400000000000...009C57D3C11C0000
+</pre></li><li class="listitem"><a name="tposeFromText"></a><a class="indexterm" name="id8922"></a><a class="indexterm" name="id8925"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+tposeFromText(text) → tpose
+tposeFromEWKT(text) → tpose
+tposechainFromText(text) → tposechain
 </pre><pre class="programlisting">
-SELECT asText((tpose '[GeodPose(Point(1 1), 0.2)@2001-01-01,
-  GeodPose(Point(1 1), 0.3)@2001-01-02)')::tgeogpoint);
--- [POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02)
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s05.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s07.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Constructores </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Accesores</td></tr></table></div></body></html>
+SELECT asEWKT(tposeFromText(text '[Pose(Point(1 2),1)@2001-01-01,
+  Pose(Point(3 4),2)@2001-01-02]'));
+-- [Pose(POINT(1 2),1)@2001-01-01, Pose(POINT(3 4),2)@2001-01-02]
+SELECT asEWKT(tposeFromEWKT(text 'SRID=3812;
+  [Pose(Point(1 2),1)@2001-01-01, Pose(Point(3 4),2)@2001-01-02]'));
+-- SRID=3812;[Pose(Point(1 2),1)@2001-01-01, Pose(Point(3 4),2)@2001-01-02]
+SELECT asEWKT(tposechainFromText('SRID=5676;PoseChain(Pose(Point(1 1),0.5))@2001-01-01'));
+-- SRID=5676;PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
+SELECT asEWKT(tposechainFromBinary(asBinary(tposechain
+  'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01')));
+-- PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
+SELECT asEWKT(tposechainFromHexEWKB(asHexEWKB(tposechain 'SRID=5676;
+  PoseChain(Pose(Point(1 1), 0.5))@2001-01-01')));
+-- SRID=5676;PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
+</pre></li><li class="listitem"><a name="tposeFromMFJSON"></a><a class="indexterm" name="id8932"></a><p>Entrada desde la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
+tposeFromMFJSON(bytea) → tpose
+</pre><pre class="programlisting">
+SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=3812;Pose(Point(1 2),0.5)@2001-01-01',
+  3)));
+-- SRID=3812;Pose(POINT(1 2),0.5)@2001-01-01
+SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=5676;
+  Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3)));
+-- SRID=5676;Pose(POINT Z(1 2 3),1,0,0,0)@2001-01-01
+</pre></li><li class="listitem"><a name="tposeFromBinary"></a><a class="indexterm" name="id8939"></a><a class="indexterm" name="id8942"></a><a class="indexterm" name="id8945"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+tposeFromBinary(bytea) → tpose
+tposeFromEWKB(bytea) → tpose
+tposeFromHexEWKB(text) → tpose
+tposechainFromBinary(bytea) → tposechain
+tposechainFromHexEWKB(text) → tposechain
+</pre><pre class="programlisting">
+SELECT asEWKT(tposeFromBinary(
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
+-- Pose(POINT(1 2),1)@2001-01-01
+SELECT asEWKT(tposeFromEWKB(
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
+-- SRID=7844;Pose(Point(1 1),2)@2001-01-01
+SELECT asEWKT(tposeFromHexEWKB(
+  '013A0041E40E0000E40E0000000000000000F03F...40000000000000F03F009C57D3C11C0000'));
+-- SRID=3812;Pose(POINT(1 2),1)@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s05.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s07.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Validez de las poses temporales y de las cadenas de poses </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Constructores</td></tr></table></div></body></html>

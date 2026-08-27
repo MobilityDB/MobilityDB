@@ -1,7 +1,7 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch03.html" title="Chapter 3. Bounding Box Types"><link rel="prev" href="ch03s04.html" title="Accessors"><link rel="next" href="ch03s06.html" title="Spatial Reference System"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s04.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Bounding Box Types</th><td width="20%" align="right"> <a accesskey="n" href="ch03s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="box_transformations"></a>Transformations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_shiftValue"></a><a class="indexterm" name="id3238"></a><a class="indexterm" name="id3241"></a><a class="indexterm" name="id3244"></a><p>Shift and/or scale the span of a bounding box by one or two values</p><pre class="programlisting">
-shiftValue(box,{integer,float}) → box
-scaleValue(box,{integer,float}) → box
-shiftScaleValue(tbox,{integer,float},{integer,float}) → box
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch03.html" title="Chapter 3. Bounding Box Types"><link rel="prev" href="ch03s04.html" title="Accessors"><link rel="next" href="ch03s06.html" title="Spatial Reference System"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s04.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Bounding Box Types</th><td width="20%" align="right"> <a accesskey="n" href="ch03s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="box_transformations"></a>Transformations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_shiftValue"></a><a class="indexterm" name="id3217"></a><a class="indexterm" name="id3220"></a><a class="indexterm" name="id3223"></a><p>Shift and/or scale the span of a bounding box by one or two values</p><pre class="programlisting">
+shiftValue(tbox,{integer,float}) → tbox
+scaleValue(tbox,{integer,float}) → tbox
+shiftScaleValue(tbox,{integer,float},{integer,float}) → tbox
 </pre><pre class="programlisting">
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 1.0);
 -- TBOXFLOAT XT([2.5, 3.5],[2001-01-01, 2001-01-02])
@@ -9,7 +9,7 @@ SELECT scaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0);
 -- TBOXFLOAT XT([1.5, 3.5],[2001-01-01, 2001-01-02])
 SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0, 3.0);
 -- TBOXFLOAT XT([3.5, 6.5],[2001-01-01, 2001-01-02])
-</pre></li><li class="listitem"><a name="box_shiftTime"></a><a class="indexterm" name="id3251"></a><a class="indexterm" name="id3254"></a><a class="indexterm" name="id3257"></a><p>Shift and/or scale the span or the period of the bounding box to a value or interval</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_shiftTime"></a><a class="indexterm" name="id3230"></a><a class="indexterm" name="id3233"></a><a class="indexterm" name="id3236"></a><p>Shift and/or scale the span or the period of the bounding box to a value or interval</p><pre class="programlisting">
 shiftTime(box,interval) → box
 scaleTime(box,interval) → box
 shiftScaleTime(box,interval,interval) → box
@@ -37,14 +37,14 @@ SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
 SELECT shiftScaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
   interval '1 hour', interval '3 hours');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 01:00:00, 2001-01-01 04:00:00])
-</pre></li><li class="listitem"><a name="box_getSpace"></a><a class="indexterm" name="id3265"></a><p>Return the spatial dimension of the bounding box, removing the temporal dimension if any</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_getSpace"></a><a class="indexterm" name="id3244"></a><p>Return the spatial dimension of the bounding box, removing the temporal dimension if any</p><pre class="programlisting">
 getSpace(stbox) → stbox
 </pre><pre class="programlisting">
 SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 -- STBOX Z((1,1,1),(2,2,2))
 </pre></li></ul></div><p>
 			The functions given next expand the bounding boxes on the value and the time dimension or set the precision of the value dimension. These functions raise an error if the corresponding dimension is not present.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_expand"></a><a class="indexterm" name="id3274"></a><a class="indexterm" name="id3277"></a><a class="indexterm" name="id3280"></a><p>Expand the numeric, spatial, or temporal dimension of a bounding box by a value or an interval</p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_expand"></a><a class="indexterm" name="id3253"></a><a class="indexterm" name="id3256"></a><a class="indexterm" name="id3259"></a><p>Expand the numeric, spatial, or temporal dimension of a bounding box by a value or an interval</p><pre class="programlisting">
 expandValue(tbox,{integer,float}) → tbox
 expandSpace(stbox,float) → stbox
 expandTime(box,interval) → box
@@ -68,7 +68,7 @@ SELECT expandTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-02,2001-01-02])
 SELECT expandTime(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', interval '-2 days');
 -- NULL
-</pre></li><li class="listitem"><a name="box_round"></a><a class="indexterm" name="id3290"></a><p>Round the value or the coordinates of the bounding box to a number of decimal places</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_round"></a><a class="indexterm" name="id3269"></a><p>Round the value or the coordinates of the bounding box to a number of decimal places</p><pre class="programlisting">
 round(box,integer=0) → box
 </pre><pre class="programlisting">
 SELECT round(tbox 'TBOXFLOAT XT((1.12345,2.12345),[2001-01-01,2001-01-02])', 2);

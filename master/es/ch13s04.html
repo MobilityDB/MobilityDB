@@ -1,77 +1,36 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Entrada y salida</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales"><link rel="prev" href="ch13s03.html" title="Validez de las poses temporales"><link rel="next" href="ch13s05.html" title="Constructores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Entrada y salida</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch13s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_inout"></a>Entrada y salida</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_asText"></a><a class="indexterm" name="id8783"></a><a class="indexterm" name="id8786"></a><p>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</p><pre class="programlisting">
-asText({tpose,tpose[]}) → {text,text[]}
-asEWKT({tpose,tpose[]}) → {text,text[]}
-</pre><pre class="programlisting">
-SELECT asText(tpose 'SRID=4326;[Pose(Point(0 0),1)@2001-01-01, 
-  Pose(Point(1 1),2)@2001-01-02)');
--- [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
-SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
--- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
-SELECT asEWKT(tpose 'SRID=4326;[Pose(Point(0 0),1)@2001-01-01, 
-  Pose(Point(1 1),2)@2001-01-02)');
--- SRID=4326;[Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
-SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 
-  'Pose(SRID=5676;Point(1 1),2)']);
--- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
-</pre></li><li class="listitem"><a name="tpose_asMFJSON"></a><a class="indexterm" name="id8793"></a><p>Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON)</p><pre class="programlisting">
-asMFJSON(tpose) → text
-</pre><pre class="programlisting">
-SELECT asMFJSON(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 3);
-/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00",
-  "end":"2001-01-01T00:00:00","lower_inc":true,"upper_inc":true},
-  "values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],
-  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
-SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
-/* {"type":"MovingPose","bbox":[[1,2,3],[1,2,3]],
-  "period":{"begin":"2001-01-01T00:00:00","end":"2001-01-01T00:00:00",
-  "lower_inc":true,"upper_inc":true},
-  "values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],
-  "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
-</pre></li><li class="listitem"><a name="tpose_asBinary"></a><a class="indexterm" name="id8800"></a><a class="indexterm" name="id8803"></a><a class="indexterm" name="id8806"></a><a class="indexterm" name="id8809"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), la representación hexadecimal binaria conocida (Hexadecimal Well-Known Binary o HexWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</p><pre class="programlisting">
-asBinary(tpose,endian text='') → bytea
-asEWKB(tpose,endian text='') → bytea
-asHexWKB(tpose,endian text='') → text
-asHexEWKB(tpose,endian text='') → text
-</pre><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
-SELECT asBinary(tpose 'Pose(Point(1 2),1)@2001-01-01');
--- \x0138000101000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
-SELECT asEWKB(tpose 'SRID=7844;Pose(Point(1 2),1)@2001-01-01');
--- \x01380041a41e000041a41e0000000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
-SELECT asHexWKB(tpose 'Pose(Point(1 2),1)@2001-01-01');
--- 0138000101000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
-SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
--- 01380041E40E000041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
-</pre></li><li class="listitem"><a name="tposeFromText"></a><a class="indexterm" name="id8817"></a><a class="indexterm" name="id8820"></a><p>Entrada desde la representación de texto conocido (Well-Known Text o WKT) o desde la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</p><pre class="programlisting">
-tposeFromText(text) → tpose
-tposeFromEWKT(text) → tpose
-</pre><pre class="programlisting">
-SELECT asEWKT(tposeFromText(text '[Pose(Point(1 2),1)@2001-01-01, 
-  Pose(Point(3 4),2)@2001-01-02]'));
--- [Pose(POINT(1 2),1)@2001-01-01, Pose(POINT(3 4),2)@2001-01-02]
-SELECT asEWKT(tposeFromEWKT(text 'SRID=3812;[Pose(Point(1 2),1)@2001-01-01,
-  Pose(Point(3 4),2)@2001-01-02]'));
--- SRID=3812;[Pose(Point(1 2),1)@2001-01-01, Pose(Point(3 4),2)@2001-01-02]
-</pre></li><li class="listitem"><a name="tposeFromMFJSON"></a><a class="indexterm" name="id8827"></a><p>Entrada desde la representación JSON de características móviles (Moving Features JSON o MF-JSON)</p><pre class="programlisting">
-tposeFromMFJSON(bytea) → tpose
-</pre><pre class="programlisting">
-SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 
-  'SRID=3812;Pose(Point(1 2),0.5)@2001-01-01', 3)));
--- SRID=3812;Pose(POINT(1 2),0.5)@2001-01-01
-SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 
-  'SRID=5676;Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3)));
--- SRID=5676;Pose(POINT Z(1 2 3),1,0,0,0)@2001-01-01
-</pre></li><li class="listitem"><a name="tposeFromBinary"></a><a class="indexterm" name="id8834"></a><a class="indexterm" name="id8837"></a><a class="indexterm" name="id8840"></a><p>Entrada desde la representación binaria conocida (Well-Known Binary o WKB), desde la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o desde la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</p><pre class="programlisting">
-tposeFromBinary(bytea) → tpose
-tposeFromEWKB(bytea) → tpose
-tposeFromHexEWKB(text) → tpose
-</pre><pre class="programlisting">
-SELECT asEWKT(tposeFromBinary(
-  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
--- Pose(POINT(1 2),1)@2001-01-01
-SELECT asEWKT(tposeFromEWKB(
-  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
--- SRID=7844;Pose(Point(1 1),2)@2001-01-01
-SELECT asEWKT(tposeFromHexEWKB(
-  '013A0041E40E0000E40E0000000000000000F03F...40000000000000F03F009C57D3C11C0000'));
--- SRID=3812;Pose(POINT(1 2),1)@2001-01-01
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Validez de las poses temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Constructores</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Poses temporales y cadenas de poses temporales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s03.html" title="Composición de cadenas de poses"><link rel="next" href="ch13s05.html" title="Validez de las poses temporales y de las cadenas de poses"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Poses temporales y cadenas de poses temporales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temp_poses"></a>Poses temporales y cadenas de poses temporales</h2></div></div></div><p>El tipo de cadena de poses temporal <code class="varname">tposechain</code> representa la evolución en el tiempo de una cadena de marcos anidados, es decir, de un objeto articulado cuyas articulaciones se mueven unas respecto de otras. Como todos los tipos temporales, tiene tres subtipos, a saber, instante, secuencia y conjunto de secuencias. A continuación se dan ejemplos de valores <code class="varname">tposechain</code> en estos subtipos.</p><p>Todos los valores de una cadena de poses temporal tienen el mismo número de eslabones. Una cadena que gana una articulación es una estructura distinta y no un valor posterior de la misma, y ese número constante es también lo que hace que la interpolación siguiente esté bien definida. En caso contrario se genera un error.</p><p>Una cadena de poses temporal se interpola eslabón por eslabón, cada eslabón como lo hace una pose, es decir, linealmente en la posición y a lo largo del arco más corto en la rotación. En el ejemplo siguiente un brazo de dos eslabones gira un cuarto de vuelta en el hombro mientras el codo permanece donde está: a la mitad, el hombro ha girado un octavo de vuelta y el codo no ha cambiado.</p><p>Una cadena de poses no tiene función de distancia, ya que la distancia entre dos configuraciones articuladas no está definida por el estándar que sigue el tipo. Por ello el tipo de cadena de poses temporal no tiene ni las relaciones espaciales siempre y alguna vez ni las temporales, todas ellas definidas en términos de una distancia.</p><p>El tipo de pose temporal <code class="varname">tpose</code> permite representar la evolución en el tiempo de la posición de los objetos y su orientación. Como todos los tipos temporales, se presenta en tres subtipos, a saber, instante, secuencia y conjunto de secuencias. A continuación se dan ejemplos de valores de <code class="varname">tpose</code> en estos subtipos.</p><pre class="programlisting">
+SELECT tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
+SELECT tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02,
+  Pose(Point(1 1), 0.5)@2001-01-03}';
+SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02,
+  Pose(Point(1 1), 0.5)@2001-01-03]';
+SELECT tpose '{[Pose(Point(1 1), 1)@2001-01-01, Pose(Point(2 2), 1)@2001-01-02],
+  [Pose(Point(2 2), 2)@2001-01-04, Pose(Point(2 2), 3)@2001-01-05]}';
+</pre><p>Al igual que para los tipos de punto temporal, el tipo de pose temporal acepta modificadores de tipo (o <code class="varname">typmod</code> en la terminología de PostgreSQL) para especificar el subtipo, la dimensionalidad del punto y/o el identificador de referencia espacial (SRID). Los valores posibles para el subtipo son <code class="varname">Instant</code>, <code class="varname">Sequence</code> y <code class="varname">SequenceSet</code> y los valores posibles para el tipo de geometría son <code class="varname">Point</code> o <code class="varname">PointZ</code>. Los tres argumentos son opcionales y si alguno de ellos no se especifica para una columna, se permiten valores de cualquier subtipo, dimensionalidad y/o SRID.</p><pre class="programlisting">
+SELECT asEWKT(tpose(Sequence,5676) 'SRID=5676;
+  [Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-03]');
+-- SRID=5676;[Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(1 1),0.5)@2001-01-03]
+SELECT tpose(Sequence) 'Pose(Point(1 1), 0.2)@2001-01-01';
+-- ERROR: Temporal type (Instant) does not match column type (Sequence)
+SELECT tpose(PointZ) 'Pose(Point(1 1), 0.2)@2001-01-01';
+-- Column has Z dimension but the tpose value does not
+SELECT tpose(5676) 'Pose(Point(1 1), 0.2)@2001-01-01';
+-- ERROR:  Temporal pose SRID (0) does not match column SRID (5676)
+SELECT asEWKT(tposechain(Sequence,5676) 'SRID=5676;
+  [PoseChain(Pose(Point(1 1), 0.2))@2001-01-01,
+  PoseChain(Pose(Point(1 1), 0.5))@2001-01-03]');
+/* SRID=5676;[PoseChain(Pose(POINT(1 1),0.2))@2001-01-01,
+   PoseChain(Pose(POINT(1 1),0.5))@2001-01-03] */
+SELECT tposechain(Sequence) 'PoseChain(Pose(Point(1 1), 0.2))@2001-01-01';
+/* ERROR:  Temporal subtype of the tposechain value (Instant) does not match
+   column subtype (Sequence) */
+</pre><p>Los valores de pose temporal del subtipo de secuencia o conjunto de secuencias se convierten en una forma normal para que los valores equivalentes tengan representaciones idénticas. Para ello, los valores instantáneos consecutivos se fusionan cuando es posible. Tres valores instantáneos consecutivos se pueden fusionar en dos si las funciones lineales que definen la evolución de los valores son las mismas. Los ejemplos de transformación a una forma normal son los siguientes.</p><pre class="programlisting">
+SELECT asText(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-02,
+  Pose(Point(3 3), 0.6)@2001-01-03)');
+-- [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(3 3),0.6)@2001-01-03)
+SELECT asText(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.3)@2001-01-02,
+  Pose(Point(2 2), 0.5)@2001-01-03),
+  [Pose(Point(2 2), 0.5)@2001-01-03, Pose(Point(2 2), 0.7)@2001-01-04)}');
+/* {[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.3)@2001-01-02, 
+   Pose(Point(2 2),0.7)@2001-01-04)} */
+</pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Composición de cadenas de poses </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Validez de las poses temporales y de las cadenas de poses</td></tr></table></div></body></html>

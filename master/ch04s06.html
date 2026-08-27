@@ -22,9 +22,9 @@ SELECT tfloat '{1.0@2001-01-01 08:00:00, 2.0@2001-01-03 08:00:00}';
 SELECT ttext '{AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00}';
 SELECT tgeompoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
 SELECT tgeogpoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
-SELECT tgeometry '{Point(0 0)@2017-01-01 08:00:00, 
+SELECT tgeometry '{Point(0 0)@2017-01-01 08:00:00,
   Linestring(0 0,0 1)@2017-01-02 08:05:00}';
-SELECT tgeography '{Point(0 0)@2017-01-01 08:00:00, 
+SELECT tgeography '{Point(0 0)@2017-01-01 08:00:00,
   Polygon((0 0,1 1,2 0,0 0))@2017-01-02 08:05:00}';
 </pre><p>
 			The temporal extent of a sequence value with linear or step interpolation is a period defined by the first and last instants as well as the lower and upper bounds. Examples of sequence values with linear interpolation are as follows:
@@ -50,8 +50,8 @@ SELECT tgeompoint 'Interp=Step;[Point(0 0)@2017-01-01 08:00:00,
 SELECT tgeompoint 'Interp=Step;[Point(0 0)@2017-01-01 08:00:00,
  Point(1 1)@2017-01-01 08:05:00, Point(0 0)@2017-01-01 08:10:00)';
 ERROR:  Invalid end value for temporal sequence with step interpolation
-SELECT tgeogpoint 'Interp=Step;[Point(0 0)@2017-01-01 08:00:00,
-  Point(1 1)@2017-01-01 08:10:00]';
+SELECT tgeogpoint 'Interp=Step;
+  [Point(0 0)@2017-01-01 08:00:00, Point(1 1)@2017-01-01 08:10:00]';
 </pre><p>
 			The last two instants of a sequence value with discrete interpolation and exclusive upper bound must have the same base value, as shown in the second and third examples above.
 		</p><p>
@@ -64,31 +64,30 @@ SELECT tint '{[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00),
 SELECT tfloat '{[1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00, 2@2001-01-04 08:00:00,
   3@2001-01-06 08:00:00]}';
 SELECT ttext '{[AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00,
-  BBB@2001-01-04 08:00:00),
-  [CCC@2001-01-05 08:00:00, CCC@2001-01-06 08:00:00]}';
+  BBB@2001-01-04 08:00:00), [CCC@2001-01-05 08:00:00, CCC@2001-01-06 08:00:00]}';
 SELECT tgeompoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
   [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
 SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
   [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
-SELECT tgeometry 
-  '{[Point(0 0)@2017-01-01 08:00:00, Linestring(0 0,1 1)@2017-01-01 08:05:00),
-    [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
-SELECT tgeography 
-  '{[Point(0 0)@2017-01-01 08:00:00, Polygon((0 0,1 1,2 0,0 0))@2017-01-01 08:05:00),
-    [Point(0 1)@2017-01-01 08:10:00, Linestring(0 0,1 1)@2017-01-01 08:15:00)}';
+SELECT tgeometry '{[Point(0 0)@2017-01-01 08:00:00,
+  Linestring(0 0,1 1)@2017-01-01 08:05:00),
+  [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
+SELECT tgeography '{[Point(0 0)@2017-01-01 08:00:00,
+  Polygon((0 0,1 1,2 0,0 0))@2017-01-01 08:05:00),
+  [Point(0 1)@2017-01-01 08:10:00, Linestring(0 0,1 1)@2017-01-01 08:15:00)}';
 </pre><p>
 			Sequence set values whose base type is continuous may specify that the interpolation is step with the prefix <code class="varname">Interp=Step</code>. If this is not specified, it is supposed that the interpolation is linear by default. Example of sequence set values with step interpolation are given next:
 		</p><pre class="programlisting">
 SELECT tfloat 'Interp=Step;{[1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00,
   2@2001-01-04 08:00:00, 3@2001-01-06 08:00:00]}';
-SELECT tgeompoint 'Interp=Step;{[Point(0 0)@2017-01-01 08:00:00,
-  Point(0 1)@2017-01-01 08:05:00], [Point(0 1)@2017-01-01 08:10:00,
-  Point(0 1)@2017-01-01 08:15:00)}';
-SELECT tgeogpoint 'Interp=Step;{[Point(0 0)@2017-01-01 08:00:00,
-  Point(0 1)@2017-01-01 08:05:00], [Point(0 1)@2017-01-01 08:10:00,
-  Point(0 1)@2017-01-01 08:15:00)}';
+SELECT tgeompoint 'Interp=Step;
+  {[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00],
+  [Point(0 1)@2017-01-01 08:10:00, Point(0 1)@2017-01-01 08:15:00)}';
+SELECT tgeogpoint 'Interp=Step;
+  {[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00],
+  [Point(0 1)@2017-01-01 08:10:00, Point(0 1)@2017-01-01 08:15:00)}';
 </pre><p>
-			For temporal geometries, it is possible to specify the spatial reference identifier (SRID) using the Extended Well-Known text (EWKT) representation as follows:
+			For temporal geometries, it is possible to specify the spatial reference identifier (SRID) using the Extended Well-Known Text (EWKT) representation as follows:
 		</p><pre class="programlisting">
 SELECT tgeompoint 'SRID=5435;[Point(0 0)@2001-01-01,Point(0 1)@2001-01-02]'
 SELECT tgeography 'SRID=7844;[Point(0 0)@2001-01-01,Linestring(1 0,0 1)@2001-01-02]'
@@ -101,53 +100,51 @@ SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=5435;Point(0 1)@2001-01
 		</p><pre class="programlisting">
 SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=4326;Point(0 1)@2001-01-02]';
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
-SELECT tgeography 'SRID=7844;[SRID=4326;Point(0 0)@2001-01-01,
-  SRID=4326;Linestring(1 0,0 1)@2001-01-02]';
+SELECT tgeography 'SRID=7844;
+  [SRID=4326;Point(0 0)@2001-01-01, SRID=4326;Linestring(1 0,0 1)@2001-01-02]';
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (7844)
 </pre><p>
 			If not specified, the default SRID for temporal geometric points is 0 (unknown) and for temporal geographies is 4326 (WGS 84). Temporal geometries with step interpolation may also specify the SRID, as shown next.
 		</p><pre class="programlisting">
-SELECT tgeompoint 'SRID=5435,Interp=Step;[Point(0 0)@2001-01-01,
-  Point(0 1)@2001-01-02]';
-SELECT tgeogpoint 'Interp=Step;[SRID=4326;Point(0 0)@2001-01-01,
-  SRID=4326;Point(0 1)@2001-01-02]';
+SELECT tgeompoint 'SRID=5435,Interp=Step;[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]';
+SELECT tgeogpoint 'Interp=Step;
+  [SRID=4326;Point(0 0)@2001-01-01, SRID=4326;Point(0 1)@2001-01-02]';
 </pre><p>
 			We give below the input and output functions in Well-Known Text (WKT), Well-Known Binary (WKB), and Moving Features JSON (MF-JSON) format for temporal alphanumeric types. The corresponding functions for temporal geometries are detailed in <a class="xref" href="ch07s04.html" title="Input and Output">the section called “Input and Output”</a>.  The default output format of all temporal alphanumeric types is the Well-Known Text format. The function <code class="varname">asText</code> given next enables to determine the output of temporal float values.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_asText"></a><a class="indexterm" name="id3885"></a><p>Return the Well-Known Text (WKT) representation</p><pre class="programlisting">
-asText(ttype,maxdecdigits=15) → text
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_asText"></a><a class="indexterm" name="id3864"></a><p>Return the Well-Known Text (WKT) representation</p><pre class="programlisting">
+asText(ttype,maxdecimaldigits integer=15) → text
 </pre><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
 SELECT asText(tfloat '[10.55@2001-01-01, 25.55@2001-01-02]', 0);
 -- [11@2001-01-01, 26@2001-01-02]
-SELECT asText(tgeometry 
-  '[Point(1.55 1.55)@2001-01-01,Linestring(1.55 1.55,3.55 3.55)@2001-01-02]', 0);
+SELECT asText(tgeometry '[Point(1.55 1.55)@2001-01-01,
+  Linestring(1.55 1.55,3.55 3.55)@2001-01-02]', 0);
 -- [Point(1 1)@2001-01-01, Linestring(1 1,3 3)@2001-01-02]
-</pre></li><li class="listitem"><a name="ttype_asMFJSON"></a><a class="indexterm" name="id3894"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><pre class="programlisting">
-asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea
+</pre></li><li class="listitem"><a name="ttype_asMFJSON"></a><a class="indexterm" name="id3873"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><pre class="programlisting">
+asMFJSON(ttype,options integer=0,flags integer=0,maxdecimaldigits integer=15) → bytea
 </pre><p>The <code class="varname">options</code> argument can be used to add a bounding box in the MFJSON output:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li></ul></div><p>The <code class="varname">flags</code> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <code class="varname">json-c</code> library for the possible values. Typical values are as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
 SELECT asMFJSON(tbool 't@2001-01-01 18:00:00', 1);
 /* {"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00",
-  "end":"2001-01-01T18:00:00","lowerInc":true,"upperInc":true},
-  "values":[true],"datetimes":["2001-01-01T18:00:00"],"interpolation":"None"} */
+   "end":"2001-01-01T18:00:00","lowerInc":true,"upperInc":true},
+   "values":[true],"datetimes":["2001-01-01T18:00:00"],"interpolation":"None"} */
 SELECT asMFJSON(tint '{10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}', 1);
 /* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00",
    "end":"2001-01-01T18:10:00"},"values":[10,25],"datetimes":["2001-01-01T18:00:00",
-   "2001-01-01T18:10:00"],"lowerInc":true,"upperInc":true,
-   "interpolation":"Discrete"} */
+   "2001-01-01T18:10:00"],"lowerInc":true,"upperInc":true, "interpolation":"Discrete"} */
 SELECT asMFJSON(tfloat '[10.5@2001-01-01 18:00:00+02, 25.5@2001-01-01 18:10:00+02]');
 /* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00",
-  "2001-01-01T17:10:00"],"lowerInc":true,"upperInc":true,"interpolation":"Linear"} */
+   "2001-01-01T17:10:00"],"lowerInc":true,"upperInc":true,"interpolation":"Linear"} */
 SELECT asMFJSON(ttext '{[walking@2001-01-01 18:00:00+02,
   driving@2001-01-01 18:10:00+02]}');
 /* {"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2001-01-01T17:00:00","2001-01-01T17:10:00"],
-  "lowerInc":true,"upperInc":true}],"interpolation":"Step"} */
+   "datetimes":["2001-01-01T17:00:00","2001-01-01T17:10:00"],
+   "lowerInc":true,"upperInc":true}],"interpolation":"Step"} */
 SELECT asMFJSON(tgeometry '{[Point(1 1)@2001-01-01 18:00:00+02,
   Linestring(1 1,2 2)@2001-01-01 18:10:00+02]}');
 /* {"type":"MovingGeometry","sequences":[{"values":[{"type":"Point",
-    "coordinates":[1,1]},{"type":"LineString","coordinates":[[1,1],[2,2]]}],
-    "datetimes":["2001-01-01T17:00:00","2001-01-01T17:10:00"],
-    "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
-</pre></li><li class="listitem"><a name="ttype_asBinary"></a><a class="indexterm" name="id3920"></a><a class="indexterm" name="id3923"></a><p>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (WKB) representation</p><pre class="programlisting">
+   "coordinates":[1,1]},{"type":"LineString","coordinates":[[1,1],[2,2]]}],
+   "datetimes":["2001-01-01T17:00:00","2001-01-01T17:10:00"],
+   "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
+</pre></li><li class="listitem"><a name="ttype_asBinary"></a><a class="indexterm" name="id3899"></a><a class="indexterm" name="id3902"></a><p>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</p><pre class="programlisting">
 asBinary(ttype,endian text='') → bytea
 asHexWKB(ttype,endian text='') → text
 </pre><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
@@ -159,37 +156,35 @@ SELECT asHexWKB(tint '1@2001-01-01', 'XDR');
 -- 000023010000000100001CC1D3579C00
 SELECT asHexWKB(ttext 'AAA@2001-01-01');
 -- 01290001040000000000000041414100009C57D3C11C0000
-</pre></li><li class="listitem"><a name="ttypeFromMFJSON"></a><a class="indexterm" name="id3931"></a><p>Input from the Moving Features JSON (MF-JSON) representation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttypeFromMFJSON"></a><a class="indexterm" name="id3910"></a><p>Input from the Moving Features JSON (MF-JSON) representation</p><pre class="programlisting">
 ttypeFromMFJSON(bytea) → ttype
 </pre><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
-SELECT tboolFromMFJSON(text
-  '{"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
-  "end":"2001-01-01T18:00:00+01","lowerInc":true,"upperInc":true},
-  "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"}');
+SELECT tboolFromMFJSON(text '{"type":"MovingBoolean",
+  "period":{"begin":"2001-01-01T18:00:00+01", "end":"2001-01-01T18:00:00+01",
+  "lowerInc":true,"upperInc":true}, "values":[true],
+  "datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"}');
 -- t@2001-01-01 18:00:00
-SELECT tintFromMFJSON(text
-  '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
-   "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
-   "2001-01-01T18:10:00+01"],"lowerInc":true,"upperInc":true,
-   "interpolation":"Discrete"}');
+SELECT tintFromMFJSON(text '{"type":"MovingInteger","bbox":[10,25],
+  "period":{"begin":"2001-01-01T18:00:00+01", "end":"2001-01-01T18:10:00+01"},
+  "values":[10,25],"datetimes":["2001-01-01T18:00:00+01", "2001-01-01T18:10:00+01"],
+  "lowerInc":true,"upperInc":true, "interpolation":"Discrete"}');
 -- {10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}
-SELECT tfloatFromMFJSON(text
-  '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
-   "2001-01-01T17:10:00+01"],"lowerInc":true,"upperInc":true,
-   "interpolation":"Linear"}');
+SELECT tfloatFromMFJSON(text '{"type":"MovingFloat","values":[10.5,25.5],
+  "datetimes":["2001-01-01T17:00:00+01", "2001-01-01T17:10:00+01"],"lowerInc":true,
+  "upperInc":true, "interpolation":"Linear"}');
 -- [10.5@2001-01-01 18:00:00, 25.5@2001-01-01 18:10:00]'
-SELECT ttextFromMFJSON(text
-  '{"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
-  "lowerInc":true,"upperInc":true}],"interpolation":"Step"}');
+SELECT ttextFromMFJSON(text '{"type":"MovingText",
+  "sequences":[{"values":["walking","driving"],
+  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"], "lowerInc":true,
+  "upperInc":true}],"interpolation":"Step"}');
 -- {["walking"@2001-01-01 18:00:00, "driving"@2001-01-01 18:10:00]}');
-SELECT asText(tgeometryFromMFJSON(text
-  '{"type":"MovingGeometry","sequences":[{"values":[{"type":"Point",
-  "coordinates":[1,1]},{"type":"LineString","coordinates":[[1,1],[2,2]]}],
-  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
-  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"}'));
+SELECT asText(tgeometryFromMFJSON(text '{"type":"MovingGeometry",
+  "sequences":[{"values":[{"type":"Point", "coordinates":[1,1]},
+  {"type":"LineString","coordinates":[[1,1],[2,2]]}],
+  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"], "lower_inc":true,
+  "upper_inc":true}],"interpolation":"Step"}'));
 -- {[POINT(1 1)@2001-01-01 17:00:00, LINESTRING(1 1,2 2)@2001-01-01 17:10:00]}
-</pre></li><li class="listitem"><a name="ttypeFromBinary"></a><a class="indexterm" name="id3941"></a><a class="indexterm" name="id3944"></a><p>Input from the Well-Known Binary (WKB) or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttypeFromBinary"></a><a class="indexterm" name="id3920"></a><a class="indexterm" name="id3923"></a><p>Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</p><pre class="programlisting">
 ttypeFromBinary(bytea) → ttype
 ttypeFromHexWKB(text) → ttype
 </pre><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">

@@ -1,145 +1,63 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Capítulo 14. Cadenas de poses</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="prev" href="ch13s18.html" title="Soporte de OGC GeoPose v1.0"><link rel="next" href="ch14s02.html" title="Cadenas de poses temporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Capítulo 14. Cadenas de poses</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s18.html">Anterior</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch14s02.html">Siguiente</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="pose_chains"></a>Capítulo 14. Cadenas de poses</h1></div></div></div><div class="toc"><p><b>Tabla de contenidos</b></p><dl class="toc"><dt><span class="sect1"><a href="ch14.html#static_pose_chains">Cadenas de poses estáticas</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch14.html#posechain_inout">Entrada y salida</a></span></dt><dt><span class="sect2"><a href="ch14.html#posechain_constructors">Constructores</a></span></dt><dt><span class="sect2"><a href="ch14.html#posechain_conversions">Conversión de tipos</a></span></dt><dt><span class="sect2"><a href="ch14.html#posechain_accessors">Accesores</a></span></dt><dt><span class="sect2"><a href="ch14.html#posechain_transformations">Transformaciones</a></span></dt><dt><span class="sect2"><a href="ch14.html#posechain_srid">Sistema de referencia espacial</a></span></dt><dt><span class="sect2"><a href="ch14.html#posechain_comparison">Comparaciones</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch14s02.html">Cadenas de poses temporales</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch14s02.html#tposechain_inout">Entrada y salida</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_constructors">Constructores</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_conversions">Conversiones</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_accessors">Funciones de acceso</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_transformations">Funciones de transformación</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_srid">Sistema de referencia espacial</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_geopose">Cadena compuesta OGC GeoPose</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechainarr_geopose">Grafo compuesto OGC GeoPose</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_restrictions">Funciones de restricción</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_comparison">Funciones y operadores de comparación</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_topops">Operadores topológicos y de posición</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_tempspatialrels">Relaciones espaciales temporales</a></span></dt><dt><span class="sect2"><a href="ch14s02.html#tposechain_aggregations">Agregaciones</a></span></dt></dl></dd></dl></div><p>El tipo <code class="varname">posechain</code> representa un cuerpo cuyas partes se sitúan unas respecto de otras: una cámara sobre un cardán sobre un vehículo, o un brazo cuyo antebrazo se sitúa respecto del brazo. Una cadena de poses es una lista ordenada de al menos una <code class="varname">pose</code>. El primer eslabón se expresa en el marco exterior de la cadena, y cada eslabón posterior se expresa en el marco que define el eslabón anterior, de modo que un eslabón indica dónde se sitúa una parte respecto de la parte que la sostiene y no respecto del mundo.</p><p>El estándar <a class="ulink" href="https://www.ogc.org/publications/standard/geopose/" target="_top">OGC GeoPose</a> denomina a esta estructura una cadena de transformaciones de marcos, donde cada transformación es un par de marcos de referencia en el que el marco exterior es el dominio y el marco interior es el rango. El estándar establece que un marco interior no puede ser un marco topocéntrico, por lo que una cadena lleva exactamente un marco que nombra un lugar sobre la tierra, en su exterior. De ello se derivan dos propiedades, ambas verificadas: toda la cadena tiene un solo SRID y todos los eslabones tienen la misma dimensión. Solo el eslabón exterior puede ser geodésico y solo el eslabón exterior puede llevar un SRID.</p><p>La composición de todos los eslabones da la pose del marco más interior en el marco exterior de la cadena, que es lo que devuelve la conversión al tipo <code class="varname">pose</code>. Esa única conversión otorga a una cadena toda la superficie definida para las poses, de modo que el tipo en sí permanece reducido.</p><p>Cuando el marco exterior es geográfico, la posición del eslabón exterior está en grados mientras que la traslación de un eslabón posterior está en metros a lo largo de los ejes locales Este-Norte-Arriba en su marco padre. La composición realiza esa suma en coordenadas geocéntricas y lee de vuelta la posición como geográfica, de modo que una cadena sobre un marco geográfico se compone sobre el elipsoide y no en el plano, y la orientación se vuelve a expresar respecto de la base Este-Norte-Arriba en la posición que alcanza la composición.</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="static_pose_chains"></a>Cadenas de poses estáticas</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="posechain_inout"></a>Entrada y salida</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="posechain_asText"></a><a class="indexterm" name="id9547"></a><a class="indexterm" name="id9550"></a><p>Devuelve la representación en texto conocido (WKT) o en texto conocido extendido (EWKT)</p><pre class="programlisting">
-asText({posechain,posechain[]}) → {text,text[]}
-asEWKT({posechain,posechain[]}) → {text,text[]}
-</pre><p>El eslabón exterior se escribe como una pose que lleva el marco de la cadena, y cada eslabón posterior se escribe sin él.</p><pre class="programlisting">
-SELECT asText(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),1))');
--- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),1))
-SELECT asText(ARRAY[posechain 'PoseChain(Pose(Point(0 0),0))',
-  'PoseChain(Pose(Point(1 1),2))']);
--- {"PoseChain(Pose(POINT(0 0),0))","PoseChain(Pose(POINT(1 1),2))"}
-SELECT asEWKT(posechain 'SRID=3812;PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),1))');
--- SRID=3812;PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),1))
-</pre></li><li class="listitem"><a name="posechain_asBinary"></a><a class="indexterm" name="id9558"></a><a class="indexterm" name="id9561"></a><a class="indexterm" name="id9564"></a><a class="indexterm" name="id9567"></a><p>Devuelve la representación en binario conocido (WKB), en binario conocido extendido (EWKB), en binario conocido hexadecimal (HexWKB) o en binario conocido extendido hexadecimal (HexEWKB)</p><pre class="programlisting">
-asBinary(posechain,endian text='') → bytea
-asEWKB(posechain,endian text='') → bytea
-asHexWKB(posechain,endian text='') → text
-asHexEWKB(posechain,endian text='') → text
-</pre><p>La cadena escribe sus indicadores y su único SRID una sola vez, después el número de eslabones y después los valores de cada eslabón en orden. El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
-SELECT asBinary(posechain 'PoseChain(Pose(Point(1 2),1))');
--- \x010101000000000000000000f03f0000000000000040000000000000f03f
-SELECT asHexWKB(posechain 'PoseChain(Pose(Point(1 2),1))');
--- 010101000000000000000000F03F0000000000000040000000000000F03F
-SELECT asHexEWKB(posechain 'SRID=3812;PoseChain(Pose(Point(1 2),1))');
--- 0141E40E000001000000000000000000F03F0000000000000040000000000000F03F
-</pre></li><li class="listitem"><a name="posechainFromText"></a><a class="indexterm" name="id9575"></a><a class="indexterm" name="id9578"></a><p>Entrada desde la representación en texto conocido (WKT) o en texto conocido extendido (EWKT)</p><pre class="programlisting">
-posechainFromText(text) → posechain
-posechainFromEWKT(text) → posechain
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Capítulo 14. Geometrías rígidas temporales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="prev" href="ch13s21.html" title="Soporte de OGC GeoPose v1.0"><link rel="next" href="ch14s02.html" title="Constructores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Capítulo 14. Geometrías rígidas temporales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s21.html">Anterior</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch14s02.html">Siguiente</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="trgeometry"></a>Capítulo 14. Geometrías rígidas temporales</h1></div></div></div><div class="toc"><p><b>Tabla de contenidos</b></p><dl class="toc"><dt><span class="sect1"><a href="ch14.html#trgeometry_inout">Entrada y salida</a></span></dt><dt><span class="sect1"><a href="ch14s02.html">Constructores</a></span></dt><dt><span class="sect1"><a href="ch14s03.html">Conversión de tipos</a></span></dt><dt><span class="sect1"><a href="ch14s04.html">Accesores</a></span></dt><dt><span class="sect1"><a href="ch14s05.html">Área recorrida</a></span></dt><dt><span class="sect1"><a href="ch14s06.html">Funciones espaciales</a></span></dt><dt><span class="sect1"><a href="ch14s07.html">Métricas de movimiento</a></span></dt><dt><span class="sect1"><a href="ch14s08.html">Transformaciones</a></span></dt><dt><span class="sect1"><a href="ch14s09.html">Modificaciones</a></span></dt><dt><span class="sect1"><a href="ch14s10.html">Restricciones</a></span></dt><dt><span class="sect1"><a href="ch14s11.html">Operaciones de distancia</a></span></dt><dt><span class="sect1"><a href="ch14s12.html">Similitud</a></span></dt><dt><span class="sect1"><a href="ch14s13.html">Operaciones de caja delimitadora</a></span></dt><dt><span class="sect1"><a href="ch14s14.html">Relaciones siempre y alguna vez</a></span></dt><dt><span class="sect1"><a href="ch14s15.html">Relaciones espaciotemporales</a></span></dt><dt><span class="sect1"><a href="ch14s16.html">Comparaciones</a></span></dt><dt><span class="sect1"><a href="ch14s17.html">Mosaicos</a></span></dt><dt><span class="sect1"><a href="ch14s18.html">Cajas delimitadoras</a></span></dt><dt><span class="sect1"><a href="ch14s19.html">Agregaciones</a></span></dt><dt><span class="sect1"><a href="ch14s20.html">Indexación</a></span></dt></dl></div><p>Una geometría rígida temporal (<code class="varname">trgeometry</code>) es una geometría de referencia 2D estática, normalmente un polígono que describe la forma de un cuerpo en movimiento— emparejada con una pose temporal (<code class="varname">tpose</code>) que describe cómo esa geometría se traslada y rota a lo largo del tiempo. La geometría materializada en el instante <code class="varname">t</code> es la geometría de referencia rotada y trasladada de acuerdo con la pose interpolada en <code class="varname">t</code>.</p><p>Esta es la representación natural para objetos en movimiento cuya <span class="emphasis"><em>forma</em></span> importa, no solo su posición. El ejemplo motivador es el tráfico marítimo AIS, donde el casco de cada barco (un pentágono derivado de los desplazamientos de antena <code class="varname">A</code>, <code class="varname">B</code>, <code class="varname">C</code>, <code class="varname">D</code>) sigue una trayectoria de pose definida por informes de latitud/longitud y rumbo. La geometría materializada en cualquier instante es el contorno real del barco en ese momento.</p><p>El tipo <code class="varname">trgeometry</code> se construye sobre <a class="xref" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses">Capítulo 13, <i>Poses temporales y cadenas de poses</i></a>. La mayoría de los operadores de acceso, comparación, topológicos, de posición y de indexación tienen la misma forma que las funciones <code class="varname">tpose</code> correspondientes; este capítulo cubre la superficie específica de trgeometry: la materialización de pose a forma, el área recorrida, la distancia materializada y las restricciones espaciales sobre la trayectoria del centroide.</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_inout"></a>Entrada y salida</h2></div></div></div><p>Un literal <code class="varname">trgeometry</code> empareja una geometría de referencia con una pose temporal. La geometría de referencia va primero, separada de la pose por un punto y coma; la pose sigue la sintaxis estándar de <code class="varname">tpose</code> (instante, secuencia o conjunto de secuencias).</p><pre class="programlisting">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.5)@2001-01-01';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(5 0), 0.5)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 1.5)@2001-01-02]';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  {[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02],
+  [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(2 0), 0.0)@2001-01-05]}';
+</pre><p>La geometría de referencia puede ser cualquier polígono 2D o superficie poliédrica. La interpolación de la pose es lineal en la traslación y de camino angular más corto en la rotación. Los SRID se heredan de la geometría de referencia y de la pose; deben coincidir.</p><p>Se puede especificar un SRID para una trgeometry ya sea al comienzo del literal o antes de la geometría de referencia, como se muestra a continuación.</p><pre class="programlisting">
+SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(0 0), 0.5)@2001-01-01';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));SRID=25832;
+  Pose(Point(0 0), 0.5)@2001-01-01';
+</pre><p>La interpolación escalonada también se puede especificar de la misma manera que para otros tipos temporales:</p><pre class="programlisting">
+SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
+</pre><p>Se admiten los formatos de transmisión estándar.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_asText"></a><a class="indexterm" name="id9786"></a><p>Devuelve la representación de texto conocido (WKT)</p><pre class="programlisting">
+asText({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
 </pre><pre class="programlisting">
-SELECT asEWKT(posechainFromText('PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),1))'));
--- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),1))
-SELECT asEWKT(posechainFromEWKT('SRID=3812;PoseChain(Pose(Point(0 0),0))'));
--- SRID=3812;PoseChain(Pose(POINT(0 0),0))
-</pre></li><li class="listitem"><a name="posechainFromBinary"></a><a class="indexterm" name="id9585"></a><a class="indexterm" name="id9588"></a><a class="indexterm" name="id9591"></a><p>Entrada desde la representación en binario conocido (WKB), en binario conocido extendido (EWKB) o en binario conocido extendido hexadecimal (HexEWKB)</p><pre class="programlisting">
-posechainFromBinary(bytea) → posechain
-posechainFromEWKB(bytea) → posechain
-posechainFromHexEWKB(text) → posechain
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
+  Pose(Point(1.123456789 1.123456789), 0.5)@2000-01-01', 6);
+-- POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1.123457 1.123457),0.5)@2000-01-01
+</pre></li><li class="listitem"><a name="trgeometry_asEWKT"></a><a class="indexterm" name="id9793"></a><p>Devuelve la representación extendida de texto conocido (EWKT), prefijada con el SRID</p><pre class="programlisting">
+asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
 </pre><pre class="programlisting">
-SELECT posechainFromBinary(asBinary(posechain 'PoseChain(Pose(Point(1 2),0.5))')) =
-  posechain 'PoseChain(Pose(Point(1 2),0.5))';
--- t
-SELECT posechainFromHexEWKB(asHexEWKB(
-  posechain 'SRID=3812;PoseChain(Pose(Point(1 2),0.5))')) =
-  posechain 'SRID=3812;PoseChain(Pose(Point(1 2),0.5))';
--- t
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="posechain_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="posechain_constructor"></a><a class="indexterm" name="id9601"></a><p>Construye una cadena de poses a partir de un arreglo de poses ordenadas desde el marco más exterior hacia dentro</p><pre class="programlisting">
-posechain(pose[]) → posechain
+SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));
+  Pose(Point(1 1),0.5)@2000-01-01');
+-- SRID=25832;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@2000-01-01
+</pre></li><li class="listitem"><a name="trgeometry_asMFJSON"></a><a class="indexterm" name="id9800"></a><p>Devuelve la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
+asMFJSON(trgeometry [, options int=0 [, flags int=0 [, maxdecimaldigits int=15]]]) → text
 </pre><pre class="programlisting">
-SELECT asEWKT(posechain(ARRAY[pose 'Pose(Point(0 0),0)', pose 'Pose(Point(1 0),0)']));
--- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))
-</pre></li><li class="listitem"><a name="posechain_appendPose"></a><a class="indexterm" name="id9608"></a><p>Devuelve una cadena de poses con una pose añadida como su eslabón más interior</p><pre class="programlisting">
-appendPose(posechain,pose) → posechain
-</pre><p>La pose se lee en el marco que define el último eslabón de la cadena, por lo que no lleva ni un SRID ni el marcador geodésico.</p><pre class="programlisting">
-SELECT asEWKT(appendPose(posechain 'PoseChain(Pose(Point(0 0),0))',
-  pose 'Pose(Point(1 0),0)'));
--- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="posechain_conversions"></a>Conversión de tipos</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_to_posechain"></a><a class="indexterm" name="id9619"></a><p>Convierte una pose en una cadena de poses de un solo eslabón</p><pre class="programlisting">
-posechain(pose) → posechain
+SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(0 0),0)@2001-01-01');
+</pre></li><li class="listitem"><a name="trgeometry_asEWKB"></a><a class="indexterm" name="id9807"></a><a class="indexterm" name="id9810"></a><a class="indexterm" name="id9813"></a><p>Devuelve la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+asEWKB(trgeometry [, endian text]) → bytea
+asHexWKB(trgeometry [, endian text]) → text
+asHexEWKB(trgeometry [, endian text]) → text
+</pre><p>Las funciones complementarias <code class="varname">asHexWKB</code> y <code class="varname">asHexEWKB</code> devuelven el texto codificado en hexadecimal de, respectivamente, la representación simple y la que incluye el SRID; ambas coinciden solo cuando el valor no tiene SRID, como en el ejemplo siguiente.</p><pre class="programlisting">
+SELECT length(asEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1 1), 0.5)@2001-01-01'));
+-- 130
+-- The bytes round-trip through the matching input function.
+SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1 1), 0.5)@2001-01-01')));
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1 1), 0.5)@2001-01-01')));
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
+</pre></li><li class="listitem"><a name="trgeometry_fromText"></a><a class="indexterm" name="id9823"></a><a class="indexterm" name="id9826"></a><a class="indexterm" name="id9829"></a><a class="indexterm" name="id9832"></a><a class="indexterm" name="id9835"></a><p>Entrada desde la representación de texto conocido (WKT), desde la representación extendida de texto conocido (EWKT), desde la representación JSON de características móviles (MF-JSON), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+trgeometryFromText(text) → trgeometry
+trgeometryFromEWKT(text) → trgeometry
+trgeometryFromMFJSON(text) → trgeometry
+trgeometryFromEWKB(bytea) → trgeometry
+trgeometryFromHexEWKB(text) → trgeometry
 </pre><pre class="programlisting">
-SELECT asEWKT(posechain(pose 'SRID=3812;Pose(Point(1 2),0.5)'));
--- SRID=3812;PoseChain(Pose(POINT(1 2),0.5))
-</pre></li><li class="listitem"><a name="posechain_to_pose"></a><a class="indexterm" name="id9626"></a><p>Devuelve la pose de un marco que define la cadena, leída en el marco exterior de la cadena</p><pre class="programlisting">
-pose(posechain) → pose
-pose(posechain,integer) → pose
-</pre><p>Con un argumento se compone toda la cadena, lo que da la pose de su marco más interior. Con dos se componen los primeros <code class="varname">n</code> eslabones, lo que da la pose del marco que define el eslabón <code class="varname">n</code>-ésimo, es decir, dónde se sitúa esa articulación de la cadena.</p><pre class="programlisting">
-SELECT asEWKT(pose(posechain
-  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),Pose(Point(1 0),0))'));
--- Pose(POINT(2 0),0)
-SELECT asEWKT(pose(posechain
-  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),Pose(Point(1 0),0))', 2));
--- Pose(POINT(1 0),0)
-</pre></li><li class="listitem"><a name="posechain_to_point"></a><a class="indexterm" name="id9636"></a><p>Convierte una cadena de poses en el punto geométrico de su marco más interior</p><pre class="programlisting">
-point(posechain) → geometry
-</pre><pre class="programlisting">
-SELECT ST_AsText(point(posechain
-  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'));
--- POINT(1 0)
-</pre></li><li class="listitem"><a name="posechain_to_stbox"></a><a class="indexterm" name="id9643"></a><p>Convierte una cadena de poses en una caja espaciotemporal</p><pre class="programlisting">
-stbox(posechain) → stbox
-</pre><p>La caja cubre la posición compuesta de cada prefijo de la cadena y no solo la del conjunto: cada articulación es un lugar, y una ventana de consulta que alcanza el codo pero no la mano alcanza igualmente la cadena.</p><pre class="programlisting">
-SELECT stbox(posechain
-  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),Pose(Point(1 0),0))');
--- STBOX X((0,0),(2,0))
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="posechain_accessors"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="posechain_numPoses"></a><a class="indexterm" name="id9654"></a><p>Devuelve el número de eslabones de una cadena de poses</p><pre class="programlisting">
-numPoses(posechain) → integer
-</pre><pre class="programlisting">
-SELECT numPoses(posechain
-  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),Pose(Point(2 0),0))');
--- 3
-</pre></li><li class="listitem"><a name="posechain_poseN"></a><a class="indexterm" name="id9661"></a><a class="indexterm" name="id9664"></a><a class="indexterm" name="id9667"></a><a class="indexterm" name="id9670"></a><p>Devuelve los eslabones de una cadena de poses</p><pre class="programlisting">
-startPose(posechain) → pose
-endPose(posechain) → pose
-poseN(posechain,integer) → pose
-poses(posechain) → pose[]
-</pre><p>Un eslabón se devuelve tal como está almacenado, es decir, en el marco que define el eslabón anterior. Dónde se sitúa ese marco en el marco exterior de la cadena es lo que responde <code class="varname">pose(posechain,integer)</code>. La función <code class="varname">poseN</code> devuelve <code class="varname">NULL</code> si la cadena tiene menos eslabones que el número dado.</p><pre class="programlisting">
-SELECT asEWKT(startPose(posechain
-  'SRID=3812;PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'));
--- SRID=3812;Pose(POINT(0 0),0)
-SELECT asEWKT(endPose(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'));
--- Pose(POINT(1 0),0)
-SELECT asEWKT(poseN(posechain
-  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))', 2));
--- Pose(POINT(1 0),0)
-SELECT asEWKT(poses(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'));
--- {"Pose(POINT(0 0),0)","Pose(POINT(1 0),0)"}
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="posechain_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="posechain_round"></a><a class="indexterm" name="id9684"></a><p>Redondea los valores de los eslabones de una cadena de poses a un número de decimales</p><pre class="programlisting">
-round(posechain,integer=0) → posechain
-</pre><pre class="programlisting">
-SELECT asEWKT(round(posechain
-  'PoseChain(Pose(Point(1.123456789 2.123456789),0.123456789))', 3));
--- PoseChain(Pose(POINT(1.123 2.123),0.123))
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="posechain_srid"></a>Sistema de referencia espacial</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="posechain_SRID"></a><a class="indexterm" name="id9694"></a><a class="indexterm" name="id9697"></a><p>Devuelve o establece el identificador de referencia espacial del marco exterior de una cadena de poses</p><pre class="programlisting">
-SRID(posechain) → integer
-setSRID(posechain,integer) → posechain
-</pre><pre class="programlisting">
-SELECT SRID(posechain 'SRID=3812;PoseChain(Pose(Point(1 2),0))');
--- 3812
-SELECT asEWKT(setSRID(posechain 'PoseChain(Pose(Point(1 2),0))', 3812));
--- SRID=3812;PoseChain(Pose(POINT(1 2),0))
-</pre></li><li class="listitem"><a name="posechain_transform"></a><a class="indexterm" name="id9704"></a><a class="indexterm" name="id9707"></a><p>Transforma a un identificador de referencia espacial</p><pre class="programlisting">
-transform(posechain,integer) → posechain
-transformPipeline(posechain,pipeline text,to_srid integer,
-  is_forward boolean=true) → posechain
-</pre><p>Solo el eslabón exterior nombra un marco, por lo que solo se transforma el eslabón exterior: cada uno de los demás eslabones es una transformación rígida leída en los ejes de su marco padre, y un cambio del marco exterior deja esos ejes como estaban. Se genera un error cuando la cadena de entrada tiene un SRID desconocido (representado por 0).</p><p>Para una cadena tridimensional sobre un marco geográfico, la orientación del eslabón exterior se vuelve a expresar en la base del marco de destino en su punto, exactamente como ocurre con una pose. Para una cadena bidimensional el ángulo es intrínseco a la proyección de origen y se transmite sin cambios.</p><p>La función <code class="varname">transformPipeline</code> especifica la transformación con una tubería de transformación de coordenadas definida representada con el siguiente formato de cadena:</p><p><code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code></p><p>El SRID de la cadena de entrada se ignora, y el SRID de la cadena de salida es el que indica el parámetro <code class="varname">to_srid</code>. Según indica el último parámetro, la tubería se ejecuta de forma predeterminada en sentido directo; si se establece el parámetro en falso, la tubería se ejecuta en sentido inverso.</p><pre class="programlisting">
-SELECT asEWKT(round(transform(posechain
-  'SRID=4326;PoseChain(Pose(Point(4.35 50.85),1),Pose(Point(10 0),0))', 3812), 6));
--- SRID=3812;PoseChain(Pose(POINT(648679.018035 671067.055638),1),Pose(POINT(10 0),0))
-SELECT asEWKT(round(transformPipeline(posechain
-  'SRID=4326;PoseChain(Pose(Point(4.35 50.85),1))',
-  'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
--- SRID=4326;PoseChain(Pose(POINT(595032.294558 5634012.833372),1))
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="posechain_comparison"></a>Comparaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="posechain_comparisons"></a><a class="indexterm" name="id9725"></a><a class="indexterm" name="id9728"></a><a class="indexterm" name="id9731"></a><a class="indexterm" name="id9734"></a><a class="indexterm" name="id9737"></a><a class="indexterm" name="id9740"></a><p>Operadores de comparación tradicionales</p><pre class="programlisting">
-{posechain} {=,&lt;&gt;,&lt;,&gt;,&lt;=,&gt;=} {posechain} → boolean
-</pre><p>El orden compara la dimensión, después el SRID, después los eslabones en orden y por último el número de eslabones, de modo que una cadena precede a toda cadena que la extiende.</p><pre class="programlisting">
-SELECT posechain 'PoseChain(Pose(Point(0 0),0))' =
-  posechain 'PoseChain(Pose(Point(0 0),0))';
--- t
-SELECT posechain 'PoseChain(Pose(Point(0 0),0))' &lt;
-  posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))';
--- t
-</pre></li><li class="listitem"><a name="posechain_same"></a><a class="indexterm" name="id9748"></a><p>Devuelve verdadero si dos cadenas de poses son iguales hasta la tolerancia de la comparación de valores de punto flotante</p><pre class="programlisting">
-posechain ~= posechain → boolean
-</pre><pre class="programlisting">
-SELECT posechain 'PoseChain(Pose(Point(0 0),0))' ~=
-  posechain 'PoseChain(Pose(Point(0 0),0))';
--- t
-</pre></li></ul></div></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s18.html">Anterior</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch14s02.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Soporte de OGC GeoPose v1.0 </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Cadenas de poses temporales</td></tr></table></div></body></html>
+SELECT asText(trgeometryFromEWKT('SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1 1), 0.5)@2001-01-01'));
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
+SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  Pose(Point(1 1), 0.5)@2001-01-01')));
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
+</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s21.html">Anterior</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch14s02.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Soporte de OGC GeoPose v1.0 </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Constructores</td></tr></table></div></body></html>

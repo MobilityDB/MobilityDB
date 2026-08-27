@@ -1,28 +1,49 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Sistema de referencia espacial</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales"><link rel="prev" href="ch13s10.html" title="Restricciones"><link rel="next" href="ch13s12.html" title="Operaciones de cuadro delimitador"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Sistema de referencia espacial</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s10.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch13s12.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_srid"></a>Sistema de referencia espacial</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_SRID"></a><a class="indexterm" name="id9047"></a><a class="indexterm" name="id9050"></a><p>Devuelve o establece el identificador de referencia espacial</p><pre class="programlisting">
-SRID(tpose) → integer
-setSRID(tpose) → tpose
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Modificaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s10.html" title="Transformaciones"><link rel="next" href="ch13s12.html" title="Restricciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Modificaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s10.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s12.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_modifications"></a>Modificaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_appendInstant"></a><a class="indexterm" name="id9104"></a><a class="indexterm" name="id9107"></a><p>Agrega un instante temporal o una secuencia temporal</p><pre class="programlisting">
+appendInstant({tpose,tposechain},{tposeInst,tposechainInst}) → {tpose,tposechain}
+appendSequence({tpose,tposechain},{tposeSeq,tposechainSeq}) → {tpose,tposechain}
 </pre><pre class="programlisting">
-SELECT SRID(tpose 'SRID=5676;[Pose(Point(0 0),1)@2001-01-01, 
-  Pose(Point(1 1),2)@2001-01-02)'));
--- 5676
-SELECT asEWKT(setSRID(tpose '[Pose(Point(0 0),1)@2001-01-01, 
-  Pose(Point(1 1),2)@2001-01-02)', 5676));
--- SRID=5676;[Pose(POINT(0 0),1)@2001-01-01, Pose(POINT(1 1),2)@2001-01-02)
-</pre></li><li class="listitem"><a name="tpose_transform"></a><a class="indexterm" name="id9057"></a><a class="indexterm" name="id9060"></a><p>Transformar a un identificador de referencia espacial</p><pre class="programlisting">
-transform(tpose,integer) → tpose
-transformPipeline(tpose,pipeline text,to_srid integer,is_forward boolean=true) → tpose
-</pre><p>La pose de cada instante se transforma igual que la pose estática correspondiente, con la corrección de orientación incluida, como se describe para <a class="link" href="ch13.html#pose_transform"><code class="varname">transform</code></a>. Lo mismo ocurre con un <code class="varname">poseset</code>. Una <code class="varname">trgeometry</code> asocia sus poses con una geometría de referencia que comparte su marco, y la transformación a otro SRID no está admitida para ese tipo.</p><pre class="programlisting">
-SELECT asEWKT(transform(tpose 'SRID=4326;Pose(Point(4.35 50.85),1)@2001-01-01', 
-  3812));
--- SRID=3812;Pose(POINT(648679.0180353033 671067.0556381135),1)@2001-01-01
+SELECT asText(appendInstant(tpose 'Pose(Point(1 1), 0.5)@2001-01-01',
+  'Pose(Point(2 2), 1)@2001-01-02'));
+-- [Pose(POINT(1 1),0.5)@2001-01-01, Pose(POINT(2 2),1)@2001-01-02]
+SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.5)@2001-01-01]',
+  '[Pose(Point(2 2), 1)@2001-01-02]'));
+-- {[Pose(POINT(1 1),0.5)@2001-01-01], [Pose(POINT(2 2),1)@2001-01-02]}
+</pre></li><li class="listitem"><a name="tpose_merge"></a><a class="indexterm" name="id9114"></a><a class="indexterm" name="id9117"></a><p>Fusiona las poses temporales</p><pre class="programlisting">
+merge({tpose,tposechain},{tpose,tposechain}) → {tpose,tposechain}
+merge({tpose,tposechain}[]) → {tpose,tposechain}
+mergeAgg({tpose,tposechain}) → {tpose,tposechain}
+</pre><p>La forma de agregación de la función es <code class="varname">mergeAgg</code>.</p><pre class="programlisting">
+SELECT asText(merge(tpose '[Pose(Point(1 1 1),1,0,0,0)@2001-01-01,
+  Pose(Point(2 2 2),0,1,0,0)@2001-01-02]',
+  '[Pose(Point(2 2 2),0,1,0,0)@2001-01-02, Pose(Point(3 3 3),0,0,0,1)@2001-01-03]'));
+/* [Pose(POINT Z (1 1 1),1,0,0,0)@2001-01-01, Pose(POINT Z (2 2 2),0,1,0,0)@2001-01-02, 
+   Pose(POINT Z (3 3 3),0,0,0,1)@2001-01-03] */
+SELECT asText(merge(ARRAY[tpose '{[Pose(Point(1 1),0.1)@2001-01-01,
+  Pose(Point(2 2),0.2)@2001-01-02],
+  [Pose(Point(3 3),0.3)@2001-01-03, Pose(Point(4 4),0.4)@2001-01-04]}',
+  '[Pose(Point(4 4),0.4)@2001-01-04, Pose(Point(5 5),0.5)@2001-01-05]']));
+/* {[Pose(POINT(1 1),0.1)@2001-01-01, Pose(POINT(2 2),0.2)@2001-01-02], 
+   [Pose(POINT(3 3),0.3)@2001-01-03, Pose(POINT(5 5),0.5)@2001-01-05]} */
+WITH temp(inst) AS (
+  SELECT tpose 'Pose(Point(1 1),0.1)@2001-01-01' UNION
+  SELECT tpose 'Pose(Point(2 2),0.2)@2001-01-02' UNION
+  SELECT tpose 'Pose(Point(3 3),0.3)@2001-01-03' )
+SELECT asText(mergeAgg(inst)) FROM temp;
+/* {Pose(POINT(1 1),0.1)@2001-01-01, Pose(POINT(2 2),0.2)@2001-01-02, 
+   Pose(POINT(3 3),0.3)@2001-01-03} */
+SELECT asText(mergeAgg(temp)) FROM (VALUES
+  (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
+  (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(temp);
+/* {PoseChain(Pose(POINT(1 1),0.1))@2001-01-01,
+   PoseChain(Pose(POINT(2 2),0.2))@2001-01-02} */
+</pre></li><li class="listitem"><a name="tposechain_insert"></a><a class="indexterm" name="id9126"></a><a class="indexterm" name="id9129"></a><a class="indexterm" name="id9132"></a><p>Inserta o actualizar la segunda cadena de poses temporal en la primera, o eliminar de ella un valor de tiempo</p><pre class="programlisting">
+insert({tpose,tposechain},{tpose,tposechain},connect boolean=true) → {tpose,tposechain}
+update({tpose,tposechain},{tpose,tposechain},connect boolean=true) → {tpose,tposechain}
+deleteTime({tpose,tposechain},time,connect boolean=true) → {tpose,tposechain}
 </pre><pre class="programlisting">
-WITH test(tpose, pipeline) AS (
-  SELECT tpose 'SRID=4326;{Pose(Point(4.3525 50.846667),1)@2001-01-01,
-    Pose(Point(-0.1275 51.507222),2)@2001-01-02}',
-    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(tpose, pipeline, 4326),  pipeline,
-  4326, false), 6)
-FROM test;
-/* SRID=4326;{Pose(POINT(4.3525 50.846667),1)@2001-01-01, 
-   Pose(POINT(-0.1275 51.507222),2)@2001-01-02} */
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s10.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s12.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Restricciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operaciones de cuadro delimitador</td></tr></table></div></body></html>
+SELECT asText(deleteTime(tposechain
+  '{PoseChain(Pose(Point(1 1),0.5), Pose(Point(2 0),0))@2001-01-01,
+  PoseChain(Pose(Point(3 3),0.5), Pose(Point(4 0),0))@2001-01-02}',
+  timestamptz '2001-01-02'));
+-- {PoseChain(Pose(POINT(1 1),0.5),Pose(POINT(2 0),0))@2001-01-01}
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s10.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s12.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Transformaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Restricciones</td></tr></table></div></body></html>

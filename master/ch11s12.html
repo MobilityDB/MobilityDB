@@ -1,7 +1,48 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Spatial Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch11.html" title="Chapter 11. Temporal Network Points"><link rel="prev" href="ch11s11.html" title="Distance Operations"><link rel="next" href="ch11s13.html" title="Bounding Box Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Spatial Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s11.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Temporal Network Points</th><td width="20%" align="right"> <a accesskey="n" href="ch11s13.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_spatial_ops"></a>Spatial Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_twCentroid"></a><a class="indexterm" name="id7937"></a><p>Return the time-weighted centroid</p><pre class="programlisting">
-twCentroid(tnpoint) → geometry(Point)
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch11.html" title="Chapter 11. Temporal Network Points"><link rel="prev" href="ch11s11.html" title="Spatial Operations"><link rel="next" href="ch11s13.html" title="Distance Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s11.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Temporal Network Points</th><td width="20%" align="right"> <a accesskey="n" href="ch11s13.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_bbox_ops"></a>Bounding Box Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_routeops"></a><a class="indexterm" name="id7829"></a><a class="indexterm" name="id7832"></a><a class="indexterm" name="id7835"></a><a class="indexterm" name="id7838"></a><p>Route operators, which compare the route identifiers a temporal network point visits: contained in, contains, overlaps, and equal</p><pre class="programlisting">
+{bigint,bigintset,npoint,tnpoint} {?@, @?, @@, @=} {bigint,bigintset,npoint,
+  tnpoint} → boolean
 </pre><pre class="programlisting">
-SELECT ST_AsText(twCentroid(tnpoint '{[NPoint(1, 0.3)@2001-01-01,
-  NPoint(1, 0.5)@2001-01-02, NPoint(1, 0.5)@2001-01-03, NPoint(1, 0.7)@2001-01-04)}'));
--- POINT(79.9787466444847 46.2385558051041)
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s11.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s13.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Distance Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Bounding Box Operations</td></tr></table></div></body></html>
+SELECT bigint '1' ?@ tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]';
+-- true
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' @? bigint '1';
+-- true
+SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01, NPoint(3, 0.5)@2001-01-02}' @@ bigintset '{3,
+  7}';
+-- true
+SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01, NPoint(3, 0.5)@2001-01-02}' @= bigintset '{1,
+  3}';
+-- true
+SELECT tnpoint '{NPoint(1, 0.3)@2001-01-01,
+  NPoint(3, 0.5)@2001-01-02}' @= bigintset '{1}';
+-- false
+</pre></li><li class="listitem"><a name="tnpoint_topo"></a><a class="indexterm" name="id7845"></a><a class="indexterm" name="id7848"></a><a class="indexterm" name="id7851"></a><a class="indexterm" name="id7854"></a><a class="indexterm" name="id7857"></a><p>Topological operators</p><pre class="programlisting">
+{tstzspan,stbox,tnpoint} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} {tstzspan,stbox,tnpoint} → boolean
+</pre><pre class="programlisting">
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &amp;&amp;
+  tstzspan '[2001-01-02,2001-01-03]';
+-- true
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' @&gt;
+  stbox(npoint 'NPoint(1, 0.5)');
+-- true
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01,
+  NPoint(1, 0.5)@2001-01-03]' ~= tnpoint '[NPoint(1, 0.3)@2001-01-01,
+  NPoint(1, 0.35)@2001-01-02, NPoint(1, 0.5)@2001-01-03]';
+-- true
+</pre></li><li class="listitem"><a name="tnpoint_pos"></a><a class="indexterm" name="id7864"></a><p>Position operators</p><pre class="programlisting">
+{stbox,tnpoint} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tnpoint} → boolean
+{stbox,tnpoint} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tnpoint} → boolean
+{tstzspan,stbox,tnpoint} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tnpoint} → boolean
+</pre><pre class="programlisting">
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &lt;&lt;
+  stbox(npoint 'NPoint(1, 0.2)');
+-- true
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01,
+  NPoint(1, 0.5)@2001-01-02]' &lt;&lt;| stbox(npoint 'NPoint(1, 0.5)');
+-- false
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05]' #&amp;&gt;
+  tstzspan '[2001-01-01,2001-01-03]';
+-- true
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt;
+  tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.3)@2001-01-02]';
+-- true
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s11.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s13.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Spatial Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Distance Operations</td></tr></table></div></body></html>

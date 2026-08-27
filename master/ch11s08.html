@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch11.html" title="Chapter 11. Temporal Network Points"><link rel="prev" href="ch11s07.html" title="Accessors"><link rel="next" href="ch11s09.html" title="Modifications"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s07.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Temporal Network Points</th><td width="20%" align="right"> <a accesskey="n" href="ch11s09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_transformations"></a>Transformations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_subtype"></a><a class="indexterm" name="id7820"></a><a class="indexterm" name="id7823"></a><a class="indexterm" name="id7826"></a><p>Transform a temporal network point to another subtype</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch11.html" title="Chapter 11. Temporal Network Points"><link rel="prev" href="ch11s07.html" title="Accessors"><link rel="next" href="ch11s09.html" title="Modifications"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s07.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Temporal Network Points</th><td width="20%" align="right"> <a accesskey="n" href="ch11s09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_transformations"></a>Transformations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_subtype"></a><a class="indexterm" name="id7737"></a><a class="indexterm" name="id7740"></a><a class="indexterm" name="id7743"></a><p>Transform a temporal network point to another subtype</p><pre class="programlisting">
 tnpointInst(tnpoint) → tnpointInst
 tnpointSeq(tnpoint) → tnpointSeq
 tnpointSeqSet(tnpoint) → tnpointSeqSet
@@ -9,16 +9,16 @@ SELECT tnpointSeq(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 -- [NPoint(1,0.5)@2001-01-01]
 SELECT tnpointSeqSet(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 -- {[NPoint(1,0.5)@2001-01-01]}
-</pre></li><li class="listitem"><a name="tnpoint_setInterp"></a><a class="indexterm" name="id7833"></a><p>Transform a temporal network point to another interpolation</p><pre class="programlisting">
-setInterp(tnpoint, interp) → tnpoint
+</pre></li><li class="listitem"><a name="tnpoint_setInterp"></a><a class="indexterm" name="id7750"></a><p>Transform a temporal network point to another interpolation</p><pre class="programlisting">
+setInterp(tnpoint,interp) → tnpoint
 </pre><pre class="programlisting">
 SELECT setInterp(tnpoint 'NPoint(1,0.2)@2001-01-01','linear');
 -- [NPoint(1,0.2)@2001-01-01]
 SELECT setInterp(tnpoint '{[NPoint(1,0.1)@2001-01-01], [NPoint(1,0.2)@2001-01-02]}',
   'discrete');
 -- {NPoint(1,0.1)@2001-01-01, NPoint(1,0.2)@2001-01-02}
-</pre></li><li class="listitem"><a name="tnpoint_round"></a><a class="indexterm" name="id7840"></a><p>Round the fraction of the temporal network point to the number of decimal places</p><pre class="programlisting">
-round(tnpoint,integer) → tnpoint
+</pre></li><li class="listitem"><a name="tnpoint_round"></a><a class="indexterm" name="id7757"></a><p>Round the fraction of the temporal network point to the number of decimal places</p><pre class="programlisting">
+round(tnpoint,integer=0) → tnpoint
 </pre><pre class="programlisting">
 SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}', 6);
 -- {[NPoint(1,0.123457)@2001-01-01, NPoint(1,0.5)@2001-01-02)}

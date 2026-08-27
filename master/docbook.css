@@ -303,6 +303,16 @@ pre.programlisting {
   border-radius: 4px;
 }
 
+/* A signature block states the syntax of an entry. It is verbatim as the examples that follow
+   it are, and only the examples carry the frame that marks a code block, so that the syntax
+   reads as part of the entry it opens and stays separated from the examples. */
+pre.programlisting.syntax {
+  margin: 0.25em 0;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+}
+
 @media screen {  /* hide from IE3 */
   a[href]:hover { background: #ffa }
 }

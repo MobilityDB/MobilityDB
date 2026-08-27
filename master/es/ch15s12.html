@@ -1,32 +1,44 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch15.html" title="Capítulo 15. Geometrías rígidas temporales"><link rel="prev" href="ch15s11.html" title="Similitud"><link rel="next" href="ch15s13.html" title="Operadores de caja delimitadora"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s11.html">Anterior</a> </td><th width="60%" align="center">Capítulo 15. Geometrías rígidas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch15s13.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_comparisons"></a>Comparaciones</h2></div></div></div><p>Los operadores de igualdad y de siempre / alguna vez comparan dos geometrías rígidas temporales sobre la geometría materializada: tanto la forma de referencia como la trayectoria de pose deben coincidir en cada instante compartido.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_eq"></a><a class="indexterm" name="id10500"></a><a class="indexterm" name="id10503"></a><p>Probar la (des)igualdad exacta de dos geometrías rígidas temporales</p><pre class="programlisting">
-trgeometry = trgeometry → boolean
-trgeometry &lt;&gt; trgeometry → boolean
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch15.html" title="Capítulo 15. Tipos JSON en MobilityDB"><link rel="prev" href="ch15s11.html" title="Operaciones de caja delimitadora"><link rel="next" href="ch15s13.html" title="Agregaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s11.html">Anterior</a> </td><th width="60%" align="center">Capítulo 15. Tipos JSON en MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s13.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_comparisons"></a>Comparaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_comp"></a><a class="indexterm" name="id11209"></a><a class="indexterm" name="id11212"></a><a class="indexterm" name="id11215"></a><a class="indexterm" name="id11218"></a><a class="indexterm" name="id11221"></a><a class="indexterm" name="id11224"></a><p>Comparaciones tradicionales</p><pre class="programlisting">
+tjsonb {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tjsonb → boolean
 </pre><pre class="programlisting">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0),
-  0.0)@2001-01-02]' = trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
--- t
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0),
-  0.0)@2001-01-02]' &lt;&gt; trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
--- f
-</pre></li><li class="listitem"><a name="trgeometry_evereq"></a><a class="indexterm" name="id10510"></a><a class="indexterm" name="id10513"></a><p>Probar si la geometría materializada es alguna vez (no) igual al operando en algún momento</p><pre class="programlisting">
-{geometry,trgeometry} ?= {geometry,trgeometry} → boolean
-{geometry,trgeometry} ?&lt;&gt; {geometry,trgeometry} → boolean
+SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02),
+  [{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02,
+   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]}' =
+  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+    {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
+-- true
+SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]}' &lt;&gt;
+  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+    {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
+-- false
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]' &lt;
+  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+    {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
+-- true
+</pre></li><li class="listitem"><a name="tjsonb_ever_always"></a><a class="indexterm" name="id11231"></a><a class="indexterm" name="id11234"></a><p>Comparaciones siempre y alguna vez</p><pre class="programlisting">
+{jsonb,tjsonb} {?=, %=} {jsonb,tjsonb} → boolean
 </pre><pre class="programlisting">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(5 0), 0.0)@2001-01-02]'
-       ?= geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))';
--- t
-</pre></li><li class="listitem"><a name="trgeometry_alwayseq"></a><a class="indexterm" name="id10520"></a><a class="indexterm" name="id10523"></a><p>Probar si la geometría materializada es siempre (no) igual al operando</p><pre class="programlisting">
-{geometry,trgeometry} %= {geometry,trgeometry} → boolean
-{geometry,trgeometry} %&lt;&gt; {geometry,trgeometry} → boolean
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' ?= jsonb '{"vehicleId": 1,
+  "location": "Point(1 1)"}';
+-- true
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' %= jsonb '{"vehicleId": 1,
+  "location": "Point(1 1)"}';
+-- false
+</pre></li><li class="listitem"><a name="tjsonb_tcomp"></a><a class="indexterm" name="id11241"></a><p>Comparaciones temporales</p><pre class="programlisting">
+{jsonb,tjsonb} {#=, #&lt;&gt;} {jsonb,tjsonb} → tbool
 </pre><pre class="programlisting">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0),
-  0.0)@2001-01-02]' %= trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
--- t
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s11.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s13.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Similitud </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operadores de caja delimitadora</td></tr></table></div></body></html>
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)' #= jsonb '{"vehicleId": 1,
+  "location": "Point(1 1)"}';
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)' #&lt;&gt;
+  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)';
+-- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s11.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s13.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de caja delimitadora </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Agregaciones</td></tr></table></div></body></html>

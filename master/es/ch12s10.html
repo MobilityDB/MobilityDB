@@ -1,52 +1,32 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones espaciales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch12.html" title="Capítulo 12. Búferes circulares temporales"><link rel="prev" href="ch12s09.html" title="Modificaciones"><link rel="next" href="ch12s11.html" title="Operaciones de distancia"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones espaciales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 12. Búferes circulares temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch12s11.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_spatial"></a>Operaciones espaciales</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_SRID"></a><a class="indexterm" name="id8091"></a><a class="indexterm" name="id8094"></a><p>Devuelve o establece el identificador de referencia espacial</p><pre class="programlisting">
-SRID(tcbuffer) → integer
-setSRID(tcbuffer) → tcbuffer
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Restricciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch12.html" title="Capítulo 12. Búferes circulares temporales"><link rel="prev" href="ch12s09.html" title="Modificaciones"><link rel="next" href="ch12s11.html" title="Operaciones espaciales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Restricciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 12. Búferes circulares temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch12s11.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_restrictions"></a>Restricciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_atValue"></a><a class="indexterm" name="id8037"></a><a class="indexterm" name="id8040"></a><a class="indexterm" name="id8043"></a><a class="indexterm" name="id8046"></a><p>Restringe al (complemento de) un valor o un conjunto de valores</p><pre class="programlisting">
+atValue(tcbuffer,value) → tcbuffer
+minusValue(tcbuffer,value) → tcbuffer
+atValues(tcbuffer,valueset) → tcbuffer
+minusValues(tcbuffer,valueset) → tcbuffer
 </pre><pre class="programlisting">
-SELECT SRID(tcbuffer 'SRID=5676;[Cbuffer(Point(0 0),1)@2001-01-01,
-  Cbuffer(Point(1 1),2)@2001-01-02)');
--- 5676
-SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01,
-  Cbuffer(Point(1 1),2)@2001-01-02)', 5676));
--- SRID=5676;[Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
-</pre></li><li class="listitem"><a name="tcbuffer_transform"></a><a class="indexterm" name="id8101"></a><a class="indexterm" name="id8104"></a><p>Transformar a una referencia espacial diferente</p><pre class="programlisting">
-transform(tcbuffer,integer) → tcbuffer
-transformPipeline(tcbuffer,pipeline text,to_srid integer,is_forward boolean=true) →
-  tcbuffer
-</pre><p>La función <code class="varname">transform</code> especifica la transformación con un SRID de destino. Se genera un error cuando el búfer circular temporal de entrada tiene un SRID desconocido (representado por 0).</p><p>La función <code class="varname">transformPipeline</code> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code>. El SRID del búfer circular temporal de entrada se ignora y el SRID del búfer circular temporal de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <code class="varname">to_srid</code>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</p><pre class="programlisting">
-SELECT asEWKT(transform(tcbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)@2001-01-01',
-  3812));
--- SRID=3812;Cbuffer(POINT(648679.0180353033 671067.0556381135),1)@2001-01-01
+SELECT asText(atValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-03]', cbuffer 'Cbuffer(Point(2 2), 0.5)'));
+-- {[Cbuffer(Point(2 2),0.5)@2001-01-02]}
+SELECT asText(minusValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-03]', cbuffer 'Cbuffer(Point(2 2), 0.5)'));
+/* {[Cbuffer(Point(2 2),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02),
+   (Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(2 2),0.7)@2001-01-03]} */
+</pre></li><li class="listitem"><a name="tcbuffer_atGeometry"></a><a class="indexterm" name="id8053"></a><a class="indexterm" name="id8056"></a><p>Restringe al (complemento de) una geometría</p><pre class="programlisting">
+atGeometry(tcbuffer,geometry) → tcbuffer
+minusGeometry(tcbuffer,geometry) → tcbuffer
 </pre><pre class="programlisting">
-WITH test(tcbuffer, pipeline) AS (
-  SELECT tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
-    Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
-    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326),  pipeline,
-  4326, false), 6)
-FROM test;
-/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01,
-   Cbuffer(POINT(-0.1275 51.507222),2)@2001-01-02} */
-</pre></li><li class="listitem"><a name="tcbuffer_traversedArea"></a><a class="indexterm" name="id8118"></a><p>Devuelve el área atravesada por el búfer circular temporal</p><pre class="programlisting">
-traversedArea(tcbuffer, unary_union=false) → geometry
+SELECT asText(atGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-- {[Cbuffer(POINT(2 2),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.7)@2001-01-03]}
+SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+/* {(Cbuffer(Point(2 2),0.342593)@2001-01-01 05:06:40.364673,
+   Cbuffer(Point(2 2),0.7)@2001-01-03]} */
+</pre></li><li class="listitem"><a name="tcbuffer_atStbox"></a><a class="indexterm" name="id8063"></a><a class="indexterm" name="id8066"></a><p>Restringe un búfer circular temporal a (el complemento de) una caja espaciotemporal</p><pre class="programlisting">
+atStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer
+minusStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer
 </pre><pre class="programlisting">
-SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
--- CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
-</pre></li><li class="listitem"><a name="tcbuffer_centroid"></a><a class="indexterm" name="id8125"></a><p>Devuelve el punto geométrico temporal dado por los centros de un búfer circular temporal</p><pre class="programlisting">
-centroid(tcbuffer) → tgeompoint
-</pre><pre class="programlisting">
-SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
-  Cbuffer(Point(3 3), 0.5)@2001-01-03]'));
--- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
-</pre></li><li class="listitem"><a name="tcbuffer_convexHull"></a><a class="indexterm" name="id8132"></a><p>Devuelve la envolvente convexa del área atravesada por el búfer circular temporal</p><pre class="programlisting">
-convexHull(tcbuffer) → geometry
-</pre><p>La envolvente convexa se calcula sobre el área atravesada exacta, arcos incluidos: un arco alcanza más allá de los puntos que lo definen, por lo que aporta a la envolvente el trozo de su círculo que ninguna otra característica del área alcanza. Por lo tanto, el resultado es un <code class="varname">CURVEPOLYGON</code> curvo delimitado por un <code class="varname">COMPOUNDCURVE</code> de arcos circulares y segmentos rectos, tan exacto como la región que devuelve <code class="varname">traversedArea</code>. La envolvente es lineal solo cuando el búfer mantiene un radio cero, ya que el área atravesada no lleva entonces ningún arco.</p><pre class="programlisting">
-SELECT ST_AsText(convexHull(tcbuffer
-  '[Cbuffer(Point(1 1), 0.5)@2001-01-01, Cbuffer(Point(1 3), 0.5)@2001-01-02]'));
--- CURVEPOLYGON(COMPOUNDCURVE((1.5 3,1.5 1),CIRCULARSTRING(1.5 1,1 0.5,0.5 1),
---   (0.5 1,0.5 3),CIRCULARSTRING(0.5 3,1 3.5,1.5 3)))
-SELECT ST_AsText(convexHull(tcbuffer
-  '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffer(Point(1 3), 0)@2001-01-02,
-  Cbuffer(Point(3 3), 0)@2001-01-03]'));
--- POLYGON((1 1,1 3,3 3,1 1))
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s09.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s11.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Modificaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operaciones de distancia</td></tr></table></div></body></html>
+SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2000-01-01,
+  Cbuffer(Point(3 3), 0.5)@2000-01-03]', stbox 'STBOX X((0,0),(2,2))'));
+-- {[Cbuffer(POINT(1 1),0.5)@2000-01-01, Cbuffer(POINT(2 2),0.5)@2000-01-02)}
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s09.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s11.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Modificaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operaciones espaciales</td></tr></table></div></body></html>

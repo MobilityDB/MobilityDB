@@ -6,16 +6,13 @@ SELECT tfloat '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
 SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt; tfloat '[3@2001-01-03, 1@2001-01-05)';
 -- NULL
-
 -- Temporal addition
 SELECT tint '[1@2001-01-01, 1@2001-01-03)' + tint '[2@2001-01-02, 2@2001-01-05)';
 -- [3@2001-01-02, 3@2001-01-03)
-
 -- Temporal intersects
 SELECT tIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
-
 -- Temporal distance
 SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
   tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
@@ -27,17 +24,14 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:
 SELECT eIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
 -- true
-
 -- Does the operands always intersect?
 SELECT aIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
-
 -- Is the left operand ever less than the right one ?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
   tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
 -- true
-
 -- Is the left operand always less than the right one ?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
   tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;

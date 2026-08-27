@@ -1,67 +1,45 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Spatial Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Poses"><link rel="prev" href="ch13s13.html" title="Distance Operations"><link rel="next" href="ch13s15.html" title="Comparisons"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Spatial Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s13.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s15.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_spatial_rels"></a>Spatial Relationships</h2></div></div></div><p>
-			The topological and distance relationships described in <a class="xref" href="ch08s05.html" title="Spatial Relationships">the section called “Spatial Relationships”</a> such as <code class="varname">eIntersects</code>, <code class="varname">aDwithin</code>, or <code class="varname">tContains</code> only consider the location of a value, not its orientation. A temporal pose accepts them directly and answers them at the position its pose occupies, which is the point the <code class="varname">tgeompoint</code> cast target names. The functions <code class="varname">geometry</code> and <code class="varname">tgeompoint</code> and the corresponding explicit casts <code class="varname">::</code> remain available wherever the geometry itself is wanted.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_espatialrels"></a><a class="indexterm" name="id9719"></a><a class="indexterm" name="id9722"></a><a class="indexterm" name="id9725"></a><a class="indexterm" name="id9728"></a><a class="indexterm" name="id9731"></a><a class="indexterm" name="id9734"></a><a class="indexterm" name="id9737"></a><a class="indexterm" name="id9740"></a><a class="indexterm" name="id9743"></a><a class="indexterm" name="id9746"></a><a class="indexterm" name="id9749"></a><a class="indexterm" name="id9752"></a><p>The <span class="emphasis"><em>ever</em></span> and <span class="emphasis"><em>always</em></span> relationships determine whether the topological or distance relationship is ever or always satisfied and result in a <code class="varname">boolean</code>. A temporal pose answers them at the position it occupies, so a value with linear interpolation is answered along its trajectory rather than at its instants alone. The temporal pose declares the relationships a moving point answers: <code class="varname">eContains</code>, <code class="varname">aContains</code>, <code class="varname">eCovers</code> and <code class="varname">aCovers</code> take the geometry first only, and <code class="varname">eTouches</code> and <code class="varname">aTouches</code> have no direction between two temporal poses, since a moving point neither contains nor covers a geometry and two moving points do not touch.</p><pre class="programlisting">
-eContains(geometry,tpose) → boolean
-eCovers(geometry,tpose) → boolean
-eDisjoint({geometry,tpose},{geometry,tpose}) → boolean
-eDwithin({geometry,tpose},{geometry,tpose},float) → boolean
-eIntersects({geometry,tpose},{geometry,tpose}) → boolean
-eTouches(geometry,tpose) → boolean
-eTouches(tpose,geometry) → boolean
-aContains(geometry,tpose) → boolean
-aCovers(geometry,tpose) → boolean
-aDisjoint({geometry,tpose},{geometry,tpose}) → boolean
-aDwithin({geometry,tpose},{geometry,tpose},float) → boolean
-aIntersects({geometry,tpose},{geometry,tpose}) → boolean
-aTouches(geometry,tpose) → boolean
-aTouches(tpose,geometry) → boolean
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Poses and Pose Chains"><link rel="prev" href="ch13s13.html" title="Spatial Reference System"><link rel="next" href="ch13s15.html" title="Distance Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s13.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Poses and Pose Chains</th><td width="20%" align="right"> <a accesskey="n" href="ch13s15.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_bbox_ops"></a>Bounding Box Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_topo"></a><a class="indexterm" name="id9784"></a><a class="indexterm" name="id9787"></a><a class="indexterm" name="id9790"></a><a class="indexterm" name="id9793"></a><a class="indexterm" name="id9796"></a><p>Topological operators</p><pre class="programlisting">
+{tstzspan,stbox,tpose,tposechain} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-}
+  {tstzspan,stbox,tpose,tposechain} → boolean
 </pre><pre class="programlisting">
-SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(3 3),0.3)@2001-01-03]');
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
+  Pose(Point(1 1), 0.5)@2001-01-03]' &amp;&amp; tstzspan '[2001-01-02,2001-01-04]';
 -- true
-SELECT aCovers(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(3 3),0.3)@2001-01-03]');
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
+  Pose(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(pose 'Pose(Point(1 1), 0.5)');
 -- true
-SELECT eDisjoint(geometry(pose 'Pose(Point(2 2), 0.0)'),
-  tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)');
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
+  Pose(Point(1 1), 0.5)@2001-01-03]' ~= tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
+  Pose(Point(1 1), 0.35)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]';
 -- true
-SELECT eIntersects(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
-  Pose(Point(3 3),0.1)@2001-01-03]', tpose '[Pose(Point(3 3),0.1)@2001-01-01,
-  Pose(Point(1 1),0.1)@2001-01-03]');
--- true
-SELECT eTouches(tpose 'Pose(Point(0 0), 0.1)@2001-01-01',
-  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
--- true
-SELECT aDwithin(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
-  Pose(Point(3 3),0.1)@2001-01-03]', geometry 'Point(9 9)', 1.0);
--- false
-</pre></li><li class="listitem"><a name="tpose_tspatialrels"></a><a class="indexterm" name="id9768"></a><a class="indexterm" name="id9771"></a><a class="indexterm" name="id9774"></a><a class="indexterm" name="id9777"></a><a class="indexterm" name="id9780"></a><a class="indexterm" name="id9783"></a><p>The <span class="emphasis"><em>temporal</em></span> relationships compute the topological or distance relationship at each instant and result in a <code class="varname">tbool</code>. A temporal pose answers them at the position it occupies, so a value with linear interpolation is answered along its trajectory rather than at its instants alone. The temporal pose declares the relationships a moving point answers: <code class="varname">tContains</code> and <code class="varname">tCovers</code> take the geometry first only, and <code class="varname">tTouches</code> has no direction between two temporal poses, since a moving point neither contains nor covers a geometry and two moving points do not touch.</p><pre class="programlisting">
-tContains(geometry,tpose) → tbool
-tCovers(geometry,tpose) → tbool
-tDisjoint({geometry,tpose},{geometry,tpose}) → tbool
-tDwithin({geometry,tpose},{geometry,tpose},float) → tbool
-tIntersects({geometry,tpose},{geometry,tpose}) → tbool
-tTouches(geometry,tpose) → tbool
-tTouches(tpose,geometry) → tbool
+</pre></li><li class="listitem"><a name="tpose_pos"></a><a class="indexterm" name="id9803"></a><p>Position operators</p><pre class="programlisting">
+{stbox,tpose} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tpose}  → boolean
+{stbox,tpose} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tpose}  → boolean
+{stbox,tpose} {&lt;&lt;/, &amp;&lt;/, /&gt;&gt;, /&amp;&gt;} {stbox,tpose}  → boolean
+{tstzspan,stbox,tpose} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tpose} → boolean
 </pre><pre class="programlisting">
-SELECT tIntersects(tpose '[Pose(Point(1 1), 0.1)@2001-01-01,
-  Pose(Point(3 3), 0.1)@2001-01-03]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
--- {[t@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
-SELECT tDisjoint(tpose '[Pose(Point(1 1), 0.1)@2001-01-01,
-  Pose(Point(3 3), 0.1)@2001-01-03]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
--- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03]}
-SELECT tContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
-  tpose 'Pose(Point(0 0), 0.1)@2001-01-01');
--- f@2001-01-01
-SELECT tCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
-  tpose 'Pose(Point(0 0), 0.1)@2001-01-01');
--- t@2001-01-01
-SELECT tTouches(tpose 'Pose(Point(0 0), 0.1)@2001-01-01',
-  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
--- t@2001-01-01
-SELECT tDwithin(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
-  Pose(Point(1 1),0.5)@2001-01-03)', tpose '[Pose(Point(1 1),0.5)@2001-01-01,
-  Pose(Point(3 3),0.3)@2001-01-03)', 1);
-/* {[t@2001-01-01, t@2001-01-01 16:58:14.025894],
-  (f@2001-01-01 16:58:14.025894, f@2001-01-03)} */
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s13.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s15.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Distance Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Comparisons</td></tr></table></div></body></html>
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; stbox(pose 'Pose(Point(2 2), 0.5)');
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(pose 'Pose(Point(2 2), 0.5)');
+-- true
+SELECT tpose '[Pose(Point(1 1 1), 1,0,0,0)@2001-01-01, 
+  Pose(Point(1 1 1), 1,0,0,0)@2001-01-02]' &lt;&lt;/ stbox(pose 'Pose(Point(2 2 2), 1,0,0,0)');
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;# tstzspan '[2001-01-03, 2001-01-04]';
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-03, Pose(Point(1 1), 0.5)@2001-01-05]' #&gt;&gt;
+  tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]';
+-- true
+</pre></li><li class="listitem"><a name="tposechain_expandSpace"></a><a class="indexterm" name="id9810"></a><a class="indexterm" name="id9813"></a><p>Return the spatiotemporal bounding box expanded in the spatial dimension, or the array of boxes covering the temporal pose chain</p><pre class="programlisting">
+expandSpace({tpose,tposechain},float) → stbox
+stboxes({tpose,tposechain}) → stbox[]
+</pre><pre class="programlisting">
+SELECT expandSpace(tposechain
+  '[PoseChain(Pose(Point(1 1),0.5), Pose(Point(2 0),0))@2001-01-01,
+  PoseChain(Pose(Point(3 3),0.5), Pose(Point(4 0),0))@2001-01-03]', 2);
+/* STBOX XT(((-1,-1),(8.510330247561491,6.917702154416812)),
+   [2001-01-01, 2001-01-03]) */
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s13.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s15.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Spatial Reference System </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Distance Operations</td></tr></table></div></body></html>

@@ -1,50 +1,66 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales"><link rel="prev" href="ch13s06.html" title="Conversión de tipos"><link rel="next" href="ch13s08.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch13s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_getValues"></a><a class="indexterm" name="id8906"></a><p>Devuelve los valores</p><pre class="programlisting">
-getValues(tpose) → poseset
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s06.html" title="Entrada y salida"><link rel="next" href="ch13s08.html" title="Conversión de tipos"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_constructors"></a>Constructores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_const"></a><a class="indexterm" name="id8955"></a><p>Constructor para poses temporales con valor constante</p><pre class="programlisting">
+tpose(pose,timestamptz) → tposeInst
+tpose(pose,tstzset) → tposeDiscSeq
+tpose(pose,tstzspan,interp text='linear') → tposeContSeq
+tpose(pose,tstzspanset,interp text='linear') → tposeSeqSet
+tposechain(posechain,{timestamptz,tstzset}) → tposechain
+tposechain(posechain,{tstzspan,tstzspanset},interp text='linear') → tposechain
 </pre><pre class="programlisting">
-SELECT asText(getValues(tpose '{[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02)}'));
--- {"Pose(Point(1 1),0.3)","Pose(Point(1 1),0.5)"}
-SELECT asEWKT(getValues(tpose 'SRID=5676;{[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.3)@2001-01-02)}'));
--- SRID=5676;{"Pose(Point(1 1),0.3)"}
-</pre></li><li class="listitem"><a name="tpose_points"></a><a class="indexterm" name="id8913"></a><p>Devuelve los puntos</p><pre class="programlisting">
-points(tpose) → geomset
+SELECT asText(tpose('Pose(Point(1 1), 0.5)', timestamptz '2001-01-01'));
+-- Pose(Point(1 1),0.5)@2001-01-01
+SELECT asText(tpose('Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)',
+  tstzset '{2001-01-01, 2001-01-05}'));
+/* {Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-01,
+   Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-05} */
+SELECT asText(tpose('Pose(Point(1 1), 0.5)', tstzspan '[2001-01-01, 2001-01-02]'));
+-- [Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02]
+SELECT asText(tpose('Pose(Point(1 1), 0.2)', tstzspanset '{[2001-01-01, 2001-01-03]}',
+  'step'));
+-- Interp=Step;{[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(1 1),0.2)@2001-01-03]}
+SELECT asEWKT(tposechain(posechain 'PoseChain(Pose(Point(1 1), 0.5))',
+  timestamptz '2001-01-01'));
+-- PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
+SELECT asEWKT(tposechain(posechain 'PoseChain(Pose(Point(1 1), 0.5))',
+  tstzset '{2001-01-01, 2001-01-02}'));
+/* {PoseChain(Pose(POINT(1 1),0.5))@2001-01-01,
+   PoseChain(Pose(POINT(1 1),0.5))@2001-01-02} */
+SELECT asEWKT(tposechain(posechain 'PoseChain(Pose(Point(1 1), 0.5))',
+  tstzspan '[2001-01-01, 2001-01-02]'));
+/* [PoseChain(Pose(POINT(1 1),0.5))@2001-01-01,
+   PoseChain(Pose(POINT(1 1),0.5))@2001-01-02] */
+</pre></li><li class="listitem"><a name="tposeSeq"></a><a class="indexterm" name="id8962"></a><p>Constructor para poses temporales de subtipo secuencia</p><pre class="programlisting">
+tposeSeq(tposeInst[],interp text={'step','linear'},leftInc boolean=true,
+  rightInc boolean=true) → tposeSeq
 </pre><pre class="programlisting">
-SELECT asEWKT(points(tpose 'SRID=5676;{Pose(Point(3 3), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02}'));
--- SRID=5676;{Point(1 1), Point(3 3)}
-</pre></li><li class="listitem"><a name="tpose_trajectory"></a><a class="indexterm" name="id8920"></a><p>Devuelve la trayectoria</p><pre class="programlisting">
-trajectory(tpose) → geometry
-</pre><p>Una pose tiene una posición y una orientación, pero no una extensión, por lo que la geometría que cubre a lo largo del tiempo es la trayectoria de su posición, como para un punto temporal. Una pose que interpola se desplaza por la línea entre dos posiciones consecutivas; una que no interpola permanece en cada una de ellas y no cubre nada entre ellas.</p><pre class="programlisting">
-SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1),0.5)@2000-01-01, 
-  Pose(Point(3 3),0.5)@2000-01-02]'));
--- LINESTRING(1 1,3 3)
-SELECT ST_AsText(trajectory(tpose 'Interp=Step;[Pose(Point(1 1),0.5)@2000-01-01, 
-  Pose(Point(3 3),0.5)@2000-01-02]'));
--- MULTIPOINT((1 1),(3 3))
-</pre></li><li class="listitem"><a name="tpose_valueAtTimestamp"></a><a class="indexterm" name="id8928"></a><p>Devuelve el valor en una marca de tiempo</p><pre class="programlisting">
-valueAtTimestamp(tpose,timestamptz) → pose
+SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.3)@2001-01-01',
+  'Pose(Point(2 2), 0.5)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
+/* {Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02, 
+   Pose(Point(1 1),0.5)@2001-01-03} */
+SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.2)@2001-01-01',
+  'Pose(Point(1 1), 0.4)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
+/* [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(1 1),0.4)@2001-01-02, 
+   Pose(Point(1 1),0.5)@2001-01-03] */
+</pre></li><li class="listitem"><a name="tposeSeqSet"></a><a class="indexterm" name="id8969"></a><a class="indexterm" name="id8972"></a><p>Constructor para poses temporales de subtipo conjunto de secuencias</p><pre class="programlisting">
+tposeSeqSet(tpose[]) → tposeSeqSet
+tposeSeqSetGaps(tposeInst[],maxt interval=NULL,maxdist float=NULL,
+  interp text='linear') → tposeSeqSet
 </pre><pre class="programlisting">
-SELECT asText(valueAtTimestamp(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(3 3), 0.5)@2001-01-03)', '2001-01-02'));
--- Pose(Point(2 2),0.4)
-SELECT asText(valueAtTimestamp(tpose 
-  '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
-    Pose(Point Z(3 3 3), 1, 0, 0, 0)@2001-01-03)', timestamptz '2001-01-02'), 6);
--- Pose(POINT Z (2 2 2),0.866025,0.288675,0.288675,0.288675)
-</pre></li><li class="listitem"><a name="tpose_speed"></a><a class="indexterm" name="id8935"></a><p>Devuelve la velocidad de una pose temporal como un flotante temporal: la magnitud de la velocidad de la componente de posición (distancia recorrida por unidad de tiempo). La orientación no es considerada; para la velocidad angular véase <code class="varname">angularSpeed</code>.</p><pre class="programlisting">
-speed(tpose) → tfloat
-</pre><pre class="programlisting">
-SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01,
-  Pose(Point(1 1), 0.5)@2000-01-02]'));
--- Interp=Step;[1.6368e-5@2000-01-01, 1.6368e-5@2000-01-02]
--- (sqrt(2) units / 86400 seconds, units depend on the SRID's CRS)
-</pre></li><li class="listitem"><a name="tpose_angular_speed"></a><a class="indexterm" name="id8943"></a><p>Devuelve la velocidad angular de una pose temporal como un flotante temporal con interpolación por pasos (radianes por unidad de tiempo). Para las poses 2D es el delta theta del arco más corto por segmento dividido por la duración del segmento; para las poses 3D es el ángulo de arco de SLERP <code class="varname">2 · acos(|q1 · q2|)</code> dividido por la duración del segmento. SLERP tiene por construcción velocidad angular constante a lo largo de un segmento, por lo que el resultado es constante a trozos.</p><pre class="programlisting">
-angularSpeed(tpose) → tfloat
-</pre><pre class="programlisting">
--- 90-degree yaw rotation over one day -&gt; pi/2 rad / 86400 s
-SELECT asText(angularSpeed(tpose
-  '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01,
-    Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
--- Interp=Step;[1.8181e-5@2000-01-01, 1.8181e-5@2000-01-02]
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Conversión de tipos </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Transformaciones</td></tr></table></div></body></html>
+SELECT asText(tposeSeqSet(ARRAY[tpose '[Pose(Point(1 1),0.2)@2001-01-01,
+  Pose(Point(2 2),0.4)@2001-01-02]',
+  '[Pose(Point(2 2),0.6)@2001-01-03, Pose(Point(2 2),0.8)@2001-01-04]']));
+/* {[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.4)@2001-01-02],
+   [Pose(Point(2 2),0.6)@2001-01-03, Pose(Point(2 2),0.6)@2001-01-04]} */
+SELECT asText(tposeSeqSetGaps(ARRAY[tpose 'Pose(Point(1 1),0.1)@2001-01-01',
+  'Pose(Point(1 1),0.3)@2001-01-03', 'Pose(Point(1 1),0.5)@2001-01-05'], '1 day'));
+/* {[Pose(Point(1 1),0.1)@2001-01-01], [Pose(Point(1 1),0.3)@2001-01-03], 
+   [Pose(Point(1 1),0.5)@2001-01-05]} */
+</pre></li><li class="listitem"><a name="tgeompoint_tfloat_tpose"></a><a class="indexterm" name="id8979"></a><p>Construye una pose temporal 2D a partir de un punto geométrico temporal y un flotante temporal</p><pre class="programlisting">
+tpose(tgeompoint,tfloat) → tpose
+</pre><p>El marco temporal del resultado es la intersección de los marcos temporales del punto temporal y el flotante temporal. Si no se intersecan, se devuelve un valor nulo</p><pre class="programlisting">
+SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[1@2001-01-01, 2@2001-01-02)'));
+-- [Pose(Point(1 1),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[2@2001-01-03, 3@2001-01-04)'));
+-- NULL
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Entrada y salida </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Conversión de tipos</td></tr></table></div></body></html>

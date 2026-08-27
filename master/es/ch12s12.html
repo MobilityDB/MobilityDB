@@ -1,32 +1,41 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Restricciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch12.html" title="Capítulo 12. Búferes circulares temporales"><link rel="prev" href="ch12s11.html" title="Operaciones de distancia"><link rel="next" href="ch12s13.html" title="Comparaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Restricciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s11.html">Anterior</a> </td><th width="60%" align="center">Capítulo 12. Búferes circulares temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch12s13.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_restrictions"></a>Restricciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_atValues"></a><a class="indexterm" name="id8192"></a><a class="indexterm" name="id8195"></a><a class="indexterm" name="id8198"></a><a class="indexterm" name="id8201"></a><p>Restringir al (complemento de) un valor o un conjunto de valores</p><pre class="programlisting">
-atValue(tcbuffer,value) → tcbuffer
-minusValue(tcbuffer,value) → tcbuffer
-atValues(tcbuffer,valueset) → tcbuffer
-minusValues(tcbuffer,valueset) → tcbuffer
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones de cuadro delimitador</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch12.html" title="Capítulo 12. Búferes circulares temporales"><link rel="prev" href="ch12s11.html" title="Operaciones espaciales"><link rel="next" href="ch12s13.html" title="Operaciones de distancia"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones de cuadro delimitador</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s11.html">Anterior</a> </td><th width="60%" align="center">Capítulo 12. Búferes circulares temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch12s13.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_bbox_ops"></a>Operaciones de cuadro delimitador</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_topo"></a><a class="indexterm" name="id8130"></a><a class="indexterm" name="id8133"></a><a class="indexterm" name="id8136"></a><a class="indexterm" name="id8139"></a><a class="indexterm" name="id8142"></a><p>Operadores topológicos</p><pre class="programlisting">
+{tstzspan,stbox,tcbuffer} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} {tstzspan,stbox,tcbuffer} → boolean
 </pre><pre class="programlisting">
-SELECT asText(atValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-03]', cbuffer 'Cbuffer(Point(2 2), 0.5)'));
--- {[Cbuffer(Point(2 2),0.5)@2001-01-02]}
-SELECT asText(minusValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-03]', cbuffer 'Cbuffer(Point(2 2), 0.5)'));
-/* {[Cbuffer(Point(2 2),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02),
-   (Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(2 2),0.7)@2001-01-03]} */
-</pre></li><li class="listitem"><a name="tcbuffer_atGeometry"></a><a class="indexterm" name="id8208"></a><a class="indexterm" name="id8211"></a><p>TODO Restringir al (complemento de) una geometría</p><pre class="programlisting">
-atGeometry(tcbuffer,geometry) → tcbuffer
-minusGeometry(tcbuffer,geometry) → tcbuffer
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&amp; cbuffer 'Cbuffer(Point(1 1), 0.5)';
+-- true
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)');
+-- true
+SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)'::geometry &lt;@
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]';
+-- true
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' ~= tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.35)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
+-- true
+</pre></li><li class="listitem"><a name="tcbuffer_pos"></a><a class="indexterm" name="id8149"></a><p>Operadores de posición</p><pre class="programlisting">
+{stbox,tcbuffer} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tcbuffer} → boolean
+{stbox,tcbuffer} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tcbuffer} → boolean
+{tstzspan,stbox,tcbuffer} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tcbuffer} → boolean
 </pre><pre class="programlisting">
-SELECT asText(atGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
--- {[Cbuffer(POINT(2 2),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.7)@2001-01-03]}
-SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
-/* {(Cbuffer(Point(2 2),0.342593)@2001-01-01 05:06:40.364673,
-   Cbuffer(Point(2 2),0.7)@2001-01-03]} */
-</pre></li><li class="listitem"><a name="tcbuffer_atStbox"></a><a class="indexterm" name="id8218"></a><a class="indexterm" name="id8221"></a><p>Restringir un búfer circular temporal a (el complemento de) una caja espaciotemporal</p><pre class="programlisting">
-atStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer
-minusStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; cbuffer 'Cbuffer(Point(1 1), 0.2)'
+-- false
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)')
+-- false
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; cbuffer 'Cbuffer(Point(1 1), 0.3)'::geometry
+-- true
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &gt;&gt;#
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]'
+-- true
+</pre></li><li class="listitem"><a name="tcbuffer_expandSpace"></a><a class="indexterm" name="id8156"></a><p>Devuelve la caja delimitadora espaciotemporal expandida en la dimensión espacial por un valor flotante</p><pre class="programlisting">
+expandSpace(tcbuffer,float) → stbox
 </pre><pre class="programlisting">
-SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2000-01-01,
-  Cbuffer(Point(3 3), 0.5)@2000-01-03]', stbox 'STBOX X((0,0),(2,2))'));
--- {[Cbuffer(POINT(1 1),0.5)@2000-01-01, Cbuffer(POINT(2 2),0.5)@2000-01-02)}
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s11.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s13.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de distancia </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Comparaciones</td></tr></table></div></body></html>
+SELECT expandSpace(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(3 3), 0.5)@2001-01-03]', 2);
+-- STBOX XT(((-1.5,-1.5),(5.5,5.5)),[2001-01-01, 2001-01-03])
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s11.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s13.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones espaciales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operaciones de distancia</td></tr></table></div></body></html>

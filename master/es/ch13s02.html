@@ -1,28 +1,198 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Poses temporales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales"><link rel="prev" href="ch13.html" title="Capítulo 13. Poses temporales"><link rel="next" href="ch13s03.html" title="Validez de las poses temporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Poses temporales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch13s03.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temp_poses"></a>Poses temporales</h2></div></div></div><p>El tipo de pose temporal <code class="varname">tpose</code> permite representar la evolución en el tiempo de la posición de los objetos y su orientación. Como todos los tipos temporales, se presenta en tres subtipos, a saber, instante, secuencia y conjunto de secuencias. A continuación se dan ejemplos de valores de <code class="varname">tpose</code> en estos subtipos.</p><pre class="programlisting">
-SELECT tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
-SELECT tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02,
-  Pose(Point(1 1), 0.5)@2001-01-03}';
-SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02,
-  Pose(Point(1 1), 0.5)@2001-01-03]';
-SELECT tpose '{[Pose(Point(1 1), 1)@2001-01-01, Pose(Point(2 2), 1)@2001-01-02],
-  [Pose(Point(2 2), 2)@2001-01-04, Pose(Point(2 2), 3)@2001-01-05]}';
-</pre><p>Al igual que para los tipos de punto temporal, el tipo de pose temporal acepta modificadores de tipo (o <code class="varname">typmod</code> en la terminología de PostgreSQL) para especificar el subtipo, la dimensionalidad del punto y/o el identificador de referencia espacial (SRID). Los valores posibles para el subtipo son <code class="varname">Instant</code>, <code class="varname">Sequence</code> y <code class="varname">SequenceSet</code> y los valores posibles para el tipo de geometría son <code class="varname">Point</code> o <code class="varname">PointZ</code>. Los tres argumentos son opcionales y si alguno de ellos no se especifica para una columna, se permiten valores de cualquier subtipo, dimensionalidad y/o SRID.</p><pre class="programlisting">
-SELECT asEWKT(tpose(Sequence,5676) 'SRID=5676;[Pose(Point(1 1), 0.2)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-03]');
--- SRID=5676;[Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(1 1),0.5)@2001-01-03]
-SELECT tpose(Sequence) 'Pose(Point(1 1), 0.2)@2001-01-01';
--- ERROR: Temporal type (Instant) does not match column type (Sequence)
-SELECT tpose(PointZ) 'Pose(Point(1 1), 0.2)@2001-01-01';
--- Column has Z dimension but the tpose value does not
-SELECT tpose(5676) 'Pose(Point(1 1), 0.2)@2001-01-01';
--- ERROR:  Temporal pose SRID (0) does not match column SRID (5676)
-</pre><p>Los valores de pose temporal del subtipo de secuencia o conjunto de secuencias se convierten en una forma normal para que los valores equivalentes tengan representaciones idénticas. Para ello, los valores instantáneos consecutivos se fusionan cuando es posible. Tres valores instantáneos consecutivos se pueden fusionar en dos si las funciones lineales que definen la evolución de los valores son las mismas. Los ejemplos de transformación a una forma normal son los siguientes.</p><pre class="programlisting">
-SELECT asText(tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
-  Pose(Point(2 2), 0.4)@2001-01-02, Pose(Point(3 3), 0.6)@2001-01-03)');
--- [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(3 3),0.6)@2001-01-03)
-SELECT asText(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, 
-  Pose(Point(2 2), 0.3)@2001-01-02, Pose(Point(2 2), 0.5)@2001-01-03), 
-  [Pose(Point(2 2), 0.5)@2001-01-03, Pose(Point(2 2), 0.7)@2001-01-04)}');
-/* {[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.3)@2001-01-02, 
-   Pose(Point(2 2),0.7)@2001-01-04)} */
-</pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s03.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Capítulo 13. Poses temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Validez de las poses temporales</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Poses estáticas y cadenas de poses estáticas</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="next" href="ch13s03.html" title="Composición de cadenas de poses"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Poses estáticas y cadenas de poses estáticas</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s03.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="static_poses"></a>Poses estáticas y cadenas de poses estáticas</h2></div></div></div><p>Una <code class="varname">pose</code> 2D es un par de la forma <code class="varname">(point2D,radius)</code> donde <code class="varname">point2D</code> es un punto geométrico 2D y <code class="varname">radius</code> es un valor <code class="varname">float</code> que representa un ángulo de rotación en (-π, π] expresado en radianes. Una <code class="varname">pose</code> 3D es una tupla de la forma <code class="varname">(point3D,W,Y,X,Z)</code> donde <code class="varname">point3D</code> es un punto geométrico 3D, y <code class="varname">W</code>, <code class="varname">X</code>, <code class="varname">Y</code> y <code class="varname">Z</code> son cuatro <code class="varname">floats</code> que representan un cuaternión <span class="emphasis"><em>unitario</em></span>.  Ejemplos de entrada de valores de pose son los siguientes:</p><pre class="programlisting">
+SELECT pose 'Pose(Point(1 1), 0.5)';
+SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
+</pre><p>Se puede especificar un SRID para una pose ya sea al comienzo del literal de pose o antes del literal de punto, como se muestra a continuación.</p><pre class="programlisting">
+SELECT pose 'SRID=3812;Pose(Point(1 1), 0.5)';
+SELECT pose 'Pose(SRID=5676;Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
+</pre><p>Los valores del tipo pose deben satisfacer varias restricciones para que estén bien definidos. Ejemplos de valores incorrectos del tipo pose son los siguientes.</p><pre class="programlisting">
+-- Punto vacío
+select pose 'Pose(Point empty, 0.5)';
+-- Valor de punto incorrecto
+SELECT pose 'Pose(Linestring(1 1,2 2), 1.0)';
+-- Valor de radio incorrecto
+SELECT pose 'Pose(Point(1 1), -10.0)';
+-- Punto 3D incorrecto
+SELECT pose 'Pose(Point Z(1 1), 1.0)';
+-- Orientación 3D incompleta
+SELECT pose 'Pose(Point Z(1 1 1), 1.0)';
+</pre><p>A continuación damos las funciones y operadores para el tipo pose.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_inout"></a>Entrada y salida</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_asText"></a><a class="indexterm" name="id8566"></a><a class="indexterm" name="id8569"></a><p>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+asText({pose,posechain,pose[],posechain[]}) → {text,text[]}
+asEWKT({pose,posechain,pose[],posechain[]}) → {text,text[]}
+</pre><pre class="programlisting">
+SELECT asText(pose 'SRID=4326;Pose(Point(0 0),1)');
+-- Pose(POINT(0 0),1)
+SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
+-- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
+SELECT asEWKT(pose 'SRID=4326;Pose(Point(0 0),1)');
+-- SRID=4326;Pose(Point(0 0),1)
+SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 'Pose(SRID=5676;Point(1 1),2)']);
+-- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
+</pre></li><li class="listitem"><a name="pose_asBinary"></a><a class="indexterm" name="id8576"></a><a class="indexterm" name="id8579"></a><a class="indexterm" name="id8582"></a><a class="indexterm" name="id8585"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+asBinary({pose,posechain},endian text='') → bytea
+asEWKB({pose,posechain},endian text='') → bytea
+asHexWKB({pose,posechain},endian text='') → text
+asHexEWKB({pose,posechain},endian text='') → text
+</pre><p>La cadena escribe sus indicadores y su único SRID una sola vez, después el número de eslabones y después los valores de cada eslabón en orden. El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+SELECT asBinary(pose 'Pose(Point(1 2),1)');
+-- \x0101000000000000f03f0000000000000040000000000000f03f
+SELECT asEWKB(pose 'SRID=7844;Pose(Point(1 2),1)');
+-- \x0141a41e0000000000000000f03f0000000000000040000000000000f03f
+SELECT asHexWKB(pose 'Pose(Point(1 2),1)');
+-- 0101000000000000F03F0000000000000040000000000000F03F
+SELECT asHexEWKB(pose 'SRID=3812;Pose(Point(1 2),1)');
+-- 0141E40E0000000000000000F03F0000000000000040000000000000F03F
+</pre></li><li class="listitem"><a name="poseFromText"></a><a class="indexterm" name="id8594"></a><a class="indexterm" name="id8597"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+poseFromText(text) → pose
+poseFromEWKT(text) → pose
+posechainFromText(text) → posechain
+posechainFromEWKT(text) → posechain
+</pre><pre class="programlisting">
+SELECT asEWKT(poseFromText(text 'Pose(Point(1 2),1)'));
+-- Pose(POINT(1 2),1)
+SELECT asEWKT(poseFromEWKT(text 'SRID=3812;Pose(Point(1 2),1)'));
+-- SRID=3812;Pose(Point(1 2),1)
+SELECT asEWKT(posechainFromText('PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),1))'));
+-- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),1))
+SELECT asEWKT(posechainFromEWKT('SRID=3812;PoseChain(Pose(Point(0 0),0))'));
+-- SRID=3812;PoseChain(Pose(POINT(0 0),0))
+</pre></li><li class="listitem"><a name="poseFromBinary"></a><a class="indexterm" name="id8604"></a><a class="indexterm" name="id8607"></a><a class="indexterm" name="id8610"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+poseFromBinary(bytea) → pose
+poseFromEWKB(bytea) → pose
+poseFromHexEWKB(text) → pose
+posechainFromBinary(bytea) → posechain
+posechainFromEWKB(bytea) → posechain
+posechainFromHexEWKB(text) → posechain
+</pre><pre class="programlisting">
+SELECT asEWKT(poseFromBinary('\x0101000000000000f03f0000000000000040000000000000f03f'));
+-- Pose(POINT(1 2),1)
+SELECT asEWKT(poseFromEWKB(
+  '\x0141a41e0000000000000000f03f0000000000000040000000000000f03f'));
+-- SRID=7844;Pose(Point(1 2),1)
+SELECT asEWKT(poseFromHexEWKB(
+  '0141E40E0000000000000000F03F0000000000000040000000000000F03F'));
+-- SRID=3812;Pose(POINT(1 2),1)
+SELECT posechainFromBinary(asBinary(posechain 'PoseChain(Pose(Point(1 2),0.5))')) =
+  posechain 'PoseChain(Pose(Point(1 2),0.5))';
+-- t
+SELECT posechainFromHexEWKB(asHexEWKB( posechain 'SRID=3812;
+  PoseChain(Pose(Point(1 2),0.5))')) = posechain 'SRID=3812;PoseChain(Pose(Point(1 2),
+  0.5))';
+-- t
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose"></a><a class="indexterm" name="id8620"></a><p>Constructor para poses</p><pre class="programlisting">
+pose(geompoint2D,float) → pose
+pose(geompoint3D,float,float,float,float) → pose
+pose(geompoint3D,yaw float,pitch float,roll float) → pose
+</pre><p>La forma de tres ángulos toma la orientación en la otra codificación que prescribe el estándar OGC GeoPose v1.0, una terna yaw / pitch / roll en radianes bajo la convención Tait-Bryan intrínseca ZYX, y almacena el cuaternión que denota. Es la inversa de <a class="link" href="ch13s21.html#pose_ypr"><code class="varname">ypr</code></a>.</p><pre class="programlisting">
+SELECT asText(pose(ST_Point(1,1), radians(45)), 6);
+-- Pose(POINT(1 1),0.785398)
+SELECT asEWKT(pose(ST_Point(1,1,3812), radians(45)), 6);
+-- SRID=3812;Pose(POINT(1 1),0.785398)
+SELECT asText(pose(ST_PointZ(1,1,1), 1, 0, 0, 0));
+-- Pose(POINT Z (1 1 1),1,0,0,0)
+SELECT asText(pose(ST_PointZ(1,1,1), radians(90), 0, 0), 6);
+-- Pose(POINT Z (1 1 1),0.707107,0,0,0.707107)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_conversions"></a>Conversión de tipos</h3></div></div></div><p>Los valores del tipo <code class="varname">pose</code> se pueden convertir al tipo de punto <code class="varname">geometry</code> utilizando un <code class="varname">CAST</code> explícito o utilizando la notación <code class="varname">::</code> como se muestra a continuación.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_stbox"></a><a class="indexterm" name="id8638"></a><a class="indexterm" name="id8641"></a><p>Convierte una pose y, opcionalmente, una marca de tiempo o un período, en una caja espaciotemporal</p><pre class="programlisting">
+{pose,posechain}::stbox
+stbox({pose,posechain}) → stbox
+stbox({pose,posechain},{timestamptz,tstzspan}) → stbox
+</pre><p>La caja cubre la posición compuesta de cada prefijo de la cadena y no solo la del conjunto: cada articulación es un lugar, y una ventana de consulta que alcanza el codo pero no la mano alcanza igualmente la cadena.</p><pre class="programlisting">
+SELECT stbox(pose 'SRID=5676;Pose(Point(1 1),0.3)');
+-- SRID=5676;STBOX X((1,1),(1,1))
+SELECT stbox(pose 'Pose(Point(1 1),0.3)', timestamptz '2001-01-01');
+-- STBOX XT(((1,1),(1.3,1.3)),[2001-01-01, 2001-01-01])
+SELECT stbox(pose 'Pose(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
+-- STBOX XT(((1,1),(1.3,1.3)),[2001-01-01, 2001-01-02])
+</pre></li><li class="listitem"><a name="pose_geometry"></a><a class="indexterm" name="id8649"></a><p>Convierte una pose en un punto geométrico</p><pre class="programlisting">
+pose::geompoint
+</pre><pre class="programlisting">
+SELECT ST_AsText(pose(ST_Point(1, 1), 1)::geometry);
+-- Point(1 1)
+SELECT ST_AsEWKT(pose(ST_PointZ(1, 1, 1, 5676), 1, 0, 0, 0)::geometry);
+-- SRID=5676;POINT(1 1 1)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_accessors"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_point"></a><a class="indexterm" name="id8659"></a><p>Devuelve el punto, que para una cadena de poses es el punto de su marco más interior</p><pre class="programlisting">
+point({pose,posechain}) → geometry
+</pre><pre class="programlisting">
+SELECT ST_AsText(point(pose 'Pose(Point(1 1), 0.3)'));
+-- Point(1 1)
+</pre></li><li class="listitem"><a name="pose_quaternion"></a><a class="indexterm" name="id8666"></a><p>Devuelve el cuaternión de orientación de una pose</p><pre class="programlisting">
+quaternion(pose) → quaternion
+</pre><p>Las componentes se devuelven en el orden <code class="varname">W</code>, <code class="varname">X</code>, <code class="varname">Y</code>, <code class="varname">Z</code>, la convención de Hamilton en la que una pose 3D las almacena. Esta es una de las dos codificaciones de orientación que prescribe el estándar OGC GeoPose v1.0; la otra, yaw / pitch / roll, la proporciona <a class="link" href="ch13s21.html#pose_ypr"><code class="varname">ypr</code></a>. Ambas están definidas para las dos dimensiones: la orientación de una pose 2D es un giro alrededor de la vertical local por su ángulo almacenado, de modo que coloca la mitad de ese ángulo en <code class="varname">W</code> y <code class="varname">Z</code> y deja <code class="varname">X</code> e <code class="varname">Y</code> en cero. Este es el cuaternión que un documento GeoPose Basic-Quaternion lleva para una pose plana.</p><pre class="programlisting">
+SELECT quaternion(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
+-- (0,0,0,1)
+SELECT quaternion(pose 'Pose(Point(1 1), 0)');
+-- (1,0,0,0)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_round"></a><a class="indexterm" name="id8687"></a><p>Redondea el punto y la orientación de la pose al número de posiciones decimales</p><pre class="programlisting">
+round({pose,posechain},integer=0) → {pose,posechain}
+</pre><pre class="programlisting">
+SELECT asText(round(pose(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
+-- Pose(POINT(1.123457 1.123457),0.123457)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_srid"></a>Sistema de referencia espacial</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_SRID"></a><a class="indexterm" name="id8697"></a><a class="indexterm" name="id8700"></a><p>Devuelve o establece el identificador de referencia espacial, que para una cadena de poses es el identificador de su marco exterior</p><pre class="programlisting">
+SRID({pose,posechain}) → integer
+setSRID({pose,posechain},integer) → {pose,posechain}
+</pre><pre class="programlisting">
+SELECT SRID(pose 'Pose(SRID=5676;Point(1 1), 0.3)');
+-- 5676
+SELECT asEWKT(setSRID(pose 'Pose(Point(0 0),1)', 4326));
+-- SRID=4326;Pose(POINT(0 0),1)
+</pre></li><li class="listitem"><a name="pose_transform"></a><a class="indexterm" name="id8707"></a><a class="indexterm" name="id8710"></a><p>Transforma a un identificador de referencia espacial</p><pre class="programlisting">
+transform({pose,posechain},integer) → {pose,posechain}
+transformPipeline({pose,posechain},pipeline text,srid integer,
+  is_forward boolean=true) → {pose,posechain}
+</pre><p>Solo el eslabón exterior nombra un marco, por lo que solo se transforma el eslabón exterior: cada uno de los demás eslabones es una transformación rígida leída en los ejes de su marco padre, y un cambio del marco exterior deja esos ejes como estaban. Se genera un error cuando la cadena de entrada tiene un SRID desconocido (representado por 0). Para una cadena tridimensional sobre un marco geográfico, la orientación del eslabón exterior se vuelve a expresar en la base del marco de destino en su punto, exactamente como ocurre con una pose. Para una cadena bidimensional el ángulo es intrínseco a la proyección de origen y se transmite sin cambios.</p><p>La función <code class="varname">transform</code> especifica la transformación con un SRID de destino. Se genera un error cuando la pose de entrada tiene un SRID desconocido (representado por 0). En una pose 3D, la orientación se reexpresa en la base del marco de destino en el punto de la pose. La corrección está definida para el par canónico de OGC GeoPose, WGS-84 geográfico (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978), y toma la base estándar Este-Norte-Arriba en el punto geográfico como pivote de rotación. Para cualquier otro par de SRID, <code class="varname">transform</code> emite un <code class="varname">NOTICE</code> y deja pasar la orientación sin cambios. En una pose 2D, el ángulo es intrínseco a la proyección de origen y se deja pasar sin cambios.</p><p>La función <code class="varname">transformPipeline</code> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena:</p><p><code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code></p><p>El SRID de la pose de entrada se ignora y el SRID de la pose de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <code class="varname">to_srid</code>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</p><pre class="programlisting">
+SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(4.35 50.85),1)', 3812), 6);
+-- SRID=3812;Pose(POINT(648679.018035 671067.055638),1)
+</pre><pre class="programlisting">
+-- Un viaje de ida y vuelta de una pose 3D por ECEF aterriza en la pose de entrada
+SELECT asEWKT(round( transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)',
+  4978), 4326), 6));
+-- SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)
+-- En el cruce del ecuador y el meridiano (lat=lon=0), el cuaternión identidad del cuerpo
+-- en la base ECEF es la rotación canónica Este-Norte-Arriba a ECEF
+SELECT asEWKT(round(transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+-- SRID=4978;Pose(POINT Z (6378137 0 0),0.5,0.5,0.5,0.5)
+</pre><pre class="programlisting">
+WITH test(pose, pipeline) AS (
+  SELECT pose 'Pose(SRID=4326;Point(4.3525 50.846667),1)',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(pose, pipeline, 4326), pipeline, 4326,
+  false), 6) FROM test;
+-- SRID=4326;Pose(POINT(4.3525 50.846667),1)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_distance"></a>Operaciones de distancia</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_distance_op"></a><a class="indexterm" name="id8733"></a><a class="indexterm" name="id8736"></a><p>Devuelve la distancia</p><pre class="programlisting">
+distance({geo,stbox,pose},pose) → float
+distance(pose,{geo,stbox,pose}) → float
+{geo,stbox,pose} &lt;-&gt; pose → float
+</pre><p>Solo se tiene en cuenta el componente de punto de la pose, la orientación se ignora. La distancia se calcula en dos dimensiones, incluso cuando los argumentos son tridimensionales. El resultado es <code class="varname">NULL</code> cuando la geometría está vacía.</p><pre class="programlisting">
+SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
+-- 3
+SELECT round(distance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
+-- 1
+SELECT round(pose 'Pose(Point(0 0),0)' &lt;-&gt; pose 'Pose(Point(3 4),0)', 6);
+-- 5
+SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' &lt;-&gt;
+  pose 'Pose(Point(3 4 12), 1, 0, 0, 0)', 6);
+-- 5
+SELECT round(geometry 'Point empty' &lt;-&gt; pose 'Pose(Point(4 0),0)', 6);
+-- NULL
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_comparison"></a>Comparaciones</h3></div></div></div><p>Los operadores de comparación (=, &lt; y así sucesivamente) están disponibles para poses. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en poses.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_comp"></a><a class="indexterm" name="id8749"></a><a class="indexterm" name="id8752"></a><a class="indexterm" name="id8755"></a><a class="indexterm" name="id8758"></a><a class="indexterm" name="id8761"></a><a class="indexterm" name="id8764"></a><p>Comparaciones tradicionales</p><pre class="programlisting">
+{pose,posechain} {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} {pose,posechain} → boolean
+</pre><p>El orden compara la dimensión, después el SRID, después los eslabones en orden y por último el número de eslabones, de modo que una cadena precede a toda cadena que la extiende.</p><pre class="programlisting">
+SELECT pose 'Pose(Point(3 3), 0.5)' = pose 'Pose(Point(3 3), 0.5)';
+-- true
+SELECT pose 'Pose(Point(3 3), 0.5)' &lt;&gt; pose 'Pose(Point(3 3), 0.6)';
+-- true
+SELECT pose 'Pose(Point(3 3), 0.5)' &lt; pose 'Pose(Point(3 3), 0.6)';
+-- true
+SELECT pose 'Pose(Point(3 3), 0.6)' &gt; pose 'Pose(Point(2 2), 0.6)';
+-- true
+SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)' &lt;=
+  pose 'Pose(Point Z(2 2 2), 0.5, 0.5, 0.5, 0.5)';
+-- true
+SELECT pose 'Pose(Point(1 1), 0.6)' &gt;= pose 'Pose(Point(1 1), 0.5)';
+-- true
+</pre></li><li class="listitem"><a name="pose_same"></a><a class="indexterm" name="id8772"></a><p>¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</p><pre class="programlisting">
+{pose,posechain} ~= {pose,posechain} → boolean
+</pre><pre class="programlisting">
+SELECT pose 'Pose(SRID=5676;Point(1 1), 0.3)' ~= pose 'Pose(SRID=5676;
+  Point(1 1.0000001), 0.30000001)';
+-- true
+</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s03.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Capítulo 13. Poses temporales y cadenas de poses </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Composición de cadenas de poses</td></tr></table></div></body></html>

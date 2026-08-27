@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversión de tipos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch03.html" title="Capítulo 3. Tipos de cuadro delimitador"><link rel="prev" href="ch03s02.html" title="Constructores"><link rel="next" href="ch03s04.html" title="Accesores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversión de tipos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s02.html">Anterior</a> </td><th width="60%" align="center">Capítulo 3. Tipos de cuadro delimitador</th><td width="20%" align="right"> <a accesskey="n" href="ch03s04.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="box_conversions"></a>Conversión de tipos</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_convert_to"></a><a class="indexterm" name="id2572"></a><a class="indexterm" name="id2575"></a><a class="indexterm" name="id2578"></a><a class="indexterm" name="id2581"></a><p>Convertir un <code class="varname">tbox</code> a otro tipo</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversión de tipos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch03.html" title="Capítulo 3. Tipos de cuadro delimitador"><link rel="prev" href="ch03s02.html" title="Constructores"><link rel="next" href="ch03s04.html" title="Accesores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversión de tipos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s02.html">Anterior</a> </td><th width="60%" align="center">Capítulo 3. Tipos de cuadro delimitador</th><td width="20%" align="right"> <a accesskey="n" href="ch03s04.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="box_conversions"></a>Conversión de tipos</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_convert_to"></a><a class="indexterm" name="id2552"></a><a class="indexterm" name="id2555"></a><a class="indexterm" name="id2558"></a><a class="indexterm" name="id2561"></a><p>Convierte un <code class="varname">tbox</code> a otro tipo</p><pre class="programlisting">
 tbox::{intspan,floatspan,tstzspan}
 intspan(tbox) → tbox
 floatspan(tbox) → tbox
@@ -10,7 +10,7 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02))'::floatspan;
 -- (1, 2)
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02))'::tstzspan;
 -- [2001-01-01, 2001-01-02)
-</pre></li><li class="listitem"><a name="tbox_convert_from"></a><a class="indexterm" name="id2589"></a><a class="indexterm" name="id2592"></a><p>Convertir otro tipo a un <code class="varname">tbox</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_convert_from"></a><a class="indexterm" name="id2569"></a><a class="indexterm" name="id2572"></a><p>Convierte otro tipo a un <code class="varname">tbox</code></p><pre class="programlisting">
 {numbers,times,tnumber}::tbox
 tbox({numbers,times,tnumber}) → tbox
 </pre><pre class="programlisting">
@@ -22,34 +22,33 @@ SELECT floatspan '(1.0,2.0)'::tbox;
 -- TBOXFLOAT X((1, 2))
 SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 -- TBOX T((2001-01-01,2001-01-04))
-</pre></li><li class="listitem"><a name="stbox_convert_to"></a><a class="indexterm" name="id2600"></a><a class="indexterm" name="id2603"></a><a class="indexterm" name="id2606"></a><a class="indexterm" name="id2609"></a><a class="indexterm" name="id2612"></a><a class="indexterm" name="id2615"></a><p>Convertir un <code class="varname">stbox</code> a otro tipo</p><pre class="programlisting">
-stbox::{box2d,box2d,geo,tstzspan}
+</pre></li><li class="listitem"><a name="stbox_convert_to"></a><a class="indexterm" name="id2580"></a><a class="indexterm" name="id2583"></a><a class="indexterm" name="id2586"></a><a class="indexterm" name="id2589"></a><a class="indexterm" name="id2592"></a><a class="indexterm" name="id2595"></a><p>Convierte un <code class="varname">stbox</code> a otro tipo</p><pre class="programlisting">
+stbox::{box2d,box3d,geo,tstzspan}
 box2d(stbox) → box2d
-box3d(stbox) → box2d
+box3d(stbox) → box3d
 geometry(stbox) → geometry
 geography(stbox) → geography
 tstzspan(stbox) → tstzspan
 </pre><pre class="programlisting">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::box2d;
 -- BOX(1 2,3 4)
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05])'::
-  geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;
+  STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05])':: geometry);
 -- SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
 SELECT ST_AsEWKT(stbox 'STBOX XT(((1,1),(1,5)),[2001-01-01,2001-01-05])'::geometry);
 -- LINESTRING(1 1,1 5)
 SELECT ST_AsEWKT(stbox 'GEODSTBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-05])'::geography);
 -- SRID=4326;POINT(1 1)
-SELECT ST_AsEWKT(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])'::
-  geometry);
+SELECT ST_AsEWKT(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])':: geometry);
 /* POLYHEDRALSURFACE(((1 1 1,1 5 1,5 5 1,5 1 1,1 1 1)),
    ((1 1 5,5 1 5,5 5 5,1 5 5,1 1 5)),((1 1 1,1 1 5,1 5 5,1 5 1,1 1 1)),
    ((5 1 1,5 5 1,5 5 5,5 1 5,5 1 1)),((1 1 1,5 1 1,5 1 5,1 1 5,1 1 1)),
    ((1 5 1,1 5 5,5 5 5,5 5 1,1 5 1))) */
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
 -- [2001-01-01, 2001-01-03]
-</pre></li><li class="listitem"><a name="stbox_convert_from"></a><a class="indexterm" name="id2623"></a><a class="indexterm" name="id2626"></a><p>Convertir otro tipo a un <code class="varname">stbox</code></p><pre class="programlisting">
-{box2d,box3d,geo,times,tgeo}::stbox
-stbox({box2d,box3d,geo,times,tgeo}) → stbox
+</pre></li><li class="listitem"><a name="stbox_convert_from"></a><a class="indexterm" name="id2603"></a><a class="indexterm" name="id2606"></a><p>Convierte otro tipo a un <code class="varname">stbox</code></p><pre class="programlisting">
+{box2d,box3d,geo,time,tgeo}::stbox
+stbox({box2d,box3d,geo,time,tgeo}) → stbox
 </pre><pre class="programlisting">
 SELECT geometry 'Linestring(1 1 1,2 2 2)'::box3d::stbox;
 -- STBOX Z((1,1,1),(2,2,2))

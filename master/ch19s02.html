@@ -1,54 +1,11 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Static Types pcpoint and pcpatch</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch19.html" title="Chapter 19. Temporal Point Clouds"><link rel="prev" href="ch19.html" title="Chapter 19. Temporal Point Clouds"><link rel="next" href="ch19s03.html" title="Set Types pcpointset and pcpatchset"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Static Types <code class="varname">pcpoint</code> and <code class="varname">pcpatch</code></th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch19.html">Prev</a> </td><th width="60%" align="center">Chapter 19. Temporal Point Clouds</th><td width="20%" align="right"> <a accesskey="n" href="ch19s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="pcpoint_pcpatch_static"></a>Static Types <code class="varname">pcpoint</code> and <code class="varname">pcpatch</code></h2></div></div></div><p>The static types come from pgPointCloud. MobilityDB exposes the schema-aware coordinate accessors needed to project pgPointCloud values into the rest of the temporal-types ecosystem.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_pcpatch_constructors"></a>Ergonomic constructors</h3></div></div></div><p>pgPointCloud's <code class="varname">pcpoint_in</code> only accepts hex-WKB, so the canonical builder is <code class="varname">PC_MakePoint(pcid, ARRAY[…]::float[])</code>. MobilityDB ships two thin SQL overloads on top of it for shorter test literals and ad-hoc queries; the underlying schema-dimension validation still happens inside <code class="varname">PC_MakePoint</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_xy_xyz"></a><a class="indexterm" name="id13316"></a><p>Build a 2D or 3D pcpoint directly from x/y(/z) coordinates</p><pre class="programlisting">
-pcpoint(pcid integer, x float, y float) → pcpoint
-pcpoint(pcid integer, x float, y float, z float) → pcpoint
-</pre><pre class="programlisting">
-SELECT pcpoint(1, 10.0, 20.0, 30.0);
--- equivalent to PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]::float[])
-</pre></li><li class="listitem"><a name="pcpoint_coordinates"></a><a class="indexterm" name="id13323"></a><p>Build a pcpoint from the coordinates of every dimension of the layout of the schema, inactive dimensions included, which is how a schema of more dimensions than the overloads above reach is given its values. That count is the one <code class="varname">PC_MakePoint</code> takes and is NOT the count of active dimensions that <code class="varname">pointCloudSchemaNDims</code> reports</p><pre class="programlisting">
-pcpoint(pcid integer, coordinates float[]) → pcpoint
-</pre><pre class="programlisting">
-SELECT pcpoint(1, ARRAY[10.0, 20.0, 30.0]::float[]);
-</pre></li><li class="listitem"><a name="pcpatch_coordinates"></a><a class="indexterm" name="id13332"></a><p>Build a pcpatch from the coordinates of its points, one point after another, every dimension of the layout of the schema given for each point, inactive dimensions included. That count is the one <code class="varname">PC_MakePatch</code> takes and is NOT the count of active dimensions that <code class="varname">pointCloudSchemaNDims</code> reports; a count that divides evenly by the wrong one of the two builds a patch of the wrong points rather than reporting an error. A patch built this way states the schema itself, there being no point to read it from</p><pre class="programlisting">
-pcpatch(pcid integer, coordinates float[]) → pcpatch
-</pre><pre class="programlisting">
-SELECT pcpatch(1, ARRAY[1.0, 1.0, 1.0, 2.0, 2.0, 2.0]::float[]);
-</pre></li><li class="listitem"><a name="pcpatch_variadic"></a><a class="indexterm" name="id13341"></a><p>Build a pcpatch from a variadic list of pcpoints sharing the same pcid</p><pre class="programlisting">
-pcpatch(VARIADIC points pcpoint[]) → pcpatch
-</pre><pre class="programlisting">
-SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
--- equivalent to PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
---                              PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])])
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_accessors"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_pcid"></a><a class="indexterm" name="id13351"></a><p>Return the schema id of a pcpoint or pcpatch</p><pre class="programlisting">
-pcid(pcpoint) → integer
-pcid(pcpatch) → integer
-</pre><pre class="programlisting">
-SELECT pcid(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
--- 1
-</pre></li><li class="listitem"><a name="pcpoint_getXYZ"></a><a class="indexterm" name="id13358"></a><a class="indexterm" name="id13361"></a><a class="indexterm" name="id13364"></a><p>Return a coordinate of a pcpoint, NULL if the dimension is absent from the schema</p><pre class="programlisting">
-getX(pcpoint) → float
-getY(pcpoint) → float
-getZ(pcpoint) → float
-</pre><pre class="programlisting">
-WITH pt AS (SELECT PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]) p)
-  SELECT getX(p), getY(p), getZ(p) FROM pt;
--- 10 | 20 | 30
-</pre></li><li class="listitem"><a name="pcpoint_getDim"></a><a class="indexterm" name="id13371"></a><p>Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</p><pre class="programlisting">
-getDim(pcpoint,text) → float
-</pre><pre class="programlisting">
-SELECT getDim(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), 'X');
--- 10
-</pre></li><li class="listitem"><a name="pcpoint_SRID"></a><a class="indexterm" name="id13378"></a><p>Return the spatial reference identifier (inherited from the schema)</p><pre class="programlisting">
-SRID(pcpoint) → integer
-SRID(pcpatch) → integer
-</pre><pre class="programlisting">
-SELECT SRID(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
--- 0
-SELECT SRID(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), PC_MakePoint(1,
-  ARRAY[11.0, 21.0, 31.0])]));
--- 0
-</pre></li><li class="listitem"><a name="pcpatch_geometry"></a><a class="indexterm" name="id13385"></a><p>Return the multipoint of the positions the points of a patch occupy. The schema the <code class="varname">pcid</code> names decides the SRID and whether the result carries a Z dimension</p><pre class="programlisting">
-geometry(pcpatch) → geometry
-</pre><pre class="programlisting">
-SELECT ST_AsText(geometry(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
--- MULTIPOINT Z ((1 1 1),(2 2 2))
-</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch19.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch19.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch19s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 19. Temporal Point Clouds </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Set Types <code class="varname">pcpointset</code> and <code class="varname">pcpatchset</code></td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Raster Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch19.html" title="Chapter 19. Raster Sampling"><link rel="prev" href="ch19.html" title="Chapter 19. Raster Sampling"><link rel="next" href="ch19s03.html" title="Raquet / QUADBIN Sampling"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Raster Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch19.html">Prev</a> </td><th width="60%" align="center">Chapter 19. Raster Sampling</th><td width="20%" align="right"> <a accesskey="n" href="ch19s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raster_accessors"></a>Raster Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_numBands"></a><a class="indexterm" name="id14485"></a><p>Return the number of bands of a raster</p><pre class="programlisting">
+numBands(raster) → integer
+</pre><p>The band number accepted by <a class="link" href="ch19.html#raster_rasterValue"><code class="varname">rasterValue</code></a> and by the operators built on it ranges from 1 to this value.</p><pre class="programlisting">
+WITH rast1 AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8 ) AS r ), rast2 AS (
+  SELECT ST_AddBand(r, '32BF'::text, 0.0::float8, NULL::float8) AS r FROM rast1 )
+SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
+  numBands((SELECT r FROM rast2)) AS num_bands_two;
+-- 1 | 2
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch19.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch19.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch19s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 19. Raster Sampling </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Raquet / QUADBIN Sampling</td></tr></table></div></body></html>

@@ -1,6 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones espaciales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch11.html" title="Capítulo 11. Puntos de red temporales"><link rel="prev" href="ch11s13.html" title="Operaciones de cuadro delimitador"><link rel="next" href="ch11s15.html" title="Comparaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones espaciales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 11. Puntos de red temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch11s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_spatial_rels"></a>Relaciones espaciales</h2></div></div></div><p>
-			Las relaciones topológicas y de distancia descritas en <a class="xref" href="ch08s05.html" title="Relaciones espaciales">“Relaciones espaciales”</a>, como <code class="varname">eIntersects</code>, <code class="varname">aDwithin</code> o <code class="varname">tContains</code>, se definen en el espacio geográfico, mientras que los puntos de la red temporal se definen en el espacio de la red. Cada una de estas relaciones también acepta directamente un argumento <code class="varname">tnpoint</code>: cada operando de punto de red se convierte en un punto geométrico temporal mediante la conversión estándar <code class="varname">tnpoint::tgeompoint</code> (el punto resuelto a lo largo de su ruta) y la relación correspondiente del punto geométrico temporal calcula el resultado, exactamente como si la conversión se hubiera escrito manualmente. Una secuencia conserva la interpolación que lleva, de modo que una con la interpolación lineal predeterminada se responde a lo largo de su ruta y no solo en sus instantes.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_espatialrels"></a><a class="indexterm" name="id7455"></a><a class="indexterm" name="id7458"></a><a class="indexterm" name="id7461"></a><a class="indexterm" name="id7464"></a><a class="indexterm" name="id7467"></a><a class="indexterm" name="id7470"></a><a class="indexterm" name="id7473"></a><a class="indexterm" name="id7476"></a><a class="indexterm" name="id7479"></a><a class="indexterm" name="id7482"></a><a class="indexterm" name="id7485"></a><a class="indexterm" name="id7488"></a><p>Las relaciones <span class="emphasis"><em>alguna vez</em></span> y <span class="emphasis"><em>siempre</em></span> determinan si la relación topológica o de distancia se satisface alguna vez o siempre y dan como resultado un <code class="varname">boolean</code>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción, de modo que una secuencia con interpolación lineal se responde a lo largo de su ruta y no solo en sus instantes. El punto de red temporal declara las relaciones que responde un punto en movimiento: <code class="varname">eContains</code>, <code class="varname">aContains</code>, <code class="varname">eCovers</code> y <code class="varname">aCovers</code> toman la geometría en primer lugar únicamente, y <code class="varname">eTouches</code> y <code class="varname">aTouches</code> no tienen dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones siempre y alguna vez</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch11.html" title="Capítulo 11. Puntos de red temporales"><link rel="prev" href="ch11s13.html" title="Operaciones de distancia"><link rel="next" href="ch11s15.html" title="Relaciones espaciotemporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones siempre y alguna vez</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 11. Puntos de red temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch11s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_everalways_rels"></a>Relaciones siempre y alguna vez</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_eContains"></a><a class="indexterm" name="id7376"></a><a class="indexterm" name="id7379"></a><a class="indexterm" name="id7382"></a><a class="indexterm" name="id7385"></a><a class="indexterm" name="id7388"></a><a class="indexterm" name="id7391"></a><a class="indexterm" name="id7394"></a><a class="indexterm" name="id7397"></a><a class="indexterm" name="id7400"></a><a class="indexterm" name="id7403"></a><a class="indexterm" name="id7406"></a><a class="indexterm" name="id7409"></a><p>Relaciones alguna vez y siempre</p><pre class="programlisting">
 eContains(geometry,tnpoint) → boolean
 eCovers(geometry,tnpoint) → boolean
 eDisjoint({geometry,tnpoint},{geometry,tnpoint}) → boolean
@@ -15,7 +13,7 @@ aDwithin({geometry,tnpoint},{geometry,tnpoint},float) → boolean
 aIntersects({geometry,tnpoint},{geometry,tnpoint}) → boolean
 aTouches(geometry,tnpoint) → boolean
 aTouches(tnpoint,geometry) → boolean
-</pre><pre class="programlisting">
+</pre><p>Las relaciones <span class="emphasis"><em>alguna vez</em></span> y <span class="emphasis"><em>siempre</em></span> determinan si la relación topológica o de distancia se satisface alguna vez o siempre y dan como resultado un <code class="varname">boolean</code>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción, de modo que una secuencia con interpolación lineal se responde a lo largo de su ruta y no solo en sus instantes. El punto de red temporal declara las relaciones que responde un punto en movimiento: <code class="varname">eContains</code>, <code class="varname">aContains</code>, <code class="varname">eCovers</code> y <code class="varname">aCovers</code> toman la geometría en primer lugar únicamente, y <code class="varname">eTouches</code> y <code class="varname">aTouches</code> no tienen dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</p><pre class="programlisting">
 SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
 -- false
@@ -28,39 +26,10 @@ SELECT eDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
 SELECT eIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
   tnpoint '[Npoint(2, 0.0)@2001-01-01, Npoint(2, 1)@2001-01-03]');
 -- false
-SELECT eTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01',
-  geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))');
+SELECT eTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01', geometry 'SRID=5676;
+  Polygon((0 0,0 50,50 50,50 0,0 0))');
 -- false
 SELECT aDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
   tnpoint '[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
 -- false
-</pre></li><li class="listitem"><a name="tnpoint_tspatialrels"></a><a class="indexterm" name="id7504"></a><a class="indexterm" name="id7507"></a><a class="indexterm" name="id7510"></a><a class="indexterm" name="id7513"></a><a class="indexterm" name="id7516"></a><a class="indexterm" name="id7519"></a><p>Las relaciones <span class="emphasis"><em>temporales</em></span> calculan la relación topológica o de distancia en cada instante y dan como resultado un <code class="varname">tbool</code>. Un punto de red temporal las responde en la posición a la que se resuelven su ruta y su fracción. El punto de red temporal declara las relaciones que responde un punto en movimiento: <code class="varname">tContains</code> y <code class="varname">tCovers</code> toman la geometría en primer lugar únicamente, y <code class="varname">tTouches</code> no tiene dirección entre dos puntos de red temporales, ya que un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan.</p><pre class="programlisting">
-tContains(geometry,tnpoint) → tbool
-tCovers(geometry,tnpoint) → tbool
-tDisjoint({geometry,tnpoint},{geometry,tnpoint}) → tbool
-tDwithin({geometry,tnpoint},{geometry,tnpoint},float) → tbool
-tIntersects({geometry,tnpoint},{geometry,tnpoint}) → tbool
-tTouches(geometry,tnpoint) → tbool
-tTouches(tnpoint,geometry) → tbool
-</pre><pre class="programlisting">
-SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
--- {[f@2001-01-01, f@2001-01-03]}
-SELECT tCovers(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tnpoint 'Npoint(1, 0.1)@2001-01-01');
--- f@2001-01-01
-SELECT tDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
-  tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
--- {[t@2001-01-01, t@2001-01-03]}
-SELECT tTouches(tnpoint 'Npoint(1, 0.1)@2001-01-01',
-  geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))');
--- f@2001-01-01
-SELECT tIntersects(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
-  tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.1)@2001-01-03]');
--- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
-SELECT tDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
-  tnpoint '[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
-/* {[f@2001-01-01, t@2001-01-01 22:19:04.400634,
-  t@2001-01-02 01:40:55.599365], (f@2001-01-02 01:40:55.599365,
-  f@2001-01-03]} */
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s13.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s15.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de cuadro delimitador </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Comparaciones</td></tr></table></div></body></html>
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s13.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s15.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de distancia </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Relaciones espaciotemporales</td></tr></table></div></body></html>

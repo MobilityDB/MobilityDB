@@ -1,41 +1,27 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Aristas Dirigidas</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Índices de Celdas H3 Temporales"><link rel="prev" href="ch17s07.html" title="Conversiones de Latitud/Longitud"><link rel="next" href="ch17s09.html" title="Vértices"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Aristas Dirigidas</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17s09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_edges"></a>Aristas Dirigidas</h2></div></div></div><p>Las aristas dirigidas H3 son a su vez identificadores de 64 bits (codificados de manera diferente a los identificadores de celda, <code class="varname">isValidDirectedEdge</code> los distingue). El tipo <code class="varname">th3index</code> de MobilityDB transporta las aristas dirigidas por convención: el mismo tipo, interpretado a través de las funciones de acceso específicas de las aristas.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_h3_are_neighbor_cells"></a><a class="indexterm" name="id11755"></a><p>Devolver un booleano temporal que indica si dos celdas temporales son vecinas en la cuadrícula en cada instante</p><pre class="programlisting">
-th3AreNeighborCells(th3index,th3index) → tbool
-</pre><p>Los dos operandos se sincronizan.</p><pre class="programlisting">
-SELECT th3AreNeighborCells(
-  th3index '880326b885fffff@2001-01-01',
-  th3index '880326b88dfffff@2001-01-01');
--- t@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_cells_to_directed_edge"></a><a class="indexterm" name="id11763"></a><p>Devolver un identificador de arista dirigida temporal a partir de un par de celdas temporales origen/destino</p><pre class="programlisting">
-th3CellsToDirectedEdge(th3index,th3index) → th3index
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Teselas y Quadkeys</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Índices de Celdas QUADBIN Temporales"><link rel="prev" href="ch17s07.html" title="Conversiones de Geometría"><link rel="next" href="ch17s09.html" title="Métricas"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Teselas y Quadkeys</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Índices de Celdas QUADBIN Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17s09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tquadbin_tile_quadkey"></a>Teselas y Quadkeys</h2></div></div></div><p>QUADBIN está construido sobre el esquema de teselas slippy-map (web-mercator), por lo que una celda se corresponde directamente con un triple de coordenadas de tesela <code class="varname">(x, y, z)</code> y con la cadena quadkey en base 4 usada por los servidores de teselas. Estas conversiones son el puente específico de QUADBIN con el ecosistema de teselado.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tquadbin_quadbin_tile_to_cell"></a><a class="indexterm" name="id12287"></a><p>Construye una celda a partir de coordenadas de tesela slippy-map: columna <code class="varname">x</code>, fila <code class="varname">y</code>, y zoom <code class="varname">z</code></p><pre class="programlisting">
+quadbinTileToCell(integer,integer,integer) → quadbin
 </pre><pre class="programlisting">
-SELECT th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01');
--- 1671fa44a8ffffff@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_is_valid_directed_edge"></a><a class="indexterm" name="id11770"></a><p>Devolver un booleano temporal que indica en cada instante si el valor es una arista dirigida H3 válida</p><pre class="programlisting">
-isValidDirectedEdge(th3index) → tbool
+SELECT quadbinTileToCell(0, 0, 0) = quadbin '480fffffffffffff';
+-- true
+SELECT quadbinTileToCell(3, 5, 4) = quadbin '48427fffffffffff';
+-- true
+SELECT quadbinTileToCell(524, 343, 10) = quadbin '48a6227affffffff';
+-- true
+</pre></li><li class="listitem"><a name="tquadbin_quadbin_cell_to_tile"></a><a class="indexterm" name="id12297"></a><p>Descompone una celda en su triple de coordenadas de tesela, devuelto como un arreglo de enteros <code class="varname">{x, y, z}</code>, la inversa de <code class="varname">quadbinTileToCell</code></p><pre class="programlisting">
+quadbinCellToTile(quadbin) → integer[]
 </pre><pre class="programlisting">
-SELECT isValidDirectedEdge(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01'));
--- t@2001-01-01
-SELECT isValidDirectedEdge(th3index '871fa44a8ffffff@2001-01-01');
--- f@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_get_directed_edge_origin"></a><a class="indexterm" name="id11777"></a><a class="indexterm" name="id11780"></a><p>Devolver la celda origen o destino temporal de una arista dirigida temporal</p><pre class="programlisting">
-th3GetDirectedEdgeOrigin(th3index) → th3index
-th3GetDirectedEdgeDestination(th3index) → th3index
-</pre><pre class="programlisting">
-SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(th3index
-  '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01'));
--- 871fa44a8ffffff@2001-01-01
-SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(th3index
-  '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01'));
--- 871fa44aeffffff@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_directed_edge_to_boundary"></a><a class="indexterm" name="id11787"></a><p>Devolver el límite poligonal temporal de cada arista dirigida en una trayectoria, como una geografía temporal</p><pre class="programlisting">
-th3DirectedEdgeToBoundary(th3index) → tgeography
-</pre><pre class="programlisting">
-SELECT ST_NPoints(getValue(th3DirectedEdgeToBoundary(
-  th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01')))::geometry);
--- 3
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17s07.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch17s09.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Conversiones de Latitud/Longitud </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Vértices</td></tr></table></div></body></html>
+SELECT quadbinCellToTile(quadbin '480fffffffffffff');
+-- {0,0,0}
+SELECT quadbinCellToTile(quadbin '48a6227affffffff');
+-- {524,343,10}
+</pre></li><li class="listitem"><a name="tquadbin_quadbin_cell_to_quadkey"></a><a class="indexterm" name="id12306"></a><a class="indexterm" name="id12309"></a><p>Emite la cadena quadkey en base 4 de una celda (un dígito por nivel de zoom, primero el más significativo; la celda mundial de resolución 0 se corresponde con la cadena vacía)</p><pre class="programlisting">
+quadbinCellToQuadkey(quadbin) → text
+tquadbinCellToQuadkey(tquadbin) → ttext
+</pre><p>La forma estática toma un único <code class="varname">quadbin</code>; la forma temporal devuelve el quadkey de cada celda de una trayectoria como un <code class="varname">ttext</code>.</p><pre class="programlisting">
+SELECT quadbinCellToQuadkey(quadbin '480fffffffffffff');
+-- (cadena vacía)
+SELECT quadbinCellToQuadkey(quadbin '48427fffffffffff');
+-- 0213
+SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
+-- 1202021322
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17s07.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch17s09.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Conversiones de Geometría </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Métricas</td></tr></table></div></body></html>

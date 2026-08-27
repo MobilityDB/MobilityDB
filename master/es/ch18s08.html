@@ -1,27 +1,53 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Teselas y Quadkeys</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch18.html" title="Capítulo 18. Índices de Celdas QUADBIN Temporales"><link rel="prev" href="ch18s07.html" title="Conversiones de Geometría"><link rel="next" href="ch18s09.html" title="Métricas"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Teselas y Quadkeys</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch18s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 18. Índices de Celdas QUADBIN Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch18s09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tquadbin_tile_quadkey"></a>Teselas y Quadkeys</h2></div></div></div><p>QUADBIN está construido sobre el esquema de teselas slippy-map (web-mercator), por lo que una celda se corresponde directamente con un triple de coordenadas de tesela <code class="varname">(x, y, z)</code> y con la cadena quadkey en base 4 usada por los servidores de teselas. Estas conversiones son el puente específico de QUADBIN con el ecosistema de teselado.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tquadbin_quadbin_tile_to_cell"></a><a class="indexterm" name="id12493"></a><p>Construye una celda a partir de coordenadas de tesela slippy-map: columna <code class="varname">x</code>, fila <code class="varname">y</code>, y zoom <code class="varname">z</code></p><pre class="programlisting">
-quadbinTileToCell(integer,integer,integer) → quadbin
-</pre><pre class="programlisting">
-SELECT quadbinTileToCell(0, 0, 0) = quadbin '480fffffffffffff';
--- true
-SELECT quadbinTileToCell(3, 5, 4) = quadbin '48427fffffffffff';
--- true
-SELECT quadbinTileToCell(524, 343, 10) = quadbin '48a6227affffffff';
--- true
-</pre></li><li class="listitem"><a name="tquadbin_quadbin_cell_to_tile"></a><a class="indexterm" name="id12503"></a><p>Descompone una celda en su triple de coordenadas de tesela, devuelto como un arreglo de enteros <code class="varname">{x, y, z}</code>, la inversa de <code class="varname">quadbinTileToCell</code></p><pre class="programlisting">
-quadbinCellToTile(quadbin) → integer[]
-</pre><pre class="programlisting">
-SELECT quadbinCellToTile(quadbin '480fffffffffffff');
--- {0,0,0}
-SELECT quadbinCellToTile(quadbin '48a6227affffffff');
--- {524,343,10}
-</pre></li><li class="listitem"><a name="tquadbin_quadbin_cell_to_quadkey"></a><a class="indexterm" name="id12512"></a><a class="indexterm" name="id12515"></a><p>Emite la cadena quadkey en base 4 de una celda (un dígito por nivel de zoom, primero el más significativo; la celda mundial de resolución 0 se corresponde con la cadena vacía)</p><pre class="programlisting">
-quadbinCellToQuadkey(quadbin) → text
-tquadbinCellToQuadkey(tquadbin) → ttext
-</pre><p>La forma estática toma un único <code class="varname">quadbin</code>; la forma temporal devuelve el quadkey de cada celda de una trayectoria como un <code class="varname">ttext</code>.</p><pre class="programlisting">
-SELECT quadbinCellToQuadkey(quadbin '480fffffffffffff');
--- (cadena vacía)
-SELECT quadbinCellToQuadkey(quadbin '48427fffffffffff');
--- 0213
-SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
--- 1202021322
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch18s07.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch18.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch18s09.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Conversiones de Geometría </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Métricas</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Agregaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch18.html" title="Capítulo 18. Nubes de puntos temporales"><link rel="prev" href="ch18s07.html" title="Indexación"><link rel="next" href="ch19.html" title="Capítulo 19. Muestreo de Ráster"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Agregaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch18s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 18. Nubes de puntos temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch19.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpointcloud_aggregations"></a>Agregaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_extent"></a><a class="indexterm" name="id13802"></a><p>Agregado de caja delimitadora sobre una columna de valores tpcpoint, tpcpatch o tpcbox</p><pre class="programlisting">
+extent({tpcpoint,tpcpatch,tpcbox}) → tpcbox
+</pre><p>Devuelve el tpcbox más pequeño que contiene todas las entradas. Agregar a través de pcid distintos genera un error, la caja delimitadora sería ininterpretable ya que las dimensiones son relativas al pcid.</p><pre class="programlisting">
+SELECT extent(v) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
+  (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
+-- TPCBOX(ZT(((1,1,1),(2,2,2)),[2001-01-01, 2001-01-02]), 1)
+</pre></li><li class="listitem"><a name="tpcpoint_tCount"></a><a class="indexterm" name="id13810"></a><a class="indexterm" name="id13813"></a><p>Conteo temporal y conteo por ventana de filas superpuestas en cada marca de tiempo</p><pre class="programlisting">
+tCount({tpcpoint,tpcpatch}) → tint
+wCount({tpcpoint,tpcpatch},interval) → tint
+</pre><p>El resultado es un tint. Todas las filas de entrada deben compartir el mismo subtipo temporal (instante / secuencia / conjunto de secuencias).</p><pre class="programlisting">
+SELECT tCount(v) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
+  (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
+-- {1@2001-01-01, 1@2001-01-02}
+SELECT wCount(v, interval '1 day') FROM (VALUES
+  (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
+  (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
+-- {[1@2001-01-01, 2@2001-01-02], (1@2001-01-02, 1@2001-01-03]}
+</pre></li><li class="listitem"><a name="tpcpatch_tnpoints"></a><a class="indexterm" name="id13821"></a><p>Conteo de puntos de pcpatch por instante, sumado a través de las filas</p><pre class="programlisting">
+tnpoints(tpcpatch) → tint
+</pre><p>Distinto de <code class="varname">tCount(tpcpatch)</code>, que cuenta el número de parches (siempre 1 por instante). <code class="varname">tnpoints</code> se lee como «cuántos puntos había en la nube en el tiempo t», la primitiva natural para el control de calidad de la ingesta y los paneles de densidad a lo largo del tiempo.</p><pre class="programlisting">
+SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)),
+  (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
+  '2001-01-02'::timestamptz))) t(v);
+-- {2@2001-01-01, 2@2001-01-02}
+</pre></li><li class="listitem"><a name="tpcpatch_tdensity"></a><a class="indexterm" name="id13831"></a><p>Densidad de puntos por instante (<code class="varname">numPoints / área-bbox-xy</code>) sumada a través de las filas</p><pre class="programlisting">
+tdensity(tpcpatch) → tfloat
+</pre><p>Cada pcpatch lleva el <code class="varname">PCBOUNDS</code> en línea (xmin / xmax / ymin / ymax) por lo que el término de área de la caja delimitadora se lee directamente, sin recálculo. Un parche de 1 punto o colineal produce <code class="varname">+Infinity</code> para ese instante; filtre con <code class="varname">isfinite()</code> en consultas posteriores si es necesario.</p><pre class="programlisting">
+-- Each patch holds 2 points over a 1x1 xy-bbox.
+SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)),
+  (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
+  '2001-01-02'::timestamptz))) t(v);
+-- {2@2001-01-01, 2@2001-01-02}
+</pre></li><li class="listitem"><a name="tpcpoint_mergeAgg"></a><a class="indexterm" name="id13843"></a><a class="indexterm" name="id13846"></a><p>Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal</p><pre class="programlisting">
+mergeAgg(tpcpoint) → tpcpoint
+mergeAgg(tpcpatch) → tpcpatch
+</pre><p>Todas las entradas deben compartir el mismo pcid y subtipo.</p><pre class="programlisting">
+SELECT numInstants(mergeAgg(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
+  '2001-01-01'::timestamptz)),
+  (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
+-- 2
+</pre></li><li class="listitem"><a name="tpcpoint_appendInstantAgg"></a><a class="indexterm" name="id13854"></a><a class="indexterm" name="id13857"></a><a class="indexterm" name="id13860"></a><a class="indexterm" name="id13863"></a><p>Agregados de construcción en flujo: <code class="varname">appendInstant</code> ensambla instantes en una secuencia; <code class="varname">appendSequence</code> ensambla secuencias en un conjunto de secuencias</p><pre class="programlisting">
+appendInstantAgg(tpcpoint[,interp,maxt]) → tpcpoint
+appendInstantAgg(tpcpatch) → tpcpatch
+appendSequenceAgg(tpcpoint) → tpcpoint
+appendSequenceAgg(tpcpatch) → tpcpatch
+</pre><p>Útil para cargadores de trayectorias que consumen filas en orden temporal.</p><pre class="programlisting">
+SELECT numInstants(appendInstant(v ORDER BY startTimestamp(v))) FROM (VALUES
+  (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
+  (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
+-- 2
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch18s07.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch18.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch19.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Indexación </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Capítulo 19. Muestreo de Ráster</td></tr></table></div></body></html>

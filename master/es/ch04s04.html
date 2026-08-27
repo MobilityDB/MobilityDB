@@ -6,16 +6,13 @@ SELECT tfloat '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
 SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt; tfloat '[3@2001-01-03, 1@2001-01-05)';
 -- NULL
-
 -- Adición temporal
 SELECT tint '[1@2001-01-01, 1@2001-01-03)' + tint '[2@2001-01-02, 2@2001-01-05)';
 -- [3@2001-01-02, 3@2001-01-03)
-
 -- Intersección temporal
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
-geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
+  geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
-
 -- Distancia temporal
 SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
 tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
@@ -27,17 +24,14 @@ tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
 SELECT eIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
 -- true
-
 -- ¿Se cruzan los operandos siempre?
 SELECT aIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
-
 -- ¿Es el operando izquierdo alguna vez menor que el derecho?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' ?&lt;
   tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
 -- true
-
 -- ¿Es el operando izquierdo siempre menor que el derecho?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' %&lt;
   tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;

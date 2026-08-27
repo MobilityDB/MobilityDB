@@ -1,63 +1,231 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Chapter 15. Temporal Rigid Geometries</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="prev" href="ch14s02.html" title="Temporal Pose Chains"><link rel="next" href="ch15s02.html" title="Constructors"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 15. Temporal Rigid Geometries</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s02.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch15s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="trgeometry"></a>Chapter 15. Temporal Rigid Geometries</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="sect1"><a href="ch15.html#trgeometry_inout">Input and Output</a></span></dt><dt><span class="sect1"><a href="ch15s02.html">Constructors</a></span></dt><dt><span class="sect1"><a href="ch15s03.html">Conversions</a></span></dt><dt><span class="sect1"><a href="ch15s04.html">Accessors</a></span></dt><dt><span class="sect1"><a href="ch15s05.html">Traversed Area</a></span></dt><dt><span class="sect1"><a href="ch15s06.html">Spatial Functions</a></span></dt><dt><span class="sect1"><a href="ch15s07.html">Motion Metrics</a></span></dt><dt><span class="sect1"><a href="ch15s08.html">Modifications</a></span></dt><dt><span class="sect1"><a href="ch15s09.html">Spatial Restrictions</a></span></dt><dt><span class="sect1"><a href="ch15s10.html">Distance Operations</a></span></dt><dt><span class="sect1"><a href="ch15s11.html">Similarity</a></span></dt><dt><span class="sect1"><a href="ch15s12.html">Comparisons</a></span></dt><dt><span class="sect1"><a href="ch15s13.html">Bounding-Box Operators</a></span></dt><dt><span class="sect1"><a href="ch15s14.html">Tiles</a></span></dt><dt><span class="sect1"><a href="ch15s15.html">Bounding Boxes</a></span></dt><dt><span class="sect1"><a href="ch15s16.html">Aggregations</a></span></dt><dt><span class="sect1"><a href="ch15s17.html">Indexing</a></span></dt></dl></div><p>A temporal rigid geometry (<code class="varname">trgeometry</code>) is a static 2D reference geometry, typically a polygon describing the shape of a moving body, paired with a temporal pose (<code class="varname">tpose</code>) describing how that geometry translates and rotates over time. The materialised geometry at time <code class="varname">t</code> is the reference geometry rotated and translated according to the pose interpolated at <code class="varname">t</code>.</p><p>This is the natural representation for moving objects whose <span class="emphasis"><em>shape</em></span> matters, not just their position. The motivating example is AIS maritime traffic, where each ship's hull (a pentagon derived from the antenna offsets <code class="varname">A</code>, <code class="varname">B</code>, <code class="varname">C</code>, <code class="varname">D</code>) follows a pose path defined by lat/lon and heading reports. The materialised geometry at any instant is the actual ship outline at that moment.</p><p>The <code class="varname">trgeometry</code> type builds on <a class="xref" href="ch13.html" title="Chapter 13. Temporal Poses">Chapter 13, <i>Temporal Poses</i></a>. Most accessor, comparison, topological, position, and indexing operators have the same shape as the corresponding <code class="varname">tpose</code> functions; this chapter covers the trgeometry-specific surface, pose-to-shape materialisation, traversed area, materialised distance, and spatial restrictions on the centroid trajectory.</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_inout"></a>Input and Output</h2></div></div></div><p>A <code class="varname">trgeometry</code> literal pairs a reference geometry with a temporal pose. The reference geometry comes first, separated from the pose by a semicolon; the pose follows the standard <code class="varname">tpose</code> syntax (instant, sequence, or sequence set).</p><pre class="programlisting">
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.5)@2001-01-01';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(5 0), 0.5)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(10 0), 1.5)@2001-01-02]';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{[Pose(Point(0 0), 0.0)@2001-01-01,
-  Pose(Point(5 0), 0.0)@2001-01-02], [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(2 0),
-  0.0)@2001-01-05]}';
-</pre><p>The reference geometry can be any 2D polygon or polyhedral surface. The pose interpolation is linear in translation and angular-shortest-path in rotation. SRIDs are inherited from the reference geometry and the pose; they must agree.</p><p>An SRID can be specified for a trgeometry either at the begining of the literal or before the reference geometry as shown below.</p><pre class="programlisting">
-SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),
-  0.5)@2001-01-01';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));SRID=25832;Pose(Point(0 0),
-  0.5)@2001-01-01';
-</pre><p>Step interpolation can also be specified in the same way as for other temporal types:</p><pre class="programlisting">
-SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),
-  0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
-</pre><p>The standard wire formats are supported.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_asText"></a><a class="indexterm" name="id10664"></a><p>Return the Well-Known Text (WKT) representation</p><pre class="programlisting">
-asText({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Chapter 15. JSON Types in MobilityDB</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="prev" href="ch14s20.html" title="Indexing"><link rel="next" href="ch15s02.html" title="Temporal JSONB values"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 15. JSON Types in MobilityDB</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s20.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch15s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="temporal_jsonb"></a>Chapter 15. JSON Types in MobilityDB</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="sect1"><a href="ch15.html#jsonbset_jsonb">JSONB Set Operations</a></span></dt><dt><span class="sect1"><a href="ch15s02.html">Temporal JSONB values</a></span></dt><dt><span class="sect1"><a href="ch15s03.html">Validity of temporal JSONB values</a></span></dt><dt><span class="sect1"><a href="ch15s04.html">Input and Output</a></span></dt><dt><span class="sect1"><a href="ch15s05.html">Constructors</a></span></dt><dt><span class="sect1"><a href="ch15s06.html">Conversions</a></span></dt><dt><span class="sect1"><a href="ch15s07.html">Accessors</a></span></dt><dt><span class="sect1"><a href="ch15s08.html">Transformations</a></span></dt><dt><span class="sect1"><a href="ch15s09.html">Temporal JSON Operations</a></span></dt><dt><span class="sect1"><a href="ch15s10.html">Restrictions</a></span></dt><dt><span class="sect1"><a href="ch15s11.html">Bounding Box Operations</a></span></dt><dt><span class="sect1"><a href="ch15s12.html">Comparisons</a></span></dt><dt><span class="sect1"><a href="ch15s13.html">Aggregations</a></span></dt><dt><span class="sect1"><a href="ch15s14.html">Indexing</a></span></dt></dl></div><p>PostgreSQL provides two types for storing JSON data: <code class="varname">json</code> and <code class="varname">jsonb</code>. The <code class="varname">json</code> type stores an exact copy of the input text, which must be reparsed each time it is processed. On the other hand, the <code class="varname">jsonb</code> type stores the JSON data in a decomposed binary format that makes it slightly slower to input due to added conversion overhead, but significantly faster to process, since no reparsing is needed. The <code class="varname">jsonb</code> type also supports indexing.</p><p>In MobilityDB, the <code class="varname">textset</code> and the <code class="varname">ttext</code> types are used for representing, respectively, set of JSON values and temporal JSON values. Furthermore, the <code class="varname">jsonb</code> type serves as base type for defining the <code class="varname">jsonbset</code> and the <code class="varname">tjsonb</code> types. Most functions and operators described in the previous chapters for set and temporal types are also applicable for the corresponding JSON types. In addition, there are specific functions defined for these types, which are derived from the corresponding functions of the <code class="varname">json</code> and the <code class="varname">jsonb</code> types.</p><p>In this chapter, we describe the MobilityDB JSON types and its associated operations. We refer to the PostgreSQL <a class="ulink" href="https://www.postgresql.org/docs/current/datatype-json.html" target="_top">documentation</a> for a detailed explanation of the <code class="varname">json</code> and <code class="varname">jsonb</code> types and their functionality. We aimed at enabling the same syntax of the original PostgreSQL functions for the corresponding MobilityDB types, as illustrated in this <a class="ulink" href="https://github.com/MobilityDB/MobilityDB/wiki/Generalizing-PostgreSQL-JSON-types-in-MobilityDB" target="_top">document</a>.</p><p>Consider for example the <code class="varname">-&gt;</code> operator, which extracts a JSON object field with a given key. 
+			</p><pre class="programlisting">
+SELECT jsonb '{"unit": "km", "speed": 10}' -&gt; text 'speed';
+-- 10
+</pre><p>
+		Applying the same operator to a JSONB set and to a temporal JSONB value yields the following results
+			</p><pre class="programlisting">
+SELECT jsonbset '{"{\"unit\": \"km\", \"speed\": 10}",
+  "{\"unit\": \"km\", \"speed\": 20}"}' -&gt; text 'speed';
+-- {"10", "20"}
+SELECT tjsonb '[{"unit": "km", "speed": 10}@2001-01-01,
+  {"unit": "km", "speed": 20}@2001-01-02]' -&gt; text 'speed';
+-- {[10@2001-01-01, 20@2001-01-02]}
+</pre><p>
+		which are obtained by applying the PostgreSQL operator <code class="varname">-&gt;</code> at every element of the JSONB set and to every instant of the temporal JSONB value.
+		</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="jsonbset_jsonb"></a>JSONB Set Operations</h2></div></div></div><p>When manipulating JSON collections of varying structure, it may be the case that an item is defined in some of the documents but not all. PostgreSQL provides the <span class="emphasis"><em>lax mode</em></span> for this purpose, where the argument <code class="varname">null_value_treatment</code> determines the behavior in the case a function returns a NULL value. The argument can take one of the following values: <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, <code class="varname">'return_target'</code>, where <code class="varname">'use_json_null'</code> is the default value. In PostgreSQL the lax mode is supported only for <span class="emphasis"><em>update</em></span> (not <span class="emphasis"><em>query</em></span>) operations with the function <code class="varname">jsonb_set_lax</code>. In MobilityDB, we kept the same semantics for the corresponding function <code class="varname">jsonbsetSetLax</code>, but we enabled similar behavior for <span class="emphasis"><em>all</em></span> JSON operations that may return a null value, except that we replaced the value <code class="varname">'return_target'</code> with <code class="varname">'return_null'</code>, since the former is not meaningful for set operations. For operators such as <code class="varname">-&gt;</code>, the default value <code class="varname">'use_json_null'</code> is used and cannot be changed, whereas for the corresponding functions <code class="varname">jsonbsetObjectField</code>, the last argument specifies the behavior in the case the function returns NULL. We illustrate this behavior for function <code class="varname">jsonbsetObjectField</code> below.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="jsonbset_object_field"></a><a class="indexterm" name="id11108"></a><a class="indexterm" name="id11111"></a><a class="indexterm" name="id11114"></a><a class="indexterm" name="id11117"></a><p>Extract a JSON object field specified by a key</p><pre class="programlisting">
+{textset,jsonbset} -&gt; text → {textset,jsonbset}
+jsonbset -&gt;&gt; text → textset
+jsonbsetObjectField(jsonbset,text,null_handle text='use_json_null') → jsonbset
+jsonbsetObjectFieldText(jsonbset,text,null_handle text='use_json_null') → textset
 </pre><pre class="programlisting">
-SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.123456789),
-  0.5)@2000-01-01', 6);
--- POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1.123457 1.123457),0.5)@2000-01-01
-</pre></li><li class="listitem"><a name="trgeometry_asEWKT"></a><a class="indexterm" name="id10671"></a><p>Return the Extended Well-Known Text (EWKT) representation, prefixed with the SRID</p><pre class="programlisting">
-asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
+SELECT textset '{[{"unit": "km", "speed": 10},
+  {"unit": "km", "speed": 20}]}' -&gt; text 'speed';
+-- {["10", "20"]}
+SELECT jsonbset '[{"position":"Point(1 1)", "speed":10},
+  {"position":"Point(2 2)", "speed":20}]' -&gt;&gt; text 'position';
+-- ["Point(1 1)", "Point(2 2)"]
+SELECT textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
+  {"unit": "km", "speed": 10}]}' -&gt; text 'speed';
+-- {[10, null, 10]}
+</pre><p>We show below the behavior of the function <code class="varname">jsonbsetObjectField</code> for the possible values of the <code class="varname">null_handle</code> argument. All JSON functions that may return a NULL value behave similarly in MobilityDB.</p><pre class="programlisting">
+SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
+  {"unit": "km", "speed": 10}]}', 'speed', 'raise_exception');
+-- ERROR:  The lifted operation returned NULL
+SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
+  {"unit": "km", "speed": 10}]}', 'speed', 'use_json_null');
+-- {[10, null, 10]}
+SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
+  {"unit": "km", "speed": 10}]}', 'speed', 'delete_key');
+-- {[10, 10), [10]}
+SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
+  {"unit": "km", "speed": 10}]}', 'speed', 'return_null');
+-- NULL
+</pre></li><li class="listitem"><a name="jsonbset_extract_path"></a><a class="indexterm" name="id11128"></a><a class="indexterm" name="id11131"></a><a class="indexterm" name="id11134"></a><a class="indexterm" name="id11137"></a><p>Extract a JSON object field specified by a path</p><pre class="programlisting">
+{textset,jsonbset} #&gt; text[] → {textset,jsonbset}
+jsonbsetExtractPath(jsonbset,text[],null_handle text='use_json_null') → jsonbset
+jsonbsetExtractPathText(jsonbset,text[],null_handle text='use_json_null') → textset
 </pre><pre class="programlisting">
-SELECT asEWKT(trgeometry
-  'SRID=25832;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
--- SRID=25832;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@2000-01-01
-</pre></li><li class="listitem"><a name="trgeometry_asMFJSON"></a><a class="indexterm" name="id10678"></a><p>Return the Moving Features JSON representation</p><pre class="programlisting">
-asMFJSON(trgeometry [, options int=0 [, flags int=0 [, maxdecimaldigits int=15]]]) → text
+SELECT textset '[{"speed": {"unit": "km", "value": 10}},
+  {"speed": {"unit": "km", "value": 20}}]' #&gt; ARRAY[text 'speed', 'value'];
+-- {["10", "20"]}
+SELECT jsonbset '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]},
+  {"position":"Point(2 2)",
+  "PoIs":["Palais Royal", "Manneken Pis"]}]' #&gt;&gt; ARRAY[text 'PoIs', '1'];
+-- ["La Bourse", "Manneken Pis"]
+</pre></li><li class="listitem"><a name="jsonbset_array_element"></a><a class="indexterm" name="id11144"></a><a class="indexterm" name="id11147"></a><p>Extract an element from a JSON array</p><pre class="programlisting">
+jsonbsetArrayElement(jsonbset,integer,null_handle text='use_json_null') → jsonbset
+jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → jsonbset
 </pre><pre class="programlisting">
-SELECT asMFJSON(trgeometry
-  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01');
-</pre></li><li class="listitem"><a name="trgeometry_asEWKB"></a><a class="indexterm" name="id10685"></a><a class="indexterm" name="id10688"></a><a class="indexterm" name="id10691"></a><p>Return the Extended Well-Known Binary (EWKB) representation</p><pre class="programlisting">
-asEWKB(trgeometry [, endian text]) → bytea
-asHexWKB(trgeometry [, endian text]) → text
-asHexEWKB(trgeometry [, endian text]) → text
-</pre><p>Companion <code class="varname">asHexWKB</code> and <code class="varname">asHexEWKB</code> return the hex-encoded text of, respectively, the plain and the SRID-carrying representation; the two coincide only when the value has no SRID, as in the example below.</p><pre class="programlisting">
-SELECT length(asEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1),
-  0.5)@2001-01-01'));
--- 130
--- The bytes round-trip through the matching input function.
-SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry
-  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
--- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
-SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry
-  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
--- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
-</pre></li><li class="listitem"><a name="trgeometry_fromText"></a><a class="indexterm" name="id10701"></a><a class="indexterm" name="id10704"></a><a class="indexterm" name="id10707"></a><a class="indexterm" name="id10710"></a><a class="indexterm" name="id10713"></a><p>Each output format has a companion parser:</p><pre class="programlisting">
-trgeometryFromText(text) → trgeometry
-trgeometryFromEWKT(text) → trgeometry
-trgeometryFromMFJSON(text) → trgeometry
-trgeometryFromEWKB(bytea) → trgeometry
-trgeometryFromHexEWKB(text) → trgeometry
+SELECT jsonbsetArrayElement(textset '[["Grand Place", "La Bourse"],
+  ["Palais Royal", "Manneken Pis"]]', 0);
+-- ["Grand Place", "Palais Royal"]
+SELECT jsonbsetArrayElement(jsonbset '[["Grand Place", "La Bourse"],
+  ["Palais Royal", "Manneken Pis"]]', 1);
+-- ["La Bourse", "Manneken Pis"]
+</pre></li><li class="listitem"><a name="jsonbset_alphanumset"></a><a class="indexterm" name="id11154"></a><a class="indexterm" name="id11157"></a><a class="indexterm" name="id11160"></a><p>Extract a alphanumeric value from a JSONB set given by a key</p><pre class="programlisting">
+intset(jsonbset,text,null_handle text='raise_exception') → tint
+floatset(jsonbset,text,null_handle text='raise_exception') → tfloat
+textset(jsonbset,text,null_handle text='raise_exception') → textset
+</pre><p>Note that the value <code class="varname">use_json_null</code> cannot be used for the above functions and thus the default value <code class="varname">'raise_exception'</code> is used.</p><pre class="programlisting">
+SELECT intset(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}",
+  "{\"speed\": 20, \"units\": \"km/h\"}"}', 'speed');
+-- {10, 20}
+SELECT floatset(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}",
+  "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 25}"}', 'speed');
+-- {10, 20, 25}
+SELECT textset(jsonbset '{"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"primary\"}",
+  "{\"road\": \"Bvd de la Cambre\", \"category\": \"residential\"}"}', 'category');
+-- {primary, residential}
+</pre></li><li class="listitem"><a name="jsonbset_concat"></a><a class="indexterm" name="id11170"></a><p>Temporal JSONB concatenation</p><pre class="programlisting">
+jsonbset || {jsonb,jsonbset} → jsonbset
 </pre><pre class="programlisting">
-SELECT asText(trgeometryFromEWKT('SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0));
-  Pose(Point(1 1), 0.5)@2001-01-01'));
--- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
-SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry
-  'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
--- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
-</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s02.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch15s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Temporal Pose Chains </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>
+SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' || '{"unit":"km"}'::jsonb;
+-- {[{"unit": "km", "speed": 10}, {"unit": "km", "speed": 20}]}
+SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' || jsonbset '{[{"Position":"Point(1 1)"},
+  {"Position":"Point(2 2)"}]}';
+-- {[{"speed": 10, "Position": "Point(1 1)"}, {"speed": 20, "Position": "Point(2 2)"}]}
+</pre></li><li class="listitem"><a name="jsonbset_delete"></a><a class="indexterm" name="id11177"></a><p>Temporal JSONB deletion</p><pre class="programlisting">
+jsonbset - {int,text,text[]} → jsonbset
+jsonbset #- text[] → jsonbset
+</pre><pre class="programlisting">
+SELECT jsonbset '{[{"unit": "km", "speed": 10}, {"unit": "km", "speed": 20}]}' - 'unit';
+-- {[{"speed": 10}, {"speed": 20}]}
+SELECT jsonbset '[["Grand Place", "La Bourse"], ["Palais Royal", "Manneken Pis"]]' - 1;
+-- [["Grand Place"], ["Palais Royal"]]
+SELECT jsonbset '[{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bourse"],
+  "location":"Point(2 2)",
+  "PoIs": ["Palais Royal", "Manneken Pis"]]' #- ARRAY[text "\"PoIs\"", "1"];
+-- ["La Bourse", "Manneken Pis"]
+</pre><p>As shown below, the result of a delete operation may be an empty record or an empty array. To remove these values, the function <code class="varname">minusValue</code> can used.</p><pre class="programlisting">
+SELECT jsonbset '{[{"unit": "km", "speed": 10, "light": true},
+  {"unit": "km", "speed": 20}]}' - ARRAY[text 'unit', 'speed'];
+-- {[{"light": true}, {}]}
+SELECT jsonbset '[["Grand Place", "La Bourse"], ["Palais Royal"]]' - 0;
+-- [["La Bourse"], []]
+</pre><pre class="programlisting">
+SELECT minusValues(jsonbset '{[{"unit": "km", "speed": 10, "light": true},
+  {"unit": "km", "speed": 20}]}' - ARRAY[text 'unit', 'speed'], jsonbset '{"[]","{}"}');
+--  {[{"light": true}, {"light": true})}
+SELECT minusValues(jsonbset '[["Grand Place", "La Bourse"], ["Palais Royal"]]' - 0,
+  jsonbset '{"[]","{}"}');
+-- {[["La Bourse"], ["La Bourse"])}
+</pre></li><li class="listitem"><a name="jsonbset_exists"></a><a class="indexterm" name="id11188"></a><p>JSONB set exists</p><pre class="programlisting">
+jsonbset ? text → boolean[]
+jsonbset {?|, ?&amp;} text[] → boolean[]
+</pre><p>As in PostgreSQL, the operators <code class="varname">?|</code> and <code class="varname">?&amp;</code> test, respectively, whether <span class="emphasis"><em>any</em></span> or <span class="emphasis"><em>all</em></span> of the strings in the text array exist as top-level keys or array elements. The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}",
+  "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
+-- {t,f}
+SELECT jsonbset '{"{\"speed\": 10}",
+  "{\"speed\": 20, \"units\": \"km/h\"}"}' ?| ARRAY[text 'units', text 'lights'];
+-- {t,f}
+SELECT jsonbset '{"{\"speed\": 10}",
+  "{\"speed\": 20, \"units\": \"km/h\"}"}' ?&amp; ARRAY[text 'speed', text 'units'];
+-- {t,f}
+</pre></li><li class="listitem"><a name="jsonbset_set"></a><a class="indexterm" name="id11200"></a><a class="indexterm" name="id11203"></a><p>Temporal JSONB set</p><pre class="programlisting">
+jsonbsetSet(jsonbset,path text[],jsonb,create boolean=true) → jsonbset
+jsonbsetSetLax(jsonbset,path text[],jsonb,create boolean=true,
+  handle_null text) → jsonbset
+</pre><p>Return the <code class="varname">jsonbset</code> value with the item specified by path replaced by <code class="varname">jsonb</code>, or added if <code class="varname">create</code> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive. Function <code class="varname">jsonbsetSetLax</code> behaves identically to <code class="varname">jsonbsetSet</code> if the given value is not NULL, Otherwise, it behaves according to the value of <code class="varname">handle_null</code>, which must be one of <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, or <code class="varname">'return_source'</code>. As stated above, we kept PostgreSQL behavior for this function enabling the value <code class="varname">'return_source'</code> whereas for all other <span class="emphasis"><em>query</em></span> operations, this value has been replaced with <code class="varname">'return_null'</code>.</p><pre class="programlisting">
+SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+  '"km/h"'::jsonb);
+-- [{"speed": 10, "units": "km/h"}, {"speed": 20, "units": "km/h"}]
+SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+  '"km/h"'::jsonb, false);
+-- [{"speed": 10}, {"speed": 20}]
+SELECT jsonbsetSet(jsonbset '[{"speed": 10, "units": "km/h"},
+  {"speed": 20, "units": "km/h"}]', ARRAY['units'], '"mi/h"'::jsonb);
+-- [{"speed": 10, "units": "mi/h"}, {"speed": 20, "units": "mi/h"}]
+SELECT jsonbsetSetLax(jsonbset '[{"speed": 10, "units": "km/h"}, {"speed": 20}]',
+  ARRAY['units'], 'null'::jsonb, true, 'delete_key');
+-- [{"speed": 10, "units": "km/h"}, {"speed": 20}]
+</pre></li><li class="listitem"><a name="jsonbset_insert"></a><a class="indexterm" name="id11224"></a><p>Return the <code class="varname">jsonbset</code> value with <code class="varname">jsonb</code> inserted</p><pre class="programlisting">
+jsonbsetInsert(jsonbset,path text[],jsonb,after boolean=false) → jsonbset
+</pre><p>If the item specified by the path is an array element, the new value will be inserted before that item if <code class="varname">after</code> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</p><pre class="programlisting">
+SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+  '"km/h"'::jsonb);
+-- [{"speed": 10, "units": "km/h"}, {"speed": 20, "units": "km/h"}]
+SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+  '"km/h"'::jsonb, false);
+-- [{"speed": 10}, {"speed": 20}]
+SELECT jsonbsetInsert(jsonbset '[{"speed": 10, "units": "km/h"},
+  {"speed": 20, "units": "km/h"}]', ARRAY['units'], '"mi/h"'::jsonb);
+-- [{"speed": 10, "units": "mi/h"}, {"speed": 20, "units": "mi/h"}]
+</pre></li><li class="listitem"><a name="jsonbset_strip_nulls"></a><a class="indexterm" name="id11235"></a><p>Return a JSONB set without nulls</p><pre class="programlisting">
+jsonbsetStripNulls(jsonbset,strip_in_arrays boolean=false) → jsonbset
+</pre><p>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</p><pre class="programlisting">
+SELECT jsonbsetStripNulls(textset '[{"speed": 10, "lights": null},
+  {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}]');
+-- [{"speed": 10}, {"PoIs": ["Grand Place", "La Bourse", null], "speed": 20}]
+SELECT jsonbsetStripNulls(jsonbset '[{"speed": 10, "lights": null},
+  {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}]', true);
+-- [{"speed": 10}, {"PoIs": ["Grand Place", "La Bourse"], "speed": 20}]
+SELECT jsonbsetStripNulls(jsonbset '{{"road": "Bvd Gén. Jacques", "category": "primary"},
+  {"road": "Bvd de la Cambre", "category": "primary"},
+  {"road": "rue de l''Abbaye", "category": null}}');
+/* [{"road": "Bvd Gén. Jacques", "category": "primary"}, 
+   {"road": "Bvd de la Cambre", "category": "primary"}, {"road": "rue de l'Abbaye"}] */
+</pre><p>As shown below, the function does not strip bare null values. Function <code class="varname">minusValue</code> can be used for this purpose.</p><pre class="programlisting">
+SELECT jsonbsetStripNulls(textset '[{"speed": 10}, null,
+  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]');
+-- [{"speed":10}, null, {"speed":20,"PoIs":["Grand Place","La Bourse"]}]
+SELECT minusValues(textset '[{"speed": 10}, null,
+  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]', 'null');
+/* {[{"speed": 10}, {"speed": 10}), [{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]}
+</pre></li><li class="listitem"><a name="jsonbset_path_exists"></a><a class="indexterm" name="id11246"></a><a class="indexterm" name="id11249"></a><a class="indexterm" name="id11252"></a><p>Does the JSON path return any item for the specified JSONB set?</p><pre class="programlisting">
+jsonbset @? jsonpath → boolean[]
+jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
+jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
+</pre><p>The operator <code class="varname">@?</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}",
+  "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
+-- {t,f}
+SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}",
+  "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ &gt; $min)', '{"min": 15}');
+-- {t,f}
+</pre></li><li class="listitem"><a name="jsonbset_path_match"></a><a class="indexterm" name="id11261"></a><a class="indexterm" name="id11264"></a><a class="indexterm" name="id11267"></a><p>Return the result of a JSON path predicate check for a JSONB set</p><pre class="programlisting">
+jsonbset @@ jsonpath → boolean[]
+jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
+jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
+</pre><p>The operator <code class="varname">@@</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}",
+  "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
+-- {t,f}
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}",
+  "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed &gt; $min', '{"min": 15}');
+-- {t,f}
+</pre></li><li class="listitem"><a name="jsonbset_path_query_array"></a><a class="indexterm" name="id11276"></a><a class="indexterm" name="id11279"></a><p>Return all items returned by a JSON path from a JSONB set, as a JSON array</p><pre class="programlisting">
+jsonbsetPathQueryArray(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
+jsonbsetPathQueryArrayTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
+</pre><p>The above function can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
+SELECT jsonbsetPathQueryArray(jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
+  '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
+-- [[{"speed": 10}], [{"speed": 20, "units": "km/h"}]]
+SELECT jsonbsetPathQueryArrayTz(jsonbset '[{"cameraId":25,
+  "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]},
+  {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}]',
+  '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
+   @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
+-- [["2000-01-06", "2000-01-09"], ["2000-01-07"]]
+</pre></li><li class="listitem"><a name="jsonbset_path_query_first"></a><a class="indexterm" name="id11287"></a><a class="indexterm" name="id11290"></a><p>Return the fist item returned by a JSON path from a JSONB set</p><pre class="programlisting">
+jsonbsetPathQueryFirst(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
+jsonbsetPathQueryFirstTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
+</pre><p>The above functions can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
+SELECT jsonbsetPathQueryFirst(jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
+  '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max'), '{"min":10, "max":30}');
+-- [[{"speed": 10}], [{"speed": 20, "units": "km/h"}]]
+-- TODO, it works without "_tz"
+SELECT jsonbsetPathQueryArrayTz(jsonbset
+  '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]},
+   {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}]',
+  '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
+  '{"min":"2000-01-05", "max":"2000-01-09"}');
+-- [["2000-01-06", "2000-01-09"], ["2000-01-07"]]
+</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s20.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch15s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Indexing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Temporal JSONB values</td></tr></table></div></body></html>
