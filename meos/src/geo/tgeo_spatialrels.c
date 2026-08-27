@@ -338,53 +338,101 @@ geo_dwithin_fn_geo(int16 flags1, uint8_t flags2)
  *****************************************************************************/
 
 /**
+ * @brief Relationship a walk over a trajectory or traversed area asks for
+ * @details The walk names the relationship rather than carrying a function of
+ * it. A name is what the walk can read: it holds one geometry fixed across
+ * every element it visits, so naming the relationship lets it read that
+ * geometry once where a function pointer leaves every element to read it again
+ */
+typedef enum
+{
+  SREL_INTERSECTS,     /**< The two share a point */
+  SREL_COVERS,         /**< The first leaves no point of the second outside */
+  SREL_CONTAINS,       /**< The first covers the interior of the second */
+  SREL_INTERIORS_MEET, /**< The interiors share a point, DE-9IM "T********" */
+  SREL_DWITHIN,        /**< The two lie within a distance of one another */
+} SpatialRelOp;
+
+/**
+ * @brief Return whether two geometries stand in a relationship
+ * @param[in] d1,d2 Geometries, in the order the relationship reads them
+ * @param[in] op Relationship asked for
+ * @param[in] dist Distance, read by @p SREL_DWITHIN alone
+ * @param[in] flags1,flags2 Flags of the temporal value and of the geometry
+ * @details The dimension a relationship is read in follows from the operands
+ * rather than from the caller, and three dimensions require BOTH of them to
+ * carry a third
+ */
+static Datum
+spatialrel_datum_geo_geo(Datum d1, Datum d2, SpatialRelOp op, double dist,
+  int16 flags1, uint8_t flags2)
+{
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(flags1);
+  bool has_z = MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2);
+  switch (op)
+  {
+    case SREL_INTERSECTS:
+      return geodetic ? datum_geog_intersects(d1, d2) :
+        (has_z ? datum_geom_intersects3d(d1, d2) :
+          datum_geo_intersects2d(d1, d2));
+    case SREL_COVERS:
+      return datum_geo_covers2d(d1, d2);
+    case SREL_CONTAINS:
+      return datum_geom_contains(d1, d2);
+    case SREL_INTERIORS_MEET:
+    {
+      char pattern[10] = "T********";
+      return datum_geom_relate_pattern(d1, d2, PointerGetDatum(&pattern));
+    }
+    default: /* SREL_DWITHIN */
+      return geodetic ?
+        datum_geog_dwithin(d1, d2, Float8GetDatum(dist)) :
+        (has_z ? datum_geom_dwithin3d(d1, d2, Float8GetDatum(dist)) :
+          datum_geom_dwithin2d(d1, d2, Float8GetDatum(dist)));
+  }
+}
+
+/**
  * @brief Generic spatial relationship for the trajectory or traversed area
  * of a temporal geo and a geometry
- * @details The function computes the function passed as parameter with the
- * trajectory or the traversed area of the temporal geometry and the geometry.
+ * @details The function reads the relationship between the trajectory or the
+ * traversed area of the temporal geometry and the geometry.
  * When the traversed area is a geometry collection the function iterates over
  * each composing geometry; the ever flag selects whether the iteration
  * short-circuits on the first true element (EVER) or on the first false
  * element (ALWAYS).
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
- * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
- * @param[in] numparam Number of parameters of the function
+ * @param[in] dist Distance, read by @p SREL_DWITHIN alone
+ * @param[in] op Relationship asked for
  * @param[in] invert True if the arguments should be inverted
  * @param[in] ever True for the ever semantics (any element satisfies),
  *  false for the always semantics (every element satisfies)
  * @return On error return -1
  */
 static int
-spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
-  varfunc func, int numparam, bool invert, bool ever)
+spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+  SpatialRelOp op, bool invert, bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
 
-  assert(numparam == 2 || numparam == 3);
+  int16 flags1 = temp->flags;
+  uint8_t flags2 = gs->gflags;
   Datum geo = PointerGetDatum(gs);
   GSERIALIZED *trav = tpoint_type(temp->temptype) ?
     tpoint_trajectory(temp, UNARY_UNION_NO) :
     tgeo_traversed_area(temp, UNARY_UNION_NO);
   Datum dtrav, result;
 
-  /* Call the GEOS function if the traversed area is not a collection */
+  /* Read the relationship whole where the traversed area is not a collection */
   if (gserialized_get_type(trav) != COLLECTIONTYPE)
   {
     dtrav = PointerGetDatum(trav);
-    if (numparam == 2)
-    {
-      datum_func2 func2 = (datum_func2) func;
-      result = invert ? func2(geo, dtrav) : func2(dtrav, geo);
-    }
-    else /* numparam == 3 */
-    {
-      datum_func3 func3 = (datum_func3) func;
-      result = invert ? func3(geo, dtrav, param) : func3(dtrav, geo, param);
-    }
+    result = invert ?
+      spatialrel_datum_geo_geo(geo, dtrav, op, dist, flags1, flags2) :
+      spatialrel_datum_geo_geo(dtrav, geo, op, dist, flags1, flags2);
     pfree(DatumGetPointer(dtrav));
     return result ? 1 : 0;
   }
@@ -397,16 +445,9 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   {
     const LWGEOM *elem = lwcollection_getsubgeom((LWCOLLECTION *) coll, i);
     dtrav = PointerGetDatum(geo_serialize(elem));
-    if (numparam == 2)
-    {
-      datum_func2 func2 = (datum_func2) func;
-      result = invert ? func2(geo, dtrav) : func2(dtrav, geo);
-    }
-    else /* numparam == 3 */
-    {
-      datum_func3 func3 = (datum_func3) func;
-      result = invert ? func3(geo, dtrav, param) : func3(dtrav, geo, param);
-    }
+    result = invert ?
+      spatialrel_datum_geo_geo(geo, dtrav, op, dist, flags1, flags2) :
+      spatialrel_datum_geo_geo(dtrav, geo, op, dist, flags1, flags2);
     /* We cannot lwgeom_free((LWGEOM *) coll); */
     pfree(DatumGetPointer(dtrav));
     if ((ever && result) || (! ever && ! result))
@@ -638,12 +679,9 @@ ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ev
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
 
-  char p[10] = "T********";
   int result = ever ?
-    spatialrel_tgeo_geo(temp, gs, PointerGetDatum(&p),
-      (varfunc) &datum_geom_relate_pattern, 3, invert, EVER) :
-    spatialrel_tgeo_geo(temp, gs, (Datum) NULL,
-      (varfunc) &datum_geom_contains, 2, invert, ALWAYS);
+    spatialrel_tgeo_geo(temp, gs, 0.0, SREL_INTERIORS_MEET, invert, EVER) :
+    spatialrel_tgeo_geo(temp, gs, 0.0, SREL_CONTAINS, invert, ALWAYS);
   return result ? 1 : 0;
 }
 
@@ -826,8 +864,7 @@ ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever
     /* Iterate for each composing geometry */
     ea_spatialrel_tspatial_geo(temp, gs, &datum_geo_covers2d, EVER, invert) :
     /* Compute the result from the traversed area and the geometry */
-    spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) &datum_geo_covers2d,
-      2, invert, ALWAYS);
+    spatialrel_tgeo_geo(temp, gs, 0.0, SREL_COVERS, invert, ALWAYS);
   return result ? 1 : 0;
 }
 
@@ -1030,9 +1067,7 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Temporal point case: "ever disjoint" reduces to "not always covered". */
   if (tpoint_type(temp->temptype))
   {
-    datum_func2 func = &datum_geo_covers2d;
-    result = spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
-      INVERT, ALWAYS);
+    result = spatialrel_tgeo_geo(temp, gs, 0.0, SREL_COVERS, INVERT, ALWAYS);
     return INVERT_RESULT(result);
   }
 
@@ -1278,9 +1313,7 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     }
   }
 
-  datum_func2 func = geo_intersects_fn_geo(temp->flags, gs->gflags);
-  return spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
-    INVERT_NO, EVER);
+  return spatialrel_tgeo_geo(temp, gs, 0.0, SREL_INTERSECTS, INVERT_NO, EVER);
 }
 
 /**
@@ -1835,15 +1868,13 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   /* EVER */
   if (ever)
   {
-    datum_func3 func = geo_dwithin_fn_geo(temp->flags, gs->gflags);
-    return spatialrel_tgeo_geo(temp, gs, Float8GetDatum(dist),
-      (varfunc) func, 3, INVERT_NO, EVER);
+    return spatialrel_tgeo_geo(temp, gs, dist, SREL_DWITHIN, INVERT_NO, EVER);
   }
 
   /* ALWAYS */
   GSERIALIZED *buffer = geom_buffer(gs, dist, "");
-  int result = spatialrel_tgeo_geo(temp, buffer, (Datum) NULL,
-    (varfunc) &datum_geo_covers2d, 2, INVERT, ALWAYS);
+  int result = spatialrel_tgeo_geo(temp, buffer, 0.0, SREL_COVERS, INVERT,
+    ALWAYS);
   pfree(buffer);
   return result;
 }
