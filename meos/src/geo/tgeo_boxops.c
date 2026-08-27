@@ -55,6 +55,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/temporal.h"
+#include "temporal/temporal_boxops.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -484,20 +485,13 @@ tgeoseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
+    tsequence_set_bbox_slice(seq, 0, 0, &result[0]);
     return 1;
   }
 
   /* One bounding box per segment */
-  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   for (int i = 0; i < seq->count - 1; i++)
-  {
-    tspatialinst_set_stbox(inst, &result[i]);
-    inst = TSEQUENCE_INST_N(seq, i + 1);
-    STBox box;
-    tspatialinst_set_stbox(inst, &box);
-    stbox_expand(&box, &result[i]);
-  }
+    tsequence_set_bbox_slice(seq, i, i + 1, &result[i]);
   return seq->count - 1;
 }
 
@@ -650,7 +644,7 @@ tgeoseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
+    tsequence_set_bbox_slice(seq, 0, 0, &result[0]);
     return 1;
   }
 
@@ -670,13 +664,7 @@ tgeoseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
     int j = i + size;
     if (k < remainder)
       j++;
-    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
-    for (int l = i + 1; l <= j; l++)
-    {
-      STBox box;
-      tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, l), &box);
-      stbox_expand(&box, &result[k]);
-    }
+    tsequence_set_bbox_slice(seq, i, j, &result[k]);
     i = j;
   }
   assert(i == nsegs);
@@ -891,18 +879,13 @@ tgeoseq_cont_split_each_n_stboxes_iter(const TSequence *seq,
   }
 
   /* General case */
-  int k = 0;
-  tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
-  for (int i = 1; i < seq->count; ++i)
-  {
-    STBox box;
-    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, i), &box);
-    stbox_expand(&box, &result[k]);
-    if ((i % elems_per_box == 0) && (i < seq->count - 1))
-      result[++k] = box;
-  }
   int nboxes = ceil((double) (seq->count - 1) / (double) elems_per_box);
-  assert(k + 1 == nboxes);
+  for (int k = 0; k < nboxes; k++)
+  {
+    int first = k * elems_per_box;
+    int last = Min(first + elems_per_box, seq->count - 1);
+    tsequence_set_bbox_slice(seq, first, last, &result[k]);
+  }
   return nboxes;
 }
 
