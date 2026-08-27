@@ -1,28 +1,28 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Static Point Clouds</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch18.html" title="Chapter 18. Temporal Point Clouds"><link rel="prev" href="ch18.html" title="Chapter 18. Temporal Point Clouds"><link rel="next" href="ch18s03.html" title="Point Cloud Sets"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Static Point Clouds</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch18.html">Prev</a> </td><th width="60%" align="center">Chapter 18. Temporal Point Clouds</th><td width="20%" align="right"> <a accesskey="n" href="ch18s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="pcpoint_pcpatch_static"></a>Static Point Clouds</h2></div></div></div><p>The static types come from pgPointCloud. MobilityDB exposes the schema-aware coordinate accessors needed to project pgPointCloud values into the rest of the temporal-types ecosystem.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_pcpatch_constructors"></a>Constructors</h3></div></div></div><p>pgPointCloud's <code class="varname">pcpoint_in</code> only accepts hex-WKB, so the canonical builder is <code class="varname">PC_MakePoint(pcid, ARRAY[…]::float[])</code>. MobilityDB ships two thin SQL overloads on top of it for shorter test literals and ad-hoc queries; the underlying schema-dimension validation still happens inside <code class="varname">PC_MakePoint</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_pcpoint"></a><a class="indexterm" name="id13043"></a><p>Build a 2D or 3D pcpoint directly from x/y(/z) coordinates</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Static Point Clouds</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch18.html" title="Chapter 18. Temporal Point Clouds"><link rel="prev" href="ch18.html" title="Chapter 18. Temporal Point Clouds"><link rel="next" href="ch18s03.html" title="Point Cloud Sets"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Static Point Clouds</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch18.html">Prev</a> </td><th width="60%" align="center">Chapter 18. Temporal Point Clouds</th><td width="20%" align="right"> <a accesskey="n" href="ch18s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="pcpoint_pcpatch_static"></a>Static Point Clouds</h2></div></div></div><p>The static types come from pgPointCloud. MobilityDB exposes the schema-aware coordinate accessors needed to project pgPointCloud values into the rest of the temporal-types ecosystem.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_pcpatch_constructors"></a>Constructors</h3></div></div></div><p>pgPointCloud's <code class="varname">pcpoint_in</code> only accepts hex-WKB, so the canonical builder is <code class="varname">PC_MakePoint(pcid, ARRAY[…]::float[])</code>. MobilityDB ships two thin SQL overloads on top of it for shorter test literals and ad-hoc queries; the underlying schema-dimension validation still happens inside <code class="varname">PC_MakePoint</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_pcpoint"></a><a class="indexterm" name="id13049"></a><p>Build a 2D or 3D pcpoint directly from x/y(/z) coordinates</p><pre class="programlisting">
 pcpoint(pcid integer,x float,y float) → pcpoint
 pcpoint(pcid integer,x float,y float,z float) → pcpoint
 </pre><pre class="programlisting">
 SELECT pcpoint(1, 10.0, 20.0, 30.0);
 -- Equivalent to pcpoint(1, 10.0, 20.0, 30.0)
-</pre></li><li class="listitem"><a name="pcpoint_pcpoint_integer"></a><a class="indexterm" name="id13050"></a><p>Build a pcpoint from the coordinates of every dimension of the schema</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_pcpoint_integer"></a><a class="indexterm" name="id13056"></a><p>Build a pcpoint from the coordinates of every dimension of the schema</p><pre class="programlisting">
 pcpoint(pcid integer,coordinates float[]) → pcpoint
 </pre><p>The layout of the schema states every dimension, inactive ones included, which is how a schema of more dimensions than the overloads above reach is given its values. That count is the one <code class="varname">PC_MakePoint</code> takes and is NOT the count of active dimensions that <code class="varname">pointCloudSchemaNDims</code> reports</p><pre class="programlisting">
 SELECT pcpoint(1, ARRAY[10.0, 20.0, 30.0]::float[]);
-</pre></li><li class="listitem"><a name="pcpatch_pcpatch"></a><a class="indexterm" name="id13060"></a><p>Build a pcpatch from the coordinates of its points, one point after another</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpatch_pcpatch"></a><a class="indexterm" name="id13066"></a><p>Build a pcpatch from the coordinates of its points, one point after another</p><pre class="programlisting">
 pcpatch(pcid integer,coordinates float[]) → pcpatch
 </pre><p>Every dimension of the layout of the schema is given for each point, inactive ones included. That count is the one <code class="varname">PC_MakePatch</code> takes and is NOT the count of active dimensions that <code class="varname">pointCloudSchemaNDims</code> reports; a count that divides evenly by the wrong one of the two builds a patch of the wrong points rather than reporting an error. A patch built this way states the schema itself, there being no point to read it from</p><pre class="programlisting">
 SELECT pcpatch(1, ARRAY[1.0, 1.0, 1.0, 2.0, 2.0, 2.0]::float[]);
-</pre></li><li class="listitem"><a name="pcpatch_pcpatch_pcpoint"></a><a class="indexterm" name="id13070"></a><p>Build a pcpatch from a variadic list of pcpoints sharing the same pcid</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpatch_pcpatch_pcpoint"></a><a class="indexterm" name="id13076"></a><p>Build a pcpatch from a variadic list of pcpoints sharing the same pcid</p><pre class="programlisting">
 pcpatch(VARIADIC points pcpoint[]) → pcpatch
 </pre><pre class="programlisting">
 SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
 -- Equivalent to pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_accessors"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_pcid"></a><a class="indexterm" name="id13080"></a><p>Return the schema id of a pcpoint or pcpatch</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_accessors"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_pcid"></a><a class="indexterm" name="id13086"></a><p>Return the schema id of a pcpoint or pcpatch</p><pre class="programlisting">
 pcid({pcpoint,pcpatch}) → integer
 </pre><pre class="programlisting">
 SELECT pcid(pcpoint(1, 10.0, 20.0, 30.0));
 -- 1
-</pre></li><li class="listitem"><a name="pcpoint_getX"></a><a class="indexterm" name="id13087"></a><a class="indexterm" name="id13090"></a><a class="indexterm" name="id13093"></a><p>Return a coordinate of a pcpoint, NULL if the dimension is absent from the schema</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_getX"></a><a class="indexterm" name="id13093"></a><a class="indexterm" name="id13096"></a><a class="indexterm" name="id13099"></a><p>Return a coordinate of a pcpoint, NULL if the dimension is absent from the schema</p><pre class="programlisting">
 getX(pcpoint) → float
 getY(pcpoint) → float
 getZ(pcpoint) → float
@@ -30,19 +30,19 @@ getZ(pcpoint) → float
 WITH pt AS (SELECT pcpoint(1, 10.0, 20.0, 30.0) p)
   SELECT getX(p), getY(p), getZ(p) FROM pt;
 -- 10 | 20 | 30
-</pre></li><li class="listitem"><a name="pcpoint_getDim"></a><a class="indexterm" name="id13100"></a><p>Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_getDim"></a><a class="indexterm" name="id13106"></a><p>Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</p><pre class="programlisting">
 getDim(pcpoint,text) → float
 </pre><pre class="programlisting">
 SELECT getDim(pcpoint(1, 10.0, 20.0, 30.0), 'X');
 -- 10
-</pre></li><li class="listitem"><a name="pcpoint_SRID"></a><a class="indexterm" name="id13107"></a><p>Return the spatial reference identifier (inherited from the schema)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_SRID"></a><a class="indexterm" name="id13113"></a><p>Return the spatial reference identifier (inherited from the schema)</p><pre class="programlisting">
 SRID({pcpoint,pcpatch}) → integer
 </pre><pre class="programlisting">
 SELECT SRID(pcpoint(1, 10.0, 20.0, 30.0));
 -- 0
 SELECT SRID(pcpatch(pcpoint(1, 10.0, 20.0, 30.0), pcpoint(1, 11.0, 21.0, 31.0)));
 -- 0
-</pre></li><li class="listitem"><a name="pcpatch_geometry"></a><a class="indexterm" name="id13114"></a><p>Return the multipoint of the positions the points of a patch occupy</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpatch_geometry"></a><a class="indexterm" name="id13120"></a><p>Return the multipoint of the positions the points of a patch occupy</p><pre class="programlisting">
 geometry(pcpatch) → geometry
 </pre><p>The schema the <code class="varname">pcid</code> names decides the SRID and whether the result carries a Z dimension</p><pre class="programlisting">
 SELECT ST_AsText(geometry(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
