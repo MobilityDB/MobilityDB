@@ -30,14 +30,14 @@ SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 </pre><pre class="programlisting">
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; cbuffer 'Cbuffer(Point(1 1), 0.2)';
--- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
+-- [0@2001-01-01, 0@2001-01-03]
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; geometry 'Point(50 50)';
--- [25.0496666945044@2001-01-01, 26.4085688426232@2001-01-03]
+-- [68.99646455628167@2001-01-01, 68.79646455628166@2001-01-03]
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt;
   tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-04]';
--- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
+-- [0@2001-01-02, 0@2001-01-03]
 </pre></li><li class="listitem"><a name="tcbuffer_minDistance"></a><a class="indexterm" name="id8739"></a><p>Return the minimum spatial distance, ignoring time</p><pre class="programlisting">
 minDistance({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → float
 </pre><p>The result is the spatial distance between the areas swept by the two arguments over their whole lifespans, equal to <code class="varname">ST_Distance</code> of the <code class="varname">traversedArea</code> of each. The form taking two temporal circular buffers is an aggregate so that a cross join grouped by a key yields the minimum over every pair in the group.</p><pre class="programlisting">
