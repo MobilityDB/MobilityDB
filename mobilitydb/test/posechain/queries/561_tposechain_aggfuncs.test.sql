@@ -83,3 +83,18 @@ SELECT asText(appendSequenceAgg(seq)) FROM (VALUES
   (tposechain '[PoseChain(Pose(Point(2 2), 0.2))@2001-01-02]')) t(seq);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The bare aggregate and its Agg twin in ONE query
+--
+-- The two carry identical transition machinery, so PostgreSQL shares one
+-- transition state between them unless each declares FINALFUNC_MODIFY. Their
+-- finalfn frees the state, so a shared one is finalized twice. Asking for both
+-- at once is what exercises that, and the two must agree.
+-------------------------------------------------------------------------------
+
+SELECT asText(merge(temp)) = asText(mergeAgg(temp)) FROM (VALUES
+  (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
+  (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(temp);
+
+-------------------------------------------------------------------------------

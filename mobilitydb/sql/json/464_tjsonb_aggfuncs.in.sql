@@ -95,6 +95,7 @@ CREATE AGGREGATE merge(tjsonb) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tjsonb_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -104,6 +105,7 @@ CREATE AGGREGATE mergeAgg(tjsonb) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tjsonb_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe

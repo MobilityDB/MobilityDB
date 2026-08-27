@@ -139,3 +139,18 @@ temp2(k, seq) AS (
 SELECT asText(appendSequenceAgg(seq ORDER BY seq)) FROM temp2;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The bare aggregate and its Agg twin in ONE query
+--
+-- The two carry identical transition machinery, so PostgreSQL shares one
+-- transition state between them unless each declares FINALFUNC_MODIFY. Their
+-- finalfn frees the state, so a shared one is finalized twice. Asking for both
+-- at once is what exercises that, and the two must agree.
+-------------------------------------------------------------------------------
+
+SELECT merge(temp) = mergeAgg(temp) FROM (VALUES
+  (th3index '831c02fffffffff@2001-01-01'),
+  (th3index '831c00fffffffff@2001-01-02')) t(temp);
+
+-------------------------------------------------------------------------------

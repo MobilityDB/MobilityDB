@@ -164,3 +164,11 @@ SELECT asText(appendSequenceAgg(seq ORDER BY seq)) FROM temp2;
  {[831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST], [871fa44a8ffffff@Wed Jan 03 00:00:00 2001 PST, 880326b885fffff@Thu Jan 04 00:00:00 2001 PST], [880326b88dfffff@Fri Jan 05 00:00:00 2001 PST, 8a2a100d645ffff@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+SELECT merge(temp) = mergeAgg(temp) FROM (VALUES
+  (th3index '831c02fffffffff@2001-01-01'),
+  (th3index '831c00fffffffff@2001-01-02')) t(temp);
+ ?column? 
+----------
+ t
+(1 row)
+

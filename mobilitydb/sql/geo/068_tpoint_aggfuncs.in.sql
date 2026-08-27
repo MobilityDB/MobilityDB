@@ -169,6 +169,7 @@ CREATE AGGREGATE merge(tgeompoint) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeompoint_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -178,6 +179,7 @@ CREATE AGGREGATE mergeAgg(tgeompoint) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeompoint_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -189,6 +191,7 @@ CREATE AGGREGATE merge(tgeogpoint) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeogpoint_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -198,6 +201,7 @@ CREATE AGGREGATE mergeAgg(tgeogpoint) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeogpoint_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe

@@ -145,6 +145,7 @@ CREATE AGGREGATE merge(tgeometry) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeometry_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -154,6 +155,7 @@ CREATE AGGREGATE mergeAgg(tgeometry) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeometry_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -165,6 +167,7 @@ CREATE AGGREGATE merge(tgeography) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeography_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -174,6 +177,7 @@ CREATE AGGREGATE mergeAgg(tgeography) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeography_tagg_finalfn,
+  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
