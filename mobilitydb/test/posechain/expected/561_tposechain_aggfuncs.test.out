@@ -94,3 +94,11 @@ SELECT asText(appendSequenceAgg(seq)) FROM (VALUES
  {[PoseChain(Pose(POINT(1 1),0.1))@Mon Jan 01 00:00:00 2001 PST], [PoseChain(Pose(POINT(2 2),0.2))@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asText(merge(temp)) = asText(mergeAgg(temp)) FROM (VALUES
+  (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
+  (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(temp);
+ ?column? 
+----------
+ t
+(1 row)
+
