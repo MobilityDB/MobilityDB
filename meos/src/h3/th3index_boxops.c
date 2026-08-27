@@ -67,6 +67,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/span.h"
+#include "temporal/tcellindex.h"
 #include "h3/h3index.h"
 
 /*****************************************************************************
@@ -90,17 +91,27 @@ th3index_cell_set_stbox(H3Index cell, STBox *box)
       "H3 cellToBoundary failed for cell %" PRIx64, (uint64_t) cell);
     return;
   }
-  double xmin = DBL_MAX, xmax = -DBL_MAX;
-  double ymin = DBL_MAX, ymax = -DBL_MAX;
+  double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
   for (int i = 0; i < bnd.numVerts; i++)
   {
-    double lng = radsToDegs(bnd.verts[i].lng);
-    double lat = radsToDegs(bnd.verts[i].lat);
-    if (lng < xmin) xmin = lng;
-    if (lng > xmax) xmax = lng;
-    if (lat < ymin) ymin = lat;
-    if (lat > ymax) ymax = lat;
+    lons[i] = radsToDegs(bnd.verts[i].lng);
+    lats[i] = radsToDegs(bnd.verts[i].lat);
   }
+  /* A cell holding a pole reaches it and spans every longitude, which its
+   * boundary vertices do not state */
+  int32_t res = getResolution(cell);
+  H3Index north, south;
+  LatLng pole;
+  pole.lng = 0.0;
+  pole.lat = degsToRads(90.0);
+  if (latLngToCell(&pole, res, &north) != E_SUCCESS)
+    north = (H3Index) 0;
+  pole.lat = degsToRads(-90.0);
+  if (latLngToCell(&pole, res, &south) != E_SUCCESS)
+    south = (H3Index) 0;
+  double xmin, ymin, xmax, ymax;
+  dggs_lonlat_boundary_set_box(lons, lats, bnd.numVerts, north == cell,
+    south == cell, &xmin, &ymin, &xmax, &ymax);
   box->xmin = xmin;
   box->xmax = xmax;
   box->ymin = ymin;
