@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geo_reverse</title>
+<title>MobilityDB: geog_array_union</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,37 +79,49 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__transf_ga299cf84d92b4ed714ddb03c9b98ed9e9.html#ga299cf84d92b4ed714ddb03c9b98ed9e9">geo_reverse</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_ga299cf84d92b4ed714ddb03c9b98ed9e9.html#ga299cf84d92b4ed714ddb03c9b98ed9e9">geo_reverse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_gaf1f310502ec4c77d431d37109403766f.html#gaf1f310502ec4c77d431d37109403766f">geo_round</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__transf_ga55994ab1d404b6328c8604937d24d23e.html#ga55994ab1d404b6328c8604937d24d23e">geog_array_union</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__transf_ga55994ab1d404b6328c8604937d24d23e.html#ga55994ab1d404b6328c8604937d24d23e">geog_array_union</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga299cf84d92b4ed714ddb03c9b98ed9e9" name="ga299cf84d92b4ed714ddb03c9b98ed9e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga299cf84d92b4ed714ddb03c9b98ed9e9">&#9670;&#160;</a></span>geo_reverse()</h2>
+<a id="ga55994ab1d404b6328c8604937d24d23e" name="ga55994ab1d404b6328c8604937d24d23e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga55994ab1d404b6328c8604937d24d23e">&#9670;&#160;</a></span>geog_array_union()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geo_reverse </td>
+          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geog_array_union </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
+          <td class="paramname"><em>gsarr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Reverse vertex order of a geometry. </p>
+<p>Return the union of an array of geographies. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry/geography </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gsarr</td><td>Array of geographies </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_aba1839b8afaa3a97365c896f7de82db8.html#aba1839b8afaa3a97365c896f7de82db8">LWGEOM_reverse(PG_FUNCTION_ARGS)</a></code> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
+<p>The union of a set of positions is the set with its duplicates removed, and two positions are the same when their coordinates are, so the answer is read without measuring anything and holds on the spheroid as it does on the plane. A geodetic array carrying anything else is a different question: a geodesic is not the segment joining two positions in degree space, and two geodesics meet where those segments need not, so the answer awaits an overlay that works on the spheroid. @csqlfn #Geo_union() </p>
 
 </div>
 </div>
