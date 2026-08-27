@@ -1,10 +1,10 @@
 set(TEMPORAL_SOURCES
   doublen.c
-  error.c
   lifting.c
   meos.c
   meos_array.c
   meos_catalog.c
+  meos_error.c
   skiplist.c
   set.c
   set_ops.c

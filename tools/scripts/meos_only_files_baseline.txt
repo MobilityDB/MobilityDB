@@ -38,10 +38,10 @@ meos/src/pointcloud/schema_hook.c	#include <utils/memutils.h>  /* TopMemoryConte
 meos/src/temporal/doublen.c	double2_make(double a, double b)	file-scope conditional
 meos/src/temporal/doublen.c	double3_make(double a, double b, double c)	file-scope conditional
 meos/src/temporal/doublen.c	double4_make(double a, double b, double c, double d)	file-scope conditional
-meos/src/temporal/error.c	#include "utils/elog.h"	file-scope conditional
-meos/src/temporal/error.c	default_error_handler(int errlevel, int errcode, const char *errmsg)	file-scope conditional
-meos/src/temporal/error.c	meos_errno_set(int err)	file-scope conditional
-meos/src/temporal/error.c	pg_error(int errlevel, const char *errmsg)	file-scope conditional
+meos/src/temporal/meos_error.c	#include "utils/elog.h"	file-scope conditional
+meos/src/temporal/meos_error.c	default_error_handler(int errlevel, int errcode, const char *errmsg)	file-scope conditional
+meos/src/temporal/meos_error.c	meos_errno_set(int err)	file-scope conditional
+meos/src/temporal/meos_error.c	pg_error(int errlevel, const char *errmsg)	file-scope conditional
 meos/src/temporal/meos.c	#define USE_POSTGRES_DATES 0	file-scope conditional
 meos/src/temporal/meos.c	geos_finalize(void)	file-scope conditional
 meos/src/temporal/meos.c	prng_finalize(void)	file-scope conditional

@@ -24,7 +24,7 @@
  * so the allocation path is byte-identical to a plain libc build; an embedder
  * may install its own allocator via meos_initialize_allocator to make MEOS
  * working-memory visible to its memory manager. SIBLING-FROM the error-handler
- * hook (MEOS_ERROR_HANDLER in meos/src/temporal/error.c), including its atomic
+ * hook (MEOS_ERROR_HANDLER in meos/src/temporal/meos_error.c), including its atomic
  * publish/consume discipline for thread-safety.
  */
 static meos_malloc_fn  MEOS_MALLOC  = &malloc;
@@ -81,7 +81,7 @@ pg_malloc_internal(size_t size, int flags)
 	if (size == 0)
 		size = 1;
 #if MEOS
-	tmp = meos_hook_malloc(size);	/* MEOS SIBLING-FROM error.c */
+	tmp = meos_hook_malloc(size);	/* MEOS SIBLING-FROM meos_error.c */
 #else
 	tmp = malloc(size);
 #endif
@@ -127,7 +127,7 @@ pg_realloc(void *ptr, size_t size)
 	if (ptr == NULL && size == 0)
 		size = 1;
 #if MEOS
-	tmp = meos_hook_realloc(ptr, size);	/* MEOS SIBLING-FROM error.c */
+	tmp = meos_hook_realloc(ptr, size);	/* MEOS SIBLING-FROM meos_error.c */
 #else
 	tmp = realloc(ptr, size);
 #endif
@@ -154,7 +154,7 @@ pg_strdup(const char *in)
 		exit(EXIT_FAILURE);
 	}
 #if MEOS
-	/* MEOS SIBLING-FROM error.c: libc strdup would bypass the allocator hook,
+	/* MEOS SIBLING-FROM meos_error.c: libc strdup would bypass the allocator hook,
 	 * so duplicate through the hook explicitly. */
 	{
 		size_t		len = strlen(in) + 1;
@@ -178,7 +178,7 @@ void
 pg_free(void *ptr)
 {
 #if MEOS
-	meos_hook_free(ptr);	/* MEOS SIBLING-FROM error.c */
+	meos_hook_free(ptr);	/* MEOS SIBLING-FROM meos_error.c */
 #else
 	free(ptr);
 #endif
@@ -233,7 +233,7 @@ pnstrdup(const char *in, Size size)
 
 	len = strnlen(in, size);
 #if MEOS
-	tmp = meos_hook_malloc(len + 1);	/* MEOS SIBLING-FROM error.c */
+	tmp = meos_hook_malloc(len + 1);	/* MEOS SIBLING-FROM meos_error.c */
 #else
 	tmp = malloc(len + 1);
 #endif
