@@ -1899,6 +1899,22 @@ SELECT round(tprecision(tfloat 'Interp=step;[1@2001-01-01 00:00:00, 2@2001-01-01
 3@2001-01-02 12:00:00, 4@2001-01-03 00:00:00, 5@2001-01-04 00:00:00,
 6@2001-01-04 12:00:00]', '1 day', '2001-01-01'), 4);
 
+-- A bin starting where an exclusive upper bound ends holds no instant of the
+-- sequence, so the result covers the period of its argument and no more. The
+-- closed twin states the bin the exclusive one leaves out.
+SELECT tprecision(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09)', '1 day', '2001-01-01');
+SELECT tprecision(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09]', '1 day', '2001-01-01');
+-- A bin can start before the sequence does, which is every bin holding a
+-- discrete sequence whose instants sit inside it
+SELECT tprecision(tint '{54@2001-02-27 16:21:00, 52@2001-02-27 16:29:00}', '15 minutes', '2001-01-01');
+
+-- Which bin ends on the bound follows from the bin width, so the containment
+-- holds over a sweep of widths rather than at one of them
+SELECT d, getTime(tprecision(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09)', d, '2001-01-01'))
+  <@ getTime(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09)') AS covered
+FROM (VALUES (interval '1 day'), (interval '2 days'), (interval '4 days'),
+  (interval '8 days'), (interval '12 hours')) AS t(d) ORDER BY d;
+
 SELECT round(tprecision(tfloat'[1@2001-01-01 00:00:00, 2@2001-01-01 12:00:00,
 3@2001-01-02 12:00:00, 4@2001-01-03 00:00:00, 5@2001-01-04 00:00:00,
 6@2001-01-04 12:00:00]', '1 day', '2001-01-01'), 4);

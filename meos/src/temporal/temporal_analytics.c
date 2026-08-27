@@ -860,8 +860,12 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       upper += tunits;
     }
   }
-  /* Compute the twAvg/twCentroid of the last bin */
-  if (k > 0)
+  /* Compute the twAvg/twCentroid of the last bin. A sequence whose upper bound
+   * is exclusive ends exactly where the bin after its last one starts, and that
+   * bin holds only the instant the bound excludes, so the result leaves it out
+   * and covers no time the argument does not */
+  if (k > 0 && ! (! seq->period.upper_inc &&
+      lower == DatumGetTimestampTz(seq->period.upper)))
   {
     seq1 = tsequence_make(ininsts, k, true,
       (k == 1) ? true : seq->period.upper_inc, interp, NORMALIZE);
