@@ -354,17 +354,17 @@ SELECT getResolution(th3index(
 
 			<listitem xml:id="th3_h3_cell_to_latlng">
 				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>th3CellToLatlngTgeompoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
 				<para>Return the temporal geodetic centroid of each cell in a trajectory</para>
 				<programlisting xml:space="preserve" format="linespecific">
 cellToPoint(th3index) → tgeogpoint
-th3CellToLatlngTgeompoint(th3index) → tgeompoint
+tgeompoint(th3index) → tgeompoint
 </programlisting>
-				<para>A planar (SRID 4326) overload is available under the name <varname>th3CellToLatlngTgeompoint</varname>.</para>
+				<para>A planar (SRID 4326) overload is available under the name <varname>tgeompoint</varname>.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
-SELECT asText(th3CellToLatlngTgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
+SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
 </programlisting>
 			</listitem>

@@ -32,7 +32,7 @@ SELECT th3index(
  t
 (1 row)
 
-SELECT th3CellToLatlngTgeompoint(th3index
+SELECT tgeompoint(th3index
   '831c02fffffffff@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
@@ -142,7 +142,7 @@ SELECT (th3index
 (1 row)
 
 SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint
-  ~= th3CellToLatlngTgeompoint(th3index '831c02fffffffff@2001-01-01');
+  ~= tgeompoint(th3index '831c02fffffffff@2001-01-01');
  ?column? 
 ----------
  t

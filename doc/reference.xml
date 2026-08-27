@@ -2840,7 +2840,7 @@
 					<para><link linkend="th3_tgeompoint_to_th3"><varname>th3index</varname></link>: Return the temporal H3 cell at the given resolution that contains each point in a temporal geodetic or planar point (SRID must be 4326 for the <varname>tgeompoint</varname> overload)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="th3_h3_cell_to_latlng"><varname>cellToPoint</varname>, <varname>th3CellToLatlngTgeompoint</varname></link>: Return the temporal geodetic centroid of each cell in a trajectory</para>
+					<para><link linkend="th3_h3_cell_to_latlng"><varname>cellToPoint</varname>, <varname>tgeompoint</varname></link>: Return the temporal geodetic centroid of each cell in a trajectory</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_cell_to_boundary"><varname>cellToBoundary</varname></link>: Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</para>

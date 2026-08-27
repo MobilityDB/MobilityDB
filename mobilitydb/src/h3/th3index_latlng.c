@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_tgeompoint);
  * @ingroup mobilitydb_h3_latlng
  * @brief Return the planar centroid trajectory (SRID 4326) of a temporal
  * H3 cell
- * @sqlfn th3CellToLatlngTgeompoint()
+ * @sqlfn tgeompoint()
  */
 Datum
 Th3index_cell_to_tgeompoint(PG_FUNCTION_ARGS)
