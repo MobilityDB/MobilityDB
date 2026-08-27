@@ -672,25 +672,42 @@ int main(void)
   free(phsurf); free(mp); free(uu2);
   meos_errno_reset();
 
-  /* The union of a GEODETIC array is serialized twice: GEOS answers a planar
-   * value, and the geodetic flag cannot be set on it because the planar
-   * bounding box already written occupies a different number of floats. The
-   * deserialization that carries the value across reads its coordinates OUT OF
-   * the planar buffer, so releasing that buffer before the geodetic value is
-   * built leaves the second serialization walking freed memory -- it answered
-   * a MULTIPOINT of denormal coordinates, and valgrind reported the read in
-   * ll2cart under lwgeom_calculate_gbox_geodetic */
+  /* A geography is answered on the spheroid, so it is #geog_array_union() that
+   * takes it and #geom_array_union() that turns it away. The union of a set of
+   * positions is the set with its duplicates removed, and two positions are
+   * the same when their coordinates are, so the answer is read without
+   * measuring anything and is the same on the spheroid as on the plane */
   GSERIALIZED *gg1 = geog_in("POINT(1 1)", -1);
   GSERIALIZED *gg2 = geog_in("POINT(2 2)", -1);
   assert(gg1 != NULL); assert(gg2 != NULL);
   GSERIALIZED *ggarr[2] = {gg1, gg2};
   meos_errno_reset();
-  GSERIALIZED *ggu = geom_array_union(ggarr, 2);
+  GSERIALIZED *ggu = geog_array_union(ggarr, 2);
   assert(ggu != NULL);
   char *ggwkt = geo_as_ewkt(ggu, 6);
   printf("the union of two geography points: %s\n", ggwkt);
   assert(strcmp(ggwkt, "SRID=4326;MULTIPOINT(1 1,2 2)") == 0);
-  free(gg1); free(gg2); free(ggu); free(ggwkt);
+  free(ggu); free(ggwkt);
+  meos_errno_reset();
+
+  /* The planar entry turns a geography away rather than reading its degrees as
+   * cartesian coordinates */
+  GSERIALIZED *ggrefused = geom_array_union(ggarr, 2);
+  assert(ggrefused == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  printf("the planar union refuses a geography\n");
+  meos_errno_reset();
+
+  /* And the geodetic entry answers no more than the spheroid answers: an array
+   * carrying anything but positions awaits an overlay that works there */
+  GSERIALIZED *ggp1 = geog_in("POLYGON((0 0,0 1,1 1,1 0,0 0))", -1);
+  GSERIALIZED *ggp2 = geog_in("POLYGON((2 2,2 3,3 3,3 2,2 2))", -1);
+  GSERIALIZED *ggparr[2] = {ggp1, ggp2};
+  meos_errno_reset();
+  assert(geog_array_union(ggparr, 2) == NULL);
+  assert(meos_errno() == MEOS_ERR_FEATURE_NOT_SUPPORTED);
+  printf("the geodetic union answers positions and declines the rest\n");
+  free(gg1); free(gg2); free(ggp1); free(ggp2);
   meos_errno_reset();
 
   /* Finalize MEOS */

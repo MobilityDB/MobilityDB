@@ -140,7 +140,12 @@ GSERIALIZED *
 geoarr_merge(GSERIALIZED **gsarr, int count)
 {
   assert(gsarr); assert(count > 0);
-  GSERIALIZED *result = geom_array_union(gsarr, count);
+  /* The union of the values is read on the plane or on the spheroid according
+   * to what they are, and each entry answers only for its own */
+  GSERIALIZED *result = FLAGS_GET_GEODETIC(gsarr[0]->gflags) ?
+    geog_array_union(gsarr, count) : geom_array_union(gsarr, count);
+  if (! result)
+    return NULL;
   /*
    * ST_Union creates MultiLineString and does not sew LineStrings into a
    * single LineString. Use ST_LineMerge to sew LineStrings.

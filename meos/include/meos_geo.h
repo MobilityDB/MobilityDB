@@ -400,6 +400,7 @@ extern GSERIALIZED *geo_geo_n(const GSERIALIZED *geom, int n);
 extern GSERIALIZED **geo_pointarr(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_points(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
+extern GSERIALIZED *geog_array_union(GSERIALIZED **gsarr, int count);
 extern GSERIALIZED *geom_boundary(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_buffer(const GSERIALIZED *gs, double size, const char *params);
 extern GSERIALIZED *geom_centroid(const GSERIALIZED *gs);
