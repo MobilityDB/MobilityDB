@@ -971,7 +971,7 @@ SELECT text 'XX' || textset '{aaa, bbb}';
 				<indexterm significance="normal"><primary><varname>tprecision</varname></primary></indexterm>
 				<para>Set the temporal precision of the time value to the interval with respect to the origin</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tprecision(times,interval,origin timestamptz='2000-01-03') → times
+tprecision(times,duration interval,origin timestamptz='2000-01-03') → times
 </programlisting>
 				<para>If the origin is not specified, it is set by default to Monday, January 3, 2000</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
