@@ -174,17 +174,17 @@ WHERE ST_Intersects(
 -- exactly, so it raises an error instead of silently reducing to the centre.
 -------------------------------------------------------------------------------
 
-SELECT atGeometry(
+SELECT asText(atGeometry(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 1.5)@2001-01-05]',
-  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))');
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'), 6);
 
-SELECT minusGeometry(
+SELECT asText(minusGeometry(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 1.5)@2001-01-05]',
-  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))');
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'), 6);
 
-SELECT atStbox(
+SELECT asText(atStbox(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 1.5)@2001-01-05]',
-  stbox 'STBOX X((1, -1), (3, 1))');
+  stbox 'STBOX X((1, -1), (3, 1))'), 6);
 
 -------------------------------------------------------------------------------
 -- Honest NOT_IMPLEMENTED: the M1 clip ignores polygon holes, so a target
@@ -252,5 +252,25 @@ SELECT asText(atStbox(
 SELECT asText(minusStbox(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01}',
   stbox 'STBOX X((-2, 0), (0, 2))', false));
+
+-------------------------------------------------------------------------------
+-- A body that turns carries its vertices along arcs, which the swept-edge
+-- clip of a translating segment does not solve, so a rotating segment is read
+-- in pieces short enough to hold one answer each. The rod below reaches
+-- x in [-3.007, 3.007] as it turns, so it meets a target within that reach
+-- and never meets one outside it.
+-------------------------------------------------------------------------------
+
+SELECT asText(atGeometry(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]',
+  geometry 'Polygon((-0.4 2,0.4 2,0.4 2.6,-0.4 2.6,-0.4 2))')) IS NOT NULL;
+
+SELECT atGeometry(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]',
+  geometry 'Polygon((-0.5 4,0.5 4,0.5 5,-0.5 5,-0.5 4))') IS NULL;
+
+SELECT asText(atGeometry(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 6),1.5707963)@2001-01-02]',
+  geometry 'Polygon((-0.5 4,0.5 4,0.5 5,-0.5 5,-0.5 4))')) IS NOT NULL;
 
 -------------------------------------------------------------------------------

@@ -67,3 +67,20 @@ FROM unnest(spaceBoxes(
  -2.828427 | 14.828427 | -2.828427 | 2.828427
 (1 row)
 
+SELECT array_length(spaceBoxes(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]',
+  2.0), 1);
+ array_length 
+--------------
+           14
+(1 row)
+
+SELECT round(min(xMin(b))::numeric, 6), round(max(xMax(b))::numeric, 6)
+FROM unnest(spaceBoxes(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]',
+  2.0)) b;
+   round   |  round   
+-----------+----------
+ -3.006659 | 3.006659
+(1 row)
+
