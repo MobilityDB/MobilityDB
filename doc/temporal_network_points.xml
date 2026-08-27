@@ -543,7 +543,7 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>tnpointFromMFJSON</varname></primary></indexterm>
 				<para>Output a temporal network point as MF-JSON and read it back; the round trip is lossless</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asMFJSON(tnpoint,integer,integer,integer) → text
+asMFJSON(tnpoint,options integer,flags integer,maxdecimaldigits integer) → text
 tnpointFromMFJSON(text) → tnpoint
 </programlisting>
 				<para>The output takes the options, flags, and decimal-digits arguments shared with the other temporal types.</para>
