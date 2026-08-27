@@ -31,9 +31,16 @@
  * @file
  * @brief Spatial and spatiotemporal grid tiling for temporal rigid geometries
  *
- * The boxes are computed on the temporal centroid trajectory
- * (`trgeometry_to_tgeompoint`) and thus reuse the `tgeo` tiling kernel, keeping the
- * trgeometry tiling surface aligned with the temporal geometry one.
+ * A rigid geometry occupies the region its body covers, so the tiles are the
+ * ones that body reaches, which #trgeo_restrict_stbox answers by solving for
+ * the times the body meets a box. The grid itself is the `tgeo` one, reached
+ * through #tspatial_space_time_boxes, so the two families lay values on the
+ * same grid and differ only in how a value is read against one tile.
+ *
+ * Reading the centroid trajectory instead answers the tiles a POINT visits:
+ * a value holding one placement of a 4 by 4 square answers a single box of
+ * zero extent, and a square carried past four grid columns answers none of
+ * them.
  */
 
 /* PostgreSQL */
@@ -42,7 +49,9 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_rgeo.h>
+#include "geo/tgeo_tile.h"
 #include "rgeo/trgeo.h"
+#include "rgeo/trgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Boxes functions
@@ -71,11 +80,8 @@ trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize,
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpoint = trgeometry_to_tgeompoint(temp);
-  STBox *result = tgeo_space_time_boxes(tpoint, xsize, ysize, zsize, NULL,
-    sorigin, 0, bitmatrix, border_inc, count);
-  pfree(tpoint);
-  return result;
+  return tspatial_space_time_boxes(temp, xsize, ysize, zsize, NULL, sorigin,
+    0, bitmatrix, border_inc, &trgeo_restrict_stbox, count);
 }
 
 /**
@@ -103,11 +109,8 @@ trgeometry_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpoint = trgeometry_to_tgeompoint(temp);
-  STBox *result = tgeo_space_time_boxes(tpoint, xsize, ysize, zsize, duration,
-    sorigin, torigin, bitmatrix, border_inc, count);
-  pfree(tpoint);
-  return result;
+  return tspatial_space_time_boxes(temp, xsize, ysize, zsize, duration,
+    sorigin, torigin, bitmatrix, border_inc, &trgeo_restrict_stbox, count);
 }
 
 /*****************************************************************************/

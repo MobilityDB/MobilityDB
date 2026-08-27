@@ -1431,6 +1431,25 @@ ensure_tgeo_type(MeosType type)
 #endif /* MEOS */
 
 /**
+ * @brief Return true if a type is a temporal spatial type whose values cover a
+ * region rather than standing at a point
+ * @details A point has no extent, so what such a value occupies is the path
+ * its point follows; a value of one of these types occupies the region its
+ * body covers, which is what a question about the space it takes up has to
+ * read
+ */
+bool
+tspatial_body_type(MeosType type)
+{
+  return (type == T_TGEOMETRY || type == T_TGEOGRAPHY ||
+    type == T_TRGEOMETRY || type == T_TCBUFFER
+#if POINTCLOUD
+    || type == T_TPCPATCH
+#endif
+    );
+}
+
+/**
  * @brief Return true if a type is a temporal type with geometry/geography as
  * base type
  */

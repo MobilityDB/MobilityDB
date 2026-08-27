@@ -951,39 +951,31 @@ stbox_get_time_tile(TimestampTz t, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_bbox_split
- * @brief Return the spatiotemporal boxes of a temporal point split with
- * respect to a space and possibly a time grid
- * @param[in] temp Temporal point
+ * @brief Return the spatiotemporal boxes of a temporal value with a spatial
+ * bounding box, split with respect to a space and possibly a time grid
+ * @details Every family lays its values on the grid the same way and differs
+ * only in how a value is read against one tile, so the restriction is the
+ * parameter: a temporal geo passes #tgeo_restrict_stbox, a temporal rigid
+ * geometry the restriction that reads its body. A family whose values cover a
+ * region MUST NOT pass a restriction reading a point, since the boxes would
+ * then answer where the point goes instead of where the value is
+ * @param[in] temp Temporal value
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] duration Size of the time dimension as an interval, may be `NULL`
  * @param[in] sorigin Origin for the space dimension, may be `NULL`
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
- * @param[in] border_inc True when the box contains the upper border, otherwise
- * the upper border is assumed as outside of the box.
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[in] restrfn Restriction of the value to one tile
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tgeo_space_time_boxes()
  */
 STBox *
-tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
+tspatial_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
-  TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
+  TimestampTz torigin, bool bitmatrix, bool border_inc,
+  TileRestrictFn restrfn, int *count)
 {
-  /* The out parameter is defined even when a later check fails */
-  *count = 0;
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL); VALIDATE_TGEO(temp, NULL);
-  if ((xsize > 0 && ! ensure_not_null((void *) sorigin)) ||
-      (xsize > 0 && ! ensure_positive_datum(xsize, T_FLOAT8)) ||
-      (xsize > 0 && ! ensure_positive_datum(ysize, T_FLOAT8)) ||
-      (xsize > 0 && MEOS_FLAGS_GET_Z(temp->flags) &&
-        ! ensure_positive_datum(zsize, T_FLOAT8)) ||
-      (duration && ! ensure_positive_duration(duration)) ||
-      /* Generic 3D geometries cannot be tiled */
-      (tgeo_type(temp->temptype) &&
-      ! ensure_has_not_Z(temp->temptype, temp->flags)))
-    return NULL;
+  assert(temp); assert(restrfn); assert(count);
 
   /* Initialize state */
   int ntiles;
@@ -1020,15 +1012,11 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
     }
     stbox_tile_state_next(state);
 
-    /* Restrict the temporal point to the box and compute its bounding box */
-    Temporal *atstbox = tgeo_restrict_stbox(state->temp, &box, BORDER_EXC,
-      REST_AT);
+    /* Restrict the value to the box and compute its bounding box */
+    Temporal *atstbox = restrfn(state->temp, &box, BORDER_EXC, REST_AT);
     if (atstbox == NULL)
       continue;
     tspatial_set_stbox(atstbox, &box);
-    /* If only space grid */
-    // if (! duration)
-      // MEOS_FLAGS_SET_T(box.flags, false);
     pfree(atstbox);
 
     /* Copy the box to the result */
@@ -1036,6 +1024,45 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   }
   *count = i;
   return result;
+}
+
+/**
+ * @ingroup meos_geo_bbox_split
+ * @brief Return the spatiotemporal boxes of a temporal point split with
+ * respect to a space and possibly a time grid
+ * @param[in] temp Temporal point
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] sorigin Origin for the space dimension, may be `NULL`
+ * @param[in] torigin Origin for the time dimension
+ * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[in] border_inc True when the box contains the upper border, otherwise
+ * the upper border is assumed as outside of the box.
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tgeo_space_time_boxes()
+ */
+STBox *
+tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
+  double zsize, const Interval *duration, const GSERIALIZED *sorigin,
+  TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_TGEO(temp, NULL);
+  if ((xsize > 0 && ! ensure_not_null((void *) sorigin)) ||
+      (xsize > 0 && ! ensure_positive_datum(xsize, T_FLOAT8)) ||
+      (xsize > 0 && ! ensure_positive_datum(ysize, T_FLOAT8)) ||
+      (xsize > 0 && MEOS_FLAGS_GET_Z(temp->flags) &&
+        ! ensure_positive_datum(zsize, T_FLOAT8)) ||
+      (duration && ! ensure_positive_duration(duration)) ||
+      /* Generic 3D geometries cannot be tiled */
+      (tgeo_type(temp->temptype) &&
+      ! ensure_has_not_Z(temp->temptype, temp->flags)))
+    return NULL;
+
+  return tspatial_space_time_boxes(temp, xsize, ysize, zsize, duration,
+    sorigin, torigin, bitmatrix, border_inc, &tgeo_restrict_stbox, count);
 }
 
 /**
@@ -1285,7 +1312,10 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   /* The out parameter is defined even when a later check fails */
   *ntiles = 0;
   /* Ensure parameter validity */
-  VALIDATE_NOT_NULL(ntiles, NULL); VALIDATE_TGEO(temp, NULL);
+  /* Every value with a spatial bounding box can be laid on a spatial grid;
+   * what differs between the families is which restriction reads the value,
+   * which is the caller's to supply */
+  VALIDATE_NOT_NULL(ntiles, NULL); VALIDATE_TSPATIAL(temp, NULL);
   if ((xsize && ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||
@@ -1308,8 +1338,11 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   }
 
   /* Disable the usage of bitmatrix for instantaneous temporal values, for
-   * time only bins, or for temporal geos */
-  if (! xsize || temporal_num_instants(temp) == 1 || tgeo_type(temp->temptype))
+   * time only bins, or for a value covering a region: the matrix is filled
+   * from the segments a POINT traverses, which is not what such a value
+   * occupies */
+  if (! xsize || temporal_num_instants(temp) == 1 ||
+      tspatial_body_type(temp->temptype))
       bitmatrix = false;
 
   /* Zero-init at declaration: when xsize == 0 the if-block below is

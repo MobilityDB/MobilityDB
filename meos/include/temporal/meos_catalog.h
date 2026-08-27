@@ -304,6 +304,7 @@ extern bool tpoint_type(MeosType type);
 extern bool ensure_tpoint_type(MeosType type);
 extern bool tgeo_type(MeosType type);
 extern bool ensure_tgeo_type(MeosType type);
+extern bool tspatial_body_type(MeosType type);
 extern bool tgeo_type_all(MeosType type);
 extern bool ensure_tgeo_type_all(MeosType type);
 extern bool tgeometry_type(MeosType type);

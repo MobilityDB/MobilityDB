@@ -98,6 +98,18 @@ extern STboxGridState *stbox_tile_state_make(const Temporal *temp,
 extern void stbox_tile_state_next(STboxGridState *state);
 extern bool stbox_tile_state_get(STboxGridState *state, STBox *box);
 
+/**
+ * @brief Restriction of a temporal value to a spatiotemporal box, which is the
+ * one step of the tiling that differs between families
+ */
+typedef Temporal *(*TileRestrictFn)(const Temporal *temp, const STBox *box,
+  bool border_inc, bool atfunc);
+
+extern STBox *tspatial_space_time_boxes(const Temporal *temp, double xsize,
+  double ysize, double zsize, const Interval *duration,
+  const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix,
+  bool border_inc, TileRestrictFn restrfn, int *count);
+
 extern STboxGridState *tgeo_space_time_tile_init(const Temporal *temp,
   double xsize, double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, 
