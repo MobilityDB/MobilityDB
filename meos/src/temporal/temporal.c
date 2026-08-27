@@ -72,6 +72,7 @@
   #include "posechain/posechain.h"
 #endif
 #if RGEO
+  #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
 #endif
 
@@ -605,6 +606,63 @@ ensure_positive_duration(const Interval *duration)
     "The interval must be positive: %s", str);
   pfree(str);
   return false;
+}
+
+/*****************************************************************************
+ * Reference geometry of the temporal types that carry one
+ *****************************************************************************/
+
+/**
+ * @brief Return the temporal value an operation is to be computed on, and the
+ * reference geometry it carries
+ * @details A temporal rigid geometry is a temporal pose with a reference
+ * geometry appended to it, and an operation that rebuilds a temporal value
+ * from its instants reproduces the poses and not the geometry. Such an
+ * operation therefore computes on the poses this function answers, and gives
+ * the result its geometry back with #temporal_attach_geom.
+ * @param[in] temp Temporal value
+ * @param[out] geom Reference geometry the value carries, NULL where it carries
+ * none
+ * @return The temporal value to compute on, which is the argument itself for
+ * every type that carries no reference geometry
+ * @note The geometry is the argument's own, so it is read while the argument
+ * lives, and #temporal_attach_geom copies it into the result
+ */
+Temporal *
+temporal_strip_geom(const Temporal *temp, const GSERIALIZED **geom)
+{
+  assert(temp); assert(geom);
+  *geom = NULL;
+#if RGEO
+  if (temp->temptype == T_TRGEOMETRY)
+  {
+    *geom = trgeo_geom_p(temp);
+    return trgeometry_to_tpose(temp);
+  }
+#endif /* RGEO */
+  return (Temporal *) temp;
+}
+
+/**
+ * @brief Return the temporal value that carries a reference geometry again
+ * @param[in] geom Reference geometry, NULL where the value carries none
+ * @param[in] temp Temporal value the operation computed
+ * @return The temporal value the caller answers, which is the argument itself
+ * where there is no geometry to give back
+ * @note The argument is freed where a value carrying the geometry replaces it
+ */
+Temporal *
+temporal_attach_geom(const GSERIALIZED *geom, Temporal *temp)
+{
+  if (! geom || ! temp)
+    return temp;
+#if RGEO
+  Temporal *result = geo_tpose_to_trgeo(geom, temp);
+  pfree(temp);
+  return result;
+#else
+  return temp;
+#endif /* RGEO */
 }
 
 /*****************************************************************************
@@ -1351,18 +1409,26 @@ temporal_round(const Temporal *temp, int maxdd)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
 
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) round_fn(temptype_basetype(temp->temptype));
+  lfinfo.func = (varfunc) round_fn(temptype_basetype(work->temptype));
   lfinfo.numparam = 1;
   lfinfo.param[0] = Int32GetDatum(maxdd);
-  lfinfo.argtype[0] = temp->temptype;
-  lfinfo.restype = temp->temptype;
+  lfinfo.argtype[0] = work->temptype;
+  lfinfo.restype = work->temptype;
   /* Rounding to a precision finer than the segment's variation is effectively
    * affine; the chord-of-f deviation is bounded by 0.5*10^-maxdd which is below
    * the user-requested precision.  Treat as affine and inherit interpolation. */
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  return tfunc_temporal(temp, &lfinfo);
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(work->flags);
+  Temporal *result = tfunc_temporal(work, &lfinfo);
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /**

@@ -944,7 +944,7 @@ trgeometry_segments(const Temporal *temp, int *count)
  * @param[in] gs Reference geometry
  * @param[in] temp Temporal pose
  */
-static Temporal *
+Temporal *
 geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   assert(gs); assert(temp);

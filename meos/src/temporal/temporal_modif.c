@@ -1598,21 +1598,32 @@ temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_restrict_timestamptz((TInstant *) temp, t,
+      result = (Temporal *) tinstant_restrict_timestamptz((TInstant *) work, t,
         REST_MINUS);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_delete_timestamptz((TSequence *) temp, t,
+      result = (Temporal *) tsequence_delete_timestamptz((TSequence *) work, t,
         connect);
+      break;
     default: /* TSEQUENCESET */
-      return connect ?
-        (Temporal *) tsequenceset_restrict_timestamptz((TSequenceSet *) temp, t,
+      result = connect ?
+        (Temporal *) tsequenceset_restrict_timestamptz((TSequenceSet *) work, t,
           REST_MINUS) :
-        (Temporal *) tsequenceset_delete_timestamptz((TSequenceSet *) temp, t);
+        (Temporal *) tsequenceset_delete_timestamptz((TSequenceSet *) work, t);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /**

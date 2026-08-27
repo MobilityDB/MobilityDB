@@ -1250,19 +1250,30 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
   if (! ensure_positive_duration(duration))
     return NULL;
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_tsample((TInstant *) temp, duration,
+      result = (Temporal *) tinstant_tsample((TInstant *) work, duration,
         torigin);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_tsample((TSequence *) temp, duration,
+      result = (Temporal *) tsequence_tsample((TSequence *) work, duration,
         torigin, interp);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_tsample((TSequenceSet *) temp,
+      result = (Temporal *) tsequenceset_tsample((TSequenceSet *) work,
         duration, torigin, interp);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /*****************************************************************************
