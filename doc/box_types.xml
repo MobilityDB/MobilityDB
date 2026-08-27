@@ -74,7 +74,7 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(box,maxdecimaldigits integer=15) → text
 </programlisting>
-					<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
+					<para>The <varname>maxdecimaldigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
 -- TBOXFLOAT XT([1.123, 2.123),[2001-01-01, 2001-01-02))
@@ -647,7 +647,7 @@ transformPipeline(stbox,pipeline text,srid integer,is_forward boolean=true) → 
 </programlisting>
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input box has an unknown SRID (represented by 0). The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
-				<para>The SRID of the input box is ignored, and the SRID of the output box will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
+				<para>The SRID of the input box is ignored, and the SRID of the output box will be set to zero unless a value is provided via the optional <varname>srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
   (6.575317, 51.553167)),[2001-01-01,2001-01-02])', 3812), 6);

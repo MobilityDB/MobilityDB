@@ -271,7 +271,7 @@ transformPipeline(cbuffer,pipeline text,srid integer,
 					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input circular buffer has an unknown SRID (represented by 0).</para>
 					<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
-				<para>The SRID of the input circular buffer is ignored, and the SRID of the output circular buffer will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
+				<para>The SRID of the input circular buffer is ignored, and the SRID of the output circular buffer will be set to zero unless a value is provided via the optional <varname>srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)', 3812));
 -- SRID=3812;Cbuffer(POINT(648679.0180353033 671067.0556381135),1)
@@ -897,7 +897,7 @@ transform(tcbuffer,integer) → tcbuffer
 transformPipeline(tcbuffer,pipeline text,srid integer,
   is_forward boolean=true) → tcbuffer
 </programlisting>
-				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0). The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
+				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0). The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <varname>srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tcbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)@2001-01-01',
   3812));

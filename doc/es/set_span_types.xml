@@ -199,7 +199,7 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText({floatset,floatspans},maxdecimaldigits integer=15) → text
 </programlisting>
-					<para>El argumento <varname>maxdecdigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
+					<para>El argumento <varname>maxdecimaldigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(floatset '{1.123456789,2.123456789}', 3);
 -- {1.123, 2.123}
@@ -1049,7 +1049,7 @@ transformPipeline(spatialset,pipeline text,srid integer,
 </programlisting>
 				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el conjunto tiene un SRID desconocido (representado por 0). La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas en el siguiente formato:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
-				<para>El SRID del conjunto de entrada se ignora y el SRID de la conjunto de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
+				<para>El SRID del conjunto de entrada se ignora y el SRID de la conjunto de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(transform(geomset 'SRID=4326;
   {Point(2.340088 49.400250), Point(6.575317 51.553167)}', 3812), 6);
