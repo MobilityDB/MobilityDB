@@ -495,6 +495,20 @@ SELECT startNumPoints(minusTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, AR
               1
 (1 row)
 
+SELECT PC_AsText(getValue(atTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz), tpcbox_zt(0, 0, 0, 1, 1, 1,
+  tstzspan '[2024-01-01, 2024-01-31]', 1, 0))));
+         pc_astext          
+----------------------------
+ {"pcid":1,"pts":[[1,1,1]]}
+(1 row)
+
+SELECT PC_AsText(getValue(minusTpcboxFine(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz), tpcbox_zt(0, 0, 0, 1, 1, 1,
+  tstzspan '[2024-01-01, 2024-01-31]', 1, 0))));
+         pc_astext          
+----------------------------
+ {"pcid":1,"pts":[[2,2,2]]}
+(1 row)
+
 SELECT startNumPoints(atGeometry(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz),
   geometry 'Polygon((0 0, 0 3, 3 3, 3 0, 0 0))'));
  startnumpoints 
@@ -514,6 +528,20 @@ SELECT startNumPoints(minusGeometry(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRA
  startnumpoints 
 ----------------
               1
+(1 row)
+
+SELECT PC_AsText(getValue(atGeometry(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz),
+  geometry 'Polygon((0 0, 0 1.5, 1.5 1.5, 1.5 0, 0 0))')));
+         pc_astext          
+----------------------------
+ {"pcid":1,"pts":[[1,1,1]]}
+(1 row)
+
+SELECT PC_AsText(getValue(minusGeometry(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz),
+  geometry 'Polygon((0 0, 0 1.5, 1.5 1.5, 1.5 0, 0 0))')));
+         pc_astext          
+----------------------------
+ {"pcid":1,"pts":[[2,2,2]]}
 (1 row)
 
 SELECT eIntersects(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz),
