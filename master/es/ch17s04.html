@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Índices de Celdas QUADBIN Temporales"><link rel="prev" href="ch17s03.html" title="Celdas Estáticas"><link rel="next" href="ch17s05.html" title="Inspección del Índice"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Índices de Celdas QUADBIN Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tquadbin_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tquadbin_startValue"></a><a class="indexterm" name="id12144"></a><a class="indexterm" name="id12147"></a><p>Devuelve el primer o el último identificador de celda QUADBIN de un valor temporal</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Índices de Celdas QUADBIN Temporales"><link rel="prev" href="ch17s03.html" title="Celdas Estáticas"><link rel="next" href="ch17s05.html" title="Inspección del Índice"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Índices de Celdas QUADBIN Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tquadbin_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tquadbin_startValue"></a><a class="indexterm" name="id12145"></a><a class="indexterm" name="id12148"></a><p>Devuelve el primer o el último identificador de celda QUADBIN de un valor temporal</p><pre class="programlisting">
 startValue(tquadbin) → quadbin
 endValue(tquadbin) → quadbin
 </pre><pre class="programlisting">
@@ -6,7 +6,7 @@ SELECT startValue(tquadbin '480fffffffffffff@2001-01-01');
 -- 480fffffffffffff
 SELECT endValue(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
 -- 48427fffffffffff
-</pre></li><li class="listitem"><a name="tquadbin_valueN"></a><a class="indexterm" name="id12154"></a><p>Devuelve el <code class="varname">n</code>-ésimo identificador de celda QUADBIN distinto (índice base 1)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tquadbin_valueN"></a><a class="indexterm" name="id12155"></a><p>Devuelve el <code class="varname">n</code>-ésimo identificador de celda QUADBIN distinto (índice base 1)</p><pre class="programlisting">
 valueN(tquadbin,integer) → quadbin
 </pre><p>Devuelve <code class="varname">NULL</code> si está fuera de rango.</p><pre class="programlisting">
 SELECT valueN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}', 1);
@@ -15,7 +15,7 @@ SELECT valueN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-0
 -- 48427fffffffffff
 SELECT valueN(tquadbin '480fffffffffffff@2001-01-01', 99);
 -- NULL
-</pre></li><li class="listitem"><a name="tquadbin_getValues"></a><a class="indexterm" name="id12164"></a><p>Devuelve el conjunto de identificadores de celda QUADBIN distintos que toma la trayectoria</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tquadbin_getValues"></a><a class="indexterm" name="id12165"></a><p>Devuelve el conjunto de identificadores de celda QUADBIN distintos que toma la trayectoria</p><pre class="programlisting">
 getValues(tquadbin) → quadbinset
 </pre><pre class="programlisting">
 SELECT getValues(tquadbin '480fffffffffffff@2001-01-01');
@@ -24,7 +24,7 @@ SELECT getValues(tquadbin
   '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02,
     48a6227affffffff@2001-01-03]');
 -- {480fffffffffffff, 48427fffffffffff, 48a6227affffffff}
-</pre></li><li class="listitem"><a name="tquadbin_valueAtTimestamp"></a><a class="indexterm" name="id12171"></a><p>Devuelve el identificador de celda QUADBIN en un instante dado, usando interpolación de pasos</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tquadbin_valueAtTimestamp"></a><a class="indexterm" name="id12172"></a><p>Devuelve el identificador de celda QUADBIN en un instante dado, usando interpolación de pasos</p><pre class="programlisting">
 valueAtTimestamp(tquadbin,timestamptz) → quadbin
 </pre><pre class="programlisting">
 SELECT valueAtTimestamp(tquadbin
