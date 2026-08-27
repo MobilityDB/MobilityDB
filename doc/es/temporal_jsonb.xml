@@ -146,10 +146,11 @@ SELECT textset(jsonbset '{"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"pri
 
 			<listitem xml:id="jsonbset_concat">
 				<indexterm significance="normal"><primary><varname>||</varname></primary></indexterm>
-				<para>Concatenación JSONB temporal</para>
+				<para>Concatenación de un conjunto JSONB</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {jsonb,jsonbset} || {jsonbset,jsonb} → jsonbset
 </programlisting>
+				<para>El valor se concatena con cada elemento del conjunto, y el orden de los operandos es libre.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']) || '{"unit":"km"}'::jsonb;
 -- {"{\"unit\": \"km\", \"speed\": 10}", "{\"unit\": \"km\", \"speed\": 20}"}
@@ -160,7 +161,7 @@ SELECT jsonb '{"unit":"km"}' || set(ARRAY[jsonb '{"speed":10}', '{"speed":20}'])
 
 			<listitem xml:id="jsonbset_delete">
 				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
-				<para>Eliminación JSONB temporal</para>
+				<para>Eliminación en un conjunto JSONB</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 jsonbset - {int,text,text[]} → jsonbset
 jsonbset #- text[] → jsonbset
@@ -178,7 +179,7 @@ SELECT set(ARRAY[jsonb '{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bo
 /* {"{\"PoIs\": [\"Grand Place\"], \"location\": \"Point(1 1)\"}", "{\"PoIs\":
    [\"Palais Royal\"], \"location\": \"Point(2 2)\"}"} */
 </programlisting>
-				<para>Como se muestra a continuación, el resultado de una operación de eliminación puede ser un registro vacío o un arreglo vacío. Para eliminar estos valores, puede utilizarse la función <varname>minusValue</varname>.</para>
+				<para>Como se muestra a continuación, el resultado de una operación de eliminación puede ser un registro vacío o un arreglo vacío. Para eliminar estos valores, puede utilizarse la función <varname>setMinus</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10, "light": true}',
   '{"unit": "km", "speed": 20}']) - ARRAY[text 'unit', 'speed'];
@@ -224,7 +225,7 @@ SELECT jsonbset '{"{\"speed\": 10}",
 			<listitem xml:id="jsonbset_set">
 				<indexterm significance="normal"><primary><varname>jsonbsetSet</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbsetSetLax</varname></primary></indexterm>
-				<para>Asignación JSONB temporal</para>
+				<para>Asignación en un conjunto JSONB</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 jsonbsetSet(jsonbset,path text[],val jsonb,create boolean=true) → jsonbset
 jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
@@ -249,11 +250,11 @@ SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed
 
 			<listitem xml:id="jsonbset_insert">
 				<indexterm significance="normal"><primary><varname>jsonbsetInsert</varname></primary></indexterm>
-				<para>Inserción JSONB temporal</para>
+				<para>Devuelve el valor <varname>jsonbset</varname> con <varname>jsonb</varname> insertado</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 jsonbsetInsert(jsonbset,path text[],val jsonb,after boolean=false) → jsonbset
 </programlisting>
-				<para>Devuelve el valor <varname>jsonbset</varname> con <varname>jsonb</varname> insertado. Si el elemento especificado por la ruta es un elemento de arreglo, el nuevo valor se insertará antes de ese elemento si <varname>after</varname> es falso, o después en caso contrario. Si el elemento especificado por la ruta es un campo de objeto, el nuevo valor se insertará solo si el objeto no contiene ya esa clave. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo.</para>
+				<para>Si el elemento especificado por la ruta es un elemento de arreglo, el nuevo valor se insertará antes de ese elemento si <varname>after</varname> es falso, o después en caso contrario. Si el elemento especificado por la ruta es un campo de objeto, el nuevo valor se insertará solo si el objeto no contiene ya esa clave. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb);
@@ -289,7 +290,7 @@ SELECT jsonbsetStripNulls(set(ARRAY[jsonb
 /* {"{\"road\": \"rue de l'Abbaye\"}", "{\"road\": \"Bvd Gén. Jacques\", \"category\":
    \"primary\"}", "{\"road\": \"Bvd de la Cambre\", \"category\": \"primary\"}"} */
 </programlisting>
-				<para>Como se muestra a continuación, la función no elimina los valores nulos simples. Para este propósito puede utilizarse la función <varname>minusValue</varname>.</para>
+				<para>Como se muestra a continuación, la función no elimina los valores nulos simples. Para este propósito puede utilizarse la función <varname>setMinus</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10}', 'null',
   '{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}']));
@@ -961,7 +962,7 @@ SELECT tjsonb
 /* {["{\"PoIs\": [\"Grand Place\"], \"location\": \"Point(1 1)\"}"@2001-01-01,
    "{\"PoIs\": [\"Palais Royal\"], \"location\": \"Point(2 2)\"}"@2001-01-02]} */
 </programlisting>
-				<para>Como se muestra a continuación, el resultado de una operación de eliminación puede ser un registro vacío o un arreglo vacío. Para eliminar estos valores, puede utilizarse la función <varname>minusValue</varname>.</para>
+				<para>Como se muestra a continuación, el resultado de una operación de eliminación puede ser un registro vacío o un arreglo vacío. Para eliminar estos valores, puede utilizarse la función <varname>minusValues</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '{[{"unit": "km", "speed": 10, "light": true}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - ARRAY[text 'unit', 'speed'];
@@ -1095,7 +1096,7 @@ SELECT tjsonbStripNulls(tjsonb '{{"road": "Bvd Gén. Jacques",
    "{\"road\": \"Bvd de la Cambre\", \"category\": \"primary\"}"@2001-01-02,
    "{\"road\": \"rue de l'Abbaye\"}"@2001-01-03} */
 </programlisting>
-				<para>Como se muestra a continuación, la función no elimina los valores nulos simples. Para este propósito puede utilizarse la función <varname>minusValue</varname>.</para>
+				<para>Como se muestra a continuación, la función no elimina los valores nulos simples. Para este propósito puede utilizarse la función <varname>minusValues</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonStripNulls(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]');

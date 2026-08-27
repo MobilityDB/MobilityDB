@@ -2552,16 +2552,16 @@
 					<para><link linkend="jsonbset_alphanumset"><varname>intset</varname>, <varname>floatset</varname>, <varname>textset</varname></link>: Extract a alphanumeric value from a JSONB set given by a key</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="jsonbset_concat"><varname>||</varname></link>: Temporal JSONB concatenation</para>
+					<para><link linkend="jsonbset_concat"><varname>||</varname></link>: JSONB set concatenation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="jsonbset_delete"><varname>-</varname></link>: Temporal JSONB deletion</para>
+					<para><link linkend="jsonbset_delete"><varname>-</varname></link>: JSONB set deletion</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="jsonbset_exists"><varname>?</varname></link>: JSONB set exists</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="jsonbset_set"><varname>jsonbsetSet</varname>, <varname>jsonbsetSetLax</varname></link>: Temporal JSONB set</para>
+					<para><link linkend="jsonbset_set"><varname>jsonbsetSet</varname>, <varname>jsonbsetSetLax</varname></link>: JSONB set assignment</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="jsonbset_insert"><varname>jsonbsetInsert</varname></link>: Return the <varname>jsonbset</varname> value with <varname>jsonb</varname> inserted</para>
