@@ -52,19 +52,6 @@
  * getResolution
  *****************************************************************************/
 
-/**
- * @ingroup meos_h3_inspection
- * @brief Return the temporal resolution (int32) of a temporal H3 cell.
- * @csqlfn #Th3index_get_resolution()
- */
-Temporal *
-th3index_get_resolution(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL);
-  return tcellindex_get_resolution(temp);
-}
-
 /*****************************************************************************
  * th3GetBaseCellNumber
  *****************************************************************************/
@@ -95,20 +82,6 @@ th3index_get_base_cell_number(const Temporal *temp)
 /*****************************************************************************
  * isValidCell
  *****************************************************************************/
-
-/**
- * @ingroup meos_h3_inspection
- * @brief Return a temporal boolean stating at each instant whether the
- * value is a valid H3 cell.
- * @csqlfn #Th3index_is_valid_cell()
- */
-Temporal *
-th3index_is_valid_cell(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL);
-  return tcellindex_is_valid_cell(temp);
-}
 
 /*****************************************************************************
  * th3IsResClassIii

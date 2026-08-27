@@ -39,6 +39,7 @@
 #include <meos.h>
 #include <meos_h3.h>
 #include "temporal/temporal.h"
+#include "temporal/tcellindex.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 
@@ -57,7 +58,7 @@ Datum
 Th3index_get_resolution(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = th3index_get_resolution(temp);
+  Temporal *result = tcellindex_get_resolution(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -99,7 +100,7 @@ Datum
 Th3index_is_valid_cell(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = th3index_is_valid_cell(temp);
+  Temporal *result = tcellindex_is_valid_cell(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
