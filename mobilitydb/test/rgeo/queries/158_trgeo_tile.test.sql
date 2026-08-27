@@ -39,3 +39,18 @@ FROM unnest(spaceBoxes(
   2.0)) b;
 
 -------------------------------------------------------------------------------
+-- The tiles read the region the body reaches, which a body that TURNS reaches
+-- by turning. The rod below spans 6 units and turns a quarter circle, so it
+-- covers a disk of radius 3.007 about its centre whether or not it travels.
+-------------------------------------------------------------------------------
+
+SELECT array_length(spaceBoxes(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]',
+  2.0), 1);
+
+SELECT round(min(xMin(b))::numeric, 6), round(max(xMax(b))::numeric, 6)
+FROM unnest(spaceBoxes(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]',
+  2.0)) b;
+
+-------------------------------------------------------------------------------

@@ -125,18 +125,30 @@ WHERE ST_Intersects(
              0
 (1 row)
 
-SELECT atGeometry(
+SELECT asText(atGeometry(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 1.5)@2001-01-05]',
-  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))');
-ERROR:  Exact spatial restriction of a temporal rigid geometry with a rotating segment is not implemented
-SELECT minusGeometry(
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'), 6);
+                                                                          astext                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{[Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3.997426 0),1.499035)@Thu Jan 04 23:56:17.627962 2001 PST]}
+(1 row)
+
+SELECT asText(minusGeometry(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 1.5)@2001-01-05]',
-  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))');
-ERROR:  Exact spatial restriction of a temporal rigid geometry with a rotating segment is not implemented
-SELECT atStbox(
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'), 6);
+                                                                           astext                                                                           
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{(Pose(POINT(3.997426 0),1.499035)@Thu Jan 04 23:56:17.627962 2001 PST, Pose(POINT(4 0),1.5)@Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atStbox(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 1.5)@2001-01-05]',
-  stbox 'STBOX X((1, -1), (3, 1))');
-ERROR:  Exact spatial restriction of a temporal rigid geometry with a rotating segment is not implemented
+  stbox 'STBOX X((1, -1), (3, 1))'), 6);
+                                                                          astext                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{[Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3.997426 0),1.499035)@Thu Jan 04 23:56:17.627962 2001 PST]}
+(1 row)
+
 SELECT atGeometry(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1,2 1,2 -1))');
@@ -215,5 +227,29 @@ SELECT asText(minusStbox(
                                       astext                                      
 ----------------------------------------------------------------------------------
  POLYGON((0 0,1 0,1 1,0 1,0 0));{Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(atGeometry(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]',
+  geometry 'Polygon((-0.4 2,0.4 2,0.4 2.6,-0.4 2.6,-0.4 2))')) IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT atGeometry(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1.5707963)@2001-01-02]',
+  geometry 'Polygon((-0.5 4,0.5 4,0.5 5,-0.5 5,-0.5 4))') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(atGeometry(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 6),1.5707963)@2001-01-02]',
+  geometry 'Polygon((-0.5 4,0.5 4,0.5 5,-0.5 5,-0.5 4))')) IS NOT NULL;
+ ?column? 
+----------
+ t
 (1 row)
 

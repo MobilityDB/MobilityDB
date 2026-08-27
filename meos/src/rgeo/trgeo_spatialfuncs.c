@@ -333,6 +333,125 @@ segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
  * @brief Test the posed body overlap at a single instant timestamp,
  * appending an instantaneous span to the buffer if it overlaps.
  */
+/**
+ * @brief Turn a rotating segment carries before it is read as one piece
+ * @details A vertex of a rotating body travels an arc, and the swept-edge clip
+ * the translating path solves reads straight travel alone, so a rotating
+ * segment is read in pieces short enough that the overlap holds or fails
+ * throughout each. The same turn bounds the pieces of the traversed area
+ */
+#define TRGEO_OVERLAP_ANGLE_TOL 0.05
+
+/**
+ * @brief Return whether a body placed by the pose at a ratio of a segment
+ * meets a target
+ */
+static bool
+body_meets_at(const GSERIALIZED *ref, const Pose *pose1, const Pose *pose2,
+  double ratio, const GSERIALIZED *target, const STBox *excl)
+{
+  Pose *p = posesegm_interpolate(pose1, pose2, ratio);
+  GSERIALIZED *body = pose_apply_geo(p, ref);
+  bool ov = body_meets_target(body, target, excl);
+  pfree(body); pfree(p);
+  return ov;
+}
+
+/**
+ * @brief Return the ratio at which the overlap of a rotating body with a
+ * target changes between two ratios that answer differently
+ * @details The two ratios answer differently, so a change stands between them
+ * and halving the bracket closes on it. What the halving reads is the overlap
+ * itself, so the ratio it returns is the one the predicate changes at
+ */
+static double
+rotating_change_ratio(const GSERIALIZED *ref, const Pose *pose1,
+  const Pose *pose2, double lo, double hi, bool ov_lo,
+  const GSERIALIZED *target, const STBox *excl)
+{
+  for (int k = 0; k < 40 && hi - lo > MEOS_GEOM_TOLERANCE; k++)
+  {
+    double mid = 0.5 * (lo + hi);
+    if (body_meets_at(ref, pose1, pose2, mid, target, excl) == ov_lo)
+      lo = mid;
+    else
+      hi = mid;
+  }
+  return hi;
+}
+
+/**
+ * @brief Compute the times at which a body meets a target over a segment
+ * along which it also ROTATES
+ * @details The translating path takes its events from a swept-edge clip,
+ * which reads straight travel and has nothing to say about a vertex on an
+ * arc. A rotating segment is read instead in pieces each carrying at most
+ * `TRGEO_OVERLAP_ANGLE_TOL` of turn: the overlap is asked at the ends of every
+ * piece, and where two consecutive readings differ the ratio the answer
+ * changes at is found by halving that piece. The times so found are exact in
+ * the overlap they read and carry the resolution of the halving, where the
+ * translating path solves its events in closed form
+ * @param[in] ref Reference geometry
+ * @param[in] pose1,pose2 Poses at the ends of the segment
+ * @param[in] t1,t2 Times at the ends of the segment
+ * @param[in] target Target geometry
+ * @param[in] excl Box whose upper borders are left out, NULL for none
+ * @param[in,out] spans,nspans,spancap Spans to append to
+ */
+static void
+segment_overlap_spans_rotating(const GSERIALIZED *ref, const Pose *pose1,
+  const Pose *pose2, TimestampTz t1, TimestampTz t2,
+  const GSERIALIZED *target, const STBox *excl, Span **spans, int *nspans,
+  int *spancap)
+{
+  double dtheta = fabs(pose2->data[2] - pose1->data[2]);
+  int npieces = (int) ceil(dtheta / TRGEO_OVERLAP_ANGLE_TOL);
+  if (npieces < 1)
+    npieces = 1;
+
+  bool prev = body_meets_at(ref, pose1, pose2, 0.0, target, excl);
+  double run_start = 0.0;
+  for (int k = 1; k <= npieces; k++)
+  {
+    double f = (double) k / npieces;
+    bool ov = body_meets_at(ref, pose1, pose2, f, target, excl);
+    if (ov == prev)
+      continue;
+    double change = rotating_change_ratio(ref, pose1, pose2,
+      (double) (k - 1) / npieces, f, prev, target, excl);
+    if (ov)
+      run_start = change;
+    else
+    {
+      if (*nspans + 1 > *spancap)
+      {
+        *spancap = (*nspans + 1) * 2 + 8;
+        *spans = repalloc(*spans, (size_t) *spancap * sizeof(Span));
+      }
+      TimestampTz lo = t1 +
+        (TimestampTz) llround(run_start * (double) (t2 - t1));
+      TimestampTz hi = t1 + (TimestampTz) llround(change * (double) (t2 - t1));
+      span_set(TimestampTzGetDatum(lo), TimestampTzGetDatum(hi), true, true,
+        T_TIMESTAMPTZ, T_TSTZSPAN, &(*spans)[*nspans]);
+      (*nspans)++;
+    }
+    prev = ov;
+  }
+  if (prev)
+  {
+    if (*nspans + 1 > *spancap)
+    {
+      *spancap = (*nspans + 1) * 2 + 8;
+      *spans = repalloc(*spans, (size_t) *spancap * sizeof(Span));
+    }
+    TimestampTz lo = t1 + (TimestampTz) llround(run_start * (double) (t2 - t1));
+    span_set(TimestampTzGetDatum(lo), TimestampTzGetDatum(t2), true, true,
+      T_TIMESTAMPTZ, T_TSTZSPAN, &(*spans)[*nspans]);
+    (*nspans)++;
+  }
+  return;
+}
+
 static void
 instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
   const GSERIALIZED *target, const STBox *excl, Span **spans, int *nspans,
@@ -444,17 +563,14 @@ trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
         const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
         const Pose *pose1 = DatumGetPoseP(tinstant_value_p(inst1));
         const Pose *pose2 = DatumGetPoseP(tinstant_value_p(inst2));
-        /* Pure-translation guard: any rotation is honestly not implemented. */
+        /* A rotating segment carries its vertices along arcs, which the
+         * swept-edge clip of the translating path does not solve, so it is
+         * read in pieces short enough to hold one answer each */
         if (fabs(pose2->data[2] - pose1->data[2]) > MEOS_GEOM_TOLERANCE)
         {
-          pfree(spans);
-          if (temp->subtype == TSEQUENCESET)
-            pfree(seqs);
-          *err = true;
-          meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-            "Exact spatial restriction of a temporal rigid geometry with a "
-            "rotating segment is not implemented");
-          return NULL;
+          segment_overlap_spans_rotating(ref, pose1, pose2, inst1->t,
+            inst2->t, gs, excl, &spans, &nspans, &spancap);
+          continue;
         }
         if (! segment_overlap_spans(ref, pose1, pose2, inst1->t, inst2->t,
             gs, lwgs, excl, &spans, &nspans, &spancap))
