@@ -224,6 +224,46 @@ int main(void)
   printf("tlt_temporal_temporal(tint, tint): answered, errno %d\n",
     meos_errno());
   free(ordered);
+
+  /* Restricting a temporal value to where it takes its minimum or its maximum
+   * reads the same order, so it admits the same types. A geometry and a pose
+   * carry a B-tree order for indexing and no order to take an extremum over,
+   * and the four entries decline them */
+  meos_errno_reset();
+  assert(temporal_at_min(tpt1) == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  assert(temporal_at_max(tpt1) == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  assert(temporal_minus_min(tpt1) == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  assert(temporal_minus_max(tpt1) == NULL);
+  printf("temporal_at_min/at_max/minus_min/minus_max(tgeompoint): declined, "
+    "errno %d\n", meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+
+  /* A temporal pose declines them for the same reason, and a pose is the value
+   * a temporal rigid geometry carries */
+  meos_errno_reset();
+  Temporal *tps = tpose_in("[Pose(Point(0 0),0)@2000-01-01, "
+    "Pose(Point(2 2),0.5)@2000-01-02]");
+  assert(tps != NULL && meos_errno() == 0);
+  assert(temporal_minus_max(tps) == NULL);
+  printf("temporal_minus_max(tpose): declined, errno %d\n", meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  free(tps);
+
+  /* The same restriction over a temporal integer answers, so the declines
+   * above discriminate */
+  meos_errno_reset();
+  Temporal *extremum = temporal_at_max(num);
+  assert(extremum != NULL);
+  assert(meos_errno() == 0);
+  printf("temporal_at_max(tint): answered, errno %d\n", meos_errno());
+  free(extremum);
+
   free(tpt1); free(tpt2);
 
   meos_errno_reset();
