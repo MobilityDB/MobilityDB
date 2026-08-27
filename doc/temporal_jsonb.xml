@@ -26,10 +26,10 @@ SELECT jsonb '{"unit": "km", "speed": 10}' -> text 'speed';
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"unit\": \"km\", \"speed\": 10}",
   "{\"unit\": \"km\", \"speed\": 20}"}' -> text 'speed';
--- {"10", "20"}
+-- {10, 20}
 SELECT tjsonb '[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]' -> text 'speed';
--- {[10@2001-01-01, 20@2001-01-02]}
+-- {["10"@2001-01-01, "20"@2001-01-02]}
 </programlisting>
 		which are obtained by applying the PostgreSQL operator <varname>-></varname> at every element of the JSONB set and to every instant of the temporal JSONB value.
 		</para>
@@ -53,29 +53,29 @@ jsonbsetObjectField(jsonbset,text,null_handle text='use_json_null') → jsonbset
 jsonbsetObjectFieldText(jsonbset,text,null_handle text='use_json_null') → textset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT textset '{[{"unit": "km", "speed": 10},
-  {"unit": "km", "speed": 20}]}' -> text 'speed';
--- {["10", "20"]}
-SELECT jsonbset '[{"position":"Point(1 1)", "speed":10},
-  {"position":"Point(2 2)", "speed":20}]' ->> text 'position';
--- ["POINT(1 1)", "POINT(2 2)"]
-SELECT textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}' -> text 'speed';
--- {[10, null, 10]}
+SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km", "speed": 20}']) -> text 'speed';
+-- {10, 20}
+SELECT set(ARRAY[jsonb '{"position":"Point(1 1)", "speed":10}',
+  '{"position":"Point(2 2)", "speed":20}']) ->> text 'position';
+-- {"Point(1 1)", "Point(2 2)"}
+SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10}', '{"unit": "km"}',
+  '{"unit": "km", "speed": 10}']) -> text 'speed';
+-- {"null", 10}
 </programlisting>
 				<para>We show below the behavior of the function <varname>jsonbsetObjectField</varname> for the possible values of the <varname>null_handle</varname> argument. All JSON functions that may return a NULL value behave similarly in MobilityDB.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}', 'speed', 'raise_exception');
+SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km"}', '{"unit": "km", "speed": 10}']), 'speed', 'raise_exception');
 -- ERROR:  The lifted operation returned NULL
-SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}', 'speed', 'use_json_null');
--- {[10, null, 10]}
-SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}', 'speed', 'delete_key');
--- {[10, 10), [10]}
-SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}', 'speed', 'return_null');
+SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km"}', '{"unit": "km", "speed": 10}']), 'speed', 'use_json_null');
+-- {"null", 10}
+SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km"}', '{"unit": "km", "speed": 10}']), 'speed', 'delete_key');
+-- {10}
+SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km"}', '{"unit": "km", "speed": 10}']), 'speed', 'return_null');
 -- NULL
 </programlisting>
 			</listitem>
@@ -92,13 +92,13 @@ jsonbsetExtractPath(jsonbset,path text[],null_handle text='use_json_null') → j
 jsonbsetExtractPathText(jsonbset,path text[],null_handle text='use_json_null') → textset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT textset '[{"speed": {"unit": "km", "value": 10}},
-  {"speed": {"unit": "km", "value": 20}}]' #> ARRAY[text 'speed', 'value'];
--- {["10", "20"]}
-SELECT jsonbset '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]},
-  {"position":"Point(2 2)",
-  "PoIs":["Palais Royal", "Manneken Pis"]}]' #>> ARRAY[text 'PoIs', '1'];
--- ["La Bourse", "Manneken Pis"]
+SELECT set(ARRAY[jsonb '{"speed": {"unit": "km", "value": 10}}',
+  '{"speed": {"unit": "km", "value": 20}}']) #> ARRAY[text 'speed', 'value'];
+-- {10, 20}
+SELECT set(ARRAY[jsonb '{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}',
+  '{"position":"Point(2 2)", "PoIs":["Palais Royal", "Manneken Pis"]}'])
+  #>> ARRAY[text 'PoIs', '1'];
+-- {"La Bourse", "Manneken Pis"}
 </programlisting>
 			</listitem>
 
@@ -111,12 +111,12 @@ jsonbsetArrayElement(jsonbset,integer,null_handle text='use_json_null') → json
 jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → jsonbset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbsetArrayElement(textset '[["Grand Place", "La Bourse"],
-  ["Palais Royal", "Manneken Pis"]]', 0);
--- ["Grand Place", "Palais Royal"]
-SELECT jsonbsetArrayElement(jsonbset '[["Grand Place", "La Bourse"],
-  ["Palais Royal", "Manneken Pis"]]', 1);
--- ["La Bourse", "Manneken Pis"]
+SELECT jsonbsetArrayElement(set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
+  '["Palais Royal", "Manneken Pis"]']), 0);
+-- {"\"Grand Place\"", "\"Palais Royal\""}
+SELECT jsonbsetArrayElement(set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
+  '["Palais Royal", "Manneken Pis"]']), 1);
+-- {"\"La Bourse\"", "\"Manneken Pis\""}
 </programlisting>
 			</listitem>
 
@@ -140,7 +140,7 @@ SELECT floatset(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}",
 -- {10, 20, 25}
 SELECT textset(jsonbset '{"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"primary\"}",
   "{\"road\": \"Bvd de la Cambre\", \"category\": \"residential\"}"}', 'category');
--- {primary, residential}
+-- {"primary", "residential"}
 </programlisting>
 			</listitem>
 
@@ -148,14 +148,13 @@ SELECT textset(jsonbset '{"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"pri
 				<indexterm significance="normal"><primary><varname>||</varname></primary></indexterm>
 				<para>Temporal JSONB concatenation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-jsonbset || {jsonb,jsonbset} → jsonbset
+{jsonb,jsonbset} || {jsonbset,jsonb} → jsonbset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' || '{"unit":"km"}'::jsonb;
--- {[{"unit": "km", "speed": 10}, {"unit": "km", "speed": 20}]}
-SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' || jsonbset '{[{"Position":"Point(1 1)"},
-  {"Position":"Point(2 2)"}]}';
--- {[{"speed": 10, "Position": "POINT(1 1)"}, {"speed": 20, "Position": "POINT(2 2)"}]}
+SELECT set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']) || '{"unit":"km"}'::jsonb;
+-- {"{\"unit\": \"km\", \"speed\": 10}", "{\"unit\": \"km\", \"speed\": 20}"}
+SELECT jsonb '{"unit":"km"}' || set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']);
+-- {"{\"unit\": \"km\", \"speed\": 10}", "{\"unit\": \"km\", \"speed\": 20}"}
 </programlisting>
 			</listitem>
 
@@ -167,30 +166,34 @@ jsonbset - {int,text,text[]} → jsonbset
 jsonbset #- text[] → jsonbset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset '{[{"unit": "km", "speed": 10}, {"unit": "km", "speed": 20}]}' - 'unit';
--- {[{"speed": 10}, {"speed": 20}]}
-SELECT jsonbset '[["Grand Place", "La Bourse"], ["Palais Royal", "Manneken Pis"]]' - 1;
--- [["Grand Place"], ["Palais Royal"]]
-SELECT jsonbset '[{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bourse"],
-  "location":"Point(2 2)",
-  "PoIs": ["Palais Royal", "Manneken Pis"]]' #- ARRAY[text "\"PoIs\"", "1"];
--- ["La Bourse", "Manneken Pis"]
+SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km", "speed": 20}']) - text 'unit';
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
+SELECT set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
+  '["Palais Royal", "Manneken Pis"]']) - 1;
+-- {"[\"Grand Place\"]", "[\"Palais Royal\"]"}
+SELECT set(ARRAY[jsonb '{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bourse"]}',
+  '{"location":"Point(2 2)", "PoIs": ["Palais Royal", "Manneken Pis"]}'])
+  #- ARRAY[text 'PoIs', '1'];
+/* {"{\"PoIs\": [\"Grand Place\"], \"location\": \"Point(1 1)\"}", "{\"PoIs\":
+   [\"Palais Royal\"], \"location\": \"Point(2 2)\"}"} */
 </programlisting>
 				<para>As shown below, the result of a delete operation may be an empty record or an empty array. To remove these values, the function <varname>minusValue</varname> can used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset '{[{"unit": "km", "speed": 10, "light": true},
-  {"unit": "km", "speed": 20}]}' - ARRAY[text 'unit', 'speed'];
--- {[{"light": true}, {}]}
-SELECT jsonbset '[["Grand Place", "La Bourse"], ["Palais Royal"]]' - 0;
--- [["La Bourse"], []]
+SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10, "light": true}',
+  '{"unit": "km", "speed": 20}']) - ARRAY[text 'unit', 'speed'];
+-- {"{}", "{\"light\": true}"}
+SELECT set(ARRAY[jsonb '["Grand Place", "La Bourse"]', '["Palais Royal"]']) - 0;
+-- {[], "[\"La Bourse\"]"}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT minusValues(jsonbset '{[{"unit": "km", "speed": 10, "light": true},
-  {"unit": "km", "speed": 20}]}' - ARRAY[text 'unit', 'speed'], jsonbset '{"[]","{}"}');
---  {[{"light": true}, {"light": true})}
-SELECT minusValues(jsonbset '[["Grand Place", "La Bourse"], ["Palais Royal"]]' - 0,
-  jsonbset '{"[]","{}"}');
--- {[["La Bourse"], ["La Bourse"])}
+SELECT setMinus(set(ARRAY[jsonb '{"unit": "km", "speed": 10, "light": true}',
+  '{"unit": "km", "speed": 20}']) - ARRAY[text 'unit', 'speed'],
+  set(ARRAY[jsonb '{}', '[]']));
+-- {"{\"light\": true}"}
+SELECT setMinus(set(ARRAY[jsonb '["Grand Place", "La Bourse"]', '["Palais Royal"]']) - 0,
+  set(ARRAY[jsonb '{}', '[]']));
+-- {"[\"La Bourse\"]"}
 </programlisting>
 			</listitem>
 
@@ -204,16 +207,16 @@ jsonbset {?|, ?&amp;} text[] → boolean[]
 				<para>As in PostgreSQL, the operators <varname>?|</varname> and <varname>?&amp;</varname> test, respectively, whether <emphasis>any</emphasis> or <emphasis>all</emphasis> of the strings in the text array exist as top-level keys or array elements. The result is a Boolean for every value of the set, in the order of the values of the set.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
--- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+-- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
--- {t,f}
+-- {f,t}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' ?| ARRAY[text 'units', text 'lights'];
--- {t,f}
+-- {f,t}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' ?&amp; ARRAY[text 'speed', text 'units'];
--- {t,f}
+-- {f,t}
 </programlisting>
 			</listitem>
 
@@ -229,18 +232,18 @@ jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
 </programlisting>
 				<para>Return the <varname>jsonbset</varname> value with the item specified by path replaced by <varname>jsonb</varname>, or added if <varname>create</varname> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive. Function <varname>jsonbsetSetLax</varname> behaves identically to <varname>jsonbsetSet</varname> if the given value is not NULL, Otherwise, it behaves according to the value of <varname>handle_null</varname>, which must be one of <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname>, or <varname>'return_source'</varname>. As stated above, we kept PostgreSQL behavior for this function enabling the value <varname>'return_source'</varname> whereas for all other <emphasis>query</emphasis> operations, this value has been replaced with <varname>'return_null'</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb);
--- [{"speed": 10, "units": "km/h"}, {"speed": 20, "units": "km/h"}]
-SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+-- {"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}"}
+SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb, false);
--- [{"speed": 10}, {"speed": 20}]
-SELECT jsonbsetSet(jsonbset '[{"speed": 10, "units": "km/h"},
-  {"speed": 20, "units": "km/h"}]', ARRAY['units'], '"mi/h"'::jsonb);
--- [{"speed": 10, "units": "mi/h"}, {"speed": 20, "units": "mi/h"}]
-SELECT jsonbsetSetLax(jsonbset '[{"speed": 10, "units": "km/h"}, {"speed": 20}]',
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
+SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}',
+  '{"speed": 20, "units": "km/h"}']), ARRAY['units'], '"mi/h"'::jsonb);
+-- {"{\"speed\": 10, \"units\": \"mi/h\"}", "{\"speed\": 20, \"units\": \"mi/h\"}"}
+SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
   ARRAY['units'], 'null'::jsonb, true, 'delete_key');
--- [{"speed": 10, "units": "km/h"}, {"speed": 20}]
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
 </programlisting>
 			</listitem>
 
@@ -252,15 +255,15 @@ jsonbsetInsert(jsonbset,path text[],val jsonb,after boolean=false) → jsonbset
 </programlisting>
 				<para>If the item specified by the path is an array element, the new value will be inserted before that item if <varname>after</varname> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb);
--- [{"speed": 10, "units": "km/h"}, {"speed": 20, "units": "km/h"}]
-SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
+SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb, false);
--- [{"speed": 10}, {"speed": 20}]
-SELECT jsonbsetInsert(jsonbset '[{"speed": 10, "units": "km/h"},
-  {"speed": 20, "units": "km/h"}]', ARRAY['units'], '"mi/h"'::jsonb);
--- [{"speed": 10, "units": "mi/h"}, {"speed": 20, "units": "mi/h"}]
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
+SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}',
+  '{"speed": 20, "units": "km/h"}']), ARRAY['units'], '"mi/h"'::jsonb);
+-- {"{\"speed\": 10, \"units\": \"mi/h\"}", "{\"speed\": 20, \"units\": \"mi/h\"}"}
 </programlisting>
 			</listitem>
 
@@ -272,26 +275,29 @@ jsonbsetStripNulls(jsonbset,strip_in_arrays boolean=false) → jsonbset
 </programlisting>
 				<para>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbsetStripNulls(textset '[{"speed": 10, "lights": null},
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}]');
--- [{"speed": 10}, {"PoIs": ["Grand Place", "La Bourse", null], "speed": 20}]
-SELECT jsonbsetStripNulls(jsonbset '[{"speed": 10, "lights": null},
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}]', true);
--- [{"speed": 10}, {"PoIs": ["Grand Place", "La Bourse"], "speed": 20}]
-SELECT jsonbsetStripNulls(jsonbset '{{"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd de la Cambre", "category": "primary"},
-  {"road": "rue de l''Abbaye", "category": null}}');
-/* [{"road": "Bvd Gén. Jacques", "category": "primary"}, 
-   {"road": "Bvd de la Cambre", "category": "primary"}, {"road": "rue de l'Abbaye"}] */
+SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10, "lights": null}',
+  '{"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}']));
+/* {"{\"speed\": 10}", "{\"PoIs\": [\"Grand Place\", \"La Bourse\", null], \"speed\":
+   20}"} */
+SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10, "lights": null}',
+  '{"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}']), true);
+-- {"{\"speed\": 10}", "{\"PoIs\": [\"Grand Place\", \"La Bourse\"], \"speed\": 20}"}
+SELECT jsonbsetStripNulls(set(ARRAY[jsonb
+  '{"road": "Bvd Gén. Jacques", "category": "primary"}',
+  '{"road": "Bvd de la Cambre", "category": "primary"}',
+  '{"road": "rue de l''Abbaye", "category": null}']));
+/* {"{\"road\": \"rue de l'Abbaye\"}", "{\"road\": \"Bvd Gén. Jacques\", \"category\":
+   \"primary\"}", "{\"road\": \"Bvd de la Cambre\", \"category\": \"primary\"}"} */
 </programlisting>
 				<para>As shown below, the function does not strip bare null values. Function <varname>minusValue</varname> can be used for this purpose.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbsetStripNulls(textset '[{"speed": 10}, null,
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]');
--- [{"speed":10}, null, {"speed":20,"PoIs":["Grand Place","La Bourse"]}]
-SELECT minusValues(textset '[{"speed": 10}, null,
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]', 'null');
-/* {[{"speed": 10}, {"speed": 10}), [{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]}
+SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10}', 'null',
+  '{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}']));
+/* {"null", "{\"speed\": 10}", "{\"PoIs\": [\"Grand Place\", \"La Bourse\"], \"speed\":
+   20}"} */
+SELECT setMinus(set(ARRAY[jsonb '{"speed": 10}', 'null',
+  '{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}']), set(ARRAY[jsonb 'null']));
+-- {"{\"speed\": 10}", "{\"PoIs\": [\"Grand Place\", \"La Bourse\"], \"speed\": 20}"}
 </programlisting>
 
 			</listitem>
@@ -309,13 +315,13 @@ jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[
 				<para>The operator <varname>@?</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
--- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+-- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
--- {t,f}
+-- {f,t}
 SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ &gt; $min)', '{"min": 15}');
--- {t,f}
+-- {f,t}
 </programlisting>
 			</listitem>
 
@@ -332,13 +338,13 @@ jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 				<para>The operator <varname>@@</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
--- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+-- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
--- {t,f}
+-- {f,t}
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed &gt; $min', '{"min": 15}');
--- {t,f}
+-- {f,t}
 </programlisting>
 			</listitem>
 
@@ -352,15 +358,16 @@ jsonbsetPathQueryArrayTz(jsonbset,vars jsonb='{}',silent boolean=false) → json
 </programlisting>
 				<para>The above function can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbsetPathQueryArray(jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
-  '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
--- [[{"speed": 10}], [{"speed": 20, "units": "km/h"}]]
-SELECT jsonbsetPathQueryArrayTz(jsonbset '[{"cameraId":25,
-  "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]},
-  {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}]',
+SELECT jsonbsetPathQueryArray(set(ARRAY[jsonb '{"speed":10}',
+  '{"speed": 20, "units": "km/h"}']), '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)',
+  '{"min":10, "max":30}');
+-- {"[{\"speed\": 10}]", "[{\"speed\": 20, \"units\": \"km/h\"}]"}
+SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
+  '{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}',
+  '{"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}']),
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
    @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
--- [["2000-01-06", "2000-01-09"], ["2000-01-07"]]
+-- {"[\"2000-01-07\"]", "[\"2000-01-06\", \"2000-01-09\"]"}
 </programlisting>
 			</listitem>
 
@@ -374,16 +381,16 @@ jsonbsetPathQueryFirstTz(jsonbset,vars jsonb='{}',silent boolean=false) → json
 </programlisting>
 				<para>The above functions can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbsetPathQueryFirst(jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
-  '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max'), '{"min":10, "max":30}');
--- [[{"speed": 10}], [{"speed": 20, "units": "km/h"}]]
--- TODO, it works without "_tz"
-SELECT jsonbsetPathQueryArrayTz(jsonbset
-  '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]},
-   {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}]',
+SELECT jsonbsetPathQueryFirst(set(ARRAY[jsonb '{"speed":10}',
+  '{"speed": 20, "units": "km/h"}']), '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max)',
+  '{"min":10, "max":30}');
+-- {10, 20}
+SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
+  '{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}',
+  '{"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}']),
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
   '{"min":"2000-01-05", "max":"2000-01-09"}');
--- [["2000-01-06", "2000-01-09"], ["2000-01-07"]]
+-- {"[\"2000-01-07\"]", "[\"2000-01-06\", \"2000-01-09\"]"}
 </programlisting>
 			</listitem>
 
@@ -397,24 +404,30 @@ SELECT jsonbsetPathQueryArrayTz(jsonbset
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Instant
 SELECT tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01';
--- Sequence with discrete interpolation
+-- "{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01
 SELECT tjsonb '{{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02}';
--- Sequence with step interpolation
+/* {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02} */
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]';
--- Sequence set
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
 SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02],
   [{"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03,
   {"vehicleId": 1, "location": "Point(3 3)"}@2001-01-04]}';
+/* {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02], ["{\"location\": \"Point(2 2)\",
+   \"vehicleId\": 1}"@2001-01-03, "{\"location\": \"Point(3 3)\", \"vehicleId\":
+   1}"@2001-01-04]} */
 </programlisting>
 		<para>As can be seen above, for the <varname>Instant</varname> subtype we need to enclose the JSONB value between quotes and escape the inner quotes, otherwise the opening brace of the JSONB value would be interpreted as the beginning of a <varname>Sequence</varname> subtype with discrete interpolation.</para>
 
 		<para>The <varname>tjsonb</varname> type accepts type modifiers (or <varname>typmod</varname> in PostgreSQL terminology) to specify the subtype. The possible values for the subtype are <varname>Instant</varname>, <varname>Sequence</varname>, and <varname>SequenceSet</varname>. The argument is optional and if not specified for a column, values of any subtype are allowed.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb(Instant) '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01';
---  {"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01
+-- "{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01
 SELECT tjsonb(Sequence) '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01';
 -- ERROR: Temporal type (Instant) does not match column type (Sequence)
 </programlisting>
@@ -424,15 +437,15 @@ SELECT tjsonb(Sequence) '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001
 SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]');
-/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-03] */
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-03] */
 SELECT asText(tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03],
   ({"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-04]}');
-/* {[{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-04]} */
+/* {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-03, "{\"location\": \"Point(2 2)\",
+   \"vehicleId\": 1}"@2001-01-04]} */
 </programlisting>
 	</sect1>
 
@@ -463,12 +476,13 @@ asText({tjsonb,tjsonb[]}) → {text,text[]}
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
-/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02] */
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
 SELECT asText(ARRAY[tjsonb '"{\"vehicleId\":1, \"location\": \"Point(1 1)\"}"@2001-01-01',
   '"{\"vehicleId\": 1, \"location\": \"Point(2 2)\"}"@2001-01-02']);
-/* {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}@2001-01-01",
-   "{\"location\": \"Point(2 2)\", \"vehicleId\": 1}@2001-01-02"} */
+/* {"\"{\\\"location\\\": \\\"Point(1 1)\\\", \\\"vehicleId\\\":
+   1}\"@2001-01-01","\"{\\\"location\\\": \\\"Point(2 2)\\\", \\\"vehicleId\\\":
+   1}\"@2001-01-02"} */
 </programlisting>
 		<para>As can be seen above, for arrays of JSONB values, the elements must be enclosed between quotes and thus, the inner quotes must be escaped.</para>
 			</listitem>
@@ -484,9 +498,11 @@ asHexWKB(tjsonb,endian text='') → text
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-01-01');
--- \x0141000138000000000000000200002008000080090000000a000000090000106c6f636174696f6e7...
+/* \x0142000138000000000000000200002008000080090000000a000000090000106c6f636174696f6e76
+   656869636c654964506f696e7428312032290020000000008001000040eba9c21c0000 */
 SELECT asHexWKB(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-01-01');
--- 0141000138000000000000000200002008000080090000000A000000090000106C6F636174696F6E7...
+/* 0142000138000000000000000200002008000080090000000A000000090000106C6F636174696F6E7665
+   6869636C654964506F696E7428312032290020000000008001000040EBA9C21C0000 */
 </programlisting>
 			</listitem>
 
@@ -499,9 +515,9 @@ asMFJSON(text) → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
   {"Position": "Point(2 2)"}@2001-01-02]');
-/* {"type":"MovingJsonb","values":[{"Position": "Point(1 1)"},{"Position": "Point(2 2)"}],
-   "datetimes":["2001-01-01T00:00:00","2001-01-02T00:00:00"],
-   "lower_inc":true,"upper_inc":true,"interpolation":"Step"} */
+/* {"type":"MovingJsonb","values":[{"Position": "Point(1 1)"},{"Position": "Point(2
+   2)"}],"datetimes":["2001-01-01T00:00:00","2001-01-02T00:00:00"],"lower_inc":true,"up
+   per_inc":true,"interpolation":"Step"} */
 </programlisting>
 			</listitem>
 
@@ -514,8 +530,8 @@ tjsonbFromText(text) → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbFromText(text '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
-/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02] */
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
 </programlisting>
 			</listitem>
 
@@ -530,10 +546,10 @@ tjsonbFromHexWKB(text) → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbFromBinary(asBinary( tjsonb '[{"vehicleId": 1,
   "location": "Point(1 2)"}@2001-01-01]'));
--- [{"location": "POINT(1 2)", "vehicleId": 1}@2001-01-01]
+-- ["{\"location\": \"Point(1 2)\", \"vehicleId\": 1}"@2001-01-01]
 SELECT tjsonbFromHexWKB(asHexWKB( tjsonb '[{"vehicleId": 1,
   "location": "Point(1 2)"}@2001-01-01]'));
--- [{"location": "POINT(1 2)", "vehicleId": 1}@2001-01-01]
+-- ["{\"location\": \"Point(1 2)\", \"vehicleId\": 1}"@2001-01-01]
 </programlisting>
 			</listitem>
 
@@ -546,9 +562,9 @@ tjsonbFromMFJSON(text) → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbFromMFJSON('{"type": "MovingJsonb", "interpolation": "Step",
   "values": [{"Position": "Point(1 1)"}, {"Position": "Point(2 2)"}],
-  "datetimes": ["2001-01-01T10:00:00Z","2001-01-01T12:00:00Z"]}');
-/* [{"Position": "Point(1 1)"}@2001-01-01 11:00:00,
-   {"Position": "Point(2 2)"}@2001-01-01 13:00:00] */
+  "datetimes": ["2001-01-01T10:00:00", "2001-01-01T12:00:00"]}');
+/* ["{\"Position\": \"Point(1 1)\"}"@2001-01-01 10:00:00, "{\"Position\": \"Point(2
+   2)\"}"@2001-01-01 12:00:00] */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -569,22 +585,22 @@ tjsonb(jsonb,tstzspanset) → tjsonbSeqSet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}', timestamptz '2001-01-01');
--- {"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01
+-- "{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01
 SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
   tstzset '{2001-01-01, 2001-01-03, 2001-01-05}');
-/* {{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-03,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-05} */
+/* {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-03, "{\"location\": \"Point(1 1)\",
+   \"vehicleId\": 1}"@2001-01-05} */
 SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
   tstzspan '[2001-01-01, 2001-01-02]');
-/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-02] */
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-02] */
 SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
   tstzspanset '{[2001-01-01, 2001-01-02],[2001-01-03, 2001-01-04]}');
-/* {[{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-02],
-   [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-03,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-04]} */
+/* {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-02], ["{\"location\": \"Point(1 1)\",
+   \"vehicleId\": 1}"@2001-01-03, "{\"location\": \"Point(1 1)\", \"vehicleId\":
+   1}"@2001-01-04]} */
 </programlisting>
 			</listitem>
 
@@ -599,9 +615,9 @@ SELECT tjsonbSeq(ARRAY[tjsonb '"{\"vehicleId\": 1,
   \"location\": \"Point(1 1)\"}"@2001-01-01',
   '"{\"vehicleId\": 1, \"location\": \"Point(2 2)\"}"@2001-01-02',
   '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-03']);
-/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-03] */
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02, "{\"location\": \"Point(1 1)\",
+   \"vehicleId\": 1}"@2001-01-03] */
 </programlisting>
 			</listitem>
 
@@ -618,17 +634,17 @@ SELECT tjsonbSeqSet(ARRAY[tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@20
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]',
   '[{"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03,
   {"vehicleId": 1, "location": "Point(3 3)"}@2001-01-04]']);
-/* {[{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02],
-   [{"location": "Point(2 2)", "vehicleId": 1}@2001-01-03,
-   {"location": "Point(3 3)", "vehicleId": 1}@2001-01-04} */
+/* {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02], ["{\"location\": \"Point(2 2)\",
+   \"vehicleId\": 1}"@2001-01-03, "{\"location\": \"Point(3 3)\", \"vehicleId\":
+   1}"@2001-01-04]} */
 SELECT tjsonbSeqSetGaps(ARRAY[tjsonb '"{\"vehicleId\": 1,
   \"location\": \"Point(1 1)\"}"@2001-01-01',
   '"{\"vehicleId\": 1, \"location\": \"Point(2 2)\"}"@2001-01-03',
   '"{\"vehicleId\": 1, \"location\": \"Point(3 3)\"}"@2001-01-05'], interval '1 day');
-/* {[{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01],
-   [{"location": "Point(2 2)", "vehicleId": 1}@2001-01-03],
-   [{"location": "Point(3 3)", "vehicleId": 1}@2001-01-05]} */
+/* {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01], ["{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-03], ["{\"location\": \"Point(3 3)\",
+   \"vehicleId\": 1}"@2001-01-05]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -658,9 +674,9 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (text '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::jsonb;
-/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02] */
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::tjsonb;
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
 SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]'::text);
 -- text
@@ -676,8 +692,8 @@ SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ttext '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::tjsonb;
-/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02] */
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
 SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]'::ttext);
 -- ttext
@@ -698,7 +714,7 @@ getValues(tjsonb) → jsonbset
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getValues(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02]');
--- {{"location": "POINT(1 1)", "vehicleId": 1}}
+-- {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"}
 </programlisting>
 			</listitem>
 
@@ -711,7 +727,7 @@ valueAtTimestamp(tjsonb,timestamptz) → jsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueAtTimestamp(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]', '2001-01-02');
--- {"location": "POINT(2 2)", "vehicleId": 1}
+-- {"location": "Point(2 2)", "vehicleId": 1}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -732,12 +748,12 @@ tjsonbSeqSet(tjsonb) → tjsonbSeqSet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSeq(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01');
--- [{"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01]
+-- ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01]
 SELECT tjsonbSeq(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01',
   'discrete');
--- {{"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01}
+-- {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01}
 SELECT tjsonbSeqSet(tjsonb '"{\"vehicleId\": 1,\"location\":\"Point(1 1)\"}"@2001-01-01');
--- {[{"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01]}
+-- {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01]}
 </programlisting>
 			</listitem>
 
@@ -750,11 +766,11 @@ setInterp(tjsonb,interp) → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT setInterp(tjsonb '"{\"vehicleId\": 1,\"location\": \"Point(1 1)\"}"@2001-01-01',
   'step');
--- [{"location": "POINT(1 1)", "vehicleId": 1}@2001-01-01]
+-- ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01]
 SELECT setInterp(tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01],
   [{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02]}', 'discrete');
-/* {{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-02} */
+/* {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-02} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -805,10 +821,10 @@ SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 -- {["10"@2001-01-01, "20"@2001-01-02]}
 SELECT tjsonb '[{"position":"Point(1 1)", "speed":10}@2001-01-01,
   {"position":"Point(2 2)", "speed":20}@2001-01-03]' ->> text 'position';
--- ["POINT(1 1)"@2001-01-01, "POINT(2 2)"@2001-01-03]
+-- {["Point(1 1)"@2001-01-01, "Point(2 2)"@2001-01-03]}
 SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01, {"unit": "km"}@2001-01-02,
   {"unit": "km", "speed": 10}@2001-01-03]}' -> text 'speed';
--- {[10@2001-01-01, null@2001-01-02, 10@2001-01-03]}
+-- {["10"@2001-01-01, "null"@2001-01-02, "10"@2001-01-03]}
 </programlisting>
 				<para>We show below the behavior of the function <varname>tjsonObjectField</varname> for the possible values of the <varname>null_handle</varname> argument. All JSON functions that may return a NULL value behave similarly in MobilityDB.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -819,11 +835,11 @@ SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'use_json_null');
--- {[10@2001-01-01, null@2001-01-02, 10@2001-01-03]}
+-- {["10"@2001-01-01, "null"@2001-01-02, "10"@2001-01-03]}
 SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'delete_key');
--- {[10@2001-01-01, 10@2001-01-02), [10@2001-01-03]}
+-- {["10"@2001-01-01, "10"@2001-01-02), ["10"@2001-01-03]}
 SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'return_null');
@@ -851,7 +867,7 @@ SELECT ttext '[{"speed": {"unit": "km", "value": 10}}@2001-01-01,
 SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}@2001-01-01,
   {"position":"Point(2 2)",
   "PoIs":["Palais Royal", "Manneken Pis"]}@2001-01-03]' #>> ARRAY[text 'PoIs', '1'];
--- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-03]
+-- {["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-03]}
 </programlisting>
 			</listitem>
 
@@ -868,10 +884,10 @@ tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → tjso
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonArrayElement(ttext '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 0);
--- ["Grand Place"@2001-01-01, "Palais Royal"@2001-01-02]
+-- {["\"Grand Place\""@2001-01-01, "\"Palais Royal\""@2001-01-02]}
 SELECT tjsonbArrayElement(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 1);
--- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-02]
+-- {["\"La Bourse\""@2001-01-01, "\"Manneken Pis\""@2001-01-02]}
 </programlisting>
 			</listitem>
 
@@ -891,10 +907,10 @@ ttext(tjsonb,text,null_handle text='raise_exception') → ttext
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbool(tjsonb '[{"speed": 10, "lights": "on"}@2001-01-01,
   {"speed": 20, "lights": "on"}@2001-01-02]', 'lights');
--- [true@2001-01-01, true@2001-01-02]
+-- {[t@2001-01-01, t@2001-01-02]}
 SELECT tint(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', 'speed');
--- [10@2001-01-01, 20@2001-01-02]
+-- {[10@2001-01-01, 20@2001-01-02]}
 SELECT tfloat(tjsonb '{[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02],
   [{"speed": 20}@2001-01-03, {"speed": 20}@2001-01-04]}', 'speed', 'step');
@@ -902,7 +918,7 @@ SELECT tfloat(tjsonb '{[{"speed": 10, "units": "km/h"}@2001-01-01,
 SELECT ttext(tjsonb '[{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-01,
   {"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-02,
   {"road": "Bvd de la Cambre", "category": "residential"}@2001-01-03]', 'category');
--- [primary@2001-01-01, residential@2001-01-03]
+-- {["primary"@2001-01-01, "residential"@2001-01-03]}
 </programlisting>
 			</listitem>
 
@@ -915,11 +931,12 @@ tjsonb || {jsonb,tjsonb} → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '{[{"speed":10}@2001-01-01,
   {"speed":20}@2001-01-02]}' || '{"unit":"km"}'::jsonb;
--- {[{"unit": "km", "speed": 10}@2001-01-01, {"unit": "km", "speed": 20}@2001-01-02]}
+/* {["{\"unit\": \"km\", \"speed\": 10}"@2001-01-01, "{\"unit\": \"km\", \"speed\":
+   20}"@2001-01-02]} */
 SELECT tjsonb '{[{"speed":10}@2001-01-01, {"speed":20}@2001-01-03]}' ||
   tjsonb '{[{"Position":"Point(1 1)"}@2001-01-02, {"Position":"Point(2 2)"}@2001-01-04]}';
-/* {[{"speed": 10, "Position": "Point(1 1)"}@2001-01-02,
-   {"speed": 20, "Position": "Point(2 2)"}@2001-01-03]} */
+/* {["{\"speed\": 10, \"Position\": \"Point(1 1)\"}"@2001-01-02, "{\"speed\": 20,
+   \"Position\": \"Point(1 1)\"}"@2001-01-03]} */
 </programlisting>
 			</listitem>
 
@@ -933,32 +950,34 @@ tjsonb #- text[] → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - 'unit';
--- {[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02]}
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 SELECT tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]' - 1;
--- [["Grand Place"]@2001-01-01, ["Palais Royal"]@2001-01-02]
-SELECT tjsonb '[{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bourse"]@2001-01-01,
-  "location":"Point(2 2)",
-  "PoIs": ["Palais Royal", "Manneken Pis"]@2001-01-02]' #- ARRAY[text "\"PoIs\"", "1"];
--- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-02]
+-- {["[\"Grand Place\"]"@2001-01-01, "[\"Palais Royal\"]"@2001-01-02]}
+SELECT tjsonb
+  '[{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bourse"]}@2001-01-01,
+  {"location":"Point(2 2)", "PoIs": ["Palais Royal", "Manneken Pis"]}@2001-01-02]'
+  #- ARRAY[text 'PoIs', '1'];
+/* {["{\"PoIs\": [\"Grand Place\"], \"location\": \"Point(1 1)\"}"@2001-01-01,
+   "{\"PoIs\": [\"Palais Royal\"], \"location\": \"Point(2 2)\"}"@2001-01-02]} */
 </programlisting>
 				<para>As shown below, the result of a delete operation may be an empty record or an empty array. To remove these values, the function <varname>minusValue</varname> can used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '{[{"unit": "km", "speed": 10, "light": true}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - ARRAY[text 'unit', 'speed'];
--- {[{"light": true}@2001-01-01, {}@2001-01-02]}
+-- {["{\"light\": true}"@2001-01-01, "{}"@2001-01-02]}
 SELECT tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal"]@2001-01-02]' - 0;
--- [["La Bourse"]@2001-01-01, []@2001-01-02]
+-- {["[\"La Bourse\"]"@2001-01-01, "[]"@2001-01-02]}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minusValues(tjsonb '{[{"unit": "km", "speed": 10, "light": true}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - ARRAY[text 'unit', 'speed'],
   jsonbset '{"[]","{}"}');
---  {[{"light": true}@2001-01-01, {"light": true}@2001-01-02)}
+-- {["{\"light\": true}"@2001-01-01, "{\"light\": true}"@2001-01-02)}
 SELECT minusValues(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal"]@2001-01-02]' - 0, jsonbset '{"[]","{}"}');
--- {[["La Bourse"]@2001-01-01, ["La Bourse"]@2001-01-02)}
+-- {["[\"La Bourse\"]"@2001-01-01, "[\"La Bourse\"]"@2001-01-02)}
 </programlisting>
 			</listitem>
 
@@ -978,7 +997,7 @@ SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(2 2)"}@2001-0
 -- {t@2001-01-01, t@2001-01-02, t@2001-01-03}
 SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]' ?&amp; ARRAY['speed', 'units'];
--- {[t@2001-01-01, t@2001-01-02]}
+-- [t@2001-01-01, t@2001-01-02]
 </programlisting>
 			</listitem>
 
@@ -1014,16 +1033,18 @@ tjsonbSetLax(tjsonb,path text[],val jsonb,create boolean=true,handle_null text) 
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
--- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]
+/* {["{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01, "{\"speed\": 20, \"units\":
+   \"km/h\"}"@2001-01-02]} */
 SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb, false);
--- [{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02]
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 SELECT tjsonbSet(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', ARRAY['units'], '"mi/h"'::jsonb);
--- [{"speed": 10, "units": "mi/h"}@2001-01-01, {"speed": 20, "units": "mi/h"}@2001-01-02]
+/* {["{\"speed\": 10, \"units\": \"mi/h\"}"@2001-01-01, "{\"speed\": 20, \"units\":
+   \"mi/h\"}"@2001-01-02]} */
 SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20}@2001-01-02]', ARRAY['units'], 'null'::jsonb, true, 'delete_key');
--- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20}@2001-01-02]
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 </programlisting>
 			</listitem>
 
@@ -1037,13 +1058,14 @@ tjsonbInsert(tjsonb,path text[],val jsonb,after boolean=false) → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
--- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb, false);
--- [{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02]
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 SELECT tjsonbInsert(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', ARRAY['units'], '"mi/h"'::jsonb);
--- [{"speed": 10, "units": "mi/h"}@2001-01-01, {"speed": 20, "units": "mi/h"}@2001-01-02]
+/* {["{\"speed\": 10, \"units\": \"mi/h\"}"@2001-01-01, "{\"speed\": 20, \"units\":
+   \"mi/h\"}"@2001-01-02]} */
 </programlisting>
 			</listitem>
 
@@ -1059,30 +1081,31 @@ tjsonbStripNulls(tjsonb,strip_in_arrays boolean=false) → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonStripNulls(ttext '[{"speed": 10, "lights": null}@2001-01-01,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}@2001-01-02]');
-/* [{"speed": 10}@2001-01-01,
-   {"PoIs": ["Grand Place", "La Bourse", null], "speed": 20}@2001-01-02] */
+/* ["{\"speed\":10}"@2001-01-01, "{\"speed\":20,\"PoIs\":[\"Grand Place\",\"La
+   Bourse\",null]}"@2001-01-02] */
 SELECT tjsonbStripNulls(tjsonb '[{"speed": 10, "lights": null}@2001-01-01,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}@2001-01-02]', true);
-/* [{"speed": 10}@2001-01-01,
-   {"PoIs": ["Grand Place", "La Bourse"], "speed": 20}@2001-01-02] */
+/* {["{\"speed\": 10}"@2001-01-01, "{\"PoIs\": [\"Grand Place\", \"La Bourse\"],
+   \"speed\": 20}"@2001-01-02]} */
 SELECT tjsonbStripNulls(tjsonb '{{"road": "Bvd Gén. Jacques",
   "category": "primary"}@2001-01-01,
   {"road": "Bvd de la Cambre", "category": "primary"}@2001-01-02,
   {"road": "rue de l''Abbaye", "category": null}@2001-01-03}');
-/* [{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-01, 
-   {"road": "Bvd de la Cambre", "category": "primary"}@2001-01-02,
-   {"road": "rue de l'Abbaye"}@2001-01-03] */
+/* {"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"primary\"}"@2001-01-01,
+   "{\"road\": \"Bvd de la Cambre\", \"category\": \"primary\"}"@2001-01-02,
+   "{\"road\": \"rue de l'Abbaye\"}"@2001-01-03} */
 </programlisting>
 				<para>As shown below, the function does not strip bare null values. Function <varname>minusValue</varname> can be used for this purpose.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonStripNulls(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]');
-/* [{"speed":10}@2001-01-01, null@2001-01-02, 
-   {"speed":20,"PoIs":["Grand Place","La Bourse"]}@2001-01-03] */
+/* ["{\"speed\":10}"@2001-01-01, "null"@2001-01-02, "{\"speed\":20,\"PoIs\":[\"Grand
+   Place\",\"La Bourse\"]}"@2001-01-03] */
 SELECT minusValues(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]', 'null');
-/* {[{"speed": 10}@2001-01-01, {"speed": 10}@2001-01-02),
-   [{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]}
+  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]',
+  set(ARRAY[text 'null']));
+/* {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 10}"@2001-01-02), ["{\"speed\": 20,
+   \"PoIs\": [\"Grand Place\", \"La Bourse\"]}"@2001-01-03]} */
 </programlisting>
 
 			</listitem>
@@ -1108,7 +1131,6 @@ SELECT tjsonbPathExists(tjsonb '{{"road": "Bvd Gén. Jacques",
   {"road": "Bvd de la Cambre", "category": "residential"}@2001-01-03}',
   '$.category ? (@ == "residential")');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
--- TODO, it works without ".datetime()"
 SELECT tjsonbPathExistsTz(tjsonb '[{"speed":10, "cameraId": "25",
   "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
   {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
@@ -1138,7 +1160,6 @@ SELECT tjsonbPathMatch(tjsonb '{{"road": "Bvd Gén. Jacques",
   {"road": "Bvd de la Cambre", "category": "residential"}@2001-01-03}',
   '$.category == "residential"');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
--- TODO, it works without ".datetime()"
 SELECT tjsonbPathMatchTz(tjsonb '[{"speed":10, "cameraId": "25",
   "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
   {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
@@ -1160,14 +1181,13 @@ tjsonbPathQueryArrayTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
 SELECT tjsonbPathQueryArray(tjsonb '[{"speed":10}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]',
   '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
--- [[{"speed": 10}]@2001-01-01, [{"speed": 20, "units": "km/h"}]@2001-01-02]
--- TODO, it works without "_tz"
+-- {["[{\"speed\": 10}]"@2001-01-01, "[{\"speed\": 20, \"units\": \"km/h\"}]"@2001-01-02]}
 SELECT tjsonbPathQueryArrayTz(tjsonb '[{"cameraId":25,
   "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
   {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
    @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
--- [["2000-01-06", "2000-01-09"]@2001-01-01, ["2000-01-07"]@2001-01-02]
+-- {["[\"2000-01-06\", \"2000-01-09\"]"@2001-01-01, "[\"2000-01-07\"]"@2001-01-02]}
 </programlisting>
 			</listitem>
 
@@ -1183,15 +1203,14 @@ tjsonbPathQueryFirstTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbPathQueryFirst(tjsonb '[{"speed":10}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]',
-  '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max'), '{"min":10, "max":30}');
--- [[{"speed": 10}]@2001-01-01, [{"speed": 20, "units": "km/h"}]@2001-01-02]
--- TODO, it works without "_tz"
+  '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max)', '{"min":10, "max":30}');
+-- {["10"@2001-01-01, "20"@2001-01-02]}
 SELECT tjsonbPathQueryArrayTz(tjsonb
   '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
    {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
   '{"min":"2000-01-05", "max":"2000-01-09"}');
--- [["2000-01-06", "2000-01-09"]@2001-01-01, ["2000-01-07"]@2001-01-02]
+-- {["[\"2000-01-06\", \"2000-01-09\"]"@2001-01-01, "[\"2000-01-07\"]"@2001-01-02]}
 </programlisting>
 			</listitem>
 
@@ -1217,12 +1236,12 @@ minusValues(tjsonb,valueset) → tjsonb
 SELECT atValue(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03]',
   jsonb '{"vehicleId": 1, "location": "Point(2 2)"}');
--- {[{"location": "POINT(2 2)", "vehicleId": 1}@2001-01-03]}
+-- {["{\"location\": \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-03]}
 SELECT minusValue(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03]',
   jsonb '{"vehicleId": 1, "location": "Point(2 2)"}');
-/* {[{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-03)} */
+/* {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-03)} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1315,7 +1334,7 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]' &lt;
   tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
     {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
--- true
+-- false
 </programlisting>
 			</listitem>
 
@@ -1348,12 +1367,12 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)' #= jsonb '{"vehicleId": 1,
   "location": "Point(1 1)"}';
--- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
+-- [t@2001-01-01, t@2001-01-03)
 SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)' #&lt;&gt;
   tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)';
--- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
+-- [f@2001-01-01, f@2001-01-03)
 </programlisting>
 			</listitem>
 		</itemizedlist>
