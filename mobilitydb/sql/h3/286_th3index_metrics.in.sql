@@ -61,12 +61,22 @@ CREATE FUNCTION th3CellAreaRads2(th3index)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * th3EdgeLength
+ * th3EdgeLengthKm, th3EdgeLengthM and th3EdgeLengthRads
  ******************************************************************************/
 
-CREATE FUNCTION th3EdgeLength(th3index, text DEFAULT 'km')
+CREATE FUNCTION th3EdgeLengthKm(th3index)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Th3index_edge_length'
+  AS 'MODULE_PATHNAME', 'Th3index_edge_length_km'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION th3EdgeLengthM(th3index)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Th3index_edge_length_m'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION th3EdgeLengthRads(th3index)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Th3index_edge_length_rads'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

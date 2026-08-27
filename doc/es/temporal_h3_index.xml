@@ -580,15 +580,25 @@ SELECT th3CellAreaRads2(th3index '871fa44a8ffffff@2001-01-01');
 			</listitem>
 
 			<listitem xml:id="th3_h3_edge_length">
-				<indexterm significance="normal"><primary><varname>th3EdgeLength</varname></primary></indexterm>
-				<para>Devolver la longitud temporal de cada arista dirigida en una trayectoria, en la unidad solicitada</para>
+				<indexterm significance="normal"><primary><varname>th3EdgeLengthKm</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3EdgeLengthM</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3EdgeLengthRads</varname></primary></indexterm>
+				<para>Devolver la longitud temporal de cada arista dirigida en una trayectoria, en kilómetros, metros o radianes</para>
 				<programlisting xml:space="preserve" format="linespecific">
-th3EdgeLength(th3index,text='km') → tfloat
+th3EdgeLengthKm(th3index) → tfloat
+th3EdgeLengthM(th3index) → tfloat
+th3EdgeLengthRads(th3index) → tfloat
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3EdgeLength(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+SELECT th3EdgeLengthKm(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01'));
 -- 1.272084901305088@2001-01-01
+SELECT th3EdgeLengthM(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 1272.0849013050881@2001-01-01
+SELECT th3EdgeLengthRads(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 0.000199667786455@2001-01-01
 </programlisting>
 			</listitem>
 

@@ -98,25 +98,56 @@ Th3index_cell_area_rads2(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * th3EdgeLength(th3index, text)
+ * th3EdgeLengthKm, th3EdgeLengthM and th3EdgeLengthRads
  *****************************************************************************/
 
-PGDLLEXPORT Datum Th3index_edge_length(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Th3index_edge_length);
+PGDLLEXPORT Datum Th3index_edge_length_km(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Th3index_edge_length_km);
 /**
  * @ingroup mobilitydb_h3_metrics
  * @brief Return the per-instant length of a temporal H3 directed edge in
- * the given unit
- * @sqlfn th3EdgeLength()
+ * kilometres
+ * @sqlfn th3EdgeLengthKm()
  */
 Datum
-Th3index_edge_length(PG_FUNCTION_ARGS)
+Th3index_edge_length_km(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  text *unit_txt = PG_GETARG_TEXT_P(1);
-  char *unit = text_to_cstring(unit_txt);
-  Temporal *result = th3index_edge_length(temp, unit);
-  pfree(unit);
+  Temporal *result = th3index_edge_length_km(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Th3index_edge_length_m(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Th3index_edge_length_m);
+/**
+ * @ingroup mobilitydb_h3_metrics
+ * @brief Return the per-instant length of a temporal H3 directed edge in
+ * metres
+ * @sqlfn th3EdgeLengthM()
+ */
+Datum
+Th3index_edge_length_m(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = th3index_edge_length_m(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Th3index_edge_length_rads(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Th3index_edge_length_rads);
+/**
+ * @ingroup mobilitydb_h3_metrics
+ * @brief Return the per-instant length of a temporal H3 directed edge in
+ * radians
+ * @sqlfn th3EdgeLengthRads()
+ */
+Datum
+Th3index_edge_length_rads(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = th3index_edge_length_rads(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
