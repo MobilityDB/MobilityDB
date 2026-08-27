@@ -147,4 +147,13 @@ extern const DggsCellOps *dggs_cellops(MeosType temptype);
 
 /* Declared in the umbrella header <meos_cellindex.h> (included above). */
 
+/*****************************************************************************
+ * Geodetic bounding box of a cell boundary — shared by every DGGS whose
+ * cells are defined on the sphere.
+ *****************************************************************************/
+
+extern void dggs_lonlat_boundary_set_box(const double *lons,
+  const double *lats, int count, bool north_pole, bool south_pole,
+  double *xmin, double *ymin, double *xmax, double *ymax);
+
 #endif /* __TCELLINDEX_H__ */
