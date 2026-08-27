@@ -149,6 +149,7 @@ extern bool meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2,
   const char *pattern, bool *result);
 extern bool meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
   bool *result);
+extern bool relate_is_areal(const LWGEOM *geom);
 
 /* The edges of one geometry, kept so that several relationships asked about it
  * read them once. A relationship extracts the edges of both its operands, and

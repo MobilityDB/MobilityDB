@@ -710,6 +710,50 @@ int main(void)
   free(gg1); free(gg2); free(ggp1); free(ggp2);
   meos_errno_reset();
 
+  /* An array whose members fall on BOTH sides of the areal boundary is
+   * answered by the two native arms together: the surfaces are dissolved, the
+   * linework and the points are dissolved, and a piece the surfaces COVER is
+   * left out of the answer.  A piece they cover only in PART stays WHOLE,
+   * which is where the answer differs from the one GEOS gives -- both
+   * spellings cover the same points, and keeping the piece whole keeps a
+   * circular arc on its own circle */
+  const char *msq = "POLYGON((0 0,0 2,2 2,2 0,0 0))";
+  struct { const char *piece; const char *result; } mixcases[] = {
+    /* the point is outside, so it stands beside the surface */
+    { "POINT(5 5)",
+      "GEOMETRYCOLLECTION(POINT(5 5),POLYGON((0 0,0 2,2 2,2 0,0 0)))" },
+    /* the point is inside, so the surface is the whole answer */
+    { "POINT(1 1)", "POLYGON((0 0,0 2,2 2,2 0,0 0))" },
+    /* a point ON the boundary is covered as well */
+    { "POINT(0 1)", "POLYGON((0 0,0 2,2 2,2 0,0 0))" },
+    /* the line is covered, and contributes nothing of its own */
+    { "LINESTRING(0.5 0.5,1.5 1.5)", "POLYGON((0 0,0 2,2 2,2 0,0 0))" },
+    /* the line is covered only in part and stays whole */
+    { "LINESTRING(1 1,5 5)",
+      "GEOMETRYCOLLECTION(LINESTRING(1 1,5 5),POLYGON((0 0,0 2,2 2,2 0,0 0)))" },
+    /* the arc stays on its own circle rather than being linearized */
+    { "CIRCULARSTRING(5 5,6 6,7 5)",
+      "GEOMETRYCOLLECTION(CIRCULARSTRING(5 5,6 6,7 5),"
+        "POLYGON((0 0,0 2,2 2,2 0,0 0)))" },
+  };
+  for (size_t i = 0; i < sizeof(mixcases) / sizeof(mixcases[0]); i++)
+  {
+    GSERIALIZED *mx1 = geom_in(mixcases[i].piece, -1);
+    GSERIALIZED *mx2 = geom_in(msq, -1);
+    assert(mx1 != NULL); assert(mx2 != NULL);
+    GSERIALIZED *mxarr[2] = {mx1, mx2};
+    meos_errno_reset();
+    GSERIALIZED *mxu = geom_array_union(mxarr, 2);
+    assert(mxu != NULL);
+    assert(meos_errno() == 0);
+    char *mxwkt = geo_as_text(mxu, 3);
+    assert(mxwkt != NULL);
+    printf("%s united with the square: %s\n", mixcases[i].piece, mxwkt);
+    assert(strcmp(mxwkt, mixcases[i].result) == 0);
+    free(mx1); free(mx2); free(mxu); free(mxwkt);
+  }
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 

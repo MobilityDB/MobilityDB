@@ -2254,6 +2254,179 @@ geom_array_linear_union(GSERIALIZED **gsarr, int count, bool geodetic)
 }
 
 /**
+ * @brief Return the components a union answer is read as, one entry per piece
+ * that stands on its own
+ * @details A multi-geometry stands for its members and a general collection
+ * for its components, so the answer is assembled from those rather than from
+ * the wrapper.
+ * ⛔ The test is the TYPE, not #lwgeom_is_collection(), which answers true for
+ * a curve polygon and a compound curve as well -- their rings and pieces are
+ * sub-geometries, so reading THEM as components takes a surface apart into its
+ * own boundary
+ * @param[in] geom Geometry
+ * @param[out] comps Newly allocated array of components, which the geometry
+ * keeps ownership of and which the caller releases with @p pfree()
+ * @return The number of components
+ */
+static int
+union_components(const LWGEOM *geom, const LWGEOM ***comps)
+{
+  uint8_t type = geom->type;
+  if (type == MULTIPOINTTYPE || type == MULTILINETYPE ||
+      type == MULTICURVETYPE || type == MULTIPOLYGONTYPE ||
+      type == MULTISURFACETYPE || type == COLLECTIONTYPE)
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+    const LWGEOM **result = palloc(sizeof(LWGEOM *) * coll->ngeoms);
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+      result[i] = coll->geoms[i];
+    *comps = result;
+    return (int) coll->ngeoms;
+  }
+  const LWGEOM **one = palloc(sizeof(LWGEOM *));
+  one[0] = geom;
+  *comps = one;
+  return 1;
+}
+
+/**
+ * @brief Return the union of an array of geometries whose members fall on both
+ * sides of the areal boundary
+ * @details The array is split on #relate_is_areal() and each half is answered
+ * by the arm that already answers it -- #meos_areal_union() for the surfaces,
+ * #meos_linear_union() for the linework and the points. What the two answers
+ * share is then read: a non-areal piece the surfaces COVER contributes nothing
+ * of its own and is left out, and what remains is collected beside them.
+ *
+ * A piece the surfaces cover only in PART stays whole, which is the rule the
+ * union already keeps for its linework: both spellings cover the same points,
+ * and keeping the piece whole keeps a circular arc on its own circle. That is
+ * where this answer differs from the one GEOS gives, which cuts the piece at
+ * the boundary
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @return The union, or @p NULL where the array does not span the boundary, or
+ * where either half is one its arm does not answer, which leaves the caller to
+ * answer it another way
+ */
+static GSERIALIZED *
+geom_array_mixed_union(GSERIALIZED **gsarr, int count)
+{
+  assert(gsarr); assert(count > 1);
+  int32_t srid = gserialized_get_srid(gsarr[0]);
+  /* An empty member carries no points and is left out, as it is in both arms */
+  LWGEOM **areal = palloc(sizeof(LWGEOM *) * count);
+  LWGEOM **other = palloc(sizeof(LWGEOM *) * count);
+  uint32_t nareal = 0, nother = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (gserialized_is_empty(gsarr[i]))
+      continue;
+    LWGEOM *geom = lwgeom_from_gserialized(gsarr[i]);
+    if (relate_is_areal(geom))
+      areal[nareal++] = geom;
+    else
+      other[nother++] = geom;
+  }
+  /* An array that stays on one side of the boundary is what the two arms
+   * already answered, and this one has nothing to add to it */
+  if (nareal == 0 || nother == 0)
+  {
+    for (uint32_t i = 0; i < nareal; i++)
+      lwgeom_free(areal[i]);
+    for (uint32_t i = 0; i < nother; i++)
+      lwgeom_free(other[i]);
+    pfree(areal); pfree(other);
+    return NULL;
+  }
+
+  /* #lwcollection_construct() takes ownership of the array it is given and of
+   * its members, so neither is freed other than through the collection. A half
+   * holding a single member is the collection of one, which each arm answers
+   * by returning that member -- there is no count the arms must be spared */
+  LWCOLLECTION *acoll = lwcollection_construct(COLLECTIONTYPE, srid, NULL,
+    nareal, areal);
+  LWCOLLECTION *ocoll = lwcollection_construct(COLLECTIONTYPE, srid, NULL,
+    nother, other);
+  LWGEOM *lwareal = meos_areal_union(lwcollection_as_lwgeom(acoll));
+  LWGEOM *lwother = lwareal ?
+    meos_linear_union(lwcollection_as_lwgeom(ocoll)) : NULL;
+  lwcollection_free(acoll); lwcollection_free(ocoll);
+  if (! lwother)
+  {
+    if (lwareal)
+      lwgeom_free(lwareal);
+    return NULL;
+  }
+
+  /* The surfaces are asked about every piece, so their edges are extracted
+   * once and read again for each question rather than once per question */
+  void *actx = relate_ctx_make(lwareal);
+  const LWGEOM **ocomps;
+  int nocomps = union_components(lwother, &ocomps);
+  bool *dropped = palloc0(sizeof(bool) * nocomps);
+  int nkept = 0;
+  for (int i = 0; i < nocomps && actx; i++)
+  {
+    void *octx = relate_ctx_make(ocomps[i]);
+    bool covered = false;
+    if (! octx || ! meos_spatialrel_ctx(actx, octx, COVERS, &covered))
+    {
+      /* A pair the engine does not cover leaves the whole answer to the
+       * caller: a piece kept without knowing it is covered would be a
+       * component the union does not have */
+      relate_ctx_free(octx);
+      relate_ctx_free(actx);
+      actx = NULL;
+      break;
+    }
+    relate_ctx_free(octx);
+    dropped[i] = covered;
+    if (! covered)
+      nkept++;
+  }
+  if (! actx)
+  {
+    pfree(dropped); pfree(ocomps);
+    lwgeom_free(lwareal); lwgeom_free(lwother);
+    return NULL;
+  }
+  relate_ctx_free(actx);
+
+  /* Every piece is covered, so the surfaces are the whole answer and they
+   * carry their own type rather than being wrapped in a collection */
+  GSERIALIZED *result;
+  if (nkept == 0)
+  {
+    result = geo_serialize(lwareal);
+    pfree(dropped); pfree(ocomps);
+    lwgeom_free(lwareal); lwgeom_free(lwother);
+    return result;
+  }
+
+  /* The answer lists what remains before the surfaces, the order a collection
+   * is read in, and lists each piece on its own: a collection of surfaces
+   * stands for its members here, not for itself */
+  const LWGEOM **acomps;
+  int nacomps = union_components(lwareal, &acomps);
+  LWGEOM **members = palloc(sizeof(LWGEOM *) * (nkept + nacomps));
+  int nmembers = 0;
+  for (int i = 0; i < nocomps; i++)
+    if (! dropped[i])
+      members[nmembers++] = lwgeom_clone_deep(ocomps[i]);
+  for (int i = 0; i < nacomps; i++)
+    members[nmembers++] = lwgeom_clone_deep(acomps[i]);
+  pfree(dropped); pfree(ocomps); pfree(acomps);
+  /* #lwcollection_construct() takes ownership of the array it is given */
+  LWCOLLECTION *coll = lwcollection_construct(COLLECTIONTYPE, srid, NULL,
+    (uint32_t) nmembers, members);
+  result = geo_serialize(lwcollection_as_lwgeom(coll));
+  lwcollection_free(coll);
+  lwgeom_free(lwareal); lwgeom_free(lwother);
+  return result;
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the union of an array of geometries
  * @details The function will iteratively call @p GEOSUnion on the
@@ -2334,6 +2507,15 @@ geom_array_union(GSERIALIZED **gsarr, int count)
   if (! geodetic || geom_array_point_only(gsarr, count))
   {
     GSERIALIZED *native = geom_array_linear_union(gsarr, count, geodetic);
+    if (native)
+      return native;
+  }
+  /* An array whose members fall on BOTH sides of the areal boundary is
+   * answered by the two arms together: each half is dissolved by the arm that
+   * answers it, and a non-areal piece the surfaces cover is left out */
+  if (! geodetic)
+  {
+    GSERIALIZED *native = geom_array_mixed_union(gsarr, count);
     if (native)
       return native;
   }

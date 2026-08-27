@@ -3640,7 +3640,7 @@ de9im_match(const char matrix[10], const char pattern[10])
 /**
  * @brief Return true if a geometry contains a 2-dimensional region
  */
-static bool
+bool
 relate_is_areal(const LWGEOM *geom)
 {
   if (! geom || lwgeom_is_empty(geom))
