@@ -3251,7 +3251,7 @@
 						<para><link linkend="tpcbox_tpcbox_pcpoint"><varname>tpcbox</varname></link>: Convert a pcpoint to a degenerate (zero-extent) tpcbox; SRID and pcid come from the schema</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_tpcbox_pcpatch"><varname>tpcbox</varname></link>: Convert a pcpatch to a tpcbox using the patch's embedded 2D PCBOUNDS; the second form takes an explicit SRID instead of looking it up from the schema</para>
+						<para><link linkend="tpcbox_tpcbox_pcpatch"><varname>tpcbox</varname></link>: Convert a pcpatch to a tpcbox</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

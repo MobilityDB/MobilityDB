@@ -68,6 +68,8 @@
 #include "temporal/type_util.h"
 #include "geo/tspatial_parser.h"
 #include "pointcloud/pcpatch.h"
+#include "pointcloud/pgsql_compat.h"
+#include "pointcloud/meos_schema_hook.h"
 
 /* Buffer size for input/output of TPCBox text form */
 #define TPCBOX_MAXLEN  512
@@ -409,14 +411,67 @@ tpcbox_copy(const TPCBox *box)
  *****************************************************************************/
 
 /**
+ * @brief Return the Z extent of the points of a patch
+ * @details The @c PCBOUNDS header of a patch states its X and Y extent only,
+ * so the Z extent is the one its points state and is reached by walking them,
+ * the way @ref pcpatch_to_geom reaches their Z coordinate.
+ * @param[in] pa Patch
+ * @param[in] schema Schema the pcid of the patch names
+ * @param[out] zmin,zmax Z extent of the points stating a Z coordinate
+ * @return @p true if some point states a Z coordinate, so that the extent is
+ *   set, and @p false otherwise
+ */
+static bool
+pcpatch_z_extent(const Pcpatch *pa, const PCSCHEMA *schema, double *zmin,
+  double *zmax)
+{
+  /* Pcpatch is byte-compatible with SERIALIZED_PATCH (see pcpatch.h) */
+  PCPATCH *patch = MEOS_PC_PATCH_DESERIALIZE(
+    (const SERIALIZED_PATCH *) pa, schema);
+  if (! patch)
+    return false;
+  PCPOINTLIST *pl = pc_pointlist_from_patch(patch);
+  if (! pl)
+  {
+    pc_patch_free(patch);
+    return false;
+  }
+
+  bool found = false;
+  for (uint32_t i = 0; i < pl->npoints; i++)
+  {
+    double z;
+    if (! pc_point_get_z(pc_pointlist_get_point(pl, i), &z))
+      continue;
+    if (! found)
+    {
+      *zmin = *zmax = z;
+      found = true;
+    }
+    else if (z < *zmin)
+      *zmin = z;
+    else if (z > *zmax)
+      *zmax = z;
+  }
+
+  pc_pointlist_free(pl);
+  pc_patch_free(patch);
+  return found;
+}
+
+/**
  * @ingroup meos_pointcloud_box_conversion
- * @brief Return the 2D spatial bounding box of a pcpatch as a TPCBox.
- * @note Z is not populated — pgpointcloud's SERIALIZED_PATCH carries only
- *   2D @c PCBOUNDS in its header; the per-point Z values are packed
- *   inside the compressed data block and cannot be summarised without
- *   schema access. Time dimension is likewise absent (pcpatch is static).
- *   Callers that need Z should go through the PG wrapper layer, which
- *   has schema access via the per-backend PCSCHEMA cache.
+ * @brief Return the spatial bounding box of a pcpatch as a TPCBox.
+ * @details The schema the pcid of the patch names decides whether the box
+ * carries a Z dimension, in the same way it decides whether the box of a
+ * pcpoint carries one. The X and Y extent is the one the @c PCBOUNDS header
+ * of the patch states, which is why a patch of a pcid no schema states still
+ * answers the extent it holds; the Z extent is the one its points state, so a
+ * patch of a schema holding Z is walked once. The time dimension is absent, a
+ * patch being static.
+ * @param[in] pa Patch
+ * @param[in] srid Spatial reference system of the result, which the caller
+ *   states so that it can override the one of the schema
  * @csqlfn #Pcpatch_to_tpcbox()
  */
 TPCBox *
@@ -424,16 +479,21 @@ pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa, NULL);
+  const PCSCHEMA *schema = meos_pc_schema_lookup(pa->pcid);
+  double zmin = 0.0, zmax = 0.0;
+  bool hasz = schema && schema->zdim &&
+    pcpatch_z_extent(pa, schema, &zmin, &zmax);
+
   Span empty_period;
   memset(&empty_period, 0, sizeof(Span));
   return tpcbox_make(
-    /* hasx */ true, /* hasz */ false, /* hast */ false,
+    /* hasx */ true, hasz, /* hast */ false,
     /* geodetic */ false, srid, pa->pcid,
     /* PCBOUNDS is {xmin, xmax, ymin, ymax}, the order the bounds field of
      * struct Pcpatch states and pointcloud-pg/lib/pc_api.h defines */
     pa->bounds[0], pa->bounds[1],  /* xmin, xmax */
     pa->bounds[2], pa->bounds[3],  /* ymin, ymax */
-    0.0, 0.0,                      /* zmin, zmax (unused) */
+    zmin, zmax,
     &empty_period);
 }
 

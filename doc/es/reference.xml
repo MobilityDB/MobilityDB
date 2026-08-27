@@ -3242,7 +3242,7 @@
 						<para><link linkend="tpcbox_tpcbox_pcpoint"><varname>tpcbox</varname></link>: Convierte un pcpoint a un tpcbox degenerado (de extensión cero); el SRID y el pcid provienen del esquema</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_tpcbox_pcpatch"><varname>tpcbox</varname></link>: Convierte un pcpatch a un tpcbox usando los límites PCBOUNDS 2D integrados en el parche</para>
+						<para><link linkend="tpcbox_tpcbox_pcpatch"><varname>tpcbox</varname></link>: Convierte un pcpatch a un tpcbox</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

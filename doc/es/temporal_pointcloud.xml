@@ -294,14 +294,15 @@ SELECT tpcbox(pcpoint(1, 10.0, 20.0, 30.0));
 
 				<listitem xml:id="tpcbox_tpcbox_pcpatch">
 					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
-					<para>Convierte un pcpatch a un tpcbox usando los límites PCBOUNDS 2D integrados en el parche</para>
+					<para>Convierte un pcpatch a un tpcbox</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpcbox(pcpatch) → tpcbox
 tpcbox(pcpatch,integer) → tpcbox
 </programlisting>
-					<para>La segunda forma acepta un SRID explícito en lugar de buscarlo en el esquema.</para>
+					<para>La extensión en X y en Y del resultado es la de los límites PCBOUNDS integrados en el parche, y su extensión en Z, cuando el esquema que nombra el pcid tiene una dimensión Z, es la que indican los puntos del parche. La segunda forma acepta un SRID explícito en lugar de buscarlo en el esquema.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(pcpatch(pcpoint(1, 10.0, 20.0, 30.0)));
+-- TPCBOX(Z((10,20,30),(10,20,30)), 1)
 </programlisting>
 				</listitem>
 			</itemizedlist>
