@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ekf_build_H_hx</title>
+<title>MobilityDB: ensure_has_twavg_temptype</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -86,12 +86,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a8ba5a6a80e7744bcfff43f12a1ed373a.html#a8ba5a6a80e7744bcfff43f12a1ed373a">dist3d_pt_seg</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ad668ce175fa912153919c940139c2bd9.html#ad668ce175fa912153919c940139c2bd9">DP_STACK_SIZE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ae4a7d85d9b66caa7152a62c83de74ca7.html#ae4a7d85d9b66caa7152a62c83de74ca7">ekf_build_F</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a26d3102c7cbbdcb86e8ec2a08be22bdd.html#a26d3102c7cbbdcb86e8ec2a08be22bdd">ekf_build_H_hx</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a26d3102c7cbbdcb86e8ec2a08be22bdd.html#a26d3102c7cbbdcb86e8ec2a08be22bdd">ekf_build_H_hx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a4aabf63dbddf1d8cba0db3505b690e35.html#a4aabf63dbddf1d8cba0db3505b690e35">ekf_build_Q</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_af26dfe7e822c08a3950c34cf5fa63a4c.html#af26dfe7e822c08a3950c34cf5fa63a4c">ekf_build_R</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_afdccae2f6ac5625fa693b2646b02a529.html#afdccae2f6ac5625fa693b2646b02a529">EKF_M</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_aa77a36f2da098625f2ef7618b8de7627.html#aa77a36f2da098625f2ef7618b8de7627">EKF_N</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a79655936c4fe00b133051de5da35903e.html#a79655936c4fe00b133051de5da35903e">ensure_has_twavg_temptype</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a79655936c4fe00b133051de5da35903e.html#a79655936c4fe00b133051de5da35903e">ensure_has_twavg_temptype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a09f4f8da75551a41bcf740e3786313e6.html#a09f4f8da75551a41bcf740e3786313e6">innovation_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ae461ee07e546737f7c0a3a7ed1337c6c.html#ae461ee07e546737f7c0a3a7ed1337c6c">int_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a403ea583e444a2165ced0f358b927931.html#a403ea583e444a2165ced0f358b927931">MAX_MATRIX_LEN</a></td></tr>
@@ -149,8 +149,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a26d3102c7cbbdcb86e8ec2a08be22bdd" name="a26d3102c7cbbdcb86e8ec2a08be22bdd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26d3102c7cbbdcb86e8ec2a08be22bdd">&#9670;&#160;</a></span>ekf_build_H_hx()</h2>
+<a id="a79655936c4fe00b133051de5da35903e" name="a79655936c4fe00b133051de5da35903e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79655936c4fe00b133051de5da35903e">&#9670;&#160;</a></span>ensure_has_twavg_temptype()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -159,43 +159,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void ekf_build_H_hx </td>
+          <td class="memname">static bool ensure_has_twavg_temptype </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="tinyekf__meos_8h_ac1e57113e79bc388637bb49dc896f02b.html#ac1e57113e79bc388637bb49dc896f02b">_float_t</a>&#160;</td>
-          <td class="paramname"><em>H</em>[EKF_M *EKF_N], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
+          <td class="paramname"><em>temptype</em></td><td>)</td>
           <td></td>
-          <td class="paramtype"><a class="el" href="tinyekf__meos_8h_ac1e57113e79bc388637bb49dc896f02b.html#ac1e57113e79bc388637bb49dc896f02b">_float_t</a>&#160;</td>
-          <td class="paramname"><em>hx</em>[EKF_M], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="tinyekf__meos_8h_ac1e57113e79bc388637bb49dc896f02b.html#ac1e57113e79bc388637bb49dc896f02b">_float_t</a>&#160;</td>
-          <td class="paramname"><em>fx</em>[EKF_N], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>dims</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Build H and hx given predicted state fx; only first dims are measured, sensor-function Jacobian matrix. </p>
+<p>Ensure that the temporal type carries a time-weighted value. </p>
+<p >A bin is summarized by the time-weighted average of the values it holds: a number averages, a point takes its centroid, and a circular buffer, a pose and a rigid geometry each summarize their own parameters. An arbitrary geometry has no such summary &ndash; the average of a set of polygons is not a polygon &ndash; so the temporal geometry and geography types state that rather than reaching a point kernel that cannot read them. </p>
 
 </div>
 </div>
