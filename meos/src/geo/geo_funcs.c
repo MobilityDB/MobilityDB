@@ -6008,8 +6008,51 @@ relate_edge_distance(double x, double y, const Edge *e)
  * reading the neighbourhood of that edge alone
  */
 static double
-relate_clearance(double x, double y, const RelateComp *comps, int ncomp)
+relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
+  double seed)
 {
+  /* The nearest feature is found by growing a box about the point until one
+   * falls inside it. An edge whose box stands outside a box of half-width r
+   * has every one of its points outside it, so it lies further than r, and a
+   * feature found no further than r is therefore the nearest there is. Where
+   * a component carries no index the walk below answers, and it answers if
+   * the growth ever runs out, so the two paths agree by construction */
+  bool indexed = (ncomp > 0);
+  for (int i = 0; i < ncomp && indexed; i++)
+    indexed = (comps[i].re.index != NULL);
+  if (indexed)
+  {
+    MeosArray *candidates = meos_array_create(sizeof(int64));
+    double r = seed > MEOS_GEOM_TOLERANCE ? seed : MEOS_GEOM_TOLERANCE;
+    for (int round = 0; round < 64; round++)
+    {
+      double best = -1;
+      for (int i = 0; i < ncomp; i++)
+      {
+        STBox query;
+        stbox_set(true, false, false, 0, x - r, x + r, y - r, y + r, 0, 0,
+          NULL, &query);
+        int nc = rtree_search(comps[i].re.index, INDEX_OVERLAPS, &query,
+          candidates);
+        for (int c = 0; c < nc; c++)
+        {
+          int j = (int) *(int64 *) meos_array_get(candidates, c);
+          double d = relate_edge_distance(x, y, comps[i].edges[j]);
+          if (d <= MEOS_GEOM_TOLERANCE)
+            continue;
+          if (best < 0 || d < best)
+            best = d;
+        }
+      }
+      if (best >= 0 && best <= r)
+      {
+        meos_array_destroy(candidates);
+        return best;
+      }
+      r *= 4;
+    }
+    meos_array_destroy(candidates);
+  }
   double result = -1;
   for (int i = 0; i < ncomp; i++)
     for (int j = 0; j < comps[i].nedges; j++)
@@ -6061,7 +6104,11 @@ relate_portion_inside_union(const Edge *e, double t, const RelateComp *comps,
 {
   double x, y;
   relate_area_edge_point(e, t, &x, &y);
-  double delta = relate_clearance(x, y, comps, ncomp);
+  /* The portion's own edge sets the scale the search starts at: the feature
+   * nearest a point of a boundary is normally the next one along it */
+  double delta = relate_clearance(x, y, comps, ncomp,
+    e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC ?
+      e->radius : e->length);
   if (delta <= 0)
     return false;
   delta *= 0.5;
