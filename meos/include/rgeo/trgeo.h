@@ -71,6 +71,8 @@ extern TSequence *geo_tposeseq_to_trgeo(const GSERIALIZED *gs,
   const TSequence *seq);
 extern TSequenceSet *geo_tposeseqset_to_trgeo(const GSERIALIZED *gs,
   const TSequenceSet *ss);
+extern Temporal *geo_tpose_to_trgeo(const GSERIALIZED *gs,
+  const Temporal *temp);
 
 /* Conversion functions */
 

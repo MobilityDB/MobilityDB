@@ -486,6 +486,9 @@ extern bool ensure_positive_duration(const Interval *duration);
 /* General functions */
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
+extern Temporal *temporal_strip_geom(const Temporal *temp,
+  const GSERIALIZED **geom);
+extern Temporal *temporal_attach_geom(const GSERIALIZED *geom, Temporal *temp);
 
 extern bool intersection_temporal_temporal(const Temporal *temp1,
 const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
