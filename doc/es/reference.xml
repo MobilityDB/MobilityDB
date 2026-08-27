@@ -2890,7 +2890,7 @@
 			<title>Métricas</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="th3_h3_cell_area"><varname>cellArea</varname></link>: Devolver el área temporal de cada celda en una trayectoria, en metros cuadrados o en la unidad solicitada</para>
+					<para><link linkend="th3_h3_cell_area"><varname>cellArea</varname>, <varname>th3CellAreaKm2</varname>, <varname>th3CellAreaRads2</varname></link>: Devolver el área temporal de cada celda en una trayectoria, en metros cuadrados, kilómetros cuadrados o radianes cuadrados</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="th3_h3_edge_length"><varname>th3EdgeLength</varname></link>: Devolver la longitud temporal de cada arista dirigida en una trayectoria, en la unidad solicitada</para>

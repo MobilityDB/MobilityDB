@@ -166,22 +166,16 @@ h3_gs_great_circle_distance_meos(const GSERIALIZED *a, const GSERIALIZED *b,
 }
 
 /*****************************************************************************
- * cellArea(th3index) and cellArea(th3index, text) — lift_with_const
+ * cellArea(th3index), th3CellAreaKm2 and th3CellAreaRads2 — lift_with_const
  *****************************************************************************/
 
 /**
- * @ingroup meos_h3_metrics
  * @brief Return the per-instant area of a temporal H3 cell in the given
- * unit.
- * @csqlfn #Th3index_cell_area_unit()
+ * H3 unit
  */
-Temporal *
-th3index_cell_area_unit(const Temporal *temp, const char *unit)
+static Temporal *
+th3index_cell_area_in(const Temporal *temp, H3Unit u)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL); VALIDATE_NOT_NULL(unit, NULL);
-
-  H3Unit u = h3_unit_from_cstring(unit);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_h3_cell_area;
@@ -193,6 +187,34 @@ th3index_cell_area_unit(const Temporal *temp, const char *unit)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_h3_metrics
+ * @brief Return the per-instant area of a temporal H3 cell in square
+ * kilometres, the quantity libh3 answers as cellAreaKm2
+ * @csqlfn #Th3index_cell_area_km2()
+ */
+Temporal *
+th3index_cell_area_km2(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp, NULL);
+  return th3index_cell_area_in(temp, H3_UNIT_KM2);
+}
+
+/**
+ * @ingroup meos_h3_metrics
+ * @brief Return the per-instant area of a temporal H3 cell in square
+ * radians, the quantity libh3 answers as cellAreaRads2
+ * @csqlfn #Th3index_cell_area_rads2()
+ */
+Temporal *
+th3index_cell_area_rads2(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp, NULL);
+  return th3index_cell_area_in(temp, H3_UNIT_RADS2);
 }
 
 /*****************************************************************************

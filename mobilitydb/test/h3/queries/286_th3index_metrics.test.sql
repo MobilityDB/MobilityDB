@@ -16,35 +16,28 @@
 -- per-instant adapters being filled in.
 
 -------------------------------------------------------------------------------
--- cellArea(th3index) and cellArea(th3index, text) — lift_with_const
+-- cellArea(th3index), th3CellAreaKm2 and th3CellAreaRads2 — lift_with_const
 -------------------------------------------------------------------------------
 
--- The one-argument form answers square metres, the unit the DggsCellOps
--- cell_area slot declares, so it agrees with 'm2' and differs from 'km2'
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01')
-  = cellArea(th3index '831c02fffffffff@2001-01-01', 'm2');
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01')
-  = cellArea(th3index '831c02fffffffff@2001-01-01', 'km2');
+-- cellArea answers square metres, the unit the DggsCellOps cell_area slot
+-- declares, and the two H3 units are the ones libh3 names
 SELECT round(startValue(cellArea(th3index '831c02fffffffff@2001-01-01'))::numeric, 1);
+SELECT round(startValue(th3CellAreaKm2(th3index '831c02fffffffff@2001-01-01'))::numeric, 7);
+SELECT round(startValue(th3CellAreaRads2(th3index '831c02fffffffff@2001-01-01'))::numeric, 9);
 
--- All three valid area units
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'km2')
-  IS NOT NULL;
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'm2')
-  IS NOT NULL;
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'rads2')
-  IS NOT NULL;
+-- The three answer one quantity in three units
+SELECT startValue(cellArea(th3index '831c02fffffffff@2001-01-01'))
+  = startValue(th3CellAreaKm2(th3index '831c02fffffffff@2001-01-01')) * 1e6;
+SELECT startValue(th3CellAreaRads2(th3index '831c02fffffffff@2001-01-01'))
+  < startValue(th3CellAreaKm2(th3index '831c02fffffffff@2001-01-01'));
 
 -- Sequence form
-SELECT cellArea(th3index
-  '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]', 'km2')
+SELECT th3CellAreaKm2(th3index
+  '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]')
   IS NOT NULL;
-
--- Length unit on an area function — h3-pg behaviour: error.
-/* Errors */
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'km');
--- Invalid unit string
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'lightyears');
+SELECT cellArea(th3index
+  '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]')
+  IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- th3EdgeLength(th3index, text) — lift_with_const

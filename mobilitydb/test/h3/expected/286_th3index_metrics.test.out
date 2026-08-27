@@ -1,38 +1,37 @@
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01')
-  = cellArea(th3index '831c02fffffffff@2001-01-01', 'm2');
- ?column? 
-----------
- t
-(1 row)
-
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01')
-  = cellArea(th3index '831c02fffffffff@2001-01-01', 'km2');
- ?column? 
-----------
- f
-(1 row)
-
 SELECT round(startValue(cellArea(th3index '831c02fffffffff@2001-01-01'))::numeric, 1);
     round     
 --------------
  7725505767.6
 (1 row)
 
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'km2')
-  IS NOT NULL;
+SELECT round(startValue(th3CellAreaKm2(th3index '831c02fffffffff@2001-01-01'))::numeric, 7);
+    round     
+--------------
+ 7725.5057676
+(1 row)
+
+SELECT round(startValue(th3CellAreaRads2(th3index '831c02fffffffff@2001-01-01'))::numeric, 9);
+    round    
+-------------
+ 0.000190332
+(1 row)
+
+SELECT startValue(cellArea(th3index '831c02fffffffff@2001-01-01'))
+  = startValue(th3CellAreaKm2(th3index '831c02fffffffff@2001-01-01')) * 1e6;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'm2')
-  IS NOT NULL;
+SELECT startValue(th3CellAreaRads2(th3index '831c02fffffffff@2001-01-01'))
+  < startValue(th3CellAreaKm2(th3index '831c02fffffffff@2001-01-01'));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'rads2')
+SELECT th3CellAreaKm2(th3index
+  '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]')
   IS NOT NULL;
  ?column? 
 ----------
@@ -40,18 +39,13 @@ SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'rads2')
 (1 row)
 
 SELECT cellArea(th3index
-  '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]', 'km2')
+  '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]')
   IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-/* Errors */
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'km');
-ERROR:  h3_cell_area: expected an area unit (km2, m2, rads2)
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'lightyears');
-ERROR:  invalid h3 unit "lightyears" (expected one of km, m, rads, km2, m2, rads2)
 SELECT th3EdgeLength(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
     th3index '880326b88dfffff@2001-01-01')) IS NOT NULL;
