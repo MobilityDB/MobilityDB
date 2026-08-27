@@ -935,6 +935,124 @@ trgeometry_segments(const Temporal *temp, int *count)
 }
 
 /*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the temporal rigid geometry a reference geometry and a
+ * temporal pose make, whatever subtype the pose has
+ * @param[in] gs Reference geometry
+ * @param[in] temp Temporal pose
+ */
+static Temporal *
+geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp)
+{
+  assert(gs); assert(temp);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) geo_tposeinst_to_trgeo(gs, (const TInstant *) temp);
+    case TSEQUENCE:
+      return (Temporal *) geo_tposeseq_to_trgeo(gs, (const TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) geo_tposeseqset_to_trgeo(gs,
+        (const TSequenceSet *) temp);
+  }
+}
+
+/**
+ * @brief Return two temporal rigid geometries merged into one
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @details A temporal rigid geometry is a temporal pose carrying a reference
+ * geometry, and a merge rebuilds the temporal value from the poses of both.
+ * The rebuilt value carries no reference geometry of its own, so the body the
+ * operands share is attached to it: the merge of two rigid geometries is a
+ * rigid geometry, and reading its body is what a caller does next.
+ * @csqlfn #Temporal_merge()
+ */
+Temporal *
+trgeometry_merge(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Where one argument is null the answer is a copy of the other */
+  if (! temp1 && ! temp2)
+    return NULL;
+  if (! temp1)
+    return temporal_copy(temp2);
+  if (! temp2)
+    return temporal_copy(temp1);
+
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp1, NULL);
+  VALIDATE_TRGEOMETRY(temp2, NULL);
+  const GSERIALIZED *geo = trgeo_geom_p(temp1);
+  /* Two rigid geometries merge into one only where they are the same body */
+  if (! ensure_same_geom(geo, trgeo_geom_p(temp2)))
+    return NULL;
+
+  Temporal *tpose1 = trgeometry_to_tpose(temp1);
+  Temporal *tpose2 = trgeometry_to_tpose(temp2);
+  if (! tpose1 || ! tpose2)
+  {
+    if (tpose1) pfree(tpose1);
+    if (tpose2) pfree(tpose2);
+    return NULL;
+  }
+  Temporal *merged = temporal_merge(tpose1, tpose2);
+  pfree(tpose1); pfree(tpose2);
+  if (! merged)
+    return NULL;
+  Temporal *result = geo_tpose_to_trgeo(geo, merged);
+  pfree(merged);
+  return result;
+}
+
+/**
+ * @brief Return the temporal rigid geometries of an array merged into one
+ * @param[in] temparr Array of temporal rigid geometries
+ * @param[in] count Number of elements in the array
+ * @csqlfn #Temporal_merge_array()
+ */
+Temporal *
+trgeometry_merge_array(Temporal **temparr, int count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temparr, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  for (int i = 0; i < count; i++)
+    VALIDATE_TRGEOMETRY(temparr[i], NULL);
+
+  const GSERIALIZED *geo = trgeo_geom_p(temparr[0]);
+  /* Every body merged into one is the same body */
+  for (int i = 1; i < count; i++)
+    if (! ensure_same_geom(geo, trgeo_geom_p(temparr[i])))
+      return NULL;
+
+  Temporal **poses = palloc(sizeof(Temporal *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    poses[i] = trgeometry_to_tpose(temparr[i]);
+    if (! poses[i])
+    {
+      for (int j = 0; j < i; j++)
+        pfree(poses[j]);
+      pfree(poses);
+      return NULL;
+    }
+  }
+  Temporal *merged = temporal_merge_array(poses, count);
+  for (int i = 0; i < count; i++)
+    pfree(poses[i]);
+  pfree(poses);
+  if (! merged)
+    return NULL;
+  Temporal *result = geo_tpose_to_trgeo(geo, merged);
+  pfree(merged);
+  return result;
+}
+
+/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 

@@ -360,6 +360,72 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* Merging two temporal rigid geometries answers a rigid geometry, and the
+   * body it answers is the body they share. A value rebuilt from instants
+   * carries no reference geometry of its own, so a merge that does not attach
+   * one answers a value that claims to be a rigid geometry while holding no
+   * body: reading it aborts on the assertion where the build carries one, and
+   * runs off the end of the value where it does not. Temporally DISJOINT
+   * operands are what reaches the sequence-set path. */
+  {
+    const char *body = "POLYGON((0 0,1 0,1 1,0 1,0 0))";
+    Temporal *m1 = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]");
+    Temporal *m2 = trgeometry_in("Polygon((0 0,1 0,1 1,0 1,0 0));"
+      "[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]");
+    if (! m1 || ! m2)
+    {
+      printf("FAILED: the two rigid geometries to merge did not parse\n");
+      result = 1;
+    }
+    else
+    {
+      meos_errno_reset();
+      Temporal *merged = temporal_merge(m1, m2);
+      if (! merged)
+      {
+        printf("FAILED: merging two rigid geometries answered NULL, errno "
+          "%d\n", meos_errno());
+        result = 1;
+      }
+      else
+      {
+        /* Reading the body is what a caller does next, and it is what a
+         * bodiless answer cannot serve */
+        GSERIALIZED *geo = trgeometry_geom(merged);
+        char *wkt = geo ? geo_as_text(geo, 6) : NULL;
+        if (! wkt || strcmp(wkt, body) != 0)
+        {
+          printf("FAILED: the merged rigid geometry answers body %s, wanted "
+            "%s\n", wkt ? wkt : "none", body);
+          result = 1;
+        }
+        else
+          printf("OK: merging two rigid geometries keeps the body %s\n", wkt);
+        free(wkt); free(geo);
+
+        /* The array form takes the same path one call along */
+        Temporal *arr[2] = {m1, m2};
+        meos_errno_reset();
+        Temporal *marr = temporal_merge_array(arr, 2);
+        GSERIALIZED *ageo = marr ? trgeometry_geom(marr) : NULL;
+        char *awkt = ageo ? geo_as_text(ageo, 6) : NULL;
+        if (! awkt || strcmp(awkt, body) != 0)
+        {
+          printf("FAILED: merging an array of rigid geometries answers body "
+            "%s, wanted %s\n", awkt ? awkt : "none", body);
+          result = 1;
+        }
+        else
+          printf("OK: merging an array of rigid geometries keeps the body\n");
+        free(awkt); free(ageo); free(marr);
+        free(merged);
+      }
+    }
+    free(m1); free(m2);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 
