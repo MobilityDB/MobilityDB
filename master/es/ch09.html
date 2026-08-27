@@ -11,14 +11,14 @@ SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2001-01-01,
 -- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (5 5 5)@2001-01-05)
 SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-04, Point(4 4 4)@2001-01-05)', sqrt(3)));
--- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (4 4 4)@2001-01-05]
+-- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (4 4 4)@2001-01-05)
 </pre><pre class="programlisting">
 SELECT minTimeDeltaSimplify(tfloat '[1@2001-01-01, 2@2001-01-02, 3@2001-01-04,
   4@2001-01-05]', '1 day');
 -- [1@2001-01-01, 3@2001-01-04, 4@2001-01-05]
 SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-04, Point(5 5 5)@2001-01-05)', '1 day'));
--- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (5 5 5)@2001-01-05]
+-- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (5 5 5)@2001-01-05)
 </pre></li><li class="listitem"><a name="ttype_douglasPeuckerSimplify"></a><a class="indexterm" name="id5895"></a><a class="indexterm" name="id5898"></a><p>Simplifica un flotante o un punto temporal usando el <a class="ulink" href="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker" target="_top">algoritmo de Douglas-Peucker</a> <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 maxDistSimplify({tfloat,tgeompoint},maxdist float,
@@ -30,11 +30,9 @@ douglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,
 SELECT maxDistSimplify(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 3@2001-01-04,
   1@2001-01-05]', 1, false);
 -- [1@2001-01-01, 1@2001-01-03, 3@2001-01-04, 1@2001-01-05]
--- Synchronous distance by default for temporal points
 SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(3 1)@2001-01-03, Point(3 3)@2001-01-05, Point(5 1)@2001-01-06]', 2));
 -- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-05, POINT(5 1)@2001-01-06]
--- Spatial distance
 SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(3 1)@2001-01-03, Point(3 3)@2001-01-05, Point(5 1)@2001-01-06]', 2, false));
 -- [POINT(1 1)@2001-01-01, POINT(5 1)@2001-01-06]

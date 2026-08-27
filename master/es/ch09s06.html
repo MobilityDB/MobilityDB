@@ -36,7 +36,7 @@ SELECT getBin(2, 2);
 SELECT getBin(2, 2.5, 1.5);
 -- [1.5, 4)
 SELECT getBin('2001-01-04', interval '1 week');
--- [2001-01-01, 2001-01-08)
+-- [2001-01-01 08:00:00, 2001-01-08 08:00:00)
 SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 -- [2000-12-31, 2001-01-07)
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tile_functions"></a>Operaciones de mosaicos</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_valueTimeTiles"></a><a class="indexterm" name="id6254"></a><a class="indexterm" name="id6257"></a><a class="indexterm" name="id6260"></a><p>Devuelve el conjunto de mosaicos que cubre un cuadro delimitador temporal con mosaicos del mismo tamaño y/o duración <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
@@ -124,13 +124,13 @@ getValueTimeTile(v float,t timestamptz,vsize float,duration interval,
   vorigin float=0.0,torigin timestamptz='2000-01-03') → tbox
 </pre><p>Si el origen de las dimensiones de valores y/o de tiempo no se especifica, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</p><pre class="programlisting">
 SELECT getValueTile(15, 2);
--- TBOX ([14,16))
+-- TBOXFLOAT X([14, 16))
 SELECT getTboxTimeTile('2001-01-15', interval '2 days');
--- TBOX ([2001-01-15,2001-01-17))
+-- TBOX T([2001-01-13 08:00:00, 2001-01-15 08:00:00))
 SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days');
--- TBOX XT([14,16),[2001-01-15,2001-01-17))
+-- TBOXFLOAT XT([14, 16),[2001-01-13 08:00:00, 2001-01-15 08:00:00))
 SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02');
--- TBOX XT([15,17),[2001-01-14,2001-01-16))
+-- TBOXFLOAT XT([15, 17),[2001-01-14, 2001-01-16))
 </pre></li><li class="listitem"><a name="stbox_getSpaceTimeTile"></a><a class="indexterm" name="id6322"></a><a class="indexterm" name="id6325"></a><a class="indexterm" name="id6328"></a><p>Devuelve el mosaico espaciotemporal que cubre un punto y/o una marca de tiempo <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 getSpaceTile(point geometry,xsize float,[ysize float,zsize float],
@@ -144,9 +144,9 @@ getSpaceTimeTile(point geometry,time timestamptz,xsize float,
 SELECT getSpaceTile(geometry 'Point(1 1 1)', 2.0);
 -- STBOX Z((0,0,0),(2,2,2))
 SELECT getStboxTimeTile(timestamptz '2001-01-01', interval '2 days');
--- STBOX T([2001-01-01,2001-01-03))
+-- STBOX T([2000-12-30 08:00:00, 2001-01-01 08:00:00))
 SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days');
--- STBOX XT(((0,0),(2,2)),[2001-01-01, 2001-01-03))
+-- STBOX XT(((0,0),(2,2)),[2000-12-30 08:00:00, 2001-01-01 08:00:00))
 SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
   'Point(1 1)', '2001-01-02');
 -- STBOX XT(((1,1),(3,3)),[2000-12-31, 2001-01-02))
@@ -156,17 +156,18 @@ timeBins(temp,duration interval,torigin timestamptz='2000-01-03') → tstzspan[]
 </pre><p>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. Si no se especifica el origen de los valores, se establece por defecto en 0 para los rangos de valores y en el lunes 3 de enero de 2000 para los rangos de tiempo.</p><pre class="programlisting">
 SELECT valueBins(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}', 3);
--- {"[1, 3)","[4, 5)"}
+-- {"[0, 3)","[3, 6)"}
 SELECT valueBins(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05]', 3, 1);
--- {"[1, 4)","[4, 4]"}
+-- {"[1, 4)","[4, 7)"}
 </pre><pre class="programlisting">
 SELECT timeBins(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03, CCC@2000-01-04,
   AAA@2000-01-05}', '3 days');
--- {"[2000-01-01, 2000-01-02]","[2000-01-03, 2000-01-05]"}
+/* {"[1999-12-31 08:00:00, 2000-01-03 08:00:00)","[2000-01-03 08:00:00, 2000-01-06
+   08:00:00)"} */
 SELECT timeBins(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05]', '3 days', '2000-01-01');
--- {"[2000-01-01, 2000-01-04)","[2000-01-04, 2000-01-05)"}
+-- {"[2000-01-01, 2000-01-04)","[2000-01-04, 2000-01-07)"}
 </pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6364"></a><a class="indexterm" name="id6367"></a><a class="indexterm" name="id6370"></a><p>Devuelve una matriz de cuadros temporales obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y/o tiempo</p><pre class="programlisting">
 valueBoxes(tnumber,size number,vorigin number=0) → tbox[]
 timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]
@@ -175,22 +176,20 @@ valueTimeBoxes(tnumber,vsize number,tsize interval,vorigin number=0,
 </pre><p>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. Si el origen de la dimensión de valores y/o de tiempo no se especifica, se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</p><pre class="programlisting">
 SELECT valueBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}', 3);
-/* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-05])",
-   "TBOXINT XT([4, 5),[2000-01-04, 2000-01-04])"} */
+/* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-05])","TBOXINT XT([4, 5),[2000-01-04,
+   2000-01-04])"} */
 SELECT timeBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}', '3 days');
-/* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-02])",
-   "TBOXINT XT([1, 5),[2000-01-03, 2000-01-05])"} */
+/* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-03])","TBOXINT XT([1, 5),[2000-01-04,
+   2000-01-05])"} */
 SELECT valueTimeBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}', 3, '3 days');
-/* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-02])",
-   "TBOXINT XT([1, 2),[2000-01-03, 2000-01-05])",
-   "TBOXINT XT([4, 5),[2000-01-04, 2000-01-04])"} */
+/* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-03])","TBOXINT XT([1, 2),[2000-01-05,
+   2000-01-05])","TBOXINT XT([4, 5),[2000-01-04, 2000-01-04])"} */
 SELECT valueTimeBoxes(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05]', 3, '3 days', 1, '2000-01-01');
-/* {"TBOXFLOAT XT([1, 4),[2000-01-01, 2000-01-04))",
-   "TBOXFLOAT XT([1, 4),(2000-01-04, 2000-01-05])",
-   "TBOXFLOAT XT([4, 4],[2000-01-04, 2000-01-04])"} */
+/* {"TBOXFLOAT XT([1, 4),[2000-01-01, 2000-01-04))","TBOXFLOAT XT([1, 4),(2000-01-04,
+   2000-01-05])","TBOXFLOAT XT([4, 4],[2000-01-04, 2000-01-04])"} */
 </pre></li><li class="listitem"><a name="tspatial_spaceTimeBoxes"></a><a class="indexterm" name="id6378"></a><a class="indexterm" name="id6381"></a><a class="indexterm" name="id6384"></a><p>Devuelve una matriz de cuadros espaciotemporales obtenidos a partir de los instantes o segmentos de un punto temporal con respecto a un mosaico espacial y/o temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 spaceBoxes({tgeompoint,tgeometry,tpose,tpcpoint,trgeometry},xsize float,
@@ -206,29 +205,29 @@ spaceTimeBoxes({tgeompoint,tgeometry,tpose,tpcpoint,trgeometry},xsize float,
 </pre><p>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. Los argumentos <code class="varname">ysize</code> y <code class="varname">zsize</code> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <code class="varname">xsize</code>. El SRID de las coordenadas del mosaico se determina por el punto temporal y los tamaños se dan en las unidades del SRID. Si se proporciona el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales a los del punto temporal, de lo contrario se genera un error. Si el origen de la dimensión espacial y/o el tiempo no se especifica, su valor se establece por defecto en <code class="varname">'Point(0 0 0)'</code> y en el lunes 3 de enero de 2000, respectivamente. El argumento opcional <code class="varname">borderInc</code> indica si se incluye el borde superior de la extensión y, por lo tanto, se generan mosaicos adicionales que contienen el borde. Una pose temporal y un punto de nube de puntos temporal responden a estas funciones en el punto geométrico temporal al que se resuelve su posición, de modo que un valor con interpolación lineal se divide en mosaicos a lo largo de su trayectoria y no solo en sus instantes.</p><pre class="programlisting">
 SELECT spaceBoxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
   Point(1 1)@2000-01-03, Point(4 4)@2000-01-04, Point(1 1)@2000-01-05}', 3);
-/* {"STBOX XT(((1,1),(2,2)),[2000-01-01, 2000-01-05])",
-   "STBOX XT(((4,4),(4,4)),[2000-01-04, 2000-01-04])"} */
+/* {"STBOX XT(((1,1),(2,2)),[2000-01-01, 2000-01-05])","STBOX
+   XT(((4,4),(4,4)),[2000-01-04, 2000-01-04])"} */
 SELECT timeBoxes(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
   Point(1 1 1)@2000-01-03, Point(4 4 4)@2000-01-04, Point(1 1 1)@2000-01-05}',
   interval '2 days', '2000-01-01');
-/* {"STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01, 2000-01-02])",
-   "STBOX ZT(((1,1,1),(4,4,4)),[2000-01-03, 2000-01-04])",
-   "STBOX ZT(((1,1,1),(1,1,1)),[2000-01-05, 2000-01-05])"} */
+/* {"STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01, 2000-01-02])","STBOX
+   ZT(((1,1,1),(4,4,4)),[2000-01-03, 2000-01-04])","STBOX
+   ZT(((1,1,1),(1,1,1)),[2000-01-05, 2000-01-05])"} */
 SELECT spaceTimeBoxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
   Point(1 1)@2000-01-03, Point(4 4)@2000-01-04, Point(1 1)@2000-01-05}', 3, '3 days');
-/* {"STBOX XT(((1,1),(2,2)),[2000-01-01, 2000-01-02])",
-   "STBOX XT(((1,1),(1,1)),[2000-01-03, 2000-01-05])",
-   "STBOX XT(((4,4),(4,4)),[2000-01-04, 2000-01-04])"} */
+/* {"STBOX XT(((1,1),(2,2)),[2000-01-01, 2000-01-03])","STBOX
+   XT(((1,1),(1,1)),[2000-01-05, 2000-01-05])","STBOX XT(((4,4),(4,4)),[2000-01-04,
+   2000-01-04])"} */
 SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
   Point(1 1 1)@2000-01-03, Point(4 4 4)@2000-01-04, Point(1 1 1)@2000-01-05]', 3,
   interval '3 days', 'Point(1 1 1)', '2000-01-01');
-/* {"STBOX ZT(((1,1,1),(4,4,4)),[2000-01-01, 2000-01-04))",
-   "STBOX ZT(((1,1,1),(4,4,4)),(2000-01-04, 2000-01-05])",
-   "STBOX ZT(((4,4,4),(4,4,4)),[2000-01-04, 2000-01-04])"} */
+/* {"STBOX ZT(((1,1,1),(4,4,4)),[2000-01-01, 2000-01-04))","STBOX
+   ZT(((1,1,1),(4,4,4)),(2000-01-04, 2000-01-05])","STBOX
+   ZT(((4,4,4),(4,4,4)),[2000-01-04, 2000-01-04])"} */
 SELECT spaceBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', 2.0);
-/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02))",
-   "STBOX XT(((2,2),(3,3)),[2001-01-02, 2001-01-03])"} */
+/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02))","STBOX
+   XT(((2,2),(3,3)),[2001-01-02, 2001-01-03])"} */
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="split_functions"></a>Operaciones de división</h3></div></div></div><p>Estas funciones fragmentan un valor temporal con respecto a una secuencia de intervalos (ver la <a class="xref" href="ch09s06.html#bin_functions" title="Operaciones de intervalos">“Operaciones de intervalos”</a>) o un mosaico multidimensional (ver la <a class="xref" href="ch09s06.html#tile_functions" title="Operaciones de mosaicos">“Operaciones de mosaicos”</a>).</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueSplit"></a><a class="indexterm" name="id6410"></a><a class="indexterm" name="id6413"></a><a class="indexterm" name="id6416"></a><p>Fragmenta un número temporal con respecto a intervalos de valores y/o de tiempo <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 valueSplit(tnumber,size number,origin number=0) → {(number,tnumber)}
