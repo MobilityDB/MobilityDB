@@ -8,9 +8,9 @@
 
  symbol.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="bin_functions"></a>Bin Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_bins"></a><a class="indexterm" name="id6750"></a><p>Return an array of bins that cover a value or time span with bins of the same size or duration
 </p><pre class="programlisting">
-bins(numspans,size number,origin number=0) → span[]
-bins(datespans,duration interval,origin date='2000-01-03') → span[]
-bins(tstzspans,duration interval,origin timestamptz='2000-01-03') → span[]
+bins(numspans,vsize number,vorigin number=0) → span[]
+bins(datespans,tsize interval,torigin date='2000-01-03') → span[]
+bins(tstzspans,tsize interval,torigin timestamptz='2000-01-03') → span[]
 </pre><p>If the origin is not specified, it is set by default to 0 for value spans and Monday, January 3, 2000 for time spans.</p><pre class="programlisting">
 SELECT bins(floatspan '[-10, -1]', 2.5, -7);
 -- {"[-12, -9.5)","[-9.5, -7)","[-7, -4.5)","[-4.5, -2)","[-2, 0.5)"}
@@ -45,9 +45,9 @@ SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tile_functions"></a>Tile Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_valueTimeTiles"></a><a class="indexterm" name="id6769"></a><a class="indexterm" name="id6772"></a><a class="indexterm" name="id6775"></a><p>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
 </p><pre class="programlisting">
-valueTiles(tbox,vsize float,vorigin float=0) → {(index,tile)}
+valueTiles(tbox,vsize float,vorigin float=0.0) → {(index,tile)}
 timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03') → {(index,tile)}
-valueTimeTiles(tbox,vsize float,duration interval,vorigin float=0,
+valueTimeTiles(tbox,vsize float,duration interval,vorigin float=0.0,
   torigin timestamptz='2000-01-03') → {(index,tile)}
 </pre><p>The result is a set of pairs <code class="varname">(index,tile)</code>. If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</p><pre class="programlisting">
 SELECT (gr).index, (gr).tile
@@ -125,10 +125,10 @@ SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
 </pre></li><li class="listitem"><a name="tbox_getValueTimeTile"></a><a class="indexterm" name="id6827"></a><a class="indexterm" name="id6830"></a><a class="indexterm" name="id6833"></a><p>Return the temporal tile that covers a value and/or a timestamp <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
 </p><pre class="programlisting">
-getValueTile(value float,vsize float,vorigin float=0.0) → tbox
+getValueTile(v float,vsize float,vorigin float=0.0) → tbox
 getTboxTimeTile(time timestamptz,duration interval,
   torigin timestamptz='2000-01-03') → tbox
-getValueTimeTile(value float,time timestamptz,size float,duration interval,
+getValueTimeTile(v float,t timestamptz,vsize float,duration interval,
   vorigin float=0.0,torigin timestamptz='2000-01-03') → tbox
 </pre><p>If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</p><pre class="programlisting">
 SELECT getValueTile(15, 2);
@@ -179,7 +179,7 @@ SELECT timeBins(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
 </pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6890"></a><a class="indexterm" name="id6893"></a><a class="indexterm" name="id6896"></a><p>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</p><pre class="programlisting">
 valueBoxes(tnumber,size number,vorigin number=0) → tbox[]
 timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]
-valueTimeBoxes(tnumber,size number,duration interval,vorigin number=0,
+valueTimeBoxes(tnumber,vsize number,tsize interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → tbox[]
 </pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</p><pre class="programlisting">
 SELECT valueBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,

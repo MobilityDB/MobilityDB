@@ -22,7 +22,7 @@ SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
    [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-03,
    {"location": "Point(1 1)", "vehicleId": 1}@2001-01-04]} */
 </pre></li><li class="listitem"><a name="tjsonbSeq"></a><a class="indexterm" name="id10825"></a><p>Constructor de valores JSONB temporales del subtipo secuencia</p><pre class="programlisting">
-tjsonbSeq(tjsonbInst[]},leftInc boolean=true,rightInc boolean=true) →tjsonbSeq
+tjsonbSeq(tjsonbInst[],lowerInc boolean=true,upperInc boolean=true) → tjsonbSeq
 </pre><pre class="programlisting">
 SELECT tjsonbSeq(ARRAY[tjsonb '"{\"vehicleId\": 1,
   \"location\": \"Point(1 1)\"}"@2001-01-01',

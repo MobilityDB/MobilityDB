@@ -19,8 +19,8 @@ SELECT asEWKT(setSRID(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2
   3812));
 -- SRID=3812;{"Cbuffer(POINT(1 1),0.5)", "Cbuffer(POINT(2 2),1)"}
 </pre></li><li class="listitem"><a name="spatialset_transform"></a><a class="indexterm" name="id2654"></a><a class="indexterm" name="id2657"></a><p>Transform to a spatial reference identifier</p><pre class="programlisting">
-transform(spatialset,to_srid integer) → spatialset
-transformPipeline(spatialset,pipeline text,to_srid integer,
+transform(spatialset,srid integer) → spatialset
+transformPipeline(spatialset,pipeline text,srid integer,
   is_forward boolean=true) → spatialset
 </pre><p>The <code class="varname">transform</code> function specifies the transformation with a target SRID. An error is raised when the input set has an unknown SRID (represented by 0). The <code class="varname">transformPipeline</code> function specifies the transformation with a coordinate transformation pipeline in the following format:</p><p><code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code></p><p>The SRID of the input set is ignored, and the SRID of the output set will be set to zero unless a value is provided via the optional <code class="varname">to_srid</code> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</p><pre class="programlisting">
 SELECT asEWKT(transform(geomset 'SRID=4326;

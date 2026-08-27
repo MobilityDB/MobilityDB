@@ -19,8 +19,8 @@ SELECT asEWKT(setSRID(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2
   3812));
 -- SRID=3812;{"Cbuffer(POINT(1 1),0.5)", "Cbuffer(POINT(2 2),1)"}
 </pre></li><li class="listitem"><a name="spatialset_transform"></a><a class="indexterm" name="id2158"></a><a class="indexterm" name="id2161"></a><p>Transforma a una referencia espacial diferente</p><pre class="programlisting">
-transform(spatialset,to_srid integer) → spatialset
-transformPipeline(spatialset,pipeline text,to_srid integer,
+transform(spatialset,srid integer) → spatialset
+transformPipeline(spatialset,pipeline text,srid integer,
   is_forward boolean=true) → spatialset
 </pre><p>La función <code class="varname">transform</code> especifica la transformación con un SRID de destino. Se genera un error cuando el conjunto tiene un SRID desconocido (representado por 0). La función <code class="varname">transformPipeline</code> especifica la transformación con una canalización de transformación de coordenadas en el siguiente formato:</p><p><code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code></p><p>El SRID del conjunto de entrada se ignora y el SRID de la conjunto de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <code class="varname">to_srid</code>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</p><pre class="programlisting">
 SELECT asEWKT(transform(geomset 'SRID=4326;

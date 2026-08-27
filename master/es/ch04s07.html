@@ -16,8 +16,8 @@ SELECT tgeompoint('Point(0 0)', tstzspan '[2001-01-01, 2001-01-02]');
 SELECT tgeography('SRID=7844;Point(0 0)',
   tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}', 'step');
 </pre></li><li class="listitem"><a name="ttypeSeq"></a><a class="indexterm" name="id3443"></a><p>Constructores para tipos temporales de subtipo secuencia</p><pre class="programlisting">
-ttypeSeq(ttypeInst[],interp text={'step','linear'},leftInc boolean=true,
-  rightInc boolean=true) → ttypeSeq
+ttypeSeq(ttypeInst[],interp text={'step','linear'},lowerInc boolean=true,
+  upperInc boolean=true) → ttypeSeq
 </pre><p>Estos constructores tienen un primer argumento obligatorio, que es una matriz de valores de los valores instantáneos correspondientes y argumentos opcionales adicionales. El segundo argumento establece la interpolación. Si no se proporciona el argumento, es por defecto escalonada para los tipos de base base discretos como los enteros y es lineal para tipos de base continuous como los flotantes. Se genera un error cuando se establece la interpolación lineal para valores temporales con tipos de base discretos. Para secuencias continuas, el tercero y el cuarto argumentos son valores booleanos que indican, respectivamente, si los límites izquierdo y derecho son inclusivos o exclusivos. Se supone que estos argumentos son verdaderos de forma predeterminada si no se especifican.</p><pre class="programlisting">
 SELECT tboolSeq(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00'],
   'discrete');

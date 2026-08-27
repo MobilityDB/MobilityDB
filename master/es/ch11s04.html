@@ -13,8 +13,8 @@ SELECT tnpoint('Npoint(1, 0.5)', tstzspan '[2001-01-01, 2001-01-02]');
 SELECT tnpoint('Npoint(1, 0.2)', tstzspanset '{[2001-01-01, 2001-01-03]}', 'step');
 -- Interp=Step;{[NPoint(1,0.2)@2001-01-01, NPoint(1,0.2)@2001-01-03]}
 </pre></li><li class="listitem"><a name="tnpointSeq"></a><a class="indexterm" name="id7106"></a><p>Constructor para puntos de red temporal de subtipo secuencia</p><pre class="programlisting">
-tnpointSeq(tnpointInst[],interp text={'step','linear'},leftInc boolean=true,
-  rightInc boolean=true) → tnpointSeq
+tnpointSeq(tnpointInst[],interp text={'step','linear'},lower_inc boolean=true,
+  upper_inc boolean=true) → tnpointSeq
 </pre><pre class="programlisting">
 SELECT tnpointSeq(ARRAY[tnpoint 'Npoint(1, 0.3)@2001-01-01', 'Npoint(1, 0.5)@2001-01-02',
   'Npoint(1, 0.5)@2001-01-03']);

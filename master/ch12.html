@@ -106,7 +106,7 @@ SELECT asEWKT(setSRID(cbuffer 'Cbuffer(Point(0 0),1)', 4326));
 -- SRID=4326;Cbuffer(POINT(0 0),1)
 </pre></li><li class="listitem"><a name="cbuffer_transform"></a><a class="indexterm" name="id8290"></a><a class="indexterm" name="id8293"></a><p>Transform to a spatial reference identifier</p><pre class="programlisting">
 transform(cbuffer,integer) → cbuffer
-transformPipeline(cbuffer,pipeline text,to_srid integer,
+transformPipeline(cbuffer,pipeline text,srid integer,
   is_forward boolean=true) → cbuffer
 </pre><p>The <code class="varname">transform</code> function specifies the transformation with a target SRID. An error is raised when the input circular buffer has an unknown SRID (represented by 0).</p><p>The <code class="varname">transformPipeline</code> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</p><p><code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code></p><p>The SRID of the input circular buffer is ignored, and the SRID of the output circular buffer will be set to zero unless a value is provided via the optional <code class="varname">to_srid</code> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</p><pre class="programlisting">
 SELECT asEWKT(transform(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)', 3812));
