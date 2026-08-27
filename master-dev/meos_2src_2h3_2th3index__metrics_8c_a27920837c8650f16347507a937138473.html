@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: h3_edge_length_meos</title>
+<title>MobilityDB: tgeogpoint_great_circle_distance_in</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,9 +80,9 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2th3index__metrics_8c_a23cad0886d306461de90d1a601bf3a45.html#a23cad0886d306461de90d1a601bf3a45">h3_cell_area_meos</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2h3_2th3index__metrics_8c_ab6be70262b3a51edef8f88aa95ec2c6d.html#ab6be70262b3a51edef8f88aa95ec2c6d">h3_edge_length_meos</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2th3index__metrics_8c_ab6be70262b3a51edef8f88aa95ec2c6d.html#ab6be70262b3a51edef8f88aa95ec2c6d">h3_edge_length_meos</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2th3index__metrics_8c_a61783d888bc5b5111b373b2a51039398.html#a61783d888bc5b5111b373b2a51039398">h3_gs_great_circle_distance_meos</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2th3index__metrics_8c_a27920837c8650f16347507a937138473.html#a27920837c8650f16347507a937138473">tgeogpoint_great_circle_distance_in</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2h3_2th3index__metrics_8c_a27920837c8650f16347507a937138473.html#a27920837c8650f16347507a937138473">tgeogpoint_great_circle_distance_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__h3__metrics_gabe1030957df7d8c2c7a793be451fb740.html#gabe1030957df7d8c2c7a793be451fb740">tgeogpoint_great_circle_distance_km</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__h3__metrics_ga1ba40557c798888524117fd99968bdab.html#ga1ba40557c798888524117fd99968bdab">tgeogpoint_great_circle_distance_m</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__h3__metrics_gadfd0a1abedc26ae0ccf022b29d608ba5.html#gadfd0a1abedc26ae0ccf022b29d608ba5">tgeogpoint_great_circle_distance_rads</a></td></tr>
@@ -97,23 +97,32 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab6be70262b3a51edef8f88aa95ec2c6d" name="ab6be70262b3a51edef8f88aa95ec2c6d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab6be70262b3a51edef8f88aa95ec2c6d">&#9670;&#160;</a></span>h3_edge_length_meos()</h2>
+<a id="a27920837c8650f16347507a937138473" name="a27920837c8650f16347507a937138473"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27920837c8650f16347507a937138473">&#9670;&#160;</a></span>tgeogpoint_great_circle_distance_in()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double h3_edge_length_meos </td>
+          <td class="memname">static <a class="el" href="structTemporal.html">Temporal</a> * tgeogpoint_great_circle_distance_in </td>
           <td>(</td>
-          <td class="paramtype">H3Index&#160;</td>
-          <td class="paramname"><em>edge</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="th3index__internal_8h_a42163dde6d2a853976e074583263b4fe.html#a42163dde6d2a853976e074583263b4fe">H3Unit</a>&#160;</td>
-          <td class="paramname"><em>unit</em>&#160;</td>
+          <td class="paramname"><em>u</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -121,7 +130,14 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return the per-instant great-circle distance between two temporal geodetic points in the given H3 unit. </p>
 
 </div>
 </div>
