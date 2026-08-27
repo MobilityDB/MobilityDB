@@ -267,3 +267,47 @@ SELECT round(abs(valueAtTimestamp(tDistance(
   '2001-01-01 12:00'), geometry 'MultiLinestring((0 5,0 6),(11 5,11 6))'))::numeric, 9);
 
 -------------------------------------------------------------------------------
+-- The distance of a rigid geometry to a geometry stands at their separation
+-- while they are apart and at zero once they meet, so the join between the
+-- two is a kink and the moment of contact is a point of the answer. The rod
+-- below covers y in [c-0.2, c+0.2] at centre height c and travels from c = 0
+-- to c = 6, so it meets the band y in [4,5] exactly while c lies in
+-- [3.8, 5.2], that is from 15:12 to 20:48 of the first day.
+-------------------------------------------------------------------------------
+
+SELECT round(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 6),0)@2001-01-02]',
+  geometry 'Polygon((-0.5 4,0.5 4,0.5 5,-0.5 5,-0.5 4))'),
+  '2001-01-01 15:11:00')::numeric, 6);
+
+SELECT round(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 6),0)@2001-01-02]',
+  geometry 'Polygon((-0.5 4,0.5 4,0.5 5,-0.5 5,-0.5 4))'),
+  '2001-01-01 15:30:00')::numeric, 6);
+
+-- A point target and a linestring target reach the same floor at the same time.
+
+SELECT round(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 6),0)@2001-01-02]',
+  geometry 'Point(0 4)'), '2001-01-01 15:30:00')::numeric, 6);
+
+SELECT round(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((-3 -0.2,3 -0.2,3 0.2,-3 0.2,-3 -0.2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 6),0)@2001-01-02]',
+  geometry 'Linestring(-1 4,1 4)'), '2001-01-01 15:30:00')::numeric, 6);
+
+-- Where the closest features change at the moment of contact the walk already
+-- answers it exactly, and a body that only grazes reaches the floor at a
+-- single instant. A square covering y in [c-1, c+1] travelling from c = 0 to
+-- c = 1 touches the band y in [2,3] at the last instant alone.
+
+SELECT round(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 3),0)@2001-01-02]',
+  geometry 'Polygon((-1 2,1 2,1 3,-1 3,-1 2))'),
+  '2001-01-01 08:00:00')::numeric, 6);
+
+SELECT round(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 1),0)@2001-01-02]',
+  geometry 'Polygon((-1 2,1 2,1 3,-1 3,-1 2))'),
+  '2001-01-01 23:59:00')::numeric, 6);
+
+-------------------------------------------------------------------------------
