@@ -10,11 +10,13 @@ on:
   push:
     paths:
       - '.github/workflows/check-doc-reference.yml'
+      - '.github/actions/apt-resilient/**'
       - 'tools/doc/**'
       - 'doc/**'
   pull_request:
     paths:
       - '.github/workflows/check-doc-reference.yml'
+      - '.github/actions/apt-resilient/**'
       - 'tools/doc/**'
       - 'doc/**'
 
@@ -27,6 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/apt-resilient
 
       - name: Install libxml2-utils
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils

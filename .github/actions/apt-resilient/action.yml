@@ -2,11 +2,12 @@
 
 name: Resilient apt
 description: >
-  Give apt a retry count and a transfer timeout, so that a package mirror which
-  stalls mid-download fails the transfer and is retried instead of holding the
-  job until the runner is killed. The settings land in an apt configuration
-  file, so every apt call the job makes afterwards reads them, including the
-  ones inside other actions.
+  Make apt answer for the packages this project installs and for nothing else.
+  A retry count and a transfer timeout turn a mirror that stalls mid-download
+  into a failed transfer that is retried, and the package sources the build
+  never reads are removed so that an outage in one of them is not an outage in
+  the build. The settings land in an apt configuration file, so every apt call
+  the job makes afterwards reads them, including the ones inside other actions.
 
 runs:
   using: composite
@@ -23,3 +24,26 @@ runs:
         Acquire::https::Timeout "30";
         Acquire::ftp::Timeout "30";
         CONF
+
+    - name: Drop the package sources the build does not read
+      shell: bash
+      run: |
+        # The runner image ships Microsoft's azure-cli and prod repositories, and
+        # every package this project installs comes from the Ubuntu archives, so
+        # those two repositories answer for nothing here. They do fail: from the
+        # Azure runners they return `403  Forbidden`, which makes `apt-get update`
+        # exit 100 and fails a step that asked only for Ubuntu packages.
+        #
+        # Retries and timeouts above cannot reach that failure — a 403 is an
+        # immediate, unchanging answer, so every retry repeats it. Removing the
+        # sources is what removes the dependency; apt then reports on exactly the
+        # repositories the build reads, and a genuine Ubuntu archive failure still
+        # fails the step.
+        sources=$(grep -rl 'packages\.microsoft\.com' \
+          /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null || true)
+        if [ -n "$sources" ]; then
+          echo "$sources" | while IFS= read -r source; do
+            echo "removing unread package source: $source"
+            sudo rm -f "$source"
+          done
+        fi
