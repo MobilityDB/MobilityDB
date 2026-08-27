@@ -557,19 +557,20 @@ SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
 
 	<sect1 xml:id="th3_metrics">
 		<title>Metrics</title>
-		<para>The three metric functions take an optional unit argument. For areas: <varname>km2</varname> (default), <varname>m2</varname>, or <varname>rads2</varname>. For lengths: <varname>km</varname> (default), <varname>m</varname>, or <varname>rads</varname>. Passing an area unit to a length function (or vice-versa) raises an error.</para>
+		<para>The three metric functions take an optional unit argument. For areas: <varname>m2</varname> (default), <varname>km2</varname>, or <varname>rads2</varname>. For lengths: <varname>km</varname> (default), <varname>m</varname>, or <varname>rads</varname>. Passing an area unit to a length function (or vice-versa) raises an error.</para>
 		<itemizedlist>
 			<listitem xml:id="th3_h3_cell_area">
 				<indexterm significance="normal"><primary><varname>cellArea</varname></primary></indexterm>
-				<para>Return the temporal area of each cell in a trajectory, in the requested unit</para>
+				<para>Return the temporal area of each cell in a trajectory, in square metres or in the requested unit</para>
 				<programlisting xml:space="preserve" format="linespecific">
-cellArea(th3index,text='km2') → tfloat
+cellArea(th3index) → tfloat
+cellArea(th3index,text) → tfloat
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
--- 4.441914270110932@2001-01-01
-SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01', 'm2');
 -- 4441914.270110932@2001-01-01
+SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01', 'km2');
+-- 4.441914270110932@2001-01-01
 </programlisting>
 			</listitem>
 

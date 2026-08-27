@@ -16,11 +16,16 @@
 -- per-instant adapters being filled in.
 
 -------------------------------------------------------------------------------
--- cellArea(th3index, text) — lift_with_const
+-- cellArea(th3index) and cellArea(th3index, text) — lift_with_const
 -------------------------------------------------------------------------------
 
--- Default unit ('km2')
-SELECT cellArea(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
+-- The one-argument form answers square metres, the unit the DggsCellOps
+-- cell_area slot declares, so it agrees with 'm2' and differs from 'km2'
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01')
+  = cellArea(th3index '831c02fffffffff@2001-01-01', 'm2');
+SELECT cellArea(th3index '831c02fffffffff@2001-01-01')
+  = cellArea(th3index '831c02fffffffff@2001-01-01', 'km2');
+SELECT round(startValue(cellArea(th3index '831c02fffffffff@2001-01-01'))::numeric, 1);
 
 -- All three valid area units
 SELECT cellArea(th3index '831c02fffffffff@2001-01-01', 'km2')
