@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: dggs_cellops</title>
+<title>MobilityDB: dggs_lonlat_to_xyz</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,9 +80,9 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_ad0f076f07cdb6e19430f3b4a98d0b46c.html#ad0f076f07cdb6e19430f3b4a98d0b46c">dggs_arc_lat_extreme</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8c_aae3db76ef453387d197b78005cd4f4b7.html#aae3db76ef453387d197b78005cd4f4b7">dggs_cellops</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_aae3db76ef453387d197b78005cd4f4b7.html#aae3db76ef453387d197b78005cd4f4b7">dggs_cellops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a4915b12a2d955b3f1b1439a6df5db3fa.html#a4915b12a2d955b3f1b1439a6df5db3fa">dggs_lonlat_boundary_set_box</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_abdcaf38080f331bc15e1895012c7f104.html#abdcaf38080f331bc15e1895012c7f104">dggs_lonlat_to_xyz</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8c_abdcaf38080f331bc15e1895012c7f104.html#abdcaf38080f331bc15e1895012c7f104">dggs_lonlat_to_xyz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a247c9888dc13c198714e48d4e637f9b1.html#a247c9888dc13c198714e48d4e637f9b1">ensure_tcellindex_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cellindex_ga3d10825c6d79705520fbbcb81afed026.html#ga3d10825c6d79705520fbbcb81afed026">tcellindex_cell_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cellindex_ga8321acc4b9730fbd038a7284ac7aa91f.html#ga8321acc4b9730fbd038a7284ac7aa91f">tcellindex_cell_to_boundary</a></td></tr>
@@ -97,24 +97,47 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aae3db76ef453387d197b78005cd4f4b7" name="aae3db76ef453387d197b78005cd4f4b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae3db76ef453387d197b78005cd4f4b7">&#9670;&#160;</a></span>dggs_cellops()</h2>
+<a id="abdcaf38080f331bc15e1895012c7f104" name="abdcaf38080f331bc15e1895012c7f104"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdcaf38080f331bc15e1895012c7f104">&#9670;&#160;</a></span>dggs_lonlat_to_xyz()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="structDggsCellOps.html">DggsCellOps</a> * dggs_cellops </td>
+          <td class="memname">static void dggs_lonlat_to_xyz </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>temptype</em></td><td>)</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>lon</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>lat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>xyz</em>[3]&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return the operations descriptor for a temporal cell-index type. </p>
-<p >Return the operations descriptor for a temporal cell-index type, or raise an error if <code>temptype</code> is not a (compiled-in) DGGS type. </p>
+<p>Return in the last argument the unit vector of a lon/lat position. </p>
 
 </div>
 </div>

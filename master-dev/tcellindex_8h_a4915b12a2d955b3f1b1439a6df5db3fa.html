@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_tcellindex_type</title>
+<title>MobilityDB: dggs_lonlat_boundary_set_box</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,32 +80,92 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8h_aae3db76ef453387d197b78005cd4f4b7.html#aae3db76ef453387d197b78005cd4f4b7">dggs_cellops</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcellindex_8h_a4915b12a2d955b3f1b1439a6df5db3fa.html#a4915b12a2d955b3f1b1439a6df5db3fa">dggs_lonlat_boundary_set_box</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8h_a4915b12a2d955b3f1b1439a6df5db3fa.html#a4915b12a2d955b3f1b1439a6df5db3fa">dggs_lonlat_boundary_set_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8h_a8d82447b587f0f0f407186ef555637c2.html#a8d82447b587f0f0f407186ef555637c2">DggsCellOps</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8h_a247c9888dc13c198714e48d4e637f9b1.html#a247c9888dc13c198714e48d4e637f9b1">ensure_tcellindex_type</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcellindex_8h_a247c9888dc13c198714e48d4e637f9b1.html#a247c9888dc13c198714e48d4e637f9b1">ensure_tcellindex_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8h_a82b2382e13e4a4bb3c2b4d7f23c57ba2.html#a82b2382e13e4a4bb3c2b4d7f23c57ba2">tcellindex_type</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a247c9888dc13c198714e48d4e637f9b1" name="a247c9888dc13c198714e48d4e637f9b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a247c9888dc13c198714e48d4e637f9b1">&#9670;&#160;</a></span>ensure_tcellindex_type()</h2>
+<a id="a4915b12a2d955b3f1b1439a6df5db3fa" name="a4915b12a2d955b3f1b1439a6df5db3fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4915b12a2d955b3f1b1439a6df5db3fa">&#9670;&#160;</a></span>dggs_lonlat_boundary_set_box()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool ensure_tcellindex_type </td>
+          <td class="memname">void dggs_lonlat_boundary_set_box </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>type</em></td><td>)</td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>lons</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>lats</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>north_pole</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>south_pole</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>xmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>ymin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>xmax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>ymax</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Ensure that <code>type</code> is a temporal DGGS cell-index type, or raise an error. </p>
-<p >Ensure that <code>type</code> is a temporal DGGS cell-index type, or raise an error. </p>
+<p>Return in the last four arguments the lon/lat bounding box of a cell boundary given as a closed ring of vertices. </p>
+<p >The box CONTAINS the cell, which the vertices alone do not establish. A cell edge is a geodesic and reaches a latitude beyond both of the vertices it joins, so every edge contributes its own extreme. A cell holding a pole reaches that pole and spans every longitude. A cell crossing the antimeridian has vertex longitudes near both <code>-180</code> and <code>+180</code>, whose plain minimum and maximum name the COMPLEMENT of the cell rather than the cell; it takes the full longitude range, which contains the cell at the cost of a wider box. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">lons,lats</td><td>Vertices of the boundary, in degrees </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of vertices </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">north_pole,south_pole</td><td>Whether the cell holds each pole </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">xmin,ymin,xmax,ymax</td><td>The box </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

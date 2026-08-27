@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: dggs_cellops</title>
+<title>MobilityDB: dggs_arc_lat_extreme</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,8 +79,8 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_ad0f076f07cdb6e19430f3b4a98d0b46c.html#ad0f076f07cdb6e19430f3b4a98d0b46c">dggs_arc_lat_extreme</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8c_aae3db76ef453387d197b78005cd4f4b7.html#aae3db76ef453387d197b78005cd4f4b7">dggs_cellops</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcellindex_8c_ad0f076f07cdb6e19430f3b4a98d0b46c.html#ad0f076f07cdb6e19430f3b4a98d0b46c">dggs_arc_lat_extreme</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_aae3db76ef453387d197b78005cd4f4b7.html#aae3db76ef453387d197b78005cd4f4b7">dggs_cellops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a4915b12a2d955b3f1b1439a6df5db3fa.html#a4915b12a2d955b3f1b1439a6df5db3fa">dggs_lonlat_boundary_set_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_abdcaf38080f331bc15e1895012c7f104.html#abdcaf38080f331bc15e1895012c7f104">dggs_lonlat_to_xyz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcellindex_8c_a247c9888dc13c198714e48d4e637f9b1.html#a247c9888dc13c198714e48d4e637f9b1">ensure_tcellindex_type</a></td></tr>
@@ -97,24 +97,62 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aae3db76ef453387d197b78005cd4f4b7" name="aae3db76ef453387d197b78005cd4f4b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae3db76ef453387d197b78005cd4f4b7">&#9670;&#160;</a></span>dggs_cellops()</h2>
+<a id="ad0f076f07cdb6e19430f3b4a98d0b46c" name="ad0f076f07cdb6e19430f3b4a98d0b46c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0f076f07cdb6e19430f3b4a98d0b46c">&#9670;&#160;</a></span>dggs_arc_lat_extreme()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="structDggsCellOps.html">DggsCellOps</a> * dggs_cellops </td>
+          <td class="memname">static bool dggs_arc_lat_extreme </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>temptype</em></td><td>)</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>a</em>[3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>b</em>[3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>north</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return the operations descriptor for a temporal cell-index type. </p>
-<p >Return the operations descriptor for a temporal cell-index type, or raise an error if <code>temptype</code> is not a (compiled-in) DGGS type. </p>
+<p>Return the latitude extreme of the geodesic arc joining two points. </p>
+<p >The great circle through <code>a</code> and <code>b</code> has normal <code>n = a x b</code>, and every point <code>p</code> on it satisfies <code>p . n = 0</code>. Maximizing <code>p_z</code> under that constraint gives <code>p* = normalize(z - n_z * n)</code>, whose latitude is the highest the circle reaches and <code>-p*</code> the lowest. Only an extreme falling INSIDE the arc counts, which is the case exactly when it lies on the same side of both endpoints, so the two half-space tests <code>(a x p*) . n &gt; 0</code> and <code>(p* x b) . n &gt; 0</code> decide it. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">a,b</td><td>Endpoints of the arc, as unit vectors </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">north</td><td>True for the northern extreme, false for the southern </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Latitude in degrees, written only when the extreme lies inside the arc </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True when the extreme lies inside the arc </dd></dl>
 
 </div>
 </div>
