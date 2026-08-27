@@ -2,7 +2,7 @@ var searchData=
 [
   ['offset_0',['offset',['../structPCDimensionSpec_a21950d10c93d95e63bae2e6c14802ae8.html#a21950d10c93d95e63bae2e6c14802ae8',1,'PCDimensionSpec']]],
   ['oid_5fmeostype_1',['oid_meostype',['../structmobilitydb__constants_ab115ec3eaedc8d1362bfbcbd7bc88dab.html#ab115ec3eaedc8d1362bfbcbd7bc88dab',1,'mobilitydb_constants']]],
-  ['op_2',['op',['../structRelateOperands_a9811a7883c525e0c7760499f1b9b0938.html#a9811a7883c525e0c7760499f1b9b0938',1,'RelateOperands::op()'],['../structOpCase_ad8fddd17b768de4720834f04fe22076e.html#ad8fddd17b768de4720834f04fe22076e',1,'OpCase::op()']]],
+  ['op_2',['op',['../structRelateOperands_a9811a7883c525e0c7760499f1b9b0938.html#a9811a7883c525e0c7760499f1b9b0938',1,'RelateOperands::op()'],['../structRelateCtx_afc8640daa7ab7dff0000d31bf8b9c0b5.html#afc8640daa7ab7dff0000d31bf8b9c0b5',1,'RelateCtx::op()'],['../structOpCase_ad8fddd17b768de4720834f04fe22076e.html#ad8fddd17b768de4720834f04fe22076e',1,'OpCase::op()']]],
   ['oper_3',['oper',['../structoid__meosoper__entry_a34ca3f2cf760bec93ede077b2b608c0d.html#a34ca3f2cf760bec93ede077b2b608c0d',1,'oid_meosoper_entry']]],
   ['oper_5foid_5fargs_4',['oper_oid_args',['../structmobilitydb__constants_af4ab4f29e78da5f82aed2d0dabd54281.html#af4ab4f29e78da5f82aed2d0dabd54281',1,'mobilitydb_constants']]],
   ['oproid_5',['oproid',['../structoid__meosoper__entry_a8adb88a8e52a4e728f5419dd633eb78a.html#a8adb88a8e52a4e728f5419dd633eb78a',1,'oid_meosoper_entry']]],

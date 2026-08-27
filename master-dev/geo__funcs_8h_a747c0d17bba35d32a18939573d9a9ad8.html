@@ -136,6 +136,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a26c9915acdbe188b513aa2cb7d525362.html#a26c9915acdbe188b513aa2cb7d525362">meos_relate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a5b730401413ce3196bcf928b1aefd042.html#a5b730401413ce3196bcf928b1aefd042">meos_relate_pattern</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a747c0d17bba35d32a18939573d9a9ad8.html#a747c0d17bba35d32a18939573d9a9ad8">meos_spatialrel</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8c7c150ee032d76c797920948aa89b59.html#a8c7c150ee032d76c797920948aa89b59">meos_spatialrel_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa728384d19ca3f96812a9fe2f3bec87d.html#aa728384d19ca3f96812a9fe2f3bec87d">mline_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a510f8313bd5310b2fdacef6db43e7ebe.html#a510f8313bd5310b2fdacef6db43e7ebe">point_in_polygon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80">point_in_polygon_index</a></td></tr>
@@ -143,6 +144,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa2f4628979203441083bd84d2c0994b0.html#aa2f4628979203441083bd84d2c0994b0">point_on_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8639632d586c3c1cb6acf37a16ed47d8.html#a8639632d586c3c1cb6acf37a16ed47d8">point_on_segment_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aecc42cfe8cf4803e172f193076c67860.html#aecc42cfe8cf4803e172f193076c67860">pointarr_find_splits</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a1735a0debf7487b606e964192e1ba587.html#a1735a0debf7487b606e964192e1ba587">relate_ctx_free</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a233a6be8421102c31ba191861b90209f.html#a233a6be8421102c31ba191861b90209f">relate_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a08be10ef2330152347ddb1cbdcedb09b.html#a08be10ef2330152347ddb1cbdcedb09b">relate_point_in_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ae2592a4a4fca991cb150c22827e8ad20.html#ae2592a4a4fca991cb150c22827e8ad20">relate_point_on_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a67f0abdd38de0a35673d0c13fb8c8941.html#a67f0abdd38de0a35673d0c13fb8c8941">same_spatial_dimensionality</a></td></tr>
@@ -188,8 +191,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return whether two geometries stand in one of the spatial relationships MEOS asks for. </p>
-<p >Each relationship is the pattern the standard gives it, matched against the DE-9IM matrix, so they share the one engine and hold the pattern in one place. Two geometries intersect where they share a point, which <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a040c4f12501344e1625c980e371e2eec.html#a040c4f12501344e1625c980e371e2eec" title="Return whether two geometries share a point.">meos_intersects</a> reads from the edges directly; one contains another where their interiors meet and nothing of the other falls outside; they touch where their interiors do not meet while a boundary meets the other geometry; and one covers another where nothing of the other falls outside, whichever part of the first it meets. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return whether two geometries stand in a spatial relationship. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">g1,g2</td><td>Geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rel</td><td>Relationship asked for </td></tr>
