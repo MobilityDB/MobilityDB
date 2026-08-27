@@ -572,7 +572,19 @@ restriction_families:
   begin: "\n * Restriction Functions\n"
   end: "\n * Unnest Function\n"
   blocks:
-  - lit: "/*****************************************************************************\n * Restriction Functions\n *****************************************************************************/\n\n-- CREATE FUNCTION atValues(trgeometry, geometry)\n  -- RETURNS trgeometry\n  -- AS 'MODULE_PATHNAME', 'Temporal_at_value'\n  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- CREATE FUNCTION minusValues(trgeometry, geometry)\n  -- RETURNS trgeometry\n  -- AS 'MODULE_PATHNAME', 'Temporal_minus_value'\n  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- CREATE FUNCTION atValues(trgeometry, geomset)\n  -- RETURNS trgeometry\n  -- AS 'MODULE_PATHNAME', 'Temporal_at_values'\n  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- CREATE FUNCTION minusValues(trgeometry, geomset)\n  -- RETURNS trgeometry\n  -- AS 'MODULE_PATHNAME', 'Temporal_minus_values'\n  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - lit: "/*****************************************************************************\n * Restriction Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(trgeometry, pose)", ret: trgeometry, sym: Temporal_at_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValue(trgeometry, pose)", ret: trgeometry, sym: Temporal_minus_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "atValues(trgeometry, poseset)", ret: trgeometry, sym: Temporal_at_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(trgeometry, poseset)", ret: trgeometry, sym: Temporal_minus_values}
+  - lit: "\n"
   - fns:
     - {sig: "atTime(trgeometry, timestamptz)", ret: trgeometry, sym: Temporal_at_timestamptz}
   - lit: "\n"

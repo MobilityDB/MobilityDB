@@ -2423,6 +2423,9 @@
 			<title>Restrictions</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="trgeometry_atValue"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a pose or a set of poses</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="trgeometry_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict a trgeometry to (the complement of) a geometry</para>
 				</listitem>
 				<listitem>
