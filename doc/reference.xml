@@ -1239,7 +1239,7 @@
 						<para><link linkend="stbox_spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return the set of tiles that covers a spatiotemporal box with tiles of the same size and/or duration &Z_support; &SRF;</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tbox_getValueTimeTile"><varname>getValueTile</varname>, <varname>getTboxTimeTile</varname>, <varname>getValueTimeTile</varname></link>: Return the temporal tile that covers a value and/or a timestamp &Z_support;</para>
+						<para><link linkend="tbox_getValueTimeTile"><varname>getValueTile</varname>, <varname>getTboxTimeTile</varname>, <varname>getValueTimeTile</varname></link>: Return the temporal tile that covers a value and/or a timestamp</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="stbox_getSpaceTimeTile"><varname>getSpaceTile</varname>, <varname>getStboxTimeTile</varname>, <varname>getSpaceTimeTile</varname></link>: Return the spatiotemporal tile that covers a point and/or a timestamp &Z_support;</para>

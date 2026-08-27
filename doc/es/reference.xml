@@ -1267,7 +1267,7 @@
 						<para><link linkend="tnumber_valueSplit"><varname>valueSplit</varname>, <varname>timeSplit</varname>, <varname>valueTimeSplit</varname></link>: Fragmenta un número temporal con respecto a intervalos de valores y/o de tiempo &SRF;</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tspatial_spaceSplit"><varname>spaceSplit</varname>, <varname>spaceTimeSplit</varname>, <varname>timeSplit</varname></link>: Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal &SRF;</para>
+						<para><link linkend="tspatial_spaceSplit"><varname>spaceSplit</varname>, <varname>spaceTimeSplit</varname>, <varname>timeSplit</varname></link>: Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal &Z_support; &SRF;</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

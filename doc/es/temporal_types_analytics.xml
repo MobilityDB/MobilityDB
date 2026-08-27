@@ -1003,7 +1003,8 @@ SELECT (sp).number, (sp).time,
 					<indexterm significance="normal"><primary><varname>spaceSplit</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>timeSplit</varname></primary></indexterm>
-					<para>Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal &SRF;</para>
+					<para>Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal &Z_support;
+ &SRF;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 spaceSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
