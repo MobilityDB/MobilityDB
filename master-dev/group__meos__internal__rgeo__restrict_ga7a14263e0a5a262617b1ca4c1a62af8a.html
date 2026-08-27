@@ -140,7 +140,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd><code>border_inc</code> governs the temporal upper border (carried in the box period). The spatial footprint is the closed box region: an area body overlaps it on a positive-measure set of times, so border-only spatial contact (a measure-zero boundary touch) does not change the result. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd><code>border_inc</code> governs the upper border of BOTH dimensions. The time span carries it directly. On the spatial side the box is closed where the upper border is asked for and half-open where it is not, so a body meeting the box only along an upper border stands outside it &ndash; which is what lets the tiles either side of a grid line claim a body lying on that line once rather than twice. </dd></dl>
 
 </div>
 </div>
