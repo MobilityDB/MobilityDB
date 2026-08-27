@@ -8,9 +8,9 @@ SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 {tjsonb,text}::{text,tjsonb}
 </pre><pre class="programlisting">
 SELECT (text '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::jsonb;
-/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02] */
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::tjsonb;
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
 SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]'::text);
 -- text
@@ -19,8 +19,8 @@ SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
 </pre><pre class="programlisting">
 SELECT (ttext '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]')::tjsonb;
-/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02] */
+/* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
 SELECT pg_typeof(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]'::ttext);
 -- ttext

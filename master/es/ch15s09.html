@@ -25,10 +25,10 @@ SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 -- {["10"@2001-01-01, "20"@2001-01-02]}
 SELECT tjsonb '[{"position":"Point(1 1)", "speed":10}@2001-01-01,
   {"position":"Point(2 2)", "speed":20}@2001-01-03]' -&gt;&gt; text 'position';
--- ["POINT(1 1)"@2001-01-01, "POINT(2 2)"@2001-01-03]
+-- {["Point(1 1)"@2001-01-01, "Point(2 2)"@2001-01-03]}
 SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01, {"unit": "km"}@2001-01-02,
   {"unit": "km", "speed": 10}@2001-01-03]}' -&gt; text 'speed';
--- {[10@2001-01-01, null@2001-01-02, 10@2001-01-03]}
+-- {["10"@2001-01-01, "null"@2001-01-02, "10"@2001-01-03]}
 </pre><p>Mostramos a continuación el comportamiento de la función <code class="varname">tjsonObjectField</code> para los posibles valores del argumento <code class="varname">null_handle</code>. Todas las funciones JSON que pueden devolver un valor NULL se comportan de forma similar en MobilityDB.</p><pre class="programlisting">
 SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
@@ -37,11 +37,11 @@ SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'use_json_null');
--- {[10@2001-01-01, null@2001-01-02, 10@2001-01-03]}
+-- {["10"@2001-01-01, "null"@2001-01-02, "10"@2001-01-03]}
 SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'delete_key');
--- {[10@2001-01-01, 10@2001-01-02), [10@2001-01-03]}
+-- {["10"@2001-01-01, "10"@2001-01-02), ["10"@2001-01-03]}
 SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'return_null');
@@ -58,7 +58,7 @@ SELECT ttext '[{"speed": {"unit": "km", "value": 10}}@2001-01-01,
 SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}@2001-01-01,
   {"position":"Point(2 2)",
   "PoIs":["Palais Royal", "Manneken Pis"]}@2001-01-03]' #&gt;&gt; ARRAY[text 'PoIs', '1'];
--- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-03]
+-- {["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-03]}
 </pre></li><li class="listitem"><a name="tjson_array_element"></a><a class="indexterm" name="id10990"></a><a class="indexterm" name="id10993"></a><a class="indexterm" name="id10996"></a><p>Extrae un elemento de un arreglo JSON temporal</p><pre class="programlisting">
 tjsonArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
 tjsonbArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb
@@ -66,10 +66,10 @@ tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → tjso
 </pre><pre class="programlisting">
 SELECT tjsonArrayElement(ttext '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 0);
--- ["Grand Place"@2001-01-01, "Palais Royal"@2001-01-02]
+-- {["\"Grand Place\""@2001-01-01, "\"Palais Royal\""@2001-01-02]}
 SELECT tjsonbArrayElement(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 1);
--- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-02]
+-- {["\"La Bourse\""@2001-01-01, "\"Manneken Pis\""@2001-01-02]}
 </pre></li><li class="listitem"><a name="tjsonb_talphanum"></a><a class="indexterm" name="id11003"></a><a class="indexterm" name="id11006"></a><a class="indexterm" name="id11009"></a><a class="indexterm" name="id11012"></a><p>Extrae un valor alfanumérico temporal de un valor JSONB temporal dado por una clave</p><pre class="programlisting">
 tbool(tjsonb,text,null_handle text='raise_exception') → tbool
 tint(tjsonb,text,null_handle text='raise_exception') → tint
@@ -78,10 +78,10 @@ ttext(tjsonb,text,null_handle text='raise_exception') → ttext
 </pre><p>Tenga en cuenta que el valor <code class="varname">use_json_null</code> no puede utilizarse para las funciones anteriores y por lo tanto se utiliza el valor por defecto <code class="varname">'raise_exception'</code>.</p><pre class="programlisting">
 SELECT tbool(tjsonb '[{"speed": 10, "lights": "on"}@2001-01-01,
   {"speed": 20, "lights": "on"}@2001-01-02]', 'lights');
--- [true@2001-01-01, true@2001-01-02]
+-- {[t@2001-01-01, t@2001-01-02]}
 SELECT tint(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', 'speed');
--- [10@2001-01-01, 20@2001-01-02]
+-- {[10@2001-01-01, 20@2001-01-02]}
 SELECT tfloat(tjsonb '{[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02],
   [{"speed": 20}@2001-01-03, {"speed": 20}@2001-01-04]}', 'speed', 'step');
@@ -89,46 +89,49 @@ SELECT tfloat(tjsonb '{[{"speed": 10, "units": "km/h"}@2001-01-01,
 SELECT ttext(tjsonb '[{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-01,
   {"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-02,
   {"road": "Bvd de la Cambre", "category": "residential"}@2001-01-03]', 'category');
--- [primary@2001-01-01, residential@2001-01-03]
+-- {["primary"@2001-01-01, "residential"@2001-01-03]}
 </pre></li><li class="listitem"><a name="tjsonb_concat"></a><a class="indexterm" name="id11022"></a><p>Concatenación JSONB temporal</p><pre class="programlisting">
 tjsonb || {jsonb,tjsonb} → tjsonb
 </pre><pre class="programlisting">
 SELECT tjsonb '{[{"speed":10}@2001-01-01,
   {"speed":20}@2001-01-02]}' || '{"unit":"km"}'::jsonb;
--- {[{"unit": "km", "speed": 10}@2001-01-01, {"unit": "km", "speed": 20}@2001-01-02]}
+/* {["{\"unit\": \"km\", \"speed\": 10}"@2001-01-01, "{\"unit\": \"km\", \"speed\":
+   20}"@2001-01-02]} */
 SELECT tjsonb '{[{"speed":10}@2001-01-01, {"speed":20}@2001-01-03]}' ||
   tjsonb '{[{"Position":"Point(1 1)"}@2001-01-02, {"Position":"Point(2 2)"}@2001-01-04]}';
-/* {[{"speed": 10, "Position": "Point(1 1)"}@2001-01-02,
-   {"speed": 20, "Position": "Point(2 2)"}@2001-01-03]} */
+/* {["{\"speed\": 10, \"Position\": \"Point(1 1)\"}"@2001-01-02, "{\"speed\": 20,
+   \"Position\": \"Point(1 1)\"}"@2001-01-03]} */
 </pre></li><li class="listitem"><a name="tjsonb_delete"></a><a class="indexterm" name="id11029"></a><p>Eliminación JSONB temporal</p><pre class="programlisting">
 tjsonb - {int,text,text[]} → tjsonb
 tjsonb #- text[] → tjsonb
 </pre><pre class="programlisting">
 SELECT tjsonb '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - 'unit';
--- {[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02]}
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 SELECT tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]' - 1;
--- [["Grand Place"]@2001-01-01, ["Palais Royal"]@2001-01-02]
-SELECT tjsonb '[{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bourse"]@2001-01-01,
-  "location":"Point(2 2)",
-  "PoIs": ["Palais Royal", "Manneken Pis"]@2001-01-02]' #- ARRAY[text "\"PoIs\"", "1"];
--- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-02]
+-- {["[\"Grand Place\"]"@2001-01-01, "[\"Palais Royal\"]"@2001-01-02]}
+SELECT tjsonb
+  '[{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bourse"]}@2001-01-01,
+  {"location":"Point(2 2)", "PoIs": ["Palais Royal", "Manneken Pis"]}@2001-01-02]'
+  #- ARRAY[text 'PoIs', '1'];
+/* {["{\"PoIs\": [\"Grand Place\"], \"location\": \"Point(1 1)\"}"@2001-01-01,
+   "{\"PoIs\": [\"Palais Royal\"], \"location\": \"Point(2 2)\"}"@2001-01-02]} */
 </pre><p>Como se muestra a continuación, el resultado de una operación de eliminación puede ser un registro vacío o un arreglo vacío. Para eliminar estos valores, puede utilizarse la función <code class="varname">minusValue</code>.</p><pre class="programlisting">
 SELECT tjsonb '{[{"unit": "km", "speed": 10, "light": true}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - ARRAY[text 'unit', 'speed'];
--- {[{"light": true}@2001-01-01, {}@2001-01-02]}
+-- {["{\"light\": true}"@2001-01-01, "{}"@2001-01-02]}
 SELECT tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal"]@2001-01-02]' - 0;
--- [["La Bourse"]@2001-01-01, []@2001-01-02]
+-- {["[\"La Bourse\"]"@2001-01-01, "[]"@2001-01-02]}
 </pre><pre class="programlisting">
 SELECT minusValues(tjsonb '{[{"unit": "km", "speed": 10, "light": true}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' - ARRAY[text 'unit', 'speed'],
   jsonbset '{"[]","{}"}');
---  {[{"light": true}@2001-01-01, {"light": true}@2001-01-02)}
+-- {["{\"light\": true}"@2001-01-01, "{\"light\": true}"@2001-01-02)}
 SELECT minusValues(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal"]@2001-01-02]' - 0, jsonbset '{"[]","{}"}');
--- {[["La Bourse"]@2001-01-01, ["La Bourse"]@2001-01-02)}
+-- {["[\"La Bourse\"]"@2001-01-01, "[\"La Bourse\"]"@2001-01-02)}
 </pre></li><li class="listitem"><a name="tjsonb_exists"></a><a class="indexterm" name="id11040"></a><p>Existencia JSONB temporal</p><pre class="programlisting">
 tjsonb ? jsonb → tbool
 tjsonb {?|, ?&amp;} jsonb[] → tbool
@@ -140,7 +143,7 @@ SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(2 2)"}@2001-0
 -- {t@2001-01-01, t@2001-01-02, t@2001-01-03}
 SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]' ?&amp; ARRAY['speed', 'units'];
--- {[t@2001-01-01, t@2001-01-02]}
+-- [t@2001-01-01, t@2001-01-02]
 </pre></li><li class="listitem"><a name="tjsonb_contains"></a><a class="indexterm" name="id11052"></a><a class="indexterm" name="id11055"></a><p>Contiene/contenido JSONB temporal</p><pre class="programlisting">
 {tjsonb,jsonb} {@&gt;, &lt;@} {tjsonb,jsonb} → tbool
 </pre><pre class="programlisting">
@@ -159,56 +162,60 @@ tjsonbSetLax(tjsonb,path text[],val jsonb,create boolean=true,handle_null text) 
 </pre><p>Devuelve el valor <code class="varname">tjsonb</code> con el elemento especificado por la ruta reemplazado por <code class="varname">jsonb</code>, o añadido si <code class="varname">create</code> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo. La función <code class="varname">tjsonbSetLax</code> se comporta de forma idéntica a <code class="varname">tjsonbSet</code> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <code class="varname">handle_null</code>, que debe ser uno de <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code> o <code class="varname">'return_source'</code>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <code class="varname">'return_source'</code>, mientras que para todas las demás operaciones de <span class="emphasis"><em>consulta</em></span>, este valor se ha reemplazado por <code class="varname">'return_null'</code>.</p><pre class="programlisting">
 SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
--- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]
+/* {["{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01, "{\"speed\": 20, \"units\":
+   \"km/h\"}"@2001-01-02]} */
 SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb, false);
--- [{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02]
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 SELECT tjsonbSet(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', ARRAY['units'], '"mi/h"'::jsonb);
--- [{"speed": 10, "units": "mi/h"}@2001-01-01, {"speed": 20, "units": "mi/h"}@2001-01-02]
+/* {["{\"speed\": 10, \"units\": \"mi/h\"}"@2001-01-01, "{\"speed\": 20, \"units\":
+   \"mi/h\"}"@2001-01-02]} */
 SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20}@2001-01-02]', ARRAY['units'], 'null'::jsonb, true, 'delete_key');
--- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20}@2001-01-02]
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 </pre></li><li class="listitem"><a name="tjsonb_insert"></a><a class="indexterm" name="id11086"></a><p>Inserción JSONB temporal</p><pre class="programlisting">
 tjsonbInsert(tjsonb,path text[],val jsonb,after boolean=false) → tjsonb
 </pre><p>Devuelve el valor <code class="varname">tjsonb</code> con <code class="varname">jsonb</code> insertado. Si el elemento especificado por la ruta es un elemento de arreglo, el nuevo valor se insertará antes de ese elemento si <code class="varname">after</code> es falso, o después en caso contrario. Si el elemento especificado por la ruta es un campo de objeto, el nuevo valor se insertará solo si el objeto no contiene ya esa clave. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo.</p><pre class="programlisting">
 SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
--- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb, false);
--- [{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02]
+-- {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 20}"@2001-01-02]}
 SELECT tjsonbInsert(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', ARRAY['units'], '"mi/h"'::jsonb);
--- [{"speed": 10, "units": "mi/h"}@2001-01-01, {"speed": 20, "units": "mi/h"}@2001-01-02]
+/* {["{\"speed\": 10, \"units\": \"mi/h\"}"@2001-01-01, "{\"speed\": 20, \"units\":
+   \"mi/h\"}"@2001-01-02]} */
 </pre></li><li class="listitem"><a name="tjson_strip_nulls"></a><a class="indexterm" name="id11097"></a><a class="indexterm" name="id11100"></a><p>Devuelve un valor JSON temporal sin nulos</p><pre class="programlisting">
 tjsonStripNulls(ttext,strip_in_arrays boolean=false) → ttext
 tjsonbStripNulls(tjsonb,strip_in_arrays boolean=false) → tjsonb
 </pre><p>El último argumento indica si los elementos de arreglo nulos también se eliminan. Los valores nulos simples nunca se eliminan.</p><pre class="programlisting">
 SELECT tjsonStripNulls(ttext '[{"speed": 10, "lights": null}@2001-01-01,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}@2001-01-02]');
-/* [{"speed": 10}@2001-01-01,
-   {"PoIs": ["Grand Place", "La Bourse", null], "speed": 20}@2001-01-02] */
+/* ["{\"speed\":10}"@2001-01-01, "{\"speed\":20,\"PoIs\":[\"Grand Place\",\"La
+   Bourse\",null]}"@2001-01-02] */
 SELECT tjsonbStripNulls(tjsonb '[{"speed": 10, "lights": null}@2001-01-01,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}@2001-01-02]', true);
-/* [{"speed": 10}@2001-01-01,
-   {"PoIs": ["Grand Place", "La Bourse"], "speed": 20}@2001-01-02] */
+/* {["{\"speed\": 10}"@2001-01-01, "{\"PoIs\": [\"Grand Place\", \"La Bourse\"],
+   \"speed\": 20}"@2001-01-02]} */
 SELECT tjsonbStripNulls(tjsonb '{{"road": "Bvd Gén. Jacques",
   "category": "primary"}@2001-01-01,
   {"road": "Bvd de la Cambre", "category": "primary"}@2001-01-02,
   {"road": "rue de l''Abbaye", "category": null}@2001-01-03}');
-/* [{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-01,
-   {"road": "Bvd de la Cambre", "category": "primary"}@2001-01-02,
-   {"road": "rue de l'Abbaye"}@2001-01-03] */
+/* {"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"primary\"}"@2001-01-01,
+   "{\"road\": \"Bvd de la Cambre\", \"category\": \"primary\"}"@2001-01-02,
+   "{\"road\": \"rue de l'Abbaye\"}"@2001-01-03} */
 </pre><p>Como se muestra a continuación, la función no elimina los valores nulos simples. Para este propósito puede utilizarse la función <code class="varname">minusValue</code>.</p><pre class="programlisting">
 SELECT tjsonStripNulls(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]');
-/* [{"speed":10}@2001-01-01, null@2001-01-02,
-   {"speed":20,"PoIs":["Grand Place","La Bourse"]}@2001-01-03] */
+/* ["{\"speed\":10}"@2001-01-01, "null"@2001-01-02, "{\"speed\":20,\"PoIs\":[\"Grand
+   Place\",\"La Bourse\"]}"@2001-01-03] */
 SELECT minusValues(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]', 'null');
-/* {[{"speed": 10}@2001-01-01, {"speed": 10}@2001-01-02),
-   [{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]}
+  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]',
+  set(ARRAY[text 'null']));
+/* {["{\"speed\": 10}"@2001-01-01, "{\"speed\": 10}"@2001-01-02), ["{\"speed\": 20,
+   \"PoIs\": [\"Grand Place\", \"La Bourse\"]}"@2001-01-03]} */
 </pre></li><li class="listitem"><a name="tjsonb_path_exists"></a><a class="indexterm" name="id11111"></a><a class="indexterm" name="id11114"></a><a class="indexterm" name="id11117"></a><p>¿Devuelve la ruta JSON algún elemento para el valor JSONB temporal especificado?</p><pre class="programlisting">
 tjsonb @? jsonpath → tbool
 tjsonbPathExists(tjsonb,vars jsonb='{}',silent boolean=false) → tbool
@@ -223,7 +230,6 @@ SELECT tjsonbPathExists(tjsonb '{{"road": "Bvd Gén. Jacques",
   {"road": "Bvd de la Cambre", "category": "residential"}@2001-01-03}',
   '$.category ? (@ == "residential")');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
--- TODO, it works without ".datetime()"
 SELECT tjsonbPathExistsTz(tjsonb '[{"speed":10, "cameraId": "25",
   "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
   {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
@@ -243,7 +249,6 @@ SELECT tjsonbPathMatch(tjsonb '{{"road": "Bvd Gén. Jacques",
   {"road": "Bvd de la Cambre", "category": "residential"}@2001-01-03}',
   '$.category == "residential"');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
--- TODO, it works without ".datetime()"
 SELECT tjsonbPathMatchTz(tjsonb '[{"speed":10, "cameraId": "25",
   "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
   {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
@@ -256,27 +261,25 @@ tjsonbPathQueryArrayTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
 SELECT tjsonbPathQueryArray(tjsonb '[{"speed":10}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]',
   '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
--- [[{"speed": 10}]@2001-01-01, [{"speed": 20, "units": "km/h"}]@2001-01-02]
--- TODO, it works without "_tz"
+-- {["[{\"speed\": 10}]"@2001-01-01, "[{\"speed\": 20, \"units\": \"km/h\"}]"@2001-01-02]}
 SELECT tjsonbPathQueryArrayTz(tjsonb '[{"cameraId":25,
   "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
   {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
    @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
--- [["2000-01-06", "2000-01-09"]@2001-01-01, ["2000-01-07"]@2001-01-02]
+-- {["[\"2000-01-06\", \"2000-01-09\"]"@2001-01-01, "[\"2000-01-07\"]"@2001-01-02]}
 </pre></li><li class="listitem"><a name="tjsonb_path_query_first"></a><a class="indexterm" name="id11152"></a><a class="indexterm" name="id11155"></a><p>Devuelve el primer elemento devuelto por una ruta JSON de un valor JSONB temporal</p><pre class="programlisting">
 tjsonbPathQueryFirst(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
 tjsonbPathQueryFirstTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
 </pre><p>Las funciones anteriores pueden suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><pre class="programlisting">
 SELECT tjsonbPathQueryFirst(tjsonb '[{"speed":10}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]',
-  '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max'), '{"min":10, "max":30}');
--- [[{"speed": 10}]@2001-01-01, [{"speed": 20, "units": "km/h"}]@2001-01-02]
--- TODO, it works without "_tz"
+  '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max)', '{"min":10, "max":30}');
+-- {["10"@2001-01-01, "20"@2001-01-02]}
 SELECT tjsonbPathQueryArrayTz(tjsonb
   '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
    {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
   '{"min":"2000-01-05", "max":"2000-01-09"}');
--- [["2000-01-06", "2000-01-09"]@2001-01-01, ["2000-01-07"]@2001-01-02]
+-- {["[\"2000-01-06\", \"2000-01-09\"]"@2001-01-01, "[\"2000-01-07\"]"@2001-01-02]}
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s08.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s10.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Transformaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Restricciones</td></tr></table></div></body></html>

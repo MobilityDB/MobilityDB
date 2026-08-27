@@ -3,11 +3,11 @@ getValues(tjsonb) → jsonbset
 </pre><pre class="programlisting">
 SELECT getValues(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02]');
--- {{"location": "POINT(1 1)", "vehicleId": 1}}
+-- {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"}
 </pre></li><li class="listitem"><a name="tjsonb_valueAtTimestamp"></a><a class="indexterm" name="id10884"></a><p>Devuelve el valor en una marca de tiempo</p><pre class="programlisting">
 valueAtTimestamp(tjsonb,timestamptz) → jsonb
 </pre><pre class="programlisting">
 SELECT valueAtTimestamp(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]', '2001-01-02');
--- {"location": "POINT(2 2)", "vehicleId": 1}
+-- {"location": "Point(2 2)", "vehicleId": 1}
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Conversiones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Transformaciones</td></tr></table></div></body></html>

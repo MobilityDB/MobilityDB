@@ -7,10 +7,10 @@ SELECT jsonb '{"unit": "km", "speed": 10}' -&gt; text 'speed';
 			</p><pre class="programlisting">
 SELECT jsonbset '{"{\"unit\": \"km\", \"speed\": 10}",
   "{\"unit\": \"km\", \"speed\": 20}"}' -&gt; text 'speed';
--- {"10", "20"}
+-- {10, 20}
 SELECT tjsonb '[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]' -&gt; text 'speed';
--- {[10@2001-01-01, 20@2001-01-02]}
+-- {["10"@2001-01-01, "20"@2001-01-02]}
 </pre><p>
 		which are obtained by applying the PostgreSQL operator <code class="varname">-&gt;</code> at every element of the JSONB set and to every instant of the temporal JSONB value.
 		</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="jsonbset_jsonb"></a>JSONB Set Operations</h2></div></div></div><p>When manipulating JSON collections of varying structure, it may be the case that an item is defined in some of the documents but not all. PostgreSQL provides the <span class="emphasis"><em>lax mode</em></span> for this purpose, where the argument <code class="varname">null_value_treatment</code> determines the behavior in the case a function returns a NULL value. The argument can take one of the following values: <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, <code class="varname">'return_target'</code>, where <code class="varname">'use_json_null'</code> is the default value. In PostgreSQL the lax mode is supported only for <span class="emphasis"><em>update</em></span> (not <span class="emphasis"><em>query</em></span>) operations with the function <code class="varname">jsonb_set_lax</code>. In MobilityDB, we kept the same semantics for the corresponding function <code class="varname">jsonbsetSetLax</code>, but we enabled similar behavior for <span class="emphasis"><em>all</em></span> JSON operations that may return a null value, except that we replaced the value <code class="varname">'return_target'</code> with <code class="varname">'return_null'</code>, since the former is not meaningful for set operations. For operators such as <code class="varname">-&gt;</code>, the default value <code class="varname">'use_json_null'</code> is used and cannot be changed, whereas for the corresponding functions <code class="varname">jsonbsetObjectField</code>, the last argument specifies the behavior in the case the function returns NULL. We illustrate this behavior for function <code class="varname">jsonbsetObjectField</code> below.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="jsonbset_object_field"></a><a class="indexterm" name="id11101"></a><a class="indexterm" name="id11104"></a><a class="indexterm" name="id11107"></a><a class="indexterm" name="id11110"></a><p>Extract a JSON object field specified by a key</p><pre class="programlisting">
@@ -19,50 +19,50 @@ jsonbset -&gt;&gt; text → textset
 jsonbsetObjectField(jsonbset,text,null_handle text='use_json_null') → jsonbset
 jsonbsetObjectFieldText(jsonbset,text,null_handle text='use_json_null') → textset
 </pre><pre class="programlisting">
-SELECT textset '{[{"unit": "km", "speed": 10},
-  {"unit": "km", "speed": 20}]}' -&gt; text 'speed';
--- {["10", "20"]}
-SELECT jsonbset '[{"position":"Point(1 1)", "speed":10},
-  {"position":"Point(2 2)", "speed":20}]' -&gt;&gt; text 'position';
--- ["POINT(1 1)", "POINT(2 2)"]
-SELECT textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}' -&gt; text 'speed';
--- {[10, null, 10]}
+SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km", "speed": 20}']) -&gt; text 'speed';
+-- {10, 20}
+SELECT set(ARRAY[jsonb '{"position":"Point(1 1)", "speed":10}',
+  '{"position":"Point(2 2)", "speed":20}']) -&gt;&gt; text 'position';
+-- {"Point(1 1)", "Point(2 2)"}
+SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10}', '{"unit": "km"}',
+  '{"unit": "km", "speed": 10}']) -&gt; text 'speed';
+-- {"null", 10}
 </pre><p>We show below the behavior of the function <code class="varname">jsonbsetObjectField</code> for the possible values of the <code class="varname">null_handle</code> argument. All JSON functions that may return a NULL value behave similarly in MobilityDB.</p><pre class="programlisting">
-SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}', 'speed', 'raise_exception');
+SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km"}', '{"unit": "km", "speed": 10}']), 'speed', 'raise_exception');
 -- ERROR:  The lifted operation returned NULL
-SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}', 'speed', 'use_json_null');
--- {[10, null, 10]}
-SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}', 'speed', 'delete_key');
--- {[10, 10), [10]}
-SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10}, {"unit": "km"},
-  {"unit": "km", "speed": 10}]}', 'speed', 'return_null');
+SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km"}', '{"unit": "km", "speed": 10}']), 'speed', 'use_json_null');
+-- {"null", 10}
+SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km"}', '{"unit": "km", "speed": 10}']), 'speed', 'delete_key');
+-- {10}
+SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km"}', '{"unit": "km", "speed": 10}']), 'speed', 'return_null');
 -- NULL
 </pre></li><li class="listitem"><a name="jsonbset_extract_path"></a><a class="indexterm" name="id11121"></a><a class="indexterm" name="id11124"></a><a class="indexterm" name="id11127"></a><a class="indexterm" name="id11130"></a><p>Extract a JSON object field specified by a path</p><pre class="programlisting">
 {textset,jsonbset} #&gt; text[] → {textset,jsonbset}
 jsonbsetExtractPath(jsonbset,path text[],null_handle text='use_json_null') → jsonbset
 jsonbsetExtractPathText(jsonbset,path text[],null_handle text='use_json_null') → textset
 </pre><pre class="programlisting">
-SELECT textset '[{"speed": {"unit": "km", "value": 10}},
-  {"speed": {"unit": "km", "value": 20}}]' #&gt; ARRAY[text 'speed', 'value'];
--- {["10", "20"]}
-SELECT jsonbset '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]},
-  {"position":"Point(2 2)",
-  "PoIs":["Palais Royal", "Manneken Pis"]}]' #&gt;&gt; ARRAY[text 'PoIs', '1'];
--- ["La Bourse", "Manneken Pis"]
+SELECT set(ARRAY[jsonb '{"speed": {"unit": "km", "value": 10}}',
+  '{"speed": {"unit": "km", "value": 20}}']) #&gt; ARRAY[text 'speed', 'value'];
+-- {10, 20}
+SELECT set(ARRAY[jsonb '{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}',
+  '{"position":"Point(2 2)", "PoIs":["Palais Royal", "Manneken Pis"]}'])
+  #&gt;&gt; ARRAY[text 'PoIs', '1'];
+-- {"La Bourse", "Manneken Pis"}
 </pre></li><li class="listitem"><a name="jsonbset_array_element"></a><a class="indexterm" name="id11137"></a><a class="indexterm" name="id11140"></a><p>Extract an element from a JSON array</p><pre class="programlisting">
 jsonbsetArrayElement(jsonbset,integer,null_handle text='use_json_null') → jsonbset
 jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → jsonbset
 </pre><pre class="programlisting">
-SELECT jsonbsetArrayElement(textset '[["Grand Place", "La Bourse"],
-  ["Palais Royal", "Manneken Pis"]]', 0);
--- ["Grand Place", "Palais Royal"]
-SELECT jsonbsetArrayElement(jsonbset '[["Grand Place", "La Bourse"],
-  ["Palais Royal", "Manneken Pis"]]', 1);
--- ["La Bourse", "Manneken Pis"]
+SELECT jsonbsetArrayElement(set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
+  '["Palais Royal", "Manneken Pis"]']), 0);
+-- {"\"Grand Place\"", "\"Palais Royal\""}
+SELECT jsonbsetArrayElement(set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
+  '["Palais Royal", "Manneken Pis"]']), 1);
+-- {"\"La Bourse\"", "\"Manneken Pis\""}
 </pre></li><li class="listitem"><a name="jsonbset_alphanumset"></a><a class="indexterm" name="id11147"></a><a class="indexterm" name="id11150"></a><a class="indexterm" name="id11153"></a><p>Extract a alphanumeric value from a JSONB set given by a key</p><pre class="programlisting">
 intset(jsonbset,text,null_handle text='raise_exception') → tint
 floatset(jsonbset,text,null_handle text='raise_exception') → tfloat
@@ -76,156 +76,163 @@ SELECT floatset(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}",
 -- {10, 20, 25}
 SELECT textset(jsonbset '{"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"primary\"}",
   "{\"road\": \"Bvd de la Cambre\", \"category\": \"residential\"}"}', 'category');
--- {primary, residential}
+-- {"primary", "residential"}
 </pre></li><li class="listitem"><a name="jsonbset_concat"></a><a class="indexterm" name="id11163"></a><p>Temporal JSONB concatenation</p><pre class="programlisting">
-jsonbset || {jsonb,jsonbset} → jsonbset
+{jsonb,jsonbset} || {jsonbset,jsonb} → jsonbset
 </pre><pre class="programlisting">
-SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' || '{"unit":"km"}'::jsonb;
--- {[{"unit": "km", "speed": 10}, {"unit": "km", "speed": 20}]}
-SELECT jsonbset '{[{"speed":10}, {"speed":20}]}' || jsonbset '{[{"Position":"Point(1 1)"},
-  {"Position":"Point(2 2)"}]}';
--- {[{"speed": 10, "Position": "POINT(1 1)"}, {"speed": 20, "Position": "POINT(2 2)"}]}
+SELECT set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']) || '{"unit":"km"}'::jsonb;
+-- {"{\"unit\": \"km\", \"speed\": 10}", "{\"unit\": \"km\", \"speed\": 20}"}
+SELECT jsonb '{"unit":"km"}' || set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']);
+-- {"{\"unit\": \"km\", \"speed\": 10}", "{\"unit\": \"km\", \"speed\": 20}"}
 </pre></li><li class="listitem"><a name="jsonbset_delete"></a><a class="indexterm" name="id11170"></a><p>Temporal JSONB deletion</p><pre class="programlisting">
 jsonbset - {int,text,text[]} → jsonbset
 jsonbset #- text[] → jsonbset
 </pre><pre class="programlisting">
-SELECT jsonbset '{[{"unit": "km", "speed": 10}, {"unit": "km", "speed": 20}]}' - 'unit';
--- {[{"speed": 10}, {"speed": 20}]}
-SELECT jsonbset '[["Grand Place", "La Bourse"], ["Palais Royal", "Manneken Pis"]]' - 1;
--- [["Grand Place"], ["Palais Royal"]]
-SELECT jsonbset '[{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bourse"],
-  "location":"Point(2 2)",
-  "PoIs": ["Palais Royal", "Manneken Pis"]]' #- ARRAY[text "\"PoIs\"", "1"];
--- ["La Bourse", "Manneken Pis"]
+SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
+  '{"unit": "km", "speed": 20}']) - text 'unit';
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
+SELECT set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
+  '["Palais Royal", "Manneken Pis"]']) - 1;
+-- {"[\"Grand Place\"]", "[\"Palais Royal\"]"}
+SELECT set(ARRAY[jsonb '{"location":"Point(1 1)", "PoIs": ["Grand Place", "La Bourse"]}',
+  '{"location":"Point(2 2)", "PoIs": ["Palais Royal", "Manneken Pis"]}'])
+  #- ARRAY[text 'PoIs', '1'];
+/* {"{\"PoIs\": [\"Grand Place\"], \"location\": \"Point(1 1)\"}", "{\"PoIs\":
+   [\"Palais Royal\"], \"location\": \"Point(2 2)\"}"} */
 </pre><p>As shown below, the result of a delete operation may be an empty record or an empty array. To remove these values, the function <code class="varname">minusValue</code> can used.</p><pre class="programlisting">
-SELECT jsonbset '{[{"unit": "km", "speed": 10, "light": true},
-  {"unit": "km", "speed": 20}]}' - ARRAY[text 'unit', 'speed'];
--- {[{"light": true}, {}]}
-SELECT jsonbset '[["Grand Place", "La Bourse"], ["Palais Royal"]]' - 0;
--- [["La Bourse"], []]
+SELECT set(ARRAY[jsonb '{"unit": "km", "speed": 10, "light": true}',
+  '{"unit": "km", "speed": 20}']) - ARRAY[text 'unit', 'speed'];
+-- {"{}", "{\"light\": true}"}
+SELECT set(ARRAY[jsonb '["Grand Place", "La Bourse"]', '["Palais Royal"]']) - 0;
+-- {[], "[\"La Bourse\"]"}
 </pre><pre class="programlisting">
-SELECT minusValues(jsonbset '{[{"unit": "km", "speed": 10, "light": true},
-  {"unit": "km", "speed": 20}]}' - ARRAY[text 'unit', 'speed'], jsonbset '{"[]","{}"}');
---  {[{"light": true}, {"light": true})}
-SELECT minusValues(jsonbset '[["Grand Place", "La Bourse"], ["Palais Royal"]]' - 0,
-  jsonbset '{"[]","{}"}');
--- {[["La Bourse"], ["La Bourse"])}
+SELECT setMinus(set(ARRAY[jsonb '{"unit": "km", "speed": 10, "light": true}',
+  '{"unit": "km", "speed": 20}']) - ARRAY[text 'unit', 'speed'],
+  set(ARRAY[jsonb '{}', '[]']));
+-- {"{\"light\": true}"}
+SELECT setMinus(set(ARRAY[jsonb '["Grand Place", "La Bourse"]', '["Palais Royal"]']) - 0,
+  set(ARRAY[jsonb '{}', '[]']));
+-- {"[\"La Bourse\"]"}
 </pre></li><li class="listitem"><a name="jsonbset_exists"></a><a class="indexterm" name="id11181"></a><p>JSONB set exists</p><pre class="programlisting">
 jsonbset ? text → boolean[]
 jsonbset {?|, ?&amp;} text[] → boolean[]
 </pre><p>As in PostgreSQL, the operators <code class="varname">?|</code> and <code class="varname">?&amp;</code> test, respectively, whether <span class="emphasis"><em>any</em></span> or <span class="emphasis"><em>all</em></span> of the strings in the text array exist as top-level keys or array elements. The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
--- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+-- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
--- {t,f}
+-- {f,t}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' ?| ARRAY[text 'units', text 'lights'];
--- {t,f}
+-- {f,t}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' ?&amp; ARRAY[text 'speed', text 'units'];
--- {t,f}
+-- {f,t}
 </pre></li><li class="listitem"><a name="jsonbset_set"></a><a class="indexterm" name="id11193"></a><a class="indexterm" name="id11196"></a><p>Temporal JSONB set</p><pre class="programlisting">
 jsonbsetSet(jsonbset,path text[],val jsonb,create boolean=true) → jsonbset
 jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
   handle_null text) → jsonbset
 </pre><p>Return the <code class="varname">jsonbset</code> value with the item specified by path replaced by <code class="varname">jsonb</code>, or added if <code class="varname">create</code> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive. Function <code class="varname">jsonbsetSetLax</code> behaves identically to <code class="varname">jsonbsetSet</code> if the given value is not NULL, Otherwise, it behaves according to the value of <code class="varname">handle_null</code>, which must be one of <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, or <code class="varname">'return_source'</code>. As stated above, we kept PostgreSQL behavior for this function enabling the value <code class="varname">'return_source'</code> whereas for all other <span class="emphasis"><em>query</em></span> operations, this value has been replaced with <code class="varname">'return_null'</code>.</p><pre class="programlisting">
-SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb);
--- [{"speed": 10, "units": "km/h"}, {"speed": 20, "units": "km/h"}]
-SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+-- {"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}"}
+SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb, false);
--- [{"speed": 10}, {"speed": 20}]
-SELECT jsonbsetSet(jsonbset '[{"speed": 10, "units": "km/h"},
-  {"speed": 20, "units": "km/h"}]', ARRAY['units'], '"mi/h"'::jsonb);
--- [{"speed": 10, "units": "mi/h"}, {"speed": 20, "units": "mi/h"}]
-SELECT jsonbsetSetLax(jsonbset '[{"speed": 10, "units": "km/h"}, {"speed": 20}]',
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
+SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}',
+  '{"speed": 20, "units": "km/h"}']), ARRAY['units'], '"mi/h"'::jsonb);
+-- {"{\"speed\": 10, \"units\": \"mi/h\"}", "{\"speed\": 20, \"units\": \"mi/h\"}"}
+SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
   ARRAY['units'], 'null'::jsonb, true, 'delete_key');
--- [{"speed": 10, "units": "km/h"}, {"speed": 20}]
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
 </pre></li><li class="listitem"><a name="jsonbset_insert"></a><a class="indexterm" name="id11217"></a><p>Return the <code class="varname">jsonbset</code> value with <code class="varname">jsonb</code> inserted</p><pre class="programlisting">
 jsonbsetInsert(jsonbset,path text[],val jsonb,after boolean=false) → jsonbset
 </pre><p>If the item specified by the path is an array element, the new value will be inserted before that item if <code class="varname">after</code> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</p><pre class="programlisting">
-SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb);
--- [{"speed": 10, "units": "km/h"}, {"speed": 20, "units": "km/h"}]
-SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]', ARRAY['units'],
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
+SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
   '"km/h"'::jsonb, false);
--- [{"speed": 10}, {"speed": 20}]
-SELECT jsonbsetInsert(jsonbset '[{"speed": 10, "units": "km/h"},
-  {"speed": 20, "units": "km/h"}]', ARRAY['units'], '"mi/h"'::jsonb);
--- [{"speed": 10, "units": "mi/h"}, {"speed": 20, "units": "mi/h"}]
+-- {"{\"speed\": 10}", "{\"speed\": 20}"}
+SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}',
+  '{"speed": 20, "units": "km/h"}']), ARRAY['units'], '"mi/h"'::jsonb);
+-- {"{\"speed\": 10, \"units\": \"mi/h\"}", "{\"speed\": 20, \"units\": \"mi/h\"}"}
 </pre></li><li class="listitem"><a name="jsonbset_strip_nulls"></a><a class="indexterm" name="id11228"></a><p>Return a JSONB set without nulls</p><pre class="programlisting">
 jsonbsetStripNulls(jsonbset,strip_in_arrays boolean=false) → jsonbset
 </pre><p>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</p><pre class="programlisting">
-SELECT jsonbsetStripNulls(textset '[{"speed": 10, "lights": null},
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}]');
--- [{"speed": 10}, {"PoIs": ["Grand Place", "La Bourse", null], "speed": 20}]
-SELECT jsonbsetStripNulls(jsonbset '[{"speed": 10, "lights": null},
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}]', true);
--- [{"speed": 10}, {"PoIs": ["Grand Place", "La Bourse"], "speed": 20}]
-SELECT jsonbsetStripNulls(jsonbset '{{"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd de la Cambre", "category": "primary"},
-  {"road": "rue de l''Abbaye", "category": null}}');
-/* [{"road": "Bvd Gén. Jacques", "category": "primary"}, 
-   {"road": "Bvd de la Cambre", "category": "primary"}, {"road": "rue de l'Abbaye"}] */
+SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10, "lights": null}',
+  '{"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}']));
+/* {"{\"speed\": 10}", "{\"PoIs\": [\"Grand Place\", \"La Bourse\", null], \"speed\":
+   20}"} */
+SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10, "lights": null}',
+  '{"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}']), true);
+-- {"{\"speed\": 10}", "{\"PoIs\": [\"Grand Place\", \"La Bourse\"], \"speed\": 20}"}
+SELECT jsonbsetStripNulls(set(ARRAY[jsonb
+  '{"road": "Bvd Gén. Jacques", "category": "primary"}',
+  '{"road": "Bvd de la Cambre", "category": "primary"}',
+  '{"road": "rue de l''Abbaye", "category": null}']));
+/* {"{\"road\": \"rue de l'Abbaye\"}", "{\"road\": \"Bvd Gén. Jacques\", \"category\":
+   \"primary\"}", "{\"road\": \"Bvd de la Cambre\", \"category\": \"primary\"}"} */
 </pre><p>As shown below, the function does not strip bare null values. Function <code class="varname">minusValue</code> can be used for this purpose.</p><pre class="programlisting">
-SELECT jsonbsetStripNulls(textset '[{"speed": 10}, null,
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]');
--- [{"speed":10}, null, {"speed":20,"PoIs":["Grand Place","La Bourse"]}]
-SELECT minusValues(textset '[{"speed": 10}, null,
-  {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]', 'null');
-/* {[{"speed": 10}, {"speed": 10}), [{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]}
+SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10}', 'null',
+  '{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}']));
+/* {"null", "{\"speed\": 10}", "{\"PoIs\": [\"Grand Place\", \"La Bourse\"], \"speed\":
+   20}"} */
+SELECT setMinus(set(ARRAY[jsonb '{"speed": 10}', 'null',
+  '{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}']), set(ARRAY[jsonb 'null']));
+-- {"{\"speed\": 10}", "{\"PoIs\": [\"Grand Place\", \"La Bourse\"], \"speed\": 20}"}
 </pre></li><li class="listitem"><a name="jsonbset_path_exists"></a><a class="indexterm" name="id11239"></a><a class="indexterm" name="id11242"></a><a class="indexterm" name="id11245"></a><p>Does the JSON path return any item for the specified JSONB set?</p><pre class="programlisting">
 jsonbset @? jsonpath → boolean[]
 jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 </pre><p>The operator <code class="varname">@?</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
--- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+-- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
--- {t,f}
+-- {f,t}
 SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ &gt; $min)', '{"min": 15}');
--- {t,f}
+-- {f,t}
 </pre></li><li class="listitem"><a name="jsonbset_path_match"></a><a class="indexterm" name="id11254"></a><a class="indexterm" name="id11257"></a><a class="indexterm" name="id11260"></a><p>Return the result of a JSON path predicate check for a JSONB set</p><pre class="programlisting">
 jsonbset @@ jsonpath → boolean[]
 jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 </pre><p>The operator <code class="varname">@@</code> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure. The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
--- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+-- {"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
--- {t,f}
+-- {f,t}
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed &gt; $min', '{"min": 15}');
--- {t,f}
+-- {f,t}
 </pre></li><li class="listitem"><a name="jsonbset_path_query_array"></a><a class="indexterm" name="id11269"></a><a class="indexterm" name="id11272"></a><p>Return all items returned by a JSON path from a JSONB set, as a JSON array</p><pre class="programlisting">
 jsonbsetPathQueryArray(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 jsonbsetPathQueryArrayTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 </pre><p>The above function can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
-SELECT jsonbsetPathQueryArray(jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
-  '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
--- [[{"speed": 10}], [{"speed": 20, "units": "km/h"}]]
-SELECT jsonbsetPathQueryArrayTz(jsonbset '[{"cameraId":25,
-  "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]},
-  {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}]',
+SELECT jsonbsetPathQueryArray(set(ARRAY[jsonb '{"speed":10}',
+  '{"speed": 20, "units": "km/h"}']), '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)',
+  '{"min":10, "max":30}');
+-- {"[{\"speed\": 10}]", "[{\"speed\": 20, \"units\": \"km/h\"}]"}
+SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
+  '{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}',
+  '{"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}']),
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
    @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
--- [["2000-01-06", "2000-01-09"], ["2000-01-07"]]
+-- {"[\"2000-01-07\"]", "[\"2000-01-06\", \"2000-01-09\"]"}
 </pre></li><li class="listitem"><a name="jsonbset_path_query_first"></a><a class="indexterm" name="id11280"></a><a class="indexterm" name="id11283"></a><p>Return the fist item returned by a JSON path from a JSONB set</p><pre class="programlisting">
 jsonbsetPathQueryFirst(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 jsonbsetPathQueryFirstTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 </pre><p>The above functions can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
-SELECT jsonbsetPathQueryFirst(jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
-  '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max'), '{"min":10, "max":30}');
--- [[{"speed": 10}], [{"speed": 20, "units": "km/h"}]]
--- TODO, it works without "_tz"
-SELECT jsonbsetPathQueryArrayTz(jsonbset
-  '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]},
-   {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}]',
+SELECT jsonbsetPathQueryFirst(set(ARRAY[jsonb '{"speed":10}',
+  '{"speed": 20, "units": "km/h"}']), '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max)',
+  '{"min":10, "max":30}');
+-- {10, 20}
+SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
+  '{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}',
+  '{"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}']),
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
   '{"min":"2000-01-05", "max":"2000-01-09"}');
--- [["2000-01-06", "2000-01-09"], ["2000-01-07"]]
+-- {"[\"2000-01-07\"]", "[\"2000-01-06\", \"2000-01-09\"]"}
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s20.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch15s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Indexing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Temporal JSONB values</td></tr></table></div></body></html>

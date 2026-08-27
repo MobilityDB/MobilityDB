@@ -7,10 +7,10 @@ minusValues(tjsonb,valueset) → tjsonb
 SELECT atValue(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03]',
   jsonb '{"vehicleId": 1, "location": "Point(2 2)"}');
--- {[{"location": "POINT(2 2)", "vehicleId": 1}@2001-01-03]}
+-- {["{\"location\": \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-03]}
 SELECT minusValue(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03]',
   jsonb '{"vehicleId": 1, "location": "Point(2 2)"}');
-/* {[{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
-   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-03)} */
+/* {["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
+   \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-03)} */
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s09.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s11.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Temporal JSON Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Bounding Box Operations</td></tr></table></div></body></html>
