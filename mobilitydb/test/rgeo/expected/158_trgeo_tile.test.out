@@ -25,18 +25,45 @@ SELECT array_length(timeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(P
 SELECT array_length(spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 2.0, interval '1 day'), 1);
  array_length 
 --------------
-            9
+           12
 (1 row)
 
 SELECT array_length(spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 2.0, 2.0, interval '1 day'), 1);
  array_length 
 --------------
-            9
+           12
 (1 row)
 
 SELECT array_length(spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 2.0, 2.0, 2.0, interval '1 day'), 1);
  array_length 
 --------------
+           12
+(1 row)
+
+SELECT array_length(spaceBoxes(
+  trgeometry 'Polygon((-2 -2,2 -2,2 2,-2 2,-2 -2));{Pose(Point(0 0),0)@2001-01-01}',
+  2.0), 1);
+ array_length 
+--------------
             9
+(1 row)
+
+SELECT min(xMin(b)), max(xMax(b)), min(yMin(b)), max(yMax(b))
+FROM unnest(spaceBoxes(
+  trgeometry 'Polygon((-2 -2,2 -2,2 2,-2 2,-2 -2));{Pose(Point(0 0),0)@2001-01-01}',
+  2.0)) b;
+ min | max | min | max 
+-----+-----+-----+-----
+  -2 |   2 |  -2 |   2
+(1 row)
+
+SELECT round(min(xMin(b))::numeric, 6), round(max(xMax(b))::numeric, 6),
+  round(min(yMin(b))::numeric, 6), round(max(yMax(b))::numeric, 6)
+FROM unnest(spaceBoxes(
+  trgeometry 'Polygon((-2 -2,2 -2,2 2,-2 2,-2 -2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(12 0),0)@2001-01-02]',
+  2.0)) b;
+   round   |   round   |   round   |  round   
+-----------+-----------+-----------+----------
+ -2.828427 | 14.828427 | -2.828427 | 2.828427
 (1 row)
 
