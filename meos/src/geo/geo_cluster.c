@@ -243,6 +243,16 @@ geo_union_intersecting(LWGEOM **geoms, uint32_t ngeoms, UNIONFIND *uf)
   GBOX *boxes = cluster_boxes(geoms, ngeoms);
   if (! boxes)
     return false;
+
+  /* Each geometry is asked about against many others, and every one of those
+   * questions reads the same edges, so the edges are read once per geometry
+   * and kept. ⛔ They are read where the FIRST question about that geometry is
+   * asked, never up front: the box test below rejects most pairs outright, and
+   * a geometry every one of whose pairs it rejects is never read at all, so a
+   * walk over well-separated geometries reads none of them */
+  void **ctxs = palloc0(sizeof(void *) * ngeoms);
+  bool *ctx_read = palloc0(sizeof(bool) * ngeoms);
+
   bool result = true;
   for (uint32_t p = 0; p < ngeoms && result; p++)
   {
@@ -257,8 +267,19 @@ geo_union_intersecting(LWGEOM **geoms, uint32_t ngeoms, UNIONFIND *uf)
         continue;
       if (! cluster_boxes_within(&boxes[p], &boxes[q], 0.0))
         continue;
+      /* The first question asked about a geometry reads its edges, and every
+       * later one about the same geometry reads them again from here */
+      for (uint32_t k = 0; k < 2; k++)
+      {
+        uint32_t i = k ? q : p;
+        if (! ctx_read[i])
+        {
+          ctxs[i] = relate_ctx_make(geoms[i]);
+          ctx_read[i] = true;
+        }
+      }
       bool meet;
-      if (! meos_spatialrel(geoms[p], geoms[q], INTERSECTS, &meet))
+      if (! meos_spatialrel_ctx(ctxs[p], ctxs[q], INTERSECTS, &meet))
       {
         result = false;
         break;
@@ -267,6 +288,11 @@ geo_union_intersecting(LWGEOM **geoms, uint32_t ngeoms, UNIONFIND *uf)
         UF_union(uf, p, q);
     }
   }
+
+  for (uint32_t i = 0; i < ngeoms; i++)
+    relate_ctx_free(ctxs[i]);
+  pfree(ctx_read);
+  pfree(ctxs);
   pfree(boxes);
   return result;
 }

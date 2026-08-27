@@ -149,6 +149,18 @@ extern bool meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2,
   const char *pattern, bool *result);
 extern bool meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
   bool *result);
+
+/* The edges of one geometry, kept so that several relationships asked about it
+ * read them once. A relationship extracts the edges of both its operands, and
+ * for a multi-surface — whose edges are those of the union of its members —
+ * that is what the call mostly costs. A caller asking about the same geometry
+ * many times, as an all-pairs walk does, holds its context and pays the
+ * extraction once instead of once per pair. NULL where the geometry is one the
+ * engine does not cover, which is what #meos_spatialrel answers false for */
+extern void *relate_ctx_make(const LWGEOM *geom);
+extern void relate_ctx_free(void *ctx);
+extern bool meos_spatialrel_ctx(const void *ctx1, const void *ctx2,
+  spatialRel rel, bool *result);
 extern bool de9im_match(const char matrix[10], const char pattern[10]);
 extern int point_in_polygon(double x, double y, Edge **edges, int nedges);
 extern int point_in_polygon_index(double x, double y, Edge **edges,

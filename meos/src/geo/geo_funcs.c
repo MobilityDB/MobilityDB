@@ -7281,31 +7281,12 @@ meos_covers_possible(const RelateOperands *ops, bool *result)
  * @param[out] result True if the geometries stand in the relationship
  * @return True if the pair is covered
  */
-bool
-meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
-  bool *result)
+static bool
+relate_spatialrel_ops(const RelateOperands *opsp, spatialRel rel, bool *result)
 {
-  assert(g1); assert(g2); assert(result);
-
-  /* Every native implementation reads the same predicate: the engine answers
-   * a geometry the edge decomposition reaches, and nothing else */
-  if (! geom_meos_supported(g1) || ! geom_meos_supported(g2))
-    return false;
-
-  /* An empty geometry holds no point to share with another, and none of the
-   * four patterns admits an empty operand */
-  if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
-  {
-    *result = false;
-    return true;
-  }
-
-  /* Each step below reads the edges of the same two geometries, so both are
-   * extracted ONCE here and every step borrows the answer. Reading the edges
-   * of a multi-surface as those of the union of its members is what a call on
-   * such a geometry mostly costs, and it was paid once per step */
-  RelateOperands ops;
-  relate_operands_init(&ops, g1, g2);
+  const RelateOperands ops = *opsp;
+  const LWGEOM *g1 = ops.op[0].geom;
+  const LWGEOM *g2 = ops.op[1].geom;
 
   bool covered = true;
 
@@ -7358,6 +7339,127 @@ meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
     }
   }
 
+  return covered;
+}
+
+/**
+ * @brief The edges of one geometry, kept for every relationship asked about it
+ */
+struct RelateCtx
+{
+  RelateOperand op;  /**< The geometry and the edges it draws */
+};
+
+/**
+ * @brief Read the edges of a geometry once, for a caller that asks about it
+ * more than once
+ * @param[in] geom Geometry
+ * @return The context, or NULL where the geometry is one the engine does not
+ * cover, which #meos_spatialrel_ctx then answers as uncovered
+ * @note Building the context is what a relationship does at its own entry, so
+ * a caller holding one pays the extraction once instead of once per pair
+ */
+void *
+relate_ctx_make(const LWGEOM *geom)
+{
+  assert(geom);
+  /* The same predicate a relationship reads at its entry. Answering NULL here
+   * rather than extracting keeps an uncovered geometry on the path it already
+   * takes: a relationship over it reports itself uncovered and raises nothing */
+  if (! geom_meos_supported(geom))
+    return NULL;
+  struct RelateCtx *ctx = palloc(sizeof(struct RelateCtx));
+  ctx->op.geom = geom;
+  ctx->op.arr = relate_extract_edges(geom);
+  return ctx;
+}
+
+/**
+ * @brief Release a context #relate_ctx_make answered
+ */
+void
+relate_ctx_free(void *ctxv)
+{
+  struct RelateCtx *ctx = (struct RelateCtx *) ctxv;
+  if (! ctx)
+    return;
+  meos_array_destroy(ctx->op.arr);
+  pfree(ctx);
+  return;
+}
+
+/**
+ * @brief Return whether two geometries stand in a spatial relationship,
+ * reading edges each context has already extracted
+ * @param[in] ctx1,ctx2 Contexts of the two geometries, in the order asked
+ * about
+ * @param[in] rel Relationship asked for
+ * @param[out] result True if the geometries stand in the relationship
+ * @return True if the pair is covered
+ * @note The contexts keep owning their edges: this borrows them for the call
+ * and releases nothing, so one context serves as many relationships as the
+ * caller asks
+ */
+bool
+meos_spatialrel_ctx(const void *ctx1, const void *ctx2, spatialRel rel,
+  bool *result)
+{
+  assert(result);
+  const struct RelateCtx *c1 = (const struct RelateCtx *) ctx1;
+  const struct RelateCtx *c2 = (const struct RelateCtx *) ctx2;
+
+  /* A geometry the engine does not cover carries no context, and the pair is
+   * uncovered exactly as #meos_spatialrel reports it */
+  if (! c1 || ! c2)
+    return false;
+
+  /* An empty geometry holds no point to share with another, and none of the
+   * four patterns admits an empty operand */
+  if (lwgeom_is_empty(c1->op.geom) || lwgeom_is_empty(c2->op.geom))
+  {
+    *result = false;
+    return true;
+  }
+
+  RelateOperands ops;
+  ops.op[0] = c1->op;
+  ops.op[1] = c2->op;
+  return relate_spatialrel_ops(&ops, rel, result);
+}
+
+/**
+ * @brief Return whether two geometries stand in a spatial relationship
+ * @param[in] g1,g2 Geometries
+ * @param[in] rel Relationship asked for
+ * @param[out] result True if the geometries stand in the relationship
+ * @return True if the pair is covered
+ */
+bool
+meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
+  bool *result)
+{
+  assert(g1); assert(g2); assert(result);
+
+  /* Every native implementation reads the same predicate: the engine answers
+   * a geometry the edge decomposition reaches, and nothing else */
+  if (! geom_meos_supported(g1) || ! geom_meos_supported(g2))
+    return false;
+
+  /* An empty geometry holds no point to share with another, and none of the
+   * four patterns admits an empty operand */
+  if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
+  {
+    *result = false;
+    return true;
+  }
+
+  /* Each step below reads the edges of the same two geometries, so both are
+   * extracted ONCE here and every step borrows the answer. Reading the edges
+   * of a multi-surface as those of the union of its members is what a call on
+   * such a geometry mostly costs, and it was paid once per step */
+  RelateOperands ops;
+  relate_operands_init(&ops, g1, g2);
+  bool covered = relate_spatialrel_ops(&ops, rel, result);
   relate_operands_free(&ops);
   return covered;
 }
