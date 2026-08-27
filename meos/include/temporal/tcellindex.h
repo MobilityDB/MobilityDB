@@ -58,8 +58,13 @@
  *      cell-id subset (cube-face projection + Hilbert curve), libm only.
  *   3. Descriptor: define a `DggsCellOps s2_cellops` with `datum_s2_*` wrappers,
  *      its point_temptype (T_TGEOGPOINT for S2's geodetic cells) and SRID.
- *   4. Register: add the `#if S2 case T_TS2CELL: return &s2_cellops;` line to
- *      `dggs_cellops()`.
+ *   4. Register: add the `#if S2CELL case T_TS2CELL: return &s2_cellops;` line
+ *      to `dggs_cellops()`, and the matching `option(S2CELL ...)` beside
+ *      `option(H3 ...)`. The family option carries the STATIC TYPE's name, as
+ *      H3 carries h3index and QUADBIN carries quadbin: the grid's bare name
+ *      cannot serve here, because `S2` is a stab-line endpoint in the vendored
+ *      PostGIS geodetic code (liblwgeom/lwgeodetic.c, lwgeodetic_tree.c) that a
+ *      build-wide `-DS2=0|1` rewrites into a numeric constant.
  * No new temporal scaffolding, SQL boilerplate, or binding code is required:
  * the generic entry points below already cover the new type.
  */
