@@ -637,6 +637,36 @@ pose_tprecision_value(const Temporal *temp)
 #endif /* POSE */
 
 /**
+ * @brief Ensure that the temporal type carries a time-weighted value
+ * @details A bin is summarized by the time-weighted average of the values it
+ * holds: a number averages, a point takes its centroid, and a circular buffer,
+ * a pose and a rigid geometry each summarize their own parameters. An arbitrary
+ * geometry has no such summary -- the average of a set of polygons is not a
+ * polygon -- so the temporal geometry and geography types state that rather
+ * than reaching a point kernel that cannot read them.
+ */
+static bool
+ensure_has_twavg_temptype(MeosType temptype)
+{
+  if (tnumber_type(temptype) || tpoint_type(temptype)
+#if CBUFFER
+    || temptype == T_TCBUFFER
+#endif
+#if POSE
+    || temptype == T_TPOSE
+#endif
+#if RGEO
+    || temptype == T_TRGEOMETRY
+#endif
+    )
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The values of a %s have no time-weighted average",
+    meostype_name(temptype));
+  return false;
+}
+
+/**
  * @brief Compute the family-specific time-weighted precision value of a bin
  * @details Dispatch to the per-type precision function and return true; return
  * false when the temporal type has no specific implementation so that the
@@ -681,8 +711,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   assert(seq); assert(duration); assert(positive_duration(duration));
   assert(seq->temptype == T_TINT || seq->temptype == T_TBIGINT ||
     seq->temptype == T_TFLOAT ||
-    seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT ||
-    seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY
+    seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT
 #if CBUFFER
     || seq->temptype == T_TCBUFFER
 #endif
@@ -746,7 +775,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
         if (interp == STEP)
         {
           /* For STEP interpolation ALWAYS generate the end of bin instant */
-          value = ininsts[k - 1]->value;
+          value = tinstant_value_p(ininsts[k - 1]);
           ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
         }
         else if (interp == LINEAR)
@@ -985,6 +1014,8 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_duration(duration))
+    return NULL;
+  if (! ensure_has_twavg_temptype(temp->temptype))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));

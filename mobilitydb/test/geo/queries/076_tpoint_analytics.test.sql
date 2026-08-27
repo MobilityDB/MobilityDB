@@ -316,3 +316,18 @@ SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]'
   SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(0 0)@2000-01-01 00:00:00, Point(1000 0)@2000-01-01 00:00:10, Point(0 0)@2000-01-01 00:00:20]', 1.0, 0, 1, true));
 
   SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(0 0)@2000-01-01 00:00:00, Point(1000 0)@2000-01-01 00:00:10, Point(0 0)@2000-01-01 00:00:20]', 1.0, 0, 1, false));
+
+-------------------------------------------------------------------------------
+-- Granularity modification with tsample and tprecision
+
+SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
+SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01', 'linear'));
+SELECT asText(tsample(tgeogpoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
+
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
+SELECT asText(tprecision(tgeogpoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
+-- A step sequence generates an end-of-bin instant whose base value is passed by
+-- reference, which every bin after the first reads
+SELECT asText(tprecision(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03, Point(4 4)@2001-01-04, Point(5 5)@2001-01-05]', interval '1 day', '2001-01-01'));
+
+-------------------------------------------------------------------------------

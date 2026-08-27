@@ -87,3 +87,19 @@ SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 
 ERROR:  Only point geometries accepted
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'Linestring(1 1,2 2)'));
 ERROR:  Only point geometries accepted
+SELECT asText(tsample(tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
+                                                           astext                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST, POINT(5 5)@Fri Jan 05 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(tsample(tgeography '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
+                                                           astext                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST, POINT(5 5)@Fri Jan 05 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(tprecision(tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
+ERROR:  The values of a tgeometry have no time-weighted average
+SELECT asText(tprecision(tgeography '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'), 6);
+ERROR:  The values of a tgeography have no time-weighted average
