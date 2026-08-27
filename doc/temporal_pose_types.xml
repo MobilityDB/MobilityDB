@@ -143,7 +143,7 @@ SELECT asText(pose 'SRID=4326;Pose(Point(0 0),1)');
 SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
 -- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
 SELECT asEWKT(pose 'SRID=4326;Pose(Point(0 0),1)');
--- SRID=4326;Pose(Point(0 0),1)
+-- SRID=4326;Pose(POINT(0 0),1)
 SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 'Pose(SRID=5676;Point(1 1),2)']);
 -- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
 </programlisting>
@@ -189,7 +189,7 @@ posechainFromEWKT(text) &#8594; posechain
 SELECT asEWKT(poseFromText(text 'Pose(Point(1 2),1)'));
 -- Pose(POINT(1 2),1)
 SELECT asEWKT(poseFromEWKT(text 'SRID=3812;Pose(Point(1 2),1)'));
--- SRID=3812;Pose(Point(1 2),1)
+-- SRID=3812;Pose(POINT(1 2),1)
 SELECT asEWKT(posechainFromText('PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),1))'));
 -- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),1))
 SELECT asEWKT(posechainFromEWKT('SRID=3812;PoseChain(Pose(Point(0 0),0))'));
@@ -215,7 +215,7 @@ SELECT asEWKT(poseFromBinary('\x0101000000000000f03f0000000000000040000000000000
 -- Pose(POINT(1 2),1)
 SELECT asEWKT(poseFromEWKB(
   '\x0141a41e0000000000000000f03f0000000000000040000000000000f03f'));
--- SRID=7844;Pose(Point(1 2),1)
+-- SRID=7844;Pose(POINT(1 2),1)
 SELECT asEWKT(poseFromHexEWKB(
   '0141E40E0000000000000000F03F0000000000000040000000000000F03F'));
 -- SRID=3812;Pose(POINT(1 2),1)
@@ -289,7 +289,7 @@ pose::geompoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(pose(ST_Point(1, 1), 1)::geometry);
--- Point(1 1)
+-- POINT(1 1)
 SELECT ST_AsEWKT(pose(ST_PointZ(1, 1, 1, 5676), 1, 0, 0, 0)::geometry);
 -- SRID=5676;POINT(1 1 1)
 </programlisting>
@@ -308,7 +308,7 @@ point({pose,posechain}) &#8594; geometry
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(point(pose 'Pose(Point(1 1), 0.3)'));
--- Point(1 1)
+-- POINT(1 1)
 </programlisting>
 				</listitem>
 
@@ -649,7 +649,7 @@ SELECT asEWKT(tposechain(Sequence,5676) 'SRID=5676;
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-02,
   Pose(Point(3 3), 0.6)@2001-01-03)');
--- [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(3 3),0.6)@2001-01-03)
+-- [Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(3 3),0.6)@2001-01-03)
 SELECT asText(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.3)@2001-01-02,
   Pose(Point(2 2), 0.5)@2001-01-03),
   [Pose(Point(2 2), 0.5)@2001-01-03, Pose(Point(2 2), 0.7)@2001-01-04)}');
@@ -686,12 +686,12 @@ asEWKT({tpose,tposechain,tpose[],tposechain[]}) &#8594; {text,text[]}
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpose 'SRID=4326;
   [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)');
--- [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+-- [Pose(POINT(0 0),1)@2001-01-01, Pose(POINT(1 1),2)@2001-01-02)
 SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
 -- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
 SELECT asEWKT(tpose 'SRID=4326;
   [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)');
--- SRID=4326;[Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+-- SRID=4326;[Pose(POINT(0 0),1)@2001-01-01, Pose(POINT(1 1),2)@2001-01-02)
 SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 'Pose(SRID=5676;Point(1 1),2)']);
 -- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
 </programlisting>
@@ -759,7 +759,7 @@ SELECT asEWKT(tposeFromText(text '[Pose(Point(1 2),1)@2001-01-01,
 -- [Pose(POINT(1 2),1)@2001-01-01, Pose(POINT(3 4),2)@2001-01-02]
 SELECT asEWKT(tposeFromEWKT(text 'SRID=3812;
   [Pose(Point(1 2),1)@2001-01-01, Pose(Point(3 4),2)@2001-01-02]'));
--- SRID=3812;[Pose(Point(1 2),1)@2001-01-01, Pose(Point(3 4),2)@2001-01-02]
+-- SRID=3812;[Pose(POINT(1 2),1)@2001-01-01, Pose(POINT(3 4),2)@2001-01-02]
 SELECT asEWKT(tposechainFromText('SRID=5676;PoseChain(Pose(Point(1 1),0.5))@2001-01-01'));
 -- SRID=5676;PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
 SELECT asEWKT(tposechainFromBinary(asBinary(tposechain
@@ -805,7 +805,7 @@ SELECT asEWKT(tposeFromBinary(
 -- Pose(POINT(1 2),1)@2001-01-01
 SELECT asEWKT(tposeFromEWKB(
   '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
--- SRID=7844;Pose(Point(1 1),2)@2001-01-01
+-- SRID=7844;Pose(POINT(1 1),2)@2001-01-01
 SELECT asEWKT(tposeFromHexEWKB(
   '013A0041E40E0000E40E0000000000000000F03F...40000000000000F03F009C57D3C11C0000'));
 -- SRID=3812;Pose(POINT(1 2),1)@2001-01-01
@@ -831,16 +831,16 @@ tposechain(posechain,{tstzspan,tstzspanset},interp text='linear') &#8594; tposec
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpose('Pose(Point(1 1), 0.5)', timestamptz '2001-01-01'));
--- Pose(Point(1 1),0.5)@2001-01-01
+-- Pose(POINT(1 1),0.5)@2001-01-01
 SELECT asText(tpose('Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)',
   tstzset '{2001-01-01, 2001-01-05}'));
 /* {Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-01,
    Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-05} */
 SELECT asText(tpose('Pose(Point(1 1), 0.5)', tstzspan '[2001-01-01, 2001-01-02]'));
--- [Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02]
+-- [Pose(POINT(1 1),0.5)@2001-01-01, Pose(POINT(1 1),0.5)@2001-01-02]
 SELECT asText(tpose('Pose(Point(1 1), 0.2)', tstzspanset '{[2001-01-01, 2001-01-03]}',
   'step'));
--- Interp=Step;{[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(1 1),0.2)@2001-01-03]}
+-- Interp=Step;{[Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(1 1),0.2)@2001-01-03]}
 SELECT asEWKT(tposechain(posechain 'PoseChain(Pose(Point(1 1), 0.5))',
   timestamptz '2001-01-01'));
 -- PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
@@ -906,7 +906,7 @@ tpose(tgeompoint,tfloat) → tpose
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
   tfloat '[1@2001-01-01, 2@2001-01-02)'));
--- [Pose(Point(1 1),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+-- [Pose(POINT(1 1),1)@2001-01-01, Pose(POINT(1 1),2)@2001-01-02)
 SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
   tfloat '[2@2001-01-03, 3@2001-01-04)'));
 -- NULL
@@ -962,10 +962,10 @@ getValues({tpose,tposechain}) &#8594; {poseset,posechainset}
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(getValues(tpose '{[Pose(Point(1 1), 0.3)@2001-01-01,
   Pose(Point(1 1), 0.5)@2001-01-02)}'));
--- {"Pose(Point(1 1),0.3)","Pose(Point(1 1),0.5)"}
+-- {"Pose(POINT(1 1),0.3)","Pose(POINT(1 1),0.5)"}
 SELECT asEWKT(getValues(tpose 'SRID=5676;
   {[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.3)@2001-01-02)}'));
--- SRID=5676;{"Pose(Point(1 1),0.3)"}
+-- SRID=5676;{"Pose(POINT(1 1),0.3)"}
 </programlisting>
 			</listitem>
 
@@ -978,7 +978,7 @@ points(tpose) → geomset
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(points(tpose 'SRID=5676;
   {Pose(Point(3 3), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02}'));
--- SRID=5676;{Point(1 1), Point(3 3)}
+-- SRID=5676;{POINT(1 1), POINT(3 3)}
 </programlisting>
 			</listitem>
 
@@ -1008,7 +1008,7 @@ valueAtTimestamp(tpose,timestamptz) → pose
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(valueAtTimestamp(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
   Pose(Point(3 3), 0.5)@2001-01-03)', '2001-01-02'));
--- Pose(Point(2 2),0.4)
+-- Pose(POINT(2 2),0.4)
 SELECT asText(valueAtTimestamp(tpose
   '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
   Pose(Point Z(3 3 3), 1, 0, 0, 0)@2001-01-03)', timestamptz '2001-01-02'), 6);
@@ -1083,9 +1083,9 @@ tposeSeqSet(tpose) → tposeSeqSet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tposeSeq(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', 'discrete'));
--- {Pose(Point(1 1),0.5)@2001-01-01}
+-- {Pose(POINT(1 1),0.5)@2001-01-01}
 SELECT asText(tposeSeq(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'));
--- [Pose(Point(1 1),0.5)@2001-01-01]
+-- [Pose(POINT(1 1),0.5)@2001-01-01]
 SELECT asText(tposeSeqSet(tpose 'Pose(PointZ(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01'));
 -- {[Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-01]}
 </programlisting>
@@ -1099,7 +1099,7 @@ setInterp(tpose,interp) → tpose
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(setInterp(tpose 'Pose(Point(1 1),0.2)@2001-01-01','linear'));
--- [Pose(Point(1 1),0.2)@2001-01-01]
+-- [Pose(POINT(1 1),0.2)@2001-01-01]
 SELECT asText(setInterp(tpose '{[Pose(Point Z(1 1 1),1,0,0,0)@2001-01-01],
   [Pose(Point Z(2 2 2),0,0,0,1)@2001-01-02]}', 'discrete'));
 -- {Pose(POINT Z (1 1 1),1,0,0,0)@2001-01-01, Pose(POINT Z (2 2 2),0,0,0,1)@2001-01-02}
@@ -1224,7 +1224,7 @@ minusValues({tpose,tposechain},{poseset,posechainset}) &#8594; {tpose,tposechain
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atValue(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
   Pose(Point(2 2), 0.7)@2001-01-03]', 'Pose(Point(2 2), 0.5)');
--- {[Pose(Point(2 2),0.5)@2001-01-02]}
+-- {[Pose(POINT(2 2),0.5)@2001-01-02]}
 SELECT minusValue(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
   Pose(Point(2 2), 0.7)@2001-01-03]', 'Pose(Point(2 2), 0.5)');
 /* {[Pose(Point(2 2),0.3)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02),
