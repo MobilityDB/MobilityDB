@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch15.html" title="Chapter 15. JSON Types in MobilityDB"><link rel="prev" href="ch15s04.html" title="Input and Output"><link rel="next" href="ch15s06.html" title="Conversions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s04.html">Prev</a> </td><th width="60%" align="center">Chapter 15. JSON Types in MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_constructors"></a>Constructors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_const"></a><a class="indexterm" name="id11377"></a><p>Constructor for temporal JSONB values having a constant value</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch15.html" title="Chapter 15. JSON Types in MobilityDB"><link rel="prev" href="ch15s04.html" title="Input and Output"><link rel="next" href="ch15s06.html" title="Conversions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s04.html">Prev</a> </td><th width="60%" align="center">Chapter 15. JSON Types in MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_constructors"></a>Constructors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_const"></a><a class="indexterm" name="id11394"></a><p>Constructor for temporal JSONB values having a constant value</p><pre class="programlisting">
 tjsonb(jsonb,timestamptz) → tjsonbInst
 tjsonb(jsonb,tstzset) → tjsonbDiscSeq
 tjsonb(jsonb,tstzspan) → tjsonbContSeq
@@ -21,7 +21,7 @@ SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
    \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-02], ["{\"location\": \"Point(1 1)\",
    \"vehicleId\": 1}"@2001-01-03, "{\"location\": \"Point(1 1)\", \"vehicleId\":
    1}"@2001-01-04]} */
-</pre></li><li class="listitem"><a name="tjsonbSeq"></a><a class="indexterm" name="id11384"></a><p>Constructor for temporal JSONB values of sequence subtype</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonbSeq"></a><a class="indexterm" name="id11401"></a><p>Constructor for temporal JSONB values of sequence subtype</p><pre class="programlisting">
 tjsonbSeq(tjsonbInst[],lowerInc boolean=true,upperInc boolean=true) → tjsonbSeq
 </pre><pre class="programlisting">
 SELECT tjsonbSeq(ARRAY[tjsonb '"{\"vehicleId\": 1,
@@ -31,7 +31,7 @@ SELECT tjsonbSeq(ARRAY[tjsonb '"{\"vehicleId\": 1,
 /* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
    \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02, "{\"location\": \"Point(1 1)\",
    \"vehicleId\": 1}"@2001-01-03] */
-</pre></li><li class="listitem"><a name="tjsonbSeqSet"></a><a class="indexterm" name="id11391"></a><a class="indexterm" name="id11394"></a><p>Constructor for temporal JSONB values of sequence set subtype</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonbSeqSet"></a><a class="indexterm" name="id11408"></a><a class="indexterm" name="id11411"></a><p>Constructor for temporal JSONB values of sequence set subtype</p><pre class="programlisting">
 tjsonbSeqSet(tjsonb[]) → tjsonbSeqSet
 tjsonbSeqSetGaps(tjsonbInst[],maxt interval=NULL,maxdist float=NULL) → tjsonbSeqSet
 </pre><pre class="programlisting">
