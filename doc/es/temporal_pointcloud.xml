@@ -30,12 +30,12 @@ CREATE EXTENSION mobilitydb CASCADE;
 		<para>Cada valor <varname>pcpoint</varname> y <varname>pcpatch</varname> lleva un <varname>pcid</varname> que se resuelve en un <emphasis>esquema</emphasis>, que declara las dimensiones que contiene el valor (X, Y, Z, …), el tipo numérico con el que se almacena cada una, y su escala y desplazamiento. El esquema se declara en SQL, en dos tablas: <varname>pointcloud_schemas</varname> contiene lo que declara un esquema en conjunto, y <varname>pointcloud_dimensions</varname> una fila por dimensión. Un esquema 3D mínimo, con cada dimensión almacenada como <varname>int32_t</varname> con escala unitaria:</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 INSERT INTO pointcloud_schemas (pcid, srid, compression, description)
-VALUES (1, 4326, 'none', 'Esquema 3D mínimo');
+VALUES (1, 4326, 'none', 'Minimal 3D schema');
 INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation, dim_scale,
   dim_offset, active, description)
-VALUES (1, 1, 'X', 'int32_t', 1, 0, true, 'Este'),
-  (1, 2, 'Y', 'int32_t', 1, 0, true, 'Norte'),
-  (1, 3, 'Z', 'int32_t', 1, 0, true, 'Elevación');
+VALUES (1, 1, 'X', 'int32_t', 1, 0, true, 'Easting'),
+  (1, 2, 'Y', 'int32_t', 1, 0, true, 'Northing'),
+  (1, 3, 'Z', 'int32_t', 1, 0, true, 'Elevation');
 </programlisting>
 		<para>El tamaño de cada dimensión y su desplazamiento dentro de un punto no aparecen porque se derivan de la interpretación, y las dimensiones X, Y, Z y M tampoco porque se resuelven a partir de los nombres. La columna <varname>dim_no</varname> declara el orden en el que se almacenan las dimensiones, de modo que no depende del orden en el que se insertan las filas, y <varname>dim_name</varname> es el nombre por el que se resuelven. Ningún nombre de columna necesita comillas en ninguno de los hosts en los que se materializan estas tablas. Un esquema es global a la base de datos y suele registrarse una sola vez, al cargar los datos; el SRID es por esquema y lo heredan todos los valores que llevan ese <varname>pcid</varname>.</para>
 		<para>Una base de datos cuyos esquemas ya están registrados en el catálogo <varname>pointcloud_formats</varname> de pgPointCloud, como documento XML, sigue funcionando: ese catálogo se lee para un <varname>pcid</varname> que las dos tablas anteriores no declaren.</para>
@@ -1055,7 +1055,7 @@ SELECT round(nearestApproachDistance( tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 10, 10, 10), '2001-01-01'::timestamptz))::numeric, 4);
 -- 15.5885
--- Un tpcbox sin extensión temporal mide únicamente el acercamiento espacial.
+-- A tpcbox without a time span measures the spatial approach only.
 SELECT round(nearestApproachDistance(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]),
@@ -1594,7 +1594,7 @@ SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1,
   tpcbox_xt(0, 0, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 1
 -- El parche descartado sigue presente en el intervalo abierto anterior a su instante,
--- por lo que el complemento conserva dos instantes.
+-- so the complement keeps two instants.
 SELECT numInstants(minusTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
