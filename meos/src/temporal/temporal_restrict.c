@@ -83,20 +83,9 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
   }
   if (tspatial_type(temp->temptype))
   {
-#if RGEO
-    /* Temporal rigid geometries have poses as base values but are restricted
-     * to geometries */
-    MeosType basetype = (temp->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
-      temptype_basetype(temp->temptype);
-#else
     MeosType basetype = temptype_basetype(temp->temptype);
-#endif /* RGEO */
     assert(tspatial_srid(temp) == spatial_srid(value, basetype));
-    if (tgeo_type_all(temp->temptype)
-#if RGEO
-      || temp->temptype == T_TRGEOMETRY
-#endif /* RGEO */
-    )
+    if (tgeo_type_all(temp->temptype))
     {
       /* Test that the geometry is not empty */
       GSERIALIZED *gs = DatumGetGserializedP(value);
@@ -153,14 +142,7 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
   VALIDATE_NOT_NULL(temp, NULL); 
   if (tspatial_type(temp->temptype))
   {
-#if RGEO
-    /* Temporal rigid geometries have poses as base values but are restricted
-     * to geometries */
-    MeosType basetype = (temp->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
-      temptype_basetype(temp->temptype);
-#else
     MeosType basetype = temptype_basetype(temp->temptype);
-#endif /* RGEO */
     if (! ensure_same_srid(tspatial_srid(temp),
             spatial_srid(value, basetype)) ||
         ! ensure_same_spatial_dimensionality(temp->flags,
@@ -168,18 +150,22 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
       return NULL;
   }
 
+  /* A value carrying a reference geometry is restricted on the base values it
+   * interpolates, and the geometry rides through the operation unchanged */
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
+
+  Temporal *result;
   /* Bounding box test */
-  interpType interp = MEOS_FLAGS_GET_INTERP(temp->flags);
-  if (! temporal_bbox_restrict_value(temp, value))
-  {
-    if (atfunc)
-      return NULL;
-    else
-      return (temp->subtype != TSEQUENCE ||
-          MEOS_FLAGS_DISCRETE_INTERP(temp->flags)) ?
-        temporal_copy(temp) :
-        (Temporal *) tsequence_as_tsequenceset((TSequence *) temp);
-  }
+  interpType interp = MEOS_FLAGS_GET_INTERP(work->flags);
+  if (! temporal_bbox_restrict_value(work, value))
+    result = atfunc ? NULL :
+      ((work->subtype != TSEQUENCE ||
+          MEOS_FLAGS_DISCRETE_INTERP(work->flags)) ?
+        temporal_copy(work) :
+        (Temporal *) tsequence_as_tsequenceset((TSequence *) work));
 
   /* For the minus of a spatial type, the direct per-segment restriction splits
    * every segment and normalises the pieces back with a per-merge collinearity
@@ -187,34 +173,46 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
    * of the at-restriction instead: the at-restriction finds the same crossings
    * but builds a small result, and the time-based minus rebuilds the kept
    * intervals without the value-driven re-split and normalisation. */
-  if (! atfunc && tspatial_type(temp->temptype))
+  else if (! atfunc && tspatial_type(work->temptype))
   {
-    Temporal *at = temporal_restrict_value(temp, value, REST_AT);
+    Temporal *at = temporal_restrict_value(work, value, REST_AT);
     if (at == NULL)
-      return (temp->subtype != TSEQUENCE ||
-          MEOS_FLAGS_DISCRETE_INTERP(temp->flags)) ?
-        temporal_copy(temp) :
-        (Temporal *) tsequence_as_tsequenceset((TSequence *) temp);
-    SpanSet *ss = temporal_time(at);
-    Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
-    pfree(at); pfree(ss);
-    return result;
+      result = (work->subtype != TSEQUENCE ||
+          MEOS_FLAGS_DISCRETE_INTERP(work->flags)) ?
+        temporal_copy(work) :
+        (Temporal *) tsequence_as_tsequenceset((TSequence *) work);
+    else
+    {
+      SpanSet *ss = temporal_time(at);
+      result = temporal_restrict_tstzspanset(work, ss, REST_MINUS);
+      pfree(at); pfree(ss);
+    }
   }
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  else
   {
-    case TINSTANT:
-      return (Temporal *) tinstant_restrict_value((TInstant *) temp, value,
-        atfunc);
-    case TSEQUENCE:
-      return (interp == DISCRETE) ?
-        (Temporal *) tdiscseq_restrict_value((TSequence *) temp, value, atfunc) :
-        (Temporal *) tcontseq_restrict_value((TSequence *) temp, value, atfunc);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_restrict_value((TSequenceSet *) temp,
-        value, atfunc);
+    assert(temptype_subtype(work->subtype));
+    switch (work->subtype)
+    {
+      case TINSTANT:
+        result = (Temporal *) tinstant_restrict_value((TInstant *) work, value,
+          atfunc);
+        break;
+      case TSEQUENCE:
+        result = (interp == DISCRETE) ?
+          (Temporal *) tdiscseq_restrict_value((TSequence *) work, value,
+            atfunc) :
+          (Temporal *) tcontseq_restrict_value((TSequence *) work, value,
+            atfunc);
+        break;
+      default: /* TSEQUENCESET */
+        result = (Temporal *) tsequenceset_restrict_value((TSequenceSet *) work,
+          value, atfunc);
+    }
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /*****************************************************************************/
@@ -274,31 +272,42 @@ temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
   if (s->count == 1)
     return temporal_restrict_value(temp, SET_VAL_N(s, 0), atfunc);
 
-  /* Bounding box test */
-  interpType interp = MEOS_FLAGS_GET_INTERP(temp->flags);
-  if (! temporal_bbox_restrict_set(temp, s))
-  {
-    if (atfunc)
-      return NULL;
-    else
-      return (temp->subtype != TSEQUENCE) ? temporal_copy(temp) :
-        (Temporal *) tsequence_as_tsequenceset((TSequence *) temp);
-  }
+  /* A value carrying a reference geometry is restricted on the base values it
+   * interpolates, and the geometry rides through the operation unchanged */
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (! work)
+    return NULL;
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  Temporal *result;
+  /* Bounding box test */
+  interpType interp = MEOS_FLAGS_GET_INTERP(work->flags);
+  if (! temporal_bbox_restrict_set(work, s))
+    result = atfunc ? NULL :
+      ((work->subtype != TSEQUENCE) ? temporal_copy(work) :
+        (Temporal *) tsequence_as_tsequenceset((TSequence *) work));
+  else
+  {
+  assert(temptype_subtype(work->subtype));
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_restrict_values((TInstant *) temp, s,
+      result = (Temporal *) tinstant_restrict_values((TInstant *) work, s,
         atfunc);
+      break;
     case TSEQUENCE:
-      return (interp == DISCRETE) ?
-        (Temporal *) tdiscseq_restrict_values((TSequence *) temp, s, atfunc) :
-        (Temporal *) tcontseq_restrict_values((TSequence *) temp, s, atfunc);
+      result = (interp == DISCRETE) ?
+        (Temporal *) tdiscseq_restrict_values((TSequence *) work, s, atfunc) :
+        (Temporal *) tcontseq_restrict_values((TSequence *) work, s, atfunc);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_restrict_values((TSequenceSet *) temp,
+      result = (Temporal *) tsequenceset_restrict_values((TSequenceSet *) work,
         s, atfunc);
   }
+  }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 /*****************************************************************************/
@@ -735,14 +744,7 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 bool
 tinstant_restrict_values_test(const TInstant *inst, const Set *s, bool atfunc)
 {
-#if RGEO
-  /* Temporal rigid geometries have poses as base values but are restricted
-   * to geometries */
-  MeosType basetype = (inst->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
-    temptype_basetype(inst->temptype);
-#else
-    MeosType basetype = temptype_basetype(inst->temptype);
-#endif /* RGEO */
+  MeosType basetype = temptype_basetype(inst->temptype);
   for (int i = 0; i < s->count; i++)
   {
     if (datum_eq(tinstant_value_p(inst), SET_VAL_N(s, i), basetype))
@@ -962,14 +964,7 @@ TSequence *
 tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
   assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
-#if RGEO
-  /* Temporal rigid geometries have poses as base values but are restricted
-   * to geometries */
-  MeosType basetype = (seq->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
-    temptype_basetype(seq->temptype);
-#else
-    MeosType basetype = temptype_basetype(seq->temptype);
-#endif /* RGEO */
+  MeosType basetype = temptype_basetype(seq->temptype);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1057,10 +1052,6 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   Datum start = tinstant_value_p(inst1);
   Datum end = tinstant_value_p(inst2);
   MeosType basetype = temptype_basetype(inst1->temptype);
-  // /* Temporal rigid geometries have poses as base values but are restricted
-   // * to geometries */
-  // MeosType basetype1 = (inst1->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
-    // basetype;
   TInstant *instants[2];
   /* Is the segment constant? */
   bool isconst = datum_eq(start, end, basetype);

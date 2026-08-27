@@ -2414,6 +2414,9 @@
 			<title>Restricciones</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="trgeometry_atValue"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restringe al (complemento de) una pose o un conjunto de poses</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="trgeometry_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringe una trgeometry a (el complemento de) una geometría</para>
 				</listitem>
 				<listitem>

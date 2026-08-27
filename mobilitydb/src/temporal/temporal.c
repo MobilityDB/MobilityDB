@@ -2096,13 +2096,7 @@ Temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
   MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
-#if RGEO
-  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
-    trgeometry_restrict_value(temp, value, atfunc) :
-    temporal_restrict_value(temp, value, atfunc);
-#else
   Temporal *result = temporal_restrict_value(temp, value, atfunc);
-#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetype, 1);
   if (! result)
@@ -2147,13 +2141,7 @@ Temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *s = PG_GETARG_SET_P(1);
-#if RGEO
-  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
-    trgeometry_restrict_values(temp, s, atfunc) :
-    temporal_restrict_values(temp, s, atfunc);
-#else
   Temporal *result = temporal_restrict_values(temp, s, atfunc);
-#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(s, 1);
   if (! result)

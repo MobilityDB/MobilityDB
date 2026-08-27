@@ -575,6 +575,31 @@ SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 		<para>Las funciones <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname> y <varname>minusStbox</varname> restringen una trgeometry a (el complemento de) una geometría o una caja espaciotemporal. La semántica refleja la de <varname>tpose</varname>: una geometría rígida temporal está «en» una región en el instante <varname>t</varname> si y solo si su centroide (antena) en <varname>t</varname> se encuentra en esa región.</para>
 
 		<itemizedlist>
+			<listitem xml:id="trgeometry_atValue">
+				<indexterm significance="normal"><primary><varname>atValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
+				<para>Restringe al (complemento de) una pose o un conjunto de poses</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atValue(trgeometry,pose) &#8594; trgeometry
+minusValue(trgeometry,pose) &#8594; trgeometry
+atValues(trgeometry,poseset) &#8594; trgeometry
+minusValues(trgeometry,poseset) &#8594; trgeometry
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atValue(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
+  [Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02,
+  Pose(Point(1 1), 0.5)@2000-01-03]', pose 'Pose(Point(1 1), 0.5)'));
+-- POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.5)@2000-01-03]}
+SELECT asText(minusValue(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
+  {Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02,
+  Pose(Point(1 1), 0.5)@2000-01-03}', pose 'Pose(Point(1 1), 0.5)'));
+-- POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 1),0.3)@2000-01-01}
+</programlisting>
+				<para>El valor de restricción es una pose, el valor base que interpola una geometría rígida temporal. La geometría de referencia se conserva sin cambios, de modo que el resultado describe el mismo cuerpo.</para>
+			</listitem>
+
 			<listitem xml:id="trgeometry_atGeometry">
 				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
