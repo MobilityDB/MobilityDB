@@ -74,6 +74,7 @@
 #if RGEO
   #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
+  #include "rgeo/trgeo_utils.h"
 #endif
 
 /*****************************************************************************
@@ -641,6 +642,26 @@ temporal_strip_geom(const Temporal *temp, const GSERIALIZED **geom)
   }
 #endif /* RGEO */
   return (Temporal *) temp;
+}
+
+/**
+ * @brief Return whether two temporal values carry a reference geometry that
+ * allows them to be combined into one
+ * @details Two values carrying a reference geometry combine into one only
+ * where the body is the same, since the result carries a single one. A value
+ * carrying none imposes nothing.
+ * @param[in] geom1,geom2 Reference geometries, NULL where a value carries none
+ */
+bool
+temporal_geom_combinable(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
+{
+  if (! geom1 || ! geom2)
+    return true;
+#if RGEO
+  return ensure_same_geom(geom1, geom2);
+#else
+  return true;
+#endif /* RGEO */
 }
 
 /**

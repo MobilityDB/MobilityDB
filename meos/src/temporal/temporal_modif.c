@@ -1528,9 +1528,19 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
       ! ensure_spatial_validity(temp1, temp2))
     return NULL;
 
+  const GSERIALIZED *geom1, *geom2;
+  Temporal *work1 = temporal_strip_geom(temp1, &geom1);
+  Temporal *work2 = temporal_strip_geom(temp2, &geom2);
+  if (! work1 || ! work2 || ! temporal_geom_combinable(geom1, geom2))
+  {
+    if (work1 != temp1) pfree(work1);
+    if (work2 != temp2) pfree(work2);
+    return NULL;
+  }
+
   /* Convert to the same subtype */
   Temporal *new1, *new2;
-  temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
+  temporal_convert_same_subtype(work1, work2, &new1, &new2);
 
   Temporal *result;
   assert(temptype_subtype(new1->subtype));
@@ -1550,11 +1560,15 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
         (Temporal *) tsequenceset_insert((TSequenceSet *) new1,
           (TSequenceSet *) new2);
   }
-  if (temp1 != new1)
+  if (work1 != new1)
     pfree(new1);
-  if (temp2 != new2)
+  if (work2 != new2)
     pfree(new2);
-  return result;
+  if (work1 != temp1)
+    pfree(work1);
+  if (work2 != temp2)
+    pfree(work2);
+  return temporal_attach_geom(geom1, result);
 }
 
 /**
@@ -2276,6 +2290,17 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
+
+#if RGEO
+  /* A temporal rigid geometry carries a reference geometry that a value
+   * rebuilt from instants does not reproduce. It appends as the poses it is
+   * made of and takes its body back afterwards, which the rigid geometry
+   * entry does; unlike the operations that read their argument, this one
+   * consumes it in expandable mode, so the entry owns that contract */
+  if (temp->temptype == T_TRGEOMETRY)
+    return trgeometry_append_tinstant(temp, inst, interp, maxdist, maxt,
+      expand);
+#endif /* RGEO */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
