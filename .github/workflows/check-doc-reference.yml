@@ -41,6 +41,9 @@ jobs:
       - name: Every chapter entry reaches the appendix exactly once
         run: python3 tools/doc/gen_reference.py --audit
 
+      - name: An entry carries the same support icons in both manuals
+        run: python3 tools/doc/check_icon_parity.py
+
       - name: Both manuals parse with the generated appendix
         run: |
           xmllint --noout --noent doc/mobilitydb-manual.xml
