@@ -8635,3 +8635,504 @@ meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * The centroid of a geometry
+ *
+ * The centroid is a weighted mean of the points a geometry is made of, so it
+ * needs no overlay engine: an area, a length and a count are the whole of it.
+ * Routing it through GEOS costs the arcs their exactness -- GEOS reads a
+ * circular string by stroking it -- and costs the answer its ordinates,
+ * because the centroid GEOS returns is a bare point in the plane.
+ *
+ * The weights are the measure of the piece each mean is taken over, and the
+ * piece is chosen by dimension: a geometry holding any area is the mean of
+ * its areas, one holding only curves is the mean of their lengths, and one
+ * holding only points is the mean of the points. A piece of zero measure
+ * carries no weight, so a shape that encloses nothing falls back to the mean
+ * of what it does hold.
+ *****************************************************************************/
+
+/**
+ * @brief The running mean a centroid is accumulated into
+ * @details Every ordinate is summed with the SAME weight, so the answer is the
+ * centroid of the point set in as many dimensions as the input states. The
+ * weight is an area, a length or a count according to what is being measured.
+ */
+typedef struct
+{
+  double weight;    /**< total measure accumulated */
+  double x, y;      /**< coordinates, each weighted by @p weight */
+  double z, m;      /**< ordinates, weighted the same way */
+} CentroidAcc;
+
+/**
+ * @brief Add a piece of the given measure, centred at the given point
+ */
+static void
+centroid_add(CentroidAcc *acc, double weight, const POINT4D *p)
+{
+  acc->weight += weight;
+  acc->x += weight * p->x;
+  acc->y += weight * p->y;
+  acc->z += weight * p->z;
+  acc->m += weight * p->m;
+  return;
+}
+
+/**
+ * @brief Return the mean accumulated so far, false when nothing carries weight
+ */
+static bool
+centroid_mean(const CentroidAcc *acc, POINT4D *result)
+{
+  if (acc->weight == 0.0)
+    return false;
+  result->x = acc->x / acc->weight;
+  result->y = acc->y / acc->weight;
+  result->z = acc->z / acc->weight;
+  result->m = acc->m / acc->weight;
+  return true;
+}
+
+/**
+ * @brief Return the centre and the angles an arc through three points spans
+ * @details The circumcentre is measured FROM THE MIDDLE POINT for the reason
+ * #emit_arc_edge states: reading it from the squares of projected coordinates
+ * loses the arc in the cancellation. Answers false when the three points are
+ * collinear, which is a straight segment rather than an arc.
+ */
+static bool
+arc_geometry(const POINT4D *p1, const POINT4D *p2, const POINT4D *p3,
+  double *cx, double *cy, double *radius, double *sweep)
+{
+  double ox = p2->x, oy = p2->y;
+  double ax = p1->x - ox, ay = p1->y - oy;
+  double bx = p3->x - ox, by = p3->y - oy;
+  double d = 2 * (ax * (0 - by) + 0 * (by - ay) + bx * (ay - 0));
+  if (fabs(d) < MEOS_GEOM_TOLERANCE)
+    return false;
+
+  double asq = ax * ax + ay * ay, bsq = bx * bx + by * by;
+  double ux = (ay * bsq - by * asq) / d;
+  double uy = (bx * asq - ax * bsq) / d;
+  *cx = ux + ox;
+  *cy = uy + oy;
+  *radius = hypot(ux, uy);
+  if (*radius < MEOS_GEOM_TOLERANCE)
+    return false;
+
+  double t1 = atan2(p1->y - *cy, p1->x - *cx);
+  double t2 = atan2(p2->y - *cy, p2->x - *cx);
+  double t3 = atan2(p3->y - *cy, p3->x - *cx);
+  /* The arc runs from p1 to p3 the way round that passes through p2 */
+  bool ccw = angle_normalize(t2 - t1) < angle_normalize(t3 - t1) ||
+    angle_normalize(t3 - t1) < MEOS_EPSILON;
+  *sweep = ccw ? angle_normalize(t3 - t1) : -angle_normalize(t1 - t3);
+  if (fabs(*sweep) < MEOS_EPSILON)
+    *sweep = ccw ? 2 * M_PI : -2 * M_PI;
+  return true;
+}
+
+/**
+ * @brief Add the length and the centre of mass of the arc through three points
+ * @details The centre of mass of a circular arc lies on the bisector of the
+ * angle it spans, at @p r*sin(h)/h from the centre for a half angle @p h.
+ * The ordinates are read BY ANGLE, as [[the lift of an arc]] is everywhere in
+ * this engine, so their mean over the arc is the mean of the two ends.
+ */
+static void
+centroid_add_arc(CentroidAcc *acc, const POINT4D *p1, const POINT4D *p2,
+  const POINT4D *p3)
+{
+  double cx, cy, radius, sweep;
+  if (! arc_geometry(p1, p2, p3, &cx, &cy, &radius, &sweep))
+  {
+    /* Collinear: the two segments the three points draw */
+    const POINT4D *pts[3] = {p1, p2, p3};
+    for (int i = 0; i < 2; i++)
+    {
+      double len = hypot(pts[i + 1]->x - pts[i]->x, pts[i + 1]->y - pts[i]->y);
+      POINT4D mid;
+      mid.x = (pts[i]->x + pts[i + 1]->x) / 2;
+      mid.y = (pts[i]->y + pts[i + 1]->y) / 2;
+      mid.z = (pts[i]->z + pts[i + 1]->z) / 2;
+      mid.m = (pts[i]->m + pts[i + 1]->m) / 2;
+      centroid_add(acc, len, &mid);
+    }
+    return;
+  }
+
+  double half = fabs(sweep) / 2;
+  double t1 = atan2(p1->y - cy, p1->x - cx);
+  double bisector = t1 + sweep / 2;
+  double dist = (half < MEOS_EPSILON) ? radius : radius * sin(half) / half;
+  POINT4D com;
+  com.x = cx + dist * cos(bisector);
+  com.y = cy + dist * sin(bisector);
+  com.z = (p1->z + p3->z) / 2;
+  com.m = (p1->m + p3->m) / 2;
+  centroid_add(acc, radius * fabs(sweep), &com);
+  return;
+}
+
+/**
+ * @brief Add every piece of a point array read as a curve
+ * @param[in,out] acc Accumulator of lengths
+ * @param[in] pa Point array
+ * @param[in] arcs True when consecutive triples of points draw circular arcs
+ */
+static void
+centroid_add_ptarray_line(CentroidAcc *acc, const POINTARRAY *pa, bool arcs)
+{
+  if (arcs)
+  {
+    for (uint32_t i = 0; i + 2 < pa->npoints; i += 2)
+    {
+      POINT4D p1, p2, p3;
+      getPoint4d_p(pa, i, &p1);
+      getPoint4d_p(pa, i + 1, &p2);
+      getPoint4d_p(pa, i + 2, &p3);
+      centroid_add_arc(acc, &p1, &p2, &p3);
+    }
+    return;
+  }
+  for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+  {
+    POINT4D p1, p2, mid;
+    getPoint4d_p(pa, i, &p1);
+    getPoint4d_p(pa, i + 1, &p2);
+    double len = hypot(p2.x - p1.x, p2.y - p1.y);
+    mid.x = (p1.x + p2.x) / 2;
+    mid.y = (p1.y + p2.y) / 2;
+    mid.z = (p1.z + p2.z) / 2;
+    mid.m = (p1.m + p2.m) / 2;
+    centroid_add(acc, len, &mid);
+  }
+  return;
+}
+
+/**
+ * @brief Add every point of a point array, each weighing one
+ */
+static void
+centroid_add_ptarray_points(CentroidAcc *acc, const POINTARRAY *pa)
+{
+  for (uint32_t i = 0; i < pa->npoints; i++)
+  {
+    POINT4D p;
+    getPoint4d_p(pa, i, &p);
+    centroid_add(acc, 1.0, &p);
+  }
+  return;
+}
+
+/**
+ * @brief Add the area a ring encloses and the centre of mass of that area
+ * @details The ring is read as a fan of triangles from its first point, which
+ * keeps every coordinate the size of the ring rather than of the projection it
+ * sits in. A triangle weighs its SIGNED area, so a hole -- wound the other way
+ * -- subtracts both its area and its moment, and the ordinates ride the same
+ * weights as the coordinates. An arc contributes the triangle its chord draws
+ * plus the circular segment standing on that chord.
+ * @param[in,out] acc Accumulator of areas
+ * @param[in] pa Point array of the ring
+ * @param[in] arcs True when consecutive triples of points draw circular arcs
+ */
+static void
+centroid_add_ring(CentroidAcc *acc, const POINTARRAY *pa, bool arcs,
+  const POINT4D *origin)
+{
+  if (pa->npoints < 2)
+    return;
+  POINT4D p0 = *origin;
+
+  /* The chord polygon, in which each arc stands as the segment joining its ends.
+   * The fan runs from an origin the CALLER owns, so a ring assembled from
+   * several pieces -- a compound curve -- fans from one point throughout
+   * instead of once per piece, which is what makes its area come out whole */
+  uint32_t step = arcs ? 2 : 1;
+  for (uint32_t i = 0; i + step < pa->npoints; i += step)
+  {
+    POINT4D pa1, pa2;
+    getPoint4d_p(pa, i, &pa1);
+    getPoint4d_p(pa, i + step, &pa2);
+    double cross = (pa1.x - p0.x) * (pa2.y - p0.y) -
+      (pa2.x - p0.x) * (pa1.y - p0.y);
+    POINT4D com;
+    com.x = (p0.x + pa1.x + pa2.x) / 3;
+    com.y = (p0.y + pa1.y + pa2.y) / 3;
+    com.z = (p0.z + pa1.z + pa2.z) / 3;
+    com.m = (p0.m + pa1.m + pa2.m) / 3;
+    centroid_add(acc, cross / 2, &com);
+  }
+  if (! arcs)
+    return;
+
+  /* The circular segment each arc adds to, or takes from, its chord */
+  for (uint32_t i = 0; i + 2 < pa->npoints; i += 2)
+  {
+    POINT4D p1, p2, p3;
+    getPoint4d_p(pa, i, &p1);
+    getPoint4d_p(pa, i + 1, &p2);
+    getPoint4d_p(pa, i + 2, &p3);
+    double cx, cy, radius, sweep;
+    if (! arc_geometry(&p1, &p2, &p3, &cx, &cy, &radius, &sweep))
+      continue;
+    double theta = fabs(sweep);
+    double denom = theta - sin(theta);
+    if (fabs(denom) < MEOS_EPSILON)
+      continue;
+    double area = radius * radius * denom / 2;
+    double half = theta / 2;
+    double dist = 4 * radius * sin(half) * sin(half) * sin(half) / (3 * denom);
+    double t1 = atan2(p1.y - cy, p1.x - cx);
+    double bisector = t1 + sweep / 2;
+    POINT4D com;
+    com.x = cx + dist * cos(bisector);
+    com.y = cy + dist * sin(bisector);
+    com.z = (p1.z + p3.z) / 2;
+    com.m = (p1.m + p3.m) / 2;
+    /* A segment standing on the left of its chord adds; one on the right,
+     * which is the arc bulging into the ring, takes away */
+    centroid_add(acc, (sweep > 0) ? area : -area, &com);
+  }
+  return;
+}
+
+/**
+ * @brief Read the first point of a ring, which may be assembled from pieces
+ */
+static bool
+ring_first_point(const LWGEOM *geom, POINT4D *result)
+{
+  if (! geom || lwgeom_is_empty(geom))
+    return false;
+  if (geom->type == LINETYPE)
+  {
+    getPoint4d_p(((const LWLINE *) geom)->points, 0, result);
+    return true;
+  }
+  if (geom->type == CIRCSTRINGTYPE)
+  {
+    getPoint4d_p(((const LWCIRCSTRING *) geom)->points, 0, result);
+    return true;
+  }
+  if (lwgeom_is_collection(geom))
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+      if (ring_first_point(coll->geoms[i], result))
+        return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Add the area a ring encloses, the ring being a line, a circular
+ * string, or a compound curve assembled from both
+ */
+static void
+centroid_add_curve_ring(CentroidAcc *acc, const LWGEOM *geom,
+  const POINT4D *origin)
+{
+  if (! geom || lwgeom_is_empty(geom))
+    return;
+  if (geom->type == LINETYPE)
+  {
+    centroid_add_ring(acc, ((const LWLINE *) geom)->points, false, origin);
+    return;
+  }
+  if (geom->type == CIRCSTRINGTYPE)
+  {
+    centroid_add_ring(acc, ((const LWCIRCSTRING *) geom)->points, true, origin);
+    return;
+  }
+  if (lwgeom_is_collection(geom))
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+      centroid_add_curve_ring(acc, coll->geoms[i], origin);
+  }
+  return;
+}
+
+/**
+ * @brief Add every piece of a ring read as a curve, the ring being a line, a
+ * circular string, or a compound curve assembled from both
+ */
+static void
+centroid_add_curve_line(CentroidAcc *lineal, CentroidAcc *punctual,
+  const LWGEOM *geom)
+{
+  if (! geom || lwgeom_is_empty(geom))
+    return;
+  if (geom->type == LINETYPE)
+  {
+    centroid_add_ptarray_line(lineal, ((const LWLINE *) geom)->points, false);
+    centroid_add_ptarray_points(punctual, ((const LWLINE *) geom)->points);
+    return;
+  }
+  if (geom->type == CIRCSTRINGTYPE)
+  {
+    centroid_add_ptarray_line(lineal, ((const LWCIRCSTRING *) geom)->points,
+      true);
+    centroid_add_ptarray_points(punctual,
+      ((const LWCIRCSTRING *) geom)->points);
+    return;
+  }
+  if (lwgeom_is_collection(geom))
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+      centroid_add_curve_line(lineal, punctual, coll->geoms[i]);
+  }
+  return;
+}
+
+/**
+ * @brief Fold a ring's own accumulator into the areal one, with the given sign
+ * @details A ring is first made to weigh POSITIVELY, because the winding of a
+ * ring does not say whether it bounds the surface or a hole in it -- both
+ * rings of `POLYGON((0 0,0 4,4 4,4 0,0 0),(1 1,1 2,2 2,2 1,1 1))` run the same
+ * way round. What says it is the ring's POSITION: the first bounds the
+ * surface and every later one is a hole, so the hole is what carries the
+ * negative sign here rather than whatever winding it happens to have.
+ */
+static void
+centroid_fold_ring(CentroidAcc *areal, const CentroidAcc *ring, bool hole)
+{
+  if (ring->weight == 0.0)
+    return;
+  double sign = (ring->weight < 0) ? -1.0 : 1.0;
+  if (hole)
+    sign = -sign;
+  areal->weight += sign * ring->weight;
+  areal->x += sign * ring->x;
+  areal->y += sign * ring->y;
+  areal->z += sign * ring->z;
+  areal->m += sign * ring->m;
+  return;
+}
+
+/**
+ * @brief Add a geometry to the accumulator of its own dimension
+ * @details Each of the three accumulators is filled independently, and the
+ * answer is read from the highest one that carries weight. That is what lets a
+ * shape enclosing no area fall back to the curve it draws, and a curve of no
+ * length to the point it stands at, without a separate pass.
+ */
+static void
+centroid_add_geo(const LWGEOM *geom, CentroidAcc *areal, CentroidAcc *lineal,
+  CentroidAcc *punctual)
+{
+  if (! geom || lwgeom_is_empty(geom))
+    return;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      centroid_add_ptarray_points(punctual, ((const LWPOINT *) geom)->point);
+      return;
+    case LINETYPE:
+      centroid_add_ptarray_line(lineal, ((const LWLINE *) geom)->points, false);
+      centroid_add_ptarray_points(punctual, ((const LWLINE *) geom)->points);
+      return;
+    case CIRCSTRINGTYPE:
+      centroid_add_ptarray_line(lineal, ((const LWCIRCSTRING *) geom)->points,
+        true);
+      centroid_add_ptarray_points(punctual,
+        ((const LWCIRCSTRING *) geom)->points);
+      return;
+    case TRIANGLETYPE:
+    {
+      const LWTRIANGLE *tri = (const LWTRIANGLE *) geom;
+      POINT4D origin;
+      getPoint4d_p(tri->points, 0, &origin);
+      CentroidAcc ring = {0};
+      centroid_add_ring(&ring, tri->points, false, &origin);
+      centroid_fold_ring(areal, &ring, false);
+      centroid_add_ptarray_line(lineal, tri->points, false);
+      centroid_add_ptarray_points(punctual, tri->points);
+      return;
+    }
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+      {
+        if (poly->rings[i]->npoints == 0)
+          continue;
+        POINT4D origin;
+        getPoint4d_p(poly->rings[i], 0, &origin);
+        CentroidAcc ring = {0};
+        centroid_add_ring(&ring, poly->rings[i], false, &origin);
+        centroid_fold_ring(areal, &ring, i > 0);
+        centroid_add_ptarray_line(lineal, poly->rings[i], false);
+        centroid_add_ptarray_points(punctual, poly->rings[i]);
+      }
+      return;
+    }
+    case CURVEPOLYTYPE:
+    {
+      const LWCURVEPOLY *cp = (const LWCURVEPOLY *) geom;
+      for (uint32_t i = 0; i < cp->nrings; i++)
+      {
+        const LWGEOM *ring = cp->rings[i];
+        POINT4D origin;
+        if (! ring_first_point(ring, &origin))
+          continue;
+        CentroidAcc acc = {0};
+        centroid_add_curve_ring(&acc, ring, &origin);
+        centroid_fold_ring(areal, &acc, i > 0);
+        centroid_add_curve_line(lineal, punctual, ring);
+      }
+      return;
+    }
+    default:
+      break;
+  }
+  if (lwgeom_is_collection(geom))
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+      centroid_add_geo(coll->geoms[i], areal, lineal, punctual);
+    return;
+  }
+  return;
+}
+
+/**
+ * @brief Return the centroid of a geometry
+ * @details The centroid is the mean of the highest-dimensional pieces the
+ * geometry holds, weighted by their measure, and it is taken in every
+ * dimension the geometry states. Works directly on the exact circular arcs,
+ * which it answers by their closed forms rather than by stroking them.
+ */
+LWGEOM *
+meos_centroid(const LWGEOM *geom)
+{
+  assert(geom);
+  bool hasz = (bool) FLAGS_GET_Z(geom->flags);
+  bool hasm = (bool) FLAGS_GET_M(geom->flags);
+  int32_t srid = geom->srid;
+
+  if (lwgeom_is_empty(geom))
+    return lwpoint_as_lwgeom(lwpoint_construct_empty(srid, hasz, hasm));
+
+  CentroidAcc areal = {0}, lineal = {0}, punctual = {0};
+  centroid_add_geo(geom, &areal, &lineal, &punctual);
+
+  POINT4D mean = {0, 0, 0, 0};
+  /* Every ring is folded in weighing positively, so a surface that holds any
+   * area holds a positive total of it */
+  if (areal.weight > MEOS_EPSILON)
+    centroid_mean(&areal, &mean);
+  else if (lineal.weight > MEOS_EPSILON)
+    centroid_mean(&lineal, &mean);
+  else if (! centroid_mean(&punctual, &mean))
+    return lwpoint_as_lwgeom(lwpoint_construct_empty(srid, hasz, hasm));
+
+  return lwpoint_as_lwgeom(lwpoint_make(srid, hasz, hasm, &mean));
+}
+
+/*****************************************************************************/

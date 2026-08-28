@@ -1663,33 +1663,28 @@ geo_geo_n(const GSERIALIZED *gs, int n)
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return the centroid of a geometry
+ * @details The answer carries the ordinates of its input: the centroid is a
+ * mean, and a mean is taken in every dimension the geometry states. PostGIS
+ * answers a bare point in the plane, since the GEOS centroid it delegates to
+ * has no ordinates to give back.
  * @note PostGIS function: @p centroid(PG_FUNCTION_ARGS).
  */
 GSERIALIZED *
 geom_centroid(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  /* The Z dimension is not verified: PostGIS function #lwgeom_centroid
-   * propagates the Z flag of the geometry to its result */
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_geodetic_geo(gs))
     return NULL;
 
-#if GEOS
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  LWGEOM *lwresult = lwgeom_centroid(lwgeom);
+  LWGEOM *lwresult = meos_centroid(lwgeom);
   lwgeom_free(lwgeom);
   if (! lwresult)
     return NULL;
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(lwresult);
   return result;
-#else /* ! GEOS */
-  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-    "The centroid of a geometry is answered by the GEOS library, which this "
-    "build excludes: configure with -DGEOS=ON");
-  return NULL;
-#endif /* GEOS */
 }
 
 /**

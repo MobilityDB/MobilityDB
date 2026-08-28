@@ -405,6 +405,19 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(
 SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,7 1,1 1))@2000-01-03]'));
 SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, Polygon((1 1,4 4,7 1,1 1))@2000-01-02]'),6);
 
+-- The centroid is a mean, so it is taken in every dimension the value states.
+-- The centroid of a single point is that point, ordinates included
+SELECT asText(centroid(tgeometry '[Point Z(1 2 3)@2000-01-01]'));
+SELECT asText(centroid(tgeometry '[Polygon Z((0 0 5,0 4 5,4 4 5,4 0 5,0 0 5))@2000-01-01]'));
+SELECT asText(centroid(tgeometry '[MultiPoint Z(0 0 1,2 0 3,0 2 5)@2000-01-01]'),6);
+-- A hole is what its POSITION in the polygon says it is: both rings here run
+-- the same way round, so a winding rule would add the hole instead of taking
+-- it away, and the centroid would read 1.970588 rather than 2.033333
+SELECT asText(centroid(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0),(1 1,1 2,2 2,2 1,1 1))@2000-01-01]'),6);
+-- An arc is answered by its own closed form rather than by stroking it: the
+-- centroid of this semicircle stands 2r/pi = 0.636620 above its ends
+SELECT asText(centroid(tgeometry '[Circularstring(0 0,1 1,2 0)@2000-01-01]'),6);
+
 ---------------------------------------------------------
 -- Only 2D is allowed for atGeometry/minusGeometry on tgeometry
 
