@@ -288,6 +288,32 @@ SELECT asEWKT(transformPipeline(transformPipeline(cbuffer, pipeline, 4326), pipe
 			</itemizedlist>
 		</sect2>
 
+				<sect2 xml:id="cbuffer_distance">
+			<title>Distance Operations</title>
+
+			<itemizedlist>
+				<listitem xml:id="cbuffer_distance_op">
+					<indexterm significance="normal"><primary><varname>distance</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+					<para>Return the distance</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+distance({geo,stbox,cbuffer},cbuffer) → float
+distance(cbuffer,{geo,stbox,cbuffer}) → float
+{geo,stbox,cbuffer} &lt;-&gt; cbuffer → float
+</programlisting>
+					<para>The distance between two circular buffers is the distance between their points reduced by both radii, and is zero when the buffers overlap. The result is <varname>NULL</varname> when the geometry is empty.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(distance(geometry 'Point(1 0)', cbuffer 'Cbuffer(Point(4 0),0.5)'), 6);
+-- 2.5
+SELECT round(cbuffer 'Cbuffer(Point(0 0),0.5)' &lt;-&gt; cbuffer 'Cbuffer(Point(3 4),0.5)', 6);
+-- 4
+SELECT round(cbuffer 'Cbuffer(Point(0 0),3)' &lt;-&gt; cbuffer 'Cbuffer(Point(3 4),3)', 6);
+-- 0
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 				<sect2 xml:id="cbuffer_static_operators">
 			<title>Comparisons</title>
 
@@ -1089,7 +1115,8 @@ SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 				<para>Return the temporal distance</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-{geo,cbuffer,tcbuffer} &lt;-&gt; {geo,cbuffer,tcbuffer} → tfloat
+{geo,cbuffer} &lt;-&gt; tcbuffer → tfloat
+tcbuffer &lt;-&gt; {geo,cbuffer,tcbuffer} → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,

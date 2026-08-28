@@ -2053,6 +2053,14 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
+				<title>Operaciones de distancia</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_distance_op"><varname>distance</varname>, <varname>&lt;-&gt;</varname></link>: Devuelve la distancia</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>Comparaciones</title>
 				<itemizedlist>
 					<listitem>
