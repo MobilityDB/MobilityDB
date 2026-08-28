@@ -36,21 +36,7 @@
 #ifndef __PG_INT_H__
 #define __PG_INT_H__
 
-/* A translation unit that has PostgreSQL's postgres.h already carries these
- * names, and the two spellings are the same type only from PG18 on: PG17
- * declares int64 as long int, which on a platform where int64_t is long long
- * is a redefinition with a different type and a hard error. postgres.h defines
- * POSTGRES_H, and so does the copy this tree vendors, so the guard reads as
- * "PostgreSQL's base types are already in scope" in both builds. */
-#ifndef POSTGRES_H
-typedef int16_t int16;
-typedef int32_t int32;
-typedef int64_t int64;
-typedef uint32_t uint32;
-typedef uint64_t uint64;
-typedef float float4;
-typedef double float8;
-#endif /* POSTGRES_H */
+#include "pg_basetypes.h"
 
 /*****************************************************************************/
 

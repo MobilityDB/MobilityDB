@@ -36,8 +36,7 @@
 #ifndef __PG_INTERVAL_H__
 #define __PG_INTERVAL_H__
 
-typedef float float4;
-typedef double float8;
+#include "pg_basetypes.h"
 
 struct NumericData;
 typedef struct NumericData *Numeric;

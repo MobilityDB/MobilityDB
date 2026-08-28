@@ -379,6 +379,10 @@ if(MEOS)
 
   # Files from ${CMAKE_SOURCE_DIR}
 
+  # The base types every other header here is written against, and which the
+  # spliced <meos.h> reads as well
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_basetypes.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_bool.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_date.h"

@@ -36,17 +36,12 @@
 #ifndef __PG_TIMESTAMP_H__
 #define __PG_TIMESTAMP_H__
 
-typedef int8_t int8;
-typedef int16_t int16;
-typedef int32_t int32;
-typedef int64_t int64;
+#include "pg_basetypes.h"
+
 typedef int32 DateADT;
 typedef int64 TimeADT;
 typedef int64 Timestamp;
 typedef int64 TimestampTz;
-
-typedef float float4;
-typedef double float8;
 
 struct NumericData;
 typedef struct NumericData *Numeric;
