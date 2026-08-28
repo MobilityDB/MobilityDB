@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch04.html" title="Capítulo 4. Tipos temporales (Parte 1)"><link rel="prev" href="ch04s09.html" title="Accesores"><link rel="next" href="ch05.html" title="Capítulo 5. Tipos temporales (Parte 2)"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 4. Tipos temporales (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_transformations"></a>Transformaciones</h2></div></div></div><p>Un valor temporal se puede transformar en otro subtipo. Se genera un error si los subtipos son incompatibles.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_subtype"></a><a class="indexterm" name="id3655"></a><a class="indexterm" name="id3658"></a><a class="indexterm" name="id3661"></a><p>Transforma un tipo temporal a otro subtipo</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch04.html" title="Capítulo 4. Tipos temporales (Parte 1)"><link rel="prev" href="ch04s09.html" title="Accesores"><link rel="next" href="ch05.html" title="Capítulo 5. Tipos temporales (Parte 2)"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 4. Tipos temporales (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_transformations"></a>Transformaciones</h2></div></div></div><p>Un valor temporal se puede transformar en otro subtipo. Se genera un error si los subtipos son incompatibles.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_subtype"></a><a class="indexterm" name="id3656"></a><a class="indexterm" name="id3659"></a><a class="indexterm" name="id3662"></a><p>Transforma un tipo temporal a otro subtipo</p><pre class="programlisting">
 ttypeInst(ttype) → ttypeInst
 ttypeSeq(ttype) → ttypeSeq
 ttypeSeqSet(ttype) → ttypeSeqSet
@@ -13,7 +13,7 @@ SELECT tfloatSeqSet(tfloat '2.5@2001-01-01');
 -- {[2.5@2001-01-01]}
 SELECT tfloatSeqSet(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-03}');
 -- {[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}
-</pre></li><li class="listitem"><a name="ttype_setInterp"></a><a class="indexterm" name="id3668"></a><p>Transforma un valor temporal a otra interpolación</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_setInterp"></a><a class="indexterm" name="id3669"></a><p>Transforma un valor temporal a otra interpolación</p><pre class="programlisting">
 setInterp(ttype,interp) → ttype
 </pre><pre class="programlisting">
 SELECT setInterp(tbool 'true@2001-01-01','discrete');
@@ -31,7 +31,7 @@ SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01,
 SELECT setInterp(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-02]',
   'linear');
 -- ERROR:  The temporal type cannot have linear interpolation
-</pre></li><li class="listitem"><a name="ttype_shiftTime"></a><a class="indexterm" name="id3675"></a><a class="indexterm" name="id3678"></a><a class="indexterm" name="id3681"></a><p>Desplaza y/o escalear el intervalo de tiempo de un valor temporal a uno o dos intervalos</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_shiftTime"></a><a class="indexterm" name="id3676"></a><a class="indexterm" name="id3679"></a><a class="indexterm" name="id3682"></a><p>Desplaza y/o escalear el intervalo de tiempo de un valor temporal a uno o dos intervalos</p><pre class="programlisting">
 segmentMinDuration(temp,interval,strict boolean=true) → tbool
 segmentMaxDuration(temp,interval,strict boolean=true) → tbool
 </pre><p>Cuando se escalea, si el rango de valores o el intervalo de tiempo del valor temporal es cero (por ejemplo, para un instante temporal), el resultado es el valor temporal. Igualmente, el ancho o intervalo dado debe ser estrictamente mayor que cero.</p><pre class="programlisting">
@@ -47,7 +47,7 @@ SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
 SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day', false);
 -- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
-</pre></li><li class="listitem"><a name="ttype_segmentMinDuration"></a><a class="indexterm" name="id3689"></a><a class="indexterm" name="id3692"></a><p>Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_segmentMinDuration"></a><a class="indexterm" name="id3690"></a><a class="indexterm" name="id3693"></a><p>Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada</p><pre class="programlisting">
 shiftTime(ttype,interval) → ttype
 scaleTime(ttype,interval) → ttype
 shiftScaleTime(ttype,interval,interval) → ttype
@@ -85,7 +85,7 @@ SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01,
 /* {[POINT(1 1)@2001-01-02 00:00:00, LINESTRING(1 1,2 2)@2001-01-02 06:00:00, 
    POINT(1 1)@2001-01-02 12:00:00], [POINT(2 2)@2001-01-02 18:00:00, 
    POLYGON((1 1,2 2,3 1,1 1))@2001-01-03 00:00:00]} */
-</pre></li><li class="listitem"><a name="ttype_unnest"></a><a class="indexterm" name="id3704"></a><p>Transforma un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="ttype_unnest"></a><a class="indexterm" name="id3705"></a><p>Transforma un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 unnest(ttype) → {(value,time)}
 </pre><pre class="programlisting">

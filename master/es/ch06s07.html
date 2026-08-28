@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones matemáticas</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch06.html" title="Capítulo 6. Tipos alfanuméricos temporales"><link rel="prev" href="ch06s06.html" title="Operaciones booleanas"><link rel="next" href="ch06s08.html" title="Operaciones de texto"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones matemáticas</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 6. Tipos alfanuméricos temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch06s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_math"></a>Operaciones matemáticas</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_tAdd"></a><a class="indexterm" name="id4364"></a><a class="indexterm" name="id4367"></a><a class="indexterm" name="id4370"></a><a class="indexterm" name="id4373"></a><p>Adición, resta, multiplicación y división temporal</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones matemáticas</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch06.html" title="Capítulo 6. Tipos alfanuméricos temporales"><link rel="prev" href="ch06s06.html" title="Operaciones booleanas"><link rel="next" href="ch06s08.html" title="Operaciones de texto"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones matemáticas</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 6. Tipos alfanuméricos temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch06s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_math"></a>Operaciones matemáticas</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_tAdd"></a><a class="indexterm" name="id4365"></a><a class="indexterm" name="id4368"></a><a class="indexterm" name="id4371"></a><a class="indexterm" name="id4374"></a><p>Adición, resta, multiplicación y división temporal</p><pre class="programlisting">
 {number,tnumber} {+, -, *, /} {number,tnumber} → tnumber
 </pre><p>La división temporal genera un error si el denominador es alguna vez igual a cero durante el intervalo de tiempo común de los argumentos.</p><pre class="programlisting">
 SELECT tint '[2@2001-01-01, 2@2001-01-04)' + 1;
@@ -29,14 +29,14 @@ SELECT 2 / tfloat '[-1@2001-01-01, 1@2001-01-02]';
 -- ERROR:  Division by zero
 SELECT tfloat '[-1@2001-01-04, 1@2001-01-05]' / tfloat '[-1@2001-01-01, 1@2001-01-05]';
 -- [-2@2001-01-04, 1@2001-01-05]
-</pre></li><li class="listitem"><a name="tnumber_abs"></a><a class="indexterm" name="id4384"></a><p>Devuelve el valor absoluto del número temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_abs"></a><a class="indexterm" name="id4385"></a><p>Devuelve el valor absoluto del número temporal</p><pre class="programlisting">
 abs(tnumber) → tnumber
 </pre><pre class="programlisting">
 SELECT abs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 0@2001-01-02, 1@2001-01-03, 0@2001-01-04, 1@2001-01-05]
 SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 1@2001-01-05]
-</pre></li><li class="listitem"><a name="tnumber_floor"></a><a class="indexterm" name="id4391"></a><a class="indexterm" name="id4394"></a><p>Redondea al entero inferior o superior</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_floor"></a><a class="indexterm" name="id4392"></a><a class="indexterm" name="id4395"></a><p>Redondea al entero inferior o superior</p><pre class="programlisting">
 floor(tfloat) → tfloat
 ceil(tfloat) → tfloat
 </pre><pre class="programlisting">
@@ -44,12 +44,12 @@ SELECT floor(tfloat '[0.5@2001-01-01, 1.5@2001-01-02]');
 -- [0@2001-01-01, 1@2001-01-02]
 SELECT ceil(tfloat '[0.5@2001-01-01, 0.6@2001-01-02, 0.7@2001-01-03]');
 -- [1@2001-01-01, 1@2001-01-03]
-</pre></li><li class="listitem"><a name="tnumber_round"></a><a class="indexterm" name="id4401"></a><p>Redondea a un número de posiciones decimales</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_round"></a><a class="indexterm" name="id4402"></a><p>Redondea a un número de posiciones decimales</p><pre class="programlisting">
 round(tfloat,integer=0) → tfloat
 </pre><pre class="programlisting">
 SELECT round(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]', 2);
 -- [0.79@2001-01-01, 2.36@2001-01-02]
-</pre></li><li class="listitem"><a name="tnumber_degrees"></a><a class="indexterm" name="id4408"></a><a class="indexterm" name="id4411"></a><p>Convierte a grados o radianes</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_degrees"></a><a class="indexterm" name="id4409"></a><a class="indexterm" name="id4412"></a><p>Convierte a grados o radianes</p><pre class="programlisting">
 degrees({float,tfloat},normalize boolean=false) → tfloat
 radians(tfloat) → tfloat
 </pre><p>El parámetro adicional en la función <code class="varname">degrees</code> puede ser utilizado para normalizar los valores entre 0 y 360 grados.</p><pre class="programlisting">
@@ -62,7 +62,7 @@ SELECT round(degrees(tfloat '[0.785398163397448@2001-01-01,
 -- [45@2001-01-01, 135@2001-01-02]
 SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 -- [0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]
-</pre></li><li class="listitem"><a name="tnumber_deltaValue"></a><a class="indexterm" name="id4420"></a><p>Devuelve la diferencia de valor entre instantes consectivos del número temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_deltaValue"></a><a class="indexterm" name="id4421"></a><p>Devuelve la diferencia de valor entre instantes consectivos del número temporal</p><pre class="programlisting">
 deltaValue(tnumber) → tnumber
 </pre><pre class="programlisting">
 SELECT deltaValue(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
@@ -71,7 +71,7 @@ SELECT deltaValue(tfloat '{[1.5@2001-01-01, 2@2001-01-02, 1@2001-01-03],
   [2@2001-01-04, 2@2001-01-05]}');
 /* Interp=Step;{[0.5@2001-01-01, -1@2001-01-02, -1@2001-01-03),
    [0@2001-01-04, 0@2001-01-05)} */
-</pre></li><li class="listitem"><a name="tfloat_trend"></a><a class="indexterm" name="id4427"></a><p>Devuelve la tendencia de un flotante temporal con interpolación lineal, que indica si su valor es creciente, constante o decreciente, representado, respectivamente, por 1, 0 y -1</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tfloat_trend"></a><a class="indexterm" name="id4428"></a><p>Devuelve la tendencia de un flotante temporal con interpolación lineal, que indica si su valor es creciente, constante o decreciente, representado, respectivamente, por 1, 0 y -1</p><pre class="programlisting">
 trend(tfloat) → tint
 </pre><p>Nótese que la tendencia es NULL para secuencias instantáneas.</p><pre class="programlisting">
 SELECT trend(tfloat '[1@2001-01-01, 2@2001-01-02, 4@2001-01-03, 4@2001-01-04,
@@ -79,7 +79,7 @@ SELECT trend(tfloat '[1@2001-01-01, 2@2001-01-02, 4@2001-01-03, 4@2001-01-04,
 -- [1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]
 SELECT trend(tfloat '[1@2001-01-01]');
 -- NULL
-</pre></li><li class="listitem"><a name="tnumber_derivative"></a><a class="indexterm" name="id4435"></a><p>Devuelve la derivada sobre el tiempo del número flotante temporal en unidades por segundo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_derivative"></a><a class="indexterm" name="id4436"></a><p>Devuelve la derivada sobre el tiempo del número flotante temporal en unidades por segundo</p><pre class="programlisting">
 derivative(tfloat) → tfloat
 </pre><p>El número flotante temporal debe tener interpolación linear. Nótese que esta función corresponde a la función <a class="link" href="ch07s06.html#tgeo_speed"><code class="varname">speed</code></a> para los puntos temporales.</p><pre class="programlisting">
 SELECT derivative(tfloat '{[0@2001-01-01, 10@2001-01-02, 5@2001-01-03],
@@ -88,19 +88,19 @@ SELECT derivative(tfloat '{[0@2001-01-01, 10@2001-01-02, 5@2001-01-03],
    [1@2001-01-04, 1@2001-01-05]} */
 SELECT derivative(tfloat 'Interp=Step;[0@2001-01-01, 10@2001-01-02, 5@2001-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
-</pre></li><li class="listitem"><a name="tnumber_integral"></a><a class="indexterm" name="id4445"></a><p>Devuelve el área bajo la curva</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_integral"></a><a class="indexterm" name="id4446"></a><p>Devuelve el área bajo la curva</p><pre class="programlisting">
 integral(tnumber) → float
 </pre><pre class="programlisting">
 SELECT integral(tint '[1@2001-01-01,2@2001-01-02]') / (24 * 3600 * 1e6);
 -- 1
 SELECT integral(tfloat '[1@2001-01-01,2@2001-01-02]') / (24 * 3600 * 1e6);
 -- 1.5
-</pre></li><li class="listitem"><a name="tnumber_twAvg"></a><a class="indexterm" name="id4452"></a><p>Devuelve el promedio ponderado en el tiempo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_twAvg"></a><a class="indexterm" name="id4453"></a><p>Devuelve el promedio ponderado en el tiempo</p><pre class="programlisting">
 twAvg(tnumber) → float
 </pre><pre class="programlisting">
 SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)}');
 -- 1.75
-</pre></li><li class="listitem"><a name="tnumber_ln"></a><a class="indexterm" name="id4459"></a><a class="indexterm" name="id4462"></a><p>Devuelve el logaritmo natural y el logaritmo base 10 de un número flotante temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_ln"></a><a class="indexterm" name="id4460"></a><a class="indexterm" name="id4463"></a><p>Devuelve el logaritmo natural y el logaritmo base 10 de un número flotante temporal</p><pre class="programlisting">
 ln(tfloat) → tfloat
 log10(tfloat) → tfloat
 </pre><p>El número flotante temporal no puede ser cero o negativo</p><pre class="programlisting">
@@ -110,7 +110,7 @@ SELECT ln(tfloat '{[1@2001-01-01, 10@2001-01-02, 5@2001-01-03],
    [0@2001-01-04, 0@2001-01-05]} */
 SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
 -- ERROR:  Cannot take logarithm of zero or a negative number
-</pre></li><li class="listitem"><a name="tnumber_exp"></a><a class="indexterm" name="id4470"></a><p>Devuelve el exponencial (e elevado a la potencia dada) de un número flotante temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_exp"></a><a class="indexterm" name="id4471"></a><p>Devuelve el exponencial (e elevado a la potencia dada) de un número flotante temporal</p><pre class="programlisting">
 exp(tfloat) → tfloat
 </pre><pre class="programlisting">
 SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02], [1@2001-01-04, 1@2001-01-05]}');
@@ -118,7 +118,7 @@ SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02], [1@2001-01-04, 1@2001-01-05]}
    [2.718281828459045@2001-01-04, 2.718281828459045@2001-01-05]} */
 SELECT exp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
 -- {0.000045399929762@2001-01-01, 1@2001-01-02, 22026.465794806718@2001-01-03}
-</pre></li><li class="listitem"><a name="tnumber_sin"></a><a class="indexterm" name="id4477"></a><a class="indexterm" name="id4480"></a><a class="indexterm" name="id4483"></a><p>Devuelve el seno, coseno o tangente de un número flotante temporal (argumento en radianes)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_sin"></a><a class="indexterm" name="id4478"></a><a class="indexterm" name="id4481"></a><a class="indexterm" name="id4484"></a><p>Devuelve el seno, coseno o tangente de un número flotante temporal (argumento en radianes)</p><pre class="programlisting">
 sin(tfloat) → tfloat
 cos(tfloat) → tfloat
 tan(tfloat) → tfloat
