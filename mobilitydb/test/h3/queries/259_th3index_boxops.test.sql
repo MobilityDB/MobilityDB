@@ -73,3 +73,20 @@ SELECT round(stbox(th3index '[8001fffffffffff@2001-01-01, 801ffffffffffff@2001-0
 -- `stbox(child) <@ stbox(parent)` is false for H3 by construction and says
 -- nothing about this box.
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A cell composed with a time keeps the space it covers
+--
+-- `stbox(cell)` and `stbox(cell, <time>)` bound the same region; the second
+-- adds the period and nothing else, so its X and Y are those of the first.
+-------------------------------------------------------------------------------
+
+SELECT round(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01'), 6);
+SELECT round(stbox(h3index '8001fffffffffff', tstzspan '[2001-01-01, 2001-01-02]'), 6);
+SELECT round(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01')::stbox, 6)
+  && round(stbox(h3index '8001fffffffffff'), 6);
+SELECT hasX(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01')),
+  hasT(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01'));
+SELECT SRID(stbox(h3index '8001fffffffffff', tstzspan '[2001-01-01, 2001-01-02]'));
+
+-------------------------------------------------------------------------------

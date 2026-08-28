@@ -126,3 +126,20 @@ SELECT quadbinCellToQuadkey(quadbin '48427fffffffffff');  -- '0213'
 SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');  -- '1202021322'
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A cell composed with a time keeps the space it covers
+--
+-- `stbox(cell)` and `stbox(cell, <time>)` bound the same region; the second
+-- adds the period and nothing else, so its X and Y are those of the first.
+-------------------------------------------------------------------------------
+
+SELECT round(stbox(quadbin '48a6227affffffff', timestamptz '2001-01-01'), 6);
+SELECT round(stbox(quadbin '48a6227affffffff', tstzspan '[2001-01-01, 2001-01-02]'), 6);
+SELECT round(stbox(quadbin '48a6227affffffff', timestamptz '2001-01-01')::stbox, 6)
+  && round(stbox(quadbin '48a6227affffffff'), 6);
+SELECT hasX(stbox(quadbin '48a6227affffffff', timestamptz '2001-01-01')),
+  hasT(stbox(quadbin '48a6227affffffff', timestamptz '2001-01-01'));
+SELECT SRID(stbox(quadbin '48a6227affffffff', tstzspan '[2001-01-01, 2001-01-02]'));
+
+-------------------------------------------------------------------------------
