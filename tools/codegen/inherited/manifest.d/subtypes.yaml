@@ -50,9 +50,6 @@ subtypes:
   - temp:  ts2cell
     base:  s2cell
     brief: "temporal S2 cells"
-    # The family stem is `s2`, not the base type name, as h3's is `h3` and not
-    # `h3index`: the SQL reads ts2CellToBoundary.
-    boundary_fn: ts2CellToBoundary
     bin:   600
     category: tspatial
     # A cell-index inherits the scalar base::stbox cast — same as tquadbin and
@@ -65,7 +62,14 @@ subtypes:
     # stbox is geodetic and a geodetic bbox against a planar query box errors.
     # h3 is geodetic for the same reason and likewise stays on the SQL form;
     # only the Web-Mercator tquadbin sets it.
-    files: [compops, posops, topops]
+    # spatialrels delegates to the geo spatial relationships through the
+    # cell -> boundary conversion, the th3index form: geodetic families take
+    # the SQL cast-wrapper, only the planar tquadbin takes the C wrapper with
+    # SUPPORT tspatial_supportfn. GiST/SP-GiST are split, the canonical
+    # cell-index layout (th3index 272/273), not the combined cbuffer
+    # `indexes` form, whose template declares a KNN ordering operator this
+    # family has no distance function to back.
+    files: [compops, posops, topops, spatialrels, gist, spgist]
 
   # ---- reference families (validate self-regeneration == committed; not new) ----
   - temp:  tcbuffer

@@ -1,0 +1,41 @@
+SELECT asText(tIntersects(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(4.35 50.85)'))
+  = asText(tIntersects(cellToBoundary(ts2cell '[47c3c3@2000-01-01]')::tgeometry,
+      geometry 'SRID=4326;Point(4.35 50.85)'));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(tDisjoint(geometry 'SRID=4326;Point(-122.4 37.8)', ts2cell '[47c3c3@2000-01-01]'))
+  = asText(tDisjoint(geometry 'SRID=4326;Point(-122.4 37.8)',
+      cellToBoundary(ts2cell '[47c3c3@2000-01-01]')::tgeometry));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(tIntersects(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(4.35 50.85)'));
+              astext              
+----------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tDisjoint(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)'));
+              astext              
+----------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tContains(geometry 'SRID=4326;Polygon((0 45,0 55,10 55,10 45,0 45))',
+  ts2cell '[47c3c3@2000-01-01]'));
+              astext              
+----------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tDwithin(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(4.35 50.85)', 0.1));
+              astext              
+----------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+

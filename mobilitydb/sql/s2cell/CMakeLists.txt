@@ -7,6 +7,10 @@ SET(LOCAL_FILES
   605_ts2cell_spatialfuncs
   608_ts2cell_topops
   609_ts2cell_posops
+  612_ts2cell_spatialrels
+  614_ts2cell_tempspatialrels
+  622_ts2cell_gist
+  623_ts2cell_spgist
   )
 
 foreach (f ${LOCAL_FILES})
