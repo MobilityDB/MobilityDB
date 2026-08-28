@@ -131,8 +131,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Populate the spatial bounds of <code>box</code> from a pcpatch, using the embedded PCBOUNDS (2D). </p>
-<p >Z is not populated — the per-point Z values are inside the compressed <code>data</code> block and cannot be summarised at the bbox layer. </p>
+<p>Populate the spatial bounds of <code>box</code> from a pcpatch. </p>
+<p >The spatial extent of a patch has one reader, <a class="el" href="group__meos__pointcloud__box__conversion_gabc77ca6a97b343894dfae2fd622db0cb.html#gabc77ca6a97b343894dfae2fd622db0cb">pcpatch_to_tpcbox</a>, so the box a temporal patch carries states the same dimensions as the box the patch converts to, Z included where its schema holds one. The period <code>box</code> keeps is the caller's, which states it after this fills the spatial part. </p>
 
 </div>
 </div>

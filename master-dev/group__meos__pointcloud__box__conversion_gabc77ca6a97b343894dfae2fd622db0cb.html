@@ -111,8 +111,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the 2D spatial bounding box of a pcpatch as a <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a>. </p>
-<dl class="section note"><dt>Note</dt><dd>Z is not populated — pgpointcloud's <a class="el" href="structSERIALIZED__PATCH.html" title="Serialized varlena layout for a pcpatch.">SERIALIZED_PATCH</a> carries only 2D <code>PCBOUNDS</code> in its header; the per-point Z values are packed inside the compressed data block and cannot be summarised without schema access. Time dimension is likewise absent (pcpatch is static). Callers that need Z should go through the PG wrapper layer, which has schema access via the per-backend PCSCHEMA cache. @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga4353a2ecb925245ee5d042fc927ff17b.html#ga4353a2ecb925245ee5d042fc927ff17b" title="Return a TPCBox built from a pcpatch — auto-fills SRID from the pgpointcloud schema via the per-backe...">Pcpatch_to_tpcbox()</a> </dd></dl>
+<p>Return the spatial bounding box of a pcpatch as a <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a>. </p>
+<p >The schema the pcid of the patch names decides whether the box carries a Z dimension, in the same way it decides whether the box of a pcpoint carries one. The X and Y extent is the one the <code>PCBOUNDS</code> header of the patch states, which is why a patch of a pcid no schema states still answers the extent it holds; the Z extent is the one its points state, so a patch of a schema holding Z is walked once. The time dimension is absent, a patch being static. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pa</td><td>Patch </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference system of the result, which the caller states so that it can override the one of the schema @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga4353a2ecb925245ee5d042fc927ff17b.html#ga4353a2ecb925245ee5d042fc927ff17b" title="Return a TPCBox built from a pcpatch — auto-fills SRID from the pgpointcloud schema via the per-backe...">Pcpatch_to_tpcbox()</a> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
