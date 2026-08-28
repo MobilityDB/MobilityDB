@@ -64,3 +64,35 @@ SELECT round(stbox(th3index '[8001fffffffffff@2001-01-01, 801ffffffffffff@2001-0
  SRID=4326;GEODSTBOX XT(((-180,37.523712),(180,90)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
+SELECT round(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01'), 6);
+                                                      round                                                       
+------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX XT(((-180,68.929958),(180,90)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
+(1 row)
+
+SELECT round(stbox(h3index '8001fffffffffff', tstzspan '[2001-01-01, 2001-01-02]'), 6);
+                                                      round                                                       
+------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX XT(((-180,68.929958),(180,90)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT round(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01')::stbox, 6)
+  && round(stbox(h3index '8001fffffffffff'), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT hasX(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01')),
+  hasT(stbox(h3index '8001fffffffffff', timestamptz '2001-01-01'));
+ hasx | hast 
+------+------
+ t    | t
+(1 row)
+
+SELECT SRID(stbox(h3index '8001fffffffffff', tstzspan '[2001-01-01, 2001-01-02]'));
+ srid 
+------
+ 4326
+(1 row)
+

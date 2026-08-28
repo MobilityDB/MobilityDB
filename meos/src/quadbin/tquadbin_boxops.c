@@ -137,7 +137,9 @@ quadbin_timestamptz_to_stbox(Quadbin cell, TimestampTz t)
   STBox box;
   if (! quadbin_set_stbox(cell, &box))
     return NULL;
-  timestamptz_set_stbox(t, &box);
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, T_TSTZSPAN, &box.period);
+  MEOS_FLAGS_SET_T(box.flags, true);
   return stbox_copy(&box);
 }
 
@@ -158,7 +160,8 @@ quadbin_tstzspan_to_stbox(Quadbin cell, const Span *s)
   STBox box;
   if (! quadbin_set_stbox(cell, &box))
     return NULL;
-  tstzspan_set_stbox(s, &box);
+  memcpy(&box.period, s, sizeof(Span));
+  MEOS_FLAGS_SET_T(box.flags, true);
   return stbox_copy(&box);
 }
 
