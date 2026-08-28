@@ -114,10 +114,10 @@ Datum
 Tpose_make(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
-  Temporal *tradius = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = tpose_make(tpoint, tradius);
+  Temporal *ttheta = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = tpose_make(tpoint, ttheta);
   PG_FREE_IF_COPY(tpoint, 0);
-  PG_FREE_IF_COPY(tradius, 1);
+  PG_FREE_IF_COPY(ttheta, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);

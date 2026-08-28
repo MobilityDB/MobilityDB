@@ -365,6 +365,11 @@ constructor_families:
     - seqset
   - ops:
     - seqsetgaps
+  - lit: "/******************************************************************************/"
+  - fns:
+    - sig: tpose(tgeompoint, tfloat)
+      ret: tpose
+      sym: Tpose_make
 - family: posechain
   file: mobilitydb/sql/posechain/552_tposechain.in.sql
   reference: true

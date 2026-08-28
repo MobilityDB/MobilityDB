@@ -260,6 +260,13 @@ CREATE FUNCTION tposeSeqSetGaps(tpose[], maxt interval DEFAULT NULL,
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+/******************************************************************************/
+
+CREATE FUNCTION tpose(tgeompoint, tfloat)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_make'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Conversions
  ******************************************************************************/
