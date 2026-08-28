@@ -125,7 +125,7 @@ CREATE FUNCTION spaceSplit(tpose, size float,
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
     SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4, $5)
   $$;
-CREATE FUNCTION spaceSplit(tpose, sizeX float, sizeY float,
+CREATE FUNCTION spaceSplit(tpose, xsize float, ysize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_tpose

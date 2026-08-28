@@ -124,12 +124,12 @@ CREATE FUNCTION h3indexFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'H3index_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(h3index, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(h3index, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'H3index_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(h3index, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(h3index, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'H3index_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

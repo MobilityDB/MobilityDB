@@ -250,44 +250,44 @@ CREATE FUNCTION asText(tstzspan)
   AS 'MODULE_PATHNAME', 'Span_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(intspan, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(intspan, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(bigintspan, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(bigintspan, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(floatspan, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(floatspan, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(datespan, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(datespan, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tstzspan, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tstzspan, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(intspan, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(intspan, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(bigintspan, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(bigintspan, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(floatspan, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(floatspan, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(datespan, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(datespan, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(tstzspan, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tstzspan, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -101,19 +101,19 @@ CREATE FUNCTION asEWKT(npointset, maxdecimaldigits integer DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(npointset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(npointset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKB(npointset, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(npointset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(npointset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(npointset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexEWKB(npointset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(npointset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

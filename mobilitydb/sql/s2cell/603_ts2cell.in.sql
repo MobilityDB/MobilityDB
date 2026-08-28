@@ -103,12 +103,12 @@ CREATE FUNCTION asText(ts2cell)
   AS 'MODULE_PATHNAME', 'Temporal_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(ts2cell, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(ts2cell, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(ts2cell, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(ts2cell, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -576,7 +576,7 @@ CREATE TYPE time_ts2cell AS (
   temp ts2cell
 );
 
-CREATE FUNCTION timeSplit(ts2cell, bin_width interval,
+CREATE FUNCTION timeSplit(ts2cell, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

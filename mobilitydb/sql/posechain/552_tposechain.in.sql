@@ -168,22 +168,22 @@ CREATE FUNCTION asMFJSON(tposechain, options integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(tposechain, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tposechain, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKB(tposechain, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(tposechain, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(tposechain, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tposechain, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexEWKB(tposechain, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(tposechain, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -651,7 +651,7 @@ CREATE TYPE time_tposechain AS (
   temp tposechain
 );
 
-CREATE FUNCTION timeSplit(tposechain, bin_width interval,
+CREATE FUNCTION timeSplit(tposechain, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tposechain
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

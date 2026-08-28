@@ -121,22 +121,22 @@ CREATE FUNCTION asEWKT(cbuffer[], maxdecimaldigits integer DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(cbuffer, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(cbuffer, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Cbuffer_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKB(cbuffer, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(cbuffer, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Cbuffer_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(cbuffer, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(cbuffer, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Cbuffer_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexEWKB(cbuffer, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(cbuffer, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Cbuffer_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -244,44 +244,44 @@ CREATE FUNCTION asText(tstzspanset)
   AS 'MODULE_PATHNAME', 'Spanset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(intspanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(intspanset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(bigintspanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(bigintspanset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(floatspanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(floatspanset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(datespanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(datespanset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tstzspanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tstzspanset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(intspanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(intspanset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(bigintspanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(bigintspanset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(floatspanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(floatspanset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(datespanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(datespanset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(tstzspanset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tstzspanset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

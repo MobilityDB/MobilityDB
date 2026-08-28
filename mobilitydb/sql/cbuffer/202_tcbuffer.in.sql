@@ -147,22 +147,22 @@ CREATE FUNCTION asMFJSON(tcbuffer, options integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(tcbuffer, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tcbuffer, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKB(tcbuffer, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(tcbuffer, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(tcbuffer, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tcbuffer, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexEWKB(tcbuffer, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(tcbuffer, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -653,7 +653,7 @@ CREATE TYPE time_tcbuffer AS (
   temp tcbuffer
 );
 
-CREATE FUNCTION timeSplit(tcbuffer, bin_width interval,
+CREATE FUNCTION timeSplit(tcbuffer, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

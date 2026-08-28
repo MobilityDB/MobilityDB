@@ -148,22 +148,22 @@ CREATE FUNCTION asEWKT(npoint[], maxdecimaldigits integer DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(npoint, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(npoint, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Npoint_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKB(npoint, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(npoint, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Npoint_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(npoint, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(npoint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Npoint_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexEWKB(npoint, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(npoint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Npoint_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

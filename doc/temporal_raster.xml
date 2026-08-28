@@ -211,7 +211,7 @@ JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8)) GROUP BY t.tripid
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 				<para>Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asBinary(raquet,endianencoding text='') → bytea
+asBinary(raquet,endian text='') → bytea
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));
@@ -223,7 +223,7 @@ SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'u
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 				<para>Return the Hexadecimal Well-Known Binary (HexWKB) representation of a Raquet tile</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asHexWKB(raquet,endianencoding text='') → text
+asHexWKB(raquet,endian text='') → text
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));

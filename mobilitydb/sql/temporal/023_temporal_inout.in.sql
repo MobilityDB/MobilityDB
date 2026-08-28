@@ -181,44 +181,44 @@ CREATE FUNCTION asMFJSON(temp ttext, options integer DEFAULT 0,
 
 /*****************************************************************************/
 
-CREATE FUNCTION asBinary(tbool, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tbool, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tint, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tint, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tbigint, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tbigint, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tfloat, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tfloat, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(ttext, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(ttext, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(tbool, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tbool, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(tint, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(tbigint, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tbigint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(tfloat, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tfloat, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(ttext, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(ttext, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

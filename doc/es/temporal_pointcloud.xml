@@ -946,7 +946,7 @@ SELECT (un).time FROM (SELECT unnest(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1
 					<indexterm significance="normal"><primary><varname>timeSplit</varname></primary></indexterm>
 					<para>Fragmenta un tpcpoint en fragmentos, uno por cada intervalo de tiempo</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-timeSplit(tpcpoint,bin_width interval,
+timeSplit(tpcpoint,duration interval,
   origin timestamptz='2000-01-03') → {(time,tpcpoint)}
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1727,7 +1727,7 @@ SELECT (un).time FROM (SELECT unnest(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>timeSplit</varname></primary></indexterm>
 					<para>Fragmenta un tpcpatch en fragmentos, uno por cada intervalo de tiempo</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-timeSplit(tpcpatch,bin_width interval,
+timeSplit(tpcpatch,duration interval,
   origin timestamptz='2000-01-03') → {(time,tpcpatch)}
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">

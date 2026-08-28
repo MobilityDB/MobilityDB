@@ -952,9 +952,9 @@ def bootstrap_io_type(filetext: str, fam: dict, rendered: str) -> str:
 #     not a class rule.
 #   * text form : pointcloud (tpcpoint/tpcpatch) withholds asText/FromText/FromMFJSON
 #     (a base-type capability); such a family simply omits those ops from its sequence.
-# The canonical MISSPELLING `endianenconding text DEFAULT ''` (asBinary/asEWKB/
-# asHexWKB/asHexEWKB) and `maxdecimaldigits integer DEFAULT 15` (only float/coordinate-
-# bearing types, per-type via the `maxdd` token) are reproduced verbatim.
+# The endian argument `endian text DEFAULT ''` (asBinary/asEWKB/asHexWKB/asHexEWKB) and
+# `maxdecimaldigits integer DEFAULT 15` (only float/coordinate-bearing types, per-type
+# via the `maxdd` token) are reproduced verbatim.
 #
 # Region markers for the eventual Phase-2 emit (mirroring _io_markers); Phase-1
 # --validate extracts the committed hand block by section-header ANCHORS instead, so
@@ -968,7 +968,7 @@ def _representations_markers(family: str):
 
 
 # From-constructor argument types and the as-output return types (the invariant
-# structure of each op; the varying part — symbol, maxdecimaldigits/endianenconding
+# structure of each op; the varying part — symbol, maxdecimaldigits/endian
 # presence — is computed below or overridden per family).
 _REPR_FROM_ARG = {
     "FromText": "text", "FromEWKT": "text", "FromMFJSON": "text",
@@ -1026,9 +1026,9 @@ def _repr_fn(op: str, t: dict, fam: dict, array: bool) -> str:
         sym = fam.get("syms", {}).get(op, _REPR_DEFAULT_SYM[op])
         return _repr_skeleton(_repr_mfjson_sig(t, fam), "text", sym)
     # as<Fmt>(temp[, tail]) output.  maxdecimaldigits only on maxdd types (text/ewkt);
-    # endianenconding on the (E/Hex)WKB ops; both reproduced verbatim.
+    # endian on the (E/Hex)WKB ops; both reproduced verbatim.
     if op in _REPR_ENDIAN_OPS:
-        tail = ", endianenconding text DEFAULT ''"
+        tail = ", endian text DEFAULT ''"
     elif op in _REPR_ARRAY_OPS and t.get("maxdd"):
         tail = ", maxdecimaldigits integer DEFAULT 15"
     else:

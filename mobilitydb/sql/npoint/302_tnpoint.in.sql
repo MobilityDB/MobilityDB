@@ -111,12 +111,12 @@ CREATE FUNCTION asText(tnpoint[], maxdecimaldigits integer DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(tnpoint, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tnpoint, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(tnpoint, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tnpoint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -596,7 +596,7 @@ CREATE TYPE time_tnpoint AS (
   temp tnpoint
 );
 
-CREATE FUNCTION timeSplit(tnpoint, bin_width interval,
+CREATE FUNCTION timeSplit(tnpoint, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

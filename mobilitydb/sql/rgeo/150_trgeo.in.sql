@@ -147,22 +147,22 @@ CREATE FUNCTION asMFJSON(trgeometry, options integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(trgeometry, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(trgeometry, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKB(trgeometry, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(trgeometry, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(trgeometry, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(trgeometry, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexEWKB(trgeometry, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(trgeometry, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -657,7 +657,7 @@ CREATE TYPE time_trgeometry AS (
   temp trgeometry
 );
 
-CREATE FUNCTION timeSplit(trgeometry, bucket_width interval,
+CREATE FUNCTION timeSplit(trgeometry, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

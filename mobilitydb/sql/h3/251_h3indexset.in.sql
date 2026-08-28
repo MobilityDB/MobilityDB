@@ -94,12 +94,12 @@ CREATE FUNCTION asText(h3indexset)
   AS 'MODULE_PATHNAME', 'Set_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(h3indexset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(h3indexset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(h3indexset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(h3indexset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
