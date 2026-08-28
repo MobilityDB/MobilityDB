@@ -505,10 +505,13 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7) ?=
 				<indexterm significance="normal"><primary><varname>getResolution</varname></primary></indexterm>
 				<para>Devolver la resolución de cada celda de una trayectoria</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+getResolution(cell) → integer
 getResolution(tcell) → tint
 </programlisting>
 				<para>Devolver la resolución de una celda, como un <varname>integer</varname> desde la forma estática y como un <varname>tint</varname> de la resolución de cada celda de una trayectoria desde la temporal. QUADBIN la llama nivel de zoom y S2 nivel, y el rango pertenece a la cuadrícula: de 0 a 15 para H3, de 0 a 26 para QUADBIN, de 0 a 30 para S2.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getResolution(h3index '831c02fffffffff');
+-- 3
 SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
 -- 3@2001-01-01
 SELECT getResolution(tquadbin '48a6227affffffff@2001-01-01');
@@ -523,11 +526,14 @@ SELECT getResolution(ts2cell '47c3c@2001-01-01');
 				<indexterm significance="normal"><primary><varname>isValidCell</varname></primary></indexterm>
 				<para>Devolver un booleano temporal que indica en cada instante si el valor es una celda válida</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+isValidCell(cell) → boolean
 isValidCell(tcell) → tbool
 </programlisting>
 				<para>Un valor es una celda válida cuando su patrón de bits denota algo que su cuadrícula indexa: para QUADBIN, coordenadas de tesela dentro de los límites de la resolución que declara el identificador; para H3, una celda base y una secuencia de dígitos que lleva el icosaedro; para S2, una cara y una posición de Hilbert en un nivel entre 0 y 30.</para>
 				<para>Solo a H3 se le puede plantear la pregunta sobre un valor que responde <varname>false</varname>: su función de entrada admite cualquier patrón de bits y deja el veredicto a esta función, mientras que las funciones de entrada de QUADBIN y de S2 rechazan un patrón que no indexa nada, de modo que <varname>tquadbin '0'</varname> y <varname>ts2cell '0'</varname> provocan un error antes de que se haga la llamada.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidCell(quadbin '48a6227affffffff');
+-- t
 SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
 -- t@2001-01-01
 SELECT isValidCell(th3index '0@2001-01-01');
@@ -549,11 +555,14 @@ SELECT isValidCell(ts2cell '47c3c@2001-01-01');
 				<indexterm significance="normal"><primary><varname>cellToParent</varname></primary></indexterm>
 				<para>Devolver la celda padre temporal en la resolución dada</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToParent(cell,integer) → cell
 cellToParent(tcell,integer) → tcell
 cellToParent(tcell) → tcell
 </programlisting>
 				<para>Devolver el ancestro de una celda en la resolución más gruesa dada. La forma estática toma una única <varname>cell</varname>; la forma temporal devuelve el ancestro de cada celda de una trayectoria. La forma sin argumento desciende a la resolución inmediatamente más gruesa.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT cellToParent(h3index '8a2a1072b59ffff', 5);
+-- 852a1073fffffff
 SELECT getResolution(cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
 -- 5@2001-01-01
 SELECT getResolution(cellToParent(tquadbin
@@ -592,11 +601,14 @@ SELECT getResolution(th3index(tgeompoint
 				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
 				<para>Devolver el centroide geodésico temporal de cada celda de una trayectoria</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToPoint(cell) → geometry
 cellToPoint(tcell) → tgeogpoint
 tgeompoint(tcell) → tgeompoint
 </programlisting>
 				<para>La forma <varname>tgeompoint</varname> responde el mismo centroide como un punto plano en SRID 4326, y H3 es la única cuadrícula que publica ambas formas. La operación se llama <varname>cellToPoint</varname> para todas las cuadrículas, siendo la ranura <varname>cell_to_point</varname> del descriptor lo que lo fija.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(cellToPoint(h3index '871fa44a8ffffff'), 6);
+-- POINT(4.297401 50.8043)
 SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
 SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
@@ -612,10 +624,13 @@ SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 				<indexterm significance="normal"><primary><varname>cellToBoundary</varname></primary></indexterm>
 				<para>Devolver la frontera poligonal temporal de cada celda de una trayectoria, como una geografía temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToBoundary(cell) → geometry
 cellToBoundary(tcell) → tgeography
 </programlisting>
 				<para>Devolver la frontera poligonal de una celda en el SRID 4326. La forma estática toma una única <varname>cell</varname>; la forma temporal devuelve la frontera de cada celda de una trayectoria. El anillo se cierra sobre su primer vértice, de modo que un hexágono H3 lleva siete puntos y un cuadrado QUADBIN o un cuadrilátero esférico S2 cinco.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_NPoints(cellToBoundary(h3index '871fa44a8ffffff'));
+-- 7
 SELECT ST_GeometryType(getValue(cellToBoundary(th3index
   '871fa44a8ffffff@2001-01-01'))::geometry);
 -- ST_Polygon

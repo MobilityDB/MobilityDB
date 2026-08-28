@@ -45,6 +45,55 @@
  */
 
 /******************************************************************************
+ * Resolution
+ ******************************************************************************/
+
+CREATE FUNCTION getResolution(h3index)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'H3index_get_resolution'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Hierarchy
+ *
+ * `cellToParent` drops to the requested coarser resolution;
+ * `h3CellToChildren` returns the seven child cells at the requested
+ * finer resolution as an `h3indexset`.
+ ******************************************************************************/
+
+CREATE FUNCTION cellToParent(h3index, integer)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'H3index_cell_to_parent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Lat/Lng
+ ******************************************************************************/
+
+CREATE FUNCTION cellToPoint(h3index)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'H3index_cell_to_point'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cellToBoundary(h3index)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'H3index_cell_to_boundary'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Metrics
+ *
+ * The unit is the square metre, the one the `DggsCellOps` descriptor
+ * fixes for `cell_area`. The two other units libh3 publishes are the
+ * H3-only `th3CellAreaKm2` / `th3CellAreaRads2`.
+ ******************************************************************************/
+
+CREATE FUNCTION cellArea(h3index)
+  RETURNS double precision
+  AS 'MODULE_PATHNAME', 'H3index_cell_area'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Static geometry → H3 cell (POINT only) / cell set (any geometry)
  ******************************************************************************/
 

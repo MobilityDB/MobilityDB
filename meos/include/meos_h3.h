@@ -135,6 +135,23 @@ extern char *h3index_as_hexwkb(H3Index cell, uint8_t variant, size_t *size_out);
  * declared in h3_ext_defs.in.h spliced above: their bare names collide
  * with the C symbols of the h3-pg PostgreSQL extension. */
 
+/* Inspection */
+
+extern uint32_t h3index_get_resolution(H3Index cell);
+
+/* Hierarchy */
+
+extern H3Index h3index_cell_to_parent(H3Index cell, uint32_t parent_resolution);
+
+/* Geometry (lon/lat, SRID 4326) */
+
+extern GSERIALIZED *h3index_cell_to_point(H3Index cell);
+extern GSERIALIZED *h3index_cell_to_boundary(H3Index cell);
+
+/* Metrics */
+
+extern double h3index_cell_area(H3Index cell);
+
 /*****************************************************************************
  * Type inheritance (analogue of meos_cbuffer.h's tcbuffer section)
  *****************************************************************************/

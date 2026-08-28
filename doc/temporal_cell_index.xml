@@ -505,10 +505,13 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7) ?=
 				<indexterm significance="normal"><primary><varname>getResolution</varname></primary></indexterm>
 				<para>Return the resolution of each cell in a trajectory</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+getResolution(cell) → integer
 getResolution(tcell) → tint
 </programlisting>
 				<para>Return the resolution of a cell, as an <varname>integer</varname> from the static form and as a <varname>tint</varname> of the resolution of each cell in a trajectory from the temporal one. QUADBIN calls it a zoom level and S2 a level, and the range belongs to the grid: 0 to 15 for H3, 0 to 26 for QUADBIN, 0 to 30 for S2.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getResolution(h3index '831c02fffffffff');
+-- 3
 SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
 -- 3@2001-01-01
 SELECT getResolution(tquadbin '48a6227affffffff@2001-01-01');
@@ -523,11 +526,14 @@ SELECT getResolution(ts2cell '47c3c@2001-01-01');
 				<indexterm significance="normal"><primary><varname>isValidCell</varname></primary></indexterm>
 				<para>Return a temporal boolean stating at each instant whether the value is a valid cell</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+isValidCell(cell) → boolean
 isValidCell(tcell) → tbool
 </programlisting>
 				<para>A value is a valid cell when its bit pattern denotes something its grid indexes: for QUADBIN, tile coordinates within the bounds of the resolution the identifier states; for H3, a base cell and digit sequence the icosahedron carries; for S2, a face and a Hilbert position at a level between 0 and 30.</para>
 				<para>Only H3 can be asked the question of a value that answers <varname>false</varname>: its input function admits any bit pattern and leaves the verdict to this function, while the QUADBIN and the S2 input functions reject a pattern that indexes nothing, so <varname>tquadbin '0'</varname> and <varname>ts2cell '0'</varname> raise an error before the call is made.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidCell(quadbin '48a6227affffffff');
+-- t
 SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
 -- t@2001-01-01
 SELECT isValidCell(th3index '0@2001-01-01');
@@ -549,11 +555,14 @@ SELECT isValidCell(ts2cell '47c3c@2001-01-01');
 				<indexterm significance="normal"><primary><varname>cellToParent</varname></primary></indexterm>
 				<para>Return the temporal parent cell at the given resolution</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToParent(cell,integer) → cell
 cellToParent(tcell,integer) → tcell
 cellToParent(tcell) → tcell
 </programlisting>
 				<para>Return the ancestor of a cell at the given coarser resolution. The static form takes a single <varname>cell</varname>; the temporal form returns the ancestor of each cell in a trajectory. The no-argument form drops to the next-coarser resolution.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT cellToParent(h3index '8a2a1072b59ffff', 5);
+-- 852a1073fffffff
 SELECT getResolution(cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
 -- 5@2001-01-01
 SELECT getResolution(cellToParent(tquadbin
@@ -592,11 +601,14 @@ SELECT getResolution(th3index(tgeompoint
 				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
 				<para>Return the temporal geodetic centroid of each cell in a trajectory</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToPoint(cell) → geometry
 cellToPoint(tcell) → tgeogpoint
 tgeompoint(tcell) → tgeompoint
 </programlisting>
 				<para>The <varname>tgeompoint</varname> form answers the same centroid as an SRID-4326 planar point, and H3 is the one grid publishing both forms. The operation is named <varname>cellToPoint</varname> for every grid, the <varname>cell_to_point</varname> slot of the descriptor being what fixes it.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(cellToPoint(h3index '871fa44a8ffffff'), 6);
+-- POINT(4.297401 50.8043)
 SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
 SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
@@ -612,10 +624,13 @@ SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 				<indexterm significance="normal"><primary><varname>cellToBoundary</varname></primary></indexterm>
 				<para>Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToBoundary(cell) → geometry
 cellToBoundary(tcell) → tgeography
 </programlisting>
 				<para>Return the polygon boundary of a cell in SRID 4326. The static form takes a single <varname>cell</varname>; the temporal form returns the boundary of each cell in a trajectory. The ring closes on its first vertex, so an H3 hexagon carries seven points and a QUADBIN square or an S2 spherical quadrilateral five.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_NPoints(cellToBoundary(h3index '871fa44a8ffffff'));
+-- 7
 SELECT ST_GeometryType(getValue(cellToBoundary(th3index
   '871fa44a8ffffff@2001-01-01'))::geometry);
 -- ST_Polygon

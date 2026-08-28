@@ -175,6 +175,68 @@ ensure_h3index_vertex(H3Index vertex)
 }
 
 /*****************************************************************************
+ * Scalar MEOS API for the shared DggsCellOps faces
+ *
+ * The faces every grid publishes, spelled as `quadbin_*` and `s2cell_*` spell
+ * them, over the h3-pg imports of `h3_generated.h`. The unit is the one the
+ * `DggsCellOps` descriptor fixes: an area is square metres, so the unit
+ * argument `h3_cell_area_meos()` carries does not reach this surface.
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_base_inspection
+ * @brief Return the resolution of an H3 cell
+ * @param[in] cell H3 cell
+ * @csqlfn #H3index_get_resolution()
+ */
+uint32_t
+h3index_get_resolution(H3Index cell)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_h3index_cell(cell))
+    return 0;
+  return (uint32_t) h3_get_resolution_meos(cell);
+}
+
+/**
+ * @ingroup meos_h3_base_hierarchy
+ * @brief Return the parent of an H3 cell at a coarser resolution
+ * @param[in] cell H3 cell
+ * @param[in] parent_resolution Target resolution (<= resolution of @p cell)
+ * @return The parent cell, or 0 on error
+ * @csqlfn #H3index_cell_to_parent()
+ */
+H3Index
+h3index_cell_to_parent(H3Index cell, uint32_t parent_resolution)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_h3index_cell(cell))
+    return 0;
+  if (parent_resolution > (uint32_t) h3_get_resolution_meos(cell))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The parent resolution must not be finer than the resolution of the cell");
+    return 0;
+  }
+  return h3_cell_to_parent_meos(cell, (int32) parent_resolution);
+}
+
+/**
+ * @ingroup meos_h3_base_metrics
+ * @brief Return the area in square metres of an H3 cell
+ * @param[in] cell H3 cell
+ * @csqlfn #H3index_cell_area()
+ */
+double
+h3index_cell_area(H3Index cell)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_h3index_cell(cell))
+    return 0.0;
+  return h3_cell_area_meos(cell, H3_UNIT_M2);
+}
+
+/*****************************************************************************
  * Datum wrappers for inspection
  *****************************************************************************/
 
@@ -487,7 +549,7 @@ datum_h3_cell_to_latlng(Datum d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_H3INDEX_CELL(DatumGetH3Index(d), (Datum) 0);
-  GSERIALIZED *gs = h3_cell_to_geompoint(DatumGetH3Index(d));
+  GSERIALIZED *gs = h3index_cell_to_point(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
 
@@ -499,7 +561,7 @@ datum_h3_cell_to_boundary(Datum d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_H3INDEX_CELL(DatumGetH3Index(d), (Datum) 0);
-  GSERIALIZED *gs = h3_cell_to_geom(DatumGetH3Index(d));
+  GSERIALIZED *gs = h3index_cell_to_boundary(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
 

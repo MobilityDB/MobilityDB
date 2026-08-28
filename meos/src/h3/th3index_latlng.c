@@ -33,7 +33,7 @@
  * adapter bodies that back them.
  *
  * The static h3 conversions `geo_to_h3index_cell`,
- * `h3_cell_to_geompoint`, and `h3_cell_to_geom` live here
+ * `h3index_cell_to_point`, and `h3index_cell_to_boundary` live here
  * alongside the lifted entries that consume them. Point reads use
  * the MobilityDB peek macro `GSERIALIZED_POINT2D_P` rather than
  * `lwgeom_from_gserialized` — approved by the PostGIS team and a
@@ -90,10 +90,13 @@ geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution)
 }
 
 /**
- * @brief 
+ * @ingroup meos_h3_base_latlng
+ * @brief Return the centroid of an H3 cell as a geometry point
+ * @param[in] cell H3 cell
+ * @csqlfn #H3index_cell_to_point()
  */
 GSERIALIZED *
-h3_cell_to_geompoint(H3Index cell)
+h3index_cell_to_point(H3Index cell)
 {
   LatLng ll;
   if (cellToLatLng(cell, &ll) != E_SUCCESS)
@@ -141,10 +144,13 @@ cell_boundary_to_gs(const CellBoundary *bnd)
 }
 
 /**
- * @brief 
+ * @ingroup meos_h3_base_latlng
+ * @brief Return the boundary of an H3 cell as a geometry polygon
+ * @param[in] cell H3 cell
+ * @csqlfn #H3index_cell_to_boundary()
  */
 GSERIALIZED *
-h3_cell_to_geom(H3Index cell)
+h3index_cell_to_boundary(H3Index cell)
 {
   CellBoundary bnd;
   if (cellToBoundary(cell, &bnd) != E_SUCCESS)
@@ -421,7 +427,7 @@ th3index_to_tgeogpoint(const Temporal *temp)
 /*****************************************************************************
  * cellToPoint (planar output, SRID 4326 overload)
  *
- * Both overloads share the same static adapter `h3_cell_to_geompoint`,
+ * Both overloads share the same static adapter `h3index_cell_to_point`,
  * which emits an SRID-4326 point. The geography-vs-geometry nature
  * of the result is disambiguated at the lifting layer via the
  * `restype` setting — downstream consumers see the intended type.
