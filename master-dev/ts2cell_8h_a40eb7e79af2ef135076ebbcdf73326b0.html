@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: SET</title>
+<title>MobilityDB: ensure_valid_ts2cell_tgeogpoint</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="mobilitydb_2sql_2s2cell_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_4fd7e498d3004600c7ef5da26e5eb9b6.html">s2cell</a></li><li class="navelem"><a class="el" href="ts2cell_8h.html">ts2cell.h</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,27 +79,43 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2sql_2s2cell_2CMakeLists_8txt_aeb66ab08c3f270d8e29835517522443c.html#aeb66ab08c3f270d8e29835517522443c">process_file</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2sql_2s2cell_2CMakeLists_8txt_a05c17c8a1f3a7c082d3d2899092215a9.html#a05c17c8a1f3a7c082d3d2899092215a9">SET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ts2cell_8h_a4351f62e7473f55e3ab172459df35827.html#a4351f62e7473f55e3ab172459df35827">datum2_s2cell_eq</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ts2cell_8h_afd11cca2bbe6831bbab540011ae15d22.html#afd11cca2bbe6831bbab540011ae15d22">datum2_s2cell_ne</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ts2cell_8h_a2f1fa235c5a686fb95b05a081a06d819.html#a2f1fa235c5a686fb95b05a081a06d819">ensure_valid_ts2cell_s2cell</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="ts2cell_8h_a40eb7e79af2ef135076ebbcdf73326b0.html#a40eb7e79af2ef135076ebbcdf73326b0">ensure_valid_ts2cell_tgeogpoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ts2cell_8h_a0a86d04315498aacf427376f5268b585.html#a0a86d04315498aacf427376f5268b585">ensure_valid_ts2cell_ts2cell</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a05c17c8a1f3a7c082d3d2899092215a9" name="a05c17c8a1f3a7c082d3d2899092215a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a05c17c8a1f3a7c082d3d2899092215a9">&#9670;&#160;</a></span>SET()</h2>
+<a id="a40eb7e79af2ef135076ebbcdf73326b0" name="a40eb7e79af2ef135076ebbcdf73326b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40eb7e79af2ef135076ebbcdf73326b0">&#9670;&#160;</a></span>ensure_valid_ts2cell_tgeogpoint()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">SET </td>
+          <td class="memname">bool ensure_valid_ts2cell_tgeogpoint </td>
           <td>(</td>
-          <td class="paramtype">LOCAL_FILES&#160;</td>
-          <td class="paramname"><em>600_s2cell</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Ensure a (ts2cell, tgeogpoint) pair — used by the geodetic point bridges. </p>
+<p >Ensure a (ts2cell, tgeogpoint) pair — used by the geodetic point bridges. </p>
 
 </div>
 </div>
