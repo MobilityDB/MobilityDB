@@ -754,26 +754,41 @@ int main(void)
   }
   meos_errno_reset();
 
-  /* The members of an array need not share their dimensions, while the
-   * collection the arms read them through must: #lwcollection_construct()
-   * refuses a set whose members carry different Z and M flags and answers
-   * NULL, and an arm given that NULL read the geometry through it. Every arm
-   * builds one -- the surfaces, the linework, and both halves of an array
-   * spanning the areal boundary, which builds a third for the answer it
-   * assembles -- so each of them is given a mixture here */
-  const char *dimcases[][2] = {
+  /* The members of an array need not share their dimensions, and the answer is
+   * read on the ones they do: a member carrying no elevation determines none
+   * for the points it contributes, so an answer declaring one would publish a
+   * value the array does not hold. Every arm is given a mixture here -- the
+   * surfaces, the linework, and an array spanning the areal boundary -- and
+   * the answer covers the same points whichever member the array lists first */
+  const char *dimcases[][3] = {
     /* the linear arm, whose members are points */
-    { "POINT Z(0 0 1)", "POINT(1 1)" },
+    { "POINT Z(0 0 1)", "POINT(1 1)", "MULTIPOINT((0 0),(1 1))" },
+    /* the same members in the other order cover the same points: the answer
+     * is read from what the array holds, not from what it lists first */
+    { "POINT(1 1)", "POINT Z(0 0 1)", "MULTIPOINT((1 1),(0 0))" },
     /* the linear arm, whose members are curves */
-    { "LINESTRING Z(0 0 1,1 1 1)", "LINESTRING(5 5,6 6)" },
-    /* the areal arm */
+    { "LINESTRING Z(0 0 1,1 1 1)", "LINESTRING(5 5,6 6)",
+      "MULTILINESTRING((0 0,1 1),(5 5,6 6))" },
+    /* the areal arm, whose surfaces stay apart */
     { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
-      "POLYGON((9 9,9 11,11 11,11 9,9 9))" },
-    /* both arms together, each half uniform and the answer mixed */
-    { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))", "LINESTRING(1 1,5 5)" },
-    /* a measure is a dimension of the collection as an elevation is */
-    { "POINT ZM(0 0 1 2)", "POINT Z(1 1 1)" },
-    { "POINT M(0 0 1)", "POINT(1 1)" },
+      "POLYGON((9 9,9 11,11 11,11 9,9 9))",
+      "MULTIPOLYGON(((0 0,0 2,2 2,2 0,0 0)),((9 9,9 11,11 11,11 9,9 9)))" },
+    /* the areal arm, dissolving a pair whose interiors meet */
+    { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
+      "POLYGON((1 1,1 3,3 3,3 1,1 1))",
+      "POLYGON((1 2,0 2,0 0,2 0,2 1,3 1,3 3,1 3,1 2))" },
+    /* both arms together, each half sharing its dimensions and the two halves
+     * not sharing them with each other */
+    { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))", "LINESTRING(5 5,6 6)",
+      "GEOMETRYCOLLECTION(LINESTRING(5 5,6 6),"
+        "POLYGON((0 0,0 2,2 2,2 0,0 0)))" },
+    /* a measure is a dimension of the answer as an elevation is, and the two
+     * are read one by one: the elevation both members carry is kept */
+    { "POINT ZM(0 0 1 2)", "POINT Z(1 1 1)", "MULTIPOINT Z ((0 0 1),(1 1 1))" },
+    { "POINT M(0 0 1)", "POINT(1 1)", "MULTIPOINT((0 0),(1 1))" },
+    /* an EMPTY member contributes no points, so it takes no ordinate away
+     * from the members that do carry one */
+    { "POINT Z(0 0 1)", "POLYGON EMPTY", "POINT Z (0 0 1)" },
   };
   for (size_t i = 0; i < sizeof(dimcases) / sizeof(dimcases[0]); i++)
   {
@@ -783,15 +798,13 @@ int main(void)
     GSERIALIZED *dmarr[2] = {dm1, dm2};
     meos_errno_reset();
     GSERIALIZED *dmu = geom_array_union(dmarr, 2);
-    /* Which answer comes back is the arm's to give, and what is asserted here
-     * is that the array is ANSWERED: a union, or the refusal reported through
-     * the error. Reading the refused collection ended the process instead */
-    printf("union of %s with %s: %s\n", dimcases[i][0], dimcases[i][1],
-      dmu ? "answered" : "declined");
-    assert(dmu != NULL || meos_errno() != 0);
-    free(dm1); free(dm2);
-    if (dmu)
-      free(dmu);
+    assert(dmu != NULL);
+    assert(meos_errno() == 0);
+    char *dmwkt = geo_as_text(dmu, 3);
+    assert(dmwkt != NULL);
+    printf("union of %s with %s: %s\n", dimcases[i][0], dimcases[i][1], dmwkt);
+    assert(strcmp(dmwkt, dimcases[i][2]) == 0);
+    free(dm1); free(dm2); free(dmu); free(dmwkt);
     meos_errno_reset();
   }
 
@@ -807,6 +820,24 @@ int main(void)
   printf("union of two elevated positions: %s\n", dmzwkt);
   assert(strcmp(dmzwkt, "MULTIPOINT Z ((0 0 1),(1 1 1))") == 0);
   free(dmz1); free(dmz2); free(dmzu); free(dmzwkt);
+  meos_errno_reset();
+
+  /* Which positions of a set are equal is read from their coordinates, on the
+   * spheroid as on the plane, and an elevation one of them does not carry is
+   * no more available there: the geodetic entry reads the shared dimensions
+   * as the planar one does */
+  GSERIALIZED *ggd1 = geog_in("POINT Z(1 1 1)", -1);
+  GSERIALIZED *ggd2 = geog_in("POINT(2 2)", -1);
+  assert(ggd1 != NULL); assert(ggd2 != NULL);
+  GSERIALIZED *ggdarr[2] = {ggd1, ggd2};
+  GSERIALIZED *ggdu = geog_array_union(ggdarr, 2);
+  assert(ggdu != NULL);
+  assert(meos_errno() == 0);
+  char *ggdwkt = geo_as_ewkt(ggdu, 6);
+  printf("the union of an elevated geography position with a flat one: %s\n",
+    ggdwkt);
+  assert(strcmp(ggdwkt, "SRID=4326;MULTIPOINT(1 1,2 2)") == 0);
+  free(ggd1); free(ggd2); free(ggdu); free(ggdwkt);
   meos_errno_reset();
 
   /* Finalize MEOS */
