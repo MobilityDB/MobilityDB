@@ -328,6 +328,23 @@ modification_families:
     - {sig: "deleteTime(tquadbin, tstzspan, connect boolean DEFAULT TRUE)", ret: "tquadbin", sym: "Temporal_delete_tstzspan"}
     - {sig: "deleteTime(tquadbin, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tquadbin", sym: "Temporal_delete_tstzspanset"}
   - lit: "\n"
+- family: s2cell
+  file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
+  reference: true
+  begin: "\n * Modification functions\n"
+  end: "CREATE TYPE time_ts2cell AS ("
+  raw_end: true
+  blocks:
+  - lit: "/******************************************************************************\n * Modification functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(ts2cell, ts2cell, connect boolean DEFAULT TRUE)", ret: "ts2cell", sym: "Temporal_insert"}
+    - {sig: "update(ts2cell, ts2cell, connect boolean DEFAULT TRUE)", ret: "ts2cell", sym: "Temporal_update"}
+    - {sig: "deleteTime(ts2cell, timestamptz, connect boolean DEFAULT TRUE)", ret: "ts2cell", sym: "Temporal_delete_timestamptz"}
+    - {sig: "deleteTime(ts2cell, tstzset, connect boolean DEFAULT TRUE)", ret: "ts2cell", sym: "Temporal_delete_tstzset"}
+    - {sig: "deleteTime(ts2cell, tstzspan, connect boolean DEFAULT TRUE)", ret: "ts2cell", sym: "Temporal_delete_tstzspan"}
+    - {sig: "deleteTime(ts2cell, tstzspanset, connect boolean DEFAULT TRUE)", ret: "ts2cell", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
   reference: true

@@ -418,6 +418,30 @@ constructor_families:
     - seq
     - seqset
     - seqsetgaps
+- family: s2cell
+  file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Transformations\n"
+  interp: step
+  span_interp: false
+  gaps_maxdist: false
+  inc: camel
+  pairs:
+  - base: s2cell
+    temp: ts2cell
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n *\n * Inherited Temporal<T> surface wired to the generic constructor symbols\n * (the value Datum carries the s2cell cell, dispatch is on the base oid).\n * `ts2cell` has step interpolation only, so the from-span and array\n * constructors take no interpolation argument / default to `'step'`, and a\n * cell has no scalar-distance metric so `ts2cellSeqSetGaps` exposes only the\n * time gap (the `tbigint` / `ttext` form, not the continuous `tcbuffer` one).\n ******************************************************************************/"
+  - ops:
+    - instant
+    - from_tstzset
+    - from_tstzspan
+    - from_tstzspanset
+  - ops:
+    - {op: seq, pre: "-- The inclusivity parameters are spelled `lowerInc` / `upperInc`, the\n-- spelling `022_temporal.in.sql` gives the base temporal type and the one\n-- `th3index` and `tquadbin` give the sibling cell indexes. The spatial\n-- families spell the same two parameters `lower_inc` / `upper_inc`, so a\n-- named-argument call does not carry across families; that split is a\n-- property of the published surface, not of this file.\n"}
+    - seqset
+    - seqsetgaps
+
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
   reference: true

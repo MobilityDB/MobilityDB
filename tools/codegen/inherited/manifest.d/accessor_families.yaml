@@ -72,6 +72,12 @@ accessor_families:
     reference: true
     types:
       - {temp: tquadbin, base: quadbin, baseset: quadbinset}
+  - family:    s2cell
+    file:      mobilitydb/sql/s2cell/603_ts2cell.in.sql
+    reference: true
+    types:
+      - {temp: ts2cell, base: s2cell, baseset: s2cellset}
+
   - family:    h3
     file:      mobilitydb/sql/h3/253_th3index.in.sql
     reference: true
