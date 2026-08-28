@@ -151,6 +151,8 @@ extern Temporal *trgeometry_delete_timestamptz(const Temporal *temp, TimestampTz
 extern Temporal *trgeometry_delete_tstzset(const Temporal *temp, const Set *s, bool connect);
 extern Temporal *trgeometry_delete_tstzspan(const Temporal *temp, const Span *s, bool connect);
 extern Temporal *trgeometry_delete_tstzspanset(const Temporal *temp, const SpanSet *ss, bool connect);
+extern Temporal *trgeometry_merge(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *trgeometry_merge_array(Temporal **temparr, int count);
 extern Temporal *trgeometry_round(const Temporal *temp, int maxdd);
 extern Temporal *trgeometry_set_interp(const Temporal *temp, interpType interp);
 extern TInstant *trgeometry_as_tinstant(const Temporal *temp);
