@@ -85,6 +85,10 @@
 #if RASTER
   #include <meos_raster.h>
 #endif
+#if S2CELL
+  #include <meos_s2cell.h>
+  #include "s2cell/s2cell.h"
+#endif
 #if RGEO
   #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
@@ -296,6 +300,16 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     {
       Quadbin cell = quadbin_parse(str);
       if (cell == (Quadbin) 0)
+        return false;
+      *result = Int64GetDatum((int64) cell);
+      return true;
+    }
+#endif
+#if S2CELL
+    case T_S2CELL:
+    {
+      S2CellId cell = s2cell_parse(str);
+      if (cell == (S2CellId) 0)
         return false;
       *result = Int64GetDatum((int64) cell);
       return true;
@@ -2132,6 +2146,11 @@ base_from_wkb_state(meos_wkb_parse_state *s)
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
       return Int64GetDatum(int64_from_wkb_state(s));
 #endif /* QUADBIN */
+#if S2CELL
+    case T_S2CELL:
+      /* an S2 cell is a uint64 cell id, wire-format identical to int8 */
+      return Int64GetDatum(int64_from_wkb_state(s));
+#endif /* S2CELL */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown base type in WKB string: %s", meostype_name(s->basetype));

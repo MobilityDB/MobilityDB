@@ -86,6 +86,10 @@
   #include "quadbin/quadbin.h"
   #include "quadbin/tquadbin_boxops.h"
 #endif
+#if S2CELL
+  #include "s2cell/s2cell.h"
+  #include "s2cell/ts2cell_boxops.h"
+#endif
 #if RGEO
   #include "rgeo/trgeo_boxops.h"
 #endif
@@ -1084,6 +1088,10 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
 #if QUADBIN
     case T_QUADBIN:
       return quadbin_set_stbox(DatumGetQuadbin(d), result);
+#endif
+#if S2CELL
+    case T_S2CELL:
+      return s2cell_set_stbox(DatumGetS2Cell(d), result);
 #endif
 #if POINTCLOUD
     case T_PCPOINT:

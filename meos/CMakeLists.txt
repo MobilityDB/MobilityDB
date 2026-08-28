@@ -194,6 +194,10 @@ if(RGEO)
   message(STATUS "Including rigid geometries")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
 endif()
+if(S2CELL)
+  message(STATUS "Including temporal Google S2 index objects")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:s2cell>")
+endif()
 
 if(MEOS AND BUILD_SHARED_LIBS)
   # Build as SHARED library for standalone use
@@ -452,6 +456,11 @@ if(MEOS)
   if(RGEO)
     install(
       FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_rgeo.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+  if(S2CELL)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_s2cell.h"
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   endif()
   if(QUADBIN)

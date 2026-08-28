@@ -155,6 +155,12 @@ spatial_srid(Datum d, MeosType basetype)
       (void) d;
       return SRID_DEFAULT;
 #endif
+#if S2CELL
+    case T_S2CELL:
+      /* S2 cells are geodetic (EPSG:4326) */
+      (void) d;
+      return SRID_DEFAULT;
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown SRID function for type: %s", meostype_name(basetype));
@@ -210,6 +216,12 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
 #if QUADBIN
     case T_QUADBIN:
       /* Quadbin cells are planar lon/lat; only SRID 4326 is accepted */
+      (void) d;
+      return (srid == SRID_DEFAULT);
+#endif
+#if S2CELL
+    case T_S2CELL:
+      /* S2 cells are geodetic; only SRID 4326 is accepted */
       (void) d;
       return (srid == SRID_DEFAULT);
 #endif

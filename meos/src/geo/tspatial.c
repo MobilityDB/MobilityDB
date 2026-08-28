@@ -78,6 +78,9 @@
 #if QUADBIN
   #include "quadbin/tquadbin_boxops.h"
 #endif
+#if S2CELL
+  #include "s2cell/ts2cell_boxops.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -514,6 +517,10 @@ tspatial_set_stbox(const Temporal *temp, STBox *result)
 #if QUADBIN
       else if (temp->temptype == T_TQUADBIN)
         tquadbininst_set_stbox((TInstant *) temp, result);
+#endif
+#if S2CELL
+      else if (temp->temptype == T_TS2CELL)
+        ts2cellinst_set_stbox((TInstant *) temp, result);
 #endif
 #if RGEO
       else if (temp->temptype == T_TRGEOMETRY)

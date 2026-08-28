@@ -82,6 +82,9 @@
 #if QUADBIN
   #include "quadbin/tquadbin_boxops.h"
 #endif
+#if S2CELL
+  #include "s2cell/ts2cell_boxops.h"
+#endif
 #if RGEO
   #include "rgeo/trgeo.h"
   #include "rgeo/trgeo_boxops.h"
@@ -150,6 +153,10 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
 #if QUADBIN
   else if (inst->temptype == T_TQUADBIN)
     tquadbininst_set_stbox(inst, (STBox *) box);
+#endif
+#if S2CELL
+  else if (inst->temptype == T_TS2CELL)
+    ts2cellinst_set_stbox(inst, (STBox *) box);
 #endif
 #if RGEO
   else if (inst->temptype == T_TRGEOMETRY)
@@ -280,6 +287,10 @@ tspatialinstarr_set_stbox(TInstant **instants, int count, bool lower_inc,
   else if (temptype == T_TQUADBIN)
     tquadbininstarr_set_stbox(instants, count, (STBox *) box);
 #endif
+#if S2CELL
+  else if (temptype == T_TS2CELL)
+    ts2cellinstarr_set_stbox(instants, count, (STBox *) box);
+#endif
 #if RGEO
   else if (temptype == T_TRGEOMETRY)
     tposeinstarr_set_stbox(instants, count, (STBox *) box);
@@ -351,6 +362,10 @@ tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst)
   else if (seq->temptype == T_TQUADBIN)
     tquadbinseq_expand_stbox(seq, inst);
 #endif
+#if S2CELL
+  else if (seq->temptype == T_TS2CELL)
+    ts2cellseq_expand_stbox(seq, inst);
+#endif
 #if RGEO
   else if (seq->temptype == T_TRGEOMETRY)
     tposeseq_expand_stbox(seq, inst);
@@ -421,6 +436,10 @@ spatialarr_set_bbox(const Datum *values, MeosType basetype, int count,
 #if QUADBIN
   else if (basetype == T_QUADBIN)
     quadbinarr_set_stbox(values, count, (STBox *) box);
+#endif
+#if S2CELL
+  else if (basetype == T_S2CELL)
+    s2cellarr_set_stbox(values, count, (STBox *) box);
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

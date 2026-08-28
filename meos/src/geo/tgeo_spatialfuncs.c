@@ -385,6 +385,20 @@ quadbin_flags(void)
   /* Quadbin cells are planar (Web-Mercator slippy tiles), not geodetic */
   return result;
 }
+#endif
+#if S2CELL
+/**
+ * @brief Return the flags of an S2 cell
+ */
+int16
+s2cell_flags(void)
+{
+  int16 result = 0; /* Set all flags to false */
+  MEOS_FLAGS_SET_X(result, true);
+  /* An S2 cell is defined on the sphere, so it is geodetic */
+  MEOS_FLAGS_SET_GEODETIC(result, true);
+  return result;
+}
 #endif /* QUADBIN */
 
 #if POINTCLOUD
@@ -488,6 +502,11 @@ spatial_flags(Datum d, MeosType basetype)
     case T_QUADBIN:
       (void) d;
       return quadbin_flags();
+#endif
+#if S2CELL
+    case T_S2CELL:
+      (void) d;
+      return s2cell_flags();
 #endif
 #if H3
     case T_H3INDEX:

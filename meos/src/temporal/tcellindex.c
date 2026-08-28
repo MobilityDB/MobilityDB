@@ -56,6 +56,9 @@ extern const DggsCellOps h3_cellops;
 #if QUADBIN
 extern const DggsCellOps quadbin_cellops;
 #endif
+#if S2CELL
+extern const DggsCellOps s2_cellops;
+#endif
 
 /*****************************************************************************
  * Catalog predicate + descriptor registry
@@ -73,6 +76,9 @@ tcellindex_type(MeosType type UNUSED)
 #endif
 #if QUADBIN
     type == T_TQUADBIN ||
+#endif
+#if S2CELL
+    type == T_TS2CELL ||
 #endif
     false;
 }
@@ -105,6 +111,10 @@ dggs_cellops(MeosType temptype)
 #if QUADBIN
     case T_TQUADBIN:
       return &quadbin_cellops;
+#endif
+#if S2CELL
+    case T_TS2CELL:
+      return &s2_cellops;
 #endif
     default:
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,

@@ -142,6 +142,16 @@ option(QUADBIN "Set ON|OFF (default=OFF) to include the temporal QUADBIN index t
 # Option for sampling PostGIS raster bands along trajectories.
 # Requires the postgis_raster extension (ships with postgresql-N-postgis-3).
 option(RASTER "Set ON|OFF (default=OFF) to include PostGIS raster sampling operators" OFF)
+# Option for including the temporal Google S2 index type (`ts2cell`).
+# S2 has no maintained C API, so its cell algebra is implemented first-party in
+# meos/src/s2cell/ (libm only) from the published cell-id specification, the same
+# model as quadbin, and no find_library / vendored subtree is needed.
+# The family is spelled `s2cell`, after its static type, so that the option, the
+# source directory and the public header carry one token as every other family
+# does. The grid's own name cannot: a bare `S2` is a stab-line endpoint in the
+# vendored PostGIS geodetic code (liblwgeom/lwgeodetic.c, lwgeodetic_tree.c),
+# which a build-wide -DS2=0|1 rewrites into a numeric constant.
+option(S2CELL "Set ON|OFF (default=OFF) to include the temporal Google S2 index type (ts2cell)" OFF)
 
 # Option for answering with the GEOS library the geometry operations no native
 # implementation covers. It is a dependency of the geometry operations rather
@@ -153,7 +163,7 @@ option(GEOS "Set ON|OFF (default=ON) to answer with the GEOS library the geometr
 # as adding a language to the documentation build's PROJECT_SUPPORTED_LANGUAGES.
 # POSE precedes RGEO and POSECHAIN because both depend on it.
 if(ALL)
-  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE RGEO POSECHAIN QUADBIN RASTER)
+  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE RGEO POSECHAIN QUADBIN RASTER S2CELL)
     set(${_family} ON CACHE BOOL "Enabled by ALL=ON" FORCE)
   endforeach()
 endif()
@@ -241,6 +251,13 @@ if(RGEO)
 else()
   message(STATUS "Excluding rigid geometries")
   add_definitions(-DRGEO=0)
+endif()
+if(S2CELL)
+  message(STATUS "Including temporal Google S2 index (ts2cell)")
+  add_definitions(-DS2CELL=1)
+else()
+  message(STATUS "Excluding temporal Google S2 index")
+  add_definitions(-DS2CELL=0)
 endif()
 
 # Build the 'requires =' clause for the generated mobilitydb.control file
