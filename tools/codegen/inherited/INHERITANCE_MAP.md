@@ -552,7 +552,7 @@ The generic inherited Tcell API (declared in the umbrella header
 | C implementation | **unified once** via `DggsCellOps` — the `Tcell` C surface is effectively "generated" (single generic body, per-DGGS descriptor) |
 | catalog predicate `tcellindex_type()` | **both cell families** (`#if H3 → T_TH3INDEX`, `#if QUADBIN → T_TQUADBIN`, `tcellindex.c:66-76`) |
 | descriptor registered | `h3_cellops` (`meos/src/h3/th3index_ops.c:79`), `quadbin_cellops` (`meos/src/quadbin/tquadbin_ops.c:132`) and `s2_cellops` (`meos/src/s2cell/ts2cell_ops.c:146`), all dispatched from `dggs_cellops()` |
-| SQL wrappers (cellResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`; names are the bare DggsCellOps slot names overloaded by argument type — a second, independent surface from the generic `tcellindex_*` descriptor path above, not sourced from it |
+| SQL wrappers (getResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`; names are the bare DggsCellOps slot names overloaded by argument type — a second, independent surface from the generic `tcellindex_*` descriptor path above, not sourced from it |
 | cell→boundary hook | the key inherited hook: `spatialrels.sql.tmpl` cast-delegates via `cellToBoundary($n)::tgeometry`, the bare DggsCellOps slot name — this IS generated (§6, h3 262 / quadbin 362) |
 
 ⇒ **Remaining opportunity**: both DGGS families are wired onto `DggsCellOps` and

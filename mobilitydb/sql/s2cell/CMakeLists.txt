@@ -1,6 +1,7 @@
 SET(LOCAL_FILES
   600_s2cell
   601_s2cellset
+  602_s2cell_ops
   603_ts2cell
   )
 
