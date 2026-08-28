@@ -4,7 +4,6 @@
 # shrinks: a call to an entry point it does not carry fails the
 # check. Regenerate with --rebaseline once a native answer takes
 # a call over. The library answers 125 entry points in all.
-meos/src/geo/postgis_funcs.c	lwgeom_centroid
 meos/src/geo/postgis_funcs.c	lwgeom_difference_prec
 meos/src/geo/postgis_funcs.c	lwgeom_intersection_prec
 meos/src/geo/postgis_funcs.c	lwgeom_is_simple

@@ -585,6 +585,21 @@ int main(void)
   assert(meos_errno() != 0);
   meos_errno_reset();
 
+  /* The clustering seeds itself from the CENTROID of every input that is not a
+   * point, so an array carrying a line reaches an answer a build with no GEOS
+   * has to hold on its own. The two clusters here are the pair at the origin
+   * and the point far from it */
+  int nkmeans = 0;
+  int *kmeans = geo_cluster_kmeans(cl, 4, 2, &nkmeans);
+  assert(kmeans != NULL);
+  assert(nkmeans == 4);
+  assert(kmeans[0] == kmeans[1] && kmeans[1] == kmeans[2]);
+  assert(kmeans[3] != kmeans[0]);
+  printf("clusterKMeans over a line and three points: %d %d %d %d\n",
+    kmeans[0], kmeans[1], kmeans[2], kmeans[3]);
+  free(kmeans);
+  meos_errno_reset();
+
   /* The k-means clustering reports a missing output parameter, which it reads
    * before the count of clusters is written to it */
   assert(geo_cluster_kmeans(cl, 4, 2, NULL) == NULL);
