@@ -822,6 +822,123 @@ int main(void)
   free(dmz1); free(dmz2); free(dmzu); free(dmzwkt);
   meos_errno_reset();
 
+  /* A union is computed on the PLANE while the Z and M its members carry are a
+   * lift of that plane: the ordinates are given at their vertices and read
+   * between them along the curve joining them. Every vertex of the answer lies
+   * on the boundary of a member, so a member determines an ordinate there --
+   * unless two of them determine DIFFERENT ones, as two surfaces crossing at
+   * different elevations do, when the point has none the members give. The
+   * answer therefore carries an ordinate exactly where that lift is unique */
+  struct { const char *first; const char *second; const char *result; }
+    liftcases[] = {
+    /* two surfaces crossing on ONE plane: the nodes the overlay adds are
+     * elevated by the edges carrying them, which agree */
+    { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
+      "POLYGON Z((1 1 1,1 3 1,3 3 1,3 1 1,1 1 1))",
+      "POLYGON Z ((1 2 1,0 2 1,0 0 1,2 0 1,2 1 1,3 1 1,3 3 1,1 3 1,1 2 1))" },
+    /* the same pair on the sloping plane Z = x, which the added nodes are
+     * read onto: (1 2) takes 1 and (2 1) takes 2 */
+    { "POLYGON Z((0 0 0,0 2 0,2 2 2,2 0 2,0 0 0))",
+      "POLYGON Z((1 1 1,1 3 1,3 3 3,3 1 3,1 1 1))",
+      "POLYGON Z ((1 2 1,0 2 0,0 0 0,2 0 2,2 1 2,3 1 3,3 3 3,1 3 1,1 2 1))" },
+    /* two surfaces crossing at DIFFERENT elevations: the nodes have none, so
+     * the answer is the planar figure rather than one carrying a mean */
+    { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
+      "POLYGON Z((1 1 7,1 3 7,3 3 7,3 1 7,1 1 7))",
+      "POLYGON((1 2,0 2,0 0,2 0,2 1,3 1,3 3,1 3,1 2))" },
+    /* two surfaces MEETING along an edge at different elevations: the shared
+     * edge is where they disagree */
+    { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
+      "POLYGON Z((2 0 7,2 2 7,4 2 7,4 0 7,2 0 7))",
+      "POLYGON((0 2,2 2,4 2,4 0,2 0,0 0,0 2))" },
+    /* linework coinciding over a stretch, dissolved into one curve that keeps
+     * the elevation both members carry */
+    { "LINESTRING Z(0 0 1,6 6 1)", "LINESTRING Z(3 3 1,10 10 1)",
+      "LINESTRING Z (0 0 1,6 6 1,10 10 1)" },
+    /* the elevations agree and the measures do not, so the answer keeps the
+     * one that is determined and drops the one that is not */
+    { "POLYGON ZM((0 0 1 5,0 2 1 5,2 2 1 5,2 0 1 5,0 0 1 5))",
+      "POLYGON ZM((1 1 1 9,1 3 1 9,3 3 1 9,3 1 1 9,1 1 1 9))",
+      "POLYGON Z ((1 2 1,0 2 1,0 0 1,2 0 1,2 1 1,3 1 1,3 3 1,1 3 1,1 2 1))" },
+    /* and the other way round */
+    { "POLYGON ZM((0 0 1 5,0 2 1 5,2 2 1 5,2 0 1 5,0 0 1 5))",
+      "POLYGON ZM((1 1 7 5,1 3 7 5,3 3 7 5,3 1 7 5,1 1 7 5))",
+      "POLYGON M ((1 2 5,0 2 5,0 0 5,2 0 5,2 1 5,3 1 5,3 3 5,1 3 5,1 2 5))" },
+  };
+  for (size_t i = 0; i < sizeof(liftcases) / sizeof(liftcases[0]); i++)
+  {
+    GSERIALIZED *lf1 = geom_in(liftcases[i].first, -1);
+    GSERIALIZED *lf2 = geom_in(liftcases[i].second, -1);
+    assert(lf1 != NULL); assert(lf2 != NULL);
+    GSERIALIZED *lfarr[2] = {lf1, lf2};
+    meos_errno_reset();
+    GSERIALIZED *lfu = geom_array_union(lfarr, 2);
+    assert(lfu != NULL);
+    assert(meos_errno() == 0);
+    char *lfwkt = geo_as_text(lfu, 3);
+    assert(lfwkt != NULL);
+    printf("%s united with %s: %s\n", liftcases[i].first, liftcases[i].second,
+      lfwkt);
+    assert(strcmp(lfwkt, liftcases[i].result) == 0);
+    free(lf1); free(lf2); free(lfu); free(lfwkt);
+    meos_errno_reset();
+  }
+
+  /* An arc is a curve, and the lift along it is read by ANGLE rather than by
+   * the chord joining its ends. These two discs are mirror images about the
+   * line through the points where they cross, and each carries elevations
+   * linear in the angle around its own centre, so the two determine the SAME
+   * elevation at each crossing node -- 0.2301, the node's 41.41 degrees over
+   * 180 -- and the answer carries it. Read along the chord, one disc gives
+   * 0.209 there and the other 0.25: they would conflict and the answer would
+   * come back flat, so its dimension is what this asserts */
+  GSERIALIZED *dsc1 = geom_in(
+    "CURVEPOLYGON(CIRCULARSTRING Z(0 0 1,2 2 0.5,4 0 0,2 -2 0.5,0 0 1))", -1);
+  GSERIALIZED *dsc2 = geom_in(
+    "CURVEPOLYGON(CIRCULARSTRING Z(3 0 0,5 2 0.5,7 0 1,5 -2 0.5,3 0 0))", -1);
+  assert(dsc1 != NULL); assert(dsc2 != NULL);
+  GSERIALIZED *dscarr[2] = {dsc1, dsc2};
+  meos_errno_reset();
+  GSERIALIZED *dscu = geom_array_union(dscarr, 2);
+  assert(dscu != NULL);
+  assert(meos_errno() == 0);
+  char *dscwkt = geo_as_text(dscu, 4);
+  printf("two mirrored discs elevated by the angle: %s\n", dscwkt);
+  assert(strcmp(dscwkt,
+    "CURVEPOLYGON Z (COMPOUNDCURVE Z ("
+    "CIRCULARSTRING Z (3.5 1.3229 0.2301,1.2929 1.8708 0.615,0 0 1),"
+    "CIRCULARSTRING Z (0 0 1,1.2929 -1.8708 0.615,3.5 -1.3229 0.2301),"
+    "CIRCULARSTRING Z (3.5 -1.3229 0.2301,5.7071 -1.8708 0.615,7 0 1),"
+    "CIRCULARSTRING Z (7 0 1,5.7071 1.8708 0.615,3.5 1.3229 0.2301)))") == 0);
+  free(dsc1); free(dsc2); free(dscu); free(dscwkt);
+  meos_errno_reset();
+
+  /* The dissolve of ONE geometry reads its ordinates back the same way: its
+   * components determine them where they agree and leave the answer planar
+   * where they do not */
+  GSERIALIZED *uz1 = geom_in(
+    "MULTISURFACE(POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1)),"
+    "POLYGON Z((1 1 1,1 3 1,3 3 1,3 1 1,1 1 1)))", -1);
+  GSERIALIZED *uz2 = geom_in(
+    "MULTISURFACE(POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1)),"
+    "POLYGON Z((1 1 7,1 3 7,3 3 7,3 1 7,1 1 7)))", -1);
+  assert(uz1 != NULL); assert(uz2 != NULL);
+  GSERIALIZED *uzu1 = geom_unary_union(uz1, -1);
+  GSERIALIZED *uzu2 = geom_unary_union(uz2, -1);
+  assert(uzu1 != NULL); assert(uzu2 != NULL);
+  assert(meos_errno() == 0);
+  char *uzwkt1 = geo_as_text(uzu1, 3);
+  char *uzwkt2 = geo_as_text(uzu2, 3);
+  printf("the dissolve of two surfaces at one elevation: %s\n", uzwkt1);
+  printf("the dissolve of two surfaces at two elevations: %s\n", uzwkt2);
+  assert(strcmp(uzwkt1,
+    "POLYGON Z ((1 2 1,0 2 1,0 0 1,2 0 1,2 1 1,3 1 1,3 3 1,1 3 1,1 2 1))")
+    == 0);
+  assert(strcmp(uzwkt2,
+    "POLYGON((1 2,0 2,0 0,2 0,2 1,3 1,3 3,1 3,1 2))") == 0);
+  free(uz1); free(uz2); free(uzu1); free(uzu2); free(uzwkt1); free(uzwkt2);
+  meos_errno_reset();
+
   /* Which positions of a set are equal is read from their coordinates, on the
    * spheroid as on the plane, and an elevation one of them does not carry is
    * no more available there: the geodetic entry reads the shared dimensions
