@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Tbigint_to_ts2cell</title>
+<title>MobilityDB: S2cell_tstzspan_to_stbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_adb2567e9af88cb8d67f6f32e8085ca1.html">s2cell</a></li><li class="navelem"><a class="el" href="mobilitydb_2src_2s2cell_2ts2cell_8c.html">ts2cell.c</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__mobilitydb__s2cell__base__conversion.html">Conversion functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,20 +79,26 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2s2cell_2ts2cell_8c_ace3bca27b9a173e8bc3cff4d541bc4cd.html#ace3bca27b9a173e8bc3cff4d541bc4cd">Tbigint_to_ts2cell</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2s2cell_2ts2cell_8c_a6fd6250db162bea8f847b3b52c85ab93.html#a6fd6250db162bea8f847b3b52c85ab93">Ts2cell_to_tbigint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__s2cell__base__conversion_gaf5627bb5f155e48da04a5ec840b22891.html#gaf5627bb5f155e48da04a5ec840b22891">S2cell_cell_to_boundary</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__s2cell__base__conversion_gaaec9d87d3735855e94a95020486c339d.html#gaaec9d87d3735855e94a95020486c339d">S2cell_cell_to_point</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__s2cell__base__conversion_ga83c837f28e275a5334531de87ff92e69.html#ga83c837f28e275a5334531de87ff92e69">S2cell_cell_to_token</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__s2cell__base__conversion_gaf9e88b3c765b192768d0e60e4832127c.html#gaf9e88b3c765b192768d0e60e4832127c">S2cell_point_to_cell</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__s2cell__base__conversion_gaaf85c58b0148972872331dbcb5b604ba.html#gaaf85c58b0148972872331dbcb5b604ba">S2cell_timestamptz_to_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__s2cell__base__conversion_gaa7d1017f58a0eb9d32f4ee5a2ae419cb.html#gaa7d1017f58a0eb9d32f4ee5a2ae419cb">S2cell_to_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__s2cell__base__conversion_gaf3391dfadee691a4402059908f744a4f.html#gaf3391dfadee691a4402059908f744a4f">S2cell_token_to_cell</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__s2cell__base__conversion_ga77cb732a5472519264bd2fcb15fe9664.html#ga77cb732a5472519264bd2fcb15fe9664">S2cell_tstzspan_to_stbox</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ace3bca27b9a173e8bc3cff4d541bc4cd" name="ace3bca27b9a173e8bc3cff4d541bc4cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace3bca27b9a173e8bc3cff4d541bc4cd">&#9670;&#160;</a></span>Tbigint_to_ts2cell()</h2>
+<a id="ga77cb732a5472519264bd2fcb15fe9664" name="ga77cb732a5472519264bd2fcb15fe9664"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga77cb732a5472519264bd2fcb15fe9664">&#9670;&#160;</a></span>S2cell_tstzspan_to_stbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Tbigint_to_ts2cell </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> S2cell_tstzspan_to_stbox </td>
           <td>(</td>
           <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -101,8 +107,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Convert a temporal big integer into a temporal S2 cell @sqlfn ts2cell() </p>
-<dl class="section user"><dt>SQL Operator:</dt><dd><code>::</code> </dd></dl>
+<p>Return the spatiotemporal bounding box of an S2 cell and a timestamptz span @sqlfn stbox() </p>
 
 </div>
 </div>
