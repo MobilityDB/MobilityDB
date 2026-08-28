@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s04.html" title="Conversión de tipos"><link rel="next" href="ch16s06.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_startValue"></a><a class="indexterm" name="id11519"></a><a class="indexterm" name="id11522"></a><a class="indexterm" name="id11525"></a><p>Devolver el primer, el último o el enésimo identificador de celda distinto de un valor temporal</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s04.html" title="Conversión de tipos"><link rel="next" href="ch16s06.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_startValue"></a><a class="indexterm" name="id11548"></a><a class="indexterm" name="id11551"></a><a class="indexterm" name="id11554"></a><p>Devolver el primer, el último o el enésimo identificador de celda distinto de un valor temporal</p><pre class="programlisting">
 startValue(tcell) → cell
 endValue(tcell) → cell
 valueN(tcell,integer) → cell
@@ -21,7 +21,7 @@ SELECT endValue(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
 -- 47c4
 SELECT valueN(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}', 1);
 -- 47c3c
-</pre></li><li class="listitem"><a name="tcell_getValues"></a><a class="indexterm" name="id11536"></a><p>Devolver el conjunto de identificadores de celda distintos que toma la trayectoria</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_getValues"></a><a class="indexterm" name="id11565"></a><p>Devolver el conjunto de identificadores de celda distintos que toma la trayectoria</p><pre class="programlisting">
 getValues(tcell) → cellset
 </pre><pre class="programlisting">
 SELECT getValues(th3index '831c02fffffffff@2001-01-01');
@@ -37,7 +37,7 @@ SELECT getValues(ts2cell '47c3c@2001-01-01');
 -- {"47c3c"}
 SELECT getValues(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
 -- {"47c3c", "47c4"}
-</pre></li><li class="listitem"><a name="tcell_valueAtTimestamp"></a><a class="indexterm" name="id11543"></a><p>Devolver el identificador de celda en una marca de tiempo dada, usando interpolación de pasos</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_valueAtTimestamp"></a><a class="indexterm" name="id11572"></a><p>Devolver el identificador de celda en una marca de tiempo dada, usando interpolación de pasos</p><pre class="programlisting">
 valueAtTimestamp(tcell,timestamptz) → cell
 </pre><pre class="programlisting">
 SELECT valueAtTimestamp(th3index

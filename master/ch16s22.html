@@ -1,18 +1,18 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>QUADBIN-Specific Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Cell Index Types"><link rel="prev" href="ch16s21.html" title="H3-Specific Operations"><link rel="next" href="ch16s23.html" title="S2-Specific Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">QUADBIN-Specific Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s21.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Cell Index Types</th><td width="20%" align="right"> <a accesskey="n" href="ch16s23.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_quadbin_specific"></a>QUADBIN-Specific Operations</h2></div></div></div><p>QUADBIN is built on the slippy-map (Web-Mercator) tile scheme, so a cell maps directly to a tile coordinate triple <code class="varname">(x,y,z)</code> and to the base-4 quadkey string tile servers use. These conversions are the QUADBIN-specific bridge to the tiling ecosystem, and have no counterpart in a hexagonal or a spherical-quadrilateral grid.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_quadbin_is_valid_index"></a><a class="indexterm" name="id12881"></a><p>Return whether a value is a structurally valid QUADBIN identifier</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>QUADBIN-Specific Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Cell Index Types"><link rel="prev" href="ch16s21.html" title="H3-Specific Operations"><link rel="next" href="ch16s23.html" title="S2-Specific Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">QUADBIN-Specific Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s21.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Cell Index Types</th><td width="20%" align="right"> <a accesskey="n" href="ch16s23.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_quadbin_specific"></a>QUADBIN-Specific Operations</h2></div></div></div><p>QUADBIN is built on the slippy-map (Web-Mercator) tile scheme, so a cell maps directly to a tile coordinate triple <code class="varname">(x,y,z)</code> and to the base-4 quadkey string tile servers use. These conversions are the QUADBIN-specific bridge to the tiling ecosystem, and have no counterpart in a hexagonal or a spherical-quadrilateral grid.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_quadbin_is_valid_index"></a><a class="indexterm" name="id12883"></a><p>Return whether a value is a structurally valid QUADBIN identifier</p><pre class="programlisting">
 isValidIndex(quadbin) → boolean
 </pre><p>Correct header tag and resolution field.</p><pre class="programlisting">
 SELECT isValidIndex(quadbin '480fffffffffffff');
 -- t
 SELECT isValidIndex(0::bigint::quadbin);
 -- f
-</pre></li><li class="listitem"><a name="tcell_quadbin_cell_sibling"></a><a class="indexterm" name="id12889"></a><p>Return the neighbouring cell at the same resolution in the given direction</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_quadbin_cell_sibling"></a><a class="indexterm" name="id12891"></a><p>Return the neighbouring cell at the same resolution in the given direction</p><pre class="programlisting">
 quadbinCellSibling(quadbin,text) → quadbin
 </pre><p><code class="varname">up</code> / <code class="varname">down</code> / <code class="varname">left</code> / <code class="varname">right</code>.</p><pre class="programlisting">
 SELECT quadbinCellSibling(
   quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
   = quadbin '48427fffffffffff';
 -- t
-</pre></li><li class="listitem"><a name="tcell_quadbin_cell_to_quadkey"></a><a class="indexterm" name="id12901"></a><a class="indexterm" name="id12904"></a><p>Emit the base-4 slippy-tile quadkey string of a cell</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_quadbin_cell_to_quadkey"></a><a class="indexterm" name="id12903"></a><a class="indexterm" name="id12906"></a><p>Emit the base-4 slippy-tile quadkey string of a cell</p><pre class="programlisting">
 quadbinCellToQuadkey(quadbin) → text
 tquadbinCellToQuadkey(tquadbin) → ttext
 </pre><p>One digit per zoom level, most significant first, the resolution-0 world cell mapping to the empty string. The static form takes a single <code class="varname">quadbin</code>, the temporal form returning the quadkey of each cell in a trajectory as a <code class="varname">ttext</code>.</p><pre class="programlisting">
@@ -22,14 +22,14 @@ SELECT quadbinCellToQuadkey(quadbin '48427fffffffffff');
 -- 0213
 SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
 -- 1202021322
-</pre></li><li class="listitem"><a name="tcell_quadbin_cell_to_tile"></a><a class="indexterm" name="id12914"></a><p>Decompose a cell back into its tile coordinate triple, returned as an integer array holding x, then y, then z</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_quadbin_cell_to_tile"></a><a class="indexterm" name="id12916"></a><p>Decompose a cell back into its tile coordinate triple, returned as an integer array holding x, then y, then z</p><pre class="programlisting">
 quadbinCellToTile(quadbin) → integer[]
 </pre><p>It is the inverse of the tile constructor</p><pre class="programlisting">
 SELECT quadbinCellToTile(quadbin '480fffffffffffff');
 -- {0,0,0}
 SELECT quadbinCellToTile(quadbin '48a6227affffffff');
 -- {524,343,10}
-</pre></li><li class="listitem"><a name="tcell_quadbin_tile_to_cell"></a><a class="indexterm" name="id12922"></a><p>Build a cell from slippy-map tile coordinates: column <code class="varname">x</code>, row <code class="varname">y</code>, and zoom <code class="varname">z</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_quadbin_tile_to_cell"></a><a class="indexterm" name="id12924"></a><p>Build a cell from slippy-map tile coordinates: column <code class="varname">x</code>, row <code class="varname">y</code>, and zoom <code class="varname">z</code></p><pre class="programlisting">
 quadbinTileToCell(integer,integer,integer) → quadbin
 </pre><pre class="programlisting">
 SELECT quadbinTileToCell(0, 0, 0) = quadbin '480fffffffffffff';

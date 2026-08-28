@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch14.html" title="Capítulo 14. Geometrías rígidas temporales"><link rel="prev" href="ch14s03.html" title="Conversión de tipos"><link rel="next" href="ch14s05.html" title="Área recorrida"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 14. Geometrías rígidas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch14s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_accessors"></a>Accesores</h2></div></div></div><p>Se aplican los accesores estándar de los tipos temporales: cada uno devuelve la geometría materializada en la marca de tiempo solicitada (la forma de referencia rotada y trasladada de acuerdo con la pose interpolada), o un valor de metadatos derivado de la trayectoria de pose.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_startValue"></a><a class="indexterm" name="id9876"></a><a class="indexterm" name="id9879"></a><a class="indexterm" name="id9882"></a><p>Devuelve la geometría materializada al inicio, al final o en una marca de tiempo elegida</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch14.html" title="Capítulo 14. Geometrías rígidas temporales"><link rel="prev" href="ch14s03.html" title="Conversión de tipos"><link rel="next" href="ch14s05.html" title="Área recorrida"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 14. Geometrías rígidas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch14s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_accessors"></a>Accesores</h2></div></div></div><p>Se aplican los accesores estándar de los tipos temporales: cada uno devuelve la geometría materializada en la marca de tiempo solicitada (la forma de referencia rotada y trasladada de acuerdo con la pose interpolada), o un valor de metadatos derivado de la trayectoria de pose.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_startValue"></a><a class="indexterm" name="id9905"></a><a class="indexterm" name="id9908"></a><a class="indexterm" name="id9911"></a><p>Devuelve la geometría materializada al inicio, al final o en una marca de tiempo elegida</p><pre class="programlisting">
 startValue(trgeometry) → geometry
 endValue(trgeometry) → geometry
 valueAtTimestamp(trgeometry,timestamptz) → geometry
@@ -10,7 +10,7 @@ SELECT asText(valueAtTimestamp( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
   timestamptz '2001-01-01 12:00:00'));
 -- POLYGON((5 0,6 0,6 1,5 1,5 0))
-</pre><p>Tenga en cuenta que la rotación interpola linealmente a lo largo del camino angular más corto; una rotación de 90° entre dos instantes separados por un día devuelve un polígono rotado 45° en el punto medio.</p></li><li class="listitem"><a name="trgeometry_numInstants"></a><a class="indexterm" name="id9890"></a><a class="indexterm" name="id9893"></a><a class="indexterm" name="id9896"></a><p>Devuelve el número de instantes, secuencias o marcas de tiempo distintos</p><pre class="programlisting">
+</pre><p>Tenga en cuenta que la rotación interpola linealmente a lo largo del camino angular más corto; una rotación de 90° entre dos instantes separados por un día devuelve un polígono rotado 45° en el punto medio.</p></li><li class="listitem"><a name="trgeometry_numInstants"></a><a class="indexterm" name="id9919"></a><a class="indexterm" name="id9922"></a><a class="indexterm" name="id9925"></a><p>Devuelve el número de instantes, secuencias o marcas de tiempo distintos</p><pre class="programlisting">
 numInstants(trgeometry) → integer
 numSequences(trgeometry) → integer
 numTimestamps(trgeometry) → integer
@@ -24,7 +24,7 @@ SELECT numSequences(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 SELECT numTimestamps(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]');
 -- 2
-</pre></li><li class="listitem"><a name="trgeometry_instants"></a><a class="indexterm" name="id9903"></a><a class="indexterm" name="id9906"></a><a class="indexterm" name="id9909"></a><p>Devuelve el arreglo de instantes, secuencias o segmentos entre instantes constituyentes</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_instants"></a><a class="indexterm" name="id9932"></a><a class="indexterm" name="id9935"></a><a class="indexterm" name="id9938"></a><p>Devuelve el arreglo de instantes, secuencias o segmentos entre instantes constituyentes</p><pre class="programlisting">
 instants(trgeometry) → trgeometry[]
 sequences(trgeometry) → trgeometry[]
 segments(trgeometry) → trgeometry[]
@@ -33,14 +33,14 @@ SELECT array_length( instants(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   {Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.5)@2001-01-02,
   Pose(Point(0 0), 0.0)@2001-01-03}'), 1);
 -- 3
-</pre></li><li class="listitem"><a name="trgeometry_points"></a><a class="indexterm" name="id9916"></a><p>Devuelve el conjunto de puntos del centroide (antena) distintos vistos a lo largo de la trgeometry</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_points"></a><a class="indexterm" name="id9945"></a><p>Devuelve el conjunto de puntos del centroide (antena) distintos vistos a lo largo de la trgeometry</p><pre class="programlisting">
 points(trgeometry) → geomset
 </pre><pre class="programlisting">
 SELECT asText(points(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   {Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 5), 0.0)@2001-01-02,
   Pose(Point(0 0), 0.0)@2001-01-03}'));
 -- {"POINT(0 0)", "POINT(5 5)"}
-</pre></li><li class="listitem"><a name="trgeometry_yaw_pitch_roll"></a><a class="indexterm" name="id9923"></a><a class="indexterm" name="id9926"></a><a class="indexterm" name="id9929"></a><p>Devuelve el ángulo yaw, pitch o roll como un flotante temporal, en radianes, bajo la convención Tait-Bryan intrínseca ZYX que exige la clase de conformidad Basic-YPR de OGC GeoPose</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_yaw_pitch_roll"></a><a class="indexterm" name="id9952"></a><a class="indexterm" name="id9955"></a><a class="indexterm" name="id9958"></a><p>Devuelve el ángulo yaw, pitch o roll como un flotante temporal, en radianes, bajo la convención Tait-Bryan intrínseca ZYX que exige la clase de conformidad Basic-YPR de OGC GeoPose</p><pre class="programlisting">
 yaw(trgeometry) → tfloat
 pitch(trgeometry) → tfloat
 roll(trgeometry) → tfloat
@@ -51,7 +51,7 @@ SELECT asText(yaw(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 SELECT asText(pitch(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
 -- [0@2001-01-01, 0@2001-01-02]
-</pre></li><li class="listitem"><a name="trgeometry_geom"></a><a class="indexterm" name="id9939"></a><p>Devuelve la geometría de referencia estática</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_geom"></a><a class="indexterm" name="id9968"></a><p>Devuelve la geometría de referencia estática</p><pre class="programlisting">
 geom(trgeometry) → geometry
 </pre><pre class="programlisting">
 SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));

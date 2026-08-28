@@ -1,11 +1,11 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>S2-Specific Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Cell Index Types"><link rel="prev" href="ch16s22.html" title="QUADBIN-Specific Operations"><link rel="next" href="ch17.html" title="Chapter 17. Temporal Point Clouds"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">S2-Specific Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s22.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Cell Index Types</th><td width="20%" align="right"> <a accesskey="n" href="ch17.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_s2_specific"></a>S2-Specific Operations</h2></div></div></div><p>The operations below have no H3 or QUADBIN analogue. They are stated on a static <code class="varname">s2cell</code>, since a cell identifier answers them without reference to time; the shared operations the sections above state apply to a <code class="varname">ts2cell</code> through the <code class="varname">tcell</code> notation.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_s2_get_face"></a><a class="indexterm" name="id12939"></a><p>Return the cube face in 0 to 5 an S2 cell sits on</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>S2-Specific Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Cell Index Types"><link rel="prev" href="ch16s22.html" title="QUADBIN-Specific Operations"><link rel="next" href="ch17.html" title="Chapter 17. Temporal Point Clouds"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">S2-Specific Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s22.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Cell Index Types</th><td width="20%" align="right"> <a accesskey="n" href="ch17.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_s2_specific"></a>S2-Specific Operations</h2></div></div></div><p>The operations below have no H3 or QUADBIN analogue. They are stated on a static <code class="varname">s2cell</code>, since a cell identifier answers them without reference to time; the shared operations the sections above state apply to a <code class="varname">ts2cell</code> through the <code class="varname">tcell</code> notation.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_s2_get_face"></a><a class="indexterm" name="id12941"></a><p>Return the cube face in 0 to 5 an S2 cell sits on</p><pre class="programlisting">
 s2GetFace(s2cell) → integer
 </pre><p>S2 projects the sphere onto the six faces of a circumscribed cube and lays a Hilbert curve on each, so the face is the first three bits of the identifier and two cells on different faces share no ancestor.</p><pre class="programlisting">
 SELECT s2GetFace(s2cell '47c3c3');
 -- 2
 SELECT s2GetFace(geoToS2Cell(geography 'SRID=4326;Point(-122.4 37.8)', 10));
 -- 4
-</pre></li><li class="listitem"><a name="tcell_s2_token"></a><a class="indexterm" name="id12947"></a><a class="indexterm" name="id12950"></a><a class="indexterm" name="id12953"></a><p>Convert between an S2 cell and its token, the form the S2 libraries publish</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_token"></a><a class="indexterm" name="id12949"></a><a class="indexterm" name="id12952"></a><a class="indexterm" name="id12955"></a><p>Convert between an S2 cell and its token, the form the S2 libraries publish</p><pre class="programlisting">
 s2CellToToken(s2cell) → text
 s2TokenToCell(text) → s2cell
 ts2CellToToken(ts2cell) → ttext
@@ -16,19 +16,19 @@ SELECT s2TokenToCell('47c3c3');
 -- 47c3c3
 SELECT asText(ts2CellToToken(ts2cell '47c3c3@2001-01-01'));
 -- "47c3c3"@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_s2_common_ancestor"></a><a class="indexterm" name="id12961"></a><p>Return the level of the deepest cell containing two S2 cells</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_common_ancestor"></a><a class="indexterm" name="id12963"></a><p>Return the level of the deepest cell containing two S2 cells</p><pre class="programlisting">
 s2CommonAncestorLevel(s2cell,s2cell) → integer
 </pre><p>Two cells on different cube faces are contained by no cell, and the function answers -1 for them.</p><pre class="programlisting">
 SELECT s2CommonAncestorLevel(s2cell '47c3c3', s2cell '47c4');
 -- 5
 SELECT s2CommonAncestorLevel(s2cell '47c3c3', s2cell '808581');
 -- -1
-</pre></li><li class="listitem"><a name="tcell_s2_cell_contains"></a><a class="indexterm" name="id12969"></a><p>Return true if the first S2 cell contains the second one</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_contains"></a><a class="indexterm" name="id12971"></a><p>Return true if the first S2 cell contains the second one</p><pre class="programlisting">
 s2CellContains(s2cell,s2cell) → boolean
 </pre><pre class="programlisting">
 SELECT s2CellContains(s2cell '47c4', s2cell '47c3c3');
 -- t
-</pre></li><li class="listitem"><a name="tcell_s2_cell_range"></a><a class="indexterm" name="id12976"></a><a class="indexterm" name="id12979"></a><p>Return the first and the last leaf cell an S2 cell contains</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_range"></a><a class="indexterm" name="id12978"></a><a class="indexterm" name="id12981"></a><p>Return the first and the last leaf cell an S2 cell contains</p><pre class="programlisting">
 s2RangeMin(s2cell) → s2cell
 s2RangeMax(s2cell) → s2cell
 </pre><p>The descendants of an S2 cell occupy a contiguous interval of the Hilbert curve, so an ancestor test is the pair of comparisons <code class="varname">other &gt;= s2RangeMin(cell)</code> and <code class="varname">other &lt;= s2RangeMax(cell)</code>. That is what S2 brings that a hexagonal or a Web-Mercator grid does not, and it is a filter feeding the <code class="varname">stbox</code> index rather than an index key of its own.</p><pre class="programlisting">
@@ -36,17 +36,17 @@ SELECT s2RangeMin(s2cell '47c3c3');
 -- 47c3c20000000001
 SELECT s2RangeMax(s2cell '47c3c3');
 -- 47c3c3ffffffffff
-</pre></li><li class="listitem"><a name="tcell_s2_cell_to_child"></a><a class="indexterm" name="id12990"></a><p>Return the descendant of an S2 cell at the given position along the Hilbert curve</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_to_child"></a><a class="indexterm" name="id12992"></a><p>Return the descendant of an S2 cell at the given position along the Hilbert curve</p><pre class="programlisting">
 s2CellToChild(s2cell,level integer,position integer) → s2cell
 </pre><p>The level is exactly one finer than the cell's own, so the position runs from 0 to 3; <code class="varname">s2CellToChildren</code>, which the hierarchy section states, answers every descendant at any finer level.</p><pre class="programlisting">
 SELECT s2CellToChild(s2cell '47c3c3', 11, 0);
 -- 47c3c24
-</pre></li><li class="listitem"><a name="tcell_s2_cell_edge_length"></a><a class="indexterm" name="id12999"></a><p>Return the length in metres of an edge of an S2 cell</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_edge_length"></a><a class="indexterm" name="id13001"></a><p>Return the length in metres of an edge of an S2 cell</p><pre class="programlisting">
 s2EdgeLength(s2cell,edge integer) → float
 </pre><p>The edge runs from the vertex of the given index, which is 0 to 3, to the next one counterclockwise, and the length is measured on the WGS84 sphere.</p><pre class="programlisting">
 SELECT round(s2EdgeLength(s2cell '47c3c3', 0)::numeric, 3);
 -- 9270.048
-</pre></li><li class="listitem"><a name="tcell_s2_cell_neighbors"></a><a class="indexterm" name="id13007"></a><p>Return the four cells sharing an edge with an S2 cell</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_neighbors"></a><a class="indexterm" name="id13009"></a><p>Return the four cells sharing an edge with an S2 cell</p><pre class="programlisting">
 s2EdgeNeighbors(s2cell) → s2cellset
 </pre><p>An S2 cell is a quadrilateral, so it has four edge neighbours and no ring of a given radius; the H3 grid disk has no S2 analogue.</p><pre class="programlisting">
 SELECT s2EdgeNeighbors(s2cell '47c3c3');

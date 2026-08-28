@@ -1,28 +1,28 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Nubes de puntos estáticas</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Nubes de puntos temporales"><link rel="prev" href="ch17.html" title="Capítulo 17. Nubes de puntos temporales"><link rel="next" href="ch17s03.html" title="Conjuntos de nubes de puntos"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Nubes de puntos estáticas</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Nubes de puntos temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17s03.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="pcpoint_pcpatch_static"></a>Nubes de puntos estáticas</h2></div></div></div><p>Los tipos estáticos provienen de pgPointCloud. MobilityDB expone las funciones de acceso de coordenadas con conocimiento del esquema necesarias para proyectar los valores de pgPointCloud en el resto del ecosistema de tipos temporales.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_pcpatch_constructors"></a>Constructores</h3></div></div></div><p>La función <code class="varname">pcpoint_in</code> de pgPointCloud solo acepta hex-WKB, por lo que el constructor canónico es <code class="varname">PC_MakePoint(pcid, ARRAY[…]::float[])</code>. MobilityDB incluye dos sobrecargas SQL ligeras sobre él para literales de prueba más cortos y consultas ad hoc; la validación subyacente de dimensiones del esquema sigue ocurriendo dentro de <code class="varname">PC_MakePoint</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_pcpoint"></a><a class="indexterm" name="id12547"></a><p>Construye un pcpoint 2D o 3D directamente a partir de coordenadas x/y(/z)</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Nubes de puntos estáticas</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Nubes de puntos temporales"><link rel="prev" href="ch17.html" title="Capítulo 17. Nubes de puntos temporales"><link rel="next" href="ch17s03.html" title="Conjuntos de nubes de puntos"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Nubes de puntos estáticas</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Nubes de puntos temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17s03.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="pcpoint_pcpatch_static"></a>Nubes de puntos estáticas</h2></div></div></div><p>Los tipos estáticos provienen de pgPointCloud. MobilityDB expone las funciones de acceso de coordenadas con conocimiento del esquema necesarias para proyectar los valores de pgPointCloud en el resto del ecosistema de tipos temporales.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_pcpatch_constructors"></a>Constructores</h3></div></div></div><p>La función <code class="varname">pcpoint_in</code> de pgPointCloud solo acepta hex-WKB, por lo que el constructor canónico es <code class="varname">PC_MakePoint(pcid, ARRAY[…]::float[])</code>. MobilityDB incluye dos sobrecargas SQL ligeras sobre él para literales de prueba más cortos y consultas ad hoc; la validación subyacente de dimensiones del esquema sigue ocurriendo dentro de <code class="varname">PC_MakePoint</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_pcpoint"></a><a class="indexterm" name="id12576"></a><p>Construye un pcpoint 2D o 3D directamente a partir de coordenadas x/y(/z)</p><pre class="programlisting">
 pcpoint(pcid integer,x float,y float) → pcpoint
 pcpoint(pcid integer,x float,y float,z float) → pcpoint
 </pre><pre class="programlisting">
 SELECT pcpoint(1, 10.0, 20.0, 30.0);
 -- Equivalent to pcpoint(1, 10.0, 20.0, 30.0)
-</pre></li><li class="listitem"><a name="pcpoint_pcpoint_integer"></a><a class="indexterm" name="id12554"></a><p>Construye un pcpoint a partir de las coordenadas de cada dimensión del esquema</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_pcpoint_integer"></a><a class="indexterm" name="id12583"></a><p>Construye un pcpoint a partir de las coordenadas de cada dimensión del esquema</p><pre class="programlisting">
 pcpoint(pcid integer,coordinates float[]) → pcpoint
 </pre><p>La disposición del esquema indica cada dimensión, incluidas las inactivas, que es como se dan sus valores a un esquema con más dimensiones de las que alcanzan las sobrecargas anteriores. Ese número es el que toma <code class="varname">PC_MakePoint</code> y NO es el número de dimensiones activas que informa <code class="varname">pointCloudSchemaNDims</code></p><pre class="programlisting">
 SELECT pcpoint(1, ARRAY[10.0, 20.0, 30.0]::float[]);
-</pre></li><li class="listitem"><a name="pcpatch_pcpatch"></a><a class="indexterm" name="id12564"></a><p>Construye un pcpatch a partir de las coordenadas de sus puntos, un punto tras otro</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpatch_pcpatch"></a><a class="indexterm" name="id12593"></a><p>Construye un pcpatch a partir de las coordenadas de sus puntos, un punto tras otro</p><pre class="programlisting">
 pcpatch(pcid integer,coordinates float[]) → pcpatch
 </pre><p>Para cada punto se da cada dimensión de la disposición del esquema, incluidas las inactivas. Ese número es el que toma <code class="varname">PC_MakePatch</code> y NO es el número de dimensiones activas que informa <code class="varname">pointCloudSchemaNDims</code>; un número que sea múltiplo del que no corresponde construye un parche de puntos erróneos en lugar de informar un error. Un parche construido así declara él mismo el esquema, al no haber ningún punto del que leerlo</p><pre class="programlisting">
 SELECT pcpatch(1, ARRAY[1.0, 1.0, 1.0, 2.0, 2.0, 2.0]::float[]);
-</pre></li><li class="listitem"><a name="pcpatch_pcpatch_pcpoint"></a><a class="indexterm" name="id12574"></a><p>Construye un pcpatch a partir de una lista variádica de pcpoints que comparten el mismo pcid</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpatch_pcpatch_pcpoint"></a><a class="indexterm" name="id12603"></a><p>Construye un pcpatch a partir de una lista variádica de pcpoints que comparten el mismo pcid</p><pre class="programlisting">
 pcpatch(VARIADIC points pcpoint[]) → pcpatch
 </pre><pre class="programlisting">
 SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
 -- Equivalent to pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_accessors"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_pcid"></a><a class="indexterm" name="id12584"></a><p>Devuelve el identificador de esquema de un pcpoint o pcpatch</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pcpoint_accessors"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pcpoint_pcid"></a><a class="indexterm" name="id12613"></a><p>Devuelve el identificador de esquema de un pcpoint o pcpatch</p><pre class="programlisting">
 pcid({pcpoint,pcpatch}) → integer
 </pre><pre class="programlisting">
 SELECT pcid(pcpoint(1, 10.0, 20.0, 30.0));
 -- 1
-</pre></li><li class="listitem"><a name="pcpoint_getX"></a><a class="indexterm" name="id12591"></a><a class="indexterm" name="id12594"></a><a class="indexterm" name="id12597"></a><p>Devuelve una coordenada de un pcpoint, NULL si la dimensión está ausente del esquema</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_getX"></a><a class="indexterm" name="id12620"></a><a class="indexterm" name="id12623"></a><a class="indexterm" name="id12626"></a><p>Devuelve una coordenada de un pcpoint, NULL si la dimensión está ausente del esquema</p><pre class="programlisting">
 getX(pcpoint) → float
 getY(pcpoint) → float
 getZ(pcpoint) → float
@@ -30,19 +30,19 @@ getZ(pcpoint) → float
 WITH pt AS (SELECT pcpoint(1, 10.0, 20.0, 30.0) p)
   SELECT getX(p), getY(p), getZ(p) FROM pt;
 -- 10 | 20 | 30
-</pre></li><li class="listitem"><a name="pcpoint_getDim"></a><a class="indexterm" name="id12604"></a><p>Devuelve cualquier dimensión con nombre de un pcpoint, NULL si el nombre es desconocido para el esquema</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_getDim"></a><a class="indexterm" name="id12633"></a><p>Devuelve cualquier dimensión con nombre de un pcpoint, NULL si el nombre es desconocido para el esquema</p><pre class="programlisting">
 getDim(pcpoint,text) → float
 </pre><pre class="programlisting">
 SELECT getDim(pcpoint(1, 10.0, 20.0, 30.0), 'X');
 -- 10
-</pre></li><li class="listitem"><a name="pcpoint_SRID"></a><a class="indexterm" name="id12611"></a><p>Devuelve el identificador de referencia espacial (heredado del esquema)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_SRID"></a><a class="indexterm" name="id12640"></a><p>Devuelve el identificador de referencia espacial (heredado del esquema)</p><pre class="programlisting">
 SRID({pcpoint,pcpatch}) → integer
 </pre><pre class="programlisting">
 SELECT SRID(pcpoint(1, 10.0, 20.0, 30.0));
 -- 0
 SELECT SRID(pcpatch(pcpoint(1, 10.0, 20.0, 30.0), pcpoint(1, 11.0, 21.0, 31.0)));
 -- 0
-</pre></li><li class="listitem"><a name="pcpatch_geometry"></a><a class="indexterm" name="id12618"></a><p>Devuelve el multipunto de las posiciones que ocupan los puntos de un parche</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpatch_geometry"></a><a class="indexterm" name="id12647"></a><p>Devuelve el multipunto de las posiciones que ocupan los puntos de un parche</p><pre class="programlisting">
 geometry(pcpatch) → geometry
 </pre><p>El esquema que nombra el <code class="varname">pcid</code> decide el SRID y si el resultado lleva una dimensión Z</p><pre class="programlisting">
 SELECT ST_AsText(geometry(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));
