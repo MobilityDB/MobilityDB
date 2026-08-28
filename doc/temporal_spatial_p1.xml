@@ -857,8 +857,8 @@ SELECT asEWKT(rotate(temp, -pi()/3, ST_Centroid(traversedArea(temp))),
 				<indexterm significance="normal"><primary><varname>scale</varname></primary></indexterm>
 				<para>Return a temporal point scaled by given factors &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-scale(tgeo,Xfactor float,Yfactor float,Zfactor float) → tgeo
-scale(tgeo,Xfactor float,Yfactor float) → tgeo
+scale(tgeo,xfactor float,yfactor float,zfactor float) → tgeo
+scale(tgeo,xfactor float,yfactor float) → tgeo
 scale(tgeo,factor geometry) → tgeo
 scale(tgeo,factor geometry,origin geometry) → tgeo
 </programlisting>

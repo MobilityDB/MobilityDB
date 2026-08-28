@@ -247,7 +247,7 @@ CREATE FUNCTION spaceSplit(tgeompoint, size float,
   RETURNS SETOF point_tpoint
   AS 'SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spaceSplit(tgeompoint, sizeX float, sizeY float,
+CREATE FUNCTION spaceSplit(tgeompoint, xsize float, ysize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_tpoint

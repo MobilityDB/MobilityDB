@@ -108,11 +108,11 @@ CREATE FUNCTION tpcpatchFromHexWKB(text)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tpcpatch, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tpcpatch, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(tpcpatch, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tpcpatch, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -654,7 +654,7 @@ CREATE TYPE time_tpcpatch AS (
   temp tpcpatch
 );
 
-CREATE FUNCTION timeSplit(tpcpatch, bin_width interval,
+CREATE FUNCTION timeSplit(tpcpatch, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

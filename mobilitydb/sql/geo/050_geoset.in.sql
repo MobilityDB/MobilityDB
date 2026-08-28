@@ -166,36 +166,36 @@ CREATE FUNCTION asEWKT(geogset, maxdecimaldigits integer DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(geomset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(geomset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKB(geomset, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(geomset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(geomset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(geomset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexEWKB(geomset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(geomset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(geogset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(geogset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKB(geogset, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(geogset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(geogset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(geogset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexEWKB(geogset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(geogset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

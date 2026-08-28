@@ -119,22 +119,22 @@ CREATE FUNCTION asEWKT(posechain[], maxdecimaldigits integer DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(posechain, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(posechain, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Posechain_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKB(posechain, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(posechain, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Posechain_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(posechain, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(posechain, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Posechain_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexEWKB(posechain, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(posechain, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Posechain_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

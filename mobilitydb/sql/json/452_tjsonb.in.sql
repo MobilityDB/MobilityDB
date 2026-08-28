@@ -127,12 +127,12 @@ CREATE FUNCTION asMFJSON(temp tjsonb, options integer DEFAULT 0, flags integer D
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(tjsonb, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tjsonb, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(tjsonb, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tjsonb, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -583,7 +583,7 @@ CREATE TYPE time_tjsonb AS (
   temp tjsonb
 );
 
-CREATE FUNCTION timeSplit(tjsonb, bin_width interval,
+CREATE FUNCTION timeSplit(tjsonb, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

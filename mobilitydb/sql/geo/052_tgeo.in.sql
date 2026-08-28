@@ -861,12 +861,12 @@ CREATE TYPE time_tgeog AS (
   tgeog tgeography
 );
 
-CREATE FUNCTION timeSplit(tgeometry, bin_width interval,
+CREATE FUNCTION timeSplit(tgeometry, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeom
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSplit(tgeography, bin_width interval,
+CREATE FUNCTION timeSplit(tgeography, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeog
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

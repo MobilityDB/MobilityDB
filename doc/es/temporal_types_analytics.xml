@@ -792,7 +792,7 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 					<para>Devuelve una matriz de rangos de valores o de tiempo obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores o de tiempo</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 valueBins(tnumber,vsize number,vorigin number=0) → numspan[]
-timeBins(temp,duration interval,torigin timestamptz='2000-01-03') → tstzspan[]
+timeBins(temp,tsize interval,torigin timestamptz='2000-01-03') → tstzspan[]
 </programlisting>
 					<para>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. Si no se especifica el origen de los valores, se establece por defecto en 0 para los rangos de valores y en el lunes 3 de enero de 2000 para los rangos de tiempo.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -820,8 +820,8 @@ SELECT timeBins(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
 					<indexterm significance="normal"><primary><varname>valueTimeBoxes</varname></primary></indexterm>
 					<para>Devuelve una matriz de cuadros temporales obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y/o tiempo</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueBoxes(tnumber,size number,vorigin number=0) → tbox[]
-timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]
+valueBoxes(tnumber,vsize number,vorigin number=0) → tbox[]
+timeBoxes(tnumber,tsize interval,torigin timestamptz='2000-01-03') → tbox[]
 valueTimeBoxes(tnumber,vsize number,tsize interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → tbox[]
 </programlisting>
@@ -996,7 +996,7 @@ spaceSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
   origin geompoint='Point(0 0 0)',bitmatrix boolean=true,
   borderInc boolean=true) → {(point,tpoint)}
-timeSplit(tpoint,duration interval,torigin timestamptz='2000-01-03') → {(time,tpoint)}
+timeSplit(tpoint,duration interval,origin timestamptz='2000-01-03') → {(time,tpoint)}
 spaceTimeSplit({tgeompoint,tgeometry,tpose,tpcpoint},xsize float,
   [ysize float,zsize float,]
   duration interval,sorigin geompoint='Point(0 0 0)',

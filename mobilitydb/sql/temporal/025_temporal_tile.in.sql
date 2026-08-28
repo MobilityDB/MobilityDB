@@ -103,11 +103,11 @@ CREATE FUNCTION getBin("value" float, size float, origin float DEFAULT 0.0)
   AS 'MODULE_PATHNAME', 'Value_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION getBin(date, interval, date DEFAULT '2000-01-03')
+CREATE FUNCTION getBin(date, duration interval, origin date DEFAULT '2000-01-03')
   RETURNS datespan
   AS 'MODULE_PATHNAME', 'Date_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getBin(timestamptz, interval, timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION getBin(timestamptz, duration interval, origin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Timestamptz_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -301,27 +301,27 @@ CREATE TYPE time_ttext AS (
   temp ttext
 );
 
-CREATE FUNCTION timeSplit(tbool, size interval,
+CREATE FUNCTION timeSplit(tbool, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tbool
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSplit(tint, size interval,
+CREATE FUNCTION timeSplit(tint, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSplit(tbigint, size interval,
+CREATE FUNCTION timeSplit(tbigint, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tbigint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSplit(tfloat, size interval,
+CREATE FUNCTION timeSplit(tfloat, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tfloat
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSplit(ttext, size interval,
+CREATE FUNCTION timeSplit(ttext, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_ttext
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

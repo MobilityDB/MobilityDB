@@ -40,9 +40,9 @@ span_families:
   - {sig: "asText({sp}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Span_as_text, only: [float]}
   - {sig: "asText({sp})", ret: "text", sym: Span_as_text, only: [date, tstz]}
   - lit: "\n"
-  - {sig: "asBinary({sp}, endianenconding text DEFAULT '')", ret: "bytea", sym: Span_as_wkb}
+  - {sig: "asBinary({sp}, endian text DEFAULT '')", ret: "bytea", sym: Span_as_wkb}
   - lit: "\n"
-  - {sig: "asHexWKB({sp}, endianenconding text DEFAULT '')", ret: "text", sym: Span_as_hexwkb}
+  - {sig: "asHexWKB({sp}, endian text DEFAULT '')", ret: "text", sym: Span_as_hexwkb}
   - lit: "\n/******************************************************************************\n * Constructor functions\n ******************************************************************************/\n\n"
   - {sig: "span({v}, {v}, boolean DEFAULT true, boolean DEFAULT false)", ret: "{sp}", sym: Span_constructor}
   - lit: "\n/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
@@ -198,9 +198,9 @@ span_families:
   - {sig: "asText({ss}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spanset_as_text, only: [float]}
   - {sig: "asText({ss})", ret: "text", sym: Spanset_as_text, only: [date, tstz]}
   - lit: "\n"
-  - {sig: "asBinary({ss}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spanset_as_wkb}
+  - {sig: "asBinary({ss}, endian text DEFAULT '')", ret: "bytea", sym: Spanset_as_wkb}
   - lit: "\n"
-  - {sig: "asHexWKB({ss}, endianenconding text DEFAULT '')", ret: "text", sym: Spanset_as_hexwkb}
+  - {sig: "asHexWKB({ss}, endian text DEFAULT '')", ret: "text", sym: Spanset_as_hexwkb}
   - lit: "\n/******************************************************************************\n * Constructor functions\n ******************************************************************************/\n\n"
   - {sig: "spanset({sp}[])", ret: "{ss}", sym: Spanset_constructor}
   - lit: "\n/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
@@ -2747,9 +2747,9 @@ span_families:
   - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Set_as_text, only: [float]}
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text, only: [text, date, tstz]}
   - lit: "\n"
-  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - lit: "\n"
-  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
   - lit: "\n"
 
 - family: geoset_io
@@ -2793,10 +2793,10 @@ span_families:
     sep: "\n"
   - lit: "\n"
   - group:
-    - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
-    - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
-    - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
-    - {sig: "asHexEWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
+    - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+    - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+    - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+    - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
     sep: "\n"
   - lit: "\n"
 
@@ -2829,10 +2829,10 @@ span_families:
   - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
   - {sig: "asEWKT({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
   - lit: "\n"
-  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
-  - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
-  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
-  - {sig: "asHexEWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
   - lit: "\n"
 
 - family: npointset_io
@@ -2864,10 +2864,10 @@ span_families:
   - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Set_as_text}
   - {sig: "asEWKT({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
   - lit: "\n"
-  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
-  - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
-  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
-  - {sig: "asHexEWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
   - lit: "\n"
 
 - family: cbufferset_io
@@ -2893,10 +2893,10 @@ span_families:
   - lit: "\n"
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
-  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
-  - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
-  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
-  - {sig: "asHexEWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
   - lit: "\n"
   - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
   - lit: "\n"
@@ -2929,9 +2929,9 @@ span_families:
   - lit: "\n"
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
   - lit: "\n"
-  - {sig: "asBinary({vs}, endianencoding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - lit: "\n"
-  - {sig: "asHexWKB({vs}, endianencoding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
   - lit: "\n"
 
 - family: h3indexset_io
@@ -2962,9 +2962,9 @@ span_families:
   - lit: "\n"
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
   - lit: "\n"
-  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - lit: "\n"
-  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
   - lit: "\n"
 
 - family: quadbinset_io
@@ -2995,9 +2995,9 @@ span_families:
   - lit: "\n"
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
   - lit: "\n"
-  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - lit: "\n"
-  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
   - lit: "\n"
 
 - family: pcpointset_io
@@ -3021,10 +3021,10 @@ span_families:
   - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
-  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
-  - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
-  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
-  - {sig: "asHexEWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
   - lit: "\n"
 
 - family: pcpatchset_io
@@ -3048,10 +3048,10 @@ span_families:
   - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
-  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
-  - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
-  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
-  - {sig: "asHexEWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
   - lit: "\n"
 - family: geoset_srs
   file: mobilitydb/sql/geo/050_geoset.in.sql

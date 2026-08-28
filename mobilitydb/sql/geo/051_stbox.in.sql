@@ -81,12 +81,12 @@ CREATE FUNCTION asText(stbox, maxdecimaldigits integer DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Stbox_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(stbox, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(stbox, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Stbox_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(stbox, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(stbox, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Stbox_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

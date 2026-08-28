@@ -862,12 +862,12 @@ CREATE TYPE time_tgeogpoint AS (
   temp tgeogpoint
 );
 
-CREATE FUNCTION timeSplit(tgeompoint, bin_width interval,
+CREATE FUNCTION timeSplit(tgeompoint, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSplit(tgeogpoint, bin_width interval,
+CREATE FUNCTION timeSplit(tgeogpoint, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'

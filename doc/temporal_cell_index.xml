@@ -95,8 +95,8 @@ SELECT ts2cell '{[47c3c@2001-01-01, 47c4@2001-01-02]}';
 				<para>Serialize a temporal cell as text, as binary, as hexadecimal well-known binary, or as MF-JSON</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(tcell) → text
-asBinary(tcell,endianencoding text='') → bytea
-asHexWKB(tcell,endianencoding text='') → text
+asBinary(tcell,endian text='') → bytea
+asHexWKB(tcell,endian text='') → text
 asMFJSON(tcell) → text
 </programlisting>
 				<para>The hexadecimal well-known binary form lets a temporal cell column round-trip through a text-based <varname>COPY</varname>. In MF-JSON the cell payload renders as the int64 cell identifier in the <varname>values</varname> array, the same representation <varname>tbigint</varname> carries.</para>

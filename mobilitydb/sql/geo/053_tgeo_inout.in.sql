@@ -144,38 +144,38 @@ CREATE FUNCTION asMFJSON(tgeography, options integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(tgeometry, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tgeometry, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tgeography, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tgeography, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKB(tgeometry, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(tgeometry, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKB(tgeography, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(tgeography, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(tgeometry, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tgeometry, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(tgeography, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tgeography, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexEWKB(tgeometry, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(tgeometry, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexEWKB(tgeography, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexEWKB(tgeography, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

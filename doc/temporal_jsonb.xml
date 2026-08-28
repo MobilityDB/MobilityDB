@@ -227,7 +227,7 @@ SELECT jsonbset '{"{\"speed\": 10}",
 				<indexterm significance="normal"><primary><varname>jsonbsetSetLax</varname></primary></indexterm>
 				<para>JSONB set assignment</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-jsonbsetSet(jsonbset,path text[],val jsonb,create boolean=true) → jsonbset
+jsonbsetSet(jsonbset,path text[],val jsonb,create_missing boolean=true) → jsonbset
 jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
   handle_null text) → jsonbset
 </programlisting>
@@ -1027,8 +1027,8 @@ SELECT jsonb '{"geom": "Point(1 1)"}' &lt;@ tjsonb '{[{"geom": "Point(1 1)"}@200
 				<indexterm significance="normal"><primary><varname>tjsonbSetLax</varname></primary></indexterm>
 				<para>Temporal JSONB set</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tjsonbSet(tjsonb,path text[],val jsonb,create boolean=true) → tjsonb
-tjsonbSetLax(tjsonb,path text[],val jsonb,create boolean=true,handle_null text) → tjsonb
+tjsonbSet(tjsonb,path text[],val jsonb,create_missing boolean=true) → tjsonb
+tjsonbSetLax(tjsonb,path text[],val jsonb,create_missing boolean=true,handle_null text) → tjsonb
 </programlisting>
 				<para>Return the <varname>tjsonb</varname> value with the item specified by path replaced by <varname>jsonb</varname>, or added if <varname>create</varname> is true and the item does not exist. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, and create_if_missing is true, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive. Function <varname>tjsonbSetLax</varname> behaves identically to <varname>tjsonbSet</varname> if the given value is not NULL, Otherwise, it behaves according to the value of <varname>handle_null</varname>, which must be one of <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname>, or <varname>'return_source'</varname>. As stated above, we kept PostgreSQL behavior for this function enabling the value <varname>'return_source'</varname> whereas for all other <emphasis>query</emphasis> operations, this value has been replaced with <varname>'return_null'</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

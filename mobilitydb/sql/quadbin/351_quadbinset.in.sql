@@ -94,12 +94,12 @@ CREATE FUNCTION asText(quadbinset)
   AS 'MODULE_PATHNAME', 'Set_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(quadbinset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(quadbinset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(quadbinset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(quadbinset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
