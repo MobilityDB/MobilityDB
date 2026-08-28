@@ -1,0 +1,118 @@
+SELECT s2cellset '{47c3c444c000000c, 47c3c444c0000004}';
+                s2cellset                 
+------------------------------------------
+ {"47c3c444c0000004", "47c3c444c000000c"}
+(1 row)
+
+SELECT s2cellset '{47c3c444c0000004, 47c3c444c0000004}';
+      s2cellset       
+----------------------
+ {"47c3c444c0000004"}
+(1 row)
+
+SELECT s2cell '47c3c444c0000008';
+ERROR:  s2cell value "47c3c444c0000008" does not encode a valid S2 cell
+LINE 1: SELECT s2cell '47c3c444c0000008';
+                      ^
+SELECT set(ARRAY[s2cell '47c3c444c000000c', s2cell '47c3c444c0000004']);
+                   set                    
+------------------------------------------
+ {"47c3c444c0000004", "47c3c444c000000c"}
+(1 row)
+
+SELECT numValues(s2cellset '{47c3c444c000000c, 47c3c444c0000004}');
+ numvalues 
+-----------
+         2
+(1 row)
+
+SELECT startValue(s2cellset '{47c3c444c000000c, 47c3c444c0000004}');
+    startvalue    
+------------------
+ 47c3c444c0000004
+(1 row)
+
+SELECT endValue(s2cellset '{47c3c444c000000c, 47c3c444c0000004}');
+     endvalue     
+------------------
+ 47c3c444c000000c
+(1 row)
+
+SELECT valueN(s2cellset '{47c3c444c000000c, 47c3c444c0000004}', 1);
+      valuen      
+------------------
+ 47c3c444c0000004
+(1 row)
+
+SELECT valueN(s2cellset '{47c3c444c000000c, 47c3c444c0000004}', 3);
+ valuen 
+--------
+ 
+(1 row)
+
+SELECT (s2cell '47c3c444c0000004')::s2cellset;
+      s2cellset       
+----------------------
+ {"47c3c444c0000004"}
+(1 row)
+
+SELECT s2cell '47c3c444c0000004' <@ s2cellset '{47c3c444c0000004, 47c3c444c000000c}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cell '47c3c444c0000014' <@ s2cellset '{47c3c444c0000004, 47c3c444c000000c}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT s2cellset '{47c3c444c0000004}' @> s2cell '47c3c444c0000004';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellset '{47c3c444c0000004}' + s2cellset '{47c3c444c000000c}';
+                 ?column?                 
+------------------------------------------
+ {"47c3c444c0000004", "47c3c444c000000c"}
+(1 row)
+
+SELECT s2cellset '{47c3c444c0000004, 47c3c444c000000c}' * s2cellset '{47c3c444c000000c}';
+       ?column?       
+----------------------
+ {"47c3c444c000000c"}
+(1 row)
+
+SELECT s2cellset '{47c3c444c0000004, 47c3c444c000000c}' - s2cellset '{47c3c444c000000c}';
+       ?column?       
+----------------------
+ {"47c3c444c0000004"}
+(1 row)
+
+SELECT s2cellset '{47c3c444c0000004}' && s2cellset '{47c3c444c0000004, 47c3c444c000000c}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellset '{47c3c444c0000004}' && s2cellset '{47c3c444c0000014}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT s2cellset '{47c3c444c0000004}' = s2cellset '{47c3c444c0000004}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellset '{47c3c444c0000004}' < s2cellset '{47c3c444c000000c}';
+ ?column? 
+----------
+ t
+(1 row)
+

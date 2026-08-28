@@ -46,6 +46,7 @@ setfamilies:
   - {set: jsonbset,   base: jsonb,       ordered: false,                         metric: false, spatial: false}
   - {set: h3indexset, base: h3index,     ordered: false,                         metric: false, spatial: true}
   - {set: quadbinset, base: quadbin,     ordered: false,                         metric: false, spatial: true}
+  - {set: s2cellset,  base: s2cell,      ordered: false,                         metric: false, spatial: true}
   # pointcloud sets ARE spatialset_type() — their elements carry an SRID — and
   # carry no bounding box, which is what this column states: the dimensions of
   # a pcpoint need the schema XML keyed by pcid, which MEOS cannot read.

@@ -688,7 +688,7 @@ its last edit:
   reads a patch as the `MULTIPOINT` of the positions its points occupy, and
   `tpcpatch_to_tgeometry` lifts that over time — so the manifest line rests on a
   MEOS entry rather than on a cast chain that already existed.
-- `distance_families`, **10/15** of the value-domain types: `posechainset`,
+- `distance_families`, **10/16** of the value-domain types: `posechainset`,
   `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`. `posechainset` is
   deliberate and `setfamilies.yaml` says so in place — a pose chain has no
   distance function, so the set deploys none.
@@ -906,7 +906,7 @@ column names the `manifest.d/` key) · ✗ HAND = hand-maintained.
 | BBox Ops · Topological (:1014) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/topop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Position (:1082) | ✓ GEN (ordered sets only) | ✓ GEN | ✓ GEN | `manifest.d/posop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Splitting (:1162) | ✓ GEN (`spans`/`splitNSpans`/`splitEachNSpans` live in `003_span.in.sql`) | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |
-| Distance (:1219) | ✓ GEN (metric sets only) — `--gaps` 10/13, missing `posechainset`, `h3indexset`, `quadbinset`; the denominator is `numset` ∪ `timeset` ∪ `spatialset`, and the spatial families answer through the `SpatialSet<T>` override of §9.1b | ✓ GEN | ✓ GEN | `manifest.d/distance_families.yaml` · `span_families` (005/009) |
+| Distance (:1219) | ✓ GEN (metric sets only) — `--gaps` 10/16, missing `posechainset`, `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`; the denominator is `numset` ∪ `timeset` ∪ `spatialset`, and the spatial families answer through the `SpatialSet<T>` override of §9.1b | ✓ GEN | ✓ GEN | `manifest.d/distance_families.yaml` · `span_families` (005/009) |
 | Comparisons (:1248) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/comparison_families.yaml` (`set` family entries) + `manifest.d/hash_families.yaml` · `span_families` (003/007) |
 | Aggregations (:1306) | ✓ GEN — the `extent` aggregates over sets in `015_span_aggfuncs.in.sql`, `setUnion` in `001_set.in.sql`, and the per-family `setUnion` regions | ✓ GEN | ✓ GEN | `span_families` (015 entry + `set_aggregations` + the per-family `*set_setunion` entries) |
 | Indexing (:1389) | ✓ GEN (span-basetype sets only, §9.2) | ✓ GEN | ✓ GEN | `span_families` (011/012/013 entries) |

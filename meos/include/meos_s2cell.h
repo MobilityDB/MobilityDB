@@ -189,6 +189,71 @@ extern STBox *s2cell_tstzspan_to_stbox(S2CellId cell, const Span *s);
 extern Set *s2cell_edge_neighbors_set(S2CellId cell);
 extern Set *s2cell_cell_to_children_set(S2CellId cell, int children_level);
 
+/*****************************************************************************
+ * Temporal `ts2cell` inheritance
+ *****************************************************************************/
+
+/* Input and output */
+
+extern Temporal *ts2cell_in(const char *str);
+extern TInstant *ts2cellinst_in(const char *str);
+extern TSequence *ts2cellseq_in(const char *str, interpType interp);
+extern TSequenceSet *ts2cellseqset_in(const char *str);
+
+/* Constructors */
+
+extern Temporal *ts2cell_make(S2CellId value, TimestampTz t);
+extern TInstant *ts2cellinst_make(S2CellId value, TimestampTz t);
+extern TSequence *ts2cellseq_make(const S2CellId *values,
+  const TimestampTz *times, int count, bool lower_inc, bool upper_inc);
+extern TSequenceSet *ts2cellseqset_make(const TSequence **sequences,
+  int count);
+
+/* Accessors */
+
+extern S2CellId ts2cell_start_value(const Temporal *temp);
+extern S2CellId ts2cell_end_value(const Temporal *temp);
+extern bool ts2cell_value_n(const Temporal *temp, int n, S2CellId *result);
+extern S2CellId *ts2cell_values(const Temporal *temp, int *count);
+extern bool ts2cell_value_at_timestamptz(const Temporal *temp, TimestampTz t,
+  bool strict, S2CellId *result);
+
+/* Conversions */
+
+extern Temporal *tbigint_to_ts2cell(const Temporal *temp);
+extern Temporal *ts2cell_to_tbigint(const Temporal *temp);
+
+/* Ever, always and temporal comparisons */
+
+extern int ever_eq_s2cell_ts2cell(S2CellId cell, const Temporal *temp);
+extern int ever_eq_ts2cell_s2cell(const Temporal *temp, S2CellId cell);
+extern int ever_ne_s2cell_ts2cell(S2CellId cell, const Temporal *temp);
+extern int ever_ne_ts2cell_s2cell(const Temporal *temp, S2CellId cell);
+extern int always_eq_s2cell_ts2cell(S2CellId cell, const Temporal *temp);
+extern int always_eq_ts2cell_s2cell(const Temporal *temp, S2CellId cell);
+extern int always_ne_s2cell_ts2cell(S2CellId cell, const Temporal *temp);
+extern int always_ne_ts2cell_s2cell(const Temporal *temp, S2CellId cell);
+extern int ever_eq_ts2cell_ts2cell(const Temporal *temp1,
+  const Temporal *temp2);
+extern int ever_ne_ts2cell_ts2cell(const Temporal *temp1,
+  const Temporal *temp2);
+extern int always_eq_ts2cell_ts2cell(const Temporal *temp1,
+  const Temporal *temp2);
+extern int always_ne_ts2cell_ts2cell(const Temporal *temp1,
+  const Temporal *temp2);
+extern Temporal *teq_s2cell_ts2cell(S2CellId cell, const Temporal *temp);
+extern Temporal *teq_ts2cell_s2cell(const Temporal *temp, S2CellId cell);
+extern Temporal *teq_ts2cell_ts2cell(const Temporal *temp1,
+  const Temporal *temp2);
+extern Temporal *tne_s2cell_ts2cell(S2CellId cell, const Temporal *temp);
+extern Temporal *tne_ts2cell_s2cell(const Temporal *temp, S2CellId cell);
+extern Temporal *tne_ts2cell_ts2cell(const Temporal *temp1,
+  const Temporal *temp2);
+
+/* Token conversion, which no other DGGS carries */
+
+extern Temporal *ts2cell_cell_to_token(const Temporal *temp);
+
 /*****************************************************************************/
 
 #endif /* __MEOS_S2CELL_H__ */
