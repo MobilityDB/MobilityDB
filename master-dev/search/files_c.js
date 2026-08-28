@@ -22,8 +22,9 @@ var searchData=
   ['meos_5fquadbin_2eh_19',['meos_quadbin.h',['../meos__quadbin_8h.html',1,'']]],
   ['meos_5fraster_2eh_20',['meos_raster.h',['../meos__raster_8h.html',1,'']]],
   ['meos_5frgeo_2eh_21',['meos_rgeo.h',['../meos__rgeo_8h.html',1,'']]],
-  ['meos_5fschema_5fhook_2eh_22',['meos_schema_hook.h',['../meos__schema__hook_8h.html',1,'']]],
-  ['meos_5ftls_2eh_23',['meos_tls.h',['../meos__tls_8h.html',1,'']]],
-  ['meos_5ftransform_2eh_24',['meos_transform.h',['../meos__transform_8h.html',1,'']]],
-  ['merge_5ftest_2ec_25',['merge_test.c',['../merge__test_8c.html',1,'']]]
+  ['meos_5fs2cell_2eh_22',['meos_s2cell.h',['../meos__s2cell_8h.html',1,'']]],
+  ['meos_5fschema_5fhook_2eh_23',['meos_schema_hook.h',['../meos__schema__hook_8h.html',1,'']]],
+  ['meos_5ftls_2eh_24',['meos_tls.h',['../meos__tls_8h.html',1,'']]],
+  ['meos_5ftransform_2eh_25',['meos_transform.h',['../meos__transform_8h.html',1,'']]],
+  ['merge_5ftest_2ec_26',['merge_test.c',['../merge__test_8c.html',1,'']]]
 ];

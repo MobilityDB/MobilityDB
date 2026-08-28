@@ -57,10 +57,11 @@ var searchData=
   ['validate_5ftposechain_54',['VALIDATE_TPOSECHAIN',['../meos__posechain_8h_aa30333edf35510dd19e1cf92577f89f5.html#aa30333edf35510dd19e1cf92577f89f5',1,'meos_posechain.h']]],
   ['validate_5ftquadbin_55',['VALIDATE_TQUADBIN',['../meos__quadbin_8h_a510a4824a5a45dda1d2dc03afebcaeb4.html#a510a4824a5a45dda1d2dc03afebcaeb4',1,'meos_quadbin.h']]],
   ['validate_5ftrgeometry_56',['VALIDATE_TRGEOMETRY',['../meos__rgeo_8h_a69bc0f985686b50986463b99bff7c51f.html#a69bc0f985686b50986463b99bff7c51f',1,'meos_rgeo.h']]],
-  ['validate_5ftspatial_57',['VALIDATE_TSPATIAL',['../meos__geo_8h_a97e0af83a57f2e5e4afcdce1626cbb78.html#a97e0af83a57f2e5e4afcdce1626cbb78',1,'meos_geo.h']]],
-  ['validate_5ftstzset_58',['VALIDATE_TSTZSET',['../meos__internal_8h_a5766a1ae7c2c31d52562300cfde57f9e.html#a5766a1ae7c2c31d52562300cfde57f9e',1,'meos_internal.h']]],
-  ['validate_5ftstzspan_59',['VALIDATE_TSTZSPAN',['../meos__internal_8h_a6cef3bfc3388594d5db56775103e4b26.html#a6cef3bfc3388594d5db56775103e4b26',1,'meos_internal.h']]],
-  ['validate_5ftstzspanset_60',['VALIDATE_TSTZSPANSET',['../meos__internal_8h_a3a85a395cb9edbd1ffbd328b6e7fd426.html#a3a85a395cb9edbd1ffbd328b6e7fd426',1,'meos_internal.h']]],
-  ['validate_5fttext_61',['VALIDATE_TTEXT',['../meos__internal_8h_a34e319f2025cb0c3847638d86c81035c.html#a34e319f2025cb0c3847638d86c81035c',1,'meos_internal.h']]],
-  ['value_5fsel_62',['VALUE_SEL',['../meos_2include_2temporal_2temporal_8h_ad82f37d01d837765d57cdfa512f347b0.html#ad82f37d01d837765d57cdfa512f347b0',1,'temporal.h']]]
+  ['validate_5fts2cell_57',['VALIDATE_TS2CELL',['../meos__s2cell_8h_a74cfa0fc109e0bdb2107c9de67acb5ee.html#a74cfa0fc109e0bdb2107c9de67acb5ee',1,'meos_s2cell.h']]],
+  ['validate_5ftspatial_58',['VALIDATE_TSPATIAL',['../meos__geo_8h_a97e0af83a57f2e5e4afcdce1626cbb78.html#a97e0af83a57f2e5e4afcdce1626cbb78',1,'meos_geo.h']]],
+  ['validate_5ftstzset_59',['VALIDATE_TSTZSET',['../meos__internal_8h_a5766a1ae7c2c31d52562300cfde57f9e.html#a5766a1ae7c2c31d52562300cfde57f9e',1,'meos_internal.h']]],
+  ['validate_5ftstzspan_60',['VALIDATE_TSTZSPAN',['../meos__internal_8h_a6cef3bfc3388594d5db56775103e4b26.html#a6cef3bfc3388594d5db56775103e4b26',1,'meos_internal.h']]],
+  ['validate_5ftstzspanset_61',['VALIDATE_TSTZSPANSET',['../meos__internal_8h_a3a85a395cb9edbd1ffbd328b6e7fd426.html#a3a85a395cb9edbd1ffbd328b6e7fd426',1,'meos_internal.h']]],
+  ['validate_5fttext_62',['VALIDATE_TTEXT',['../meos__internal_8h_a34e319f2025cb0c3847638d86c81035c.html#a34e319f2025cb0c3847638d86c81035c',1,'meos_internal.h']]],
+  ['value_5fsel_63',['VALUE_SEL',['../meos_2include_2temporal_2temporal_8h_ad82f37d01d837765d57cdfa512f347b0.html#ad82f37d01d837765d57cdfa512f347b0',1,'temporal.h']]]
 ];
