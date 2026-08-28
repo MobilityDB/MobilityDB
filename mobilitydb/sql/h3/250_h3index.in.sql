@@ -49,14 +49,42 @@
  * The four commented-out blocks below — type plumbing, the bigint
  * casts, the comparison functions and operators, and the btree and
  * hash operator classes — are RETAINED ON PURPOSE and are not dead
- * code to be cleaned up. They are the reference example of a
- * complete, self-contained base-type surface, for the bindings that
- * have no h3-pg to lean on (MobilitySpark, MobilityDuck, Nebula) and
- * must declare the type, its comparisons and its operator classes
- * themselves. Their PG C wrappers (`H3index_in`, `H3index_eq`, …)
- * no longer exist in `mobilitydb/src/h3/h3index.c`, so the blocks
- * cannot be uncommented as they stand — they are a template, not
- * switchable code.
+ * code to be cleaned up. Together they spell out a complete,
+ * self-contained base-type surface, and they are kept here as the
+ * WORKED REFERENCE for the SQL bindings that have no host h3
+ * extension to lean on and must therefore provide the type, its
+ * casts, its comparisons and its operator classes themselves.
+ *
+ * Which bindings those are follows one rule: a base type the host
+ * already provides is DEFERRED to the host's own extension, and
+ * emitted from the MEOS catalog where the host provides nothing.
+ *   - PostgreSQL — h3-pg provides h3index  ⇒ DEFER (this file)
+ *   - DuckDB     — duckdb-h3 provides it   ⇒ DEFER
+ *   - MobilitySpark, Flink StreamSQL, NebulaStream — no h3 extension
+ *     exists for them ⇒ they must carry the whole surface, shaped
+ *     like these blocks
+ *
+ * The same rule decides the sibling cell families, and h3index is the
+ * only one of the three it sends to DEFER — PostgreSQL ships no
+ * quadbin or S2 extension, so `mobilitydb/sql/quadbin/350_quadbin.in.sql`
+ * and `mobilitydb/sql/s2cell/600_s2cell.in.sql` define their types
+ * outright. The three files differ only in which branch of the rule
+ * they take, never in the rule.
+ * Databricks' h3_* built-ins are proprietary and Apache Sedona ships
+ * geometry-oriented ST_H3* helpers rather than an h3index scalar
+ * type, so Spark genuinely has nothing to defer to.
+ *
+ * ⛔ The blocks are the SHAPE to reproduce, not source to paste
+ * verbatim: a binding's surface is generated from the MEOS catalog
+ * like any other family, and MEOS deliberately keeps the complete
+ * h3index scalar surface because it is what those generators read.
+ * Deferring is a host-side decision that never removes anything from
+ * the kernel.
+ *
+ * Their PG C wrappers (`H3index_in`, `H3index_eq`, …) no longer exist
+ * in `mobilitydb/src/h3/h3index.c`, so the blocks cannot be
+ * uncommented as they stand — they are a reference, not switchable
+ * code.
  *
  * A grep for `h3index_eq` or `h3index_cmp` in this file therefore
  * matches comment text, not live SQL: h3index is not a bare-naming
@@ -67,7 +95,10 @@
  * Type plumbing
  ******************************************************************************/
 
--- Provided by the h3 extension; retained as a binding reference (see the file header).
+-- Provided by the h3 extension (h3-pg); NOT emitted by this extension.
+-- ⛔ RETAINED AS A WORKED REFERENCE — not dead code, do not delete.
+-- A host that ships no h3 extension must carry this surface itself; this block
+-- is the reference for the TYPE and its I/O. See the file header.
 /*
 CREATE TYPE h3index;
 
@@ -149,7 +180,9 @@ CREATE FUNCTION asHexWKB(h3index, endian text DEFAULT '')
  * sidesteps the need for a dedicated cast function here.
  ******************************************************************************/
 
--- Provided by the h3 extension; retained as a binding reference (see the file header).
+-- Provided by the h3 extension (h3-pg); NOT emitted by this extension.
+-- ⛔ RETAINED AS A WORKED REFERENCE — the bigint casts a host must provide
+-- itself where no h3 extension provides them. See the file header.
 -- CREATE CAST (bigint AS h3index) WITHOUT FUNCTION AS ASSIGNMENT;
 -- CREATE CAST (h3index AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
 
@@ -163,7 +196,9 @@ CREATE FUNCTION asHexWKB(h3index, endian text DEFAULT '')
  * boiler-plate and lets MobilityDuck consume the same primitives.
  ******************************************************************************/
 
--- Provided by the h3 extension; retained as a binding reference (see the file header).
+-- Provided by the h3 extension (h3-pg); NOT emitted by this extension.
+-- ⛔ RETAINED AS A WORKED REFERENCE — the six comparison functions and
+-- operators a host must provide. See the file header.
 /*
 CREATE FUNCTION h3index_eq(h3index, h3index)
   RETURNS boolean
@@ -256,7 +291,9 @@ CREATE OPERATOR >= (
  * exact-match lookups, plus distinct, GROUP BY, etc.
  ******************************************************************************/
 
--- Provided by the h3 extension; retained as a binding reference (see the file header).
+-- Provided by the h3 extension (h3-pg); NOT emitted by this extension.
+-- ⛔ RETAINED AS A WORKED REFERENCE — the btree and hash operator classes a
+-- host must provide so h3index is indexable. See the file header.
 /*
 CREATE OPERATOR CLASS h3index_ops
   DEFAULT FOR TYPE h3index USING btree AS
