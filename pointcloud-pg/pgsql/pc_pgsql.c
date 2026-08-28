@@ -52,9 +52,13 @@ static Oid pointcloud_get_full_version_schema()
 #if PGSQL_VERSION < 140
   FuncCandidateList clist =
       FuncnameGetCandidates(names, -1, NIL, false, false, false);
-#else
+#elif PGSQL_VERSION < 190
   FuncCandidateList clist =
       FuncnameGetCandidates(names, -1, NIL, false, false, false, false);
+#else
+  /* PostgreSQL 19 adds an output flags argument, which is not read here */
+  FuncCandidateList clist =
+      FuncnameGetCandidates(names, -1, NIL, false, false, false, false, NULL);
 #endif
   if (!clist)
     return InvalidOid;
