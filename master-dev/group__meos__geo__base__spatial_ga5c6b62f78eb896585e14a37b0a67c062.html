@@ -138,14 +138,14 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the union of an array of geometries. </p>
-<p >The function will iteratively call <code>GEOSUnion</code> on the GEOS-converted versions of them and return PGIS-converted version back. Changing the combination order <em>might</em> speed up performance. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The answer covers the points the members cover, read on the dimensions they share: an array mixing a member that carries an elevation with one that does not is answered without one, since no member determines an elevation for the points the flat one contributes. That reading is what the array is answered from, so the answer does not depend on which member the array happens to list first </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gsarr</td><td>Array of geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_adee9b3ebeb82e54facc3a9ded6701383.html#adee9b3ebeb82e54facc3a9ded6701383">pgis_union_geometry_array(PG_FUNCTION_ARGS)</a></code> MEOS modified the PostGIS function since does not cope with geographies by setting the geodetic flag for geographies. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
 
 </div>
 </div>

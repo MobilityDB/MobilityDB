@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geog_serialize</title>
+<title>MobilityDB: geom_array_shared_dims</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -132,7 +132,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga2d318481a308c8a7f92709c21480118f.html#ga2d318481a308c8a7f92709c21480118f">geog_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gaad3e0b48756848a3b2780b449e4e9ccf.html#gaad3e0b48756848a3b2780b449e4e9ccf">geog_length</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga5ef380ee1aa9b1d68a96e250484a29a0.html#ga5ef380ee1aa9b1d68a96e250484a29a0">geog_perimeter</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a813350b37b325f8910939a176a60fd1b.html#a813350b37b325f8910939a176a60fd1b">geog_serialize</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a813350b37b325f8910939a176a60fd1b.html#a813350b37b325f8910939a176a60fd1b">geog_serialize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__conversion_ga39c89b042d5a7071728cb09f1e2eafb6.html#ga39c89b042d5a7071728cb09f1e2eafb6">geog_to_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__constructor_gaa968e1b9c23d4b32c601152eebee241d.html#gaa968e1b9c23d4b32c601152eebee241d">geogpoint_make2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__constructor_gafbde2db2a4d54a07904c76d6b40da087.html#gafbde2db2a4d54a07904c76d6b40da087">geogpoint_make3dz</a></td></tr>
@@ -144,7 +144,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ade691ddd1920609e08cbcd1657a2fa75.html#ade691ddd1920609e08cbcd1657a2fa75">geom_array_linear_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_abc68fa34e1f1115500a254ed714005b0.html#abc68fa34e1f1115500a254ed714005b0">geom_array_mixed_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a6b9fcd1ef55c79b79b25d07ded9bf31c.html#a6b9fcd1ef55c79b79b25d07ded9bf31c">geom_array_point_only</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a80f9d74281fe38391af9f4e005273456.html#a80f9d74281fe38391af9f4e005273456">geom_array_shared_dims</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a80f9d74281fe38391af9f4e005273456.html#a80f9d74281fe38391af9f4e005273456">geom_array_shared_dims</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga5c6b62f78eb896585e14a37b0a67c062.html#ga5c6b62f78eb896585e14a37b0a67c062">geom_array_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_adc4ea18545a13e8101c53129daed895d.html#adc4ea18545a13e8101c53129daed895d">geom_array_union_shared</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga28dca3f4d5f757de8c4d247ce8f25b82.html#ga28dca3f4d5f757de8c4d247ce8f25b82">geom_azimuth</a></td></tr>
@@ -217,25 +217,49 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a813350b37b325f8910939a176a60fd1b" name="a813350b37b325f8910939a176a60fd1b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a813350b37b325f8910939a176a60fd1b">&#9670;&#160;</a></span>geog_serialize()</h2>
+<a id="a80f9d74281fe38391af9f4e005273456" name="a80f9d74281fe38391af9f4e005273456"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80f9d74281fe38391af9f4e005273456">&#9670;&#160;</a></span>geom_array_shared_dims()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geog_serialize </td>
+          <td class="memname">static <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> ** geom_array_shared_dims </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>lwgeom</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
+          <td class="paramname"><em>gsarr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Utility method to call the serialization and then set the PgSQL varsize header appropriately with the serialized size. </p>
-<p >Force to geodetic in case it's not</p>
-<p ><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> geodetic</p>
+<p>Return the members of an array read on the dimensions they share. </p>
+<p >A planar union answers the point set its members cover, and the Z and M ordinates of that answer are READ from the members rather than computed: a member carrying no elevation determines none for the points it contributes, and an answer declaring one would publish a value the array does not hold. The answer therefore carries an ordinate only where EVERY member contributing points carries it. An empty member contributes none, so it does not take an ordinate away from the members that do </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">gsarr</td><td>Array of geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A new array holding the members read on their shared dimensions, or <code>NULL</code> where they already share them and the array itself is what the arms read. The caller releases the array and its members </dd></dl>
 
 </div>
 </div>
