@@ -93,6 +93,10 @@
  * @ingroup mobilitydb_api
  * @brief Functions for temporal CARTO QUADBIN cell indices
  *
+ * @defgroup mobilitydb_s2cell Functions for temporal Google S2 cell indices
+ * @ingroup mobilitydb_api
+ * @brief Functions for temporal Google S2 cell indices
+ *
  * @defgroup mobilitydb_raster Functions for temporal rasters
  * @ingroup mobilitydb_api
  * @brief Functions for temporal rasters

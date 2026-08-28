@@ -1,0 +1,201 @@
+SELECT getResolution(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10));
+ getresolution 
+---------------
+            10
+(1 row)
+
+SELECT getResolution(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 20));
+ getresolution 
+---------------
+            20
+(1 row)
+
+SELECT s2GetFace(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10));
+ s2getface 
+-----------
+         2
+(1 row)
+
+SELECT s2GetFace(geoToS2Cell(geography 'SRID=4326;Point(-122.4 37.8)', 10));
+ s2getface 
+-----------
+         4
+(1 row)
+
+SELECT getResolution(cellToParent(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 15), 8));
+ getresolution 
+---------------
+             8
+(1 row)
+
+SELECT s2CellContains(cellToParent(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 15), 8),
+  geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 15));
+ s2cellcontains 
+----------------
+ t
+(1 row)
+
+SELECT s2CellContains(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 15),
+  cellToParent(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 15), 8));
+ s2cellcontains 
+----------------
+ f
+(1 row)
+
+SELECT s2CommonAncestorLevel(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 15),
+  cellToParent(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 15), 8));
+ s2commonancestorlevel 
+-----------------------
+                     8
+(1 row)
+
+SELECT s2CommonAncestorLevel(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10),
+  geoToS2Cell(geography 'SRID=4326;Point(-122.4 37.8)', 10));
+ s2commonancestorlevel 
+-----------------------
+                    -1
+(1 row)
+
+SELECT getResolution(s2CellToChild(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 9, 0));
+ getresolution 
+---------------
+             9
+(1 row)
+
+SELECT s2CellContains(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8),
+  s2CellToChild(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 9, 2));
+ s2cellcontains 
+----------------
+ t
+(1 row)
+
+SELECT s2CellToChild(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 10, 0);
+ERROR:  The child level 10 must be exactly one finer than the cell level 8
+SELECT numValues(s2CellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 9));
+ numvalues 
+-----------
+         4
+(1 row)
+
+SELECT numValues(s2CellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 10));
+ numvalues 
+-----------
+        16
+(1 row)
+
+SELECT s2RangeMin(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10))
+  <= geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2RangeMax(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10))
+  >= geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 20)
+  BETWEEN s2RangeMin(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10))
+  AND s2RangeMax(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT getResolution(s2RangeMin(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10)));
+ getresolution 
+---------------
+            30
+(1 row)
+
+SELECT numValues(s2EdgeNeighbors(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10)));
+ numvalues 
+-----------
+         4
+(1 row)
+
+SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10)
+  <@ s2EdgeNeighbors(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10));
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT geoToS2Cell(cellToPoint(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10)), 10)
+  = geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_SRID(cellToPoint(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10))::geometry);
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT ST_GeometryType(cellToBoundary(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10))::geometry);
+ st_geometrytype 
+-----------------
+ ST_Polygon
+(1 row)
+
+SELECT ST_NPoints(cellToBoundary(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10))::geometry);
+ st_npoints 
+------------
+          5
+(1 row)
+
+SELECT ST_SRID(cellToBoundary(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10))::geometry);
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT round(cellArea(cellToParent(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10), 0)) / 1e12, 3);
+ round  
+--------
+ 85.011
+(1 row)
+
+SELECT round(cellArea(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10))
+  / cellArea(cellToParent(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10), 6)), 4);
+ round 
+-------
+ 0.004
+(1 row)
+
+SELECT round(s2EdgeLength(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10), 0) / 1000, 3);
+ round 
+-------
+  9.27
+(1 row)
+
+SELECT round(s2EdgeLength(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10), 2) / 1000, 3);
+ round 
+-------
+  9.27
+(1 row)
+
+SELECT s2CellToToken(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10));
+ s2celltotoken 
+---------------
+ 47c3c3
+(1 row)
+
+SELECT s2CellToToken(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 20));
+ s2celltotoken 
+---------------
+ 47c3c38705f
+(1 row)
+
+SELECT s2TokenToCell(s2CellToToken(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10)))
+  = geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
