@@ -420,7 +420,7 @@ PG_FUNCTION_INFO_V1(Temporal_out);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal value
- * @sqlfn tint_out(), tfloat_out(), ...
+ * @sqlfn temporal_out()
  */
 Datum
 Temporal_out(PG_FUNCTION_ARGS)
@@ -493,7 +493,7 @@ PG_FUNCTION_INFO_V1(Temporal_send);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Return the Well-Known Binary (WKB) representation of a temporal value
- * @sqlfn tint_send(), tfloat_send(), ...
+ * @sqlfn temporal_send()
  */
 Datum
 Temporal_send(PG_FUNCTION_ARGS)
@@ -712,7 +712,7 @@ PG_FUNCTION_INFO_V1(Temporal_from_text);
  * @note This just does the same thing as the SQL function #Temporal_in, except
  * it has to handle a 'text' input. First, unwrap the text into a cstring, then
  * do as Temporal_in
- * @sqlfn tboolFromText(), tintFromText(),
+ * @sqlfn tjsonbFromText()
  */
 Datum
 Temporal_from_text(PG_FUNCTION_ARGS)
@@ -1648,7 +1648,7 @@ PG_FUNCTION_INFO_V1(Temporalarr_round);
  * @ingroup mobilitydb_temporal_transf
  * @brief Return an array of temporal floats with the precision of the values
  * set to a number of decimal places
- * @sqlfn asText()
+ * @sqlfn round()
  */
 Datum
 Temporalarr_round(PG_FUNCTION_ARGS)

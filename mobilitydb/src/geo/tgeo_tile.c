@@ -298,7 +298,7 @@ PG_FUNCTION_INFO_V1(Stbox_get_time_tile);
 /**
  * @brief @ingroup mobilitydb_geo_tile
  * @brief Return a tile in the temporal grid of a spatiotemporal box
- * @sqlfn getTimeTile()
+ * @sqlfn getStboxTimeTile()
  */
 inline Datum
 Stbox_get_time_tile(PG_FUNCTION_ARGS)

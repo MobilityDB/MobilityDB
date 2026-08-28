@@ -147,7 +147,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_constructor);
  * @ingroup mobilitydb_cbuffer_constructor
  * @brief Construct a temporal circular buffer from a temporal point and a
  * temporal float
- * @sqlfn tcbuffer_constructor()
+ * @sqlfn tcbuffer()
  */
 Datum
 Tcbuffer_constructor(PG_FUNCTION_ARGS)

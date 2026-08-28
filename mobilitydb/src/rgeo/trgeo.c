@@ -256,7 +256,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_inst_constructor);
  * @ingroup mobilitydb_rgeo_constructor
  * @brief Construct a temporal rigid geometry instant from a geometry, a pose,
  * and a timestamptz
- * @sqlfn trgeometryInst()
+ * @sqlfn trgeometry()
  */
 Datum
 Trgeometry_inst_constructor(PG_FUNCTION_ARGS)

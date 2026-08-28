@@ -843,7 +843,7 @@ PG_FUNCTION_INFO_V1(Tgeo_at_elevation);
 /**
  * @ingroup mobilitydb_geo_restrict
  * @brief Return a temporal geo restricted to an elevation span
- * @sqlfn atGeometry()
+ * @sqlfn atElevation()
  */
 inline Datum
 Tgeo_at_elevation(PG_FUNCTION_ARGS)
@@ -856,7 +856,7 @@ PG_FUNCTION_INFO_V1(Tgeo_minus_elevation);
 /**
  * @ingroup mobilitydb_geo_restrict
  * @brief Return a temporal geo restricted to the complement an elevation span
- * @sqlfn minusGeometry()
+ * @sqlfn minusElevation()
  */
 inline Datum
 Tgeo_minus_elevation(PG_FUNCTION_ARGS)

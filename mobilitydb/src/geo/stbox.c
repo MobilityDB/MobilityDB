@@ -290,7 +290,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_x);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox()
+ * @sqlfn stboxX()
  */
 inline Datum
 Stbox_constructor_x(PG_FUNCTION_ARGS)
@@ -303,7 +303,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_z);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox_z()
+ * @sqlfn stboxZ()
  */
 inline Datum
 Stbox_constructor_z(PG_FUNCTION_ARGS)
@@ -316,7 +316,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_t);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox_t()
+ * @sqlfn stboxT()
  */
 inline Datum
 Stbox_constructor_t(PG_FUNCTION_ARGS)
@@ -329,7 +329,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_xt);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox_xt()
+ * @sqlfn stboxXT()
  */
 inline Datum
 Stbox_constructor_xt(PG_FUNCTION_ARGS)
@@ -342,7 +342,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_zt);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox_zt()
+ * @sqlfn stboxZT()
  */
 inline Datum
 Stbox_constructor_zt(PG_FUNCTION_ARGS)
@@ -358,7 +358,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn geodstbox_z()
+ * @sqlfn geodstboxZ()
  */
 inline Datum
 Geodstbox_constructor_z(PG_FUNCTION_ARGS)
@@ -371,7 +371,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn geodstbox_t()
+ * @sqlfn geodstboxT()
  */
 inline Datum
 Geodstbox_constructor_t(PG_FUNCTION_ARGS)
@@ -384,7 +384,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_zt);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn geodstbox_zt()
+ * @sqlfn geodstboxZT()
  */
 inline Datum
 Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
@@ -1028,7 +1028,7 @@ PG_FUNCTION_INFO_V1(Stbox_expand_time);
  * @ingroup mobilitydb_geo_box_transf
  * @brief Return a spatiotemporal box with the time span expanded/shrinked by
  * an interval
- * @sqlfn Stbox_expand_time()
+ * @sqlfn expandTime()
  */
 Datum
 Stbox_expand_time(PG_FUNCTION_ARGS)

@@ -240,7 +240,7 @@ PG_FUNCTION_INFO_V1(Npoint_from_hexwkb);
  * @ingroup mobilitydb_npoint_base_inout
  * @brief Return a network point from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
- * @sqlfn npointFromHexWKB()
+ * @sqlfn npointFromHexEWKB()
  */
 Datum
 Npoint_from_hexwkb(PG_FUNCTION_ARGS)
@@ -324,7 +324,7 @@ PG_FUNCTION_INFO_V1(Npoint_as_ewkb);
 /**
  * @ingroup mobilitydb_pose_base_inout
  * @brief Return the Well-Known Binary (WKB) representation of a network point
- * @sqlfn asBinary()
+ * @sqlfn asEWKB()
  */
 Datum
 Npoint_as_ewkb(PG_FUNCTION_ARGS)
@@ -580,7 +580,7 @@ PG_FUNCTION_INFO_V1(Npoint_position);
 /**
  * @ingroup mobilitydb_npoint_base_accessor
  * @brief Return the position of a network point
- * @sqlfn position()
+ * @sqlfn getPosition()
  */
 Datum
 Npoint_position(PG_FUNCTION_ARGS)
