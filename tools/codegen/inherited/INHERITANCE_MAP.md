@@ -309,7 +309,7 @@ Two more reference chapters carry inherited surface:
 
 | chapter → `<sect1>` | prefix | generated? | notes |
 |---|---|---|---|
-| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **11 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, rgeo, tpoint, th3index, quadbin) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant; `--gaps`: 18/18, full coverage |
+| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **12 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, posechain, rgeo, tpoint, th3index, quadbin) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant; `--gaps`: 19/19, full coverage |
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
