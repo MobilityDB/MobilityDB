@@ -43,16 +43,23 @@
  *
  * That error travels the channel liblwgeom's own errors travel: MEOS installs
  * @p meos_lwerror_handler(), so it reaches the caller as a MEOS error rather
- * than ending the process. The MEOS entry points that reach these same
- * operations report them as not supported before liblwgeom is reached at all,
- * so nothing of MEOS arrives here; the definitions exist so that the set of
- * entry points the left-out files carry is answered as a whole.
+ * than ending the process.
+ *
+ * ONE of them is answered rather than refused. @p lwgeom_centroid() IS reached
+ * from MEOS: #geo_cluster_kmeans() calls @p lwgeom_cluster_kmeans(), which
+ * takes the centroid of every input that is not a point, so a build carrying
+ * no GEOS could not cluster a polygon. #meos_centroid() answers it natively,
+ * so the clustering works wherever the library does. The rest are reached only
+ * from entry points MEOS never calls, and the definitions exist so that the
+ * set of entry points the left-out files carry is answered as a whole.
  */
 
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeom_geos.h>
 #include <lwgeom_log.h>
+/* MEOS */
+#include "geo/geo_funcs.h"
 
 /**
  * @brief The message the geometry library's GEOS files leave for their callers
@@ -75,11 +82,15 @@ lwgeom_needs_geos(const char *name)
   return NULL;
 }
 
+/**
+ * @brief Return the centroid of a geometry
+ * @details Answered natively, because @p lwkmeans.c takes the centroid of
+ * every clustered geometry that is not a point and MEOS reaches it there
+ */
 LWGEOM *
 lwgeom_centroid(const LWGEOM *geom)
 {
-  (void) geom;
-  return lwgeom_needs_geos(__func__);
+  return meos_centroid(geom);
 }
 
 LWGEOM *
