@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: nsegment_set_stbox</title>
+<title>MobilityDB: ea_dwithin_tcbuffer_geo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__internal__npoint__accessor.html">Accessor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__cbuffer__spatial__rel__ever.html">Ever/always relationship functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,29 +79,47 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__npoint__accessor_gabd8ec72e7e3371a93cf188b1ef977973.html#gabd8ec72e7e3371a93cf188b1ef977973">nsegment_set_stbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__npoint__accessor_ga4dde08093a85f8c8c523933500e73e23.html#ga4dde08093a85f8c8c523933500e73e23">tnpointseq_speed</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__cbuffer__spatial__rel__ever_gacc9f250a7af23666928918c3731f303e.html#gacc9f250a7af23666928918c3731f303e">ea_dwithin_tcbuffer_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__spatial__rel__ever_gabc14201368fe1f1eb6ecd32c69fdb123.html#gabc14201368fe1f1eb6ecd32c69fdb123">ea_dwithin_tcbuffer_tcbuffer</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gabd8ec72e7e3371a93cf188b1ef977973" name="gabd8ec72e7e3371a93cf188b1ef977973"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gabd8ec72e7e3371a93cf188b1ef977973">&#9670;&#160;</a></span>nsegment_set_stbox()</h2>
+<a id="gacc9f250a7af23666928918c3731f303e" name="gacc9f250a7af23666928918c3731f303e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacc9f250a7af23666928918c3731f303e">&#9670;&#160;</a></span>ea_dwithin_tcbuffer_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool nsegment_set_stbox </td>
+          <td class="memname">int ea_dwithin_tcbuffer_geo </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structNsegment.html">Nsegment</a> *&#160;</td>
-          <td class="paramname"><em>ns</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dist</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>ever</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>invert</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -111,11 +129,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the bounding box of the network segment value. </p>
+<p>Return 1 if a temporal circular buffer and a geometry are ever/always within the given distance, 0 if not, -1 on error or if the geometry is empty. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ns</td><td>Network segment </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dist</td><td>Distance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ever</td><td>True for the ever semantics, false for the always semantics </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">invert</td><td>True if the arguments should be inverted @csqlfn <a class="el" href="group__mobilitydb__cbuffer__rel__ever_ga0ed84887e0059464280cecb9ad1a417e.html#ga0ed84887e0059464280cecb9ad1a417e" title="Return true if a temporal circular buffer and a geometry are ever within a distance @sqlfn eDwithin()">Edwithin_tcbuffer_geo()</a>, <a class="el" href="group__mobilitydb__cbuffer__rel__ever_ga4e781df9c94370b02bfa518cda842f97.html#ga4e781df9c94370b02bfa518cda842f97" title="Return true if a temporal circular buffer and a geometry are always within a distance @sqlfn aDwithin...">Adwithin_tcbuffer_geo()</a> </td></tr>
   </table>
   </dd>
 </dl>

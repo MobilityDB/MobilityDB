@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Accessor functions</title>
+<title>MobilityDB: cbuffer_set_srid_int</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -47,7 +47,6 @@ $(function() {
 /* @license-end */
 </script>
 <div id="main-nav"></div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -69,27 +68,62 @@ $(function() {
 </div>
 </div>
 
-<div class="header">
-  <div class="summary">
-<a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">Accessor functions<div class="ingroups"><a class="el" href="group__meos.html">MEOS library</a> &raquo; <a class="el" href="group__meos__internal.html">Internal API</a> &raquo; <a class="el" href="group__meos__internal__npoint.html">Functions for temporal network points</a></div></div></div>
-</div><!--header-->
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="group__meos__internal__cbuffer__base__srid.html">Spatial reference system functions</a></li>  </ul>
+</div>
+</div><!-- top -->
 <div class="contents">
+<table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+   <td valign="top">
+      <div class="navtab">
+        <table>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__cbuffer__base__srid_gac704618c7d777f4d39a5210c6874d6f0.html#gac704618c7d777f4d39a5210c6874d6f0">cbuffer_set_srid_int</a></td></tr>
+        </table>
+      </div>
+   </td>
+   <td valign="top" class="mempage">
+<a id="gac704618c7d777f4d39a5210c6874d6f0" name="gac704618c7d777f4d39a5210c6874d6f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac704618c7d777f4d39a5210c6874d6f0">&#9670;&#160;</a></span>cbuffer_set_srid_int()</h2>
 
-<p>Accessor functions for temporal network points.  
-<a href="#details">More...</a></p>
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:gabd8ec72e7e3371a93cf188b1ef977973"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__npoint__accessor_gabd8ec72e7e3371a93cf188b1ef977973.html#gabd8ec72e7e3371a93cf188b1ef977973">nsegment_set_stbox</a> (const <a class="el" href="structNsegment.html">Nsegment</a> *ns, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
-<tr class="memdesc:gabd8ec72e7e3371a93cf188b1ef977973"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the bounding box of the network segment value.  <a href="group__meos__internal__npoint__accessor_gabd8ec72e7e3371a93cf188b1ef977973.html#gabd8ec72e7e3371a93cf188b1ef977973">More...</a><br /></td></tr>
-<tr class="separator:gabd8ec72e7e3371a93cf188b1ef977973"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4dde08093a85f8c8c523933500e73e23"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__npoint__accessor_ga4dde08093a85f8c8c523933500e73e23.html#ga4dde08093a85f8c8c523933500e73e23">tnpointseq_speed</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq)</td></tr>
-<tr class="memdesc:ga4dde08093a85f8c8c523933500e73e23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Speed of a temporal network point @csqlfn <a class="el" href="group__mobilitydb__npoint__accessor_ga8706db3b0adb9e7a6af8bd965266ebaf.html#ga8706db3b0adb9e7a6af8bd965266ebaf" title="Return the speed of a temporal network point @sqlfn speed()">Tnpoint_speed()</a>  <a href="group__meos__internal__npoint__accessor_ga4dde08093a85f8c8c523933500e73e23.html#ga4dde08093a85f8c8c523933500e73e23">More...</a><br /></td></tr>
-<tr class="separator:ga4dde08093a85f8c8c523933500e73e23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cbuffer_set_srid_int </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the coordinates of a circular buffer to an SRID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cb</td><td>Circular buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID @csqlfn <a class="el" href="group__mobilitydb__cbuffer__base__srid_ga2307ed718f63afd966635140d848cf2d.html#ga2307ed718f63afd966635140d848cf2d" title="Return a circular buffer with the coordinates of the point set to an SRID @sqlfn setSRID()">Cbuffer_set_srid()</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+    </td>
+  </tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Accessor functions for temporal network points. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
