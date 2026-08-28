@@ -14,11 +14,12 @@ tpcbox(pcpoint) → tpcbox
 </pre><pre class="programlisting">
 SELECT tpcbox(pcpoint(1, 10.0, 20.0, 30.0));
 -- TPCBOX(Z((10,20,30),(10,20,30)), 1)
-</pre></li><li class="listitem"><a name="tpcbox_tpcbox_pcpatch"></a><a class="indexterm" name="id12674"></a><p>Convierte un pcpatch a un tpcbox usando los límites PCBOUNDS 2D integrados en el parche</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcbox_tpcbox_pcpatch"></a><a class="indexterm" name="id12674"></a><p>Convierte un pcpatch a un tpcbox</p><pre class="programlisting">
 tpcbox(pcpatch) → tpcbox
 tpcbox(pcpatch,integer) → tpcbox
-</pre><p>La segunda forma acepta un SRID explícito en lugar de buscarlo en el esquema.</p><pre class="programlisting">
+</pre><p>La extensión en X y en Y del resultado es la de los límites PCBOUNDS integrados en el parche, y su extensión en Z, cuando el esquema que nombra el pcid tiene una dimensión Z, es la que indican los puntos del parche. La segunda forma acepta un SRID explícito en lugar de buscarlo en el esquema.</p><pre class="programlisting">
 SELECT tpcbox(pcpatch(pcpoint(1, 10.0, 20.0, 30.0)));
+-- TPCBOX(Z((10,20,30),(10,20,30)), 1)
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_accessors"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_hasX"></a><a class="indexterm" name="id12685"></a><a class="indexterm" name="id12688"></a><a class="indexterm" name="id12691"></a><p>Devuelve si un tpcbox tiene establecidas las dimensiones X/Y, Z o T</p><pre class="programlisting">
 hasX(tpcbox) → boolean
 hasZ(tpcbox) → boolean

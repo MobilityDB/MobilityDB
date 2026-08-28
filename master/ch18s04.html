@@ -14,12 +14,13 @@ tpcbox(pcpoint) → tpcbox
 </pre><pre class="programlisting">
 SELECT tpcbox(pcpoint(1, 10.0, 20.0, 30.0));
 -- TPCBOX(Z((10,20,30),(10,20,30)), 1)
-</pre></li><li class="listitem"><a name="tpcbox_tpcbox_pcpatch"></a><a class="indexterm" name="id13230"></a><p>Convert a pcpatch to a tpcbox using the patch's embedded 2D PCBOUNDS; the second form takes an explicit SRID instead of looking it up from the schema</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcbox_tpcbox_pcpatch"></a><a class="indexterm" name="id13230"></a><p>Convert a pcpatch to a tpcbox</p><pre class="programlisting">
 tpcbox(pcpatch) → tpcbox
 tpcbox(pcpatch,integer) → tpcbox
-</pre><pre class="programlisting">
+</pre><p>The X and Y extent of the result is the PCBOUNDS the patch embeds, and its Z extent, where the schema the pcid names holds a Z dimension, is the one the points of the patch state. The second form takes an explicit SRID instead of looking it up from the schema.</p><pre class="programlisting">
 SELECT tpcbox(pcpatch(pcpoint(1, 10.0, 20.0, 30.0)));
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_accessors"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_hasX"></a><a class="indexterm" name="id13240"></a><a class="indexterm" name="id13243"></a><a class="indexterm" name="id13246"></a><p>Return whether a tpcbox has the X/Y, Z, or T dimensions set</p><pre class="programlisting">
+-- TPCBOX(Z((10,20,30),(10,20,30)), 1)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_accessors"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_hasX"></a><a class="indexterm" name="id13241"></a><a class="indexterm" name="id13244"></a><a class="indexterm" name="id13247"></a><p>Return whether a tpcbox has the X/Y, Z, or T dimensions set</p><pre class="programlisting">
 hasX(tpcbox) → boolean
 hasZ(tpcbox) → boolean
 hasT(tpcbox) → boolean
@@ -27,7 +28,7 @@ hasT(tpcbox) → boolean
 WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
   SELECT hasX(b), hasZ(b) FROM b;
 -- t | f
-</pre></li><li class="listitem"><a name="tpcbox_xmin"></a><a class="indexterm" name="id13253"></a><a class="indexterm" name="id13256"></a><a class="indexterm" name="id13259"></a><a class="indexterm" name="id13262"></a><a class="indexterm" name="id13265"></a><a class="indexterm" name="id13268"></a><p>Return a coordinate bound, NULL if the corresponding dimension is absent</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcbox_xmin"></a><a class="indexterm" name="id13254"></a><a class="indexterm" name="id13257"></a><a class="indexterm" name="id13260"></a><a class="indexterm" name="id13263"></a><a class="indexterm" name="id13266"></a><a class="indexterm" name="id13269"></a><p>Return a coordinate bound, NULL if the corresponding dimension is absent</p><pre class="programlisting">
 xmin(tpcbox) → float
 xmax(tpcbox) → float
 ymin(tpcbox) → float
@@ -38,37 +39,37 @@ zmax(tpcbox) → float
 WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
   SELECT xmin(b), xmax(b) FROM b;
 -- 0 | 10
-</pre></li><li class="listitem"><a name="tpcbox_tmin"></a><a class="indexterm" name="id13275"></a><a class="indexterm" name="id13278"></a><p>Return a temporal bound, NULL if the box has no T dimension</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcbox_tmin"></a><a class="indexterm" name="id13276"></a><a class="indexterm" name="id13279"></a><p>Return a temporal bound, NULL if the box has no T dimension</p><pre class="programlisting">
 tmin(tpcbox) → timestamptz
 tmax(tpcbox) → timestamptz
 </pre><pre class="programlisting">
 SELECT tmin(tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1));
 -- 2024-01-01
-</pre></li><li class="listitem"><a name="tpcbox_pcid"></a><a class="indexterm" name="id13285"></a><a class="indexterm" name="id13288"></a><p>Return the schema id and SRID</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcbox_pcid"></a><a class="indexterm" name="id13286"></a><a class="indexterm" name="id13289"></a><p>Return the schema id and SRID</p><pre class="programlisting">
 pcid(tpcbox) → integer
 SRID(tpcbox) → integer
 </pre><pre class="programlisting">
 WITH b AS (SELECT tpcbox(0, 0, 10, 10, 7, 4326) AS b)
   SELECT pcid(b), SRID(b) FROM b;
 -- 7 | 4326
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_transformations"></a>Transformations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_round"></a><a class="indexterm" name="id13298"></a><p>Return a tpcbox with coordinates rounded to a given number of decimal digits</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_transformations"></a>Transformations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_round"></a><a class="indexterm" name="id13299"></a><p>Return a tpcbox with coordinates rounded to a given number of decimal digits</p><pre class="programlisting">
 round(tpcbox,integer=0) → tpcbox
 </pre><pre class="programlisting">
 SELECT round(tpcbox(0.123456, 1.234567, 2.345678, 3.456789, 1, 0), 2);
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
-</pre></li><li class="listitem"><a name="tpcbox_setSRID"></a><a class="indexterm" name="id13305"></a><p>Return a tpcbox with the SRID overwritten</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcbox_setSRID"></a><a class="indexterm" name="id13306"></a><p>Return a tpcbox with the SRID overwritten</p><pre class="programlisting">
 setSRID(tpcbox,integer) → tpcbox
 </pre><p>Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</p><pre class="programlisting">
 SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
 -- 4326
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_setops"></a>Set Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_union"></a><a class="indexterm" name="id13316"></a><a class="indexterm" name="id13319"></a><p>Union and intersection of two tpcboxes</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_setops"></a>Set Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_union"></a><a class="indexterm" name="id13317"></a><a class="indexterm" name="id13320"></a><p>Union and intersection of two tpcboxes</p><pre class="programlisting">
 tpcbox {+, *} tpcbox → tpcbox
 </pre><p>Both operands must share the same <code class="varname">pcid</code>, and the intersection is NULL when the two boxes are disjoint.</p><pre class="programlisting">
 SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
 -- TPCBOX(X((0,0),(10,10)), 1)
 SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
 -- TPCBOX(X((3,3),(5,5)), 1)
-</pre></li></ul></div><p>Note: a generic box-vs-box <code class="varname">minus</code> is not provided, mirroring the convention for <code class="varname">stbox</code> and <code class="varname">tbox</code>: the difference of two boxes is not generally a box.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_topo"></a>Topological Operations</h3></div></div></div><p>All topological operators take two <code class="varname">tpcbox</code> values with matching <code class="varname">pcid</code>. A pcid mismatch always yields false (not an error) so that index scans behave intuitively.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_topo_ops"></a><a class="indexterm" name="id13338"></a><a class="indexterm" name="id13341"></a><a class="indexterm" name="id13344"></a><a class="indexterm" name="id13347"></a><a class="indexterm" name="id13350"></a><p>Topological operators</p><pre class="programlisting">
+</pre></li></ul></div><p>Note: a generic box-vs-box <code class="varname">minus</code> is not provided, mirroring the convention for <code class="varname">stbox</code> and <code class="varname">tbox</code>: the difference of two boxes is not generally a box.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_topo"></a>Topological Operations</h3></div></div></div><p>All topological operators take two <code class="varname">tpcbox</code> values with matching <code class="varname">pcid</code>. A pcid mismatch always yields false (not an error) so that index scans behave intuitively.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_topo_ops"></a><a class="indexterm" name="id13339"></a><a class="indexterm" name="id13342"></a><a class="indexterm" name="id13345"></a><a class="indexterm" name="id13348"></a><a class="indexterm" name="id13351"></a><p>Topological operators</p><pre class="programlisting">
 tpcbox {&amp;&amp;, @&gt;, &lt;@, ~=, -|-} tpcbox → boolean
 </pre><pre class="programlisting">
 SELECT tpcbox(0, 0, 10, 10, 1, 0) @&gt; tpcbox(2, 2, 8, 8, 1, 0);
@@ -83,7 +84,7 @@ SELECT tpcbox(0, 0, 2, 2) -|- tpcbox(5, 5, 7, 7);
 -- f
 SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);
 -- ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_pos"></a>Position Operations</h3></div></div></div><p>Sixteen axis-aligned position predicates, parallel to those on <code class="varname">stbox</code>. Each tests strict-or-overlap relationship along one axis. All require matching <code class="varname">pcid</code>; mismatch returns false. Z-axis predicates require both boxes to have a Z dimension; T-axis predicates require both to have a T dimension.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_pos_ops"></a><a class="indexterm" name="id13363"></a><a class="indexterm" name="id13366"></a><a class="indexterm" name="id13369"></a><a class="indexterm" name="id13372"></a><a class="indexterm" name="id13375"></a><a class="indexterm" name="id13378"></a><a class="indexterm" name="id13381"></a><a class="indexterm" name="id13384"></a><a class="indexterm" name="id13387"></a><a class="indexterm" name="id13390"></a><a class="indexterm" name="id13393"></a><a class="indexterm" name="id13396"></a><a class="indexterm" name="id13399"></a><a class="indexterm" name="id13402"></a><a class="indexterm" name="id13405"></a><a class="indexterm" name="id13408"></a><p>Position operators</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_pos"></a>Position Operations</h3></div></div></div><p>Sixteen axis-aligned position predicates, parallel to those on <code class="varname">stbox</code>. Each tests strict-or-overlap relationship along one axis. All require matching <code class="varname">pcid</code>; mismatch returns false. Z-axis predicates require both boxes to have a Z dimension; T-axis predicates require both to have a T dimension.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_pos_ops"></a><a class="indexterm" name="id13364"></a><a class="indexterm" name="id13367"></a><a class="indexterm" name="id13370"></a><a class="indexterm" name="id13373"></a><a class="indexterm" name="id13376"></a><a class="indexterm" name="id13379"></a><a class="indexterm" name="id13382"></a><a class="indexterm" name="id13385"></a><a class="indexterm" name="id13388"></a><a class="indexterm" name="id13391"></a><a class="indexterm" name="id13394"></a><a class="indexterm" name="id13397"></a><a class="indexterm" name="id13400"></a><a class="indexterm" name="id13403"></a><a class="indexterm" name="id13406"></a><a class="indexterm" name="id13409"></a><p>Position operators</p><pre class="programlisting">
 tpcbox {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} tpcbox → boolean
 tpcbox {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} tpcbox → boolean
 tpcbox {&lt;&lt;/, &amp;&lt;/, /&gt;&gt;, /&amp;&gt;} tpcbox → boolean
@@ -98,7 +99,7 @@ SELECT tpcbox(0, 0, 2, 2) &lt;&lt;/ tpcbox(5, 5, 7, 7);
 -- f
 SELECT tpcbox(0, 0, 2, 2) &lt;&lt;# tpcbox(5, 5, 7, 7);
 -- f
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_comparisons"></a>Comparisons</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_btree"></a><a class="indexterm" name="id13419"></a><a class="indexterm" name="id13422"></a><a class="indexterm" name="id13425"></a><a class="indexterm" name="id13428"></a><a class="indexterm" name="id13431"></a><a class="indexterm" name="id13434"></a><p>Compare two tpcboxes; total order over the canonical encoding (pcid, srid, flags, period, then spatial bounds in XYZ-min/max order)</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_comparisons"></a>Comparisons</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_btree"></a><a class="indexterm" name="id13420"></a><a class="indexterm" name="id13423"></a><a class="indexterm" name="id13426"></a><a class="indexterm" name="id13429"></a><a class="indexterm" name="id13432"></a><a class="indexterm" name="id13435"></a><p>Compare two tpcboxes; total order over the canonical encoding (pcid, srid, flags, period, then spatial bounds in XYZ-min/max order)</p><pre class="programlisting">
 tpcbox {=, &lt;&gt;, &lt;, &lt;=, &gt;, &gt;=} tpcbox → boolean
 </pre><pre class="programlisting">
 SELECT tpcbox(0, 0, 2, 2) = tpcbox(0, 0, 2, 2);
