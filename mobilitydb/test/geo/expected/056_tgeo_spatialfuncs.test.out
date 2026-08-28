@@ -1140,6 +1140,36 @@ SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, Polygon(
  Interp=Step;[POINT(4 2.001727)@Sat Jan 01 00:00:00 2000 PST, POINT(4 2.001727)@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
+SELECT asText(centroid(tgeometry '[Point Z(1 2 3)@2000-01-01]'));
+                           astext                           
+------------------------------------------------------------
+ Interp=Step;[POINT Z (1 2 3)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(centroid(tgeometry '[Polygon Z((0 0 5,0 4 5,4 4 5,4 0 5,0 0 5))@2000-01-01]'));
+                           astext                           
+------------------------------------------------------------
+ Interp=Step;[POINT Z (2 2 5)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(centroid(tgeometry '[MultiPoint Z(0 0 1,2 0 3,0 2 5)@2000-01-01]'),6);
+                                  astext                                  
+--------------------------------------------------------------------------
+ Interp=Step;[POINT Z (0.666667 0.666667 3)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(centroid(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0),(1 1,1 2,2 2,2 1,1 1))@2000-01-01]'),6);
+                               astext                                
+---------------------------------------------------------------------
+ Interp=Step;[POINT(2.033333 2.033333)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(centroid(tgeometry '[Circularstring(0 0,1 1,2 0)@2000-01-01]'),6);
+                           astext                            
+-------------------------------------------------------------
+ Interp=Step;[POINT(1 0.63662)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
 SELECT asText(atGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
                  astext                  
 -----------------------------------------
