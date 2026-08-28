@@ -375,11 +375,9 @@ transform({pose,posechain},integer) &#8594; {pose,posechain}
 transformPipeline({pose,posechain},pipeline text,srid integer,
   is_forward boolean=true) &#8594; {pose,posechain}
 </programlisting>
-					<para>Only the outer link names a frame, so only the outer link is transformed: every other link is a rigid transform read in the axes of its parent, and a change of the outer frame leaves those axes as they were. An error is raised when the input chain has an unknown SRID (represented by 0). For a three-dimensional chain over a geographic frame the outer link's orientation is re-expressed in the basis of the target frame at its point, exactly as it is for a pose. For a two-dimensional chain the angle is intrinsic to the source projection and is passed through unchanged.</para>
-					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input pose has an unknown SRID (represented by 0). For a 3D pose the orientation is re-expressed in the basis of the target frame at the pose's point. The correction is defined for the canonical OGC GeoPose pair, WGS-84 geographic (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978), and takes the standard East-North-Up basis at the geographic point as the rotation pivot. For any other pair of SRIDs, <varname>transform</varname> emits a <varname>NOTICE</varname> and passes the orientation through unchanged. For a 2D pose the angle is intrinsic to the source projection and is passed through unchanged.</para>
-					<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
-				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
-				<para>The SRID of the input pose is ignored, and the SRID of the output pose will be set to zero unless a value is provided via the optional <varname>srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
+					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input has an unknown SRID (represented by 0). For a 3D pose the orientation is re-expressed in the basis of the target frame at the pose's point: the correction is defined for the canonical OGC GeoPose pair, WGS-84 geographic (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978), taking the standard East-North-Up basis at the geographic point as the rotation pivot, and for any other pair of SRIDs <varname>transform</varname> emits a <varname>NOTICE</varname> and passes the orientation through unchanged. For a 2D pose the angle is intrinsic to the source projection and is passed through unchanged. In a chain only the outer link names a frame and only it is transformed, every other link being a rigid transform read in the axes of its parent, which a change of the outer frame leaves as they were. The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
+					<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
+					<para>The SRID of the input pose is ignored, and the SRID of the output pose will be set to zero unless a value is provided via the optional <varname>srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(4.35 50.85),1)', 3812), 6);
 -- SRID=3812;Pose(POINT(648679.018035 671067.055638),1)
@@ -669,7 +667,7 @@ SELECT tpose 'Point(0 0)@NULL';
 -- Base type is not a pose
 SELECT tpose 'Point(0 0)@2001-01-01 08:05:00';
 </programlisting>
-		<para>We give next the functions and operators for temporal poses. Most functions and operators for temporal types and spatiotemporal types described in the previous chapters can be applied for temporal pose types. Therefore, in the signatures of the functions, the type <varname>pose</varname> can be used whenever the types <varname>base</varname> and <varname>spatial</varname> are specified, and the type <varname>tpose</varname> can be used whenever the types <varname>ttype</varname> and <varname>tpatial</varname> are specified. To avoid redundancy, we only present some examples of these functions and operators for temporal poses and we refer to previous chapters for detailed explanations about them.</para>
+		<para>We give next the functions and operators for temporal poses. Most functions and operators for temporal types and spatiotemporal types described in the previous chapters can be applied for temporal pose types. Therefore, in the signatures of the functions, the type <varname>pose</varname> can be used whenever the types <varname>base</varname> and <varname>spatial</varname> are specified, and the type <varname>tpose</varname> can be used whenever the types <varname>ttype</varname> and <varname>tspatial</varname> are specified. To avoid redundancy, we only present some examples of these functions and operators for temporal poses and we refer to previous chapters for detailed explanations about them.</para>
 	</sect1>
 
 	<sect1 xml:id="tpose_inout">
@@ -1771,6 +1769,81 @@ SELECT asText(appendSequenceAgg(seq)) FROM (VALUES
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="tpose_spatial">
+		<title>Spatial Operations</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_centroid">
+				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
+				<para>Return the temporal geometry point given by the points of a temporal pose</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+centroid(tpose) &#8594; tgeompoint
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(centroid(tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
+  Pose(Point(3 3), 0.5)@2001-01-03]'));
+-- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_convexHull">
+				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
+				<para>Return the convex hull of the points of a temporal pose</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+convexHull(tpose) &#8594; geometry
+</programlisting>
+				<para>The hull is taken over the positions the pose occupies; the orientation carries no extent and takes no part in it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(convexHull(tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
+  Pose(Point(3 1), 0.3)@2001-01-02, Pose(Point(2 3), 0.5)@2001-01-03]'));
+-- POLYGON((1 1,2 3,3 1,1 1))
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_simplification">
+		<title>Simplification</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_minDistSimplify">
+				<indexterm significance="normal"><primary><varname>minDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
+				<para>Return a temporal pose simplified ensuring that consecutive points are at least a certain distance or time interval apart</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+minDistSimplify(tpose,mindist float) &#8594; tpose
+minTimeDeltaSimplify(tpose,mint interval) &#8594; tpose
+</programlisting>
+				<para>The simplification operates on the trajectory of the points of the temporal pose and preserves the orientation at each surviving instant. Simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given value is returned.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(minDistSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
+  Pose(Point(2 2), 0)@2001-01-02, Pose(Point(3 3), 0)@2001-01-03]', 2));
+-- [Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(3 3),0)@2001-01-03]
+SELECT asText(minTimeDeltaSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
+  Pose(Point(2 2), 0)@2001-01-02, Pose(Point(3 3), 0)@2001-01-04]', interval '2 days'));
+-- [Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(3 3),0)@2001-01-04]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_maxDistSimplify">
+				<indexterm significance="normal"><primary><varname>maxDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
+				<para>Return a temporal pose simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink></para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+maxDistSimplify(tpose,maxdist float,syncdist bool=true) &#8594; tpose
+douglasPeuckerSimplify(tpose,maxdist float,syncdist bool=true) &#8594; tpose
+</programlisting>
+				<para>The <varname>syncdist</varname> argument states whether the distance is measured between synchronized instants; when it is false the distance is the spatial one, ignoring time.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(maxDistSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
+  Pose(Point(2 1), 0)@2001-01-02, Pose(Point(3 3), 0)@2001-01-03]', 1));
+-- [Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(3 3),0)@2001-01-03]
+SELECT asText(douglasPeuckerSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
+  Pose(Point(2 1), 0)@2001-01-02, Pose(Point(3 3), 0)@2001-01-03]', 1));
+-- [Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(3 3),0)@2001-01-03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tpose_indexing">
 		<title>Indexing</title>
 
@@ -1973,37 +2046,37 @@ SELECT count(*) FROM geoPoseFrames();
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameSRID(int) → int
 </programlisting>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoPoseFrameSRID(1), geoPoseFrameSRID(2);
 -- 4326 | 4978
 SELECT geoPoseFrameSRID(3);
 -- NULL
 </programlisting>
-			</listitem>
+				</listitem>
 				<listitem xml:id="pose_geopose_frame_name">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameName</varname></primary></indexterm>
 					<para>Return the human-readable name of a frame</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameName(int) → text
 </programlisting>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoPoseFrameName(1);
 -- WGS-84 geographic (lat/lon/h)
 SELECT geoPoseFrameName(2), geoPoseFrameName(3);
 -- WGS-84 ECEF (Earth-Centred Earth-Fixed) | Local Tangent Plane (East-North-Up)
 </programlisting>
-			</listitem>
+				</listitem>
 				<listitem xml:id="pose_geopose_frame_is_geographic">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameIsGeographic</varname></primary></indexterm>
 					<para>Return <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameIsGeographic(int) → boolean
 </programlisting>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoPoseFrameIsGeographic(1), geoPoseFrameIsGeographic(2);
 -- true | false
 </programlisting>
-			</listitem>
+				</listitem>
 			</itemizedlist>
 			<para>Users can register custom frames by inserting into <varname>geopose_frames</varname>; the catalog is marked as a configuration table so <varname>pg_dump</varname> preserves user rows.</para>
 		</sect2>

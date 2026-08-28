@@ -376,11 +376,9 @@ transform({pose,posechain},integer) &#8594; {pose,posechain}
 transformPipeline({pose,posechain},pipeline text,srid integer,
   is_forward boolean=true) &#8594; {pose,posechain}
 </programlisting>
-					<para>Solo el eslabón exterior nombra un marco, por lo que solo se transforma el eslabón exterior: cada uno de los demás eslabones es una transformación rígida leída en los ejes de su marco padre, y un cambio del marco exterior deja esos ejes como estaban. Se genera un error cuando la cadena de entrada tiene un SRID desconocido (representado por 0). Para una cadena tridimensional sobre un marco geográfico, la orientación del eslabón exterior se vuelve a expresar en la base del marco de destino en su punto, exactamente como ocurre con una pose. Para una cadena bidimensional el ángulo es intrínseco a la proyección de origen y se transmite sin cambios.</para>
-					<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando la pose de entrada tiene un SRID desconocido (representado por 0). En una pose 3D, la orientación se reexpresa en la base del marco de destino en el punto de la pose. La corrección está definida para el par canónico de OGC GeoPose, WGS-84 geográfico (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978), y toma la base estándar Este-Norte-Arriba en el punto geográfico como pivote de rotación. Para cualquier otro par de SRID, <varname>transform</varname> emite un <varname>NOTICE</varname> y deja pasar la orientación sin cambios. En una pose 2D, el ángulo es intrínseco a la proyección de origen y se deja pasar sin cambios.</para>
-					<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena:</para>
-				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
-				<para>El SRID de la pose de entrada se ignora y el SRID de la pose de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
+					<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando la entrada tiene un SRID desconocido (representado por 0). En una pose 3D, la orientación se reexpresa en la base del marco de destino en el punto de la pose: la corrección está definida para el par canónico de OGC GeoPose, WGS-84 geográfico (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978), tomando la base estándar Este-Norte-Arriba en el punto geográfico como pivote de rotación, y para cualquier otro par de SRID <varname>transform</varname> emite un <varname>NOTICE</varname> y deja pasar la orientación sin cambios. En una pose 2D, el ángulo es intrínseco a la proyección de origen y se deja pasar sin cambios. En una cadena solo el eslabón exterior nombra un marco y solo él se transforma, siendo cada uno de los demás eslabones una transformación rígida leída en los ejes de su marco padre, que un cambio del marco exterior deja como estaban. La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena:</para>
+					<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
+					<para>El SRID de la pose de entrada se ignora y el SRID de la pose de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(4.35 50.85),1)', 3812), 6);
 -- SRID=3812;Pose(POINT(648679.018035 671067.055638),1)
@@ -664,7 +662,7 @@ SELECT tpose 'Point(0 0)@NULL';
 -- Base type is not a pose
 SELECT tpose 'Point(0 0)@2001-01-01 08:05:00';
 </programlisting>
-		<para>A continuación damos las funciones y operadores para las poses temporales. La mayoría de las funciones y operadores para tipos temporales y tipos espaciotemporales descritos en los capítulos precedentes se pueden aplicar para los tipos de pose temporal. Por lo tanto, en las firmas de las funciones, el tipo <varname>pose</varname> se puede utilizar siempre que se especifiquen los tipos <varname>base</varname> y <varname>spatial</varname>, y el tipo <varname>tpose</varname> se puede utilizar siempre que se especifiquen los tipos <varname>ttype</varname> y <varname>tpatial</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para poses temporales y nos remitimos a los capítulos precedentes para explicaciones detalladas sobre ellos.</para>
+		<para>A continuación damos las funciones y operadores para las poses temporales. La mayoría de las funciones y operadores para tipos temporales y tipos espaciotemporales descritos en los capítulos precedentes se pueden aplicar para los tipos de pose temporal. Por lo tanto, en las firmas de las funciones, el tipo <varname>pose</varname> se puede utilizar siempre que se especifiquen los tipos <varname>base</varname> y <varname>spatial</varname>, y el tipo <varname>tpose</varname> se puede utilizar siempre que se especifiquen los tipos <varname>ttype</varname> y <varname>tspatial</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para poses temporales y nos remitimos a los capítulos precedentes para explicaciones detalladas sobre ellos.</para>
 	</sect1>
 
 	<sect1 xml:id="tpose_inout">
@@ -1766,6 +1764,81 @@ SELECT asText(appendSequenceAgg(seq)) FROM (VALUES
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="tpose_spatial">
+		<title>Operaciones espaciales</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_centroid">
+				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
+				<para>Devuelve el punto de geometría temporal dado por los puntos de una pose temporal</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+centroid(tpose) &#8594; tgeompoint
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(centroid(tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
+  Pose(Point(3 3), 0.5)@2001-01-03]'));
+-- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_convexHull">
+				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
+				<para>Devuelve la envolvente convexa de los puntos de una pose temporal</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+convexHull(tpose) &#8594; geometry
+</programlisting>
+				<para>La envolvente se toma sobre las posiciones que ocupa la pose; la orientación no tiene extensión y no participa en ella.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(convexHull(tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
+  Pose(Point(3 1), 0.3)@2001-01-02, Pose(Point(2 3), 0.5)@2001-01-03]'));
+-- POLYGON((1 1,2 3,3 1,1 1))
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_simplification">
+		<title>Simplificación</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_minDistSimplify">
+				<indexterm significance="normal"><primary><varname>minDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
+				<para>Devuelve una pose temporal simplificada asegurando que los puntos consecutivos estén separados al menos una cierta distancia o intervalo de tiempo</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+minDistSimplify(tpose,mindist float) &#8594; tpose
+minTimeDeltaSimplify(tpose,mint interval) &#8594; tpose
+</programlisting>
+				<para>La simplificación opera sobre la trayectoria de los puntos de la pose temporal y preserva la orientación en cada instante que sobrevive. La simplificación se aplica únicamente a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del valor dado.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(minDistSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
+  Pose(Point(2 2), 0)@2001-01-02, Pose(Point(3 3), 0)@2001-01-03]', 2));
+-- [Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(3 3),0)@2001-01-03]
+SELECT asText(minTimeDeltaSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
+  Pose(Point(2 2), 0)@2001-01-02, Pose(Point(3 3), 0)@2001-01-04]', interval '2 days'));
+-- [Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(3 3),0)@2001-01-04]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_maxDistSimplify">
+				<indexterm significance="normal"><primary><varname>maxDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
+				<para>Devuelve una pose temporal simplificada mediante el <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">algoritmo de Douglas-Peucker</ulink></para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+maxDistSimplify(tpose,maxdist float,syncdist bool=true) &#8594; tpose
+douglasPeuckerSimplify(tpose,maxdist float,syncdist bool=true) &#8594; tpose
+</programlisting>
+				<para>El argumento <varname>syncdist</varname> indica si la distancia se mide entre instantes sincronizados; cuando es falso la distancia es la espacial, ignorando el tiempo.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(maxDistSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
+  Pose(Point(2 1), 0)@2001-01-02, Pose(Point(3 3), 0)@2001-01-03]', 1));
+-- [Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(3 3),0)@2001-01-03]
+SELECT asText(douglasPeuckerSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
+  Pose(Point(2 1), 0)@2001-01-02, Pose(Point(3 3), 0)@2001-01-03]', 1));
+-- [Pose(POINT(1 1),0)@2001-01-01, Pose(POINT(3 3),0)@2001-01-03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tpose_indexing">
 		<title>Indexación</title>
 
@@ -1874,7 +1947,7 @@ pitch({pose,tpose}) → {float,tfloat}
 roll({pose,tpose}) → {float,tfloat}
 </programlisting>
 					<para>Para una pose 2D <varname>yaw</varname> devuelve la rotación almacenada <varname>theta</varname>, por convención el yaw del marco del cuerpo, y <varname>pitch</varname> y <varname>roll</varname> devuelven <varname>0</varname>. Para una pose 3D los tres valores provienen de la descomposición Tait-Bryan intrínseca ZYX del cuaternión de orientación. El término <varname>asin</varname> del pitch se acota a <varname>[-1, 1]</varname> para absorber la pequeña deriva numérica que pueden introducir las composiciones largas de cuaterniones. Sobre una pose temporal la interpolación del resultado sigue a la dimensión. Una pose 2D interpola su ángulo almacenado linealmente y ese ángulo es su yaw, de modo que un <varname>tpose</varname> 2D lineal se proyecta a un <varname>tfloat</varname> lineal. Una pose 3D interpola mediante SLERP, cuya descomposición Tait-Bryan no es lineal en el tiempo, de modo que un <varname>tpose</varname> 3D se proyecta a un <varname>tfloat</varname> de pasos: leerlo entre dos instantes responde el ángulo del instante de la izquierda en lugar de un ángulo que ninguna pose tiene.</para>
-<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT yaw(pose 'Pose(Point(1 1), 0.5)');
 -- 0.5
 SELECT pitch(pose 'Pose(Point(1 1), 0.5)');
@@ -1884,7 +1957,7 @@ SELECT roll(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.707106781186547
 SELECT yaw(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)');
 -- 1.5707963267948966
 </programlisting>
-<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
   Pose(Point(1 1), 0.5)@2000-01-02]'));
 -- [0@2000-01-01, 0.5@2000-01-02]
@@ -1967,37 +2040,37 @@ SELECT count(*) FROM geoPoseFrames();
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameSRID(int) → int
 </programlisting>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoPoseFrameSRID(1), geoPoseFrameSRID(2);
 -- 4326 | 4978
 SELECT geoPoseFrameSRID(3);
 -- NULL
 </programlisting>
-			</listitem>
+				</listitem>
 				<listitem xml:id="pose_geopose_frame_name">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameName</varname></primary></indexterm>
 					<para>Devuelve el nombre legible del marco</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameName(int) → text
 </programlisting>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoPoseFrameName(1);
 -- WGS-84 geographic (lat/lon/h)
 SELECT geoPoseFrameName(2), geoPoseFrameName(3);
 -- WGS-84 ECEF (Earth-Centred Earth-Fixed) | Local Tangent Plane (East-North-Up)
 </programlisting>
-			</listitem>
+				</listitem>
 				<listitem xml:id="pose_geopose_frame_is_geographic">
 					<indexterm significance="normal"><primary><varname>geoPoseFrameIsGeographic</varname></primary></indexterm>
 					<para>Devuelve <varname>true</varname> para los marcos lat/lon/h, <varname>false</varname> para los cartesianos o proyectados</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoPoseFrameIsGeographic(int) → boolean
 </programlisting>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoPoseFrameIsGeographic(1), geoPoseFrameIsGeographic(2);
 -- true | false
 </programlisting>
-			</listitem>
+				</listitem>
 			</itemizedlist>
 			<para>Los usuarios pueden registrar marcos personalizados insertándolos en <varname>geopose_frames</varname>; el catálogo está marcado como una tabla de configuración, por lo que <varname>pg_dump</varname> preserva las filas del usuario.</para>
 		</sect2>
@@ -2005,40 +2078,40 @@ SELECT geoPoseFrameIsGeographic(1), geoPoseFrameIsGeographic(2);
 		<sect2 xml:id="pose_geopose_apply">
 			<title>Transformación rígida cuerpo↔mundo</title>
 			<itemizedlist>
-			<listitem xml:id="pose_applyPose">
-			<indexterm significance="normal"><primary><varname>applyPose</varname></primary></indexterm>
-			<para>Aplica la transformación de cuerpo rígido codificada por una pose (la correspondencia <emphasis>cuerpo al mundo</emphasis> de OGC GeoPose) a una geometría en el marco del cuerpo, produciendo la geometría correspondiente en el marco del mundo</para>
-			<programlisting role="syntax" xml:space="preserve" format="linespecific">
+				<listitem xml:id="pose_applyPose">
+					<indexterm significance="normal"><primary><varname>applyPose</varname></primary></indexterm>
+					<para>Aplica la transformación de cuerpo rígido codificada por una pose (la correspondencia <emphasis>cuerpo al mundo</emphasis> de OGC GeoPose) a una geometría en el marco del cuerpo, produciendo la geometría correspondiente en el marco del mundo</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 applyPose(geometry,pose) → geometry
 applyPose(geometry,tpose) → tgeompoint
 applyPose(pose,pose) → pose
 </programlisting>
-			<para>La transformación es</para>
-			<programlisting xml:space="preserve" format="linespecific">
+					<para>La transformación es</para>
+					<programlisting xml:space="preserve" format="linespecific">
 world = R(q) · body + p
 </programlisting>
-			<para>donde <varname>(p, q)</varname> son la posición y la orientación de la pose. La forma estática toma una única pose y una geometría estática; la forma temporal eleva la transformación rígida por instante de una <varname>tpose</varname> a lo largo de sus instantes, produciendo una trayectoria <varname>tgeompoint</varname> en el marco del mundo de la geometría del cuerpo. La forma estática admite una geometría de cuerpo de cualquier tipo y lleva su forma al marco de la pose; la forma temporal devuelve una <varname>tgeompoint</varname>, por lo que su geometría de cuerpo debe ser un punto. La pose y la geometría del cuerpo deben tener la misma dimensionalidad y deben coincidir en su SRID, adoptando el desconocido el del otro. La interpolación lineal de la trayectoria resultante es la cuerda de cada segmento, que aproxima la verdadera trayectoria de cuerpo rígido (un arco circular bajo SLERP), la misma concesión que MobilityDB ya adopta para las trayectorias espaciales.</para>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<para>donde <varname>(p, q)</varname> son la posición y la orientación de la pose. La forma estática toma una única pose y una geometría estática; la forma temporal eleva la transformación rígida por instante de una <varname>tpose</varname> a lo largo de sus instantes, produciendo una trayectoria <varname>tgeompoint</varname> en el marco del mundo de la geometría del cuerpo. La forma estática admite una geometría de cuerpo de cualquier tipo y lleva su forma al marco de la pose; la forma temporal devuelve una <varname>tgeompoint</varname>, por lo que su geometría de cuerpo debe ser un punto. La pose y la geometría del cuerpo deben tener la misma dimensionalidad y deben coincidir en su SRID, adoptando el desconocido el del otro. La interpolación lineal de la trayectoria resultante es la cuerda de cada segmento, que aproxima la verdadera trayectoria de cuerpo rígido (un arco circular bajo SLERP), la misma concesión que MobilityDB ya adopta para las trayectorias espaciales.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A body sensor offset 1 unit along the body X axis, traced through a tpose that ends 90
 -- degrees yawed and translated to (10, 20).
 SELECT asText(applyPose(ST_Point(1,0), tpose '[Pose(Point(0 0), 0)@2026-01-01,
   Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));
 -- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
 </programlisting>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The shape of the body geometry is carried into the pose's frame: a hull 4 by 2 about
 -- the body origin, placed at (10, 20)
 SELECT ST_AsText(applyPose(ST_MakeEnvelope(-2,-1,2,1), pose 'Pose(Point(10 20), 0)'));
 -- POLYGON((8 19,8 21,12 21,12 19,8 19))
 </programlisting>
-			<para>Cualquiera de los dos marcos puede moverse. Aplicar una pose a una <varname>tpose</varname> lleva un cuerpo fijo a través de todo el movimiento de su padre, que es lo que pide un sensor montado sobre un vehículo en movimiento; aplicar una <varname>tpose</varname> a una pose lleva un cuerpo en movimiento a un marco que permanece quieto; y aplicar una <varname>tpose</varname> a una <varname>tpose</varname> compone dos marcos que ambos se mueven, sobre el tiempo que comparten. <varname>poseInverse</varname> se eleva de la misma manera, cambiando el punto de vista sobre un objeto en movimiento durante todo su movimiento.</para>
-			<programlisting role="syntax" xml:space="preserve" format="linespecific">
+					<para>Cualquiera de los dos marcos puede moverse. Aplicar una pose a una <varname>tpose</varname> lleva un cuerpo fijo a través de todo el movimiento de su padre, que es lo que pide un sensor montado sobre un vehículo en movimiento; aplicar una <varname>tpose</varname> a una pose lleva un cuerpo en movimiento a un marco que permanece quieto; y aplicar una <varname>tpose</varname> a una <varname>tpose</varname> compone dos marcos que ambos se mueven, sobre el tiempo que comparten. <varname>poseInverse</varname> se eleva de la misma manera, cambiando el punto de vista sobre un objeto en movimiento durante todo su movimiento.</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 applyPose(pose,tpose) &#8594; tpose
 applyPose(tpose,pose) &#8594; tpose
 applyPose(tpose,tpose) &#8594; tpose
 poseInverse(tpose) &#8594; tpose
 </programlisting>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A sensor one unit ahead of a body that ends yawed a quarter turn at (10, 20) ends one
 -- unit north of it
 SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
@@ -2046,8 +2119,8 @@ SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
   Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'), 6));
 -- [Pose(POINT(1 0),0)@2026-01-01, Pose(POINT(10 21),1.570796)@2026-01-02]
 </programlisting>
-			<para>Una pose nombra un marco, por lo que ella misma es un valor en el marco del cuerpo: aplicar una pose a otra compone las dos relaciones entre marcos. Escribiendo <varname>P_WV</varname> para la pose de un vehículo en el mundo y <varname>P_VS</varname> para la pose de un sensor en el vehículo, la pose del sensor en el mundo es <varname>P_WS = P_WV ∘ P_VS</varname>. Esta es la operación que una cadena de poses pliega sobre sus eslabones, de modo que una cadena de dos eslabones se compone en lo que esto devuelve.</para>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<para>Una pose nombra un marco, por lo que ella misma es un valor en el marco del cuerpo: aplicar una pose a otra compone las dos relaciones entre marcos. Escribiendo <varname>P_WV</varname> para la pose de un vehículo en el mundo y <varname>P_VS</varname> para la pose de un sensor en el vehículo, la pose del sensor en el mundo es <varname>P_WS = P_WV ∘ P_VS</varname>. Esta es la operación que una cadena de poses pliega sobre sus eslabones, de modo que una cadena de dos eslabones se compone en lo que esto devuelve.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A sensor one unit ahead of a vehicle turned a quarter turn is one unit North of it, and
 -- carries the vehicle's orientation
 SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)', pose(ST_Point(0,0), pi()/2)),
@@ -2060,7 +2133,7 @@ SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
   pose 'Pose(Point(0 0 5), 1, 0, 0, 0)'), 6));
 -- Pose(POINT Z (1 0 5),1,0,0,0)
 </programlisting>
-			</listitem>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -2076,7 +2149,7 @@ asGeoPose(tpose,conformance integer=0,maxdecimaldigits integer=-1) → text
 tposeFromGeoPose(text) → tpose
 </programlisting>
 					<para>La clase de conformidad se deduce del valor. Un instante único es un documento Basic que lleva su <varname>validTime</varname>; una secuencia o un conjunto de secuencias es una serie de secuencia compuesta, de la clase Regular cuando los instantes están igualmente espaciados por un número entero de milisegundos y de la clase Irregular en caso contrario. El argumento <varname>conformance</varname> elige la codificación de la orientación de un documento Basic, como lo hace para una <varname>pose</varname>, y no tiene efecto sobre una serie, cuyos marcos interiores llevan un cuaternión y no ofrecen tal elección. Una serie declara su marco exterior una sola vez, como el marco Este-Norte-Arriba del plano tangente local en la posición de la primera pose, y da cada pose como un marco interior que contiene su traslación desde ese punto de tangencia, en metros, y su rotación relativa a la base de ese marco. Los tiempos son valores <varname>GeoPose_Instant</varname>, es decir, tiempo Unix en milisegundos enteros, que es lo que el estándar exige de toda posición temporal que define. Por lo tanto, el muestreo por debajo del milisegundo no se lleva; la codificación MF-JSON, que el estándar que la sustenta tipa como una cadena de fecha y hora, sí lo lleva. El modelo de transición informa de la interpolación. La interpolación lineal es el modelo <varname>interpolate</varname> del estándar y las interpolaciones de pasos y discreta son su modelo <varname>none</varname>; puesto que esos dos identificadores no distinguen la de pasos de la discreta, los <varname>parameters</varname> del modelo nombran la interpolación con las mismas palabras que usa la codificación MF-JSON.</para>
-<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
   Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02,
   Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-05]', 0, 6);
@@ -2129,7 +2202,7 @@ SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
 </programlisting>
 					<para>Una serie no tiene ni huecos ni límites abiertos, de modo que un conjunto de secuencias se aplana en una única secuencia cerrada y la inclusión de los límites de una secuencia no se conserva. La lectura acepta además la envoltura <varname>TemporalGeoPose</varname> que escribían versiones anteriores, un arreglo de objetos de la clase Basic cada uno con un <varname>validTime</varname> añadido, de modo que los datos ya almacenados en esa forma siguen cargándose.</para>
 					<para>La forma de esa envoltura es</para>
-<programlisting xml:space="preserve" format="linespecific">
+					<programlisting xml:space="preserve" format="linespecific">
 {
   "type":          "TemporalGeoPose",
   "version":       "1.0",
@@ -2141,7 +2214,7 @@ SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
   "sequences":     [{...}, ...]           // for TSequenceSet only
 }
 </programlisting>
-<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
   Pose(Point(9 48), 0.5)@2026-01-02]', 1, 4);
 /* {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-YPR",

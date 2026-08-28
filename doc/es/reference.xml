@@ -1641,6 +1641,28 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
+			<title>Operaciones espaciales</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tpose_centroid"><varname>centroid</varname></link>: Devuelve el punto de geometría temporal dado por los puntos de una pose temporal</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpose_convexHull"><varname>convexHull</varname></link>: Devuelve la envolvente convexa de los puntos de una pose temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Simplificación</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tpose_minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Devuelve una pose temporal simplificada asegurando que los puntos consecutivos estén separados al menos una cierta distancia o intervalo de tiempo</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpose_maxDistSimplify"><varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Devuelve una pose temporal simplificada mediante el <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">algoritmo de Douglas-Peucker</ulink></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
 			<title>Soporte de OGC GeoPose v1.0</title>
 			<sect3>
 				<title>Entrada y salida JSON</title>
