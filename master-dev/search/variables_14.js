@@ -3,7 +3,7 @@ var searchData=
   ['s_0',['s',['../structSortedSpan_ab5569668489e436f985508057a94c8be.html#ab5569668489e436f985508057a94c8be',1,'SortedSpan']]],
   ['s0_1',['s0',['../structpg__prng__state_a1335caffb5e49b4457e9b99468f4bd0c.html#a1335caffb5e49b4457e9b99468f4bd0c',1,'pg_prng_state']]],
   ['s1_2',['s1',['../structpg__prng__state_a1bce6a27cf0a214774c337052426cc98.html#a1bce6a27cf0a214774c337052426cc98',1,'pg_prng_state']]],
-  ['s2_5fcellops_3',['s2_cellops',['../ts2cell__ops_8c_af82b969621c8122d3468a79d687ffcb3.html#af82b969621c8122d3468a79d687ffcb3',1,'ts2cell_ops.c']]],
+  ['s2_5fcellops_3',['s2_cellops',['../meos_2src_2s2cell_2ts2cell__ops_8c_af82b969621c8122d3468a79d687ffcb3.html#af82b969621c8122d3468a79d687ffcb3',1,'ts2cell_ops.c']]],
   ['sample_5ffeatures_4',['sample_features',['../structND__STATS__T_af39ba36f89d255438105d272abadcc80.html#af39ba36f89d255438105d272abadcc80',1,'ND_STATS_T']]],
   ['sc_5',['sc',['../projection__gk_8c_ab30e38ccace0b85cce508d6f9b2b06c9.html#ab30e38ccace0b85cce508d6f9b2b06c9',1,'projection_gk.c']]],
   ['scale_6',['scale',['../structPCDimensionSpec_a746b9fa8c2593b7d7c88d2935c311b62.html#a746b9fa8c2593b7d7c88d2935c311b62',1,'PCDimensionSpec']]],
