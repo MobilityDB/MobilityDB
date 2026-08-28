@@ -566,6 +566,34 @@ restriction_families:
     - {sig: "beforeTimestamp(tquadbin, timestamptz, strict boolean DEFAULT TRUE)", ret: tquadbin, sym: Temporal_before_timestamptz}
     - {sig: "afterTimestamp(tquadbin, timestamptz, strict boolean DEFAULT TRUE)", ret: tquadbin, sym: Temporal_after_timestamptz}
   - lit: "\n"
+- family: s2cell
+  file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
+  reference: true
+  begin: "\n * Restriction functions\n"
+  end: "\n * Modification functions\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Restriction functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(ts2cell, s2cell)", ret: ts2cell, sym: Temporal_at_value}
+    - {sig: "minusValue(ts2cell, s2cell)", ret: ts2cell, sym: Temporal_minus_value}
+    - {sig: "atValues(ts2cell, s2cellset)", ret: ts2cell, sym: Temporal_at_values}
+    - {sig: "minusValues(ts2cell, s2cellset)", ret: ts2cell, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(ts2cell, timestamptz)", ret: ts2cell, sym: Temporal_at_timestamptz}
+    - {sig: "minusTime(ts2cell, timestamptz)", ret: ts2cell, sym: Temporal_minus_timestamptz}
+    - {sig: "atTime(ts2cell, tstzset)", ret: ts2cell, sym: Temporal_at_tstzset}
+    - {sig: "minusTime(ts2cell, tstzset)", ret: ts2cell, sym: Temporal_minus_tstzset}
+    - {sig: "atTime(ts2cell, tstzspan)", ret: ts2cell, sym: Temporal_at_tstzspan}
+    - {sig: "minusTime(ts2cell, tstzspan)", ret: ts2cell, sym: Temporal_minus_tstzspan}
+    - {sig: "atTime(ts2cell, tstzspanset)", ret: ts2cell, sym: Temporal_at_tstzspanset}
+    - {sig: "minusTime(ts2cell, tstzspanset)", ret: ts2cell, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(ts2cell, timestamptz, strict boolean DEFAULT TRUE)", ret: ts2cell, sym: Temporal_before_timestamptz}
+    - {sig: "afterTimestamp(ts2cell, timestamptz, strict boolean DEFAULT TRUE)", ret: ts2cell, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
   reference: true

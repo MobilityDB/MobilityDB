@@ -247,15 +247,15 @@ point in pure SQL (§6, `320_tnpoint_spatialrels`).
 
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |
 |---|---|---|---|
-| Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, each missing `ts2cell` alone (`--gaps`: `io_families` 19/20, `representation_families` 19/20): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **13 entries** (temporal, geo, tpoint, cbuffer, npoint, pose, posechain, rgeo, h3, quadbin, pointcloud, pointcloud_patch, json). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **18 entries**: the same 13 temporal families plus the five base-value entries `npoint_base`, `pose_base`, `posechain_base`, `cbuffer_base`, `raquet_base`, whose representations belong to the base type rather than to its temporal type |
+| Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, both full coverage (`--gaps`: `io_families` 20/20, `representation_families` 20/20): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **13 entries** (temporal, geo, tpoint, cbuffer, npoint, pose, posechain, rgeo, h3, quadbin, pointcloud, pointcloud_patch, json). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **18 entries**: the same 13 temporal families plus the five base-value entries `npoint_base`, `pose_base`, `posechain_base`, `cbuffer_base`, `raquet_base`, whose representations belong to the base type rather than to its temporal type |
 | Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **13 entries** all `reference: true` (temporal, cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) |
-| Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **8 entries** (temporal, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `--gaps`: `conversion_families` 15/20, missing tposechain, tgeography, ts2cell, tpcpoint, tpcpatch. `geo`/`tpoint` have no dedicated entry: their conversion surface is already named as the RETURNS/argument type of other families' declarations (e.g. rgeo's `tgeometry(trgeometry)`) |
+| Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **8 entries** (temporal, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `--gaps`: `conversion_families` 16/20, missing tposechain, tgeography, tpcpoint, tpcpatch. `geo`/`tpoint` have no dedicated entry: their conversion surface is already named as the RETURNS/argument type of other families' declarations (e.g. rgeo's `tgeometry(trgeometry)`) |
 | Accessors | `temporal_` | ✓ **GEN** | `accessors.sql.tmpl` multi-base renderer from base `022_temporal.in.sql` — the value/time/generic set for ALL families (§4c); per-family value shape = manifest `types:` tokens. A few interleaved/positional accessors stay hand per family |
 | Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **13 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample. ⛔ `tsample` and `tprecision` are NOT the same surface and the manifest is the record of which family carries which: **`tsample` 10** (temporal, cbuffer, h3, json, npoint, pose, posechain, quadbin, tpcpatch, tpcpoint) against **`tprecision` 7** (temporal, cbuffer, h3, pose, posechain, quadbin, rgeo). `tsample` SELECTS the value holding at a bin boundary, so it applies to every temporal type; `tprecision` SYNTHESIZES one value per bin as a time-weighted average, so it applies only where the value type carries such an average — `ensure_has_twavg_temptype()` in `meos/src/temporal/temporal_analytics.c` is the kernel's own list. A family in the first set and not the second is either a gap to close or an exception to argue; the per-type table sits under §4b |
 | Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **13 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
 | Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **13 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
 | **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
-| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (13 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pointcloud, pointcloud_patch, pose, posechain, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 19/20, missing `ts2cell` (§5a). The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 13 entries. ⛔ Each hash entry's LEADING `lit` is the bare `/****/` divider standing between the B-tree opclass and the hash block, because a region starts at the divider preceding its `begin` anchor: without that divider the hash region reaches back to the comparison banner and the entry has to carry the comparison section too; `--gaps`: `hash_families` 19/20, missing `ts2cell` (§5a) |
+| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (13 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pointcloud, pointcloud_patch, pose, posechain, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 20/20, full coverage. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 13 entries. ⛔ Each hash entry's LEADING `lit` is the bare `/****/` divider standing between the B-tree opclass and the hash block, because a region starts at the divider preceding its `begin` anchor: without that divider the hash region reaches back to the comparison banner and the entry has to carry the comparison section too; `--gaps`: `hash_families` 20/20, full coverage |
 | Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl` + one shared `render_compops_body` engine, fed by two manifest tracks: `compops_families` (multi-pair families — temporal's 5 base types on one generic base/temporal C symbol per op, tgeo/tpoint's geometry+geography pair on one generic geo/tgeo C symbol per op) and the `subtypes:` `compops` behaviour (every one-pair family — cbuffer, jsonb, quadbin, h3index, s2cell, npoint, pose, trgeometry, pcpoint, pcpatch). `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions); a pair whose temporal type the catalog's `torder_type` holds (temporal's int/bigint/float/text) additionally gets `eLt…aGe` + `?<…%>=`. A `compops_families` `pairs:` entry names only its `temp` type — `base` is never hand-paired alongside it; `render_compops` derives it from `catalog_temptype_basetype()`, read from meos_catalog.c's own `MEOS_RELTYPE_CATALOG[...].temptype_basetype` field, the same table `temptype_basetype()` reads at runtime for these functions' MEOS entry point. This makes a mismatched pair (`temp: tfloat` naming `base: integer`, which would render `tGt(tfloat, integer)` while the C entry point still derives float8 from the temp type alone) unrepresentable — the generator raises if a pair still carries a `base:` key |
 | Comparisons → Temporal | `temporal_` | ✓ **GEN** | same engine as Ever/Always above — renders `tEq`/`tNe`/`tLt`/`tGt`/`tLe`/`tGe` → `#=`/`#<>`/`#<`/`#>`/`#<=`/`#>=` in the same pass, not a separate template |
 | Miscellaneous | `temporal_` | ✗ HAND | |
@@ -416,9 +416,8 @@ a separate, small hand surface (components/coordinates), orthogonal to the inher
 
 ### 4e. Input/Output generation scope
 
-The Input/Output `<sect1>` is **two token-shaped sub-families**, each governed for
-every member but `ts2cell` (`--gaps`: `io_families` 19/20,
-`representation_families` 19/20, §5a); both mirror the
+The Input/Output `<sect1>` is **two token-shaped sub-families**, both fully governed
+(`--gaps`: `io_families` 20/20, `representation_families` 20/20); both mirror the
 `accessor_families` model (per-type `types:` rows, region-marked blocks in a
 reference file, `--validate` byte-for-byte).
 
@@ -565,23 +564,27 @@ SQL cell wrappers (`255_th3index_spatialfuncs`, `355_tquadbin_spatialfuncs`,
 template instead of hand-written three times, since the underlying descriptor
 surface is identical across the three.
 
-⛔ **THE THREE ARE AT PARITY IN THE SHIPPED SQL AND NOT IN THE MANIFESTS.**
+⭐ **THE THREE ARE AT PARITY IN THE SHIPPED SQL AND IN THE MANIFESTS.**
 `mobilitydb/sql/s2cell/` holds 600–623, the same fourteen slot files `quadbin` holds
 at 350–373, and `generate.py --check` emits the same seven per family — s2cell 604,
-608, 609, 612, 614, 622, 623 against quadbin 354, 358, 359, 362, 364, 372, 373. But
-`--gaps` names `ts2cell` as the ONLY missing member of ten temporal-class axes, and
-`s2cellset` as the only missing member of two value-domain axes:
+608, 609, 612, 614, 622, 623 against quadbin 354, 358, 359, 362, 364, 372, 373. Every
+axis that names `tquadbin` names `ts2cell`, and every axis that names `quadbinset`
+names `s2cellset`: `accessor`, `comparison`, `constructor`, `conversion`, `hash`, `io`,
+`modification`, `representation`, `restriction`, `transformation`, `setop` and `span`,
+beside the four S2 already held (`aggregate` 20/20 `611_ts2cell_aggfuncs`, `compops`
+20/20, `tempspatialrel` 14/14 `614_ts2cell_tempspatialrels`, `tiling` 20/20
+`607_ts2cell_boxops`). `--validate` re-renders all 336 regions byte-for-byte and
+`603_ts2cell.in.sql` / `601_s2cellset.in.sql` leave `coverage_exceptions.txt`.
 
-| axis | coverage | missing |
-|---|---|---|
-| `accessor_families`, `comparison_families`, `constructor_families`, `hash_families`, `io_families`, `modification_families`, `representation_families`, `restriction_families`, `transformation_families` | 19/20 each | `ts2cell` |
-| `conversion_families` | 15/20 | `ts2cell`, and tposechain, tgeography, tpcpoint, tpcpatch |
-| `setop_families` | 17/18 | `s2cellset` |
-| `span_families` | 27/28 | `s2cellset` |
+⛔ **TWO OF THE EIGHTEEN ENTRIES ARE NOT A RENAME OF QUADBIN'S, AND `--validate` IS WHAT
+SAYS SO.** A mechanical `quadbin`→`s2cell` copy renders text the S2 file does not carry:
+its Conversions banner reads *geodetic* where quadbin reads *planar* — an S2 cell is a
+region of the sphere and its bbox is a geodetic `stbox` — and its Constructors region
+carries a six-line note on the `lowerInc`/`upperInc` spelling that neither `th3index`
+nor `tquadbin` states (measured: 1 occurrence in the S2 file, 0 in each sibling). That
+note is the `seq` op's `pre:`, the `{op, pre}` form `_ctor_op` already accepts, never a
+`lit:` block — a `lit:` cannot cancel the leading newline the next `ops:` group emits.
 
-⭐ Where S2 is already whole: `aggregate_families` 20/20 (`611_ts2cell_aggfuncs`),
-`compops_families` 20/20, `tempspatialrel_families` 14/14 (`614_ts2cell_tempspatialrels`)
-and `tiling_families` 20/20 (`607_ts2cell_boxops`).
 ⛔ `distance_families` 10/16 is missing `s2cellset` AND `h3indexset`, `quadbinset`,
 `posechainset`, `pcpointset`, `pcpatchset` — a set-type-wide gap, NOT an S2 one; reading
 it as one over-counts the cell work.
@@ -931,12 +934,12 @@ column names the `manifest.d/` key) · ✗ HAND = hand-maintained.
 | `<sect1>` (doc line) | `Set<T>` | `Span<T>` | `SpanSet<T>` | axis |
 |---|---|---|---|---|
 | Input and Output (:102) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (003/007 entries; sets: `set_io` + the per-family `*set_io` entries) |
-| Constructors (:268) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_constructors` + `*set_constructors`; h3/quadbin/pointcloud fold their singleton conversion + cast into this section; `s2cellset` is not governed here — `--gaps`: `span_families` 27/28, §5a) |
+| Constructors (:268) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_constructors` + `*set_constructors`; h3/quadbin/pointcloud fold their singleton conversion + cast into this section; `--gaps`: `span_families` 28/28, full coverage) |
 | Conversions (:325) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_conversions` + `*set_conversions`; h3/quadbin/s2cell/pointcloud have no separate Conversions section — see Constructors) |
 | Accessors (:442) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_accessors` + `*set_accessors`; the pointcloud entries also carry the trailing `unnest`) |
 | Transformations (:693) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_transformations` + the per-family `*set_transformations`/`*set_unnest` entries; jsonbset's empty Transformations banner stays hand) |
 | Spatial Reference System (:901) | ✓ GEN (geoset/poseset/posechainset/cbufferset — the only set files with an SRS section; npointset/h3indexset/quadbinset/s2cellset/pcpointset/pcpatchset have no SRID functions) | — | — | `span_families` (`*set_srs` entries) |
-| Set Operations (:958) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/setop_families.yaml` · `span_families` (005/009); `s2cellset` is not governed here — `--gaps`: `setop_families` 17/18, §5a |
+| Set Operations (:958) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/setop_families.yaml` · `span_families` (005/009); `--gaps`: `setop_families` 18/18, full coverage |
 | BBox Ops · Topological (:1014) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/topop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Position (:1082) | ✓ GEN (ordered sets only) | ✓ GEN | ✓ GEN | `manifest.d/posop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Splitting (:1162) | ✓ GEN (`spans`/`splitNSpans`/`splitEachNSpans` live in `003_span.in.sql`) | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |

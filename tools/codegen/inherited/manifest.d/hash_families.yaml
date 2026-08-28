@@ -140,6 +140,19 @@ hash_families:
   - lit: "\n"
   - opcls: tquadbin
   - lit: "\n/******************************************************************************/\n"
+- family: s2cell
+  file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(ts2cell"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: ts2cell
+  - lit: "\n"
+  - opcls: ts2cell
+  - lit: "\n/******************************************************************************/\n"
+
 - family: json
   file: mobilitydb/sql/json/452_tjsonb.in.sql
   reference: true
@@ -293,3 +306,12 @@ hash_families:
   end: "\n * unnest \u2014 SETOF expansion\n"
   blocks:
   - lit: "CREATE OPERATOR CLASS quadbinset_hash_ops\n  DEFAULT FOR TYPE quadbinset USING hash AS\n    OPERATOR  1  =,\n    FUNCTION  1  hash(quadbinset),\n    FUNCTION  2  hashExtended(quadbinset, bigint);\n\n"
+
+- family: s2cellset
+  file: mobilitydb/sql/s2cell/601_s2cellset.in.sql
+  reference: true
+  begin: "CREATE OPERATOR CLASS s2cellset_hash_ops"
+  begin_exact: true
+  end: "\n * unnest \u2014 SETOF expansion\n"
+  blocks:
+  - lit: "CREATE OPERATOR CLASS s2cellset_hash_ops\n  DEFAULT FOR TYPE s2cellset USING hash AS\n    OPERATOR  1  =,\n    FUNCTION  1  hash(s2cellset),\n    FUNCTION  2  hashExtended(s2cellset, bigint);\n\n"

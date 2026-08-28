@@ -210,6 +210,28 @@ representation_families:
     - FromBinary
     - FromHexWKB
     - FromMFJSON
+- family: s2cell
+  file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
+  reference: true
+  mfjson_named: true
+  begin: "\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n"
+  end: "\n * Typmod enforcer + self-cast (mirrors tbigint / tint / tfloat / ttext)\n"
+  temps:
+  - temp: ts2cell
+    mfjson_maxdd: true
+  syms:
+    asText: Temporal_as_text
+  blocks:
+  - lit: "/******************************************************************************\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n ******************************************************************************/"
+  - ops:
+    - asText
+    - asBinary
+    - asHexWKB
+    - asMFJSON
+    - FromBinary
+    - FromHexWKB
+    - FromMFJSON
+
 - family: json
   file: mobilitydb/sql/json/452_tjsonb.in.sql
   reference: true

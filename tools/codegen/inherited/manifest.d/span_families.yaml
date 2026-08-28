@@ -2161,6 +2161,29 @@ span_families:
   - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
   - lit: "\n"
 
+- family: s2cellset_accessors
+  file: mobilitydb/sql/s2cell/601_s2cellset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Comparison operators + btree / hash opclasses"
+  order: [s2cell]
+  insts:
+    s2cell: {v: s2cell, vs: s2cellset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessors\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+
 - family: jsonbset_accessors
   file: mobilitydb/sql/json/450_jsonbset.in.sql
   reference: true
@@ -2428,6 +2451,19 @@ span_families:
   - lit: "/******************************************************************************\n * unnest \u2014 SETOF expansion\n ******************************************************************************/\n\n"
   - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
   - lit: "\n"
+- family: s2cellset_unnest
+  file: mobilitydb/sql/s2cell/601_s2cellset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * unnest \u2014 SETOF expansion\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * setUnion aggregate"
+  order: [s2cell]
+  insts:
+    s2cell: {v: s2cell, vs: s2cellset}
+  blocks:
+  - lit: "/******************************************************************************\n * unnest \u2014 SETOF expansion\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
 - family: set_conversions
   file: mobilitydb/sql/temporal/001_set.in.sql
   reference: true
@@ -2660,6 +2696,23 @@ span_families:
   order: [quadbin]
   insts:
     quadbin: {v: quadbin, vs: quadbinset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n-- Singleton constructor: `set(basetype)` is the cross-set convention\n-- (matches set(bigint), set(text), etc.).\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+
+- family: s2cellset_constructors
+  file: mobilitydb/sql/s2cell/601_s2cellset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Accessors"
+  order: [s2cell]
+  insts:
+    s2cell: {v: s2cell, vs: s2cellset}
   blocks:
   - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n\n"
   - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
@@ -3000,6 +3053,39 @@ span_families:
   - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
   - lit: "\n"
 
+- family: s2cellset_io
+  file: mobilitydb/sql/s2cell/601_s2cellset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Type plumbing\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructors"
+  order: [s2cell]
+  insts:
+    s2cell: {v: s2cell, vs: s2cellset}
+  blocks:
+  - lit: "/******************************************************************************\n * Type plumbing\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - lit: "\n"
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - lit: "\n"
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - lit: "\n"
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
+  - lit: "\n/******************************************************************************\n * WKB / HexWKB helpers\n ******************************************************************************/\n\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - lit: "\n"
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
+  - lit: "\n"
+  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - lit: "\n"
+  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+
 - family: pcpointset_io
   file: mobilitydb/sql/pointcloud/400_pcset.in.sql
   reference: true
@@ -3235,6 +3321,27 @@ span_families:
     quadbin: {v: quadbin, vs: quadbinset}
   blocks:
   - lit: "/******************************************************************************\n * setUnion aggregate\n *\n * Two aggregate overloads, matching the pattern every other *set\n * ships with: one that aggregates scalars into a set\n * (`setUnion(quadbin)`), one that aggregates sets into a set\n * (`setUnion(quadbinset)`). Both share the same finalfn.\n ******************************************************************************/\n\n-- The transition function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n"
+
+- family: s2cellset_setunion
+  file: mobilitydb/sql/s2cell/601_s2cellset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * setUnion aggregate\n *\n * Two aggregate overloads, matching the pattern every other *set\n * ships with: one that aggregates scalars into a set\n * (`setUnion(s2cell)`), one that aggregates sets into a set\n * (`setUnion(s2cellset)`). Both share the same finalfn.\n ******************************************************************************/\n"
+  end: "/******************************************************************************/\n\n/******************************************************************************\n * Set-theoretic operators"
+  order: [s2cell]
+  insts:
+    s2cell: {v: s2cell, vs: s2cellset}
+  blocks:
+  - lit: "/******************************************************************************\n * setUnion aggregate\n *\n * Two aggregate overloads, matching the pattern every other *set\n * ships with: one that aggregates scalars into a set\n * (`setUnion(s2cell)`), one that aggregates sets into a set\n * (`setUnion(s2cellset)`). Both share the same finalfn.\n ******************************************************************************/\n\n-- The transition function is not STRICT\n"
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}

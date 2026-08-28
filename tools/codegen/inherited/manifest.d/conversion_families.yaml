@@ -127,3 +127,15 @@ conversion_families:
     - {sig: "tquadbin(tbigint)", ret: tquadbin, sym: Tbigint_to_tquadbin}
     - {sig: "tbigint(tquadbin)", ret: tbigint, sym: Tquadbin_to_tbigint}
   - lit: "\nCREATE CAST (tbigint AS tquadbin) WITH FUNCTION tquadbin(tbigint) AS ASSIGNMENT;\nCREATE CAST (tquadbin AS tbigint) WITH FUNCTION tbigint(tquadbin) AS ASSIGNMENT;\n\n"
+
+- family: s2cell
+  file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
+  reference: true
+  begin: "\n * Conversions\n"
+  end: "\n * Constructors\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Conversions\n *\n * The int64 payload is shared, but ts2cell sequences carry a geodetic\n * STBox bbox while tbigint sequences carry a TBox; a binary coercion\n * would leave the wrong bbox shape in place and the wrong temptype byte\n * inside the Temporal header. The cast therefore goes through a real\n * function that lifts an identity Datum function so the result is\n * rebuilt at the correct shape. The cast is declared `AS ASSIGNMENT`\n * so the user must spell out `::ts2cell` or `::tbigint` — mistakes\n * surface as a clear binder error rather than silently reinterpreting\n * an arbitrary int64 trajectory as a stream of s2cell cells.\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "ts2cell(tbigint)", ret: ts2cell, sym: Tbigint_to_ts2cell}
+    - {sig: "tbigint(ts2cell)", ret: tbigint, sym: Ts2cell_to_tbigint}
+  - lit: "\nCREATE CAST (tbigint AS ts2cell) WITH FUNCTION ts2cell(tbigint) AS ASSIGNMENT;\nCREATE CAST (ts2cell AS tbigint) WITH FUNCTION tbigint(ts2cell) AS ASSIGNMENT;\n\n"

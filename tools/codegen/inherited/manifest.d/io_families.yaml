@@ -393,6 +393,47 @@ io_families:
   - lit: '
 
       '
+- family: s2cell
+  file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
+  reference: true
+  begin: CREATE TYPE ts2cell;
+  end: -- GENERATED-REPRESENTATIONS-BEGIN s2cell
+  order:
+  - qb
+  insts:
+    qb:
+      t: ts2cell
+  blocks:
+  - lit: "CREATE TYPE ts2cell;\n\n/******************************************************************************\n * Input / Output\n ******************************************************************************/\n\n"
+  - sig: '{t}_in(cstring, oid, integer)'
+    ret: '{t}'
+    sym: Temporal_in
+  - lit: '
+
+      '
+  - sig: '{t}_recv(internal, oid, integer)'
+    ret: '{t}'
+    sym: Temporal_recv
+  - lit: '
+
+      '
+  - sig: temporal_out({t})
+    ret: cstring
+    sym: Temporal_out
+  - lit: '
+
+      '
+  - sig: temporal_send({t})
+    ret: bytea
+    sym: Temporal_send
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = temporal_typmod_in,\n  typmod_out = temporal_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+  - lit: '
+
+      '
+
 - family: pointcloud
   file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
   reference: true

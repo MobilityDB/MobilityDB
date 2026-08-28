@@ -220,3 +220,23 @@ setop_families:
   - setfns: intersection
   - lit: "\n"
   - setops: intersection
+
+- family: s2cellset
+  file: mobilitydb/sql/s2cell/601_s2cellset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setUnion(s2cell,"
+  whole_file: true
+  pairs: [[s2cell, s2cellset]]
+  blocks:
+  - lit: "/******************************************************************************\n * Set union +\n ******************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/******************************************************************************\n * Set difference -\n ******************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/******************************************************************************\n * Set intersection *\n ******************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection

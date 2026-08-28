@@ -547,6 +547,45 @@ transformation_families:
     - shiftScaleTime
     - tprecision
     - tsample
+- family: s2cell
+  file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
+  reference: true
+  begin: "\n * Transformations\n"
+  end: "\n * Accessor functions\n"
+  temps:
+  - ts2cell
+  blocks:
+  - lit: "/******************************************************************************\n * Transformations\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - fns:
+    - sig: appendInstant(ts2cell, ts2cell)
+      ret: ts2cell
+      sym: Temporal_append_tinstant
+    - sig: appendSequence(ts2cell, ts2cell)
+      ret: ts2cell
+      sym: Temporal_append_tsequence
+    - sig: merge(ts2cell, ts2cell)
+      ret: ts2cell
+      sym: Temporal_merge
+      strict: false
+      pre: '-- The function is not strict
+
+        '
+    - sig: merge(ts2cell[])
+      ret: ts2cell
+      sym: Temporal_merge_array
+  - ops:
+    - shiftTime
+    - scaleTime
+    - shiftScaleTime
+    - tprecision
+    - tsample
+
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
   reference: true
