@@ -196,6 +196,10 @@ stboxnode_init(const STBox *centroid, STboxNode *nodebox)
     TimestampTzGetDatum(DT_NOBEGIN);
   nodebox->left.period.upper = nodebox->right.period.upper =
     TimestampTzGetDatum(DT_NOEND);
+  nodebox->left.period.spantype = nodebox->right.period.spantype =
+    centroid->period.spantype;
+  nodebox->left.period.basetype = nodebox->right.period.basetype =
+    centroid->period.basetype;
 
   nodebox->left.srid = nodebox->right.srid = centroid->srid;
   nodebox->left.flags = nodebox->right.flags = centroid->flags;
