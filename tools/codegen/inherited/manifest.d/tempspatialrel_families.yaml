@@ -139,6 +139,16 @@ tempspatialrel_families:
       - {l: tquadbin, r: tquadbin}
     convert: "@extschema@.cellToBoundary(@N@)::@extschema@.tgeometry"
 
+  - family:  ts2cell
+    impl:    cast
+    file:    mobilitydb/sql/s2cell/614_ts2cell_tempspatialrels.in.sql
+    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    directions:
+      - {l: geometry, r: ts2cell}
+      - {l: ts2cell, r: geometry}
+      - {l: ts2cell, r: ts2cell}
+    convert: "@extschema@.cellToBoundary(@N@)::@extschema@.tgeometry"
+
   - family:  th3index
     impl:    cast
     file:    mobilitydb/sql/h3/264_th3index_tempspatialrels.in.sql

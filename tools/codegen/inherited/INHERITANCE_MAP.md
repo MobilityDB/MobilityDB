@@ -528,8 +528,8 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | Spatial Reference System | `tspatial_` (`spatialfuncs`) | ✗ HAND | reserved position, no template |
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ✗ HAND | tDistance/nad/nai/shortestLine — reserved position, no template |
-| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, tnpoint — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
-| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 13/14, every `tspatial`-class member but `ts2cell`. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while a cell-index or area-valued family converts its boundary to tgeometry (tquadbin, th3index, trgeometry, tpcpatch) |
+| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
+| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while a cell-index or area-valued family converts its boundary to tgeometry (tquadbin, th3index, ts2cell, trgeometry, tpcpatch) |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
 
@@ -588,7 +588,7 @@ Reading the table:
 - **`tempsp.rels` is generated for cbuffer, npoint, pose, posechain, pointcloud
   (both types), rgeo, h3, quadbin** via `tempspatialrel_families` (§3/§5) — native
   for cbuffer, cast-delegated for the other eight (`--gaps`:
-  `tempspatialrel_families` 13/14, every member but `ts2cell`).
+  `tempspatialrel_families` 14/14, full coverage).
   ⭐ The cast target follows the value's geometry: an AREA-valued family reaches
   `tgeometry`, a POINT-valued one reaches `tgeompoint`. It is load-bearing rather
   than cosmetic — a `tgeompoint` carries linear interpolation and a `tgeometry`
@@ -659,7 +659,7 @@ Reading the table:
 below is what `generate.py --gaps` prints today — read it from the tool rather
 than from this paragraph, which is a transcription and can only be as fresh as
 its last edit:
-- `spatialrel_families` (the C ever/always kernel), **5/14**: only `geo`, `cbuffer`
+- `spatialrel_families` (the C ever/always kernel), **6/14**: only `geo`, `cbuffer`
   and `rgeo` carry one, so every other member of `tspatial_type` reads missing.
   `tnpoint` needs none by design — its ever/always relationships cast-delegate to
   the temporal geometry point at the SQL level instead (§3, §6, the `subtypes:`
@@ -683,7 +683,7 @@ its last edit:
 - `aggregate_families` is **19/19**: `561_tposechain_aggfuncs.in.sql` carries the
   surface its siblings carry, every statement binding a generic transition or final
   function, so the family needs no kernel of its own.
-- `tempspatialrel_families` is **13/14**: `448_tpcpatch_tempspatialrels.in.sql`
+- `tempspatialrel_families` is **14/14**: `448_tpcpatch_tempspatialrels.in.sql`
   closes the axis. Its conversion is the one the family lacked — `pcpatch_to_geom`
   reads a patch as the `MULTIPOINT` of the positions its points occupy, and
   `tpcpatch_to_tgeometry` lifts that over time — so the manifest line rests on a
