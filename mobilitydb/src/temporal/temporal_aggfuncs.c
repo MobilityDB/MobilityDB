@@ -107,8 +107,14 @@ PG_FUNCTION_INFO_V1(Temporal_tagg_finalfn);
 Datum
 Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 {
+  /* The transition value is null for a group that aggregated no rows, and
+   * PG_GETARG_POINTER of a null argument is an arbitrary pointer rather than
+   * NULL, so the state is read through PG_ARGISNULL */
+  SkipList *state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);
+  if (! state)
+    PG_RETURN_NULL();
+
   MemoryContext ctx = set_aggregation_context(fcinfo);
-  SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
   Temporal *result = temporal_tagg_finalfn(state);
   unset_aggregation_context(ctx);
   if (! result)
@@ -754,7 +760,11 @@ PG_FUNCTION_INFO_V1(Tnumber_tavg_finalfn);
 Datum
 Tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
+  /* See the note in Temporal_tagg_finalfn */
+  SkipList *state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);
+  if (! state)
+    PG_RETURN_NULL();
+
   Temporal *result = tnumber_tavg_finalfn(state);
   if (! result)
     PG_RETURN_NULL();
@@ -905,6 +915,10 @@ PG_FUNCTION_INFO_V1(Temporal_append_finalfn);
 Datum
 Temporal_append_finalfn(PG_FUNCTION_ARGS)
 {
+  /* See the note in Temporal_tagg_finalfn */
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+
   MemoryContext ctx = set_aggregation_context(fcinfo);
   Temporal *state = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = temporal_compact(state);
