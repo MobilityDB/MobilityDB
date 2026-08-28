@@ -524,7 +524,7 @@ SELECT tpcbox(0, 0, 2, 2) &lt;&lt;# tpcbox(5, 5, 7, 7);
 tpcbox {=, &lt;&gt;, &lt;, &lt;=, &gt;, &gt;=} tpcbox → boolean
 </programlisting>
 					<para>La función compara en el orden siguiente: pcid, srid, flags, período y a continuación límites espaciales en orden XYZ-min/max)</para>
-						<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 2, 2) = tpcbox(0, 0, 2, 2);
 -- t
 SELECT tpcbox(0, 0, 2, 2) &lt;&gt; tpcbox(5, 5, 7, 7);
@@ -544,6 +544,8 @@ SELECT tpcbox(0, 0, 2, 2) &lt; tpcbox(5, 5, 7, 7);
 		<para>Un <varname>tpcpoint</varname> es el levantamiento de <varname>pcpoint</varname> a través de la maquinaria temporal de MobilityDB. Admite los mismos tres subtipos que los demás tipos temporales, instante, secuencia (con interpolación discreta o de pasos) y conjunto de secuencias. Todos los instantes de un único valor <varname>tpcpoint</varname> deben compartir el mismo <varname>pcid</varname>; el constructor impone esta restricción.</para>
 
 		<para>La caja delimitadora de un <varname>tpcpoint</varname> es un <varname>tpcbox</varname>, calculada en el momento de la construcción a partir de las dimensiones X/Y/Z de los valores <varname>pcpoint</varname> subyacentes junto con las marcas temporales de los instantes.</para>
+
+		<para>Presentamos a continuación las funciones y operadores para los puntos de nube de puntos temporales. La mayoría de las funciones y operadores para tipos temporales descritos en los capítulos anteriores pueden aplicarse a los puntos de nube de puntos temporales. Por lo tanto, en las signaturas de las funciones, la notación <varname>base</varname> representa un <varname>pcpoint</varname> y las notaciones <varname>ttype</varname> y <varname>tpoint</varname> representan también un <varname>tpcpoint</varname>. Para evitar redundancias, solo presentamos a continuación algunos ejemplos de estas funciones y operadores para los puntos de nube de puntos temporales.</para>
 
 		<para>Una columna o dominio puede fijar el esquema añadiendo el <varname>pcid</varname> como un typmod de entero único, exactamente igual que el <varname>geometry(Point, SRID)</varname> de PostGIS. La mezcla de esquemas en dicha columna es rechazada en el momento de INSERT o de la conversión. El mismo constructor se aplica a <varname>tpcpatch</varname>.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -568,20 +570,20 @@ asText(tpcpoint) → text
 asText(tpcpoint[]) → text[]
 tpcpoint::text → text
 </programlisting>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
--- La carga del pcpoint se representa como WKB codificado en hexadecimal.
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The pcpoint payload renders as hex-encoded WKB.
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- 5C00000001000000640000006400000064000000000000@2001-01-01
 </programlisting>
 				</listitem>
 				<listitem xml:id="tpcpoint_asMFJSON">
 					<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-					<para>Para <varname>tpcpoint</varname>, el tipo temporal se emite como <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "datetimes":[…]}</varname></para>
+					<para>Devuelve la representación JSON de características móviles (MF-JSON)</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asMFJSON(tpcpoint,options int=0,flags int=0,maxdecimaldigits int=15) → text
 </programlisting>
-					<para>X/Y/[Z] se extraen del <varname>pcpoint</varname> de cada instante mediante la caché de esquemas; si el esquema carece de X/Y el array de coordenadas está vacío para ese instante.</para>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<para>Un <varname>tpcpoint</varname> se emite como <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "datetimes":[…]}</varname>, y las X, Y y Z de cada instante se leen de su <varname>pcpoint</varname> mediante la caché de esquemas; un esquema que no indica ni X ni Y deja vacío el array de coordenadas de ese instante.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 /* {"type":"MovingPCPoint","coordinates":[[1,1,1]],
    "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
@@ -596,23 +598,29 @@ SELECT asMFJSON(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_tpcpoint">
 					<indexterm significance="normal"><primary><varname>tpcpoint</varname></primary></indexterm>
-					<para>Construye un pcpoint temporal de subtipo instante</para>
+					<para>Constructor para puntos de nube de puntos temporales con un valor constante</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpcpoint(pcpoint,timestamptz) → tpcpoint
+tpcpoint(pcpoint,timestamptz) → tpcpointInst
+tpcpoint(pcpoint,tstzset) → tpcpointDiscSeq
+tpcpoint(pcpoint,tstzspan,interp text='step') → tpcpointContSeq
+tpcpoint(pcpoint,tstzspanset,interp text='step') → tpcpointSeqSet
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcpoint(pcpoint(1, 10.0, 20.0, 30.0), '2024-01-01 12:00+00');
+SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), timestamptz '2001-01-01'));
+-- 5C00000001000000640000006400000064000000000000@2001-01-01
+SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), tstzspan '[2001-01-01, 2001-01-02]'));
+-- [5C000000010000006400…000000@2001-01-01, 5C000000010000006400…000000@2001-01-02]
 </programlisting>
 				</listitem>
 
 				<listitem xml:id="tpcpoint_tpcpointSeq">
 					<indexterm significance="normal"><primary><varname>tpcpointSeq</varname></primary></indexterm>
-					<para>Construye un pcpoint temporal de subtipo secuencia a partir de un array de instantes</para>
+					<para>Constructor para puntos de nube de puntos temporales de subtipo secuencia</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpcpointSeq(tpcpoint[]) → tpcpoint
-tpcpointSeq(tpcpoint[],text) → tpcpoint
+tpcpointSeq(tpcpointInst[],interp text='step',leftInc boolean=true,
+  rightInc boolean=true) → tpcpointSeq
 </programlisting>
-					<para>La interpolación es una de <varname>'discrete'</varname>, <varname>'step'</varname>; <varname>'step'</varname> es el valor predeterminado para tpcpoint, ya que los pcpoints llevan dimensiones heterogéneas que no se interpolan de manera lineal</para>
+					<para>La interpolación es <varname>'discrete'</varname> o <varname>'step'</varname>; las dimensiones que lleva un <varname>pcpoint</varname> no interpolan linealmente, por lo que <varname>'linear'</varname> genera <varname>The temporal type cannot have linear interpolation</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), '2024-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 4.0, 5.0, 6.0), '2024-01-02'::timestamptz)], 'step');
@@ -623,15 +631,15 @@ SELECT tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), '2024-01-01'::times
 					<indexterm significance="normal"><primary><varname>tpcpointSeqSet</varname></primary></indexterm>
 					<para>Construye un pcpoint temporal de subtipo conjunto de secuencias a partir de un array de secuencias</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpcpointSeqSet(tpcpoint[]) → tpcpoint
+tpcpointSeqSet(tpcpoint[]) → tpcpointSeqSet
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT numSequences(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
-  '2001-01-01'::timestamptz),
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numSequences(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)])]));
 -- 1
-SELECT numInstants(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
-  '2001-01-01'::timestamptz),
+SELECT numInstants(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)])]));
 -- 2
 </programlisting>
@@ -644,12 +652,11 @@ SELECT numInstants(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_tgeompoint">
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-					<para>Convierte un tpcpoint a un punto de geometría temporal, proyectando todas las dimensiones no espaciales mientras se preservan las marcas temporales</para>
+					<para>Convierte un punto de nube de puntos temporal a un punto de geometría temporal</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpcpoint::tgeompoint
 </programlisting>
-					<para><varname>tgeompoint::tpcpoint</varname> no está definida</para>
-					<para>El resultado tiene el mismo SRID que el esquema; su dimensionalidad (2D frente a 3D) sigue la presencia de Z en el esquema. No se proporciona una conversión inversa: reconstruir un pcpoint requiere un esquema destino que el valor temporal solo no puede suministrar</para>
+					<para>Toda dimensión no espacial se proyecta y las marcas temporales se preservan. El resultado lleva el SRID que indica el esquema, y es tridimensional cuando el esquema indica una dimensión Z. No se proporciona la conversión inversa, ya que reconstruir un <varname>pcpoint</varname> necesita un esquema destino que el valor temporal por sí solo no lleva.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(startValue(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
   '2024-01-01'::timestamptz)::tgeompoint));
@@ -662,7 +669,6 @@ SELECT ST_AsText(startValue(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
 
 		<sect2 xml:id="tpcpoint_accessors">
 			<title>Accesores</title>
-			<para>Se aplican todas las funciones de acceso temporales genéricas (véase <xref linkend="ttype_p1" />): <varname>numInstants</varname>, <varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname>, <varname>instants</varname>, <varname>startValue</varname>, <varname>endValue</varname>, <varname>getValues</varname>, <varname>numTimestamps</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>getTime</varname>, <varname>duration</varname>, <varname>memSize</varname>, <varname>interp</varname>. Adicionalmente:</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_pcid">
 					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
@@ -670,7 +676,7 @@ SELECT ST_AsText(startValue(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 pcid(tpcpoint) → integer
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pcid(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- 1
 </programlisting>
@@ -682,8 +688,8 @@ SELECT pcid(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 SRID({tpcpoint,tpcpatch}) → integer
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
--- El SRID es el del esquema registrado para el pcid.
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The SRID is that of the schema registered for the pcid.
 SELECT SRID(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- 0
 SELECT SRID(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz));
@@ -714,7 +720,7 @@ SELECT startValue(getX(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 getDim(tpcpoint,text) → tfloat
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getDim(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)]), 'X');
 -- Interp=Step;[1@2001-01-01, 2@2001-01-02]
@@ -736,12 +742,12 @@ tpcpointInst(tpcpoint) → tpcpoint
 tpcpointSeq(tpcpoint,interp text='step') → tpcpoint
 tpcpointSeqSet(tpcpoint) → tpcpoint
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(tpcpointInst(tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz)));
 -- 1
-SELECT numInstants(tpcpointSeq(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
-  '2001-01-01'::timestamptz),
+SELECT numInstants(tpcpointSeq(tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)])));
 -- 2
 </programlisting>
@@ -752,14 +758,14 @@ SELECT numInstants(tpcpointSeq(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 setInterp(tpcpoint,interp) → tpcpoint
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A tpcpoint carries step interpolation.
 SELECT interp(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)]));
 -- Step
-SELECT interp(setInterp(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
-  '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)],
-  'discrete'), 'step'));
+SELECT interp(setInterp(tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)], 'discrete'), 'step'));
 -- Step
 </programlisting>
 				</listitem>
@@ -777,7 +783,7 @@ SELECT interp(setInterp(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 insert(tpcpoint,tpcpoint,connect boolean=true) → tpcpoint
 update(tpcpoint,tpcpoint,connect boolean=true) → tpcpoint
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(insert(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)]),
   tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
@@ -792,10 +798,10 @@ SELECT numInstants(insert(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 deleteTime(tpcpoint,time,connect boolean=true) → tpcpoint
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Borrar el instante central divide la secuencia en {[2001-01-01, 2001-01-02),
--- (2001-01-02, 2001-01-03]}; cada mitad almacena su límite en la marca de tiempo
--- borrada, dando cuatro instantes.
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Deleting the middle instant splits the sequence into {[2001-01-01, 2001-01-02),
+-- (2001-01-02, 2001-01-03]}; each half stores its bound at the deleted timestamp, giving
+-- four instants.
 SELECT numInstants(deleteTime(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), timestamptz '2001-01-02'));
@@ -811,7 +817,7 @@ SELECT numInstants(deleteTime(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 appendInstant(tpcpoint,tpcpoint) → tpcpoint
 appendSequence(tpcpoint,tpcpoint) → tpcpoint
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(appendInstant(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz)]),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)));
@@ -836,9 +842,9 @@ minusValue(tpcpoint,pcpoint) → tpcpoint
 atValues(tpcpoint,pcpointset) → tpcpoint
 minusValues(tpcpoint,pcpointset) → tpcpoint
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Con interpolación escalonada el valor coincidente se mantiene en
--- [2001-01-01, 2001-01-02); su límite de cierre se almacena como un segundo instante.
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- With step interpolation the matching value is held on [2001-01-01, 2001-01-02); its
+-- closing bound is stored as a second instant.
 SELECT numInstants(atValue(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), pcpoint(1, 1, 1, 1)));
@@ -858,7 +864,7 @@ SELECT numInstants(minusValue(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 atTime(tpcpoint,time) → tpcpoint
 minusTime(tpcpoint,time) → tpcpoint
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTime(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), timestamptz '2001-01-02'));
@@ -880,13 +886,13 @@ atTpcbox(tpcpoint,tpcbox,border_inc boolean=true) → tpcpoint
 minusTpcbox(tpcpoint,tpcbox,border_inc boolean=true) → tpcpoint
 </programlisting>
 					<para>Devuelve NULL cuando el pcid del tpcbox no coincide con el del tpcpoint. Internamente proyecta a un tgeompoint a través de la caché de esquemas, restringe la proyección mediante el stbox equivalente y devuelve el span temporal del resultado al tpcpoint original para preservar los valores pcpoint completos</para>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]),
   tpcbox_zt(0, 0, 0, 2, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 2
--- La caja no interseca el tpcpoint, por lo que no se elimina nada.
+-- The box does not intersect the tpcpoint, so nothing is removed.
 SELECT numInstants(minusTpcbox(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]),
@@ -904,7 +910,7 @@ beforeTimestamp(tpcpoint,timestamptz,strict boolean=true) → tpcpoint
 afterTimestamp(tpcpoint,timestamptz,strict boolean=true) → tpcpoint
 </programlisting>
 					<para>El indicador strict excluye el instante en la marca de tiempo misma</para>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT timeSpan(beforeTimestamp(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), timestamptz '2001-01-02'));
@@ -997,21 +1003,22 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
 					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 					<para>Operadores topológicos</para>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-03]), 1)' &amp;&amp;
-  tpcbox 'TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-02, 2024-01-04]), 1)';
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tstzspan,tpcbox,tpcpoint} {&amp;&amp;, @&gt;, &lt;@, ~=, -|-} {tstzspan,tpcbox,tpcpoint} &#8594; boolean
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]) &amp;&amp;
+  tstzspan '[2001-01-02, 2001-01-04]';
 -- true
-SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(4,4,4)),[2024-01-01, 2024-01-04]), 1)' @&gt;
-  tpcbox 'TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-02, 2024-01-03]), 1)';
--- true
-SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-03]), 1)' ~=
-  tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-03]), 1)';
--- true
-SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-02)), 1)' -|-
-  tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-02, 2024-01-03]), 1)';
+SELECT tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]) @&gt;
+  tpcbox_z(1, 1, 1, 2, 2, 2, 1);
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 				<listitem xml:id="tpcpoint_pos">
 					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
@@ -1022,36 +1029,38 @@ SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-02)), 1)' -|-
 					<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 					<para>Operadores de posición</para>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;
-  tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tpcbox,tpcpoint} {&lt;&lt;, &gt;&gt;, &lt;&lt;|, |&gt;&gt;, &lt;&lt;/, /&gt;&gt;} {tpcbox,tpcpoint} &#8594; boolean
+{tstzspan,tpcbox,tpcpoint} {&lt;&lt;#, #&gt;&gt;} {tstzspan,tpcbox,tpcpoint} &#8594; boolean
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]) &lt;&lt;
+  tpcbox_z(10, 10, 10, 12, 12, 12, 1);
 -- true
-SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;|
-  tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
--- true
-SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;/
-  tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
--- true
-SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;#
-  tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
+SELECT tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]) &lt;&lt;#
+  tstzspan '[2001-01-05, 2001-01-06]';
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_distance_ops">
 				<title>Operaciones de distancia</title>
 				<itemizedlist>
-				<listitem xml:id="tpcpoint_nearestApproachDistance">
-					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
-					<para>Devuelve la distancia más cercana</para>
-					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+					<listitem xml:id="tpcpoint_nearestApproachDistance">
+						<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
+						<para>Devuelve la distancia más cercana</para>
+						<programlisting role="syntax" xml:space="preserve" format="linespecific">
 nearestApproachDistance(tpcpoint,{tpcbox,tpcpoint}) → float
 </programlisting>
-					<para>El desajuste de pcid produce infinito.</para>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+						<para>Dos valores cuyos esquemas difieren no son comparables, por lo que un desajuste de pcid genera <varname>Operation on pcpoint values with different schemas</varname>, nombrando ambos, en lugar de responder.</para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(nearestApproachDistance( tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 10, 10, 10), '2001-01-01'::timestamptz))::numeric, 4);
@@ -1066,49 +1075,92 @@ SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
   tpcpoint(pcpoint(1, 10, 10, 10), '2001-01-01'::timestamptz))::numeric, 4);
 -- 15.5885
 </programlisting>
-				</listitem>
+					</listitem>
+
+					<listitem xml:id="tpcpoint_nearestApproachInstant">
+						<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
+						<para>Devuelve el instante del tpcpoint en el que los dos argumentos están a la distancia más cercana</para>
+						<programlisting role="syntax" xml:space="preserve" format="linespecific">
+nearestApproachInstant({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; tpcpoint
+</programlisting>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(nearestApproachInstant(tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 4, 4, 4), '2001-01-02'::timestamptz)]), geometry 'Point Z(5 5 5)'));
+-- 5C00000001000000900100009001000090010000000000@2001-01-02
+</programlisting>
+					</listitem>
+
+					<listitem xml:id="tpcpoint_shortestLine">
+						<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
+						<para>Devuelve la línea que une el punto de acercamiento más cercano entre los dos argumentos</para>
+						<programlisting role="syntax" xml:space="preserve" format="linespecific">
+shortestLine({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; geometry
+</programlisting>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(shortestLine(tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 4, 4, 4), '2001-01-02'::timestamptz)]), geometry 'Point Z(5 5 5)'));
+-- LINESTRING Z (4 4 4,5 5 5)
+</programlisting>
+					</listitem>
+
+					<listitem xml:id="tpcpoint_tDistance">
+						<indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+						<para>Devuelve la distancia temporal</para>
+						<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{geometry,tpcpoint} &lt;-&gt; {geometry,tpcpoint} &#8594; tfloat
+</programlisting>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 4, 4, 4), '2001-01-02'::timestamptz)]) &lt;-&gt;
+  geometry 'Point Z(5 5 5)', 4);
+-- [6.9282@2001-01-01, 1.7321@2001-01-02]
+</programlisting>
+					</listitem>
 				</itemizedlist>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_spatialrels">
 			<title>Relaciones siempre y alguna vez</title>
-			<para>Se evalúan proyectando el tpcpoint a un <varname>tgeompoint</varname> a través de la caché de esquemas y delegando en la relación tgeompoint correspondiente. Cada función está conectada en tres órdenes de argumentos: <varname>(geometry, tpcpoint)</varname>, <varname>(tpcpoint, geometry)</varname> y <varname>(tpcpoint, tpcpoint)</varname>. Las relaciones ever/always están conectadas solo para tpcpoint; un tpcpatch responde en cambio las relaciones temporales, leyendo un parche como el multipunto de las posiciones que ocupan sus puntos. Un tpcpoint declara las relaciones que declara su destino de conversión, de modo que <varname>eContains</varname>, <varname>eCovers</varname> y <varname>eTouches</varname> y sus gemelas siempre también están conectadas: un esquema cuyas dimensiones no incluyen Z las responde, y uno que lleva Z encuentra el rechazo planar <varname>The tgeompoint cannot have Z dimension</varname>, exactamente como lo hace un punto geométrico temporal tridimensional.</para>
+			<para>Un <varname>tpcpoint</varname> se proyecta a un <varname>tgeompoint</varname> mediante la caché de esquemas y la relación se responde allí, de modo que un tpcpoint declara las relaciones que declara su destino de conversión.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_eContains">
 					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
-					<para>Contiene, cubre y toca alguna vez / siempre</para>
+					<para>Relaciones ever y always</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eContains(geometry,tpcpoint) &#8594; boolean
 aContains(geometry,tpcpoint) &#8594; boolean
 eCovers(geometry,tpcpoint) &#8594; boolean
 aCovers(geometry,tpcpoint) &#8594; boolean
+eDisjoint({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; boolean
+aDisjoint({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; boolean
+eDwithin({geometry,tpcpoint},{geometry,tpcpoint},dist float) &#8594; boolean
+aDwithin({geometry,tpcpoint},{geometry,tpcpoint},dist float) &#8594; boolean
+eIntersects({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; boolean
+aIntersects({geometry,tpcpoint},{geometry,tpcpoint}) &#8594; boolean
 eTouches(geometry,tpcpoint) &#8594; boolean
 aTouches(geometry,tpcpoint) &#8594; boolean
 eTouches(tpcpoint,geometry) &#8594; boolean
 aTouches(tpcpoint,geometry) &#8594; boolean
 </programlisting>
-					<para>Un punto en movimiento no contiene ni cubre una geometría y dos puntos en movimiento no se tocan, de modo que estas toman la geometría en primer lugar únicamente, salvo <varname>eTouches</varname> y <varname>aTouches</varname>, que leen cualquiera de los dos órdenes. Son relaciones planares: un punto cuyo esquema declara una dimensión Z es rechazado.</para>
+					<para>Un punto en movimiento ni contiene ni cubre una geometría, y dos puntos en movimiento no se tocan, por lo que <varname>eContains</varname>, <varname>eCovers</varname> y sus gemelas always toman primero la geometría, y <varname>eTouches</varname> y <varname>aTouches</varname> leen cualquiera de los dos órdenes pero no dos puntos. Son relaciones planares, por lo que un punto cuyo esquema indica una dimensión Z encuentra el rechazo <varname>The tgeompoint cannot have Z dimension</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))',
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- ERROR:  The tgeompoint cannot have Z dimension
-</programlisting>
-				</listitem>
-
-				<listitem xml:id="tpcpoint_eIntersects">
-					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
-					<para>Alguna vez / siempre intersecta</para>
-					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eIntersects(tpcpoint,{geometry,tpcpoint}) → boolean
-aIntersects(tpcpoint,{geometry,tpcpoint}) → boolean
-</programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), geometry 'POINT Z (1 1 1)');
@@ -1124,17 +1176,6 @@ SELECT eIntersects(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]));
 -- t
-</programlisting>
-				</listitem>
-				<listitem xml:id="tpcpoint_eDisjoint">
-					<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
-					<para>Alguna vez / siempre disjunto</para>
-					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eDisjoint(tpcpoint,{geometry,tpcpoint}) → boolean
-aDisjoint(tpcpoint,{geometry,tpcpoint}) → boolean
-</programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDisjoint(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), geometry 'POINT Z (1 1 1)');
@@ -1143,17 +1184,6 @@ SELECT aDisjoint(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), geometry 'POINT Z (1 1 1)');
 -- f
-</programlisting>
-				</listitem>
-				<listitem xml:id="tpcpoint_eDwithin">
-					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
-					<para>Alguna vez / siempre dentro de la distancia</para>
-					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eDwithin(tpcpoint,{geometry,tpcpoint},float) → boolean
-aDwithin(tpcpoint,{geometry,tpcpoint},float) → boolean
-</programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDwithin(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]), geometry 'POINT Z (5 5 5)',
@@ -1229,7 +1259,7 @@ SELECT tDwithin(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
 tpcpoint {=, &lt;&gt;, &lt;, &lt;=, &gt;, &gt;=} tpcpoint → boolean
 </programlisting>
 					<para>El orden es lexicográfico sobre las codificaciones canónicas de los dos valores, no geométrico.</para>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz) = tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz);
 -- t
@@ -1249,9 +1279,9 @@ SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) &lt; tpcpoint(pc
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {pcpoint,tpcpoint} {?=, %=, ?&lt;&gt;, %&lt;&gt;} {pcpoint,tpcpoint} → boolean
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT pcpoint(1, 1, 1,
-  1) ?= tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pcpoint(1, 1, 1, 1) ?= tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]);
 -- t
@@ -1268,7 +1298,7 @@ SELECT tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {pcpoint,tpcpoint} {#=, #&lt;&gt;} {pcpoint,tpcpoint} → tbool
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]) #= pcpoint(1, 1, 1, 1);
@@ -1300,23 +1330,23 @@ asText(tpcpatch) → text
 asText(tpcpatch[]) → text[]
 tpcpatch::text → text
 </programlisting>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
--- La carga del pcpatch se representa como WKB codificado en hexadecimal.
-SELECT left(asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
-  '2001-01-01'::timestamptz)), 24);
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The pcpatch payload renders as hex-encoded WKB.
+SELECT left(asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)), 24);
 -- EC0100000100000000000000
 </programlisting>
 				</listitem>
 				<listitem xml:id="tpcpatch_asMFJSON">
 					<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-					<para>Para <varname>tpcpatch</varname>, la etiqueta de tipo es <varname>"MovingPCPatch"</varname> y cada instante emite un pequeño objeto <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname></para>
+					<para>Devuelve la representación JSON de características móviles (MF-JSON)</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asMFJSON(tpcpatch,options int=0,flags int=0,maxdecimaldigits int=15) → text
 </programlisting>
-					<para>La carga de puntos comprimida no está intencionadamente en el JSON, use <varname>asBinary</varname> / <varname>asHexWKB</varname> para el ida y vuelta.</para>
-								<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
-  '2001-01-01'::timestamptz));
+					<para>Un <varname>tpcpatch</varname> se emite bajo la etiqueta de tipo <varname>"MovingPCPatch"</varname>, y cada instante indica el objeto <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname>; la carga de puntos comprimida queda fuera del JSON, por lo que un ida y vuelta sin pérdida pasa por <varname>asBinary</varname> o <varname>asHexWKB</varname>.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz));
 /* {"type":"MovingPCPatch","values":[{"pcid":1,"npoints":2,"bounds":[1,2,1,2]}],
    "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 </programlisting>
@@ -1334,9 +1364,9 @@ SELECT asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpcpatch(pcpatch,timestamptz) → tpcpatch
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
-  '2001-01-01'::timestamptz));
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz));
 -- Instant
 </programlisting>
 				</listitem>
@@ -1348,7 +1378,7 @@ SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
 tpcpatchSeq(tpcpatch[]) → tpcpatch
 tpcpatchSeq(tpcpatch[],text) → tpcpatch
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
@@ -1366,11 +1396,11 @@ SELECT numInstants(tpcpatchSeq(ARRAY[
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpcpatchSeqSet(tpcpatch[]) → tpcpatch
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT numSequences(tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1,
-  1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
-  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
-  '2001-01-02'::timestamptz)])]));
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numSequences(tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
+  pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)])]));
 -- 1
 </programlisting>
 				</listitem>
@@ -1388,8 +1418,8 @@ tgeometry(tpcpatch) &#8594; tgeometry
 </programlisting>
 					<para>El parche de cada instante se convierte en el multipunto de las posiciones que ocupan sus puntos, leídas a través del esquema que nombra su <varname>pcid</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
-  '2001-01-01'::timestamptz)::tgeometry);
+SELECT asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)::tgeometry);
 -- MULTIPOINT Z ((1 1 1),(2 2 2))@2001-01-01
 </programlisting>
 				</listitem>
@@ -1398,7 +1428,6 @@ SELECT asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
 
 		<sect2 xml:id="tpcpatch_accessors">
 			<title>Accesores</title>
-			<para>Se aplican todos los accesores temporales genéricos, además del <varname>pcid</varname> y el <varname>SRID</varname> al estilo de <varname>tpcpoint</varname>. Adicionalmente:</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_startNumPoints">
 					<indexterm significance="normal"><primary><varname>startNumPoints</varname></primary></indexterm>
@@ -1463,9 +1492,9 @@ tpcpatchInst(tpcpatch) → tpcpatch
 tpcpatchSeq(tpcpatch,interp text='step') → tpcpatch
 tpcpatchSeqSet(tpcpatch) → tpcpatch
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tempSubtype(tpcpatchSeq(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
-  '2001-01-01'::timestamptz)));
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tempSubtype(tpcpatchSeq(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)));
 -- Sequence
 </programlisting>
 				</listitem>
@@ -1475,7 +1504,7 @@ SELECT tempSubtype(tpcpatchSeq(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 setInterp(tpcpatch,interp) → tpcpatch
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT interp(setInterp(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)],
@@ -1497,7 +1526,7 @@ SELECT interp(setInterp(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 insert(tpcpatch,tpcpatch,connect boolean=true) → tpcpatch
 update(tpcpatch,tpcpatch,connect boolean=true) → tpcpatch
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(insert(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
@@ -1514,10 +1543,10 @@ SELECT numInstants(insert(tpcpatchSeq(ARRAY[
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 deleteTime(tpcpatch,time,connect boolean=true) → tpcpatch
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Borrar el instante central divide la secuencia en {[2001-01-01, 2001-01-02),
--- (2001-01-02, 2001-01-03]}; cada mitad almacena su límite en la marca de tiempo
--- borrada, dando cuatro instantes.
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Deleting the middle instant splits the sequence into {[2001-01-01, 2001-01-02),
+-- (2001-01-02, 2001-01-03]}; each half stores its bound at the deleted timestamp, giving
+-- four instants.
 SELECT numInstants(deleteTime(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz),
@@ -1535,11 +1564,11 @@ SELECT numInstants(deleteTime(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 
 appendInstant(tpcpatch,tpcpatch) → tpcpatch
 appendSequence(tpcpatch,tpcpatch) → tpcpatch
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(appendInstant(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
-  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
-  '2001-01-02'::timestamptz)]),
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
+  pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]),
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5)), '2001-01-03'::timestamptz)));
 -- 3
 </programlisting>
@@ -1562,9 +1591,9 @@ minusValue(tpcpatch,pcpatch) → tpcpatch
 atValues(tpcpatch,pcpatchset) → tpcpatch
 minusValues(tpcpatch,pcpatchset) → tpcpatch
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
--- El valor coincidente se mantiene hasta el siguiente instante; el límite de cierre se
--- almacena como un segundo instante.
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The matching value is held up to the next instant; the closing bound is stored as a
+-- second instant.
 SELECT numInstants(atValue(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
@@ -1587,19 +1616,19 @@ atTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 minusTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 </programlisting>
 					<para>La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente, sin descompresión por punto. Como el <varname>PCBOUNDS</varname> de pgPointCloud es 2D, la dimensión Z de la caja se ignora a esta granularidad. Devuelve NULL cuando el pcid del tpcbox no coincide.</para>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
-  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
-  '2001-01-02'::timestamptz)]),
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
+  pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]),
   tpcbox_xt(0, 0, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 1
--- El parche descartado sigue presente en el intervalo abierto anterior a su instante,
+-- The dropped patch stays present on the open interval before its instant,
 -- so the complement keeps two instants.
 SELECT numInstants(minusTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
-  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
-  '2001-01-02'::timestamptz)]),
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
+  pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]),
   tpcbox_xt(0, 0, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 2
 </programlisting>
@@ -1613,11 +1642,11 @@ atTpcboxFine(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 minusTpcboxFine(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 </programlisting>
 					<para>Cada instante superviviente contiene un pcpatch recién construido que incluye solo los puntos dentro, o fuera en la forma minus, del tpcbox en dos dimensiones, y en tres cuando la caja tiene dimensión Z. Los instantes cuyo parche filtra hasta cero puntos se descartan. Más lenta que la variante aproximada porque cada parche se descomprime y reconstruye; úsela cuando se necesite fidelidad a nivel de punto.</para>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcboxFine(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
-  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
-  '2001-01-02'::timestamptz)]),
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
+  pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]),
   tpcbox_xt(0, 0, 1, 1, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 1
 </programlisting>
@@ -1631,9 +1660,9 @@ atGeometry(tpcpatch,geometry) → tpcpatch
 minusGeometry(tpcpatch,geometry) → tpcpatch
 </programlisting>
 					<para>Z se ignora. El llamador debe garantizar la compatibilidad de SRID entre el esquema del parche y la geometría.</para>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
--- La frontera del polígono toca el punto (3 3) del parche en 2001-01-02, por lo que ese
--- parche sobrevive tanto en el lado at como en el lado minus.
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The polygon boundary touches the point (3 3) of the patch at 2001-01-02, so that patch
+-- survives both the at and the minus side.
 SELECT numInstants(atGeometry(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
@@ -1656,7 +1685,7 @@ beforeTimestamp(tpcpatch,timestamptz,strict boolean=true) → tpcpatch
 afterTimestamp(tpcpatch,timestamptz,strict boolean=true) → tpcpatch
 </programlisting>
 					<para>El indicador strict excluye el instante en la marca de tiempo misma</para>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT timeSpan(beforeTimestamp(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz),
@@ -1684,11 +1713,11 @@ SELECT timeSpan(afterTimestamp(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1,
 unnest(tpcpatch) → {(value,time)}
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT (un).time FROM (SELECT unnest(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1,
-  1), pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
+SELECT (un).time FROM (SELECT unnest(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
-  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
-  '2024-01-03'::timestamptz)])) AS un) t;
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)])) AS un) t;
 -- {[2024-01-02, 2024-01-03)}
 -- {[2024-01-01, 2024-01-02), [2024-01-03, 2024-01-03]}
 </programlisting>
@@ -1721,11 +1750,11 @@ SELECT (ts).time, numInstants((ts).temp) FROM (SELECT timeSplit(tpcpatchSeq(ARRA
 spans(tpcpatch) → tstzspan[]
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT spans(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
-  '2024-01-01'::timestamptz),
+SELECT spans(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
-  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
-  '2024-01-03'::timestamptz)]));
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]));
 -- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
 </programlisting>
 				</listitem>
@@ -1742,8 +1771,8 @@ splitEachNSpans(tpcpatch,integer) → tstzspan[]
 SELECT splitNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2024-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 5, 5, 5), pcpoint(1, 6, 6, 6)), '2024-01-02'::timestamptz),
-  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
-  '2024-01-03'::timestamptz)]), 2);
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2024-01-03'::timestamptz)]), 2);
 -- {"[2024-01-01, 2024-01-02]","[2024-01-02, 2024-01-03]"}
 </programlisting>
 				</listitem>
@@ -1755,14 +1784,44 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 			<para>La misma superficie de operadores de caja que en <xref linkend="tpcpoint_bbox_ops" /> se aplica a <varname>tpcpatch</varname>. El predicado se evalúa sobre el <varname>tpcbox</varname> del valor, calculado en O(1) por instante a partir del <varname>PCBOUNDS</varname> embebido en el parche.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_topo">
-					<indexterm significance="normal"><primary><varname>&amp;&amp;, @&gt;, &lt;@, ~=, -|-</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 					<para>Operadores topológicos</para>
-					<para>Véase <xref linkend="tpcbox_topo" />.</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tstzspan,tpcbox,tpcpatch} {&amp;&amp;, @&gt;, &lt;@, ~=, -|-} {tstzspan,tpcbox,tpcpatch} &#8594; boolean
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)])
+  &amp;&amp; tstzspan '[2001-01-01, 2001-01-03]';
+-- true
+</programlisting>
 				</listitem>
 				<listitem xml:id="tpcpatch_pos">
-					<indexterm significance="normal"><primary><varname>&lt;&lt;, &gt;&gt;, &lt;&lt;|, |&gt;&gt;, &lt;&lt;/, /&gt;&gt;, &lt;&lt;#, #&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;/</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>/&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 					<para>Operadores de posición</para>
-					<para>Véase <xref linkend="tpcbox_pos" />.</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tpcbox,tpcpatch} {&lt;&lt;, &gt;&gt;, &lt;&lt;|, |&gt;&gt;, &lt;&lt;/, /&gt;&gt;} {tpcbox,tpcpatch} &#8594; boolean
+{tstzspan,tpcbox,tpcpatch} {&lt;&lt;#, #&gt;&gt;} {tstzspan,tpcbox,tpcpatch} &#8594; boolean
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)])
+  &lt;&lt;# tstzspan '[2001-01-05, 2001-01-06]';
+-- true
+</programlisting>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1770,14 +1829,21 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 		<sect2 xml:id="tpcpatch_distance_ops">
 				<title>Operaciones de distancia</title>
 				<itemizedlist>
-				<listitem xml:id="tpcpatch_nearestApproachDistance">
-					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
-					<para>Devuelve la distancia más cercana</para>
-					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+					<listitem xml:id="tpcpatch_nearestApproachDistance">
+						<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
+						<para>Devuelve la distancia más cercana</para>
+						<programlisting role="syntax" xml:space="preserve" format="linespecific">
 nearestApproachDistance(tpcpatch,{tpcbox,tpcpatch}) → float
 </programlisting>
-				</listitem>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(nearestApproachDistance(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 8, 8, 8), pcpoint(1, 9, 9, 9)),
+  '2001-01-01'::timestamptz))::numeric, 4);
+-- 8.4853
+</programlisting>
+					</listitem>
 				</itemizedlist>
 		</sect2>
 
@@ -1802,11 +1868,11 @@ nearestApproachDistance(tpcpatch,{tpcbox,tpcpatch}) → float
 eIntersects(tpcpatch,geometry) → boolean
 </programlisting>
 					<para>Las relaciones alguna vez y siempre cubren la misma matriz: <varname>eContains</varname>, <varname>eCovers</varname>, <varname>eDisjoint</varname>, <varname>eIntersects</varname>, <varname>eTouches</varname> y <varname>eDwithin</varname>, cada una en los tres órdenes de argumentos, y sus gemelas siempre. <varname>eIntersects(tpcpatch,geometry)</varname> es la que el tipo responde de forma nativa, recorriendo los puntos de cada instante y deteniéndose en el primer acierto; las demás convierten el parche a la geometría temporal de sus multipuntos.</para>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
-  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
-  '2001-01-02'::timestamptz)]), geometry 'POINT(1 1)');
+  tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
+  pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]), geometry 'POINT(1 1)');
 -- t
 </programlisting>
 				</listitem>
@@ -1844,8 +1910,8 @@ SELECT tDisjoint(tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestampt
 SELECT tDwithin(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz),
   geometry 'Point(1 5)', 2.0);
 -- f@2001-01-01
-SELECT tIntersects(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)),
-  '2001-01-01'::timestamptz),
+SELECT tIntersects(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz)]),
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
 -- [t@2001-01-01, f@2001-01-02]
@@ -1863,7 +1929,7 @@ SELECT tIntersects(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)),
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {pcpatch,tpcpatch} {?=, %=, ?&lt;&gt;, %&lt;&gt;} {pcpatch,tpcpatch} → boolean
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)) ?= tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
@@ -1882,7 +1948,7 @@ SELECT tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {pcpatch,tpcpatch} {#=, #&lt;&gt;} {pcpatch,tpcpatch} → tbool
 </programlisting>
-									<programlisting language="sql" xml:space="preserve" format="linespecific">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
   '2001-01-02'::timestamptz)]) #= pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2));
@@ -1921,7 +1987,7 @@ CREATE INDEX ON my_table USING spgist(my_tpcpoint_column tpcpoint_kdtree_ops);
 extent({tpcpoint,tpcpatch,tpcbox}) → tpcbox
 </programlisting>
 				<para>Devuelve el tpcbox más pequeño que contiene todas las entradas. Agregar a través de pcid distintos genera un error, la caja delimitadora sería ininterpretable ya que las dimensiones son relativas al pcid.</para>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT extent(v) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- TPCBOX(ZT(((1,1,1),(2,2,2)),[2001-01-01, 2001-01-02]), 1)
@@ -1937,7 +2003,7 @@ tCount({tpcpoint,tpcpatch}) → tint
 wCount({tpcpoint,tpcpatch},interval) → tint
 </programlisting>
 				<para>El resultado es un tint. Todas las filas de entrada deben compartir el mismo subtipo temporal (instante / secuencia / conjunto de secuencias).</para>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tCount(v) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- {1@2001-01-01, 1@2001-01-02}
@@ -1955,11 +2021,11 @@ SELECT wCount(v, interval '1 day') FROM (VALUES
 tnpoints(tpcpatch) → tint
 </programlisting>
 				<para>Distinto de <varname>tCount(tpcpatch)</varname>, que cuenta el número de parches (siempre 1 por instante). <varname>tnpoints</varname> se lee como «cuántos puntos había en la nube en el tiempo t», la primitiva natural para el control de calidad de la ingesta y los paneles de densidad a lo largo del tiempo.</para>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)),
-  (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
-  '2001-01-02'::timestamptz))) t(v);
+  (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
+  pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz))) t(v);
 -- {2@2001-01-01, 2@2001-01-02}
 </programlisting>
 			</listitem>
@@ -1971,12 +2037,12 @@ SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 tdensity(tpcpatch) → tfloat
 </programlisting>
 				<para>Cada pcpatch lleva el <varname>PCBOUNDS</varname> en línea (xmin / xmax / ymin / ymax) por lo que el término de área de la caja delimitadora se lee directamente, sin recálculo. Un parche de 1 punto o colineal produce <varname>+Infinity</varname> para ese instante; filtre con <varname>isfinite()</varname> en consultas posteriores si es necesario.</para>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Each patch holds 2 points over a 1x1 xy-bbox.
 SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)),
-  (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
-  '2001-01-02'::timestamptz))) t(v);
+  (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
+  pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz))) t(v);
 -- {2@2001-01-01, 2@2001-01-02}
 </programlisting>
 			</listitem>
@@ -1990,7 +2056,7 @@ mergeAgg(tpcpoint) → tpcpoint
 mergeAgg(tpcpatch) → tpcpatch
 </programlisting>
 				<para>Todas las entradas deben compartir el mismo pcid y subtipo.</para>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(mergeAgg(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
@@ -2011,7 +2077,7 @@ appendSequenceAgg(tpcpoint) → tpcpoint
 appendSequenceAgg(tpcpatch) → tpcpatch
 </programlisting>
 				<para>Útil para cargadores de trayectorias que consumen filas en orden temporal.</para>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(appendInstant(v ORDER BY startTimestamp(v))) FROM (VALUES
   (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
