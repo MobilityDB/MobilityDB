@@ -204,30 +204,6 @@ Tspatial_gist_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Calculate the union of two spatiotemporal boxes
- * @param[in] a,b Input boxes
- * @param[out] new Resulting box
- */
-static void
-stbox_union_gist(const STBox *a, const STBox *b, STBox *new)
-{
-  memset(new, 0, sizeof(STBox));
-  new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
-  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  new->ymin = FLOAT8_MIN(a->ymin, b->ymin);
-  new->ymax = FLOAT8_MAX(a->ymax, b->ymax);
-  new->zmin = FLOAT8_MIN(a->zmin, b->zmin);
-  new->zmax = FLOAT8_MAX(a->zmax, b->zmax);
-  TimestampTz tmin = Min(DatumGetTimestampTz(a->period.lower),
-    DatumGetTimestampTz(b->period.lower));
-  TimestampTz tmax = Max(DatumGetTimestampTz(a->period.upper),
-    DatumGetTimestampTz(b->period.upper));
-  new->period.lower = TimestampTzGetDatum(tmin);
-  new->period.upper = TimestampTzGetDatum(tmax);
-  return;
-}
-
-/**
  * @brief Return the size of a spatiotemporal box for penalty calculation
  * @note The result can be +Infinity, but not NaN
  */
@@ -266,7 +242,7 @@ stbox_size(const STBox *box)
   {
     result_size *= (box->xmax - box->xmin) * (box->ymax - box->ymin);
     if (hasz)
-      result_size *= (box->xmax - box->xmin) * (box->ymax - box->ymin);
+      result_size *= (box->zmax - box->zmin);
   }
   if (hast)
     /* Expressed in seconds */
@@ -286,7 +262,8 @@ stbox_penalty(void *bbox1, void *bbox2)
   const STBox *original = (STBox *) bbox1;
   const STBox *new = (STBox *) bbox2;
   STBox unionbox;
-  stbox_union_gist(original, new, &unionbox);
+  memcpy(&unionbox, original, sizeof(STBox));
+  stbox_adjust(&unionbox, (void *) new);
   return stbox_size(&unionbox) - stbox_size(original);
 }
 
