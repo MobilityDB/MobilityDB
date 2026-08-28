@@ -309,11 +309,11 @@ Two more reference chapters carry inherited surface:
 
 | chapter → `<sect1>` | prefix | generated? | notes |
 |---|---|---|---|
-| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **12 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, posechain, rgeo, tpoint, th3index, quadbin) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant; `--gaps`: 19/19, full coverage |
+| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **13 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, posechain, rgeo, tpoint, th3index, quadbin, ts2cell) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant; `--gaps`: 20/20, full coverage |
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
-| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **22 entries** all `reference: true` (geo, tpoint, cbuffer, json, json_boxops, npoint, tpcpoint, tpcpatch, tpc_boxops, pose, posechain, rgeo, tgeo_tile, trgeo_tile, tpoint_tile, tpose_tile, tpcpoint_tile, temporal, th3index, th3index_boxops, quadbin, quadbin_boxops). The entry names sit at three granularities — family (`geo`, `npoint`), per-FILE tile split (`tgeo_tile`, `tpose_tile`), and per-FILE boxops split (`json_boxops`, `tpc_boxops`, `th3index_boxops`, `quadbin_boxops`) |
+| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **23 entries** all `reference: true` (geo, tpoint, cbuffer, json, json_boxops, npoint, tpcpoint, tpcpatch, tpc_boxops, pose, posechain, rgeo, tgeo_tile, trgeo_tile, tpoint_tile, tpose_tile, tpcpoint_tile, temporal, th3index, th3index_boxops, quadbin, quadbin_boxops, s2cell_boxops). The entry names sit at three granularities — family (`geo`, `npoint`), per-FILE tile split (`tgeo_tile`, `tpose_tile`), and per-FILE boxops split (`json_boxops`, `tpc_boxops`, `th3index_boxops`, `quadbin_boxops`) |
 
 #### `tprecision` — which types carry a time-weighted average, and why the rest do not
 
@@ -584,7 +584,7 @@ Reading the table:
   spgist]`).
 - **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin**
   via the whole-file `aggregate_families` axis (§4b), not the `subtypes:` track
-  (`--gaps`: `aggregate_families` 19/19, full coverage).
+  (`--gaps`: `aggregate_families` 20/20, full coverage).
 - **`tempsp.rels` is generated for cbuffer, npoint, pose, posechain, pointcloud
   (both types), rgeo, h3, quadbin** via `tempspatialrel_families` (§3/§5) — native
   for cbuffer, cast-delegated for the other eight (`--gaps`:
@@ -680,7 +680,7 @@ its last edit:
   B-tree / hash` for the canonical banner, `boolean`/`integer` for `bool`/`int4`,
   eq-first ordering, a one-line operator head, wider opclass spacing). Adding the
   divider gives each behaviour one owner and no transcription.
-- `aggregate_families` is **19/19**: `561_tposechain_aggfuncs.in.sql` carries the
+- `aggregate_families` is **20/20**: `561_tposechain_aggfuncs.in.sql` carries the
   surface its siblings carry, every statement binding a generic transition or final
   function, so the family needs no kernel of its own.
 - `tempspatialrel_families` is **14/14**: `448_tpcpatch_tempspatialrels.in.sql`

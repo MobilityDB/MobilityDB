@@ -1,0 +1,57 @@
+SELECT round(extent(temp), 6) FROM (VALUES
+  (ts2cell '47c3c3@2001-01-01'),
+  (ts2cell '47c3c4@2001-01-02')) t(temp);
+                                                              round                                                              
+---------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX XT(((4.19708,50.762981),(4.421419,50.936164)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT asText(tCount(temp)) FROM (VALUES
+  (ts2cell '47c3c3@2001-01-01'),
+  (ts2cell '47c3c4@2001-01-02')) t(temp);
+                              astext                              
+------------------------------------------------------------------
+ {1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(wCount(temp, interval '1 day')) FROM (VALUES
+  (ts2cell '47c3c3@2001-01-01'),
+  (ts2cell '47c3c4@2001-01-02')) t(temp);
+                                                                astext                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST], (1@Tue Jan 02 00:00:00 2001 PST, 1@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(mergeAgg(temp)) FROM (VALUES
+  (ts2cell '47c3c3@2001-01-01'),
+  (ts2cell '47c3c4@2001-01-02')) t(temp);
+                                   astext                                   
+----------------------------------------------------------------------------
+ {47c3c3@Mon Jan 01 00:00:00 2001 PST, 47c3c4@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(merge(temp)) = asText(mergeAgg(temp)) FROM (VALUES
+  (ts2cell '47c3c3@2001-01-01'),
+  (ts2cell '47c3c4@2001-01-02')) t(temp);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM (VALUES
+  (ts2cell '47c3c3@2001-01-01'),
+  (ts2cell '47c3c4@2001-01-02')) t(inst);
+                                   astext                                   
+----------------------------------------------------------------------------
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 47c3c4@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(appendInstant(inst ORDER BY inst))
+  = asText(appendInstantAgg(inst ORDER BY inst)) FROM (VALUES
+  (ts2cell '47c3c3@2001-01-01'),
+  (ts2cell '47c3c4@2001-01-02')) t(inst);
+ ?column? 
+----------
+ t
+(1 row)
+

@@ -606,3 +606,40 @@ aggregate_families:
   - fns:
     - {sig: "temporal_app_tseq_transfn(tquadbin, tquadbin)", ret: "tquadbin", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n/* Function deprecated in 1.4\n   Some bindings require Agg suffix to disambiguate from the scalar function */\nCREATE AGGREGATE appendSequence(tquadbin) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = tquadbin,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendSequenceAgg(tquadbin) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = tquadbin,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+- family: ts2cell
+  file: mobilitydb/sql/s2cell/611_ts2cell_aggfuncs.in.sql
+  reference: true
+  begin: "@brief Aggregate functions for temporal S2 cells"
+  whole_file: true
+  blocks:
+  - lit: "/**\n * @file\n * @brief Aggregate functions for temporal S2 cells\n */\n\n"
+  - fns:
+    - {sig: "tspatial_extent_transfn(stbox, ts2cell)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+  - lit: "\nCREATE AGGREGATE extent(ts2cell) (\n  SFUNC = tspatial_extent_transfn,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - fns:
+    - {sig: "tcount_transfn(internal, ts2cell)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+  - lit: "\n"
+  - fns:
+    - {sig: "ts2cell_tagg_finalfn(internal)", ret: "ts2cell", sym: "Temporal_tagg_finalfn"}
+  - lit: "\nCREATE AGGREGATE tCount(ts2cell) (\n  SFUNC = tcount_transfn,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - fns:
+    - {sig: "wcount_transfn(internal, ts2cell, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+  - lit: "\nCREATE AGGREGATE wCount(ts2cell, interval) (\n  SFUNC = wcount_transfn,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tint_tagg_finalfn,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);\n\n"
+  - fns:
+    - {sig: "temporal_merge_transfn(internal, ts2cell)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+  - lit: "\n/* Function deprecated in 1.4\n   Some bindings require Agg suffix to disambiguate from the scalar function */\nCREATE AGGREGATE merge(ts2cell) (\n  SFUNC = temporal_merge_transfn,\n  STYPE = internal,\n  COMBINEFUNC = temporal_merge_combinefn,\n  FINALFUNC = ts2cell_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\nCREATE AGGREGATE mergeAgg(ts2cell) (\n  SFUNC = temporal_merge_transfn,\n  STYPE = internal,\n  COMBINEFUNC = temporal_merge_combinefn,\n  FINALFUNC = ts2cell_tagg_finalfn,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);\n\n"
+  - fns:
+    - {sig: "temporal_app_tinst_transfn(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn"}
+  - lit: "\n"
+  - fns:
+    - {sig: "temporal_app_tinst_transfn(ts2cell, ts2cell, interp text)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn"}
+  - lit: "\n"
+  - fns:
+    - {sig: "temporal_app_tinst_transfn(ts2cell, ts2cell, interp text,\n    maxt interval)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+  - lit: "\n"
+  - fns:
+    - {sig: "temporal_append_finalfn(ts2cell)", ret: "ts2cell", sym: "Temporal_append_finalfn"}
+  - lit: "\n/* Function deprecated in 1.4\n   Some bindings require Agg suffix to disambiguate from the scalar function */\nCREATE AGGREGATE appendInstant(ts2cell) (\n  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell),\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstantAgg(ts2cell) (\n  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell),\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n/* Function deprecated in 1.4\n   Some bindings require Agg suffix to disambiguate from the scalar function */\nCREATE AGGREGATE appendInstant(ts2cell, interp text) (\n  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell, text),\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstantAgg(ts2cell, interp text) (\n  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell, text),\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n/* Function deprecated in 1.4\n   Some bindings require Agg suffix to disambiguate from the scalar function */\nCREATE AGGREGATE appendInstant(ts2cell, interp text, maxt interval) (\n  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell, text, maxt),\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendInstantAgg(ts2cell, interp text, maxt interval) (\n  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell, text, maxt),\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+  - fns:
+    - {sig: "temporal_app_tseq_transfn(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+  - lit: "\n/* Function deprecated in 1.4\n   Some bindings require Agg suffix to disambiguate from the scalar function */\nCREATE AGGREGATE appendSequence(ts2cell) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE appendSequenceAgg(ts2cell) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = ts2cell,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"

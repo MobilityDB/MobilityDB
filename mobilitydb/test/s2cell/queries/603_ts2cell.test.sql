@@ -94,6 +94,17 @@ SELECT ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'::tbigint::ts2cell
   = ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]';
 
 -------------------------------------------------------------------------------
+-- Time spans
+--
+-- A cell index carries no value dimension to split on, so the spans a ts2cell
+-- answers are those of its time dimension, as th3index and tquadbin answer.
+-------------------------------------------------------------------------------
+
+SELECT spans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]');
+SELECT splitNSpans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]', 2);
+SELECT splitEachNSpans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]', 2);
+
+-------------------------------------------------------------------------------
 -- Comparisons
 --
 -- A ts2cell is a spatiotemporal type, so `temporal_cmp` reads the bounding

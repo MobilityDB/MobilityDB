@@ -5,8 +5,10 @@ SET(LOCAL_FILES
   603_ts2cell
   604_ts2cell_compops
   605_ts2cell_spatialfuncs
+  607_ts2cell_boxops
   608_ts2cell_topops
   609_ts2cell_posops
+  611_ts2cell_aggfuncs
   612_ts2cell_spatialrels
   614_ts2cell_tempspatialrels
   622_ts2cell_gist
