@@ -1616,7 +1616,7 @@
 					<para><link linkend="tpose_tcomp"><varname>::</varname></link>: Comparaciones temporales</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tposechain_eq"><varname>=</varname>, <varname>&lt;&gt;</varname></link>: Compara dos cadenas de poses temporales, o una cadena de poses temporal y una cadena de poses</para>
+					<para><link linkend="tposechain_eq"><varname>eEq</varname></link>: Compara dos cadenas de poses temporales, o una cadena de poses temporal y una cadena de poses</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1671,7 +1671,7 @@
 						<para><link linkend="pose_ypr"><varname>ypr</varname></link>: Devuelve la orientación de una pose como una terna yaw / pitch / roll, en radianes</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpose_yaw_pitch_roll"><varname>yaw</varname>, <varname>pitch</varname>, <varname>roll</varname></link>: Eleva los accesores de ángulos de Euler a través de una pose temporal, devolviendo un flotante temporal (radianes) por cada instante bajo la convención Tait-Bryan intrínseca ZYX</para>
+						<para><link linkend="tpose_yaw_pitch_roll"><varname>yaw</varname>, <varname>pitch</varname>, <varname>roll</varname></link>: Eleva los accesores de ángulos de Euler sobre una pose temporal, devolviendo un flotante temporal en radianes</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1704,7 +1704,7 @@
 				<title>E/S JSON temporal</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpose_geopose_funcs"><varname>asGeoPose</varname>, <varname>tposeFromGeoPose</varname></link>: Convierte una pose temporal hacia o desde una envoltura JSON TemporalGeoPose</para>
+						<para><link linkend="tpose_geopose_funcs"><varname>asGeoPose</varname>, <varname>tposeFromGeoPose</varname></link>: Convierte una pose temporal hacia o desde su codificación OGC GeoPose v1.0</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpose_geopose_stream"><varname>asGeoPoseStream</varname></link>: Escribe una pose temporal como un Stream de OGC GeoPose</para>
