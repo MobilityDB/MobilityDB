@@ -962,6 +962,7 @@ geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
+ * @ingroup meos_rgeo_modif
  * @brief Return two temporal rigid geometries merged into one
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @details A temporal rigid geometry is a temporal pose carrying a reference
@@ -1008,6 +1009,7 @@ trgeometry_merge(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
+ * @ingroup meos_rgeo_modif
  * @brief Return the temporal rigid geometries of an array merged into one
  * @param[in] temparr Array of temporal rigid geometries
  * @param[in] count Number of elements in the array
