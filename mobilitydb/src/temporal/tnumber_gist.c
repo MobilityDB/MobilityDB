@@ -213,37 +213,16 @@ Tnumber_gist_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Calculates the union of two temporal boxes
- * @param[in] a,b Input boxes
- * @param[out] new Resulting box
- * @note This function uses NaN-aware comparisons
- */
-static void
-tbox_union_rt(const TBox *a, const TBox *b, TBox *new)
-{
-  memset(new, 0, sizeof(TBox));
-  double xmin = FLOAT8_MIN(DatumGetFloat8(a->span.lower),
-    DatumGetFloat8(b->span.lower));
-  double xmax = FLOAT8_MAX(DatumGetFloat8(a->span.upper),
-    DatumGetFloat8(b->span.upper));
-  new->span.lower = Float8GetDatum(xmin);
-  new->span.upper = Float8GetDatum(xmax);
-  TimestampTz tmin = Min(DatumGetTimestampTz(a->period.lower),
-    DatumGetTimestampTz(b->period.lower));
-  TimestampTz tmax = Max(DatumGetTimestampTz(a->period.upper),
-    DatumGetTimestampTz(b->period.upper));
-  new->period.lower = TimestampTzGetDatum(tmin);
-  new->period.upper = TimestampTzGetDatum(tmax);
-  return;
-}
-
-/**
  * @brief Return the size of a temporal box for penalty-calculation purposes
  * @note The result can be +Infinity, but not NaN
  */
 static double
 tbox_size(const TBox *box)
 {
+  double result_size = 1;
+  bool hasx = MEOS_FLAGS_GET_X(box->flags),
+       hast = MEOS_FLAGS_GET_T(box->flags);
+
   /*
    * Check for zero-width cases.  Note that we define the size of a zero-
    * by-infinity box as zero.  It's important to special-case this somehow,
@@ -251,9 +230,9 @@ tbox_size(const TBox *box)
    *
    * The less-than cases should not happen, but if they do, say "zero".
    */
-  if (FLOAT8_LE(DatumGetFloat8(box->span.upper),
-        DatumGetFloat8(box->span.lower)) ||
-      datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ))
+  if ((hasx && datum_le(box->span.upper, box->span.lower,
+        box->span.basetype)) ||
+      (hast && datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ)))
     return 0.0;
 
   /*
@@ -261,11 +240,19 @@ tbox_size(const TBox *box)
    * and a non-NaN is infinite.  Note the previous check eliminated the
    * possibility that the low fields are NaNs.
    */
-  if (isnan(DatumGetFloat8(box->span.upper)))
+  if (hasx && box->span.basetype == T_FLOAT8 &&
+      isnan(DatumGetFloat8(box->span.upper)))
     return get_float8_infinity();
-  return (DatumGetFloat8(box->span.upper) - DatumGetFloat8(box->span.lower)) *
-    (DatumGetTimestampTz(box->period.upper) -
+
+  /* The value span of a tint box holds integers, so its width is read
+   * through the base type the span names */
+  if (hasx)
+    result_size *= distance_double(distance_value_value(box->span.lower,
+      box->span.upper, box->span.basetype), box->span.basetype);
+  if (hast)
+    result_size *= (double) (DatumGetTimestampTz(box->period.upper) -
       DatumGetTimestampTz(box->period.lower));
+  return result_size;
 }
 
 /**
@@ -279,7 +266,8 @@ tbox_penalty(void *bbox1, void *bbox2)
   const TBox *original = (TBox *) bbox1;
   const TBox *new = (TBox *) bbox2;
   TBox unionbox;
-  tbox_union_rt(original, new, &unionbox);
+  memcpy(&unionbox, original, sizeof(TBox));
+  tbox_adjust(&unionbox, (void *) new);
   return tbox_size(&unionbox) - tbox_size(original);
 }
 
