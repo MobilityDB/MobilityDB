@@ -234,7 +234,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_from_hexwkb);
  * @ingroup mobilitydb_cbuffer_base_inout
  * @brief Return a circular buffer from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
- * @sqlfn cbufferFromHexWKB()
+ * @sqlfn cbufferFromHexEWKB()
  */
 Datum
 Cbuffer_from_hexwkb(PG_FUNCTION_ARGS)

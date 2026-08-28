@@ -427,7 +427,7 @@ PG_FUNCTION_INFO_V1(Tbox_to_intspan);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a temporal box into an integer span
- * @sqlfn floatspan()
+ * @sqlfn intspan()
  */
 Datum
 Tbox_to_intspan(PG_FUNCTION_ARGS)
@@ -706,7 +706,7 @@ PG_FUNCTION_INFO_V1(Tbox_shift_scale_value);
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the value span shifted and scaled by two
  * values
- * @sqlfn scaleValue()
+ * @sqlfn shiftScaleValue()
  */
 Datum
 Tbox_shift_scale_value(PG_FUNCTION_ARGS)

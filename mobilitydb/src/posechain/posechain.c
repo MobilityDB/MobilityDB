@@ -233,7 +233,7 @@ PG_FUNCTION_INFO_V1(Posechain_from_hexwkb);
  * @ingroup mobilitydb_posechain_base_inout
  * @brief Return a pose chain from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
- * @sqlfn posechainFromHexWKB()
+ * @sqlfn posechainFromHexEWKB()
  */
 Datum
 Posechain_from_hexwkb(PG_FUNCTION_ARGS)
@@ -672,7 +672,7 @@ PG_FUNCTION_INFO_V1(Posechain_eq);
 /**
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return true if the first pose chain is equal to the second one
- * @sqlfn posechain_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum
@@ -688,7 +688,7 @@ PG_FUNCTION_INFO_V1(Posechain_ne);
 /**
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return true if the first pose chain is not equal to the second one
- * @sqlfn posechain_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum
@@ -705,7 +705,7 @@ PG_FUNCTION_INFO_V1(Posechain_cmp);
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first pose chain is
  * less than, equal to, or greater than the second one
- * @sqlfn posechain_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Posechain_cmp(PG_FUNCTION_ARGS)
@@ -720,7 +720,7 @@ PG_FUNCTION_INFO_V1(Posechain_lt);
 /**
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return true if the first pose chain is less than the second one
- * @sqlfn posechain_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -737,7 +737,7 @@ PG_FUNCTION_INFO_V1(Posechain_le);
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return true if the first pose chain is less than or equal to the
  * second one
- * @sqlfn posechain_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -754,7 +754,7 @@ PG_FUNCTION_INFO_V1(Posechain_ge);
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return true if the first pose chain is greater than or equal to the
  * second one
- * @sqlfn posechain_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum
@@ -770,7 +770,7 @@ PG_FUNCTION_INFO_V1(Posechain_gt);
 /**
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return true if the first pose chain is greater than the second one
- * @sqlfn posechain_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum

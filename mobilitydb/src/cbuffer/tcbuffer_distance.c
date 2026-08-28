@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_geo);
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
  * geometry
- * @sqlfn tDistance()
+ * @sqlfn distance()
  * @sqlop @p <->
  */
 Datum
@@ -95,7 +95,7 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_stbox);
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
  * spatiotemporal box
- * @sqlfn tDistance()
+ * @sqlfn distance()
  * @sqlop @p <->
  */
 Datum
@@ -115,7 +115,7 @@ PG_FUNCTION_INFO_V1(Distance_stbox_cbuffer);
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
  * spatiotemporal box
- * @sqlfn tDistance()
+ * @sqlfn distance()
  * @sqlop @p <->
  */
 Datum
@@ -134,7 +134,7 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between two circular buffers
- * @sqlfn tDistance()
+ * @sqlfn distance()
  * @sqlop @p <->
  */
 Datum

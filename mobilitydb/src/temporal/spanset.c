@@ -260,7 +260,7 @@ PG_FUNCTION_INFO_V1(Value_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a value into a span set
- * @sqlfn intspanset(), floatspanset(), ...
+ * @sqlfn spanset()
  */
 Datum
 Value_to_spanset(PG_FUNCTION_ARGS)
@@ -275,7 +275,7 @@ PG_FUNCTION_INFO_V1(Set_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a set into a span set
- * @sqlfn intspanset(), floatspanset(), ...
+ * @sqlfn spanset()
  */
 Datum
 Set_to_spanset(PG_FUNCTION_ARGS)
@@ -409,7 +409,7 @@ PG_FUNCTION_INFO_V1(Spanset_to_multirange);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a span set into a multirange
- * @sqlfn int4range(), tstzrange()
+ * @sqlfn multirange()
  * @sqlop @p ::
  */
 Datum
@@ -428,7 +428,7 @@ PG_FUNCTION_INFO_V1(Multirange_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a multirange into a span set
- * @sqlfn intspanset(), tstzspanset()
+ * @sqlfn spanset()
  * @sqlop @p ::
  */
 Datum
@@ -510,7 +510,7 @@ PG_FUNCTION_INFO_V1(Spanset_lower_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the lower bound of a span set is inclusive
- * @sqlfn lower_inc()
+ * @sqlfn lowerInc()
  */
 Datum
 Spanset_lower_inc(PG_FUNCTION_ARGS)
@@ -526,7 +526,7 @@ PG_FUNCTION_INFO_V1(Spanset_upper_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the upper bound of a span set is inclusive
- * @sqlfn lower_inc()
+ * @sqlfn upperInc()
  */
 Datum
 Spanset_upper_inc(PG_FUNCTION_ARGS)
@@ -908,7 +908,7 @@ PG_FUNCTION_INFO_V1(Numspanset_shift_scale);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span set shifted and scaled by two values
  * @note This function is also used for `datespanset`
- * @sqlfn shiftTscale()
+ * @sqlfn shiftScale()
  */
 Datum
 Numspanset_shift_scale(PG_FUNCTION_ARGS)
@@ -926,7 +926,7 @@ PG_FUNCTION_INFO_V1(Tstzspanset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a timestamptz span set shifted and scaled by two intervals
- * @sqlfn shiftTscale()
+ * @sqlfn shiftScale()
  */
 Datum
 Tstzspanset_shift_scale(PG_FUNCTION_ARGS)

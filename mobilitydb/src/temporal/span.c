@@ -230,7 +230,7 @@ PG_FUNCTION_INFO_V1(Span_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
  * @brief Return a span from the bounds
- * @sqlfn intspan(), floatspan(), ...
+ * @sqlfn span()
  */
 Datum
 Span_constructor(PG_FUNCTION_ARGS)
@@ -407,7 +407,7 @@ PG_FUNCTION_INFO_V1(Span_to_range);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a span into a range
- * @sqlfn int4range(), tstzrange()
+ * @sqlfn range()
  * @sqlop @p ::
  */
 Datum
@@ -461,7 +461,7 @@ PG_FUNCTION_INFO_V1(Range_to_span);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a PostgreSQL range into a span
- * @sqlfn intspan(), tstzspan()
+ * @sqlfn span()
  * @sqlop @p ::
  */
 Datum
