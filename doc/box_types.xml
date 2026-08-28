@@ -619,7 +619,7 @@ SELECT round(tstzspan '[2000-01-01, 2001-01-02]'::tbox);
 				<para>Return or set the spatial reference identifier</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 SRID(stbox) → integer
-setSRID(stbox) → stbox
+setSRID(stbox,integer) → stbox
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');

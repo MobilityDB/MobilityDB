@@ -249,7 +249,7 @@ SELECT asText(round(cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789), 6))
 					<para>Devuelve o establece el identificador de referencia espacial</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 SRID(cbuffer) → integer
-setSRID(cbuffer) → cbuffer
+setSRID(cbuffer,integer) → cbuffer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(cbuffer 'Cbuffer(SRID=5676;Point(1 1), 0.3)');
@@ -875,7 +875,7 @@ SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2000-01-01,
 				<para>Devuelve o establece el identificador de referencia espacial</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 SRID(tcbuffer) → integer
-setSRID(tcbuffer) → tcbuffer
+setSRID(tcbuffer,integer) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(tcbuffer 'SRID=5676;
