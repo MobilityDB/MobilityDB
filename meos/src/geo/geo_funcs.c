@@ -8195,4 +8195,443 @@ meos_linear_union(const LWGEOM *geom)
   return lwcollection_as_lwgeom(result);
 }
 
+/*****************************************************************************
+ * Lifting a planar answer back to the ordinates its inputs carry
+ *****************************************************************************/
+
+/**
+ * @brief Structure keeping what the inputs of an overlay determine at one
+ * point of its answer
+ */
+typedef struct
+{
+  bool found;      /**< An input determines the ordinates there */
+  bool zconflict;  /**< Two inputs determine different elevations there */
+  bool mconflict;  /**< Two inputs determine different measures there */
+  double z;        /**< Elevation the inputs determine */
+  double m;        /**< Measure the inputs determine */
+} LiftPoint;
+
+/**
+ * @brief Return the angle swept from one angle to another in a direction
+ * @param[in] theta0,theta1 Angles of the ends of the sweep
+ * @param[in] ccw True where the sweep runs counterclockwise
+ */
+static double
+arc_angle_swept(double theta0, double theta1, bool ccw)
+{
+  return angle_normalize(ccw ? theta1 - theta0 : theta0 - theta1);
+}
+
+/**
+ * @brief Return the ordinates an arc determines at a point of it
+ * @details A geometry carrying a Z or an M is a planar figure together with a
+ * LIFT: the ordinates are given at the vertices and read between them along
+ * the curve joining them, which for an arc is read by ANGLE rather than by the
+ * chord. The middle control point carries its own ordinates, so the lift is
+ * linear over each of the two halves of the sweep
+ * @param[in] p0,p1,p2 Control points of the arc
+ * @param[in] px,py Point
+ * @param[out] z,m Ordinates the arc determines there
+ * @return True if the point lies on the arc, which is what determines them
+ */
+static bool
+arc_ordinates_at(const POINT4D *p0, const POINT4D *p1, const POINT4D *p2,
+  double px, double py, double *z, double *m)
+{
+  assert(p0); assert(p1); assert(p2); assert(z); assert(m);
+  POINT2D a = { p0->x, p0->y }, b = { p1->x, p1->y }, c = { p2->x, p2->y };
+  POINT2D centre;
+  double radius = lw_arc_center(&a, &b, &c, &centre);
+  /* Three collinear points draw a segment, which the caller reads as one */
+  if (radius < 0)
+    return false;
+
+  /* The point lies on the circle */
+  double tol = fmax(
+    coordinate_tolerance(centre.x - radius, centre.x + radius),
+    coordinate_tolerance(centre.y - radius, centre.y + radius));
+  if (fabs(hypot(px - centre.x, py - centre.y) - radius) > tol)
+    return false;
+
+  /* The sweep runs from the first control point through the second, which is
+   * the direction the three of them turn in */
+  bool ccw = cross_product(&a, &b, &c) > 0;
+  double t0 = atan2(a.y - centre.y, a.x - centre.x);
+  double total = arc_angle_swept(t0,
+    atan2(c.y - centre.y, c.x - centre.x), ccw);
+  double mid = arc_angle_swept(t0,
+    atan2(b.y - centre.y, b.x - centre.x), ccw);
+  double here = arc_angle_swept(t0, atan2(py - centre.y, px - centre.x), ccw);
+  /* A full circle sweeps from a point back to itself, which reads as no sweep
+   * at all: its two halves are what the middle control point separates */
+  if (total <= 0)
+    total = 2 * M_PI;
+  /* The point is on the circle but outside the span the arc occupies */
+  if (here > total + MEOS_GEOM_TOLERANCE)
+    return false;
+
+  double f = here / total, fmid = mid / total;
+  if (fmid <= 0 || fmid >= 1)
+  {
+    /* The middle point determines nothing of its own, so the lift runs from
+     * one end of the arc to the other */
+    *z = p0->z + f * (p2->z - p0->z);
+    *m = p0->m + f * (p2->m - p0->m);
+    return true;
+  }
+  if (f <= fmid)
+  {
+    double g = f / fmid;
+    *z = p0->z + g * (p1->z - p0->z);
+    *m = p0->m + g * (p1->m - p0->m);
+  }
+  else
+  {
+    double g = (f - fmid) / (1 - fmid);
+    *z = p1->z + g * (p2->z - p1->z);
+    *m = p1->m + g * (p2->m - p1->m);
+  }
+  return true;
+}
+
+/**
+ * @brief Return the ordinates a point array determines at a point
+ * @details A vertex of the array determines its own ordinates, and a point
+ * between two of them reads them along the curve that joins them
+ * @param[in] pa Point array
+ * @param[in] circular True where the array reads as arcs rather than segments
+ * @param[in] px,py Point
+ * @param[out] z,m Ordinates the array determines there
+ * @return True if the point lies on what the array draws
+ */
+static bool
+ptarray_ordinates_at(const POINTARRAY *pa, bool circular, double px, double py,
+  double *z, double *m)
+{
+  assert(pa); assert(z); assert(m);
+  /* A vertex carries its ordinates rather than reading them from a curve, and
+   * an answer keeps the vertices of its inputs, so this is where the walk ends
+   * for all but the nodes an overlay adds */
+  for (uint32_t i = 0; i < pa->npoints; i++)
+  {
+    POINT4D p;
+    getPoint4d_p(pa, i, &p);
+    if (fabs(p.x - px) <= coordinate_tolerance(p.x, px) &&
+        fabs(p.y - py) <= coordinate_tolerance(p.y, py))
+    {
+      *z = p.z; *m = p.m;
+      return true;
+    }
+  }
+
+  if (circular)
+  {
+    /* An arc is read from three points, the last of one being the first of the
+     * next */
+    for (uint32_t i = 0; i + 2 < pa->npoints; i += 2)
+    {
+      POINT4D p0, p1, p2;
+      getPoint4d_p(pa, i, &p0);
+      getPoint4d_p(pa, i + 1, &p1);
+      getPoint4d_p(pa, i + 2, &p2);
+      if (arc_ordinates_at(&p0, &p1, &p2, px, py, z, m))
+        return true;
+    }
+    return false;
+  }
+
+  for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+  {
+    POINT4D p0, p1;
+    getPoint4d_p(pa, i, &p0);
+    getPoint4d_p(pa, i + 1, &p1);
+    if (! point_on_segment(px, py, p0.x, p0.y, p1.x, p1.y))
+      continue;
+    POINT2D q = { px, py }, a = { p0.x, p0.y }, b = { p1.x, p1.y }, closest;
+    double f = (double) closest_point2d_on_segment_ratio(&q, &a, &b, &closest);
+    *z = p0.z + f * (p1.z - p0.z);
+    *m = p0.m + f * (p1.m - p0.m);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Read what a point array determines at a point into what the arrays
+ * already read determine there
+ * @details The first array to determine the ordinates gives them, and one
+ * determining others reports the conflict, which is separate for each of the
+ * two: two surfaces meeting at one elevation may carry different measures
+ * @param[in] pa Point array
+ * @param[in] circular True where the array reads as arcs rather than segments
+ * @param[in] px,py Point
+ * @param[in,out] state Ordinates determined at the point
+ */
+static void
+lift_point_read(const POINTARRAY *pa, bool circular, double px, double py,
+  LiftPoint *state)
+{
+  assert(pa); assert(state);
+  double z, m;
+  if (! ptarray_ordinates_at(pa, circular, px, py, &z, &m))
+    return;
+  if (! state->found)
+  {
+    state->found = true;
+    state->z = z; state->m = m;
+    return;
+  }
+  if (fabs(z - state->z) > coordinate_tolerance(z, state->z))
+    state->zconflict = true;
+  if (fabs(m - state->m) > coordinate_tolerance(m, state->m))
+    state->mconflict = true;
+  return;
+}
+
+/**
+ * @brief Read the ordinates a geometry determines at a point into what the
+ * geometries read before it determined
+ * @details Where two of them determine DIFFERENT ordinates at one point --
+ * two surfaces crossing at different elevations -- the point has none that the
+ * inputs give, and a value chosen between them would be one no input carries.
+ * The conflict is reported rather than resolved
+ * @param[in] geom Geometry
+ * @param[in] px,py Point
+ * @param[in,out] state Ordinates the geometries already read determine there,
+ * which this one adds what it determines to
+ */
+static void
+geom_ordinates_at(const LWGEOM *geom, double px, double py,
+  LiftPoint *state)
+{
+  assert(geom); assert(state);
+  const POINTARRAY *pa = NULL;
+  bool circular = false;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      pa = ((const LWPOINT *) geom)->point;
+      break;
+    case LINETYPE:
+      pa = ((const LWLINE *) geom)->points;
+      break;
+    case CIRCSTRINGTYPE:
+      pa = ((const LWCIRCSTRING *) geom)->points;
+      circular = true;
+      break;
+    case TRIANGLETYPE:
+      pa = ((const LWTRIANGLE *) geom)->points;
+      break;
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        lift_point_read(poly->rings[i], false, px, py, state);
+      return;
+    }
+    /* ⛔ A CURVEPOLYGON and a COMPOUNDCURVE hold their rings and their pieces
+     * in @p geoms, and each of those is a geometry of its own that says
+     * whether it reads as arcs. They are walked HERE rather than through
+     * #lwgeom_is_collection(), which answers true for both */
+    case CURVEPOLYTYPE:
+    case COMPOUNDTYPE:
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTICURVETYPE:
+    case MULTIPOLYGONTYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        geom_ordinates_at(coll->geoms[i], px, py, state);
+      return;
+    }
+    default:
+      return;
+  }
+  lift_point_read(pa, circular, px, py, state);
+  return;
+}
+
+/**
+ * @brief Collect the point arrays of a geometry in the order a walk of it
+ * visits them
+ * @details Two geometries drawing the same figure list the same arrays with
+ * the same number of points in the same order, which is what lets the
+ * ordinates read for the vertices of one be written to the other
+ * @param[in] geom Geometry
+ * @param[in,out] arrays Array of point arrays
+ */
+static void
+geom_ptarrays(const LWGEOM *geom, MeosArray *arrays)
+{
+  assert(geom); assert(arrays);
+  POINTARRAY *pa = NULL;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      pa = ((const LWPOINT *) geom)->point;
+      break;
+    case LINETYPE:
+      pa = ((const LWLINE *) geom)->points;
+      break;
+    case CIRCSTRINGTYPE:
+      pa = ((const LWCIRCSTRING *) geom)->points;
+      break;
+    case TRIANGLETYPE:
+      pa = ((const LWTRIANGLE *) geom)->points;
+      break;
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        meos_array_add(arrays, &poly->rings[i]);
+      return;
+    }
+    /* ⛔ The rings of a CURVEPOLYGON and the pieces of a COMPOUNDCURVE are
+     * geometries in @p geoms, walked here rather than through
+     * #lwgeom_is_collection(), which answers true for both */
+    case CURVEPOLYTYPE:
+    case COMPOUNDTYPE:
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTICURVETYPE:
+    case MULTIPOLYGONTYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        geom_ptarrays(coll->geoms[i], arrays);
+      return;
+    }
+    default:
+      return;
+  }
+  meos_array_add(arrays, &pa);
+  return;
+}
+
+/**
+ * @ingroup meos_internal_geo_base_spatial
+ * @brief Return a planar answer carrying the ordinates its inputs determine
+ * @details A union, a difference or an intersection is computed on the PLANE,
+ * while the Z and M its inputs carry are a lift of that plane: the ordinates
+ * are given at the vertices of the inputs and read between them along the
+ * curve joining them. Every vertex of such an answer lies on the boundary of
+ * an input -- the boundary of a union is part of the boundaries it is built
+ * from -- so the inputs determine an ordinate there, EXCEPT where two of them
+ * determine different ones, as two surfaces crossing at different elevations
+ * do. The answer therefore carries an ordinate exactly where the lift is
+ * unique, and is the plain planar figure where it is not: a value chosen
+ * between two the inputs carry, such as the mean, is one no input holds.
+ * @param[in] geom Answer of a planar overlay
+ * @param[in] geoms Geometries the answer is read from
+ * @param[in] count Number of geometries, at least one
+ * @return A new geometry carrying the ordinates the inputs determine
+ * @note The two ordinates are decided one by one: an answer whose elevations
+ * agree keeps them where its measures conflict
+ */
+LWGEOM *
+meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms, int count)
+{
+  assert(geom); assert(geoms); assert(count > 0);
+  /* The answer carries what the inputs do, and the inputs share it */
+  bool hasz = FLAGS_GET_Z(geoms[0]->flags);
+  bool hasm = FLAGS_GET_M(geoms[0]->flags);
+  if (! hasz && ! hasm)
+    return lwgeom_force_2d(geom);
+
+  /* The vertices of the answer, read in the order a walk of it visits them */
+  MeosArray *arrays = meos_array_create(sizeof(POINTARRAY *));
+  geom_ptarrays(geom, arrays);
+  int nvertices = 0;
+  for (int i = 0; i < meos_array_count(arrays); i++)
+    nvertices += (int) (*(POINTARRAY **) meos_array_get(arrays, i))->npoints;
+
+  /* The extent of each geometry, read once for the whole walk. A vertex
+   * outside one lies on nothing it draws, so the geometries a handful of
+   * comparisons rule out are never walked for it */
+  GBOX *boxes = palloc(sizeof(GBOX) * count);
+  bool *hasbox = palloc(sizeof(bool) * count);
+  for (int i = 0; i < count; i++)
+    hasbox[i] = (lwgeom_calculate_gbox(geoms[i], &boxes[i]) == LW_SUCCESS);
+
+  LiftPoint *lifted = palloc(sizeof(LiftPoint) * Max(nvertices, 1));
+  bool zok = hasz, mok = hasm;
+  int nvertex = 0;
+  for (int i = 0; i < meos_array_count(arrays); i++)
+  {
+    const POINTARRAY *pa = *(POINTARRAY **) meos_array_get(arrays, i);
+    for (uint32_t j = 0; j < pa->npoints; j++)
+    {
+      POINT4D p;
+      getPoint4d_p(pa, j, &p);
+      LiftPoint *state = &lifted[nvertex++];
+      state->found = false; state->zconflict = false; state->mconflict = false;
+      state->z = state->m = 0;
+      for (int k = 0; k < count; k++)
+      {
+        /* The extent is grown by the tolerance the coordinates call for, so a
+         * vertex ON the boundary of one is read rather than ruled out */
+        if (hasbox[k])
+        {
+          double tol = fmax(coordinate_tolerance(boxes[k].xmin, boxes[k].xmax),
+            coordinate_tolerance(boxes[k].ymin, boxes[k].ymax));
+          if (p.x < boxes[k].xmin - tol || p.x > boxes[k].xmax + tol ||
+              p.y < boxes[k].ymin - tol || p.y > boxes[k].ymax + tol)
+            continue;
+        }
+        geom_ordinates_at(geoms[k], p.x, p.y, state);
+      }
+      /* A vertex no input determines an ordinate for leaves the answer with
+       * none, as a conflict does: the answer is a figure of one dimension or
+       * of another, never of one at some of its vertices */
+      if (! state->found || state->zconflict)
+        zok = false;
+      if (! state->found || state->mconflict)
+        mok = false;
+    }
+  }
+  meos_array_destroy(arrays);
+  pfree(boxes); pfree(hasbox);
+
+  LWGEOM *result = lwgeom_force_dims(geom, zok ? 1 : 0, mok ? 1 : 0, 0, 0);
+  if (! zok && ! mok)
+  {
+    pfree(lifted);
+    return result;
+  }
+
+  /* The forced answer draws the same figure, so its vertices are visited in
+   * the same order and take the ordinates read for them */
+  MeosArray *outarrays = meos_array_create(sizeof(POINTARRAY *));
+  geom_ptarrays(result, outarrays);
+  nvertex = 0;
+  for (int i = 0; i < meos_array_count(outarrays); i++)
+  {
+    POINTARRAY *pa = *(POINTARRAY **) meos_array_get(outarrays, i);
+    for (uint32_t j = 0; j < pa->npoints; j++)
+    {
+      POINT4D p;
+      getPoint4d_p(pa, j, &p);
+      if (zok)
+        p.z = lifted[nvertex].z;
+      if (mok)
+        p.m = lifted[nvertex].m;
+      ptarray_set_point4d(pa, j, &p);
+      nvertex++;
+    }
+  }
+  meos_array_destroy(outarrays);
+  pfree(lifted);
+  return result;
+}
+
 /*****************************************************************************/

@@ -2742,6 +2742,42 @@ geom_array_union_shared(GSERIALIZED **gsarr, int count)
 }
 
 /**
+ * @brief Return the answer of an overlay carrying the ordinates its members
+ * determine
+ * @details The answer of an overlay is computed on the PLANE while its Z and M
+ * are a lift of that plane, so the ordinates are read back from the members
+ * once the planar figure is known -- see #meos_lift_ordinates(). An answer of
+ * members carrying neither ordinate is already the whole answer, and is left
+ * untouched rather than walked
+ * @param[in] result Answer of the overlay, owned by this function
+ * @param[in] gsarr Array of geometries the answer is read from
+ * @param[in] count Number of elements in the array
+ * @return The answer carrying the ordinates its members determine, or @p NULL
+ * where the overlay gave none
+ */
+static GSERIALIZED *
+union_lifted(GSERIALIZED *result, GSERIALIZED **gsarr, int count)
+{
+  assert(gsarr); assert(count > 0);
+  if (! result)
+    return NULL;
+  if (! gserialized_has_z(gsarr[0]) && ! gserialized_has_m(gsarr[0]))
+    return result;
+
+  const LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
+  for (int i = 0; i < count; i++)
+    geoms[i] = lwgeom_from_gserialized(gsarr[i]);
+  LWGEOM *lwresult = lwgeom_from_gserialized(result);
+  LWGEOM *lifted = meos_lift_ordinates(lwresult, geoms, count);
+  GSERIALIZED *answer = geo_serialize(lifted);
+  for (int i = 0; i < count; i++)
+    lwgeom_free((LWGEOM *) geoms[i]);
+  pfree(geoms);
+  lwgeom_free(lwresult); lwgeom_free(lifted); pfree(result);
+  return answer;
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the union of an array of geometries
  * @details The answer covers the points the members cover, read on the
@@ -2778,12 +2814,15 @@ geom_array_union(GSERIALIZED **gsarr, int count)
     return geo_copy(gsarr[0]);
 
   GSERIALIZED **shared = geom_array_shared_dims(gsarr, count);
-  if (! shared)
-    return geom_array_union_shared(gsarr, count);
-  GSERIALIZED *result = geom_array_union_shared(shared, count);
-  for (int i = 0; i < count; i++)
-    pfree(shared[i]);
-  pfree(shared);
+  GSERIALIZED **members = shared ? shared : gsarr;
+  GSERIALIZED *result = union_lifted(geom_array_union_shared(members, count),
+    members, count);
+  if (shared)
+  {
+    for (int i = 0; i < count; i++)
+      pfree(shared[i]);
+    pfree(shared);
+  }
   return result;
 }
 
@@ -2892,8 +2931,14 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
     return NULL;
 #endif /* GEOS */
   }
-  GSERIALIZED *result = geo_serialize(lwresult);
-  lwgeom_free(lwgeom); lwgeom_free(lwresult);
+  /* The dissolve is computed on the plane, and the ordinates the components
+   * carry are read back onto it: two of them crossing at one elevation give
+   * the answer that elevation, and two crossing at different ones leave the
+   * point with none */
+  const LWGEOM *inputs[1] = { lwgeom };
+  LWGEOM *lifted = meos_lift_ordinates(lwresult, inputs, 1);
+  GSERIALIZED *result = geo_serialize(lifted);
+  lwgeom_free(lwgeom); lwgeom_free(lwresult); lwgeom_free(lifted);
   return result;
 }
 
