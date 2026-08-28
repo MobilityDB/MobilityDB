@@ -112,6 +112,23 @@ jobs:
           ./merge_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
           ./geo_test
+          # Every program under meos/test is a check of the installed library, and
+          # one that is compiled nowhere is a check nobody makes: it keeps calling
+          # whatever it called when it was written while the surface moves under it.
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o date_test date_test.c -L/usr/local/lib -lmeos
+          ./date_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o float_test float_test.c -L/usr/local/lib -lmeos
+          ./float_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o interval_test interval_test.c -L/usr/local/lib -lmeos
+          ./interval_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o timestamp_test timestamp_test.c -L/usr/local/lib -lmeos
+          ./timestamp_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
+          ./npoint_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o trajclip_test trajclip_test.c -L/usr/local/lib -lmeos
+          ./trajclip_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o threaded_geos_test threaded_geos_test.c -L/usr/local/lib -lmeos
+          ./threaded_geos_test
           # The raster input and output functions are the only way a caller
           # outside PostgreSQL reaches a Raster, so they are exercised here
           # rather than through the PostgreSQL suite. The RASTER family is
