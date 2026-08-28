@@ -363,3 +363,10 @@ tiling_families:
   end: ""
   blocks:
   - lit: "/**\n * @file\n * @brief Bounding box operations for temporal QUADBIN cells\n */\n\n-- spans()\nCREATE FUNCTION spans(tquadbin)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(tquadbin, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(tquadbin, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/"
+- family: s2cell_boxops
+  file: mobilitydb/sql/s2cell/607_ts2cell_boxops.in.sql
+  reference: true
+  begin: "@brief Bounding box operations for temporal S2 cells"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Bounding box operations for temporal S2 cells\n */\n\n-- spans()\nCREATE FUNCTION spans(ts2cell)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(ts2cell, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(ts2cell, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/"
