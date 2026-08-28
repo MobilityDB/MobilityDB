@@ -1238,6 +1238,49 @@ region rather than inside it. A `CREATE EXTENSION` is the only thing that
 catches a misplacement; the build never parses the bundle.
 
 
+## 11. `@csqlfn` under a `meos_internal_*` group is the NORM, not a defect
+
+The catalog's `api` field derives from the `@ingroup` doxygen tag alone: a
+`meos_internal_*` group, or no group at all, reads internal; any other `meos_*`
+group reads public. `@csqlfn` answers a DIFFERENT question — which PostgreSQL
+wrapper calls this C function — so the two tags are orthogonal and a function
+carrying both is ordinary. Measured at master `853d1b66e4` over `meos/src/**/*.c`:
+
+| | count |
+|---|---|
+| doxygen blocks carrying `@csqlfn` | 3008 |
+| of those, under a `meos_internal_*` group | **293** distinct names |
+| ⤷ also declared in `meos_internal*.h` | 214 — group and header AGREE |
+| ⤷ declared in no umbrella header | 71 — group and header AGREE |
+| ⤷ declared in a PUBLIC umbrella header | **8 — group and header DISAGREE** |
+
+⛔ **A `@csqlfn` ON AN INTERNAL FUNCTION IS NOT EVIDENCE OF A MISCLASSIFICATION,
+and re-grouping one to "publish" it BREAKS THE BUILD OF EVERY CONSUMER.** 285 of the
+293 are internal by BOTH signals: the C function is an internal entry point and the
+PG wrapper named by `@csqlfn` is the public face. `temporal_mem_size` is the type
+case — `@ingroup meos_internal_temporal_accessor` + `@csqlfn #Temporal_mem_size()`,
+declared at `meos_internal.h:1176` and NOWHERE in `meos.h`, while `memSize` answers
+in SQL for every temporal type. Re-tagging it public would emit, from every
+catalog-driven binding, a call to a symbol declared only in a private header — the
+`trgeometry_merge` failure exactly. ⇒ If a binding needs the operation, the fix is a
+PUBLIC MEOS entry point, never a re-tag of the internal one.
+
+⭐ **THE ONLY DEFECT THIS CENSUS FINDS IS THE 8 WHERE THE TWO SIGNALS DISAGREE**, and
+the shape of each says the GROUP is right and the HEADER is wrong — every one carries
+an internal calling convention that no public entry point would expose:
+
+| function | public header | why the internal group is the correct signal |
+|---|---|---|
+| `acontains_tgeo_tgeo` | `meos_geo.h` | returns `int` 1/0/-1, the three-valued internal convention |
+| `atouches_tcbuffer_tcbuffer` | `meos_cbuffer.h` | same three-valued `int` |
+| `tnumber_avg_value` | `meos.h` | returns a bare `double` |
+| `trgeometry_restrict_timestamptz` `_tstzset` `_tstzspan` `_tstzspanset` `_values` | `meos_rgeo.h` | take an `atfunc` boolean; the public faces are the `*_at_*` / `*_minus_*` pair |
+
+⇒ The alignment is to move those 8 declarations to `meos_internal*.h`, NOT to
+re-group them. ⛔ That is an API-surface change — a consumer including the public
+umbrella today can call them — so it is a user decision, not a sweep. The catalog
+already answers `internal` for all 8, so no rule-following binding emits them.
+
 ---
 
 ### Legend
