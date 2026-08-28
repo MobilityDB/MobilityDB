@@ -44,7 +44,7 @@ SELECT stboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-03]');
 SELECT geodstboxZ(1.0,2.0,3.0,1.0,2.0,3.0);
 -- Only time dimension for geodetic box
 SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-03]');
---  Both value (with X, Y, and Z geodetic coordinates) and time dimensions
+-- Both value (with X, Y, and Z geodetic coordinates) and time dimensions
 SELECT geodstboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-04]');
 -- Geometry and time dimension
 SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03,2001-01-05]');

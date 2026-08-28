@@ -11,7 +11,7 @@ eIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 aIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 eTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 aTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
-</pre><p>The <span class="emphasis"><em>ever</em></span> and <span class="emphasis"><em>always</em></span> relationships determine whether the topological or distance relationship is ever or always satisfied and return a <code class="varname">boolean</code></p><pre class="programlisting">
+</pre><p>The <span class="emphasis"><em>ever</em></span> and <span class="emphasis"><em>always</em></span> relationships determine whether the topological or distance relationship is ever or always satisfied (see <a class="xref" href="ch05s04.html#ever_always_comparison" title="Ever and Always Comparisons">the section called “Ever and Always Comparisons”</a>) and return a <code class="varname">boolean</code></p><pre class="programlisting">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
 -- false

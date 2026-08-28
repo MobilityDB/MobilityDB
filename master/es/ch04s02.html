@@ -7,23 +7,23 @@ CREATE TABLE Temperature(RoomNo integer, Temp tfloat);
 INSERT INTO Temperature VALUES
   (1001, tfloat '{18.5@2001-01-01 08:00:00, 20.0@2001-01-01 08:10:00}'),
   (2001, tfloat '{19.0@2001-01-01 08:00:00, 22.5@2001-01-01 08:10:00}');
--- Valor en una marca de tiempo
+-- Value at a timestamp
 SELECT RoomNo, valueAtTimestamp(Temp, '2001-01-01 08:10:00') FROM temperature;
 -- 1001 | 20
 -- 2001 | 22.5
--- Restricción a un valor
+-- Restriction to a value
 SELECT DeptNo, atValue(NoEmps, 10) FROM Department;
 -- 10 | [10@2001-01-01, 10@2001-04-01)
 -- 20 |
--- Restricción a un período
+-- Restriction to a period
 SELECT DeptNo, atTime(NoEmps, tstzspan '[2001-01-01, 2001-04-01]') FROM Department;
 -- 10 | [10@2001-01-01, 12@2001-04-01]
 -- 20 | [4@2001-02-01, 4@2001-04-01]
--- Comparación temporal
+-- Temporal comparison
 SELECT DeptNo, NoEmps #&lt;= 10 FROM Department;
 -- 10 | [t@2001-01-01, f@2001-04-01, f@2001-08-01)
 -- 20 | [t@2001-02-01, t@2001-10-01)
--- Agregación temporal
+-- Temporal aggregation
 SELECT tsum(NoEmps) FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01,
    18@2001-06-01, 6@2001-08-01, 6@2001-10-01)} */
@@ -34,21 +34,21 @@ INSERT INTO Trips VALUES
 Point(2 1)@2001-01-01 08:15:00)}'),
   (20, 1, tgeompoint '{[Point(0 0)@2001-01-01 08:05:00, Point(1 1)@2001-01-01 08:10:00,
   Point(3 3)@2001-01-01 08:20:00)}');
--- Valor en una marca de tiempo
+-- Value at a given timestamp
 SELECT CarId,
   ST_AsText(valueAtTimestamp(Trip, timestamptz '2001-01-01 08:10:00')) FROM Trips;
 -- 10 | POINT(2 0)
 -- 20 | POINT(1 1)
--- Restricción a un valor
+-- Restriction to a value
 SELECT CarId, asText(atValue(Trip, geometry 'Point(2 0)')) FROM Trips;
 -- 10 | {"[POINT(2 0)@2001-01-01 08:10:00]"}
 -- 20 | 
--- Restricción a un período
+-- Restriction to a period
 SELECT CarId,
   asText(atTime(Trip, tstzspan '[2001-01-01 08:05:00,2001-01-01 08:10:00]')) FROM Trips;
 -- 10 | {[POINT(1 0)@2001-01-01 08:05:00, POINT(2 0)@2001-01-01 08:10:00]}
 -- 20 | {[POINT(0 0)@2001-01-01 08:05:00, POINT(1 1)@2001-01-01 08:10:00]}
--- Distancia temporal
+-- Temporal distance
 SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip FROM Trips T1,
   Trips T2 WHERE T1.CarId &lt; T2.CarId;
 /* 10 | 20 | {[1@2001-01-01 08:05:00, 1.4142135623731@2001-01-01 08:10:00,

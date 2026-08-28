@@ -11,13 +11,13 @@ SELECT tfloat '17@2018-01-01 08:00:00';
 </pre><p>
 		Un valor temporal de subtipo <span class="emphasis"><em>secuencia</em></span> (brevemente, un <span class="emphasis"><em>valor de secuencia</em></span>) representa la evolución del valor durante una secuencia de instantes de tiempo, donde los valores entre estos instantes se interpolan usando una función discreta, escalonada, o lineal (ver arriba). Un ejemplo es el siguiente:
 	</p><pre class="programlisting">
--- Interpolación discreta
+-- Discrete interpolation
 SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00,
   18@2018-01-01 08:10:00}';
--- Interpolación escalonada
+-- Step interpolation
 SELECT tfloat 'Interp=Step;
   (10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
--- Interpolación lineal
+-- Linear interpolation
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 </pre><p>
 		Como puede verse, un valor de secuencia tiene un límite superior e inferior que pueden ser inclusivos (representados por ‘<code class="varname">[</code>’ y ‘<code class="varname">]</code>’) o exclusivos (representados por ‘<code class="varname">(</code>' y ‘<code class="varname">)</code>'). Por definición, ambos límites deben ser inclusivos cuando la interpolación es discreta o cuando la secuencia tiene un solo instante (que se llama <span class="emphasis"><em>secuencia instantánea</em></span>), como el ejemplo suiguiente.

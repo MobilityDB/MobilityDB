@@ -18,7 +18,7 @@ SELECT npoint(76, 0.33)::nsegment;
 </pre><p>Values of static network types must satisfy several constraints so that they are well defined. These constraints are given next.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>The route identifier <code class="varname">rid</code> must be found in column <code class="varname">gid</code> of table <code class="varname">ways</code>.</p></li><li class="listitem"><p>The <code class="varname">position</code>, <code class="varname">startPosition</code>, and <code class="varname">endPosition</code> values must be in the range [0,1]. An error is raised whenever one of these constraints are not satisfied.</p></li></ul></div><p>Examples of incorrect static network type values are as follows.</p><pre class="programlisting">
 -- Incorrect rid value
 SELECT npoint 'Npoint(87.5, 1.0)';
--- incorrect position value
+-- Incorrect position value
 SELECT npoint 'Npoint(87, 2.0)';
 -- rid value not found in the ways table
 SELECT npoint 'Npoint(99999999, 1.0)';

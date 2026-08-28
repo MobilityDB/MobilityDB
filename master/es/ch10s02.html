@@ -29,13 +29,13 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 		</p><p>Finalmente, se pueden crear índices de árbol B para columnas de tabla de todos los tipos temporales. Para este tipo de índice, la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos temporales, con los correspondientes operadores <code class="varname">&lt;</code>, <code class="varname">&lt;=</code>, <code class="varname">&gt;</code> y <code class="varname">&gt;=</code>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte de árbol B para tipos temporales está destinado principalmente a permitir la clasificación interna en las consultas, en lugar de la creación de índices reales.</p><p>Para acelerar algunas de las funciones de los tipos temporales, se puede agregar en la cláusula <code class="varname">WHERE</code> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
 			</p><pre class="programlisting">
 SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)') FROM Trips T
--- Filtro de índice con cuadro delimitador
+-- Bounding box index filtering
 WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </pre><p>
 		</p><p>En el caso de los geometrías temporales, todas las relaciones espaciales con la semántica alguna vez o siempre (ver la <a class="xref" href="ch08s06.html" title="Relaciones espaciotemporales">“Relaciones espaciotemporales”</a>) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
 			</p><pre class="programlisting">
 SELECT tIntersects(T.Trip, R.Geom) FROM Trips T, Regions R
--- Filtro de índice con cuadro delimitador
+-- Bounding box index filtering
 WHERE eIntersects(T.Trip, R.Geom);
 </pre><p>
 		</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch10.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch10.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch10s03.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Capítulo 10. Tipos temporales: Agregación e indexación </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Estadísticas y selectividad</td></tr></table></div></body></html>
