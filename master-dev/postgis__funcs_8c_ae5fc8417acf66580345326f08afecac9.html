@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geography_centroid_from_mline</title>
+<title>MobilityDB: union_collection_make</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -136,7 +136,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__conversion_ga39c89b042d5a7071728cb09f1e2eafb6.html#ga39c89b042d5a7071728cb09f1e2eafb6">geog_to_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__constructor_gaa968e1b9c23d4b32c601152eebee241d.html#gaa968e1b9c23d4b32c601152eebee241d">geogpoint_make2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__constructor_gafbde2db2a4d54a07904c76d6b40da087.html#gafbde2db2a4d54a07904c76d6b40da087">geogpoint_make3dz</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a33c856d9f5763615ac1cad594493181a.html#a33c856d9f5763615ac1cad594493181a">geography_centroid_from_mline</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a33c856d9f5763615ac1cad594493181a.html#a33c856d9f5763615ac1cad594493181a">geography_centroid_from_mline</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a04bca1fd4c350fcca60467ef76749bfa.html#a04bca1fd4c350fcca60467ef76749bfa">geography_centroid_from_mpoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae526396a025c1acb33c113bd37f7dede.html#ae526396a025c1acb33c113bd37f7dede">geography_centroid_from_wpoints</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ab6476731f7d2ca148769eeec3bc843c3.html#ab6476731f7d2ca148769eeec3bc843c3">geography_valid_type</a></td></tr>
@@ -209,29 +209,38 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_adb5e820c58dec63ccdf40981c110cd3f.html#adb5e820c58dec63ccdf40981c110cd3f">PG_PARSER_ERROR</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_abfcf635143063bd52419c2f80829a83b.html#abfcf635143063bd52419c2f80829a83b">postgis_valid_typmod</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a5f52970397e99dbd3a5b0db6067a8994.html#a5f52970397e99dbd3a5b0db6067a8994">spheroid_init_from_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae5fc8417acf66580345326f08afecac9.html#ae5fc8417acf66580345326f08afecac9">union_collection_make</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_ae5fc8417acf66580345326f08afecac9.html#ae5fc8417acf66580345326f08afecac9">union_collection_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a7dbe5b3aaec19dc7673219371720b347.html#a7dbe5b3aaec19dc7673219371720b347">union_components</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a33c856d9f5763615ac1cad594493181a" name="a33c856d9f5763615ac1cad594493181a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33c856d9f5763615ac1cad594493181a">&#9670;&#160;</a></span>geography_centroid_from_mline()</h2>
+<a id="ae5fc8417acf66580345326f08afecac9" name="ae5fc8417acf66580345326f08afecac9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5fc8417acf66580345326f08afecac9">&#9670;&#160;</a></span>union_collection_make()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structLWPOINT.html">LWPOINT</a> * geography_centroid_from_mline </td>
+          <td class="memname">static <a class="el" href="structLWCOLLECTION.html">LWCOLLECTION</a> * union_collection_make </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWMLINE.html">LWMLINE</a> *&#160;</td>
-          <td class="paramname"><em>mline</em>, </td>
+          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> **&#160;</td>
+          <td class="paramname"><em>geoms</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSPHEROID.html">SPHEROID</a> *&#160;</td>
-          <td class="paramname"><em>s</em>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>ngeoms</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -239,9 +248,23 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Split lines into segments and calculate with middle of segment as weighted point. </p>
+<p>Return the collection a set of geometries stands for. </p>
+<p >#lwcollection_construct() reads the Z and M dimensions of the collection from its first member and refuses a set whose members do not share them, answering <code>NULL</code>. That is not a collection an arm can be given: the arms read their members through it, so a null one is dereferenced rather than reported. The members and the array are released with the refusal, so a caller answered <code>NULL</code> has nothing left to free </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geoms</td><td>Array of geometries, owned by this function </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ngeoms</td><td>Number of elements in the array, at least one </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference identifier </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The collection, which owns the array and its members, or <code>NULL</code> where the members do not share their dimensions </dd></dl>
 
 </div>
 </div>
