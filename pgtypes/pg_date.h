@@ -36,8 +36,8 @@
 #ifndef __PG_DATE_H__
 #define __PG_DATE_H__
 
-typedef int32_t int32;
-typedef int64_t int64;
+#include "pg_basetypes.h"
+
 typedef int32 DateADT;
 typedef int64 TimeADT;
 

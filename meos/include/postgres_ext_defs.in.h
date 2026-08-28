@@ -1,3 +1,9 @@
+/* The scalar types come from the header that states them once, so this file and
+ * every pg_*.h answer the same type for a name. It is read BEFORE POSTGRES_H is
+ * defined below, because that macro is what tells it PostgreSQL has already
+ * supplied them. */
+#include <pg_basetypes.h>
+
 #ifndef POSTGRES_H
 #define POSTGRES_H
 
@@ -7,16 +13,6 @@
 
 typedef char *Pointer;
 typedef uintptr_t Datum;
-
-typedef signed char int8;
-typedef signed short int16;
-typedef signed int int32;
-typedef int64_t int64;
-
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-typedef uint64_t uint64;
 
 /* State vector of the PostgreSQL pseudo-random number generator, mirroring the
  * definition in <common/pg_prng.h>. Its include guard is defined here as well
