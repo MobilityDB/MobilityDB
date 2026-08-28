@@ -3282,7 +3282,7 @@
 						<para><link linkend="tpcpoint_asText"><varname>asText</varname></link>: Return the text representation of a tpcpoint, or of an array of them, and cast a tpcpoint to text</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_asMFJSON"><varname>asMFJSON</varname></link>: For <varname>tpcpoint</varname>, the temporal type is emitted as <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "datetimes":[…]}</varname></para>
+						<para><link linkend="tpcpoint_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3290,10 +3290,10 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_tpcpoint"><varname>tpcpoint</varname></link>: Construct a temporal pcpoint of instant subtype</para>
+						<para><link linkend="tpcpoint_tpcpoint"><varname>tpcpoint</varname></link>: Constructor for temporal point cloud points having a constant value</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_tpcpointSeq"><varname>tpcpointSeq</varname></link>: Construct a temporal pcpoint of sequence subtype from an array of instants</para>
+						<para><link linkend="tpcpoint_tpcpointSeq"><varname>tpcpointSeq</varname></link>: Constructor for temporal point cloud points of sequence subtype</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_tpcpointSeqSet"><varname>tpcpointSeqSet</varname></link>: Construct a temporal pcpoint of sequence-set subtype from an array of sequences</para>
@@ -3304,7 +3304,7 @@
 				<title>Conversions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_tgeompoint"><varname>::</varname></link>: Cast a tpcpoint to a temporal geometry point, projecting away every non-spatial dimension while preserving timestamps</para>
+						<para><link linkend="tpcpoint_tgeompoint"><varname>::</varname></link>: Convert a temporal point cloud point to a temporal geometry point</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3401,22 +3401,22 @@
 					<listitem>
 						<para><link linkend="tpcpoint_nearestApproachDistance"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Return the smallest distance ever</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the tpcpoint at which the two arguments are at the nearest distance</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the nearest approach point between the two arguments</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_tDistance"><varname>tDistance</varname>, <varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
 				<title>Ever and Always Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever / always contains, covers and touches</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever / always intersects</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Ever / always disjoint</para>
-					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Ever / always within distance</para>
+						<para><link linkend="tpcpoint_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever and always relationships</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3452,7 +3452,7 @@
 						<para><link linkend="tpcpatch_asText"><varname>asText</varname></link>: Return the text representation of a tpcpatch, or of an array of them, and cast a tpcpatch to text</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_asMFJSON"><varname>asMFJSON</varname></link>: For <varname>tpcpatch</varname>, the type tag is <varname>"MovingPCPatch"</varname> and each instant emits a small object <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname></para>
+						<para><link linkend="tpcpatch_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3558,10 +3558,10 @@
 				<title>Bounding Box Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_topo"><varname>&amp;&amp;, @&gt;, &lt;@, ~=, -|-</varname></link>: Topological operators</para>
+						<para><link linkend="tpcpatch_topo"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_pos"><varname>&lt;&lt;, &gt;&gt;, &lt;&lt;|, |&gt;&gt;, &lt;&lt;/, /&gt;&gt;, &lt;&lt;#, #&gt;&gt;</varname></link>: Position operators</para>
+						<para><link linkend="tpcpatch_pos"><varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname></link>: Position operators</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
