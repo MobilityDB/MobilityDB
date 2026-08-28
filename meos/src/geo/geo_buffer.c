@@ -2885,6 +2885,65 @@ buffer_ring_contains_ring(const BufferRingInfo *outer,
 }
 
 /**
+ * @brief Release the ring and the pieces a boundary ring holds
+ * @details A #BufferRingInfo owns the compound curve of its ring and the
+ * array of pieces the ring is chained from, and neither is reachable from
+ * anything else once the entry holding them goes. An entry whose ring has
+ * moved to another array holds none, so releasing it again releases nothing
+ * @param[in,out] info Boundary ring
+ */
+static void
+buffer_ring_info_release(BufferRingInfo *info)
+{
+  assert(info);
+  if (info->ring)
+  {
+    lwgeom_free(lwcompound_as_lwgeom(info->ring));
+    info->ring = NULL;
+  }
+  if (info->pieces)
+  {
+    meos_array_destroy(info->pieces);
+    info->pieces = NULL;
+  }
+  return;
+}
+
+/**
+ * @brief Destroy an array of boundary rings together with what its entries
+ * hold
+ * @param[in] rings Array of boundary rings, owned by this function
+ */
+static void
+buffer_ring_infos_destroy(MeosArray *rings)
+{
+  assert(rings);
+  for (uint32_t i = 0; i < rings->count; i++)
+  {
+    BufferRingInfo *info = (BufferRingInfo *) meos_array_get(rings, i);
+    if (info)
+      buffer_ring_info_release(info);
+  }
+  meos_array_destroy(rings);
+  return;
+}
+
+/**
+ * @brief Release the boundary rings a classification under construction holds
+ * @param[in] infos Boundary rings, owned by this function
+ * @param[in] count Number of rings the classification has taken
+ */
+static void
+buffer_ring_infos_free(BufferRingInfo *infos, uint32_t count)
+{
+  assert(infos);
+  for (uint32_t i = 0; i < count; i++)
+    buffer_ring_info_release(&infos[i]);
+  pfree(infos);
+  return;
+}
+
+/**
  * @brief Build the containment hierarchy of closed boundary rings.
  * @details For every ring, the immediate containing ring is identified
  * using the containment relation between rings. No ring orientation or
@@ -2898,7 +2957,7 @@ buffer_ring_contains_ring(const BufferRingInfo *outer,
  *   ...
  */
 static bool
-buffer_classify_rings(const MeosArray *rings, int32_t srid,
+buffer_classify_rings(MeosArray *rings, int32_t srid,
   MeosArray *classified)
 {
   assert(rings); assert(classified);
@@ -2912,11 +2971,10 @@ buffer_classify_rings(const MeosArray *rings, int32_t srid,
   uint32_t kept = 0;
   for (uint32_t i = 0; i < count; i++)
   {
-    const BufferRingInfo *ring_info =
-      (BufferRingInfo *) meos_array_get(rings, i);
+    BufferRingInfo *ring_info = (BufferRingInfo *) meos_array_get(rings, i);
     if (! ring_info || ! ring_info->ring || ! ring_info->pieces)
     {
-      pfree(info);
+      buffer_ring_infos_free(info, kept);
       return false;
     }
     info[kept] = *ring_info;
@@ -2932,6 +2990,10 @@ buffer_classify_rings(const MeosArray *rings, int32_t srid,
     if (! buffer_ring_representative_point(info[kept].ring, srid,
         &info[kept].x, &info[kept].y))
       continue;
+    /* The ring and its pieces are held by the classification from here, and
+     * the chain they are taken from gives them up: one owner releases them */
+    ring_info->ring = NULL;
+    ring_info->pieces = NULL;
     kept++;
   }
   count = kept;
@@ -2993,7 +3055,7 @@ buffer_classify_rings(const MeosArray *rings, int32_t srid,
          * non-intersecting ring hierarchy */
         if (parent >= 0)
         {
-          pfree(contains); pfree(info);
+          pfree(contains); buffer_ring_infos_free(info, count);
           return false;
         }
         parent = (int32_t) j;
@@ -3012,7 +3074,7 @@ buffer_classify_rings(const MeosArray *rings, int32_t srid,
     {
       if ((uint32_t) current >= count)
       {
-        pfree(contains); pfree(info);
+        pfree(contains); buffer_ring_infos_free(info, count);
         return false;
       }
       depth++;
@@ -3020,7 +3082,7 @@ buffer_classify_rings(const MeosArray *rings, int32_t srid,
       /* A valid containment hierarchy is acyclic */
       if (++steps > count)
       {
-        pfree(contains); pfree(info);
+        pfree(contains); buffer_ring_infos_free(info, count);
         return false;
       }
     }
@@ -3037,12 +3099,12 @@ buffer_classify_rings(const MeosArray *rings, int32_t srid,
     int32_t parent = info[i].parent;
     if (parent < 0 || (uint32_t) parent >= count)
     {
-      pfree(contains); pfree(info);
+      pfree(contains); buffer_ring_infos_free(info, count);
       return false;
     }
     if ((info[parent].depth & 1) != 0)
     {
-      pfree(contains); pfree(info);
+      pfree(contains); buffer_ring_infos_free(info, count);
       return false;
     }
     info[i].shell = parent;
@@ -3247,7 +3309,7 @@ buffer_normalize_ring_orientations(MeosArray *classified, int32_t srid)
  * Shells and holes are already oriented by the preceding topology stage.
  */
 static LWGEOM *
-buffer_build_surfaces_from_classified_rings(const MeosArray *classified,
+buffer_build_surfaces_from_classified_rings(MeosArray *classified,
   int32_t srid)
 {
   assert(classified);
@@ -3270,8 +3332,7 @@ buffer_build_surfaces_from_classified_rings(const MeosArray *classified,
   /* Construct one CURVEPOLYGON for every shell */
   for (uint32_t i = 0; i < classified->count; i++)
   {
-    const BufferRingInfo *shell =
-      (const BufferRingInfo *) meos_array_get(classified, i);
+    BufferRingInfo *shell = (BufferRingInfo *) meos_array_get(classified, i);
     if (! shell)
       goto fail;
     /* Odd depth means hole */
@@ -3280,23 +3341,23 @@ buffer_build_surfaces_from_classified_rings(const MeosArray *classified,
     LWCURVEPOLY *polygon = lwcurvepoly_construct_empty(srid, 0, 0);
     if (! polygon)
       goto fail;
-    /* Add the shell.
-     * The output geometry receives its own copy because the classified
-     * ring remains owned by BufferRingInfo until the classification
-     * array is destroyed. */
-    LWCOMPOUND *shell_ring = (LWCOMPOUND *) lwgeom_clone(
-        lwcompound_as_lwgeom(shell->ring));
+    /* Add the shell. A ring bounds exactly one surface, as a shell or as the
+     * hole of one shell, so the surface TAKES the ring rather than copying it
+     * and the classification gives it up. #lwgeom_clone() would share the
+     * point arrays of the ring rather than copy them, leaving the surface
+     * reading what releasing the classification releases */
+    LWCOMPOUND *shell_ring = shell->ring;
     if (! shell_ring)
     {
       lwgeom_free(lwcurvepoly_as_lwgeom(polygon));
       goto fail;
     }
+    shell->ring = NULL;
     buffer_curvepoly_add_ring(polygon, shell_ring);
     /* Attach only the holes whose immediate shell is this shell */
     for (uint32_t j = 0; j < classified->count; j++)
     {
-      const BufferRingInfo *hole =
-        (const BufferRingInfo *) meos_array_get(classified, j);
+      BufferRingInfo *hole = (BufferRingInfo *) meos_array_get(classified, j);
       if (! hole)
       {
         lwgeom_free(lwcurvepoly_as_lwgeom(polygon));
@@ -3306,13 +3367,13 @@ buffer_build_surfaces_from_classified_rings(const MeosArray *classified,
         continue;
       if (hole->shell != (int32_t) i)
         continue;
-      LWCOMPOUND *hole_ring = (LWCOMPOUND *) lwgeom_clone(
-          lwcompound_as_lwgeom(hole->ring));
+      LWCOMPOUND *hole_ring = hole->ring;
       if (! hole_ring)
       {
         lwgeom_free(lwcurvepoly_as_lwgeom(polygon));
         goto fail;
       }
+      hole->ring = NULL;
       buffer_curvepoly_add_ring(polygon, hole_ring);
     }
     surfaces[surface_count++] = lwcurvepoly_as_lwgeom(polygon);
@@ -3348,7 +3409,7 @@ fail:
  * Each hole is assigned to its immediate containing shell.
  */
 static LWGEOM *
-buffer_build_surfaces_from_rings(const MeosArray *rings, int32_t srid)
+buffer_build_surfaces_from_rings(MeosArray *rings, int32_t srid)
 {
   assert(rings);
   if (rings->count == 0)
@@ -3357,25 +3418,28 @@ buffer_build_surfaces_from_rings(const MeosArray *rings, int32_t srid)
     return lwcurvepoly_as_lwgeom(empty);
   }
   /* The classification array contains one BufferRingInfo for each
-   * closed boundary ring */
+   * closed boundary ring, and holds the ring and the pieces of every one it
+   * takes from @p rings */
   MeosArray *classified = meos_array_create(sizeof(BufferRingInfo));
   if (! classified)
     return NULL;
   if (! buffer_classify_rings(rings, srid, classified))
   {
-    meos_array_destroy(classified);
+    buffer_ring_infos_destroy(classified);
     return NULL;
   }
   /* Normalize shell/hole orientation only after the containment
    * hierarchy has been established */
   if (! buffer_normalize_ring_orientations(classified, srid))
   {
-    meos_array_destroy(classified);
+    buffer_ring_infos_destroy(classified);
     return NULL;
   }
+  /* The surfaces are built from copies of the rings, so the classification
+   * still holds the rings themselves and releases them */
   LWGEOM *result = buffer_build_surfaces_from_classified_rings(classified,
     srid);
-  meos_array_destroy(classified);
+  buffer_ring_infos_destroy(classified);
   return result;
 }
 
@@ -3394,13 +3458,13 @@ buffer_make_surfaces_from_pieces(const MeosArray *pieces, int32_t srid)
     return NULL;
   if (! buffer_chain_ring_infos(pieces, srid, rings))
   {
-    meos_array_destroy(rings);
+    buffer_ring_infos_destroy(rings);
     return NULL;
   }
   LWGEOM *result = buffer_build_surfaces_from_rings(rings, srid);
-  /* The CURVEPOLYGON now owns the ring geometries. 
-   * Only the array of pointers has to be destroyed here. */
-  meos_array_destroy(rings);
+  /* The classification holds the rings it takes, and what stays here is what
+   * it leaves: a ring bounding no area, which it drops */
+  buffer_ring_infos_destroy(rings);
   return result;
 }
 
