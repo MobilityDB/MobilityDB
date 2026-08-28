@@ -2144,6 +2144,35 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
+ * @brief Return the collection a set of geometries stands for
+ * @details #lwcollection_construct() reads the Z and M dimensions of the
+ * collection from its first member and refuses a set whose members do not
+ * share them, answering @p NULL. That is not a collection an arm can be given:
+ * the arms read their members through it, so a null one is dereferenced rather
+ * than reported. The members and the array are released with the refusal, so a
+ * caller answered @p NULL has nothing left to free
+ * @param[in] geoms Array of geometries, owned by this function
+ * @param[in] ngeoms Number of elements in the array, at least one
+ * @param[in] srid Spatial reference identifier
+ * @return The collection, which owns the array and its members, or @p NULL
+ * where the members do not share their dimensions
+ */
+static LWCOLLECTION *
+union_collection_make(LWGEOM **geoms, uint32_t ngeoms, int32_t srid)
+{
+  assert(geoms); assert(ngeoms > 0);
+  LWCOLLECTION *result = lwcollection_construct(COLLECTIONTYPE, srid, NULL,
+    ngeoms, geoms);
+  if (! result)
+  {
+    for (uint32_t i = 0; i < ngeoms; i++)
+      lwgeom_free(geoms[i]);
+    pfree(geoms);
+  }
+  return result;
+}
+
+/**
  * @brief Return the union of an array of geometries whose members are all
  * surfaces, read from their boundaries
  * @details The array is presented to #meos_areal_union() as the collection it
@@ -2170,10 +2199,12 @@ geom_array_areal_union(GSERIALIZED **gsarr, int count)
     pfree(geoms);
     return NULL;
   }
-  /* #lwcollection_construct() takes ownership of the array it is given, so
+  /* #union_collection_make() takes ownership of the array it is given, so
    * geoms must not be freed after this call */
-  LWCOLLECTION *coll = lwcollection_construct(COLLECTIONTYPE,
-    gserialized_get_srid(gsarr[0]), NULL, (uint32_t) ngeoms, geoms);
+  LWCOLLECTION *coll = union_collection_make(geoms, (uint32_t) ngeoms,
+    gserialized_get_srid(gsarr[0]));
+  if (! coll)
+    return NULL;
   LWGEOM *lwresult = meos_areal_union(lwcollection_as_lwgeom(coll));
   GSERIALIZED *result = lwresult ? geo_serialize(lwresult) : NULL;
   if (lwresult)
@@ -2233,10 +2264,12 @@ geom_array_linear_union(GSERIALIZED **gsarr, int count, bool geodetic)
     pfree(geoms);
     return NULL;
   }
-  /* #lwcollection_construct() takes ownership of the array it is given, so
+  /* #union_collection_make() takes ownership of the array it is given, so
    * geoms must not be freed after this call */
-  LWCOLLECTION *coll = lwcollection_construct(COLLECTIONTYPE,
-    gserialized_get_srid(gsarr[0]), NULL, (uint32_t) ngeoms, geoms);
+  LWCOLLECTION *coll = union_collection_make(geoms, (uint32_t) ngeoms,
+    gserialized_get_srid(gsarr[0]));
+  if (! coll)
+    return NULL;
   LWGEOM *lwresult = meos_linear_union(lwcollection_as_lwgeom(coll));
   GSERIALIZED *result = NULL;
   if (lwresult)
@@ -2340,14 +2373,27 @@ geom_array_mixed_union(GSERIALIZED **gsarr, int count)
     return NULL;
   }
 
-  /* #lwcollection_construct() takes ownership of the array it is given and of
+  /* #union_collection_make() takes ownership of the array it is given and of
    * its members, so neither is freed other than through the collection. A half
    * holding a single member is the collection of one, which each arm answers
-   * by returning that member -- there is no count the arms must be spared */
-  LWCOLLECTION *acoll = lwcollection_construct(COLLECTIONTYPE, srid, NULL,
-    nareal, areal);
-  LWCOLLECTION *ocoll = lwcollection_construct(COLLECTIONTYPE, srid, NULL,
-    nother, other);
+   * by returning that member -- there is no count the arms must be spared.
+   * A half whose members do not share their dimensions is no collection, and
+   * the other half is then released here rather than through one */
+  LWCOLLECTION *acoll = union_collection_make(areal, nareal, srid);
+  LWCOLLECTION *ocoll = acoll ?
+    union_collection_make(other, nother, srid) : NULL;
+  if (! acoll || ! ocoll)
+  {
+    if (! acoll)
+    {
+      for (uint32_t i = 0; i < nother; i++)
+        lwgeom_free(other[i]);
+      pfree(other);
+    }
+    if (acoll)
+      lwcollection_free(acoll);
+    return NULL;
+  }
   LWGEOM *lwareal = meos_areal_union(lwcollection_as_lwgeom(acoll));
   LWGEOM *lwother = lwareal ?
     meos_linear_union(lwcollection_as_lwgeom(ocoll)) : NULL;
@@ -2417,9 +2463,17 @@ geom_array_mixed_union(GSERIALIZED **gsarr, int count)
   for (int i = 0; i < nacomps; i++)
     members[nmembers++] = lwgeom_clone_deep(acomps[i]);
   pfree(dropped); pfree(ocomps); pfree(acomps);
-  /* #lwcollection_construct() takes ownership of the array it is given */
-  LWCOLLECTION *coll = lwcollection_construct(COLLECTIONTYPE, srid, NULL,
-    (uint32_t) nmembers, members);
+  /* #union_collection_make() takes ownership of the array it is given. The two
+   * halves are each a collection, and yet what they draw together need not be:
+   * a surface carrying Z and a line that does not are two answers no single
+   * collection holds, and that array is left to the caller as the halves were */
+  LWCOLLECTION *coll = union_collection_make(members, (uint32_t) nmembers,
+    srid);
+  if (! coll)
+  {
+    lwgeom_free(lwareal); lwgeom_free(lwother);
+    return NULL;
+  }
   result = geo_serialize(lwcollection_as_lwgeom(coll));
   lwcollection_free(coll);
   lwgeom_free(lwareal); lwgeom_free(lwother);

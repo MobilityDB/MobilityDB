@@ -754,6 +754,61 @@ int main(void)
   }
   meos_errno_reset();
 
+  /* The members of an array need not share their dimensions, while the
+   * collection the arms read them through must: #lwcollection_construct()
+   * refuses a set whose members carry different Z and M flags and answers
+   * NULL, and an arm given that NULL read the geometry through it. Every arm
+   * builds one -- the surfaces, the linework, and both halves of an array
+   * spanning the areal boundary, which builds a third for the answer it
+   * assembles -- so each of them is given a mixture here */
+  const char *dimcases[][2] = {
+    /* the linear arm, whose members are points */
+    { "POINT Z(0 0 1)", "POINT(1 1)" },
+    /* the linear arm, whose members are curves */
+    { "LINESTRING Z(0 0 1,1 1 1)", "LINESTRING(5 5,6 6)" },
+    /* the areal arm */
+    { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
+      "POLYGON((9 9,9 11,11 11,11 9,9 9))" },
+    /* both arms together, each half uniform and the answer mixed */
+    { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))", "LINESTRING(1 1,5 5)" },
+    /* a measure is a dimension of the collection as an elevation is */
+    { "POINT ZM(0 0 1 2)", "POINT Z(1 1 1)" },
+    { "POINT M(0 0 1)", "POINT(1 1)" },
+  };
+  for (size_t i = 0; i < sizeof(dimcases) / sizeof(dimcases[0]); i++)
+  {
+    GSERIALIZED *dm1 = geom_in(dimcases[i][0], -1);
+    GSERIALIZED *dm2 = geom_in(dimcases[i][1], -1);
+    assert(dm1 != NULL); assert(dm2 != NULL);
+    GSERIALIZED *dmarr[2] = {dm1, dm2};
+    meos_errno_reset();
+    GSERIALIZED *dmu = geom_array_union(dmarr, 2);
+    /* Which answer comes back is the arm's to give, and what is asserted here
+     * is that the array is ANSWERED: a union, or the refusal reported through
+     * the error. Reading the refused collection ended the process instead */
+    printf("union of %s with %s: %s\n", dimcases[i][0], dimcases[i][1],
+      dmu ? "answered" : "declined");
+    assert(dmu != NULL || meos_errno() != 0);
+    free(dm1); free(dm2);
+    if (dmu)
+      free(dmu);
+    meos_errno_reset();
+  }
+
+  /* The control is the same array with its members sharing one dimension,
+   * which is answered exactly as before */
+  GSERIALIZED *dmz1 = geom_in("POINT Z(0 0 1)", -1);
+  GSERIALIZED *dmz2 = geom_in("POINT Z(1 1 1)", -1);
+  GSERIALIZED *dmzarr[2] = {dmz1, dmz2};
+  GSERIALIZED *dmzu = geom_array_union(dmzarr, 2);
+  assert(dmzu != NULL);
+  assert(meos_errno() == 0);
+  char *dmzwkt = geo_as_text(dmzu, 3);
+  printf("union of two elevated positions: %s\n", dmzwkt);
+  assert(strcmp(dmzwkt, "MULTIPOINT Z ((0 0 1),(1 1 1))") == 0);
+  free(dmz1); free(dmz2); free(dmzu); free(dmzwkt);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 
