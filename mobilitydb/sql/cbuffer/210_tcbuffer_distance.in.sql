@@ -54,7 +54,7 @@ CREATE FUNCTION distance(cbuffer, stbox)
   AS 'MODULE_PATHNAME', 'Distance_cbuffer_stbox'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, cbuffer)
-  RETURNS tfloat
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_cbuffer_cbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

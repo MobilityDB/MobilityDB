@@ -26,6 +26,31 @@
 -- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 --
 -------------------------------------------------------------------------------
+-- distance
+-------------------------------------------------------------------------------
+
+SELECT round(distance(geometry 'Point(1 0)', cbuffer 'Cbuffer(Point(4 0),0.5)'), 6);
+SELECT round(distance(stbox 'STBOX X((1,-1),(3,1))', cbuffer 'Cbuffer(Point(4 0),0.5)'), 6);
+SELECT round(distance(cbuffer 'Cbuffer(Point(4 0),0.5)', geometry 'Point(1 0)'), 6);
+SELECT round(distance(cbuffer 'Cbuffer(Point(4 0),0.5)', stbox 'STBOX X((1,-1),(3,1))'), 6);
+SELECT round(distance(cbuffer 'Cbuffer(Point(0 0),0.5)', cbuffer 'Cbuffer(Point(3 4),0.5)'), 6);
+
+SELECT round(geometry 'Point(1 0)' <-> cbuffer 'Cbuffer(Point(4 0),0.5)', 6);
+SELECT round(stbox 'STBOX X((1,-1),(3,1))' <-> cbuffer 'Cbuffer(Point(4 0),0.5)', 6);
+SELECT round(cbuffer 'Cbuffer(Point(4 0),0.5)' <-> geometry 'Point(1 0)', 6);
+SELECT round(cbuffer 'Cbuffer(Point(4 0),0.5)' <-> stbox 'STBOX X((1,-1),(3,1))', 6);
+SELECT round(cbuffer 'Cbuffer(Point(0 0),0.5)' <-> cbuffer 'Cbuffer(Point(3 4),0.5)', 6);
+
+-- The radii cover the gap between the centres, so the distance is zero
+SELECT round(cbuffer 'Cbuffer(Point(0 0),3)' <-> cbuffer 'Cbuffer(Point(3 4),3)', 6);
+SELECT round(cbuffer 'Cbuffer(Point(0 0),0)' <-> cbuffer 'Cbuffer(Point(0 0),0)', 6);
+SELECT round(cbuffer 'SRID=5676;Cbuffer(Point(0 0),0.5)' <->
+  cbuffer 'SRID=5676;Cbuffer(Point(3 4),0.5)', 6);
+SELECT round(geometry 'Point empty' <-> cbuffer 'Cbuffer(Point(4 0),0.5)', 6);
+
+-------------------------------------------------------------------------------
+-- tDistance
+-------------------------------------------------------------------------------
 
 SELECT round(geometry 'Point(1 1)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 6);
 SELECT round(geometry 'Point(1 1)' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 6);
