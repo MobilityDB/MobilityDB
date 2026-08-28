@@ -1,0 +1,54 @@
+SELECT ts2cell '54b5c9@2000-01-01' << ts2cell '47c3c3@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cell '47c3c3@2000-01-01' >> ts2cell '54b5c9@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cell '47c3c3@2000-01-01' |>> ts2cell '54b5c9@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cell '54b5c9@2000-01-01' <<| ts2cell '47c3c3@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cell '47c3c3@2000-01-01' &< ts2cell '47c3c3@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cell '47c3c3@2000-01-01' <<# ts2cell '54b5c9@2000-01-02';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cell '54b5c9@2000-01-02' #>> ts2cell '47c3c3@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cell '47c3c3@2000-01-01' &<# ts2cell '47c3c3@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cell '47c3c3@2000-01-01' <<# tstzspan '[2000-01-02, 2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
