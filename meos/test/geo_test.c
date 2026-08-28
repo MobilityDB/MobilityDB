@@ -542,6 +542,15 @@ int main(void)
   assert(within != NULL);
   assert(nwithin == 1);
   assert(meos_errno() == 0);
+  /* Both entries answer a fresh array of fresh collections, so the array and
+   * every collection in it belong to this caller. The geometries themselves
+   * are released once the entries reading them are done, further down */
+  for (int i = 0; i < nclusters; i++)
+    free(clusters[i]);
+  free(clusters);
+  for (int i = 0; i < nwithin; i++)
+    free(within[i]);
+  free(within);
   meos_errno_reset();
 
   /* Clustering geometries of different SRIDs is an error */
@@ -582,6 +591,11 @@ int main(void)
   printf("clusterKMeans without an output parameter: errno %d\n",
     meos_errno());
   assert(meos_errno() != 0);
+  /* The last entry reading them has answered, so the parsed geometries go */
+  for (int i = 0; i < 4; i++)
+    free((GSERIALIZED *) cl[i]);
+  for (int i = 0; i < 2; i++)
+    free((GSERIALIZED *) mixed[i]);
   meos_errno_reset();
 
   /* A ring that encloses no area draws its own linework and bounds no
@@ -598,6 +612,7 @@ int main(void)
   assert(geom_relate_pattern(realsq, square2, "**2******") == true);
   printf("a ring enclosing no area relates as the linework it draws\n");
   assert(meos_errno() == 0);
+  free(square2); free(noarea); free(realsq);
   meos_errno_reset();
 
   /* Two members of a multipolygon may share a boundary edge, and that edge
@@ -622,6 +637,7 @@ int main(void)
   assert(geom_relate_pattern(adjtin, diag, "1********") == true);
   printf("a TIN covers what its triangles cover written any other way\n");
   assert(meos_errno() == 0);
+  free(adjmp); free(adjtin);
   meos_errno_reset();
 
   /* A polyhedral surface covers what its faces cover, and the unit cube is the
@@ -645,7 +661,9 @@ int main(void)
   printf("a closed polyhedral surface covers what it projects to\n");
   assert(meos_errno() == 0);
   meos_errno_reset();
-  free(cube);
+  /* The square and the diagonal are read by the cube as well as by the
+   * surfaces above, so they go with the last reader of them */
+  free(cube); free(adjsq); free(diag);
 
   /* The overlay answers NULL for a geometry it cannot read -- a polyhedral
    * surface reaches the default arm of LWGEOM2GEOS, whose lwerror the MEOS
