@@ -50,12 +50,13 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
   └── TSpatial<T>        tspatial_type      = tgeompoint tgeogpoint tnpoint tpose
         │                                     tposechain tcbuffer tgeometry
         │                                     tgeography trgeometry th3index
-        │                                     tquadbin tpcpoint tpcpatch (13)
+        │                                     tquadbin ts2cell tpcpoint
+        │                                     tpcpatch (14)
         ├── TGeo<T>      tgeo_type          = tgeometry, tgeography          (catalog:1325)
         │   (all)        tgeo_type_all      = + tgeompoint + tgeogpoint (4)   (catalog:1350)
         │     ├── TGeometry  ├── TGeography
         │     └── TPoint<T>  tpoint_type    = tgeompoint, tgeogpoint         (catalog:1303)
-        ├── Tcell<T>     tcellindex_type    = th3index, tquadbin, ts2cell (3) (tcellindex.c:66)
+        ├── Tcell<T>     tcellindex_type    = th3index, tquadbin, ts2cell (3) (tcellindex.c:71)
         │     │                               all wired via DggsCellOps     (§5a)
         │     ├── TH3Index  ├── TQuadbin  └── TS2Cell
         ├── TPointcloud  tpointcloud_temptype = tpcpoint, tpcpatch  (#if POINTCLOUD)
@@ -246,15 +247,15 @@ point in pure SQL (§6, `320_tnpoint_spatialrels`).
 
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |
 |---|---|---|---|
-| Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, both full coverage (`--gaps`: `io_families` 18/18, `representation_families` 18/18): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **13 entries** (temporal, geo, tpoint, cbuffer, npoint, pose, posechain, rgeo, h3, quadbin, pointcloud, pointcloud_patch, json). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **18 entries**: the same 13 temporal families plus the five base-value entries `npoint_base`, `pose_base`, `posechain_base`, `cbuffer_base`, `raquet_base`, whose representations belong to the base type rather than to its temporal type |
+| Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, each missing `ts2cell` alone (`--gaps`: `io_families` 19/20, `representation_families` 19/20): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **13 entries** (temporal, geo, tpoint, cbuffer, npoint, pose, posechain, rgeo, h3, quadbin, pointcloud, pointcloud_patch, json). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **18 entries**: the same 13 temporal families plus the five base-value entries `npoint_base`, `pose_base`, `posechain_base`, `cbuffer_base`, `raquet_base`, whose representations belong to the base type rather than to its temporal type |
 | Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **13 entries** all `reference: true` (temporal, cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) |
-| Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **8 entries** (temporal, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `--gaps`: `conversion_families` 15/18, missing tgeography, tpcpoint, tpcpatch. `geo`/`tpoint` have no dedicated entry: their conversion surface is already named as the RETURNS/argument type of other families' declarations (e.g. rgeo's `tgeometry(trgeometry)`) |
+| Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **8 entries** (temporal, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `--gaps`: `conversion_families` 15/20, missing tposechain, tgeography, ts2cell, tpcpoint, tpcpatch. `geo`/`tpoint` have no dedicated entry: their conversion surface is already named as the RETURNS/argument type of other families' declarations (e.g. rgeo's `tgeometry(trgeometry)`) |
 | Accessors | `temporal_` | ✓ **GEN** | `accessors.sql.tmpl` multi-base renderer from base `022_temporal.in.sql` — the value/time/generic set for ALL families (§4c); per-family value shape = manifest `types:` tokens. A few interleaved/positional accessors stay hand per family |
 | Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **13 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample. ⛔ `tsample` and `tprecision` are NOT the same surface and the manifest is the record of which family carries which: **`tsample` 10** (temporal, cbuffer, h3, json, npoint, pose, posechain, quadbin, tpcpatch, tpcpoint) against **`tprecision` 7** (temporal, cbuffer, h3, pose, posechain, quadbin, rgeo). `tsample` SELECTS the value holding at a bin boundary, so it applies to every temporal type; `tprecision` SYNTHESIZES one value per bin as a time-weighted average, so it applies only where the value type carries such an average — `ensure_has_twavg_temptype()` in `meos/src/temporal/temporal_analytics.c` is the kernel's own list. A family in the first set and not the second is either a gap to close or an exception to argue; the per-type table sits under §4b |
 | Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **13 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
 | Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **13 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
 | **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
-| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (13 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pointcloud, pointcloud_patch, pose, posechain, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 19/19, full coverage. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 13 entries. ⛔ Each hash entry's LEADING `lit` is the bare `/****/` divider standing between the B-tree opclass and the hash block, because a region starts at the divider preceding its `begin` anchor: without that divider the hash region reaches back to the comparison banner and the entry has to carry the comparison section too; `--gaps`: `hash_families` 19/19, full coverage |
+| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (13 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pointcloud, pointcloud_patch, pose, posechain, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 19/20, missing `ts2cell` (§5a). The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 13 entries. ⛔ Each hash entry's LEADING `lit` is the bare `/****/` divider standing between the B-tree opclass and the hash block, because a region starts at the divider preceding its `begin` anchor: without that divider the hash region reaches back to the comparison banner and the entry has to carry the comparison section too; `--gaps`: `hash_families` 19/20, missing `ts2cell` (§5a) |
 | Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl` + one shared `render_compops_body` engine, fed by two manifest tracks: `compops_families` (multi-pair families — temporal's 5 base types on one generic base/temporal C symbol per op, tgeo/tpoint's geometry+geography pair on one generic geo/tgeo C symbol per op) and the `subtypes:` `compops` behaviour (every one-pair family — cbuffer, jsonb, quadbin, h3index, s2cell, npoint, pose, trgeometry, pcpoint, pcpatch). `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions); a pair whose temporal type the catalog's `torder_type` holds (temporal's int/bigint/float/text) additionally gets `eLt…aGe` + `?<…%>=`. A `compops_families` `pairs:` entry names only its `temp` type — `base` is never hand-paired alongside it; `render_compops` derives it from `catalog_temptype_basetype()`, read from meos_catalog.c's own `MEOS_RELTYPE_CATALOG[...].temptype_basetype` field, the same table `temptype_basetype()` reads at runtime for these functions' MEOS entry point. This makes a mismatched pair (`temp: tfloat` naming `base: integer`, which would render `tGt(tfloat, integer)` while the C entry point still derives float8 from the temp type alone) unrepresentable — the generator raises if a pair still carries a `base:` key |
 | Comparisons → Temporal | `temporal_` | ✓ **GEN** | same engine as Ever/Always above — renders `tEq`/`tNe`/`tLt`/`tGt`/`tLe`/`tGe` → `#=`/`#<>`/`#<`/`#>`/`#<=`/`#>=` in the same pass, not a separate template |
 | Miscellaneous | `temporal_` | ✗ HAND | |
@@ -331,7 +332,7 @@ pose into its position and a circular mean of its angle.
 | tcbuffer, tpose, trgeometry | per-parameter summary | carried |
 | **tnpoint** | position averages on the route the bin shares | carried; a bin spanning two routes has no network point to answer with and raises, the rule the sequence constructor already states |
 | **tposechain** | per-link pose average, the chain keeping its shape | carried; link count is an invariant of the whole value, so link *n* always has a counterpart |
-| **th3index, tquadbin** | — | ⛔ **RULED EXCEPTION, not a gap.** A cell identifier is an area and an identity, not a position. Both design notes state *"Int64 ordering is arbitrary with respect to grid geometry"*, so no arithmetic touches the value; a centroid-of-centres would have to leave cell space and return, and the type constrains neither the resolution (one valid value holds cells of resolution 3 and 10) nor the pentagon and antimeridian cases the notes warn of. `tsample` answers the real need by returning a cell the value actually holds |
+| **th3index, tquadbin, ts2cell** | — | ⛔ **RULED EXCEPTION, not a gap.** A cell identifier is an area and an identity, not a position. The h3 and quadbin design notes state *"Int64 ordering is arbitrary with respect to grid geometry"*, so no arithmetic touches the value. ⛔ S2 reaches the SAME exception by a DIFFERENT route and the distinction is worth keeping: an S2 identifier IS spatially coherent — the descendants of a cell occupy one contiguous interval of the Hilbert curve — yet an average of cell identifiers still names no cell, so the exception holds on what the value MEANS rather than on its ordering. a centroid-of-centres would have to leave cell space and return, and the type constrains neither the resolution (one valid value holds cells of resolution 3 and 10) nor the pentagon and antimeridian cases the notes warn of. `tsample` answers the real need by returning a cell the value actually holds |
 | **tgeometry, tgeography** | — | open: `centroid()` runs on both, so a bin reduces to a point, but no `twCentroid` aggregate exists over them and a point-valued result changes what the value depicts |
 | **tjsonb** | — | a JSON document has no average |
 | **tpcpoint, tpcpatch** | — | open: both carry `tsample` and `centroid(tpcpoint)` exists, so these are candidates of the same shape as `tnpoint` rather than settled exceptions |
@@ -415,8 +416,9 @@ a separate, small hand surface (components/coordinates), orthogonal to the inher
 
 ### 4e. Input/Output generation scope
 
-The Input/Output `<sect1>` is **two token-shaped sub-families**, both fully governed
-(`--gaps`: `io_families` 18/18, `representation_families` 18/18); both mirror the
+The Input/Output `<sect1>` is **two token-shaped sub-families**, each governed for
+every member but `ts2cell` (`--gaps`: `io_families` 19/20,
+`representation_families` 19/20, §5a); both mirror the
 `accessor_families` model (per-type `types:` rows, region-marked blocks in a
 reference file, `--validate` byte-for-byte).
 
@@ -550,17 +552,43 @@ The generic inherited Tcell API (declared in the umbrella header
 | aspect | state |
 |---|---|
 | C implementation | **unified once** via `DggsCellOps` — the `Tcell` C surface is effectively "generated" (single generic body, per-DGGS descriptor) |
-| catalog predicate `tcellindex_type()` | **both cell families** (`#if H3 → T_TH3INDEX`, `#if QUADBIN → T_TQUADBIN`, `tcellindex.c:66-76`) |
+| catalog predicate `tcellindex_type()` | **all three cell families** (`#if H3 → T_TH3INDEX`, `#if QUADBIN → T_TQUADBIN`, `#if S2CELL → T_TS2CELL`, `tcellindex.c:71-84`) |
 | descriptor registered | `h3_cellops` (`meos/src/h3/th3index_ops.c:79`), `quadbin_cellops` (`meos/src/quadbin/tquadbin_ops.c:132`) and `s2_cellops` (`meos/src/s2cell/ts2cell_ops.c:146`), all dispatched from `dggs_cellops()` |
-| SQL wrappers (getResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`; names are the bare DggsCellOps slot names overloaded by argument type — a second, independent surface from the generic `tcellindex_*` descriptor path above, not sourced from it |
-| cell→boundary hook | the key inherited hook: `spatialrels.sql.tmpl` cast-delegates via `cellToBoundary($n)::tgeometry`, the bare DggsCellOps slot name — this IS generated (§6, h3 262 / quadbin 362) |
+| SQL wrappers (getResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`, s2cell `605_ts2cell_spatialfuncs`; names are the bare DggsCellOps slot names overloaded by argument type — a second, independent surface from the generic `tcellindex_*` descriptor path above, not sourced from it |
+| cell→boundary hook | the key inherited hook: `spatialrels.sql.tmpl` cast-delegates via `cellToBoundary($n)::tgeometry`, the bare DggsCellOps slot name — this IS generated (§6, h3 262 / quadbin 362 / s2cell 612) |
 
-⇒ **Remaining opportunity**: both DGGS families are wired onto `DggsCellOps` and
-`tcellindex_type()`, so the C implementation is unified and the two paths (typed
+⇒ **Remaining opportunity**: all three DGGS families are wired onto `DggsCellOps`
+and `tcellindex_type()`, so the C implementation is unified and the two paths (typed
 per-family functions, generic descriptor lift) agree slot-for-slot; the per-family
-SQL cell wrappers (`255_th3index_spatialfuncs`, `355_tquadbin_spatialfuncs`) could
-now be generated from a single `tcellindex` template instead of hand-written twice,
-since the underlying descriptor surface is identical across both families.
+SQL cell wrappers (`255_th3index_spatialfuncs`, `355_tquadbin_spatialfuncs`,
+`605_ts2cell_spatialfuncs`) could now be generated from a single `tcellindex`
+template instead of hand-written three times, since the underlying descriptor
+surface is identical across the three.
+
+⛔ **THE THREE ARE AT PARITY IN THE SHIPPED SQL AND NOT IN THE MANIFESTS.**
+`mobilitydb/sql/s2cell/` holds 600–623, the same fourteen slot files `quadbin` holds
+at 350–373, and `generate.py --check` emits the same seven per family — s2cell 604,
+608, 609, 612, 614, 622, 623 against quadbin 354, 358, 359, 362, 364, 372, 373. But
+`--gaps` names `ts2cell` as the ONLY missing member of ten temporal-class axes, and
+`s2cellset` as the only missing member of two value-domain axes:
+
+| axis | coverage | missing |
+|---|---|---|
+| `accessor_families`, `comparison_families`, `constructor_families`, `hash_families`, `io_families`, `modification_families`, `representation_families`, `restriction_families`, `transformation_families` | 19/20 each | `ts2cell` |
+| `conversion_families` | 15/20 | `ts2cell`, and tposechain, tgeography, tpcpoint, tpcpatch |
+| `setop_families` | 17/18 | `s2cellset` |
+| `span_families` | 27/28 | `s2cellset` |
+
+⭐ Where S2 is already whole: `aggregate_families` 20/20 (`611_ts2cell_aggfuncs`),
+`compops_families` 20/20, `tempspatialrel_families` 14/14 (`614_ts2cell_tempspatialrels`)
+and `tiling_families` 20/20 (`607_ts2cell_boxops`).
+⛔ `distance_families` 10/16 is missing `s2cellset` AND `h3indexset`, `quadbinset`,
+`posechainset`, `pcpointset`, `pcpatchset` — a set-type-wide gap, NOT an S2 one; reading
+it as one over-counts the cell work.
+⛔ `tiling_families` names `th3index` and `quadbin` on their temporal-type file
+(253/353) beside their `_boxops` entry, and names S2 through `s2cell_boxops` alone.
+The shipped surface does not diverge — all three temporal-type files carry 97
+`CREATE FUNCTION` — so this is a governance gap, not a missing function.
 
 ## 6. Per-family gap — every inherited `.in.sql` file, generated vs hand
 
@@ -576,18 +604,19 @@ plain = the file exists but is still hand-maintained.
 | rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173** | 160 |
 | h3 (250) | **254** | 255 | **258** | **259** | — | **261** | **262** | **264** | **272**·**273** | **257** |
 | quadbin (350) | **354** | 355 | **358** | **359** | — | **361** | **362** | **364** | **372**·**373** | **357** |
+| s2cell (600) | **604** | 605 | **608** | **609** | — | **611** | **612** | **614** | **622**·**623** | **607** |
 
 Reading the table:
 - **`compops`/`topops`/`posops`/`idx` are generated for every derived family** via the
   `subtypes:` `files:` track (§3): cbuffer, npoint, pose, rgeo (`[compops, topops,
-  posops, indexes]`) and h3, quadbin (`[compops, posops, topops, spatialrels, gist,
-  spgist]`).
-- **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin**
-  via the whole-file `aggregate_families` axis (§4b), not the `subtypes:` track
-  (`--gaps`: `aggregate_families` 20/20, full coverage).
+  posops, indexes]`) and h3, quadbin, s2cell (`[compops, posops, topops, spatialrels,
+  gist, spgist]` — the three cell families declare one and the same list).
+- **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin,
+  s2cell** via the whole-file `aggregate_families` axis (§4b), not the `subtypes:`
+  track (`--gaps`: `aggregate_families` 20/20, full coverage).
 - **`tempsp.rels` is generated for cbuffer, npoint, pose, posechain, pointcloud
-  (both types), rgeo, h3, quadbin** via `tempspatialrel_families` (§3/§5) — native
-  for cbuffer, cast-delegated for the other eight (`--gaps`:
+  (both types), rgeo, h3, quadbin, s2cell** via `tempspatialrel_families` (§3/§5) —
+  native for cbuffer, cast-delegated for the other nine (`--gaps`:
   `tempspatialrel_families` 14/14, full coverage).
   ⭐ The cast target follows the value's geometry: an AREA-valued family reaches
   `tgeometry`, a POINT-valued one reaches `tgeompoint`. It is load-bearing rather
@@ -607,9 +636,9 @@ Reading the table:
   engine's `The tgeompoint cannot have Z dimension`, exactly as a 3-D `tgeompoint`
   does.
 - **`spatialrels` SQL** (the ever/always wrapper *file*) is generated for the
-  **cast-delegated families** (h3 262, quadbin 362, npoint 320, tpcpoint 443,
-  tpcpatch 449) via the `subtypes:` `spatialrels` behaviour — a
-  cell-boundary→`tgeometry` cast for h3/quadbin, a `tnpoint::tgeompoint` /
+  **cast-delegated families** (h3 262, quadbin 362, s2cell 612, npoint 320,
+  tpcpoint 443, tpcpatch 449) via the `subtypes:` `spatialrels` behaviour — a
+  cell-boundary→`tgeometry` cast for the three cell families, a `tnpoint::tgeompoint` /
   `tpcpoint::tgeompoint` cast for the two point families, a
   `tpcpatch::tgeometry` cast for the patch. ⛔ `native_ever_intersects` is the
   additive flag a family sets when its type file already declares
@@ -629,8 +658,9 @@ Reading the table:
   exists; hand everywhere.
 - **`boxops`** (the box-cast `.in.sql` file holding `spans`/`splitNSpans`/
   `splitEachNSpans`, not the C dispatcher) is generated via the `tiling_families`
-  axis (reference-block entries, no dedicated template) for **h3 (257)** and
-  **quadbin (357)** in this table — plus, outside the `subtypes:`-track family set
+  axis (reference-block entries, no dedicated template) for **h3 (257)**,
+  **quadbin (357)** and **s2cell (607)** in this table — plus, outside the
+  `subtypes:`-track family set
   above, for json/tjsonb (`459`) and pointcloud (`435`, one file covering both
   tpcpoint and tpcpatch). cbuffer (207), npoint (307), pose (107) and rgeo (160)
   stay hand.
@@ -709,7 +739,7 @@ its last edit:
 
 - The `subtypes:` `spatialrels` behaviour (the ever/always SQL wrapper *file*, as
   opposed to the C kernel above) covers the cast-delegated families (th3index,
-  tquadbin, tnpoint); cbuffer/pose/rgeo's own wrapper files (212/112/170) stay
+  tquadbin, ts2cell, tnpoint); cbuffer/pose/rgeo's own wrapper files (212/112/170) stay
   hand even though cbuffer's and rgeo's C kernel is generated.
 
 ⭐ **THE DISCRIMINATOR THAT DECIDES WHETHER A GAP IS MECHANICAL**, and it is one
@@ -763,8 +793,9 @@ TPose, TRGeometry}. Diffed against the live MEOS catalog predicates
 |---|---|---|---|
 | **TBigint** | `tbigint` (`tnumber_type` :1214) | TNumber | **in-scope leaf, omitted (defect)** — number family IS in `scope.inScopeTypeFamilies` |
 | **TJsonb** | `tjsonb` (`talpha_type` :1192) | TAlpha | in-scope family (alpha), omitted leaf |
-| **TH3Index** | `th3index` (`tspatial_type` :1280) | TSpatial → Tcell | deferred family (not in declared scope) |
-| **TQuadbin** | `tquadbin` (`tspatial_type` :1281) | TSpatial → Tcell | deferred family |
+| **TH3Index** | `th3index` (`tspatial_type` :1374) | TSpatial → Tcell | deferred family (not in declared scope) |
+| **TQuadbin** | `tquadbin` (`tspatial_type` :1375) | TSpatial → Tcell | deferred family |
+| **TS2Cell** | `ts2cell` (`tspatial_type` :1375) | TSpatial → Tcell | deferred family |
 | **TPcpoint** | `tpcpoint` (`tpointcloud_temptype` :1204) | TSpatial → TPointcloud | deferred family (`#if POINTCLOUD`) |
 | **TPcpatch** | `tpcpatch` (`tpointcloud_temptype` :1204) | TSpatial → TPointcloud | deferred family |
 | **Tcell / TCellIndex** (abstract) | `tcellindex_type()` | between TSpatial and cell leaves | missing intermediate |
@@ -772,8 +803,8 @@ TPose, TRGeometry}. Diffed against the live MEOS catalog predicates
 
 Notes:
 - The lattice's `scope.inScopeTypeFamilies` = `[temporal, alpha, number, geo, point,
-  cbuffer, npoint, pose, rgeo]` — it does **not** list h3/quadbin/pointcloud, so those
-  are *declared* deferrals. But **TBigint / TJsonb** belong to in-scope families
+  cbuffer, npoint, pose, rgeo]` — it does **not** list h3/quadbin/s2cell/pointcloud,
+  so those are *declared* deferrals. But **TBigint / TJsonb** belong to in-scope families
   (number / alpha) and are silent omissions → genuine curation defects.
 - The model's own correction **OM-M7 is stale**: it states `tpcpoint`/`tpcpatch`
   are "absent from master MEOS (0 hits)", but live master **has** them
@@ -835,7 +866,9 @@ inherited from the `ways` network table.
 
 ### 9.1b `SpatialSet<T>` — the subclass surface, derived from `Spatial<T>`
 
-`SpatialSet<T>` = `spatialset_type()` (**10** members). Its surface is the set-lift
+`SpatialSet<T>` = `spatialset_type()` (**11** members: `geomset` `geogset`
+`npointset` `poseset` `posechainset` `cbufferset` `h3indexset` `quadbinset`
+`s2cellset` `pcpointset` `pcpatchset`, `meos_catalog.c:950-955`). Its surface is the set-lift
 of what a spatial BASE type carries BECAUSE it is spatial — the operations left
 after removing what every value type has (comparisons, `hash`, the set operations,
 ever/always, `asText`/`asBinary`/`asHexWKB`). Counted from the `CREATE FUNCTION`
@@ -843,11 +876,11 @@ declarations under `mobilitydb/sql/`:
 
 | operation | why it is spatial | sets carrying it |
 |---|---|---|
-| `SRID` `setSRID` `transform` `transformPipeline` | identity of the reference system | 5/8 — absent from `npointset`, `h3indexset`, `quadbinset`, `s2cellset`, whose types IMPOSE or INHERIT the system (§9.1) |
-| `stbox` | the spatial bounding extent | 6/8 — absent from `h3indexset`, `quadbinset` |
-| `asEWKT` `asEWKB` `asHexEWKB` | the SRID-CARRYING representations | 6/8 — the `E` forms mirror their bases |
-| `round` | rounding of COORDINATES | 6/8 — a cell id carries no coordinates to round |
-| `distance` | ⭐ the OVERRIDE, below | 5/8 — absent from `posechainset`, `h3indexset`, `quadbinset` |
+| `SRID` `setSRID` `transform` `transformPipeline` | identity of the reference system | 5/11 — absent from `npointset`, `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`, whose types IMPOSE or INHERIT the system (§9.1) |
+| `stbox` | the spatial bounding extent | 6/11 — absent from `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset` |
+| `asEWKT` `asEWKB` `asHexEWKB` | the SRID-CARRYING representations | 6/11 — the `E` forms mirror their bases, so the same five are absent |
+| `round` | rounding of COORDINATES | 6/11 — the same five; a cell id carries no coordinates to round |
+| `distance` | ⭐ the OVERRIDE, below | 5/11 — absent from `posechainset`, `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset` |
 
 ⭐ **`distance` IS AN OVERRIDE, NOT AN ADDITION, AND IT IS THE ONE PLACE THE
 SUBCLASS REDEFINES A SUPERCLASS BEHAVIOUR.** `Set<T>` answers the distance of the
@@ -862,10 +895,11 @@ of it* — `distance_spanset_value()` is literally `distance_span_value(&ss->spa
 ⛔ A nearest-ELEMENT distance would CONTRADICT that ruling; it belongs to a
 separate, differently-named operation, never to a redefinition of `setDistance`.
 
-⛔ **THE ONE CELL NO PROPERTY EXPLAINS:** `stbox(h3index)` and `stbox(quadbin)` are
-declared while `stbox(h3indexset)` and `stbox(quadbinset)` are not, though both sets
-are named by `spatialset_type()` and so already store an STBox. A bounding box needs
-no agreement on a datum, so unlike the SRID rows this is a lift gap.
+⛔ **THE ONE CELL NO PROPERTY EXPLAINS:** `stbox(h3index)`, `stbox(quadbin)` and
+`stbox(s2cell)` are declared while `stbox(h3indexset)`, `stbox(quadbinset)` and
+`stbox(s2cellset)` are not, though all three sets are named by `spatialset_type()`
+and so already store an STBox. A bounding box needs no agreement on a datum, so
+unlike the SRID rows this is a lift gap, and it is the same gap in all three.
 
 ### 9.2 WHY the 17-vs-5 asymmetry
 
@@ -897,12 +931,12 @@ column names the `manifest.d/` key) · ✗ HAND = hand-maintained.
 | `<sect1>` (doc line) | `Set<T>` | `Span<T>` | `SpanSet<T>` | axis |
 |---|---|---|---|---|
 | Input and Output (:102) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (003/007 entries; sets: `set_io` + the per-family `*set_io` entries) |
-| Constructors (:268) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_constructors` + `*set_constructors`; h3/quadbin/pointcloud fold their singleton conversion + cast into this section) |
-| Conversions (:325) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_conversions` + `*set_conversions`; h3/quadbin/pointcloud have no separate Conversions section — see Constructors) |
+| Constructors (:268) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_constructors` + `*set_constructors`; h3/quadbin/pointcloud fold their singleton conversion + cast into this section; `s2cellset` is not governed here — `--gaps`: `span_families` 27/28, §5a) |
+| Conversions (:325) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_conversions` + `*set_conversions`; h3/quadbin/s2cell/pointcloud have no separate Conversions section — see Constructors) |
 | Accessors (:442) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_accessors` + `*set_accessors`; the pointcloud entries also carry the trailing `unnest`) |
 | Transformations (:693) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_transformations` + the per-family `*set_transformations`/`*set_unnest` entries; jsonbset's empty Transformations banner stays hand) |
-| Spatial Reference System (:901) | ✓ GEN (geoset/poseset/cbufferset — the only set files with an SRS section; npointset/h3indexset/quadbinset have no SRID functions) | — | — | `span_families` (`*set_srs` entries) |
-| Set Operations (:958) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/setop_families.yaml` · `span_families` (005/009) |
+| Spatial Reference System (:901) | ✓ GEN (geoset/poseset/posechainset/cbufferset — the only set files with an SRS section; npointset/h3indexset/quadbinset/s2cellset/pcpointset/pcpatchset have no SRID functions) | — | — | `span_families` (`*set_srs` entries) |
+| Set Operations (:958) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/setop_families.yaml` · `span_families` (005/009); `s2cellset` is not governed here — `--gaps`: `setop_families` 17/18, §5a |
 | BBox Ops · Topological (:1014) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/topop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Position (:1082) | ✓ GEN (ordered sets only) | ✓ GEN | ✓ GEN | `manifest.d/posop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Splitting (:1162) | ✓ GEN (`spans`/`splitNSpans`/`splitEachNSpans` live in `003_span.in.sql`) | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |
@@ -945,10 +979,11 @@ whole body is generator-governed by a `span_families` entry:
 | `Span<T>` | `003_span` ✓ | `005_span_ops` ✓ | `011_span_indexes` ✓ | `015_span_aggfuncs` ✓ |
 | `SpanSet<T>` | `007_spanset` ✓ | `009_spanset_ops` ✓ | `012_spanset_indexes` ✓ | shares `015` ✓ |
 
-plus the 8 per-family set files that instantiate `Set<T>` for the plug-in base
+plus the 10 per-family set files that instantiate `Set<T>` for the plug-in base
 types: `geo/050_geoset` · `pose/101_poseset` · `cbuffer/201_cbufferset` ·
 `h3/251_h3indexset` · `npoint/301_npointset` · `quadbin/351_quadbinset` ·
-`pointcloud/400_pcset` · `json/450_jsonbset` (the jsonb-specific path/element
+`pointcloud/400_pcset` · `json/450_jsonbset` · `posechain/551_posechainset` ·
+`s2cell/601_s2cellset` (the jsonb-specific path/element
 operators live separately in `json/451_jsonbset_jsonfuncs`). Their comparison /
 hash / set-operation / topological / position / distance regions are governed
 by the per-surface set axes; their I/O, constructor, conversion, accessor,
