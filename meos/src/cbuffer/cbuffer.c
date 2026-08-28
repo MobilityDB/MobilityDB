@@ -835,6 +835,7 @@ cbuffer_srid(const Cbuffer *cb)
 }
 
 /**
+ * @ingroup meos_internal_cbuffer_base_srid
  * @brief Set the coordinates of a circular buffer to an SRID
  * @param[in] cb Circular buffer
  * @param[in] srid SRID
