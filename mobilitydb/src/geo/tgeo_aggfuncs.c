@@ -142,7 +142,11 @@ PG_FUNCTION_INFO_V1(Tpoint_tcentroid_finalfn);
 Datum
 Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
+  /* See the note in Temporal_tagg_finalfn */
+  SkipList *state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);
+  if (! state)
+    PG_RETURN_NULL();
+
   Temporal *result = tpoint_tcentroid_finalfn(state);
   if (! result)
     PG_RETURN_NULL();
