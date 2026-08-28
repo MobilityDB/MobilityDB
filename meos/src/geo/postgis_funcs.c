@@ -2481,8 +2481,67 @@ geom_array_mixed_union(GSERIALIZED **gsarr, int count)
 }
 
 /**
- * @ingroup meos_geo_base_spatial
- * @brief Return the union of an array of geometries
+ * @brief Return the members of an array read on the dimensions they share
+ * @details A planar union answers the point set its members cover, and the Z
+ * and M ordinates of that answer are READ from the members rather than
+ * computed: a member carrying no elevation determines none for the points it
+ * contributes, and an answer declaring one would publish a value the array
+ * does not hold. The answer therefore carries an ordinate only where EVERY
+ * member contributing points carries it. An empty member contributes none, so
+ * it does not take an ordinate away from the members that do
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @return A new array holding the members read on their shared dimensions, or
+ * @p NULL where they already share them and the array itself is what the arms
+ * read. The caller releases the array and its members
+ */
+static GSERIALIZED **
+geom_array_shared_dims(GSERIALIZED **gsarr, int count)
+{
+  assert(gsarr); assert(count > 0);
+  bool hasz = true, hasm = true, mixed = false;
+  int nonempty = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (gserialized_is_empty(gsarr[i]))
+      continue;
+    nonempty++;
+    if (! gserialized_has_z(gsarr[i]))
+      hasz = false;
+    if (! gserialized_has_m(gsarr[i]))
+      hasm = false;
+  }
+  /* An array of empties carries no points to read an ordinate for */
+  if (nonempty == 0)
+    return NULL;
+  for (int i = 0; i < count && ! mixed; i++)
+  {
+    if (gserialized_is_empty(gsarr[i]))
+      continue;
+    mixed = ((bool) gserialized_has_z(gsarr[i]) != hasz ||
+      (bool) gserialized_has_m(gsarr[i]) != hasm);
+  }
+  /* Every member already carries what they share, and the array reads as it is */
+  if (! mixed)
+    return NULL;
+
+  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    LWGEOM *geom = lwgeom_from_gserialized(gsarr[i]);
+    /* The two ordinates are never both dropped: they are shared unless a
+     * member lacks one, and a member lacking both leaves nothing to force */
+    LWGEOM *shared = hasz ? lwgeom_force_3dz(geom, 0) :
+      (hasm ? lwgeom_force_3dm(geom, 0) : lwgeom_force_2d(geom));
+    result[i] = geo_serialize(shared);
+    lwgeom_free(geom); lwgeom_free(shared);
+  }
+  return result;
+}
+
+/**
+ * @brief Return the union of an array of geometries whose members share their
+ * dimensions
  * @details The function will iteratively call @p GEOSUnion on the
  * GEOS-converted versions of them and return PGIS-converted version back.
  * Changing the combination order *might* speed up performance.
@@ -2492,27 +2551,10 @@ geom_array_mixed_union(GSERIALIZED **gsarr, int count)
  * MEOS modified the PostGIS function since does not cope with geographies
  * by setting the geodetic flag for geographies.
  */
-GSERIALIZED *
-geom_array_union(GSERIALIZED **gsarr, int count)
+static GSERIALIZED *
+geom_array_union_shared(GSERIALIZED **gsarr, int count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gsarr, NULL);
-  if (! ensure_positive(count))
-    return NULL;
-  /* This entry answers on the plane; #geog_array_union() answers a geodetic
-   * array. The flag is read from one member, so the array is turned away
-   * before the SRID test walks all of them */
-  if (! ensure_not_geodetic_geo(gsarr[0]))
-    return NULL;
-  /* The members of the array carry one SRID */
-  if (! ensure_same_srid_geoarr((const GSERIALIZED **) gsarr, count))
-    return NULL;
-
-  /* A single member is its own union, returned as a value of its own: the
-   * array belongs to the caller, and a result aliasing a member of it is
-   * released when the caller releases the array */
-  if (count == 1)
-    return geo_copy(gsarr[0]);
+  assert(gsarr); assert(count > 1);
 
   /* An array holding nothing but empties has an empty union, which is read
    * from the array alone. It is answered here so that a build carrying no
@@ -2700,6 +2742,52 @@ geom_array_union(GSERIALIZED **gsarr, int count)
 }
 
 /**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the union of an array of geometries
+ * @details The answer covers the points the members cover, read on the
+ * dimensions they share: an array mixing a member that carries an elevation
+ * with one that does not is answered without one, since no member determines
+ * an elevation for the points the flat one contributes. That reading is what
+ * the array is answered from, so the answer does not depend on which member
+ * the array happens to list first
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @return On error return @p NULL
+ */
+GSERIALIZED *
+geom_array_union(GSERIALIZED **gsarr, int count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gsarr, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  /* This entry answers on the plane; #geog_array_union() answers a geodetic
+   * array. The flag is read from one member, so the array is turned away
+   * before the SRID test walks all of them */
+  if (! ensure_not_geodetic_geo(gsarr[0]))
+    return NULL;
+  /* The members of the array carry one SRID */
+  if (! ensure_same_srid_geoarr((const GSERIALIZED **) gsarr, count))
+    return NULL;
+
+  /* A single member is its own union, returned as a value of its own: the
+   * array belongs to the caller, and a result aliasing a member of it is
+   * released when the caller releases the array. The member carries whatever
+   * dimensions it has, since there is no other member to share them with */
+  if (count == 1)
+    return geo_copy(gsarr[0]);
+
+  GSERIALIZED **shared = geom_array_shared_dims(gsarr, count);
+  if (! shared)
+    return geom_array_union_shared(gsarr, count);
+  GSERIALIZED *result = geom_array_union_shared(shared, count);
+  for (int i = 0; i < count; i++)
+    pfree(shared[i]);
+  pfree(shared);
+  return result;
+}
+
+/**
  * @ingroup meos_geo_base_transf
  * @brief Return the union of an array of geographies
  * @param[in] gsarr Array of geographies
@@ -2738,7 +2826,18 @@ geog_array_union(GSERIALIZED **gsarr, int count)
       "The union of a geodetic array is answered for positions only");
     return NULL;
   }
-  return geom_array_linear_union(gsarr, count, true);
+
+  /* Which positions of a set are equal is read from their coordinates, and an
+   * elevation none of them carries is no more available here than on the
+   * plane, so the array is read on the dimensions its members share */
+  GSERIALIZED **shared = geom_array_shared_dims(gsarr, count);
+  if (! shared)
+    return geom_array_linear_union(gsarr, count, true);
+  GSERIALIZED *result = geom_array_linear_union(shared, count, true);
+  for (int i = 0; i < count; i++)
+    pfree(shared[i]);
+  pfree(shared);
+  return result;
 }
 
 /**
