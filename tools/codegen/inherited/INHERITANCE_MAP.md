@@ -246,11 +246,11 @@ point in pure SQL (§6, `320_tnpoint_spatialrels`).
 
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |
 |---|---|---|---|
-| Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, both full coverage (`--gaps`: `io_families` 18/18, `representation_families` 18/18): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **12 entries** (temporal, cbuffer, geo, h3, json, npoint, pointcloud, pointcloud_patch, pose, quadbin, rgeo, tpoint). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **12 entries** (same family set) |
+| Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, both full coverage (`--gaps`: `io_families` 18/18, `representation_families` 18/18): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **13 entries** (temporal, geo, tpoint, cbuffer, npoint, pose, posechain, rgeo, h3, quadbin, pointcloud, pointcloud_patch, json). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **18 entries**: the same 13 temporal families plus the five base-value entries `npoint_base`, `pose_base`, `posechain_base`, `cbuffer_base`, `raquet_base`, whose representations belong to the base type rather than to its temporal type |
 | Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **13 entries** all `reference: true` (temporal, cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) |
 | Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **8 entries** (temporal, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `--gaps`: `conversion_families` 15/18, missing tgeography, tpcpoint, tpcpatch. `geo`/`tpoint` have no dedicated entry: their conversion surface is already named as the RETURNS/argument type of other families' declarations (e.g. rgeo's `tgeometry(trgeometry)`) |
 | Accessors | `temporal_` | ✓ **GEN** | `accessors.sql.tmpl` multi-base renderer from base `022_temporal.in.sql` — the value/time/generic set for ALL families (§4c); per-family value shape = manifest `types:` tokens. A few interleaved/positional accessors stay hand per family |
-| Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **13 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample |
+| Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **13 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample. ⛔ `tsample` and `tprecision` are NOT the same surface and the manifest is the record of which family carries which: **`tsample` 10** (temporal, cbuffer, h3, json, npoint, pose, posechain, quadbin, tpcpatch, tpcpoint) against **`tprecision` 7** (temporal, cbuffer, h3, pose, posechain, quadbin, rgeo). `tsample` SELECTS the value holding at a bin boundary, so it applies to every temporal type; `tprecision` SYNTHESIZES one value per bin as a time-weighted average, so it applies only where the value type carries such an average — `ensure_has_twavg_temptype()` in `meos/src/temporal/temporal_analytics.c` is the kernel's own list. A family in the first set and not the second is either a gap to close or an exception to argue; the per-type table sits under §4b |
 | Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **13 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
 | Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **13 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
 | **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
@@ -313,7 +313,28 @@ Two more reference chapters carry inherited surface:
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
-| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **18 entries** all `reference: true` (temporal, cbuffer, geo, json, npoint, pose, quadbin, rgeo, th3index, tgeo_tile, tpcpatch, tpcpoint, tpcpoint_tile, tpoint, tpoint_tile, tpose_tile, trgeo_tile) — `--gaps`: 18/18 |
+| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **22 entries** all `reference: true` (geo, tpoint, cbuffer, json, json_boxops, npoint, tpcpoint, tpcpatch, tpc_boxops, pose, posechain, rgeo, tgeo_tile, trgeo_tile, tpoint_tile, tpose_tile, tpcpoint_tile, temporal, th3index, th3index_boxops, quadbin, quadbin_boxops). The entry names sit at three granularities — family (`geo`, `npoint`), per-FILE tile split (`tgeo_tile`, `tpose_tile`), and per-FILE boxops split (`json_boxops`, `tpc_boxops`, `th3index_boxops`, `quadbin_boxops`) |
+
+#### `tprecision` — which types carry a time-weighted average, and why the rest do not
+
+`tprecision` reduces each time bin to ONE synthesized value, the time-weighted
+average of the values the bin holds. So the surface follows the VALUE type's
+algebra, not the temporal machinery: `ensure_has_twavg_temptype()`
+(`meos/src/temporal/temporal_analytics.c`) is the list, and a type outside it has
+nothing to answer with. Its siblings summarize by decomposing into parts that do
+carry an average and recomposing — a circular buffer into its centre and radius, a
+pose into its position and a circular mean of its angle.
+
+| type | summary | status |
+|---|---|---|
+| tnumber, tgeompoint/tgeogpoint | average / centroid | carried |
+| tcbuffer, tpose, trgeometry | per-parameter summary | carried |
+| **tnpoint** | position averages on the route the bin shares | carried; a bin spanning two routes has no network point to answer with and raises, the rule the sequence constructor already states |
+| **tposechain** | per-link pose average, the chain keeping its shape | carried; link count is an invariant of the whole value, so link *n* always has a counterpart |
+| **th3index, tquadbin** | — | ⛔ **RULED EXCEPTION, not a gap.** A cell identifier is an area and an identity, not a position. Both design notes state *"Int64 ordering is arbitrary with respect to grid geometry"*, so no arithmetic touches the value; a centroid-of-centres would have to leave cell space and return, and the type constrains neither the resolution (one valid value holds cells of resolution 3 and 10) nor the pentagon and antimeridian cases the notes warn of. `tsample` answers the real need by returning a cell the value actually holds |
+| **tgeometry, tgeography** | — | open: `centroid()` runs on both, so a bin reduces to a point, but no `twCentroid` aggregate exists over them and a point-valued result changes what the value depicts |
+| **tjsonb** | — | a JSON document has no average |
+| **tpcpoint, tpcpatch** | — | open: both carry `tsample` and `centroid(tpcpoint)` exists, so these are candidates of the same shape as `tnpoint` rather than settled exceptions |
 
 ### 4c. Canonical accessor set & order — the inherited value/time surface
 
