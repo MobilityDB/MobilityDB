@@ -34,7 +34,7 @@
  *
  * Mirrors the section layout of `doxygen_meos_cbuffer.h`. The
  * grouping follows the chapter divisions of the user manual
- * (`doc/temporal_h3_index.xml`).
+ * (`doc/temporal_cell_index.xml`).
  */
 
 /*****************************************************************************

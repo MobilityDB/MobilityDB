@@ -1,0 +1,1604 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="tcell">
+	<title>Temporal Cell Index Types</title>
+
+	<para>A <emphasis>discrete global grid system</emphasis> (DGGS) partitions the Earth into a hierarchy of cells, each identified by a 64-bit integer, so that a position becomes a cell identifier and a containment test becomes an integer comparison. MobilityDB supports three of them, and a temporal cell index type records the movement of an object as the sequence of cells it occupies over time.</para>
+
+	<informaltable frame="all">
+		<tgroup cols="5" align="left" colsep="1" rowsep="1">
+			<thead>
+				<row><entry>Grid</entry><entry>Cell type</entry><entry>Set type</entry><entry>Temporal type</entry><entry>Resolutions</entry></row>
+			</thead>
+			<tbody>
+				<row><entry>Uber H3</entry><entry><varname>h3index</varname></entry><entry><varname>h3indexset</varname></entry><entry><varname>th3index</varname></entry><entry>0–15</entry></row>
+				<row><entry>CARTO QUADBIN</entry><entry><varname>quadbin</varname></entry><entry><varname>quadbinset</varname></entry><entry><varname>tquadbin</varname></entry><entry>0–26</entry></row>
+				<row><entry>Google S2</entry><entry><varname>s2cell</varname></entry><entry><varname>s2cellset</varname></entry><entry><varname>ts2cell</varname></entry><entry>0–30</entry></row>
+			</tbody>
+		</tgroup>
+	</informaltable>
+
+	<para><xref linkend="tcell_grids" /> shows one AIS vessel track leaving Frederikshavn on the three grids, at the resolution of each whose cells are closest in area — 0.57 km² for H3, 0.43 km² for QUADBIN and 0.32 km² for S2 at this latitude — with the cells the track passes through shaded and a marine protected area in green. A temporal cell index records that shaded sequence, so the track is one and the same and each grid states it as a different sequence of identifiers. Asking whether the vessel entered the protected area then becomes an integer test between two sets of identifiers rather than a test between two geometries. The lower row states the excerpt outlined in black above, one resolution finer in each grid, where every cell is roughly an eighth of the area above it and the sequence follows the track closely enough to stand for it.</para>
+
+	<figure xml:id="tcell_grids" float="start">
+		<title>An AIS vessel track leaving Frederikshavn on the three grids, with the cells the track passes through shaded and a marine protected area in green. The upper row states the whole track at the resolutions whose cells are closest in area and outlines in black the excerpt the lower row states, one resolution finer in each grid. Vessel track and protected areas from the Danish AIS data; basemap © OpenStreetMap contributors.</title>
+		<mediaobject>
+			<imageobject><imagedata format="PNG" width="100%" scalefit="1" fileref="images/cellindex.png"/></imageobject>
+		</mediaobject>
+	</figure>
+
+	<para>The three differ in the shape of a cell and in how the hierarchy branches. Uber's H3 tessellates the sphere into 122 base cells at resolution 0 and subdivides each into 7 children at every finer resolution, up to 15, so a cell is a hexagon on an icosahedron and its identifier encodes the base cell, the resolution and the hierarchical position. CARTO's QUADBIN is built on the slippy-map (Web-Mercator) tile scheme: a single world cell at resolution 0 subdivides into four equal children at every finer resolution, up to 26, and the identifier encodes a header tag, the resolution and the tile coordinates. Google's S2 projects the six faces of a circumscribed cube onto the sphere and subdivides each face into four children, up to level 30, so a cell is a spherical quadrilateral and the identifier encodes the face, the position along a Hilbert curve and the level.</para>
+
+	<para>Each shape buys something. A hexagon has six neighbours all at the same distance from its centre, so an H3 step is the same move in every direction, which is what a flow or a density surface wants. A QUADBIN square is a slippy-map tile, so a cell IS the tile a map server already serves and the identifier converts to the <varname>(x,y,z)</varname> triple and the quadkey string of that ecosystem. An S2 cell is a quadtree cell of a cube face projected onto the sphere, so the descendants of a cell occupy one contiguous interval of the Hilbert curve and an ancestor test is a pair of integer comparisons. The grids are documented by their authors at <ulink url="https://h3geo.org/">h3geo.org</ulink>, <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes#quadbin">CARTO</ulink> and <ulink url="https://s2geometry.io/">s2geometry.io</ulink>, and the family they belong to at <ulink url="https://en.wikipedia.org/wiki/Discrete_global_grid">Discrete global grid</ulink>.</para>
+
+	<para>They answer the same questions, so this chapter states each operation once and names the grid only where the answer depends on it. S2 calls a resolution a <emphasis>level</emphasis>; the two words denote the same quantity.</para>
+
+	<para>A cell index type shares its on-disk representation with <varname>tbigint</varname>: both store a temporal 64-bit integer. The distinct SQL type exists so that the type-checker rejects a cell-specific function applied to an arbitrary <varname>tbigint</varname> trajectory, and the reverse. Casts to and from <varname>tbigint</varname> are binary-coercion only, zero-cost at run time, and explicit, so a query states <varname>::</varname>.</para>
+
+	<para>As with other temporal types, a cell index type has four subtypes: <varname>Instant</varname>, discrete sequence, continuous sequence with step interpolation, and <varname>SequenceSet</varname>. Cell identifiers are discrete, so linear interpolation between two of them has no meaning and step interpolation is always used.</para>
+
+	<sect1 xml:id="tcell_notation">
+		<title>Notation</title>
+		<para>Most functions and operators for temporal types described in the previous chapters can be applied to temporal cell index types. Therefore, in the signatures of the functions, the notation <varname>base</varname> represents a <varname>cell</varname> and the notation <varname>ttype</varname> also represents a <varname>tcell</varname>. To avoid redundancy, we present next only the functions and operators specific to the cell index types.</para>
+
+		<itemizedlist>
+			<listitem>
+				<para><varname>cell</varname> represents any cell index type, that is, <varname>h3index</varname>, <varname>quadbin</varname>, or <varname>s2cell</varname>, and in the position of a function name it is the constructor of that type,</para>
+			</listitem>
+			<listitem>
+				<para><varname>cellset</varname> represents any cell index set type, that is, <varname>h3indexset</varname>, <varname>quadbinset</varname>, or <varname>s2cellset</varname>,</para>
+			</listitem>
+			<listitem>
+				<para><varname>tcell</varname> represents any temporal cell index type, that is, <varname>th3index</varname>, <varname>tquadbin</varname>, or <varname>ts2cell</varname>,</para>
+			</listitem>
+			<listitem>
+				<para><varname>geo</varname> and <varname>tgeo</varname> represent the geometry type a grid answers in, planar for QUADBIN and geodetic for H3 and S2.</para>
+			</listitem>
+		</itemizedlist>
+
+	</sect1>
+	<sect1 xml:id="tcell_inout">
+		<title>Input and Output</title>
+		<para>A temporal cell value is entered using the standard temporal syntax with the underlying 64-bit cell identifier. The input parser accepts the canonical hexadecimal form each grid publishes — the form the H3 CLI and <varname>h3_cell_to_string</varname> emit, and the form the CARTO reference implementation reads — with an optional <varname>0x</varname> prefix, in either letter case, and at most 16 significant digits. Hexadecimal is idiomatic in all three ecosystems and is what the output function emits, so every example below uses it. The value must also denote something its grid indexes: for H3 a cell, a directed edge or a vertex, so that a well-formed hexadecimal literal such as <varname>12345</varname>, which is none of the three, is rejected rather than stored as a value with no location. For reference, the hexadecimal <varname>480fffffffffffff</varname> used in the examples is the QUADBIN resolution-0 world cell, equal to the decimal <varname>5192650370358181887</varname>.</para>
+		<itemizedlist>
+			<listitem xml:id="tcell_in_out">
+				<indexterm significance="normal"><primary><varname>tcell</varname></primary></indexterm>
+				<para>Input and output of a temporal cell in its text form</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcell(text) → tcell
+text(tcell) → text
+</programlisting>
+				<para>The companion static type <varname>cell</varname> holds a single (non-temporal) cell identifier and <varname>cellset</varname> a finite set of them; they share the temporal type's hexadecimal / decimal textual representation, carry the standard equality and ordering operators through a btree and a hash operator class, and expose the validity predicates below. A type modifier constrains a column to one subtype, which is <varname>Instant</varname>, or <varname>Sequence</varname>, or <varname>SequenceSet</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '831c02fffffffff@2001-01-01';
+-- 831c02fffffffff@2001-01-01
+SELECT tquadbin '[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]';
+-- [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]
+SELECT ts2cell '{[47c3c@2001-01-01, 47c4@2001-01-02]}';
+-- {[47c3c@2001-01-01, 47c4@2001-01-02]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_astext">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Serialize a temporal cell as text, as binary, as hexadecimal well-known binary, or as MF-JSON</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asText(tcell) → text
+asBinary(tcell,endianencoding text='') → bytea
+asHexWKB(tcell,endianencoding text='') → text
+asMFJSON(tcell) → text
+</programlisting>
+				<para>The hexadecimal well-known binary form lets a temporal cell column round-trip through a text-based <varname>COPY</varname>. In MF-JSON the cell payload renders as the int64 cell identifier in the <varname>values</varname> array, the same representation <varname>tbigint</varname> carries.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asHexWKB(th3index '831c02fffffffff@2001-01-01');
+-- 01460021FFFFFFFF2FC031080060885EC91C0000
+SELECT asHexWKB(tquadbin '48a6227affffffff@2001-01-01');
+-- 01490001FFFFFFFF7A22A6480060885EC91C0000
+SELECT asHexWKB(ts2cell '47c3c@2001-01-01');
+-- 015700210000000000C0C3470060885EC91C0000
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_frombinary">
+				<indexterm significance="normal"><primary><varname>tcellFromBinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellFromHexWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellFromMFJSON</varname></primary></indexterm>
+				<para>Reconstruct a temporal cell from its binary, hexadecimal, or MF-JSON representation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcellFromBinary(bytea) → tcell
+tcellFromHexWKB(text) → tcell
+tcellFromMFJSON(text) → tcell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3indexFromHexWKB(asHexWKB(th3index '831c02fffffffff@2001-01-01'));
+-- 831c02fffffffff@2001-01-01
+SELECT tquadbinFromHexWKB(asHexWKB(tquadbin '48a6227affffffff@2001-01-01'));
+-- 48a6227affffffff@2001-01-01
+SELECT ts2cellFromHexWKB(asHexWKB(ts2cell '47c3c@2001-01-01'));
+-- 47c3c@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_constructors">
+		<title>Constructors</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_const">
+				<indexterm significance="normal"><primary><varname>tcell</varname></primary></indexterm>
+				<para>Construct a temporal cell holding one cell over a time value</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcell(cell,timestamptz) → tcellInst
+tcell(cell,tstzset) → tcellDiscSeq
+tcell(cell,tstzspan) → tcellSeq
+tcell(cell,tstzspanset) → tcellSeqSet
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index(h3index '871fa4418ffffff', timestamptz '2001-01-01');
+-- 871fa4418ffffff@2001-01-01
+SELECT th3index(h3index '871fa4418ffffff', tstzspan '[2001-01-01, 2001-01-03]');
+-- [871fa4418ffffff@2001-01-01, 871fa4418ffffff@2001-01-03]
+SELECT tquadbin(quadbin '48a6227affffffff', timestamptz '2001-01-01');
+-- 48a6227affffffff@2001-01-01
+SELECT tquadbin(quadbin '48a6227affffffff', tstzspan '[2001-01-01, 2001-01-03]');
+-- [48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-03]
+SELECT ts2cell(s2cell '47c3c', timestamptz '2001-01-01');
+-- 47c3c@2001-01-01
+SELECT ts2cell(s2cell '47c3c', tstzspan '[2001-01-01, 2001-01-03]');
+-- [47c3c@2001-01-01, 47c3c@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_seq_const">
+				<indexterm significance="normal"><primary><varname>tcellInst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellSeq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellSeqSet</varname></primary></indexterm>
+				<para>Construct a temporal cell of a given subtype from its components</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcellInst(tcell) → tcellInst
+tcellSeq(tcell[],interp text='step') → tcellSeq
+tcellSeqSet(tcell[]) → tcellSeqSet
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3indexSeq(ARRAY[th3index '871fa4418ffffff@2001-01-01',
+  th3index '871fa44a8ffffff@2001-01-02'], 'step');
+-- [871fa4418ffffff@2001-01-01, 871fa44a8ffffff@2001-01-02]
+SELECT tquadbinSeq(ARRAY[tquadbin '48a6227affffffff@2001-01-01',
+  tquadbin '485623ffffffffff@2001-01-02'], 'step');
+-- [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]
+SELECT ts2cellSeq(ARRAY[ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02'], 'step');
+-- [47c3c@2001-01-01, 47c4@2001-01-02]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_conversions">
+		<title>Conversions</title>
+
+		<para>A <varname>tcell</varname> value shares the same on-disk representation as <varname>tbigint</varname>. The binary-coercion cast between them is <emphasis>explicit</emphasis>, requiring <varname>::</varname>, so cell-specific functions cannot be silently called on arbitrary bigint trajectories.</para>
+
+		<itemizedlist>
+			<listitem xml:id="tcell_tbigint">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Convert between a <varname>tcell</varname> and a <varname>tbigint</varname></para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tbigint,tcell}::{tcell,tbigint}
+</programlisting>
+				<para>The cast is a binary coercion in both directions, so it costs nothing beyond the type change and round trips: <varname>((c::tbigint)::tcell) = c</varname> for every cell <varname>c</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT (tbigint '590464338553208831@2001-01-01')::th3index;
+-- 831c02fffffffff@2001-01-01
+SELECT (tbigint '5234909528541102079@2001-01-01')::tquadbin;
+-- 48a6227affffffff@2001-01-01
+SELECT (tbigint '5171187903383994368@2001-01-01')::ts2cell;
+-- 47c3c@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_tgeogpoint">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Cast a temporal cell to a temporal geodetic or planar point of cell centroids</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcell::{tgeogpoint,tgeompoint}
+</programlisting>
+				<para>The cast of a QUADBIN cell answers a point of the Web-Mercator plane the grid is defined on, while the cast of an S2 cell answers a geodetic one; each grid declares the single cast its own definition calls for. H3 declares both, so it is the one grid where the caller chooses between the geodetic and the SRID-4326 planar representation.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText((th3index '831c02fffffffff@2001-01-01')::tgeogpoint, 6);
+-- POINT(-144.523991 49.716503)@2001-01-01
+SELECT asText((th3index '831c02fffffffff@2001-01-01')::tgeompoint, 6);
+-- POINT(-144.523991 49.716503)@2001-01-01
+SELECT asText((tquadbin '48a6227affffffff@2001-01-01')::tgeompoint, 6);
+-- POINT(4.394531 50.847573)@2001-01-01
+SELECT asText((ts2cell '47c3c@2001-01-01')::tgeogpoint, 6);
+-- POINT(4.222019 50.936164)@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_accessors">
+		<title>Accessors</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_startValue">
+				<indexterm significance="normal"><primary><varname>startValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>endValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>valueN</varname></primary></indexterm>
+				<para>Return the first, the last, or the nth distinct cell identifier of a temporal value</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+startValue(tcell) → cell
+endValue(tcell) → cell
+valueN(tcell,integer) → cell
+</programlisting>
+				<para><varname>valueN</varname> counts from one and returns <varname>NULL</varname> when <varname>n</varname> is out of range.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT startValue(th3index '831c02fffffffff@2001-01-01');
+-- 831c02fffffffff
+SELECT endValue(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
+-- 831c00fffffffff
+SELECT valueN(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 1);
+-- 831c02fffffffff
+SELECT startValue(tquadbin '48a6227affffffff@2001-01-01');
+-- 48a6227affffffff
+SELECT endValue(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}');
+-- 485623ffffffffff
+SELECT valueN(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}', 1);
+-- 48a6227affffffff
+SELECT startValue(ts2cell '47c3c@2001-01-01');
+-- 47c3c
+SELECT endValue(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
+-- 47c4
+SELECT valueN(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}', 1);
+-- 47c3c
+</programlisting>
+			</listitem>
+
+
+			<listitem xml:id="tcell_getValues">
+				<indexterm significance="normal"><primary><varname>getValues</varname></primary></indexterm>
+				<para>Return the set of distinct cell identifiers the trajectory takes</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+getValues(tcell) → cellset
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getValues(th3index '831c02fffffffff@2001-01-01');
+-- {"831c02fffffffff"}
+SELECT getValues(th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02,
+    880326b885fffff@2001-01-03]');
+-- {"831c00fffffffff", "831c02fffffffff", "880326b885fffff"}
+SELECT getValues(tquadbin '48a6227affffffff@2001-01-01');
+-- {"48a6227affffffff"}
+SELECT getValues(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}');
+-- {"485623ffffffffff", "48a6227affffffff"}
+SELECT getValues(ts2cell '47c3c@2001-01-01');
+-- {"47c3c"}
+SELECT getValues(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
+-- {"47c3c", "47c4"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_valueAtTimestamp">
+				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
+				<para>Return the cell identifier at a given timestamp, using step interpolation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+valueAtTimestamp(tcell,timestamptz) → cell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT valueAtTimestamp(th3index
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]', '2001-01-03');
+-- 831c02fffffffff
+SELECT valueAtTimestamp(tquadbin
+  '[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-05]', '2001-01-03');
+-- 48a6227affffffff
+SELECT valueAtTimestamp(ts2cell '47c3c@2001-01-01', timestamptz '2001-01-01');
+-- 47c3c
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_transformations">
+		<title>Transformations</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_shift_scale">
+				<indexterm significance="normal"><primary><varname>shiftTime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>scaleTime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>shiftScaleTime</varname></primary></indexterm>
+				<para>Shift, scale, or shift and scale the time span of a temporal cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+shiftTime(tcell,interval) → tcell
+scaleTime(tcell,interval) → tcell
+shiftScaleTime(tcell,interval,interval) → tcell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT shiftTime(th3index '871fa4418ffffff@2001-01-01', interval '1 day');
+-- 871fa4418ffffff@2001-01-02
+SELECT scaleTime(th3index '[871fa4418ffffff@2001-01-01,
+  871fa44a8ffffff@2001-01-03]', interval '4 days');
+-- [871fa4418ffffff@2001-01-01, 871fa44a8ffffff@2001-01-05]
+SELECT shiftTime(tquadbin '48a6227affffffff@2001-01-01', interval '1 day');
+-- 48a6227affffffff@2001-01-02
+SELECT scaleTime(tquadbin '[48a6227affffffff@2001-01-01,
+  485623ffffffffff@2001-01-03]', interval '4 days');
+-- [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-05]
+SELECT shiftTime(ts2cell '47c3c@2001-01-01', interval '1 day');
+-- 47c3c@2001-01-02
+SELECT scaleTime(ts2cell '[47c3c@2001-01-01, 47c4@2001-01-03]', interval '4 days');
+-- [47c3c@2001-01-01, 47c4@2001-01-05]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_set_interp">
+				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
+				<para>Set the interpolation of a temporal cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+setInterp(tcell,interp text) → tcell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT setInterp(th3index '{871fa4418ffffff@2001-01-01,
+  871fa44a8ffffff@2001-01-02}', 'step');
+-- {[871fa4418ffffff@2001-01-01], [871fa44a8ffffff@2001-01-02]}
+SELECT setInterp(tquadbin '{48a6227affffffff@2001-01-01,
+  485623ffffffffff@2001-01-02}', 'step');
+-- {[48a6227affffffff@2001-01-01], [485623ffffffffff@2001-01-02]}
+SELECT setInterp(ts2cell '{47c3c@2001-01-01}', 'step');
+-- [47c3c@2001-01-01]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_modifications">
+		<title>Modifications</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_insert_update">
+				<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
+				<para>Insert a temporal cell into another one, or update one with another</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+insert(tcell,tcell,connect boolean=true) → tcell
+update(tcell,tcell,connect boolean=true) → tcell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT insert(th3index '[871fa4418ffffff@2001-01-01,
+  871fa4418ffffff@2001-01-02]', th3index '[871fa44a8ffffff@2001-01-03,
+  871fa44a8ffffff@2001-01-04]');
+-- [871fa4418ffffff@2001-01-01, 871fa44a8ffffff@2001-01-03, 871fa44a8ffffff@2001-01-04]
+SELECT insert(tquadbin '[48a6227affffffff@2001-01-01,
+  48a6227affffffff@2001-01-02]', tquadbin '[485623ffffffffff@2001-01-03,
+  485623ffffffffff@2001-01-04]');
+/* [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-03,
+   485623ffffffffff@2001-01-04] */
+SELECT insert(ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02');
+-- {47c3c@2001-01-01, 47c4@2001-01-02}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_delete">
+				<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
+				<para>Delete a time value from a temporal cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+deleteTime(tcell,time,connect boolean=true) → tcell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT deleteTime(th3index '[871fa4418ffffff@2001-01-01,
+  871fa4418ffffff@2001-01-04]', tstzspan '[2001-01-02, 2001-01-03]');
+-- [871fa4418ffffff@2001-01-01, 871fa4418ffffff@2001-01-04]
+SELECT deleteTime(tquadbin '[48a6227affffffff@2001-01-01,
+  48a6227affffffff@2001-01-04]', tstzspan '[2001-01-02, 2001-01-03]');
+-- [48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-04]
+SELECT deleteTime(ts2cell '47c3c@2001-01-01', tstzspan '[2001-01-02, 2001-01-03]');
+-- 47c3c@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_restrictions">
+		<title>Restrictions</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_at_value">
+				<indexterm significance="normal"><primary><varname>atValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
+				<para>Restrict a temporal cell to (the complement of) a cell or a set of cells</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atValue(tcell,cell) → tcell
+minusValue(tcell,cell) → tcell
+atValues(tcell,cellset) → tcell
+minusValues(tcell,cellset) → tcell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT atValue(th3index '{871fa4418ffffff@2001-01-01,
+  871fa44a8ffffff@2001-01-02}', h3index '871fa4418ffffff');
+-- {871fa4418ffffff@2001-01-01}
+SELECT atValue(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}',
+  quadbin '48a6227affffffff');
+-- {48a6227affffffff@2001-01-01}
+SELECT atValue(ts2cell '47c3c@2001-01-01', s2cell '47c3c');
+-- 47c3c@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_at_time">
+				<indexterm significance="normal"><primary><varname>atTime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusTime</varname></primary></indexterm>
+				<para>Restrict a temporal cell to (the complement of) a time value</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atTime(tcell,time) → tcell
+minusTime(tcell,time) → tcell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT atTime(th3index '[871fa4418ffffff@2001-01-01,
+  871fa4418ffffff@2001-01-04]', tstzspan '[2001-01-02, 2001-01-03]');
+-- [871fa4418ffffff@2001-01-02, 871fa4418ffffff@2001-01-03]
+SELECT atTime(tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-04]',
+  tstzspan '[2001-01-02, 2001-01-03]');
+-- [48a6227affffffff@2001-01-02, 48a6227affffffff@2001-01-03]
+SELECT atTime(ts2cell '47c3c@2001-01-01', tstzspan '[2001-01-01, 2001-01-02]');
+-- 47c3c@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_geo_coverage">
+		<title>Static Geometry Coverage</title>
+
+		<para>These functions convert an ordinary (non-temporal) geometry into the cell or cell set that covers it at a given resolution, and test whether a temporal cell trajectory ever enters that cell set. The cell-set output together with the ever-intersects predicate form the cross-platform spatial prefilter used by the portable BerlinMOD queries.</para>
+
+		<itemizedlist>
+			<listitem xml:id="tcell_geoToH3Cell">
+				<indexterm significance="normal"><primary><varname>cell</varname></primary></indexterm>
+				<para>Return the cell of a grid that contains a point geometry at the given resolution</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+geoTo<replaceable>Grid</replaceable>Cell(geo,integer) → cell
+</programlisting>
+				<para>The geometry must be a <varname>POINT</varname>, and its longitude and latitude are interpreted in SRID 4326.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT geoToH3Cell(geometry 'SRID=4326;Point(4.35 50.85)', 7);
+-- 871fa4418ffffff
+SELECT geoToQuadbinCell(geometry 'SRID=4326;Point(4.35 50.85)', 10);
+-- 48a6227affffffff
+SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
+-- 47c3c3
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_geoToH3IndexSet">
+				<indexterm significance="normal"><primary><varname>cellset</varname></primary></indexterm>
+				<para>Return the set of cells of a grid covering a geometry at the given resolution</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+geoToH3IndexSet(geometry,integer) → h3indexset
+</programlisting>
+				<para>Every geometry type is supported: a <varname>POINT</varname> yields a single cell, a <varname>LINESTRING</varname> samples its segments, a <varname>POLYGON</varname> fills its interior, and <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> values return the union of their components. The covering is stated for H3 alone: it is the one grid MobilityDB carries a region-covering kernel for, and the QUADBIN and S2 forms are not yet implemented.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
+-- {"871fa4418ffffff"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_ever_eq_set">
+				<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
+				<para>Return whether a temporal cell trajectory ever takes one of the cells in a cell set</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3indexset ?= th3index → boolean
+</programlisting>
+				<para>Combined with the cell set constructor it answers whether a trip ever passes through a region without materialising the trajectory geometry, a conservative prefilter for the exact <varname>eIntersects</varname>. It rests on a kernel of its own, which H3 alone carries; the QUADBIN and S2 forms are not yet implemented.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7) ?=
+  th3index '871fa4418ffffff@2001-01-01';
+-- t
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_inspection">
+		<title>Inspection</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_get_resolution">
+				<indexterm significance="normal"><primary><varname>getResolution</varname></primary></indexterm>
+				<para>Return the resolution of each cell in a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+getResolution(tcell) → tint
+</programlisting>
+				<para>Return the resolution of a cell, as an <varname>integer</varname> from the static form and as a <varname>tint</varname> of the resolution of each cell in a trajectory from the temporal one. QUADBIN calls it a zoom level and S2 a level, and the range belongs to the grid: 0 to 15 for H3, 0 to 26 for QUADBIN, 0 to 30 for S2.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
+-- 3@2001-01-01
+SELECT getResolution(tquadbin '48a6227affffffff@2001-01-01');
+-- 10@2001-01-01
+SELECT getResolution(ts2cell '47c3c@2001-01-01');
+-- 7@2001-01-01
+</programlisting>
+			</listitem>
+
+
+			<listitem xml:id="tcell_is_valid_cell">
+				<indexterm significance="normal"><primary><varname>isValidCell</varname></primary></indexterm>
+				<para>Return a temporal boolean stating at each instant whether the value is a valid cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+isValidCell(tcell) → tbool
+</programlisting>
+				<para>A value is a valid cell when its bit pattern denotes something its grid indexes: for QUADBIN, tile coordinates within the bounds of the resolution the identifier states; for H3, a base cell and digit sequence the icosahedron carries; for S2, a face and a Hilbert position at a level between 0 and 30.</para>
+				<para>Only H3 can be asked the question of a value that answers <varname>false</varname>: its input function admits any bit pattern and leaves the verdict to this function, while the QUADBIN and the S2 input functions reject a pattern that indexes nothing, so <varname>tquadbin '0'</varname> and <varname>ts2cell '0'</varname> raise an error before the call is made.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
+-- t@2001-01-01
+SELECT isValidCell(th3index '0@2001-01-01');
+-- f@2001-01-01
+SELECT isValidCell(tquadbin '48a6227affffffff@2001-01-01');
+-- t@2001-01-01
+SELECT isValidCell(ts2cell '47c3c@2001-01-01');
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+
+
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_hierarchy">
+		<title>Hierarchy</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_cell_to_parent">
+				<indexterm significance="normal"><primary><varname>cellToParent</varname></primary></indexterm>
+				<para>Return the temporal parent cell at the given resolution</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToParent(tcell,integer) → tcell
+cellToParent(tcell) → tcell
+</programlisting>
+				<para>Return the ancestor of a cell at the given coarser resolution. The static form takes a single <varname>cell</varname>; the temporal form returns the ancestor of each cell in a trajectory. The no-argument form drops to the next-coarser resolution.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getResolution(cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
+-- 5@2001-01-01
+SELECT getResolution(cellToParent(tquadbin
+  '48a6227affffffff@2001-01-01', 5));
+-- 5@2001-01-01
+SELECT getResolution(cellToParent(ts2cell '47c3c@2001-01-01', 5));
+-- 5@2001-01-01
+</programlisting>
+			</listitem>
+
+
+
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_latlng">
+		<title>Latitude and Longitude Conversions</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_tgeompoint_to_th3">
+				<indexterm significance="normal"><primary><varname>tcell</varname></primary></indexterm>
+				<para>Return the temporal cell at the given resolution that contains each point in a temporal geodetic or planar point</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3index(tpoint,integer) → th3index
+</programlisting>
+				<para>SRID must be 4326 for the <varname>tgeompoint</varname> overload. The constructor over a temporal point is stated for H3 alone: the QUADBIN and S2 forms are not yet implemented, and a trajectory reaches those grids through the per-instant cell of its positions.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getResolution(th3index(tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
+-- 9@2001-01-01
+SELECT getResolution(th3index(tgeompoint
+  'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
+-- 9@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_cell_to_latlng">
+				<indexterm significance="normal"><primary><varname>cellToPoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
+				<para>Return the temporal geodetic centroid of each cell in a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToPoint(tcell) → tgeogpoint
+tgeompoint(tcell) → tgeompoint
+</programlisting>
+				<para>The <varname>tgeompoint</varname> form answers the same centroid as an SRID-4326 planar point, and H3 is the one grid publishing both forms. The operation is named <varname>cellToPoint</varname> for every grid, the <varname>cell_to_point</varname> slot of the descriptor being what fixes it.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
+-- POINT(4.297401 50.8043)@2001-01-01
+SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
+-- POINT(4.297401 50.8043)@2001-01-01
+SELECT asText(cellToPoint(tquadbin '48a6227affffffff@2001-01-01'), 6);
+-- POINT(4.394531 50.847573)@2001-01-01
+SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
+-- POINT(4.222019 50.936164)@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_cell_to_boundary">
+				<indexterm significance="normal"><primary><varname>cellToBoundary</varname></primary></indexterm>
+				<para>Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellToBoundary(tcell) → tgeography
+</programlisting>
+				<para>Return the polygon boundary of a cell in SRID 4326. The static form takes a single <varname>cell</varname>; the temporal form returns the boundary of each cell in a trajectory. The ring closes on its first vertex, so an H3 hexagon carries seven points and a QUADBIN square or an S2 spherical quadrilateral five.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_GeometryType(getValue(cellToBoundary(th3index
+  '871fa44a8ffffff@2001-01-01'))::geometry);
+-- ST_Polygon
+SELECT ST_NPoints(getValue(cellToBoundary(th3index
+  '871fa44a8ffffff@2001-01-01'))::geometry);
+-- 7
+SELECT ST_GeometryType(getValue(cellToBoundary(tquadbin
+  '48a6227affffffff@2001-01-01'))::geometry);
+-- ST_Polygon
+SELECT ST_NPoints(getValue(cellToBoundary(tquadbin
+  '48a6227affffffff@2001-01-01'))::geometry);
+-- 5
+SELECT ST_GeometryType(getValue(cellToBoundary(ts2cell '47c3c@2001-01-01'))::geometry);
+-- ST_Polygon
+SELECT ST_NPoints(getValue(cellToBoundary(ts2cell '47c3c@2001-01-01'))::geometry);
+-- 5
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_bbox_ops">
+		<title>Bounding Box Operations</title>
+		<para>The following operators compare the spatiotemporal <emphasis>bounding box</emphasis> of temporal cells rather than containment in the cell hierarchy. <varname>tcell</varname> is a spatial temporal type: its bounding box is an <varname>stbox</varname> that combines the geodetic spatial extent of the cell boundaries (their longitude/latitude envelope in SRID 4326) with the trajectory's <varname>tstzspan</varname> time period. The operators below compare that box along the spatial and/or temporal axes. See the indexing section for the opclasses that make these operators index-capable.</para>
+
+		<note>
+			<para>The <varname>@&gt;</varname> operator tests spatiotemporal bounding-box containment (spatial extent and time together), <emphasis>not</emphasis> containment in the cell hierarchy. To test whether one cell is the ancestor of another at a given resolution, use <link linkend="tcell_cell_to_parent"><varname>cellToParent</varname></link>.</para>
+		</note>
+
+		<itemizedlist>
+			<listitem xml:id="tcell_overlaps">
+				<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
+				<para>Topological operators</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{tstzspan,stbox,tcell} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} {tstzspan,stbox,tcell} → boolean
+</programlisting>
+				<para>Bounding-box overlap, contains, contained-by, same, and adjacent</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '871fa44a8ffffff@2001-01-01' &amp;&amp; tstzspan '[2001-01-01, 2001-01-02]';
+-- t
+SELECT th3index '871fa44a8ffffff@2001-01-01' ~= th3index '871fa44a8ffffff@2001-01-01';
+-- t
+SELECT tquadbin '485623ffffffffff@2001-01-01' &amp;&amp; tstzspan '[2001-01-01, 2001-01-02]';
+-- t
+SELECT tquadbin '485623ffffffffff@2001-01-01' ~= tquadbin '485623ffffffffff@2001-01-01';
+-- t
+SELECT ts2cell '47c3c@2001-01-01' &amp;&amp; tstzspan '[2001-01-01, 2001-01-02]';
+-- t
+SELECT ts2cell '47c3c@2001-01-01' ~= ts2cell '47c3c@2001-01-01';
+-- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_position">
+				<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&lt;|</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;|</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>|&amp;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>|&gt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;#</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>#&amp;&gt;</varname></primary></indexterm>
+				<para>Position operators</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{stbox,tcell} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tcell} → boolean
+{stbox,tcell} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tcell} → boolean
+{tstzspan,stbox,tcell} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tcell} → boolean
+</programlisting>
+				<para>Relative position along the spatial axes (strictly-left, overlaps-left, overlaps-right, strictly-right; strictly-below, overlaps-below, overlaps-above, strictly-above) and along the time axis (strictly-before, overlaps-before, strictly-after, overlaps-after)</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '871fa44a8ffffff@2001-01-01' &lt;&lt;
+  th3index '871fa44aeffffff@2001-01-01';
+-- f
+SELECT tquadbin '485623ffffffffff@2001-01-01' &lt;&lt; tquadbin '48b6227abfffffff@2001-01-01';
+-- f
+SELECT ts2cell '47c3c@2001-01-01' &lt;&lt; ts2cell '47c4@2001-01-01';
+-- f
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '871fa44a8ffffff@2001-01-01' &lt;&lt;# th3index '871fa44aeffffff@2001-01-05';
+-- t
+SELECT th3index '871fa44a8ffffff@2001-01-01' #&gt;&gt;
+  th3index '871fa44aeffffff@2001-01-05';
+-- f
+SELECT tquadbin '485623ffffffffff@2001-01-01' &lt;&lt;# tquadbin '48b6227abfffffff@2001-01-05';
+-- t
+SELECT tquadbin '485623ffffffffff@2001-01-01' #&gt;&gt; tquadbin '48b6227abfffffff@2001-01-05';
+-- f
+SELECT ts2cell '47c3c@2001-01-01' &lt;&lt;# ts2cell '47c3c@2001-01-05';
+-- t
+SELECT ts2cell '47c3c@2001-01-01' #&gt;&gt; ts2cell '47c3c@2001-01-05';
+-- f
+</programlisting>
+			</listitem>
+
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_metrics">
+		<title>Metric Functions</title>
+		<para>Cell area is the one metric the three grids share, and <varname>cellArea</varname> answers it in square metres for each of them. H3 publishes the two other units libh3 names, as <varname>th3CellAreaKm2</varname> and <varname>th3CellAreaRads2</varname>. The metrics H3 alone carries, the length of a directed edge and the great-circle distance between two temporal points, are stated in the H3-specific section.</para>
+		<itemizedlist>
+			<listitem xml:id="tcell_cell_area">
+				<indexterm significance="normal"><primary><varname>cellArea</varname></primary></indexterm>
+				<para>Return the area of a cell, and the temporal area of each cell in a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+cellArea(cell) → float8
+cellArea(tcell) → tfloat
+th3CellAreaKm2(th3index) → tfloat
+th3CellAreaRads2(th3index) → tfloat
+</programlisting>
+				<para>A cell area shrinks toward the poles on the QUADBIN grid, as Web-Mercator squares cover progressively less ground at higher latitudes. An H3 or an S2 cell is defined on the sphere, so its area varies only with resolution and with the cell's position in the base solid.</para>
+				<para>The unit is the square metre, fixed by the <varname>cell_area</varname> slot of the <varname>DggsCellOps</varname> descriptor every grid plugs into, so <varname>cellArea</varname> answers the same quantity whichever grid holds the cell.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
+-- 4441914.270110932@2001-01-01
+SELECT th3CellAreaKm2(th3index '871fa44a8ffffff@2001-01-01');
+-- 4.441914270110932@2001-01-01
+SELECT cellArea(tquadbin '48a6227affffffff@2001-01-01');
+-- 609209287.1146417@2001-01-01
+SELECT cellArea(ts2cell '47c3c@2001-01-01');
+-- 4145164039.0857196@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_set_returning">
+		<title>Set-Returning Functions</title>
+		<para>The following static helpers return a <varname>cellset</varname>, the finite-collection companion type of <varname>cell</varname>. They operate on a static <varname>cell</varname> or on a <varname>cellset</varname> and are not lifted to <varname>tcell</varname>, the temporal lift being deferred pending a <varname>tset&lt;T&gt;</varname> primitive.</para>
+
+		<itemizedlist>
+			<listitem xml:id="tcell_grid_disk">
+				<indexterm significance="normal"><primary><varname>h3GridDisk</varname></primary></indexterm>
+				<para>All cells within <varname>k</varname> grid steps of the origin</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3GridDisk(h3index,integer) → h3indexset
+quadbinGridDisk(quadbin,integer) → quadbinset
+s2EdgeNeighbors(s2cell) → s2cellset
+</programlisting>
+				<para>The disk includes the origin, which is the whole of it at <varname>k</varname> = 0. Its shape follows the grid: on the QUADBIN square grid the disk at step <varname>k</varname> is the <varname>(2k+1)</varname>×<varname>(2k+1)</varname> block of cells centred on the origin, while on the H3 hexagonal grid it is the ring of hexagons at that many steps and everything inside it. S2 states the four cells sharing an edge with the origin and takes no step count, so it answers the disk at <varname>k</varname> = 1 less the origin itself.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3GridDisk(h3index '871fa44a8ffffff', 1);
+/* {"871fa44a8ffffff", "871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff",
+   "871fa44acffffff", "871fa44adffffff", "871fa44aeffffff"} */
+SELECT quadbinGridDisk(quadbin '48a6227affffffff', 1);
+/* {"48a6226dffffffff", "48a6226fffffffff", "48a62278ffffffff", "48a62279ffffffff",
+   "48a6227affffffff", "48a6227bffffffff", "48a622c5ffffffff", "48a622d0ffffffff",
+   "48a622d1ffffffff"} */
+SELECT s2EdgeNeighbors(s2cell '47c3c');
+-- {"47c14", "47c24", "47c34", "47c44"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_cell_to_children">
+				<indexterm significance="normal"><primary><varname>h3CellToChildren</varname></primary></indexterm>
+				<para>All children of a cell at the given target resolution</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3CellToChildren(h3index,integer) → h3indexset
+quadbinCellToChildren(quadbin,integer) → quadbinset
+s2CellToChildren(s2cell,integer) → s2cellset
+</programlisting>
+				<para>The number of children is the grid's branching factor: four for a QUADBIN or an S2 quadtree cell, seven for an H3 cell. The helper is static, children being a per-instant set whose temporal lift is deferred pending a <varname>tset&lt;T&gt;</varname> primitive.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3CellToChildren(h3index '831c02fffffffff', 4);
+/* {"841c021ffffffff", "841c023ffffffff", "841c025ffffffff", "841c027ffffffff",
+   "841c029ffffffff", "841c02bffffffff", "841c02dffffffff"} */
+SELECT quadbinCellToChildren(quadbin '48a6227affffffff', 11);
+-- {"48b6227a3fffffff", "48b6227a7fffffff", "48b6227abfffffff", "48b6227affffffff"}
+SELECT s2CellToChildren(s2cell '47c3c', 8);
+-- {"47c39", "47c3b", "47c3d", "47c3f"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_compact_cells">
+				<indexterm significance="normal"><primary><varname>compactCells</varname></primary></indexterm>
+				<para>Compacted representation of a cell set, finer cells being merged into their parent whenever the parent's full set of children is present</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3CompactCells(h3indexset) → h3indexset
+</programlisting>
+				<para>Compaction is stated for H3 alone: it is the one grid MobilityDB carries the kernel for, and the QUADBIN and S2 forms are not yet implemented.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4));
+-- {"831c02fffffffff"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_uncompact_cells">
+				<indexterm significance="normal"><primary><varname>uncompactCells</varname></primary></indexterm>
+				<para>Uncompacted representation at the given resolution, the inverse of <varname>compactCells</varname></para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3UncompactCells(h3indexset,integer) → h3indexset
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numValues(h3UncompactCells(h3CompactCells(
+  h3CellToChildren(h3index '831c02fffffffff', 4)), 4));
+-- 7
+</programlisting>
+			</listitem>
+
+
+
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_everalways_rels">
+		<title>Ever and Always Relationships</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_espatialrels">
+				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+				<para>Ever and always relationships</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+eContains(geometry,tcell) → boolean
+aContains(geometry,tcell) → boolean
+eCovers(geometry,tcell) → boolean
+aCovers(geometry,tcell) → boolean
+eDisjoint({geometry,tcell},{geometry,tcell}) → boolean
+aDisjoint({geometry,tcell},{geometry,tcell}) → boolean
+eDwithin({geometry,tcell},{geometry,tcell},float) → boolean
+aDwithin({geometry,tcell},{geometry,tcell},float) → boolean
+eIntersects({geometry,tcell},{geometry,tcell}) → boolean
+aIntersects({geometry,tcell},{geometry,tcell}) → boolean
+eTouches({geometry,tcell},{geometry,tcell}) → boolean
+aTouches({geometry,tcell},{geometry,tcell}) → boolean
+</programlisting>
+				<para>The relationships evaluate a <varname>tcell</varname> argument through its per-instant cell-boundary geometry, the footprint of each cell as <link linkend="tcell_cell_to_boundary"><varname>cellToBoundary</varname></link> returns it, and then apply the corresponding relationship of the temporal geometry types. Each relationship has three quantified forms: the <varname>e</varname>-prefixed <emphasis>ever</emphasis> form returns <varname>true</varname> when the relationship holds at some instant, the <varname>a</varname>-prefixed <emphasis>always</emphasis> form when it holds at every instant, and the <varname>t</varname>-prefixed <emphasis>temporal</emphasis> form of the next section returns a <varname>tbool</varname> of the instant-by-instant result. Every form accepts the three argument orderings <varname>(geometry, tcell)</varname>, <varname>(tcell, geometry)</varname>, and <varname>(tcell, tcell)</varname>. <varname>eContains</varname> states whether one footprint contains the other, interiors only, and <varname>eCovers</varname> the same with the boundary included; <varname>eIntersects</varname> whether the footprints share at least one point, <varname>eDisjoint</varname> whether they share none, <varname>eTouches</varname> whether they share a boundary point but no interior point, and <varname>eDwithin</varname> whether they lie within the distance passed as the third argument.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+  4.2 50.9,4.2 50.7))', th3index '871fa4418ffffff@2001-01-01');
+-- t
+SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+  4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
+-- t
+SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+  4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
+-- t
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tcell_spatiotemp_rels">
+		<title>Spatiotemporal Relationships</title>
+		<itemizedlist>
+			<listitem xml:id="tcell_tspatialrels">
+				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+				<para>Spatiotemporal relationships</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tContains(geometry,tcell) → tbool
+tCovers(geometry,tcell) → tbool
+tDisjoint({geometry,tcell},{geometry,tcell}) → tbool
+tDwithin({geometry,tcell},{geometry,tcell},float) → tbool
+tIntersects({geometry,tcell},{geometry,tcell}) → tbool
+tTouches({geometry,tcell},{geometry,tcell}) → tbool
+</programlisting>
+				<para>The temporal form answers a <varname>tbool</varname> that carries the result at each instant, where the ever and always forms of the previous section answer a single <varname>boolean</varname> over the whole time span.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+  4.2 50.9,4.2 50.7))', th3index '871fa4418ffffff@2001-01-01');
+-- t@2001-01-01
+SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+  4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
+-- t@2001-01-01
+SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
+  4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_comparisons">
+		<title>Comparisons</title>
+		<itemizedlist>
+		<listitem xml:id="tcell_comp">
+			<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+			<para>Traditional comparisons</para>
+			<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcell {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tcell → boolean
+</programlisting>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '831c02fffffffff@2001-01-01' = th3index '831c02fffffffff@2001-01-01';
+-- t
+SELECT tquadbin '48a6227affffffff@2001-01-01' &lt; tquadbin '485623ffffffffff@2001-01-01';
+-- f
+SELECT ts2cell '47c3c@2001-01-01' = ts2cell '47c3c@2001-01-01';
+-- t
+</programlisting>
+		</listitem>
+
+		<listitem xml:id="tcell_ever_always">
+			<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>aEq</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>eNe</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>aNe</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
+			<para>Ever and always comparisons</para>
+			<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{cell,tcell} {?=, ?&lt;&gt;, %=, %&lt;&gt;} {cell,tcell} → boolean
+</programlisting>
+				<para>The probe operand may be a bare <varname>cell</varname> identifier or another <varname>tcell</varname> trajectory, in either operand position. The <varname>e</varname>-prefixed forms hold when the relationship holds at at least one instant, the <varname>a</varname>-prefixed forms when it holds across the entire time span.</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '[831c02fffffffff@2001-01-01,
+  880326b885fffff@2001-01-05]' ?= h3index '880326b885fffff';
+-- t
+SELECT tquadbin '[48a6227affffffff@2001-01-01,
+  485623ffffffffff@2001-01-05]' %= quadbin '485623ffffffffff';
+-- f
+SELECT ts2cell '47c3c@2001-01-01' ?= s2cell '47c3c';
+-- t
+</programlisting>
+		</listitem>
+
+		<listitem xml:id="tcell_tcomp">
+			<indexterm significance="normal"><primary><varname>tEq</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>tNe</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
+			<indexterm significance="normal"><primary><varname>#&lt;&gt;</varname></primary></indexterm>
+			<para>Temporal comparisons</para>
+			<programlisting role="syntax" xml:space="preserve" format="linespecific">
+{cell,tcell} {#=, #&lt;&gt;} {cell,tcell} → tbool
+</programlisting>
+				<para>Return a temporal boolean giving the per-instant equality, or inequality, between a temporal cell and a probe</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '831c02fffffffff@2001-01-01' #= h3index '831c02fffffffff';
+-- t@2001-01-01
+SELECT tquadbin '48a6227affffffff@2001-01-01' #&lt;&gt; quadbin '485623ffffffffff';
+-- t@2001-01-01
+SELECT ts2cell '47c3c@2001-01-01' #= s2cell '47c3c';
+-- t@2001-01-01
+</programlisting>
+		</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_aggregations">
+		<title>Aggregations</title>
+		<para>The aggregate functions for temporal cells are illustrated next.</para>
+
+		<itemizedlist>
+			<listitem xml:id="tcell_tCount">
+				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
+				<para>Temporal count</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tCount(tcell) → {tintSeq,tintSeqSet}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH Temp(temp) AS (
+  SELECT th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-03)' UNION
+  SELECT th3index '[831c00fffffffff@2001-01-02, 831c00fffffffff@2001-01-04)' UNION
+  SELECT th3index '[871fa44a8ffffff@2001-01-03, 871fa44a8ffffff@2001-01-05)' )
+SELECT tCount(Temp)
+FROM Temp;
+-- {[1@2001-01-01, 2@2001-01-02, 1@2001-01-04, 1@2001-01-05)}
+SELECT tCount(temp) FROM (VALUES (tquadbin '48a6227affffffff@2001-01-01')) AS t(temp);
+-- {1@2001-01-01}
+SELECT tCount(temp) FROM (VALUES (ts2cell '47c3c@2001-01-01')) AS t(temp);
+-- {1@2001-01-01}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_wCount">
+				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
+				<para>Window count</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+wCount(tcell) → {tintSeq,tintSeqSet}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH Temp(temp) AS (
+  SELECT th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-03)' UNION
+  SELECT th3index '[831c00fffffffff@2001-01-02, 831c00fffffffff@2001-01-04)' UNION
+  SELECT th3index '[871fa44a8ffffff@2001-01-03, 871fa44a8ffffff@2001-01-05)' )
+SELECT wCount(Temp, interval '1 day')
+FROM Temp;
+-- {[1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 2@2001-01-04, 1@2001-01-05, 1@2001-01-06)}
+SELECT wCount(temp, interval '1 day') FROM (VALUES
+  (tquadbin '48a6227affffffff@2001-01-01')) AS t(temp);
+-- {[1@2001-01-01, 1@2001-01-02]}
+SELECT wCount(temp, interval '1 day') FROM (VALUES
+  (ts2cell '47c3c@2001-01-01')) AS t(temp);
+-- {[1@2001-01-01, 1@2001-01-02]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_agg_twins">
+				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendInstantAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequenceAgg</varname></primary></indexterm>
+				<para>Aggregate a set of temporal cells by merging them, or by assembling them into a sequence or a sequence set</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+mergeAgg(tcell) → tcell
+appendInstantAgg(tcell,interp text='step',maxt interval) → tcell
+appendSequenceAgg(tcell) → tcell
+</programlisting>
+				<para>Each carries a bare spelling kept for PostgreSQL backward compatibility.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT mergeAgg(temp) FROM (VALUES (th3index '831c02fffffffff@2001-01-01')) AS t(temp);
+-- {831c02fffffffff@2001-01-01}
+SELECT mergeAgg(temp) FROM (VALUES (tquadbin '48a6227affffffff@2001-01-01')) AS t(temp);
+-- {48a6227affffffff@2001-01-01}
+SELECT mergeAgg(temp) FROM (VALUES (ts2cell '47c3c@2001-01-01')) AS t(temp);
+-- {47c3c@2001-01-01}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_indexing">
+		<title>Indexing</title>
+		<para>GiST and SP-GiST operator classes are defined so the bounding-box operators of the previous section can be used with corresponding indexes.</para>
+
+		<para>Each operator class carries the name of the temporal type it indexes, so <varname>tcell_rtree_ops</varname> below stands for <varname>th3index_rtree_ops</varname>, <varname>tquadbin_rtree_ops</varname>, and <varname>ts2cell_rtree_ops</varname>, and the other four names likewise.</para>
+
+		<itemizedlist>
+			<listitem xml:id="tcell_rtree_ops">
+				<indexterm significance="normal"><primary><varname>tcell_rtree_ops</varname></primary></indexterm>
+				<para>GiST operator class for temporal cells</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX ON trips USING gist(cells);       -- uses th3index_rtree_ops by default
+CREATE INDEX ON trips USING gist(cells th3index_rtree_ops);
+</programlisting>
+				<para>Indexes an <varname>stbox</varname> spatiotemporal bounding box per row, the geodetic extent of the cell boundaries together with the time period.</para>
+			</listitem>
+
+			<listitem xml:id="tcell_quadtree_ops">
+				<indexterm significance="normal"><primary><varname>tcell_quadtree_ops</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcell_kdtree_ops</varname></primary></indexterm>
+				<para>SP-GiST operator classes for temporal cells, keyed on the <varname>stbox</varname> spatiotemporal bounding box. The quadtree class is the default; the k-d tree class uses k-d tree partitioning and must be named explicitly</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX ON trips USING spgist(cells);     -- uses th3index_quadtree_ops by default
+CREATE INDEX ON trips USING spgist(cells th3index_kdtree_ops);
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_btree_ops">
+				<indexterm significance="normal"><primary><varname>tcell_btree_ops</varname></primary></indexterm>
+				<para>Default B-tree operator class for temporal cells, ordering by the underlying temporal value</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX ON trips USING btree(cells);      -- uses tquadbin_btree_ops by default
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_hash_ops">
+				<indexterm significance="normal"><primary><varname>tcell_hash_ops</varname></primary></indexterm>
+				<para>Default hash operator class for temporal cells, used by hash joins and hash aggregation</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX ON trips USING hash(cells);       -- uses tquadbin_hash_ops by default
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_h3_specific">
+		<title>H3-Specific Operations</title>
+		<para>An H3 cell is a hexagon on an icosahedron, so it has neighbours through six edges, vertices shared with them, and a base cell among the 122 the icosahedron carries. Twelve cells at each resolution are pentagons. None of that has a counterpart in a square or a spherical quadrilateral grid.</para>
+		<itemizedlist>
+			<listitem xml:id="tcell_h3_get_base_cell_number">
+				<indexterm significance="normal"><primary><varname>th3GetBaseCellNumber</varname></primary></indexterm>
+				<para>Return the temporal base-cell number (0–121) of each cell in a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3GetBaseCellNumber(th3index) → tint
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3GetBaseCellNumber(th3index '831c02fffffffff@2001-01-01');
+-- 14@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_is_res_class_iii">
+				<indexterm significance="normal"><primary><varname>th3IsResClassIii</varname></primary></indexterm>
+				<para>Return a temporal boolean stating whether each cell has Class-III orientation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3IsResClassIii(th3index) → tbool
+</programlisting>
+				<para>Class III alternates with resolution: odd resolutions are class III, even are class II.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3IsResClassIii(th3index '871fa44a8ffffff@2001-01-01');
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_is_pentagon">
+				<indexterm significance="normal"><primary><varname>th3IsPentagon</varname></primary></indexterm>
+				<para>Return a temporal boolean stating whether each cell is a pentagon</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3IsPentagon(th3index) → tbool
+</programlisting>
+				<para>12 cells per resolution are pentagons, the remaining 110 at each base cell descend as hexagons.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3IsPentagon(th3index '831c00fffffffff@2001-01-01');
+-- t@2001-01-01
+SELECT th3IsPentagon(th3index '831c02fffffffff@2001-01-01');
+-- f@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_cell_to_center_child">
+				<indexterm significance="normal"><primary><varname>th3CellToCenterChild</varname></primary></indexterm>
+				<para>Return the temporal center-child cell at the given resolution</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3CellToCenterChild(th3index,integer) → th3index
+th3CellToCenterChild(th3index) → th3index
+</programlisting>
+				<para>The no-argument form drops to the next-finer resolution.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01', 8);
+-- 881fa44a81fffff@2001-01-01
+SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01');
+-- 881fa44a81fffff@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_cell_to_child_pos">
+				<indexterm significance="normal"><primary><varname>th3CellToChildPos</varname></primary></indexterm>
+				<para>Return the ordinal position (0-based) of each cell among the children of its parent at the given resolution</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3CellToChildPos(th3index,integer) → tbigint
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3CellToChildPos(th3index '871fa44a8ffffff@2001-01-01', 6);
+-- 0@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_child_pos_to_cell">
+				<indexterm significance="normal"><primary><varname>th3ChildPosToCell</varname></primary></indexterm>
+				<para>Return the temporal child cell at a given ordinal position of the given parent, at the given child resolution</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3ChildPosToCell(tbigint,th3index,integer) → th3index
+</programlisting>
+				<para>The two temporal operands are synchronised over their shared time axis.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01',
+  8);
+-- 881fa44a81fffff@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_grid_ring">
+				<indexterm significance="normal"><primary><varname>h3GridRing</varname></primary></indexterm>
+				<para>The cells at <emphasis>exactly</emphasis> <varname>k</varname> grid steps from the origin</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3GridRing(h3index,integer) → h3indexset
+</programlisting>
+				<para>Fails near pentagons.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3GridRing(h3index '871fa44a8ffffff', 1);
+/* {"871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff", "871fa44acffffff",
+   "871fa44adffffff", "871fa44aeffffff"} */
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_grid_path_cells">
+				<indexterm significance="normal"><primary><varname>h3GridPathCells</varname></primary></indexterm>
+				<para>The inclusive path of cells between two cells of the same resolution</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3GridPathCells(h3index,h3index) → h3indexset
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3GridPathCells(h3index '871fa44a8ffffff', h3index '871fa44b1ffffff');
+/* {"871fa4484ffffff", "871fa44a3ffffff", "871fa44a8ffffff", "871fa44aeffffff",
+   "871fa44b1ffffff"} */
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_origin_to_directed_edges">
+				<indexterm significance="normal"><primary><varname>h3OriginToDirectedEdges</varname></primary></indexterm>
+				<para>All outgoing directed edges of a cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3OriginToDirectedEdges(h3index) → h3indexset
+</programlisting>
+				<para>6 for a hexagon and 5 for a pentagon.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3OriginToDirectedEdges(h3index '871fa44a8ffffff');
+/* {"1171fa44a8ffffff", "1271fa44a8ffffff", "1371fa44a8ffffff", "1471fa44a8ffffff",
+   "1571fa44a8ffffff", "1671fa44a8ffffff"} */
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_cell_to_vertexes">
+				<indexterm significance="normal"><primary><varname>h3CellToVertexes</varname></primary></indexterm>
+				<para>All vertexes of a cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3CellToVertexes(h3index) → h3indexset
+</programlisting>
+				<para>6 for a hexagon and 5 for a pentagon.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3CellToVertexes(h3index '871fa44a8ffffff');
+/* {"2071fa44a8ffffff", "2171fa44a8ffffff", "2271fa44a8ffffff", "2371fa44a8ffffff",
+   "2471fa44a8ffffff", "2571fa44a8ffffff"} */
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_get_icosahedron_faces">
+				<indexterm significance="normal"><primary><varname>h3GetIcosahedronFaces</varname></primary></indexterm>
+				<para>The icosahedron face indexes (0..19) intersected by a cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+h3GetIcosahedronFaces(h3index) → intset
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
+-- {6, 11}
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_edge_length">
+				<indexterm significance="normal"><primary><varname>th3EdgeLengthKm</varname></primary></indexterm>
+				<para>Return the temporal length of each directed edge in a trajectory, in the requested unit</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3EdgeLengthKm(th3index) → tfloat
+th3EdgeLengthM(th3index) → tfloat
+th3EdgeLengthRads(th3index) → tfloat
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3EdgeLengthKm(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 1.272084901305088@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_great_circle_distance">
+				<indexterm significance="normal"><primary><varname>greatCircleDistanceKm</varname></primary></indexterm>
+				<para>Return the temporal great-circle distance between two temporal geodetic points (not between cells)</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+greatCircleDistanceKm(tgeogpoint,tgeogpoint) → tfloat
+greatCircleDistanceM(tgeogpoint,tgeogpoint) → tfloat
+greatCircleDistanceRads(tgeogpoint,tgeogpoint) → tfloat
+</programlisting>
+				<para>The two operands are synchronised.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT greatCircleDistanceKm(tgeogpoint 'Point(0 0)@2001-01-01',
+  tgeogpoint 'Point(1 0)@2001-01-01');
+-- 111.19505197522943@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_are_neighbor_cells">
+				<indexterm significance="normal"><primary><varname>th3AreNeighborCells</varname></primary></indexterm>
+				<para>Return a temporal boolean stating whether two temporal cells are grid neighbours at each instant</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3AreNeighborCells(th3index,th3index) → tbool
+</programlisting>
+				<para>The two operands are synchronised.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3AreNeighborCells(th3index '880326b885fffff@2001-01-01',
+  th3index '880326b88dfffff@2001-01-01');
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_cells_to_directed_edge">
+				<indexterm significance="normal"><primary><varname>th3CellsToDirectedEdge</varname></primary></indexterm>
+				<para>Return a temporal directed-edge identifier from an origin/destination pair of temporal cells</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3CellsToDirectedEdge(th3index,th3index) → th3index
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01');
+-- 1671fa44a8ffffff@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_is_valid_directed_edge">
+				<indexterm significance="normal"><primary><varname>isValidDirectedEdge</varname></primary></indexterm>
+				<para>Return a temporal boolean stating at each instant whether the value is a valid H3 directed edge</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+isValidDirectedEdge(tcell) → tbool
+</programlisting>
+				<para>H3 directed edges are themselves 64-bit identifiers (encoded differently from cell identifiers, <varname>isValidDirectedEdge</varname> distinguishes them). The MobilityDB <varname>th3index</varname> type carries directed edges by convention: the same type, interpreted through edge-specific accessors.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidDirectedEdge(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- t@2001-01-01
+SELECT isValidDirectedEdge(th3index '871fa44a8ffffff@2001-01-01');
+-- f@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_get_directed_edge_origin">
+				<indexterm significance="normal"><primary><varname>th3GetDirectedEdgeOrigin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3GetDirectedEdgeDestination</varname></primary></indexterm>
+				<para>Return the temporal origin or destination cell of a temporal directed edge</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3GetDirectedEdgeOrigin(th3index) → th3index
+th3GetDirectedEdgeDestination(th3index) → th3index
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(th3index
+  '871fa44a8ffffff@2001-01-01', th3index '871fa44aeffffff@2001-01-01'));
+-- 871fa44a8ffffff@2001-01-01
+SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(th3index
+  '871fa44a8ffffff@2001-01-01', th3index '871fa44aeffffff@2001-01-01'));
+-- 871fa44aeffffff@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_directed_edge_to_boundary">
+				<indexterm significance="normal"><primary><varname>th3DirectedEdgeToBoundary</varname></primary></indexterm>
+				<para>Return the temporal polygon boundary of each directed edge in a trajectory, as a temporal geography</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3DirectedEdgeToBoundary(th3index) → tgeography
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_NPoints(getValue(th3DirectedEdgeToBoundary(
+  th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01')))::geometry);
+-- 3
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_cell_to_vertex">
+				<indexterm significance="normal"><primary><varname>th3CellToVertex</varname></primary></indexterm>
+				<para>Return the temporal H3 vertex at the given vertex number</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3CellToVertex(th3index,integer) → th3index
+</programlisting>
+				<para>0–5 for hexagons, 0–4 for pentagons.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0);
+-- 2071fa44a8ffffff@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_vertex_to_latlng">
+				<indexterm significance="normal"><primary><varname>th3VertexToPoint</varname></primary></indexterm>
+				<para>Return the temporal geodetic coordinates of each vertex in a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3VertexToPoint(th3index) → tgeogpoint
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(th3VertexToPoint(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
+  0)), 6);
+-- POINT(4.280027 50.807655)@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_is_valid_vertex">
+				<indexterm significance="normal"><primary><varname>isValidVertex</varname></primary></indexterm>
+				<para>Return a temporal boolean stating at each instant whether the value is a valid H3 vertex</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+isValidVertex(tcell) → tbool
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidVertex(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0));
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_grid_distance">
+				<indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Return the temporal grid-hop distance (number of single-cell steps) between two temporal cells</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3GridDistance(th3index,th3index) → tbigint
+tcell &lt;-&gt; tcell → tbigint
+</programlisting>
+				<para>Equivalently, the <varname>&lt;-&gt;</varname> operator returns the same distance. The two operands are synchronised over their shared time axis.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '880326b885fffff@2001-01-01' &lt;-&gt; th3index '880326b88dfffff@2001-01-01';
+-- 1@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_h3_cell_to_local_ij">
+				<indexterm significance="normal"><primary><varname>th3CellToLocalIj</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3LocalIjToCell</varname></primary></indexterm>
+				<para>Convert between a temporal cell and a temporal local (I, J) coordinate pair relative to an origin temporal cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+th3CellToLocalIj(th3index,th3index) → tgeompoint
+th3LocalIjToCell(th3index,tgeompoint) → th3index
+</programlisting>
+				<para>The local coordinate is exposed as a <varname>tgeompoint</varname> with the I axis in the <varname>x</varname> slot and J in <varname>y</varname>.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
+  th3index '871fa44aeffffff@2001-01-01'));
+-- POINT(497 320)@2001-01-01
+SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
+  th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 871fa44aeffffff@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_quadbin_specific">
+		<title>QUADBIN-Specific Operations</title>
+		<para>QUADBIN is built on the slippy-map (Web-Mercator) tile scheme, so a cell maps directly to a tile coordinate triple <varname>(x,y,z)</varname> and to the base-4 quadkey string tile servers use. These conversions are the QUADBIN-specific bridge to the tiling ecosystem, and have no counterpart in a hexagonal or a spherical-quadrilateral grid.</para>
+		<itemizedlist>
+			<listitem xml:id="tcell_quadbin_is_valid_index">
+				<indexterm significance="normal"><primary><varname>isValidIndex</varname></primary></indexterm>
+				<para>Return whether a value is a structurally valid QUADBIN identifier</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+isValidIndex(quadbin) → boolean
+</programlisting>
+				<para>Correct header tag and resolution field.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidIndex(quadbin '480fffffffffffff');
+-- t
+SELECT isValidIndex(0::bigint::quadbin);
+-- f
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_quadbin_cell_sibling">
+				<indexterm significance="normal"><primary><varname>quadbinCellSibling</varname></primary></indexterm>
+				<para>Return the neighbouring cell at the same resolution in the given direction</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+quadbinCellSibling(quadbin,text) → quadbin
+</programlisting>
+				<para><varname>up</varname> / <varname>down</varname> / <varname>left</varname> / <varname>right</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinCellSibling(
+  quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
+  = quadbin '48427fffffffffff';
+-- t
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_quadbin_cell_to_quadkey">
+				<indexterm significance="normal"><primary><varname>quadbinCellToQuadkey</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tquadbinCellToQuadkey</varname></primary></indexterm>
+				<para>Emit the base-4 slippy-tile quadkey string of a cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+quadbinCellToQuadkey(quadbin) → text
+tquadbinCellToQuadkey(tquadbin) → ttext
+</programlisting>
+				<para>One digit per zoom level, most significant first, the resolution-0 world cell mapping to the empty string. The static form takes a single <varname>quadbin</varname>, the temporal form returning the quadkey of each cell in a trajectory as a <varname>ttext</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinCellToQuadkey(quadbin '480fffffffffffff');
+-- (empty string)
+SELECT quadbinCellToQuadkey(quadbin '48427fffffffffff');
+-- 0213
+SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
+-- 1202021322
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_quadbin_cell_to_tile">
+				<indexterm significance="normal"><primary><varname>quadbinCellToTile</varname></primary></indexterm>
+				<para>Decompose a cell back into its tile coordinate triple, returned as an integer array holding x, then y, then z</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+quadbinCellToTile(quadbin) → integer[]
+</programlisting>
+				<para>It is the inverse of the tile constructor</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinCellToTile(quadbin '480fffffffffffff');
+-- {0,0,0}
+SELECT quadbinCellToTile(quadbin '48a6227affffffff');
+-- {524,343,10}
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_quadbin_tile_to_cell">
+				<indexterm significance="normal"><primary><varname>quadbinTileToCell</varname></primary></indexterm>
+				<para>Build a cell from slippy-map tile coordinates: column <varname>x</varname>, row <varname>y</varname>, and zoom <varname>z</varname></para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+quadbinTileToCell(integer,integer,integer) → quadbin
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinTileToCell(0, 0, 0) = quadbin '480fffffffffffff';
+-- t
+SELECT quadbinTileToCell(3, 5, 4) = quadbin '48427fffffffffff';
+-- t
+SELECT quadbinTileToCell(524, 343, 10) = quadbin '48a6227affffffff';
+-- t
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 xml:id="tcell_s2_specific">
+		<title>S2-Specific Operations</title>
+		<para>The operations below have no H3 or QUADBIN analogue. They are stated on a static <varname>s2cell</varname>, since a cell identifier answers them without reference to time; the shared operations the sections above state apply to a <varname>ts2cell</varname> through the <varname>tcell</varname> notation.</para>
+		<itemizedlist>
+			<listitem xml:id="tcell_s2_get_face">
+				<indexterm significance="normal"><primary><varname>s2GetFace</varname></primary></indexterm>
+				<para>Return the cube face in 0 to 5 an S2 cell sits on</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+s2GetFace(s2cell) → integer
+</programlisting>
+				<para>S2 projects the sphere onto the six faces of a circumscribed cube and lays a Hilbert curve on each, so the face is the first three bits of the identifier and two cells on different faces share no ancestor.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT s2GetFace(s2cell '47c3c3');
+-- 2
+SELECT s2GetFace(geoToS2Cell(geography 'SRID=4326;Point(-122.4 37.8)', 10));
+-- 4
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_s2_token">
+				<indexterm significance="normal"><primary><varname>s2CellToToken</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>s2TokenToCell</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ts2CellToToken</varname></primary></indexterm>
+				<para>Convert between an S2 cell and its token, the form the S2 libraries publish</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+s2CellToToken(s2cell) → text
+s2TokenToCell(text) → s2cell
+ts2CellToToken(ts2cell) → ttext
+</programlisting>
+				<para>A token is the identifier in hexadecimal with its trailing zeros removed, so a coarse cell reads shorter than a fine one and the text sorts as the identifier does.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT s2CellToToken(s2cell '47c3c3');
+-- 47c3c3
+SELECT s2TokenToCell('47c3c3');
+-- 47c3c3
+SELECT asText(ts2CellToToken(ts2cell '47c3c3@2001-01-01'));
+-- "47c3c3"@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_s2_common_ancestor">
+				<indexterm significance="normal"><primary><varname>s2CommonAncestorLevel</varname></primary></indexterm>
+				<para>Return the level of the deepest cell containing two S2 cells</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+s2CommonAncestorLevel(s2cell,s2cell) → integer
+</programlisting>
+				<para>Two cells on different cube faces are contained by no cell, and the function answers -1 for them.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT s2CommonAncestorLevel(s2cell '47c3c3', s2cell '47c4');
+-- 5
+SELECT s2CommonAncestorLevel(s2cell '47c3c3', s2cell '808581');
+-- -1
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_s2_cell_contains">
+				<indexterm significance="normal"><primary><varname>s2CellContains</varname></primary></indexterm>
+				<para>Return true if the first S2 cell contains the second one</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+s2CellContains(s2cell,s2cell) → boolean
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT s2CellContains(s2cell '47c4', s2cell '47c3c3');
+-- t
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_s2_cell_range">
+				<indexterm significance="normal"><primary><varname>s2RangeMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>s2RangeMax</varname></primary></indexterm>
+				<para>Return the first and the last leaf cell an S2 cell contains</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+s2RangeMin(s2cell) → s2cell
+s2RangeMax(s2cell) → s2cell
+</programlisting>
+				<para>The descendants of an S2 cell occupy a contiguous interval of the Hilbert curve, so an ancestor test is the pair of comparisons <varname>other &gt;= s2RangeMin(cell)</varname> and <varname>other &lt;= s2RangeMax(cell)</varname>. That is what S2 brings that a hexagonal or a Web-Mercator grid does not, and it is a filter feeding the <varname>stbox</varname> index rather than an index key of its own.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT s2RangeMin(s2cell '47c3c3');
+-- 47c3c20000000001
+SELECT s2RangeMax(s2cell '47c3c3');
+-- 47c3c3ffffffffff
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_s2_cell_to_child">
+				<indexterm significance="normal"><primary><varname>s2CellToChild</varname></primary></indexterm>
+				<para>Return the descendant of an S2 cell at the given position along the Hilbert curve</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+s2CellToChild(s2cell,level integer,position integer) → s2cell
+</programlisting>
+				<para>The level is exactly one finer than the cell's own, so the position runs from 0 to 3; <varname>s2CellToChildren</varname>, which the hierarchy section states, answers every descendant at any finer level.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT s2CellToChild(s2cell '47c3c3', 11, 0);
+-- 47c3c24
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_s2_cell_edge_length">
+				<indexterm significance="normal"><primary><varname>s2EdgeLength</varname></primary></indexterm>
+				<para>Return the length in metres of an edge of an S2 cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+s2EdgeLength(s2cell,edge integer) → float
+</programlisting>
+				<para>The edge runs from the vertex of the given index, which is 0 to 3, to the next one counterclockwise, and the length is measured on the WGS84 sphere.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(s2EdgeLength(s2cell '47c3c3', 0)::numeric, 3);
+-- 9270.048
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_s2_cell_neighbors">
+				<indexterm significance="normal"><primary><varname>s2EdgeNeighbors</varname></primary></indexterm>
+				<para>Return the four cells sharing an edge with an S2 cell</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+s2EdgeNeighbors(s2cell) → s2cellset
+</programlisting>
+				<para>An S2 cell is a quadrilateral, so it has four edge neighbours and no ring of a given radius; the H3 grid disk has no S2 analogue.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT s2EdgeNeighbors(s2cell '47c3c3');
+-- {"47c3c1", "47c3c5", "47c3dd", "47c3e9"}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+		<para>A region covering, which answers the set of cells approximating an arbitrary geometry, is the one S2 operation this chapter states no signature for: the S2 libraries publish it and MobilityDB does not yet carry a kernel for it.</para>
+	</sect1>
+
+</chapter>

@@ -64,12 +64,7 @@ LAYOUT = [
      "parts": ["Static Circular Buffers", "Temporal Circular Buffers"]},
     {"title": "Temporal Rigid Geometries", "chapters": ["temporal_rigid_geometries.xml"]},
     {"title": "Temporal JSON", "chapters": ["temporal_jsonb.xml"]},
-    {"title": "Temporal H3 Cell Indices", "chapters": ["temporal_h3_index.xml"]},
-    {"title": "Temporal Quadbin Cell Indices", "chapters": ["temporal_quadbin_index.xml"],
-     "rows": {"Comparisons": [
-         ("tquadbin_comparisons",
-          ["=", "&lt;&gt;", "&lt;", "&gt;", "&lt;=", "&gt;="],
-          "Traditional comparisons")]}},
+    {"title": "Temporal Cell Index Types", "chapters": ["temporal_cell_index.xml"]},
     {"title": "Temporal Point Clouds", "chapters": ["temporal_pointcloud.xml"],
      "parts": ["Static Types <varname>pcpoint</varname> and <varname>pcpatch</varname>",
                "Set Types <varname>pcpointset</varname> and <varname>pcpatchset</varname>",
