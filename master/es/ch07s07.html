@@ -95,8 +95,8 @@ SELECT asEWKT(rotate(temp, -pi()/3, ST_Centroid(traversedArea(temp))),
    LINESTRING(6.25 7.17,8.75 2.83)@2001-01-03] */
 </pre></li><li class="listitem"><a name="tgeo_scale"></a><a class="indexterm" name="id5281"></a><p>Devuelve un punto temporal escalado por factores dados <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
-scale(tgeo,Xfactor float,Yfactor float,Zfactor float) → tgeo
-scale(tgeo,Xfactor float,Yfactor float) → tgeo
+scale(tgeo,xfactor float,yfactor float,zfactor float) → tgeo
+scale(tgeo,xfactor float,yfactor float) → tgeo
 scale(tgeo,factor geometry) → tgeo
 scale(tgeo,factor geometry,origin geometry) → tgeo
 </pre><pre class="programlisting">

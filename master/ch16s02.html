@@ -10,8 +10,8 @@ SELECT ts2cell '{[47c3c@2001-01-01, 47c4@2001-01-02]}';
 -- {[47c3c@2001-01-01, 47c4@2001-01-02]}
 </pre></li><li class="listitem"><a name="tcell_astext"></a><a class="indexterm" name="id12048"></a><a class="indexterm" name="id12051"></a><a class="indexterm" name="id12054"></a><a class="indexterm" name="id12057"></a><p>Serialize a temporal cell as text, as binary, as hexadecimal well-known binary, or as MF-JSON</p><pre class="programlisting">
 asText(tcell) → text
-asBinary(tcell,endianencoding text='') → bytea
-asHexWKB(tcell,endianencoding text='') → text
+asBinary(tcell,endian text='') → bytea
+asHexWKB(tcell,endian text='') → text
 asMFJSON(tcell) → text
 </pre><p>The hexadecimal well-known binary form lets a temporal cell column round-trip through a text-based <code class="varname">COPY</code>. In MF-JSON the cell payload renders as the int64 cell identifier in the <code class="varname">values</code> array, the same representation <code class="varname">tbigint</code> carries.</p><pre class="programlisting">
 SELECT asHexWKB(th3index '831c02fffffffff@2001-01-01');

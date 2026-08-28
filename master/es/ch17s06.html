@@ -208,7 +208,7 @@ SELECT (un).time FROM (SELECT unnest(tpcpatchSeq(ARRAY[
 -- {[2024-01-02, 2024-01-03)}
 -- {[2024-01-01, 2024-01-02), [2024-01-03, 2024-01-03]}
 </pre></li><li class="listitem"><a name="tpcpatch_timeSplit"></a><a class="indexterm" name="id13763"></a><p>Fragmenta un tpcpatch en fragmentos, uno por cada intervalo de tiempo</p><pre class="programlisting">
-timeSplit(tpcpatch,bin_width interval,
+timeSplit(tpcpatch,duration interval,
   origin timestamptz='2000-01-03') → {(time,tpcpatch)}
 </pre><pre class="programlisting">
 SELECT (ts).time, numInstants((ts).temp) FROM (SELECT timeSplit(tpcpatchSeq(ARRAY[
