@@ -3473,10 +3473,19 @@ buffer_make_surfaces_from_pieces(const MeosArray *pieces, int32_t srid)
  *****************************************************************************/
 
 /**
- * @brief Determine whether two buffer boundaries have a proper crossing.
- * @details A proper crossing means that at least one boundary intersection
- * is an isolated point and the two surfaces overlap in their interiors.
- * A point-touch without interior overlap is NOT a crossing.
+ * @brief Determine whether two buffer boundaries meet at nodes the overlay can
+ * split them at
+ * @details Two boundaries meet either at isolated POINTS or along a CURVE, and
+ * both give the overlay something to work with: a point is a node, and a
+ * coincident stretch is bounded by two of them, which
+ * #buffer_collect_line_line_intersections() emits from the parameters of the
+ * overlap. What follows splits both boundaries at those nodes and classifies
+ * each piece, and a piece lying ON the other boundary is resolved by the side
+ * each geometry occupies -- opposite sides put the stretch INSIDE the union,
+ * so it is dropped, and the two surfaces come out as one.
+ * A point-touch without interior overlap answers true here as well; it is the
+ * boundary SELECTION that leaves such a pair as two surfaces, because every
+ * piece of both boundaries survives it.
  */
 static bool
 buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
@@ -3506,14 +3515,10 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
         continue;
       int dimension = buffer_boundary_intersection(e1, e2);
 
-      /* Dimension 1 means that the boundaries overlap over a curve.
-       * That is not a proper crossing and must be handled separately. */
-      if (dimension == 1)
-      {
-        meos_array_destroy(a1); meos_array_destroy(a2);
-        return false;
-      }
-      if (dimension == 0)
+      /* A curve the two boundaries share is bounded by two nodes, so it splits
+       * like any other meeting and the stretch between them becomes a piece of
+       * its own for the classification to place */
+      if (dimension >= 0)
         point_intersection = true;
     }
   }

@@ -883,10 +883,11 @@ int main(void)
       "POLYGON Z((1 1 7,1 3 7,3 3 7,3 1 7,1 1 7))",
       "POLYGON((1 2,0 2,0 0,2 0,2 1,3 1,3 3,1 3,1 2))" },
     /* two surfaces MEETING along an edge at different elevations: the shared
-     * edge is where they disagree */
+     * edge is where they disagree, and the shell is traversed counter-clockwise
+     * as #buffer_normalize_ring_orientation() leaves every shell it builds */
     { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
       "POLYGON Z((2 0 7,2 2 7,4 2 7,4 0 7,2 0 7))",
-      "POLYGON((0 2,2 2,4 2,4 0,2 0,0 0,0 2))" },
+      "POLYGON((2 2,0 2,0 0,2 0,4 0,4 2,2 2))" },
     /* linework coinciding over a stretch, dissolved into one curve that keeps
      * the elevation both members carry */
     { "LINESTRING Z(0 0 1,6 6 1)", "LINESTRING Z(3 3 1,10 10 1)",
