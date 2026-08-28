@@ -422,8 +422,9 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     centroid->zmin = lowZs[median];
     centroid->zmax = highZs[median];
   }
-  centroid->period.lower = TimestampTzGetDatum(lowTs[median]);
-  centroid->period.upper = TimestampTzGetDatum(highTs[median]);
+  span_set(TimestampTzGetDatum(lowTs[median]),
+    TimestampTzGetDatum(highTs[median]), true, true, T_TIMESTAMPTZ,
+    T_TSTZSPAN, &centroid->period);
 
   /* Fill the output */
   out->hasPrefix = true;
