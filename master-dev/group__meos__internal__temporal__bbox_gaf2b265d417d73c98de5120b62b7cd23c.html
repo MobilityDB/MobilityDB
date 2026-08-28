@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tnumberseqset_tboxes</title>
+<title>MobilityDB: tsequence_set_bbox_slice</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -91,10 +91,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_ga72c0e64bbbff1f62ae5b073a859df83b.html#ga72c0e64bbbff1f62ae5b073a859df83b">tnumberseqset_set_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_gaea7501ab2d776abfc987e686585c791c.html#gaea7501ab2d776abfc987e686585c791c">tnumberseqset_split_each_n_tboxes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_ga2543f91109e65ee72ce6f1c15101aacc.html#ga2543f91109e65ee72ce6f1c15101aacc">tnumberseqset_split_n_tboxes</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__temporal__bbox_gad20875c11acfbdfe6ba7c03217bfb00e.html#gad20875c11acfbdfe6ba7c03217bfb00e">tnumberseqset_tboxes</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_gad20875c11acfbdfe6ba7c03217bfb00e.html#gad20875c11acfbdfe6ba7c03217bfb00e">tnumberseqset_tboxes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_ga4ecbbcd93de2668f89ca4d7b4010ede4.html#ga4ecbbcd93de2668f89ca4d7b4010ede4">tsequence_expand_bbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_gabc8d0ac17ae2637b9a33e45f2d07912e.html#gabc8d0ac17ae2637b9a33e45f2d07912e">tsequence_set_bbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_gaf2b265d417d73c98de5120b62b7cd23c.html#gaf2b265d417d73c98de5120b62b7cd23c">tsequence_set_bbox_slice</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__temporal__bbox_gaf2b265d417d73c98de5120b62b7cd23c.html#gaf2b265d417d73c98de5120b62b7cd23c">tsequence_set_bbox_slice</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_gaf13ff7a0cd387149d840f4b28e724453.html#gaf13ff7a0cd387149d840f4b28e724453">tsequence_spans</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_ga90f6588729e168258add492c891183fb.html#ga90f6588729e168258add492c891183fb">tsequence_split_each_n_spans</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__bbox_gab9037552a74f91d495ee4555f433ed57.html#gab9037552a74f91d495ee4555f433ed57">tsequence_split_n_spans</a></td></tr>
@@ -107,23 +107,35 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gad20875c11acfbdfe6ba7c03217bfb00e" name="gad20875c11acfbdfe6ba7c03217bfb00e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gad20875c11acfbdfe6ba7c03217bfb00e">&#9670;&#160;</a></span>tnumberseqset_tboxes()</h2>
+<a id="gaf2b265d417d73c98de5120b62b7cd23c" name="gaf2b265d417d73c98de5120b62b7cd23c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf2b265d417d73c98de5120b62b7cd23c">&#9670;&#160;</a></span>tsequence_set_bbox_slice()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTBox.html">TBox</a> * tnumberseqset_tboxes </td>
+          <td class="memname">void tsequence_set_bbox_slice </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequenceSet.html">TSequenceSet</a> *&#160;</td>
-          <td class="paramname"><em>ss</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
+          <td class="paramname"><em>seq</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>box</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -133,14 +145,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return an array of temporal boxes obtained from the segments of a temporal number sequence set. </p>
+<p>Return in the last argument the bounding box of the instants of a temporal sequence between two positions. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ss</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> sequence set </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> sequence </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">first,last</td><td>Positions of the first and of the last instant </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">box</td><td>Bounding box </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>A bound interior to the sequence is inclusive, since the instant it names belongs to both of the segments meeting there, while a bound at an end of the sequence carries the inclusivity the sequence gives that end. The box of a slice is thus contained in the box of the sequence, which is what an index keyed on the slices of a value relies on </dd></dl>
 
 </div>
 </div>
