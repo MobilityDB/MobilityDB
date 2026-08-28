@@ -29,14 +29,15 @@ and its tag must say so.  A wrapper is checked only when the SQL binds it;
 one reached solely through an operator or an aggregate has no CREATE FUNCTION
 to answer for it and is left alone.
 
+An aggregate's transition, combine and final wrappers each back a CREATE
+FUNCTION nobody calls while implementing a CREATE AGGREGATE everybody does.
+The tag states the first and @sqlaggfn the second, so an aggregate member
+answers this guard like any other wrapper and needs no exemption.
+
 Three shapes name the SQL correctly without repeating its spelling, and are
 accepted rather than reported:
 
-  AGGREGATE   The SQL name is a `_transfn` / `_combinefn` / `_finalfn`, an
-              internal of an aggregate no user calls.  The tag names the
-              aggregate itself (`tCount`), which is the name to document.
-
-  PER TYPE    The symbol serves a FAMILY of SQL functions, each carrying its
+  PER TYPE   The symbol serves a FAMILY of SQL functions, each carrying its
               own type (`intspan_in`, `floatspan_in`, ... for one `Span_in`),
               so there is no single name for the tag to state and the tag
               names the family.  What such a tag should say is a question of
@@ -77,10 +78,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 # the tag's spelling.  The catalog carries them as backing-only names.
 BBOX_TAGS = {'contains_bbox', 'contained_bbox', 'overlaps_bbox',
              'adjacent_bbox', 'same_bbox'}
-
-# An aggregate's internals are CREATE FUNCTIONed under names no user calls;
-# the tag names the aggregate they serve.
-AGGREGATE_INTERNAL = re.compile(r'_(transfn|combinefn|finalfn)$')
 
 # The name and C symbol of one CREATE FUNCTION statement.  The statement ends
 # at its first semicolon: reading past it walks into the next statement and
@@ -142,7 +139,7 @@ def accepted(tagged, declared):
     """True if the tag names the SQL correctly without repeating its spelling."""
     if tagged & BBOX_TAGS:
         return True
-    return len(declared) > 1 or AGGREGATE_INTERNAL.search(next(iter(declared)))
+    return len(declared) > 1
 
 
 def report(fix):

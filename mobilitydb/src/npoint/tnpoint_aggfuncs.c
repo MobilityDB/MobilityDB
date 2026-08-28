@@ -52,7 +52,8 @@ PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
  * @ingroup mobilitydb_npoint_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * network points
- * @sqlfn tCentroid()
+ * @sqlfn tcentroid_transfn()
+ * @sqlaggfn tCentroid()
  */
 Datum
 Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)

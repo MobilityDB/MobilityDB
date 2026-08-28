@@ -274,7 +274,9 @@ TAB_SIZE               = 4
 # @} or use a double escape (\\{ and \\})
 
 ALIASES                = "csqlfn=@par C-SQL Function:^^" \
+                         "csqlaggfn=@par C-SQL Aggregate Role:^^" \
                          "sqlfn=@par SQL Function:^^" \
+                         "sqlaggfn=@par SQL Aggregate:^^" \
                          "sqlop=@par SQL Operator:^^"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
