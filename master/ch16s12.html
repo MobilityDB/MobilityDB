@@ -7,9 +7,12 @@ SELECT getResolution(th3index(tgeompoint
   'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
 </pre></li><li class="listitem"><a name="tcell_cell_to_latlng"></a><a class="indexterm" name="id12278"></a><a class="indexterm" name="id12281"></a><p>Return the temporal geodetic centroid of each cell in a trajectory</p><pre class="programlisting">
+cellToPoint(cell) → geometry
 cellToPoint(tcell) → tgeogpoint
 tgeompoint(tcell) → tgeompoint
 </pre><p>The <code class="varname">tgeompoint</code> form answers the same centroid as an SRID-4326 planar point, and H3 is the one grid publishing both forms. The operation is named <code class="varname">cellToPoint</code> for every grid, the <code class="varname">cell_to_point</code> slot of the descriptor being what fixes it.</p><pre class="programlisting">
+SELECT ST_AsText(cellToPoint(h3index '871fa44a8ffffff'), 6);
+-- POINT(4.297401 50.8043)
 SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
 SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
@@ -19,8 +22,11 @@ SELECT asText(cellToPoint(tquadbin '48a6227affffffff@2001-01-01'), 6);
 SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 -- POINT(4.222019 50.936164)@2001-01-01
 </pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id12292"></a><p>Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</p><pre class="programlisting">
+cellToBoundary(cell) → geometry
 cellToBoundary(tcell) → tgeography
 </pre><p>Return the polygon boundary of a cell in SRID 4326. The static form takes a single <code class="varname">cell</code>; the temporal form returns the boundary of each cell in a trajectory. The ring closes on its first vertex, so an H3 hexagon carries seven points and a QUADBIN square or an S2 spherical quadrilateral five.</p><pre class="programlisting">
+SELECT ST_NPoints(cellToBoundary(h3index '871fa44a8ffffff'));
+-- 7
 SELECT ST_GeometryType(getValue(cellToBoundary(th3index
   '871fa44a8ffffff@2001-01-01'))::geometry);
 -- ST_Polygon
