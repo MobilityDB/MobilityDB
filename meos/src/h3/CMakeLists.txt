@@ -24,7 +24,7 @@ set(H3_SRCS
 
   # Per-section lifted public API, listed in the same order as
   # the @defgroup sequence in meos/include/h3/doxygen_meos_h3.h
-  # and the chapter sections in doc/temporal_h3_index.xml. Each of
+  # and the chapter sections in doc/temporal_cell_index.xml. Each of
   # these also carries the hand-written static h3 adapters that
   # could not be auto-generated (GSERIALIZED conversions, unit-
   # string dispatch, next-resolution conveniences).

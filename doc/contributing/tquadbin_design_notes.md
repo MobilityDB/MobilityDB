@@ -12,7 +12,7 @@ A `quadbin` packs a Web-Mercator tile into a 64-bit integer, so cells are square
 
 > **Audience**: a contributor or binding author working at the MEOS C level.
 > This is design rationale, not user documentation — the user manual
-> (`doc/temporal_quadbin_index.xml`) intentionally does **not** carry these internals.
+> (`doc/temporal_cell_index.xml`) intentionally does **not** carry these internals.
 
 ---
 

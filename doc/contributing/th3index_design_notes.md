@@ -12,7 +12,7 @@ An `h3index` is an opaque 64-bit cell identifier in a fixed hierarchy, so the ty
 
 > **Audience**: a contributor or binding author working at the MEOS C level.
 > This is design rationale, not user documentation — the user manual
-> (`doc/temporal_h3_index.xml`) intentionally does **not** carry these internals.
+> (`doc/temporal_cell_index.xml`) intentionally does **not** carry these internals.
 
 ---
 
