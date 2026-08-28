@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Funciones sobre Geometrías</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch07.html" title="Capítulo 7. Tipos temporales geométricos (Parte 1)"><link rel="prev" href="ch07.html" title="Capítulo 7. Tipos temporales geométricos (Parte 1)"><link rel="next" href="ch07s03.html" title="Notación"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Funciones sobre Geometrías</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 7. Tipos temporales geométricos (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch07s03.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="geo_funcs"></a>Funciones sobre Geometrías</h2></div></div></div><p>Las funciones de esta sección responden una pregunta sobre una geometría y no sobre un tipo temporal. Cada una indica cómo lee una geometría delimitada por arcos circulares, ya que una respuesta construida a partir de los arcos mismos y una construida a partir de una aproximación poligonal de ellos no son la misma respuesta.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="geo_orientedenvelope"></a><a class="indexterm" name="id4557"></a><p>Devuelve el rectángulo de área mínima que encierra una geometría</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Funciones sobre Geometrías</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch07.html" title="Capítulo 7. Tipos temporales geométricos (Parte 1)"><link rel="prev" href="ch07.html" title="Capítulo 7. Tipos temporales geométricos (Parte 1)"><link rel="next" href="ch07s03.html" title="Notación"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Funciones sobre Geometrías</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 7. Tipos temporales geométricos (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch07s03.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="geo_funcs"></a>Funciones sobre Geometrías</h2></div></div></div><p>Las funciones de esta sección responden una pregunta sobre una geometría y no sobre un tipo temporal. Cada una indica cómo lee una geometría delimitada por arcos circulares, ya que una respuesta construida a partir de los arcos mismos y una construida a partir de una aproximación poligonal de ellos no son la misma respuesta.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="geo_orientedenvelope"></a><a class="indexterm" name="id4559"></a><p>Devuelve el rectángulo de área mínima que encierra una geometría</p><pre class="programlisting">
 orientedEnvelope(geometry) → geometry
 </pre><p>El rectángulo se orienta en el ángulo que lo hace más pequeño, que en general no es el ángulo de los ejes. Se devuelve como una línea cuando la geometría está contenida en una y como un punto cuando la geometría es uno. Una geometría que lleva un arco circular se responde sobre el arco mismo: el rectángulo se coloca contra el círculo en el que se encuentra el arco y no contra la cadena de segmentos que lo aproxima.</p><pre class="programlisting">
 SELECT ST_AsText(round(orientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
@@ -7,7 +7,7 @@ SELECT ST_AsText(round(orientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
 -- LINESTRING(0 0,10 0)
 SELECT ST_AsText(round(orientedEnvelope(geometry 'Circularstring(0 0,0.5 0.1,1 0)'), 6));
 -- POLYGON((1 0.1,0 0.1,0 0,1 0,1 0.1))
-</pre></li><li class="listitem"><a name="geo_convexhull"></a><a class="indexterm" name="id4565"></a><p>Devuelve la geometría convexa más pequeña que encierra una geometría</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_convexhull"></a><a class="indexterm" name="id4567"></a><p>Devuelve la geometría convexa más pequeña que encierra una geometría</p><pre class="programlisting">
 convexHull(geometry) → geometry
 </pre><p>El resultado es un polígono en el que cada esquina es un punto de la geometría, una línea cuando la geometría está contenida en una y un punto cuando la geometría es uno. Una geometría que lleva un arco circular se responde sobre el arco mismo, por lo que la envolvente está delimitada por el arco y se devuelve como una geometría curva y no como un polígono que la aproxima.</p><pre class="programlisting">
 SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
@@ -16,7 +16,7 @@ SELECT ST_AsText(round(convexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0
 -- POLYGON((0 0,0 10,10 10,10 0,0 0))
 SELECT ST_AsText(round(convexHull(geometry 'Circularstring(5 0,0 5,-5 0)'), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE((5 0,-5 0),CIRCULARSTRING(-5 0,0 5,5 0)))
-</pre></li><li class="listitem"><a name="geo_issimple"></a><a class="indexterm" name="id4573"></a><p>Devuelve verdadero si una geometría no tiene ningún punto en el que se cruce o se toque a sí misma</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_issimple"></a><a class="indexterm" name="id4575"></a><p>Devuelve verdadero si una geometría no tiene ningún punto en el que se cruce o se toque a sí misma</p><pre class="programlisting">
 isSimple(geometry) → boolean
 </pre><p>Un punto siempre es simple, un multipunto es simple cuando no repite ningún punto, una línea es simple cuando se encuentra consigo misma solo donde dos de sus segmentos se siguen y, cuando se cierra, en el punto donde se cierra, y una geometría de área es simple cuando cada uno de sus anillos lo es. Además, dos líneas de una multilínea pueden encontrarse en un punto que termina ambas. Una geometría que lleva un arco circular se encuentra consigo misma a lo largo de un arco y no en un punto, lo que la intersección de segmentos en la que esto se basa no lee, por lo que tal geometría se responde sobre la cadena de segmentos que aproxima sus arcos.</p><pre class="programlisting">
 SELECT isSimple(geometry 'Linestring(0 0,10 10,10 0,0 10)');
@@ -25,7 +25,7 @@ SELECT isSimple(geometry 'Linestring(0 0,10 0,10 10,0 0)');
 -- true
 SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(10 0,10 10))');
 -- true
-</pre></li><li class="listitem"><a name="geo_buffer"></a><a class="indexterm" name="id4581"></a><p>Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_buffer"></a><a class="indexterm" name="id4583"></a><p>Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</p><pre class="programlisting">
 buffer(geometry,float,options text='') → geometry
 </pre><p>La frontera del resultado está formada por los dos desplazamientos de la geometría a la distancia dada, por la unión que rellena el lado exterior de cada giro y por el extremo que cierra cada final de una línea abierta. Una distancia negativa contrae una geometría de área y devuelve una geometría vacía para una de cualquier otra dimensión. La cadena <code class="varname">options</code> lleva los estilos como pares <code class="varname">clave=valor</code> separados por espacios: <code class="varname">endcap</code> es uno de <code class="varname">round</code>, <code class="varname">flat</code> o <code class="varname">square</code>, <code class="varname">join</code> uno de <code class="varname">round</code>, <code class="varname">mitre</code> o <code class="varname">bevel</code>, y <code class="varname">mitre_limit</code> la razón a partir de la cual una unión en inglete pasa a ser biselada.</p><pre class="programlisting">
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 1), 6));
@@ -36,7 +36,7 @@ SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
 SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,
   0 0))', 1), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
-</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id4600"></a><p>Devuelve la región que dos geometrías comparten</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id4602"></a><p>Devuelve la región que dos geometrías comparten</p><pre class="programlisting">
 intersection(geometry,geometry) → geometry
 </pre><p>Las cuatro operaciones booleanas de esta sección responden sobre los (multi)polígonos que llevan los tipos temporales cuyos valores son regiones, y cada una toma el nombre de la función de PostGIS para la que responde sin el prefijo <code class="varname">ST_</code>, de modo que una consulta alcanza este motor quitando el prefijo y PostGIS conservándolo. Son planas y bidimensionales: se rechazan una geografía, una dimensión Z y una geometría que no sea un (multi)polígono. Un resultado vacío se responde como <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -48,13 +48,13 @@ SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT intersection(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   geometry 'Polygon((10 10,10 11,11 11,11 10,10 10))') IS NULL;
 -- true
-</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id4610"></a><p>Devuelve la región que dos geometrías cubren en conjunto</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id4612"></a><p>Devuelve la región que dos geometrías cubren en conjunto</p><pre class="programlisting">
 geoUnion(geometry,geometry) → geometry
 </pre><p><code class="varname">UNION</code> es una palabra reservada de SQL, por lo que esta lleva el nombre del tipo sobre el que responde, como hacen <code class="varname">setUnion</code> y <code class="varname">spanUnion</code>. Dos geometrías que no se tocan se responden como un multipolígono.</p><pre class="programlisting">
 SELECT ST_AsText(geoUnion(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
 -- POLYGON((5 1,1 1,1 5,3 5,3 7,7 7,7 3,5 3,5 1))
-</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id4621"></a><p>Devuelve la región de la primera geometría que la segunda no cubre</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id4623"></a><p>Devuelve la región de la primera geometría que la segunda no cubre</p><pre class="programlisting">
 difference(geometry,geometry) → geometry
 </pre><p>Una segunda geometría situada dentro de la primera deja un agujero en lugar de dividirla.</p><pre class="programlisting">
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -63,7 +63,7 @@ SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((2 2,2 4,4 4,4 2,2 2))'));
 -- POLYGON((5 1,1 1,1 5,5 5,5 1),(2 4,2 2,4 2,4 4,2 4))
-</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id4629"></a><p>Devuelve la región que cubre exactamente una de dos geometrías</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id4631"></a><p>Devuelve la región que cubre exactamente una de dos geometrías</p><pre class="programlisting">
 symDifference(geometry,geometry) → geometry
 </pre><p>Es la unión de las dos geometrías menos la región que comparten, por lo que una geometría contra sí misma se responde como <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(symDifference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',

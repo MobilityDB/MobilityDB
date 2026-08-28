@@ -6,7 +6,7 @@
 			<a class="xref" href="ch09s06.html#tiling" title="Figure 9.4. Multidimensional tiling for temporal floats.">Figure 9.4, “Multidimensional tiling for temporal floats.”</a> illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <span class="emphasis"><em>reshuffling</em></span>.
 		</p><p>Many of the functions in this section are <span class="emphasis"><em>set-returning functions</em></span> (also known as a <span class="emphasis"><em>table functions</em></span>) since they typically return more than one value. In this case, the functions are marked with the <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
- symbol.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="bin_functions"></a>Bin Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_bins"></a><a class="indexterm" name="id6744"></a><p>Return an array of bins that cover a value or time span with bins of the same size or duration
+ symbol.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="bin_functions"></a>Bin Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_bins"></a><a class="indexterm" name="id6746"></a><p>Return an array of bins that cover a value or time span with bins of the same size or duration
 </p><pre class="programlisting">
 bins(numspans,vsize number,vorigin number=0) → span[]
 bins(datespans,tsize interval,torigin date='2000-01-03') → span[]
@@ -29,7 +29,7 @@ FROM unnest(bins(tstzspanset '{[2001-01-15, 2001-01-17],[2001-01-22, 2001-01-25]
 -- 2 | [2001-01-16, 2001-01-17]
 -- 3 | [2001-01-22, 2001-01-24)
 -- 4 | [2001-01-24, 2001-01-25]
-</pre></li><li class="listitem"><a name="setspan_getBin"></a><a class="indexterm" name="id6752"></a><p>Return the bin that contains a number or a timestamp</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_getBin"></a><a class="indexterm" name="id6754"></a><p>Return the bin that contains a number or a timestamp</p><pre class="programlisting">
 getBin(number,size number,origin number=0) → span
 getBin(date,duration interval,origin date='2000-01-03') → datespan
 getBin(timestamptz,duration interval,origin timestamptz='2000-01-03') → tstzspan
@@ -42,7 +42,7 @@ SELECT getBin('2001-01-04', interval '1 week');
 -- [2001-01-01 08:00:00, 2001-01-08 08:00:00)
 SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 -- [2000-12-31, 2001-01-07)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tile_functions"></a>Tile Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_valueTimeTiles"></a><a class="indexterm" name="id6763"></a><a class="indexterm" name="id6766"></a><a class="indexterm" name="id6769"></a><p>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tile_functions"></a>Tile Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox_valueTimeTiles"></a><a class="indexterm" name="id6765"></a><a class="indexterm" name="id6768"></a><a class="indexterm" name="id6771"></a><p>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
 </p><pre class="programlisting">
 valueTiles(tbox,vsize float,vorigin float=0.0) → {(index,tile)}
@@ -74,7 +74,7 @@ SELECT valueTimeTiles(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days
 -- (2,"TBOX XT([15.5,17.5),[2001-01-15,2001-01-17))")
 -- (3,"TBOX XT([17.5,19.5),[2001-01-15,2001-01-17))")
 -- ...
-</pre></li><li class="listitem"><a name="stbox_spaceTimeTiles"></a><a class="indexterm" name="id6785"></a><a class="indexterm" name="id6788"></a><a class="indexterm" name="id6791"></a><p>Return the set of tiles that covers a spatiotemporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="stbox_spaceTimeTiles"></a><a class="indexterm" name="id6787"></a><a class="indexterm" name="id6790"></a><a class="indexterm" name="id6793"></a><p>Return the set of tiles that covers a spatiotemporal box with tiles of the same size and/or duration <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
  <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
@@ -122,7 +122,7 @@ SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
 -- (2,"STBOX ZT(((5,3,3),(7,5,5))),[2001-01-15,2001-01-17)")
 -- (3,"STBOX ZT(((7,3,3),(9,5,5))),[2001-01-15,2001-01-17)")
 -- ...
-</pre></li><li class="listitem"><a name="tbox_getValueTimeTile"></a><a class="indexterm" name="id6821"></a><a class="indexterm" name="id6824"></a><a class="indexterm" name="id6827"></a><p>Return the temporal tile that covers a value and/or a timestamp</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_getValueTimeTile"></a><a class="indexterm" name="id6823"></a><a class="indexterm" name="id6826"></a><a class="indexterm" name="id6829"></a><p>Return the temporal tile that covers a value and/or a timestamp</p><pre class="programlisting">
 getValueTile(v float,vsize float,vorigin float=0.0) → tbox
 getTboxTimeTile(time timestamptz,duration interval,
   torigin timestamptz='2000-01-03') → tbox
@@ -137,7 +137,7 @@ SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days');
 -- TBOXFLOAT XT([14, 16),[2001-01-13 08:00:00, 2001-01-15 08:00:00))
 SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02');
 -- TBOXFLOAT XT([15, 17),[2001-01-14, 2001-01-16))
-</pre></li><li class="listitem"><a name="stbox_getSpaceTimeTile"></a><a class="indexterm" name="id6835"></a><a class="indexterm" name="id6838"></a><a class="indexterm" name="id6841"></a><p>Return the spatiotemporal tile that covers a point and/or a timestamp <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="stbox_getSpaceTimeTile"></a><a class="indexterm" name="id6837"></a><a class="indexterm" name="id6840"></a><a class="indexterm" name="id6843"></a><p>Return the spatiotemporal tile that covers a point and/or a timestamp <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
 </p><pre class="programlisting">
 getSpaceTile(point geometry,xsize float,[ysize float,zsize float],
@@ -157,7 +157,7 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
   'Point(1 1)', '2001-01-02');
 -- STBOX XT(((1,1),(3,3)),[2000-12-31, 2001-01-02))
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="boxes_functions"></a>Bounding Box Operations</h3></div></div></div><p>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <a class="xref" href="ch09s05.html" title="Splitting Operations">the section called “Splitting Operations”</a> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueTimeBins"></a><a class="indexterm" name="id6865"></a><a class="indexterm" name="id6868"></a><p>Return an array of value or time spans obtained from the instants or segments of a temporal number with respect to a value or time grid</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="boxes_functions"></a>Bounding Box Operations</h3></div></div></div><p>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <a class="xref" href="ch09s05.html" title="Splitting Operations">the section called “Splitting Operations”</a> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueTimeBins"></a><a class="indexterm" name="id6867"></a><a class="indexterm" name="id6870"></a><p>Return an array of value or time spans obtained from the instants or segments of a temporal number with respect to a value or time grid</p><pre class="programlisting">
 valueBins(tnumber,vsize number,vorigin number=0) → numspan[]
 timeBins(temp,duration interval,torigin timestamptz='2000-01-03') → tstzspan[]
 </pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of values or time is not specified, it is set by default to 0 for value spans or to Monday, January 3, 2000 for time spans.</p><pre class="programlisting">
@@ -175,7 +175,7 @@ SELECT timeBins(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03, CCC@2000
 SELECT timeBins(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05]', '3 days', '2000-01-01');
 -- {"[2000-01-01, 2000-01-04)","[2000-01-04, 2000-01-07)"}
-</pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6877"></a><a class="indexterm" name="id6880"></a><a class="indexterm" name="id6883"></a><p>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6879"></a><a class="indexterm" name="id6882"></a><a class="indexterm" name="id6885"></a><p>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</p><pre class="programlisting">
 valueBoxes(tnumber,size number,vorigin number=0) → tbox[]
 timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]
 valueTimeBoxes(tnumber,vsize number,tsize interval,vorigin number=0,
@@ -197,7 +197,7 @@ SELECT valueTimeBoxes(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-
   1@2000-01-05]', 3, '3 days', 1, '2000-01-01');
 /* {"TBOXFLOAT XT([1, 4),[2000-01-01, 2000-01-04))","TBOXFLOAT XT([1, 4),(2000-01-04,
    2000-01-05])","TBOXFLOAT XT([4, 4],[2000-01-04, 2000-01-04])"} */
-</pre></li><li class="listitem"><a name="tspatial_spaceTimeBoxes"></a><a class="indexterm" name="id6891"></a><a class="indexterm" name="id6894"></a><a class="indexterm" name="id6897"></a><p>Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tspatial_spaceTimeBoxes"></a><a class="indexterm" name="id6893"></a><a class="indexterm" name="id6896"></a><a class="indexterm" name="id6899"></a><p>Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
 </p><pre class="programlisting">
 spaceBoxes({tgeompoint,tgeometry,tpose,tpcpoint,trgeometry},xsize float,
@@ -236,7 +236,7 @@ SELECT spaceBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', 2.0);
 /* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02))","STBOX
    XT(((2,2),(3,3)),[2001-01-02, 2001-01-03])"} */
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="split_functions"></a>Splitting Operations</h3></div></div></div><p>These functions split a temporal value with respect to a sequence of bins (see <a class="xref" href="ch09s06.html#bin_functions" title="Bin Operations">the section called “Bin Operations”</a>) or tiles (see <a class="xref" href="ch09s06.html#tile_functions" title="Tile Operations">the section called “Tile Operations”</a>).</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueSplit"></a><a class="indexterm" name="id6923"></a><a class="indexterm" name="id6926"></a><a class="indexterm" name="id6929"></a><p>Split a temporal number with respect to value and/or time bins <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="split_functions"></a>Splitting Operations</h3></div></div></div><p>These functions split a temporal value with respect to a sequence of bins (see <a class="xref" href="ch09s06.html#bin_functions" title="Bin Operations">the section called “Bin Operations”</a>) or tiles (see <a class="xref" href="ch09s06.html#tile_functions" title="Tile Operations">the section called “Tile Operations”</a>).</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_valueSplit"></a><a class="indexterm" name="id6925"></a><a class="indexterm" name="id6928"></a><a class="indexterm" name="id6931"></a><p>Split a temporal number with respect to value and/or time bins <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 </p><pre class="programlisting">
 valueSplit(tnumber,size number,origin number=0) → {(number,tnumber)}
 timeSplit(ttype,duration interval,origin timestamptz='2000-01-03') → {(time,temp)}
@@ -307,7 +307,7 @@ SELECT (sp).number, (sp).time,
   '5 days', 1.0, '2001-02-01') AS sp) t;
 -- 1 | 2001-01-01 | [1@2001-01-01, 6@2001-01-06)
 -- 6 | 2001-01-06 | [6@2001-01-06, 10@2001-01-10)
-</pre></li><li class="listitem"><a name="tspatial_spaceSplit"></a><a class="indexterm" name="id6948"></a><a class="indexterm" name="id6951"></a><a class="indexterm" name="id6954"></a><p>Split a temporal point with respect to a spatial grid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tspatial_spaceSplit"></a><a class="indexterm" name="id6950"></a><a class="indexterm" name="id6953"></a><a class="indexterm" name="id6956"></a><p>Split a temporal point with respect to a spatial grid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
  <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
