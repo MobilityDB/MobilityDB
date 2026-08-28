@@ -128,7 +128,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the centroid of a geometry. </p>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid(PG_FUNCTION_ARGS)</a></code>. </dd></dl>
+<p >The answer carries the ordinates of its input: the centroid is a mean, and a mean is taken in every dimension the geometry states. PostGIS answers a bare point in the plane, since the GEOS centroid it delegates to has no ordinates to give back. </p><dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid(PG_FUNCTION_ARGS)</a></code>. </dd></dl>
 
 </div>
 </div>
