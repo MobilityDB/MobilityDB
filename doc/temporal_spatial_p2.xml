@@ -123,7 +123,7 @@ SELECT astext(minusElevation(tgeompoint '[Point(1 1 1)@2001-01-01,
 				<para>Return or set the spatial reference identifier &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 SRID(tspatial) → integer
-setSRID(tspatial) → tspatial
+setSRID(tspatial,integer) → tspatial
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(tgeompoint 'Point(0 0)@2001-01-01');

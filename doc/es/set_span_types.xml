@@ -1014,7 +1014,7 @@ SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
 				<para>Devuelve o especifica el identificador de referencia espacial</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 SRID(spatialset) → integer
-setSRID(spatialset) → spatialset
+setSRID(spatialset,integer) → spatialset
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(geomset '{"Point(1 1)", "Point(2 2)"}');
