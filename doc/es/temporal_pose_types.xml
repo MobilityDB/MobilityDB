@@ -49,11 +49,13 @@
 		</math>.
 	</para>
 
+	<para>El constructor de poses acepta cuaterniones cuya norma dista como mucho <varname>1e-3</varname> de la unidad (una tolerancia lo bastante amplia como para absorber la deriva del integrador típica de los clientes de fusión de sensores, como las IMU y los entornos de ejecución de RA/RV), y a continuación los renormaliza a norma exactamente unitaria antes de almacenarlos. Las normas muy alejadas (por ejemplo, el caso de error evidente <varname>(1, 1, 1, 1)</varname>, donde <varname>|q| = 2</varname>), los cuaterniones nulos y los cuaterniones con componentes <varname>NaN</varname>/<varname>Inf</varname> se rechazan de entrada. La representación en disco es por tanto independiente de la higiene de coma flotante de quien llama, y el código posterior de comparación, hash, SLERP y descomposición de Euler puede confiar en el invariante de norma unitaria.</para>
+
 	<para>
 		El <ulink url="https://www.ogc.org/publications/standard/geopose/">grupo de trabajo de estándares GeoPose</ulink> (SWG), que trabaja bajo los auspicios del <ulink url="https://www.ogc.org/">Open Geospatial Consortium</ulink>, ha definido un estándar para intercambiar información de poses entre distintos usuarios, dispositivos y plataformas. Se puede encontrar más información sobre el estándar en el <ulink url="https://github.com/opengeospatial/GeoPose">repositorio de GitHub</ulink> del SWG GeoPose.
 	</para>
 
-	<para>El tipo <varname>pose</varname> sirve como tipo base para definir el tipo de pose temporal <varname>tpose</varname>. El tipo <varname>tpose</varname> tiene una funcionalidad similar al tipo de punto temporal <varname>tgeompoint</varname>. Por lo tanto, la mayoría de las funciones y operadores descritos anteriormente para el tipo <varname>tgeompoint</varname> también son aplicables para el tipo <varname>tpose</varname>. Además, hay funciones específicas definidas para el tipo <varname>tpose</varname>.</para> En este capítulo cubrimos estas funciones.
+	<para>El tipo <varname>pose</varname> sirve como tipo base para definir el tipo de pose temporal <varname>tpose</varname>. El tipo <varname>tpose</varname> tiene una funcionalidad similar al tipo de punto temporal <varname>tgeompoint</varname>. Por lo tanto, la mayoría de las funciones y operadores descritos anteriormente para el tipo <varname>tgeompoint</varname> también son aplicables para el tipo <varname>tpose</varname>. Además, hay funciones específicas definidas para el tipo <varname>tpose</varname>. En este capítulo cubrimos estas funciones.</para>
 
 	<para>El tipo <varname>tpose</varname> se utiliza para definir el tipo <varname>trgeometry</varname> (es decir, geometría rígida temporal) definido en el siguiente capítulo. La implementación de estos tipos en MobilityDB se ha estudiado en la siguiente tesis doctoral.</para>
 
@@ -112,15 +114,15 @@ SELECT pose 'SRID=4326;GeodPose(Point Z(1 1 1), 1, 0, 0, 0)';
 
 		<para>Los valores del tipo pose deben satisfacer varias restricciones para que estén bien definidos. Ejemplos de valores incorrectos del tipo pose son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Punto vacío
+-- Empty point
 select pose 'Pose(Point empty, 0.5)';
--- Valor de punto incorrecto
+-- Incorrect point value
 SELECT pose 'Pose(Linestring(1 1,2 2), 1.0)';
--- Valor de radio incorrecto
+-- Incorrect radius value
 SELECT pose 'Pose(Point(1 1), -10.0)';
--- Punto 3D incorrecto
+-- Incorrect 3D point
 SELECT pose 'Pose(Point Z(1 1), 1.0)';
--- Orientación 3D incompleta
+-- Incomplete 3D orientation
 SELECT pose 'Pose(Point Z(1 1 1), 1.0)';
 </programlisting>
 		<para>A continuación damos las funciones y operadores para el tipo pose.</para>
@@ -384,12 +386,12 @@ SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(4.35 50.85),1)', 3812), 6);
 -- SRID=3812;Pose(POINT(648679.018035 671067.055638),1)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Un viaje de ida y vuelta de una pose 3D por ECEF aterriza en la pose de entrada
+-- Round-tripping a 3D pose through ECEF and back lands at the input pose
 SELECT asEWKT(round( transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)',
   4978), 4326), 6));
 -- SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)
--- En el cruce del ecuador y el meridiano (lat=lon=0), el cuaternión identidad del cuerpo
--- en la base ECEF es la rotación canónica Este-Norte-Arriba a ECEF
+-- At the equator-meridian (lat=lon=0), the body identity quaternion in the ECEF basis is
+-- the canonical East-North-Up to ECEF rotation
 SELECT asEWKT(round(transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
 -- SRID=4978;Pose(POINT Z (6378137 0 0),0.5,0.5,0.5,0.5)
 </programlisting>
@@ -656,10 +658,10 @@ SELECT asText(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.3)@2
 
 		<para>Los valores de pose temporal deben satisfacer las restricciones especificadas en la <xref linkend="ttype_validity"/> para que estén bien definidos. Se genera un error cuando no se cumple una de estas restricciones. Ejemplos de valores incorrectos son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- No se permiten valores nulos
+-- Null values are not allowed
 SELECT tpose 'NULL@2001-01-01 08:05:00';
 SELECT tpose 'Point(0 0)@NULL';
--- El tipo base no es una pose
+-- Base type is not a pose
 SELECT tpose 'Point(0 0)@2001-01-01 08:05:00';
 </programlisting>
 		<para>A continuación damos las funciones y operadores para las poses temporales. La mayoría de las funciones y operadores para tipos temporales y tipos espaciotemporales descritos en los capítulos precedentes se pueden aplicar para los tipos de pose temporal. Por lo tanto, en las firmas de las funciones, el tipo <varname>pose</varname> se puede utilizar siempre que se especifiquen los tipos <varname>base</varname> y <varname>spatial</varname>, y el tipo <varname>tpose</varname> se puede utilizar siempre que se especifiquen los tipos <varname>ttype</varname> y <varname>tpatial</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para poses temporales y nos remitimos a los capítulos precedentes para explicaciones detalladas sobre ellos.</para>
@@ -1016,6 +1018,7 @@ SELECT asText(valueAtTimestamp(tpose
 speed(tpose) → tfloat
 </programlisting>
 				<para>La orientación no es considerada; para la velocidad angular véase <varname>angularSpeed</varname>.</para>
+				<para>La respuesta se da en las unidades del CRS del SRID, que multiplicadas por 3600 en este caso corresponden a metros por hora.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01 08:00,
   Pose(Point(1 1), 0.5)@2000-01-02 08:00]') * 3600);
@@ -1655,8 +1658,7 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.8)@2001-01-0
 </programlisting>
 			</listitem>
 			<listitem xml:id="tposechain_eq">
-				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
 				<para>Compara dos cadenas de poses temporales, o una cadena de poses temporal y una cadena de poses</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eEq({pose,posechain,tpose,tposechain},{pose,posechain,tpose,tposechain}) &#8594; boolean
@@ -1871,6 +1873,7 @@ yaw({pose,tpose}) → {float,tfloat}
 pitch({pose,tpose}) → {float,tfloat}
 roll({pose,tpose}) → {float,tfloat}
 </programlisting>
+					<para>Para una pose 2D <varname>yaw</varname> devuelve la rotación almacenada <varname>theta</varname>, por convención el yaw del marco del cuerpo, y <varname>pitch</varname> y <varname>roll</varname> devuelven <varname>0</varname>. Para una pose 3D los tres valores provienen de la descomposición Tait-Bryan intrínseca ZYX del cuaternión de orientación. El término <varname>asin</varname> del pitch se acota a <varname>[-1, 1]</varname> para absorber la pequeña deriva numérica que pueden introducir las composiciones largas de cuaterniones. Sobre una pose temporal la interpolación del resultado sigue a la dimensión. Una pose 2D interpola su ángulo almacenado linealmente y ese ángulo es su yaw, de modo que un <varname>tpose</varname> 2D lineal se proyecta a un <varname>tfloat</varname> lineal. Una pose 3D interpola mediante SLERP, cuya descomposición Tait-Bryan no es lineal en el tiempo, de modo que un <varname>tpose</varname> 3D se proyecta a un <varname>tfloat</varname> de pasos: leerlo entre dos instantes responde el ángulo del instante de la izquierda en lugar de un ángulo que ninguna pose tiene.</para>
 <programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT yaw(pose 'Pose(Point(1 1), 0.5)');
 -- 0.5
@@ -1909,12 +1912,13 @@ SELECT ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)');
 					<indexterm significance="normal"><primary><varname>yaw</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>pitch</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>roll</varname></primary></indexterm>
-					<para>Eleva los accesores de ángulos de Euler a través de una pose temporal, devolviendo un flotante temporal (radianes) por cada instante bajo la convención Tait-Bryan intrínseca ZYX</para>
+					<para>Eleva los accesores de ángulos de Euler sobre una pose temporal, devolviendo un flotante temporal en radianes</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 yaw(tpose) → tfloat
 pitch(tpose) → tfloat
 roll(tpose) → tfloat
 </programlisting>
+					<para>El resultado lleva interpolación de pasos, ya que un ángulo leído de una rotación no varía linealmente entre dos poses.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(yaw(tpose '[Pose(Point(0 0),0.5)@2001-01-01,
   Pose(Point(1 1),1.5)@2001-01-02]'), 6);
@@ -2022,8 +2026,8 @@ SELECT asText(applyPose(ST_Point(1,0), tpose '[Pose(Point(0 0), 0)@2026-01-01,
 -- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
 </programlisting>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
--- La forma de la geometría del cuerpo se lleva al marco de la pose: un casco de 4 por 2
--- alrededor del origen del cuerpo, situado en (10, 20)
+-- The shape of the body geometry is carried into the pose's frame: a hull 4 by 2 about
+-- the body origin, placed at (10, 20)
 SELECT ST_AsText(applyPose(ST_MakeEnvelope(-2,-1,2,1), pose 'Pose(Point(10 20), 0)'));
 -- POLYGON((8 19,8 21,12 21,12 19,8 19))
 </programlisting>
@@ -2035,8 +2039,8 @@ applyPose(tpose,tpose) &#8594; tpose
 poseInverse(tpose) &#8594; tpose
 </programlisting>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Un sensor una unidad delante de un cuerpo que termina girado un cuarto de vuelta en
--- (10, 20) termina una unidad al norte de él
+-- A sensor one unit ahead of a body that ends yawed a quarter turn at (10, 20) ends one
+-- unit north of it
 SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
   tpose '[Pose(Point(0 0), 0)@2026-01-01,
   Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'), 6));
@@ -2044,8 +2048,8 @@ SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
 </programlisting>
 			<para>Una pose nombra un marco, por lo que ella misma es un valor en el marco del cuerpo: aplicar una pose a otra compone las dos relaciones entre marcos. Escribiendo <varname>P_WV</varname> para la pose de un vehículo en el mundo y <varname>P_VS</varname> para la pose de un sensor en el vehículo, la pose del sensor en el mundo es <varname>P_WS = P_WV ∘ P_VS</varname>. Esta es la operación que una cadena de poses pliega sobre sus eslabones, de modo que una cadena de dos eslabones se compone en lo que esto devuelve.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Un sensor una unidad delante de un vehículo girado un cuarto de vuelta queda una unidad
--- al norte de él, y lleva la orientación del vehículo
+-- A sensor one unit ahead of a vehicle turned a quarter turn is one unit North of it, and
+-- carries the vehicle's orientation
 SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)', pose(ST_Point(0,0), pi()/2)),
   6));
 -- Pose(POINT(0 1),1.570796)
@@ -2066,11 +2070,12 @@ SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
 				<listitem xml:id="tpose_geopose_funcs">
 					<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tposeFromGeoPose</varname></primary></indexterm>
-					<para>Convierte una pose temporal hacia o desde una envoltura JSON TemporalGeoPose</para>
+					<para>Convierte una pose temporal hacia o desde su codificación OGC GeoPose v1.0</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asGeoPose(tpose,conformance integer=0,maxdecimaldigits integer=-1) → text
 tposeFromGeoPose(text) → tpose
 </programlisting>
+					<para>La clase de conformidad se deduce del valor. Un instante único es un documento Basic que lleva su <varname>validTime</varname>; una secuencia o un conjunto de secuencias es una serie de secuencia compuesta, de la clase Regular cuando los instantes están igualmente espaciados por un número entero de milisegundos y de la clase Irregular en caso contrario. El argumento <varname>conformance</varname> elige la codificación de la orientación de un documento Basic, como lo hace para una <varname>pose</varname>, y no tiene efecto sobre una serie, cuyos marcos interiores llevan un cuaternión y no ofrecen tal elección. Una serie declara su marco exterior una sola vez, como el marco Este-Norte-Arriba del plano tangente local en la posición de la primera pose, y da cada pose como un marco interior que contiene su traslación desde ese punto de tangencia, en metros, y su rotación relativa a la base de ese marco. Los tiempos son valores <varname>GeoPose_Instant</varname>, es decir, tiempo Unix en milisegundos enteros, que es lo que el estándar exige de toda posición temporal que define. Por lo tanto, el muestreo por debajo del milisegundo no se lleva; la codificación MF-JSON, que el estándar que la sustenta tipa como una cadena de fecha y hora, sí lo lleva. El modelo de transición informa de la interpolación. La interpolación lineal es el modelo <varname>interpolate</varname> del estándar y las interpolaciones de pasos y discreta son su modelo <varname>none</varname>; puesto que esos dos identificadores no distinguen la de pasos de la discreta, los <varname>parameters</varname> del modelo nombran la interpolación con las mismas palabras que usa la codificación MF-JSON.</para>
 <programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
   Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02,
@@ -2122,6 +2127,8 @@ SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
 --  }
 -- }
 </programlisting>
+					<para>Una serie no tiene ni huecos ni límites abiertos, de modo que un conjunto de secuencias se aplana en una única secuencia cerrada y la inclusión de los límites de una secuencia no se conserva. La lectura acepta además la envoltura <varname>TemporalGeoPose</varname> que escribían versiones anteriores, un arreglo de objetos de la clase Basic cada uno con un <varname>validTime</varname> añadido, de modo que los datos ya almacenados en esa forma siguen cargándose.</para>
+					<para>La forma de esa envoltura es</para>
 <programlisting xml:space="preserve" format="linespecific">
 {
   "type":          "TemporalGeoPose",
