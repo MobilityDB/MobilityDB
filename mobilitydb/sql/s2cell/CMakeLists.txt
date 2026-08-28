@@ -3,6 +3,10 @@ SET(LOCAL_FILES
   601_s2cellset
   602_s2cell_ops
   603_ts2cell
+  604_ts2cell_compops
+  605_ts2cell_spatialfuncs
+  608_ts2cell_topops
+  609_ts2cell_posops
   )
 
 foreach (f ${LOCAL_FILES})

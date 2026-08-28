@@ -46,6 +46,27 @@ subtypes:
     # in manifest.d/tempspatialrel_families.yaml.
     files: [compops, posops, topops, spatialrels, gist, spgist]
 
+  # ---- s2: the third cell index, geodetic like h3 ----
+  - temp:  ts2cell
+    base:  s2cell
+    brief: "temporal S2 cells"
+    # The family stem is `s2`, not the base type name, as h3's is `h3` and not
+    # `h3index`: the SQL reads ts2CellToBoundary.
+    boundary_fn: ts2CellToBoundary
+    bin:   600
+    category: tspatial
+    # A cell-index inherits the scalar base::stbox cast — same as tquadbin and
+    # th3index — backed by the s2cell_to_stbox /
+    # s2cell_{timestamptz,tstzspan}_to_stbox exports
+    # (meos/src/s2cell/ts2cell_boxops.c).
+    scalar_stbox_cast: true
+    stboxes: false
+    # index_support is NOT set: an S2 cell is a region of the sphere, so its
+    # stbox is geodetic and a geodetic bbox against a planar query box errors.
+    # h3 is geodetic for the same reason and likewise stays on the SQL form;
+    # only the Web-Mercator tquadbin sets it.
+    files: [compops, posops, topops]
+
   # ---- reference families (validate self-regeneration == committed; not new) ----
   - temp:  tcbuffer
     base:  cbuffer

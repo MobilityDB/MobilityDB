@@ -1,0 +1,89 @@
+SELECT asText(getResolution(ts2cell '[47c3c3@2000-01-01, 47c3c38705f@2000-01-02]'));
+                               astext                               
+--------------------------------------------------------------------
+ [10@Sat Jan 01 00:00:00 2000 PST, 20@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(isValidCell(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'));
+                              astext                              
+------------------------------------------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT startValue(getResolution(ts2cell '[47c3c3@2000-01-01]'))
+  = getResolution(s2cell '47c3c3');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(startValue(cellArea(ts2cell '[47c3c3@2000-01-01]'))::numeric, 6)
+  = round(cellArea(s2cell '47c3c3')::numeric, 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(cellToParent(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', 5));
+                                 astext                                 
+------------------------------------------------------------------------
+ [47c4@Sat Jan 01 00:00:00 2000 PST, 54b4@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT startValue(cellToParent(ts2cell '[47c3c3@2000-01-01]', 5))
+  = cellToParent(s2cell '47c3c3', 5);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tempSubtype(cellToPoint(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'));
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT tempBasetype(cellToPoint(ts2cell '[47c3c3@2000-01-01]'));
+ tempbasetype 
+--------------
+ geography
+(1 row)
+
+SELECT tempBasetype(cellToBoundary(ts2cell '[47c3c3@2000-01-01]'));
+ tempbasetype 
+--------------
+ geography
+(1 row)
+
+SELECT startValue(cellToPoint(ts2cell '[47c3c3@2000-01-01]'))::geometry
+  = cellToPoint(s2cell '47c3c3')::geometry;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_NPoints(startValue(cellToBoundary(ts2cell '[47c3c3@2000-01-01]'))::geometry);
+ st_npoints 
+------------
+          5
+(1 row)
+
+SELECT ST_SRID(startValue(cellToBoundary(ts2cell '[47c3c3@2000-01-01]'))::geometry);
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT asText(ts2CellToToken(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ ["47c3c3"@Sat Jan 01 00:00:00 2000 PST, "54b5c9"@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT startValue(ts2CellToToken(ts2cell '[47c3c3@2000-01-01]'))
+  = s2CellToToken(s2cell '47c3c3');
+ ?column? 
+----------
+ t
+(1 row)
+
