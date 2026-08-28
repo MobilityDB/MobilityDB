@@ -68,7 +68,8 @@ PG_FUNCTION_INFO_V1(Tpc_extent_transfn);
  * @ingroup mobilitydb_pointcloud_agg
  * @brief Transition function for the extent aggregate over tpcpoint /
  *   tpcpatch values.
- * @sqlfn extent()
+ * @sqlfn tpc_extent_transfn()
+ * @sqlaggfn extent()
  */
 Datum
 Tpc_extent_transfn(PG_FUNCTION_ARGS)
@@ -87,7 +88,8 @@ PG_FUNCTION_INFO_V1(Tpcbox_extent_transfn);
  * @ingroup mobilitydb_pointcloud_agg
  * @brief Transition function for the extent aggregate over tpcbox values.
  *   Doubles as the parallel combine function for the temporal variants.
- * @sqlfn extent()
+ * @sqlfn tpcbox_extent_transfn()
+ * @sqlaggfn extent()
  */
 Datum
 Tpcbox_extent_transfn(PG_FUNCTION_ARGS)
@@ -144,7 +146,8 @@ PG_FUNCTION_INFO_V1(Tpcpatch_tnpoints_transfn);
  * @ingroup mobilitydb_pointcloud_agg
  * @brief Transition function for tnpoints(tpcpatch) — temporal running
  *   sum of per-instant pcpatch->npoints.
- * @sqlfn tnpoints()
+ * @sqlfn tnpoints_transfn()
+ * @sqlaggfn tnpoints()
  */
 Datum
 Tpcpatch_tnpoints_transfn(PG_FUNCTION_ARGS)
@@ -214,7 +217,8 @@ PG_FUNCTION_INFO_V1(Tpcpatch_tdensity_transfn);
  * @ingroup mobilitydb_pointcloud_agg
  * @brief Transition function for tdensity(tpcpatch) — temporal running
  *   sum of per-instant density (npoints / xy-bbox-area).
- * @sqlfn tdensity()
+ * @sqlfn tdensity_transfn()
+ * @sqlaggfn tdensity()
  */
 Datum
 Tpcpatch_tdensity_transfn(PG_FUNCTION_ARGS)

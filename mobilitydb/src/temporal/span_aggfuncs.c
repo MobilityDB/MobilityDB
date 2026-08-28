@@ -54,7 +54,8 @@ PG_FUNCTION_INFO_V1(Span_extent_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for extent aggregation of spans
- * @sqlfn extent()
+ * @sqlfn span_extent_transfn()
+ * @sqlaggfn extent()
  */
 Datum
 Span_extent_transfn(PG_FUNCTION_ARGS)
@@ -73,6 +74,7 @@ PG_FUNCTION_INFO_V1(Span_extent_combinefn);
  * @ingroup mobilitydb_setspan_agg
  * @brief Combine function for extent aggregation of spans
  * @sqlfn extent()
+ * @sqlaggfn extent()
  */
 Datum
 Span_extent_combinefn(PG_FUNCTION_ARGS)
@@ -96,7 +98,8 @@ PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for extent aggregation of span base values
- * @sqlfn extent()
+ * @sqlfn span_extent_transfn()
+ * @sqlaggfn extent()
  */
 Datum
 Spanbase_extent_transfn(PG_FUNCTION_ARGS)
@@ -116,7 +119,8 @@ PG_FUNCTION_INFO_V1(Set_extent_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for extent aggregation of sets
- * @sqlfn extent()
+ * @sqlfn set_extent_transfn()
+ * @sqlaggfn extent()
  */
 Datum
 Set_extent_transfn(PG_FUNCTION_ARGS)
@@ -135,7 +139,8 @@ PG_FUNCTION_INFO_V1(Spanset_extent_transfn);
 /**
  * @ingroup mobilitydb_setspan_agg
  * @brief Transition function for extent aggregation of span sets
- * @sqlfn extent()
+ * @sqlfn spanset_extent_transfn()
+ * @sqlaggfn extent()
  */
 Datum
 Spanset_extent_transfn(PG_FUNCTION_ARGS)
@@ -169,7 +174,8 @@ PG_FUNCTION_INFO_V1(Spanset_union_transfn);
  * @brief Transition function for union aggregation of span sets
  * @note We simply gather the input values into an array so that the final
  * function can sort and combine them
- * @sqlfn union()
+ * @sqlfn spanset_union_transfn()
+ * @sqlaggfn spansetUnion()
  */
 Datum
 Spanset_union_transfn(PG_FUNCTION_ARGS)
@@ -208,6 +214,7 @@ PG_FUNCTION_INFO_V1(Span_union_finalfn);
  * @brief Final function for union aggregation of spans.
  * @note Shared for both spans and span sets
  * @sqlfn union()
+ * @sqlaggfn spanUnion(), spansetUnion()
  */
 Datum
 Span_union_finalfn(PG_FUNCTION_ARGS)

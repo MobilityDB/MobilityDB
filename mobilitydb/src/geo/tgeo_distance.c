@@ -462,7 +462,8 @@ PG_FUNCTION_INFO_V1(Mindistance_transfn);
  * @brief Aggregate transition function for the 2-ary `minDistance`
  * aggregate: threads the running min as the threshold into the
  * per-pair plane-sweep kernel
- * @sqlfn minDistance()
+ * @sqlfn minDistance_transfn()
+ * @sqlaggfn minDistance()
  */
 Datum
 Mindistance_transfn(PG_FUNCTION_ARGS)
