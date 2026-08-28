@@ -8,7 +8,7 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter xml:id="ttype_analytics">
+<chapter xml:id="temporal_types_analytics">
 	<title>Tipos temporales: Operaciones de análisis</title>
 
 	<sect1 xml:id="ttype_simplification">
@@ -987,8 +987,8 @@ SELECT (sp).number, (sp).time,
 
 				<listitem xml:id="tspatial_spaceSplit">
 					<indexterm significance="normal"><primary><varname>spaceSplit</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>timeSplit</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<para>Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal &Z_support;
  &SRF;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">

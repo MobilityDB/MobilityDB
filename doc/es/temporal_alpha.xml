@@ -8,7 +8,7 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter xml:id="talpha">
+<chapter xml:id="temporal_types_alpha">
 	<title>Tipos alfanuméricos temporales</title>
 
 	<sect1 xml:id="talpha_notation">
@@ -81,22 +81,6 @@ SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::tbox;
 				<indexterm significance="normal"><primary><varname>tint</varname></primary></indexterm>
 				<para>Convierte entre un booleano temporal y un entero temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueSpan(tnumber) → numspan
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT valueSpan(tint '{1@2001-01-01, 5@2001-01-02, 3@2001-01-03}');
--- [1, 6)
-SELECT valueSpan(tfloat '[1.5@2001-01-01, 4.5@2001-01-03]');
--- [1.5, 4.5]
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tint_tfloat">
-				<indexterm significance="normal"><primary><varname>tnumber</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tnumber(tnumber)</varname></primary></indexterm>
-				<para>Convierte entre enteros temporales, enteros grandes temporales y flotantes temporales</para>
-				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tbool::tint
 tint(tbool) → tint
 </programlisting>
@@ -105,15 +89,12 @@ SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
 -- [1@2001-01-01, 0@2001-01-03]
 </programlisting>
 			</listitem>
-		</itemizedlist>
-	</sect1>
 
-	<sect1 xml:id="talpha_accessors">
-		<title>Accessores</title>
-		<itemizedlist>
-			<listitem xml:id="talpha_valueSpan">
-				<indexterm significance="normal"><primary><varname>valueSpan</varname></primary></indexterm>
-				<para>Devuelve el intervalo de valores ignorando las brechas potenciales</para>
+			<listitem xml:id="tint_tfloat">
+				<indexterm significance="normal"><primary><varname>tnumber</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnumber(tnumber)</varname></primary></indexterm>
+				<para>Convierte entre enteros temporales, enteros grandes temporales y flotantes temporales</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tnumber::tnumber
 tnumber(tnumber) → tnumber
@@ -127,6 +108,25 @@ SELECT tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- [1@2001-01-01, 2@2001-01-03]
 SELECT tint(tfloat '[1.5@2001-01-01, 2.5@2001-01-03]');
 -- ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="talpha_accessors">
+		<title>Accessores</title>
+		<itemizedlist>
+			<listitem xml:id="talpha_valueSpan">
+				<indexterm significance="normal"><primary><varname>valueSpan</varname></primary></indexterm>
+				<para>Devuelve el intervalo de valores ignorando las brechas potenciales</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+valueSpan(tnumber) → numspan
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT valueSpan(tint '{1@2001-01-01, 5@2001-01-02, 3@2001-01-03}');
+-- [1, 6)
+SELECT valueSpan(tfloat '[1.5@2001-01-01, 4.5@2001-01-03]');
+-- [1.5, 4.5]
 </programlisting>
 			</listitem>
 

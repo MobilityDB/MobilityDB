@@ -490,38 +490,16 @@ SET client_min_messages TO notice;
 		</sect2>
 	</sect1>
 
-	<sect1 xml:id="migrating">
-		<title>Migración de la versión 1.0 a la versión 1.1</title>
+	<sect1 xml:id="migrating_1.3">
+		<title>Migración de la versión 1.2 a la versión 1.3</title>
 		<para>
-			MobilityDB 1.1 es una revisión importante con respecto a la versión inicial 1.0. El cambio más significativo en la version 1.1 fue extraer la funcionalidad central para la gestión de datos temporales y espaciotemporales de MobilityDB en la bibilioteca C Mobility Engine Open Source (<ulink url="http://libmeos.org">MEOS</ulink>). De esta forma, la misma funcionalidad que proporciona MobilityDB en un entorno de base de datos está disponible en un programa C para ser utilizada, por ejemplo, en un entorno de streaming. La biblioteca MEOS para la gestión de la movilidad proporciona una funcionalidad similar a la biblioteca C/C++ Geometry Engine Open Source (<ulink url="http://libgeos.org">GEOS</ulink>) para geometría computacional. Además, están disponibles contenedores para la biblioteca MEOS en otros lenguajes de programación, en particular para Python con <ulink url="https://github.com/MobilityDB/PyMEOS">PyMEOS</ulink>. Además, contenedores para C#, Java y Javascript, están en desarrollando.
+			MobilityDB 1.3 es una revisión importante con respecto a la versión 1.2. El cambio más significativo de la versión 1.3 fue habilitar nuevos tipos espaciotemporales. Mientras que la versión 1.2 definía los tipos espaciotemporales <varname>tgeompoint</varname> (punto de geometría temporal), <varname>tgeogpoint</varname> (punto de geografía temporal) y <varname>tnpoint</varname> (punto de red temporal), la versión 1.3 añadió los nuevos tipos <varname>tgeometry</varname> (geometría temporal), <varname>tgeography</varname> (geografía temporal), <varname>tcbuffer</varname> (búfer circular temporal), <varname>tpose</varname> (pose temporal) y <varname>trgeometry</varname> (geometría rígida temporal). A nivel conceptual, todos los tipos espaciotemporales se organizan en la jerarquía que muestra la <xref linkend="tspatial_fig" />.
 		</para>
 		<para>
-			Fueron necesarios varios cambios con respecto a la versión 1.0 de MobilityDB para habilitar lo anterior. Uno importante fue la definición de nuevos tipos de datos <varname>span</varname> y <varname>spanset</varname>, que brindan una funcionalidad similar a los tipos de datos de PostgreSQL <varname>range</varname> y <varname>multirange</varname> pero también se puede usar en varios lenguajes de programación independientemente de PostgreSQL. Estos son <emphasis>tipos de plantilla</emphasis>, lo que significa que son contenedores de otros tipos, de forma similar a como las listas y matrices contienen valores de otros tipos. Además, también se agregó un nuevo tipo de datos de plantilla <varname>set</varname>. Por lo tanto, los tipos <varname>timestampset</varname>, <varname>period</varname> y <varname>periodset</varname> en la versión 1.0 se reemplazan por los tipos <varname>tstzset</varname>, <varname>tstzspan</varname> y <varname>tstzspanset</varname> en la versión 1.1. El nombre de las funciones constructoras para estos tipos se modificó en consecuencia.
+			Para habilitar lo anterior fue necesaria una refactorización del código. Todos los tipos que proporcionaba la versión 1.2, además de los nuevos tipos <varname>tgeometry</varname> y <varname>tgeography</varname>, se definen como tipos centrales y, por lo tanto, se incluyen siempre en el proceso de construcción. Cada uno de los demás tipos espaciotemporales se puede incluir en el proceso de construcción indicando su bandera de compilación correspondiente. Por ejemplo, al añadir <varname>-DCBUFFER=1</varname> se incluyen en el proceso de construcción los tipos construidos sobre el tipo base <varname>cbuffer</varname>, es decir <varname>cbuffer</varname>, <varname>cbufferset</varname> y <varname>tcbuffer</varname>. La posibilidad de seleccionar los tipos que se incluyen en el programa ejecutable es importante en particular para el procesamiento de flujos, dada la capacidad limitada de los dispositivos de borde. Tenga en cuenta que los nuevos tipos <varname>tcbuffer</varname>, <varname>tpose</varname> y <varname>trgeometry</varname> están todavía en desarrollo y se finalizarán en una versión próxima.
 		</para>
 		<para>
-			Finalmente, se simplificó la API de MEOS y MobilityDB para mejorar la usabilidad. Detallamos a continuación los cambios más importantes en la API.
+			Además, la API de MobilityDB y de MEOS se amplió con nuevas funcionalidades y se simplificó para mejorar su usabilidad. Por último, la versión 1.3 también habilita las últimas versiones PostgreSQL 18 y PostGIS 3.6.0. Por todas estas razones, el formato binario de los tipos temporales cambió de la versión 1.2 a la 1.3 y, por lo tanto, es necesario hacer una copia de seguridad y restaurarla para migrar a la nueva versión 1.3 de MobilityDB.
 		</para>
-		<itemizedlist>
-			<listitem>
-				<para>Las funciones <varname>atTimestamp</varname>, <varname>atTimestampSet</varname>, <varname>atPeriod</varname>, and <varname>atPeriodSet</varname> fueron renombradas a <varname>atTime</varname>.
-				</para>
-			</listitem>
-			<listitem>
-				<para>Las funciones <varname>minusTimestamp</varname>, <varname>minusTimestampSet</varname>, <varname>minusPeriod</varname> y <varname>minusPeriodSet</varname> fueron renombradas a <varname>minusTime</varname>.
-				</para>
-			</listitem>
-			<listitem>
-				<para>Las funciones <varname>atValue</varname>, <varname>atValues</varname>, <varname>atRange</varname> y <varname>atRanges</varname> fueron renombradas a <varname>atValues</varname>.
-				</para>
-			</listitem>
-			<listitem>
-				<para>Las funciones <varname>minusValue</varname>, <varname>minusValues</varname>, <varname>minusRange</varname> y <varname>minusRanges</varname> fueron renombradas a <varname>minusValues</varname>.
-				</para>
-			</listitem>
-			<listitem>
-				<para>Las funciones <varname>contains</varname>, <varname>disjoint</varname>, <varname>dwithin</varname>, <varname>intersects</varname> y <varname>touches</varname> fueron renombradas, respectivamente, a <varname>eContains</varname>, <varname>eDisjoint</varname>, <varname>eDwithin</varname>, <varname>eIntersects</varname> y <varname>eTouches</varname>.
-			</para>
-			</listitem>
-		</itemizedlist>
 	</sect1>
 </chapter>

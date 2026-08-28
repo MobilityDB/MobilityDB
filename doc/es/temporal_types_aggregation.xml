@@ -232,7 +232,7 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 		<para>Para acelerar algunas de las funciones de los tipos temporales, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)') FROM Trips T
--- Filtro de índice con cuadro delimitador
+-- Bounding box index filtering
 WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </programlisting>
 		</para>
@@ -240,7 +240,7 @@ WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 		<para>En el caso de los geometrías temporales, todas las relaciones espaciales con la semántica alguna vez o siempre (ver la <xref linkend="tgeo_spatiotemp_rel" />) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(T.Trip, R.Geom) FROM Trips T, Regions R
--- Filtro de índice con cuadro delimitador
+-- Bounding box index filtering
 WHERE eIntersects(T.Trip, R.Geom);
 </programlisting>
 		</para>

@@ -74,19 +74,6 @@ SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::tbox;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="talpha_valueSpan">
-				<indexterm significance="normal"><primary><varname>valueSpan</varname></primary></indexterm>
-				<para>Return the span of values, ignoring any gaps</para>
-				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-valueSpan(tnumber) → numspan
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT valueSpan(tint '{1@2001-01-01, 5@2001-01-02, 3@2001-01-03}');
--- [1, 6)
-SELECT valueSpan(tfloat '[1.5@2001-01-01, 4.5@2001-01-03]');
--- [1.5, 4.5]
-</programlisting>
-			</listitem>
 
 			<listitem xml:id="tbool_tint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
@@ -129,6 +116,19 @@ SELECT tint(tfloat '[1.5@2001-01-01, 2.5@2001-01-03]');
 	<sect1 xml:id="talpha_accessors">
 		<title>Accessors</title>
 		<itemizedlist>
+			<listitem xml:id="talpha_valueSpan">
+				<indexterm significance="normal"><primary><varname>valueSpan</varname></primary></indexterm>
+				<para>Return the span of values, ignoring any gaps</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+valueSpan(tnumber) → numspan
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT valueSpan(tint '{1@2001-01-01, 5@2001-01-02, 3@2001-01-03}');
+-- [1, 6)
+SELECT valueSpan(tfloat '[1.5@2001-01-01, 4.5@2001-01-03]');
+-- [1.5, 4.5]
+</programlisting>
+			</listitem>
 			<listitem xml:id="talpha_valueSet">
 				<indexterm significance="normal"><primary><varname>valueSet</varname></primary></indexterm>
 				<para>Return the values of a temporal number as a set</para>

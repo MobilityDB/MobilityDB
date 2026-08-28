@@ -232,7 +232,7 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 		<para>In order to speed up several of the functions for temporal types, we can add in the <varname>WHERE</varname> clause of queries a bounding box comparison that make uses of the available indexes. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)') FROM Trips T
--- Bouding box index filtering
+-- Bounding box index filtering
 WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </programlisting>
 		</para>
@@ -240,7 +240,7 @@ WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 		<para>In the case of temporal points, all spatial relationships with the ever and always semantics (see <xref linkend="tgeo_spatiotemp_rel"/>) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(T.Trip, R.Geom) FROM Trips T, Regions R
--- Bouding box index filtering
+-- Bounding box index filtering
 WHERE eIntersects(T.Trip, R.Geom);
 </programlisting>
 		</para>

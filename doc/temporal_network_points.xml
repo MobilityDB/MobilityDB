@@ -79,7 +79,7 @@ SELECT npoint(76, 0.33)::nsegment;
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Incorrect rid value
 SELECT npoint 'Npoint(87.5, 1.0)';
--- incorrect position value
+-- Incorrect position value
 SELECT npoint 'Npoint(87, 2.0)';
 -- rid value not found in the ways table
 SELECT npoint 'Npoint(99999999, 1.0)';
@@ -359,8 +359,8 @@ SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
 					<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 					<para>Traditional comparisons</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
@@ -1073,7 +1073,7 @@ SELECT tDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]'
 				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>&gt;,</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 				<para>Traditional comparisons</para>
