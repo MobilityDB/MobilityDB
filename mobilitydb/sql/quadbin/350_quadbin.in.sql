@@ -41,6 +41,19 @@
  * quadbin-specific functions type-safe — a user cannot accidentally
  * feed an arbitrary `bigint` to a function that expects a quadbin
  * cell, and vice-versa.
+ *
+ * WHY THIS FILE DEFINES THE TYPE — one rule, shared by the three cell
+ * families: a base type the host database already provides is
+ * DEFERRED to the host's own extension, and defined here where the
+ * host provides nothing. PostgreSQL ships no quadbin extension, so
+ * this file carries the whole surface.
+ *   - `quadbin`  — no host extension ⇒ defined here
+ *   - `s2cell`   — no host extension ⇒ defined in
+ *                  `mobilitydb/sql/s2cell/600_s2cell.in.sql`
+ *   - `h3index`  — h3-pg provides it ⇒ DEFERRED, and the equivalent
+ *                  blocks in `mobilitydb/sql/h3/250_h3index.in.sql`
+ *                  are commented out, since a second definition would
+ *                  collide on `CREATE EXTENSION`
  */
 
 /******************************************************************************
