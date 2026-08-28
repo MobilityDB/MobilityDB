@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_point_offset</title>
+<title>MobilityDB: buffer_ring_infos_destroy</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -172,7 +172,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa769075729327141bd98598b1e2092b3.html#aa769075729327141bd98598b1e2092b3">buffer_point_edge_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2a9b213088ae7accdbc0b10efbc2849d.html#a2a9b213088ae7accdbc0b10efbc2849d">buffer_point_edges_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_adac2d22c90c49eced8e8a632b37af672.html#adac2d22c90c49eced8e8a632b37af672">buffer_point_location</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_ae3c9090d008e1fb3b1f4929911adf883.html#ae3c9090d008e1fb3b1f4929911adf883">buffer_point_offset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae3c9090d008e1fb3b1f4929911adf883.html#ae3c9090d008e1fb3b1f4929911adf883">buffer_point_offset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afd6dd08960eff26831bb4ad5bee23c07.html#afd6dd08960eff26831bb4ad5bee23c07">buffer_point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae51fba08d848f3e608a839f29d0ac863.html#ae51fba08d848f3e608a839f29d0ac863">buffer_points_equal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af89df4cc273ca3d9368fd7b5babab813.html#af89df4cc273ca3d9368fd7b5babab813">buffer_resolve_coincident_piece</a></td></tr>
@@ -184,7 +184,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2c811cfa3b2ad96e039055fc227a5bb6.html#a2c811cfa3b2ad96e039055fc227a5bb6">buffer_ring_encloses_no_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac8e6cfbf2b08d8f5b03f762dbe8b61a5.html#ac8e6cfbf2b08d8f5b03f762dbe8b61a5">buffer_ring_find_interior_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aeaa3c6d88322ab595605294e14047479.html#aeaa3c6d88322ab595605294e14047479">buffer_ring_info_release</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a8b50171f8d1f2337a79046a0624aec1a.html#a8b50171f8d1f2337a79046a0624aec1a">buffer_ring_infos_destroy</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a8b50171f8d1f2337a79046a0624aec1a.html#a8b50171f8d1f2337a79046a0624aec1a">buffer_ring_infos_destroy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a312ecd0ec9d23c62026e344f46984ef3.html#a312ecd0ec9d23c62026e344f46984ef3">buffer_ring_infos_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5fd9bc8b4ad1c67220d79b64cf7f0203.html#a5fd9bc8b4ad1c67220d79b64cf7f0203">buffer_ring_outward_left</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aaf671e3020ba966666efdd9d59ebe9f2.html#aaf671e3020ba966666efdd9d59ebe9f2">buffer_ring_representative_point</a></td></tr>
@@ -229,8 +229,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae3c9090d008e1fb3b1f4929911adf883" name="ae3c9090d008e1fb3b1f4929911adf883"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae3c9090d008e1fb3b1f4929911adf883">&#9670;&#160;</a></span>buffer_point_offset()</h2>
+<a id="a8b50171f8d1f2337a79046a0624aec1a" name="a8b50171f8d1f2337a79046a0624aec1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b50171f8d1f2337a79046a0624aec1a">&#9670;&#160;</a></span>buffer_ring_infos_destroy()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -239,49 +239,27 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structPOINT2D.html">POINT2D</a> buffer_point_offset </td>
+          <td class="memname">static void buffer_ring_infos_destroy </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>rings</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>nx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ny</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>distance</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return a point displaced from another point. </p>
+<p>Destroy an array of boundary rings together with what its entries hold. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rings</td><td>Array of boundary rings, owned by this function </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

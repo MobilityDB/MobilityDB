@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_point_offset</title>
+<title>MobilityDB: buffer_build_surfaces_from_rings</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -109,7 +109,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af73260c05ad68319dc9abca7f0a70d75.html#af73260c05ad68319dc9abca7f0a70d75">buffer_boundary_self_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a071488d74402e9996c288e16842ac778.html#a071488d74402e9996c288e16842ac778">buffer_build_ring_from_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aff47038aebaf33df7987dc13884848de.html#aff47038aebaf33df7987dc13884848de">buffer_build_surfaces_from_classified_rings</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a15ad0eb19ed1ce81dfc12fd543ab1e93.html#a15ad0eb19ed1ce81dfc12fd543ab1e93">buffer_build_surfaces_from_rings</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a15ad0eb19ed1ce81dfc12fd543ab1e93.html#a15ad0eb19ed1ce81dfc12fd543ab1e93">buffer_build_surfaces_from_rings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a53cc846bc9be582f0fdb5a92e411845b.html#a53cc846bc9be582f0fdb5a92e411845b">buffer_chain_ring_infos</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7acf2eccf4c51c298f5011b0896a592f.html#a7acf2eccf4c51c298f5011b0896a592f">buffer_chain_ring_with_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad742fc5593b65bbe7894673165d244d1.html#ad742fc5593b65bbe7894673165d244d1">buffer_classify_coincident_piece</a></td></tr>
@@ -172,7 +172,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa769075729327141bd98598b1e2092b3.html#aa769075729327141bd98598b1e2092b3">buffer_point_edge_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2a9b213088ae7accdbc0b10efbc2849d.html#a2a9b213088ae7accdbc0b10efbc2849d">buffer_point_edges_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_adac2d22c90c49eced8e8a632b37af672.html#adac2d22c90c49eced8e8a632b37af672">buffer_point_location</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_ae3c9090d008e1fb3b1f4929911adf883.html#ae3c9090d008e1fb3b1f4929911adf883">buffer_point_offset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae3c9090d008e1fb3b1f4929911adf883.html#ae3c9090d008e1fb3b1f4929911adf883">buffer_point_offset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afd6dd08960eff26831bb4ad5bee23c07.html#afd6dd08960eff26831bb4ad5bee23c07">buffer_point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae51fba08d848f3e608a839f29d0ac863.html#ae51fba08d848f3e608a839f29d0ac863">buffer_points_equal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af89df4cc273ca3d9368fd7b5babab813.html#af89df4cc273ca3d9368fd7b5babab813">buffer_resolve_coincident_piece</a></td></tr>
@@ -229,8 +229,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae3c9090d008e1fb3b1f4929911adf883" name="ae3c9090d008e1fb3b1f4929911adf883"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae3c9090d008e1fb3b1f4929911adf883">&#9670;&#160;</a></span>buffer_point_offset()</h2>
+<a id="a15ad0eb19ed1ce81dfc12fd543ab1e93" name="a15ad0eb19ed1ce81dfc12fd543ab1e93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15ad0eb19ed1ce81dfc12fd543ab1e93">&#9670;&#160;</a></span>buffer_build_surfaces_from_rings()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -239,34 +239,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structPOINT2D.html">POINT2D</a> buffer_point_offset </td>
+          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * buffer_build_surfaces_from_rings </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>rings</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>nx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ny</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>distance</em>&#160;</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -276,12 +258,13 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return a point displaced from another point. </p>
+<p>Construct polygonal surfaces from closed boundary rings. </p>
+<p >Rings are classified according to their containment depth. Even-depth rings are shells and odd-depth rings are holes. Each hole is assigned to its immediate containing shell. </p>
 
 </div>
 </div>
