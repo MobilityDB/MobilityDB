@@ -653,6 +653,7 @@ ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a geometry ever/always contains a temporal circular
  * buffer, 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
@@ -693,6 +694,7 @@ acontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always contains a
  * geometry, 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal circular buffer
@@ -884,6 +886,7 @@ acontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a geometry ever/always covers a temporal circular buffer
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
@@ -939,6 +942,7 @@ acovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always covers a
  * geometry, 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal circular buffer
@@ -1821,6 +1825,7 @@ atouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_cbuffer_spatial_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry are ever/always
  * within the given distance, 0 if not, -1 on error or if the geometry is empty
  * @param[in] temp Temporal circular buffer

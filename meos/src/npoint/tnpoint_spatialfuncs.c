@@ -360,6 +360,7 @@ tnpoint_cumulative_length(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_npoint_accessor
  * @brief Speed of a temporal network point
  * @csqlfn #Tnpoint_speed()
  */

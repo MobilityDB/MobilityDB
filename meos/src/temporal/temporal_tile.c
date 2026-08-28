@@ -898,6 +898,7 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
 }
 
 /**
+ * @ingroup meos_internal_temporal_analytics_tile
  * @brief Return the temporal boxes of a temporal number split with respect to
  * a value and possibly a time grid
  * @param[in] temp Temporal number
