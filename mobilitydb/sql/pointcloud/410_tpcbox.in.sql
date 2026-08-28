@@ -134,15 +134,19 @@ CREATE FUNCTION tpcbox(pcpoint)
 CREATE CAST (pcpatch AS tpcbox) WITH FUNCTION tpcbox(pcpatch);
 CREATE CAST (pcpoint AS tpcbox) WITH FUNCTION tpcbox(pcpoint);
 
--- Project a tpcbox to an stbox by dropping the pcid. Lets tpcbox values
--- compose into stbox-only operators (extent aggregation across mixed
--- pcids, generic spatiotemporal predicates) without manual conversion.
+-- Project a tpcbox to an stbox by dropping the pcid. Write `value::stbox` to
+-- compose a tpcbox into an stbox-only operator, as every other projection into
+-- stbox is written.
 CREATE FUNCTION stbox(tpcbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tpcbox_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (tpcbox AS stbox) WITH FUNCTION stbox(tpcbox) AS IMPLICIT;
+-- The cast is explicit. An implicit one lets a tpcbox reach the stbox
+-- operators with no schema comparison at all, so `tpcbox && stbox` answers
+-- where `tpcbox && tpcbox` reports the pcid mismatch, and a tpcbox assigns
+-- into an stbox column dropping its schema silently.
+CREATE CAST (tpcbox AS stbox) WITH FUNCTION stbox(tpcbox);
 
 /******************************************************************************
  * Accessors
