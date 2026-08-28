@@ -126,7 +126,7 @@ Datum pcpoint_get_values(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-static inline bool array_get_isnull(const bits8 *nullbitmap, int offset)
+static inline bool array_get_isnull(const uint8 *nullbitmap, int offset)
 {
   if (nullbitmap == NULL)
   {
@@ -147,7 +147,7 @@ pcpatch_from_point_array(ArrayType *array, FunctionCallInfo fcinfo)
 #endif
 {
   int nelems;
-  bits8 *bitmap;
+  uint8 *bitmap;
   size_t offset = 0;
   int i;
   uint32 pcid = 0;
@@ -222,7 +222,7 @@ pcpatch_from_patch_array(ArrayType *array, FunctionCallInfo fcinfo)
 #endif
 {
   int nelems;
-  bits8 *bitmap;
+  uint8 *bitmap;
   size_t offset = 0;
   int i;
   uint32 pcid = 0;
@@ -1127,7 +1127,7 @@ const char **array_to_cstring_array(ArrayType *array, int *size)
   int i, j, offset = 0;
   int nelems = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
   const char **cstring = nelems ? pcalloc(nelems * sizeof(char *)) : NULL;
-  bits8 *bitmap = ARR_NULLBITMAP(array);
+  uint8 *bitmap = ARR_NULLBITMAP(array);
   for (i = j = 0; i < nelems; ++i)
   {
     text *array_text;
