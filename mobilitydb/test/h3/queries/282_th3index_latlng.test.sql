@@ -7,8 +7,8 @@
 -------------------------------------------------------------------------------
 
 -- §1.1 Lat/Lng conversions — five lifts, all backed by adapters in
--- th3index_latlng.c (geo_to_h3index_cell / h3_cell_to_geompoint /
--- h3_cell_to_geom). Round-trip identities are the most
+-- th3index_latlng.c (geo_to_h3index_cell / h3index_cell_to_point /
+-- h3index_cell_to_boundary). Round-trip identities are the most
 -- robust assertions because they hold without us hard-coding any
 -- specific lat/lng coordinates.
 --

@@ -77,7 +77,7 @@ h3_cell_area_meos(H3Index cell, H3Unit unit)
     case H3_UNIT_RADS2: err = cellAreaRads2(cell, &area); break;
     default:
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "h3_cell_area: expected an area unit (km2, m2, rads2)");
+        "h3_cell_area_meos: expected an area unit (km2, m2, rads2)");
       return 0.0;
   }
   if (err != E_SUCCESS)

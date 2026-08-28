@@ -131,6 +131,22 @@
  * @defgroup mobilitydb_h3_base_comp Comparison functions
  * @ingroup mobilitydb_h3_base
  * @brief Comparison functions for static H3 cell indices
+ *
+ * @defgroup mobilitydb_h3_base_inspection Index-inspection functions
+ * @ingroup mobilitydb_h3_base
+ * @brief Index-inspection functions for static H3 cell indices
+ *
+ * @defgroup mobilitydb_h3_base_hierarchy Hierarchy functions
+ * @ingroup mobilitydb_h3_base
+ * @brief Hierarchy functions for static H3 cell indices
+ *
+ * @defgroup mobilitydb_h3_base_latlng Lat/Lng-conversion functions
+ * @ingroup mobilitydb_h3_base
+ * @brief Lat/Lng-conversion functions for static H3 cell indices
+ *
+ * @defgroup mobilitydb_h3_base_metrics Metric functions
+ * @ingroup mobilitydb_h3_base
+ * @brief Metric functions for static H3 cell indices
  */
 
 /*****************************************************************************/

@@ -117,6 +117,22 @@
  * @defgroup meos_h3_base_comp Comparison functions
  * @ingroup meos_h3_base
  * @brief Comparison functions for static H3 cell indices
+ *
+ * @defgroup meos_h3_base_inspection Index-inspection functions
+ * @ingroup meos_h3_base
+ * @brief Index-inspection functions for static H3 cell indices
+ *
+ * @defgroup meos_h3_base_hierarchy Hierarchy functions
+ * @ingroup meos_h3_base
+ * @brief Hierarchy functions for static H3 cell indices
+ *
+ * @defgroup meos_h3_base_latlng Lat/Lng-conversion functions
+ * @ingroup meos_h3_base
+ * @brief Lat/Lng-conversion functions for static H3 cell indices
+ *
+ * @defgroup meos_h3_base_metrics Metric functions
+ * @ingroup meos_h3_base
+ * @brief Metric functions for static H3 cell indices
  */
 
 /*****************************************************************************/

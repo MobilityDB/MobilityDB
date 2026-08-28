@@ -1,5 +1,8 @@
 add_library(pg_h3 OBJECT
   h3index.c
+  # The DggsCellOps faces shared with quadbin and s2cell, wrapped where
+  # quadbin_ops.c and s2cell_ops.c wrap theirs.
+  h3index_ops.c
   h3index_sets.c
   th3index.c
   th3index_inspection.c

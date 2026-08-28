@@ -1,0 +1,141 @@
+SELECT getResolution(h3index '831c02fffffffff');
+ getresolution 
+---------------
+             3
+(1 row)
+
+SELECT getResolution(h3index '871fa44a8ffffff');
+ getresolution 
+---------------
+             7
+(1 row)
+
+SELECT getResolution(h3index '8a2a1072b59ffff');
+ getresolution 
+---------------
+            10
+(1 row)
+
+SELECT isValidCell(h3index '831c02fffffffff');
+ isvalidcell 
+-------------
+ t
+(1 row)
+
+SELECT isValidCell(h3index '0');
+ isvalidcell 
+-------------
+ f
+(1 row)
+
+SELECT getResolution(cellToParent(h3index '8a2a1072b59ffff', 5));
+ getresolution 
+---------------
+             5
+(1 row)
+
+SELECT cellToParent(h3index '8a2a1072b59ffff', 5);
+  celltoparent   
+-----------------
+ 852a1073fffffff
+(1 row)
+
+SELECT cellToParent(h3index '871fa44a8ffffff', 7) = h3index '871fa44a8ffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cellToParent(h3index '831c02fffffffff', 7);
+ERROR:  The parent resolution must not be finer than the resolution of the cell
+SELECT round(ST_X(cellToPoint(h3index '871fa44a8ffffff'))::numeric, 6);
+  round   
+----------
+ 4.297401
+(1 row)
+
+SELECT round(ST_Y(cellToPoint(h3index '871fa44a8ffffff'))::numeric, 6);
+   round   
+-----------
+ 50.804300
+(1 row)
+
+SELECT ST_SRID(cellToPoint(h3index '871fa44a8ffffff'));
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT ST_GeometryType(cellToBoundary(h3index '871fa44a8ffffff'));
+ st_geometrytype 
+-----------------
+ ST_Polygon
+(1 row)
+
+SELECT ST_SRID(cellToBoundary(h3index '871fa44a8ffffff'));
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT ST_NPoints(cellToBoundary(h3index '871fa44a8ffffff'));
+ st_npoints 
+------------
+          7
+(1 row)
+
+SELECT ST_Contains(
+  cellToBoundary(h3index '871fa44a8ffffff'),
+  cellToPoint(h3index '871fa44a8ffffff'));
+ st_contains 
+-------------
+ t
+(1 row)
+
+SELECT geoToH3Cell(cellToPoint(h3index '871fa44a8ffffff'), 7)
+  = h3index '871fa44a8ffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(cellArea(h3index '871fa44a8ffffff')::numeric, 0);
+  round  
+---------
+ 4441914
+(1 row)
+
+SELECT cellArea(h3index '8a2a1072b59ffff') < cellArea(h3index '831c02fffffffff');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT abs(cellArea(h3index '871fa44a8ffffff') / 1e6
+  - getValue(th3CellAreaKm2(th3index '871fa44a8ffffff@2001-01-01'))) < 1e-9;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT getResolution(h3index '831c02fffffffff')
+  = getValue(getResolution(th3index '831c02fffffffff@2001-01-01'));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cellArea(h3index '871fa44a8ffffff')
+  = getValue(cellArea(th3index '871fa44a8ffffff@2001-01-01'));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_AsBinary(cellToBoundary(h3index '871fa44a8ffffff'))
+  = ST_AsBinary(getValue(cellToBoundary(th3index '871fa44a8ffffff@2001-01-01'))::geometry);
+ ?column? 
+----------
+ t
+(1 row)
+
