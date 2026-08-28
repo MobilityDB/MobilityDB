@@ -159,6 +159,9 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_QUADBIN] = "quadbin",
   [T_QUADBINSET] = "quadbinset",
   [T_TQUADBIN] = "tquadbin",
+  [T_S2CELL] = "s2cell",
+  [T_S2CELLSET] = "s2cellset",
+  [T_TS2CELL] = "ts2cell",
   [T_PCPOINT] = "pcpoint",
   [T_PCPOINTSET] = "pcpointset",
   [T_TPCPOINT] = "tpcpoint",
@@ -307,6 +310,9 @@ static const reltype_catalog_struct MEOS_RELTYPE_CATALOG[] =
   [T_QUADBIN] = { .basetype_settype = T_QUADBINSET },
   [T_QUADBINSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_QUADBIN },
   [T_TQUADBIN] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_QUADBIN },
+  [T_S2CELL] = { .basetype_settype = T_S2CELLSET },
+  [T_S2CELLSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_S2CELL },
+  [T_TS2CELL] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_S2CELL },
   [T_PCPOINT] = { .basetype_settype = T_PCPOINTSET },
   [T_PCPOINTSET] = { .settype_basetype = T_PCPOINT },
   [T_TPCPOINT] = { .type_bboxtype = T_TPCBOX, .temptype_basetype = T_PCPOINT },
@@ -664,7 +670,8 @@ meos_basetype(MeosType type)
     type == T_GEOGRAPHY || type == T_NPOINT || type == T_POSE ||
     type == T_POSECHAIN ||
     type == T_CBUFFER || type == T_JSONB || type == T_H3INDEX ||
-    type == T_QUADBIN || type == T_PCPOINT || type == T_PCPATCH);
+    type == T_QUADBIN || type == T_S2CELL || type == T_PCPOINT ||
+    type == T_PCPATCH);
 }
 
 /**
@@ -675,7 +682,7 @@ basetype_byvalue(MeosType type)
 {
   return (type == T_BOOL || type == T_DATE || type == T_FLOAT8 ||
     type == T_INT4 || type == T_INT8 || type == T_TIMESTAMPTZ ||
-    type == T_H3INDEX || type == T_QUADBIN);
+    type == T_H3INDEX || type == T_QUADBIN || type == T_S2CELL);
 }
 
 /**
@@ -752,7 +759,7 @@ alphanum_basetype(MeosType type)
   return (type == T_BOOL || type == T_DATE || type == T_FLOAT8 ||
     type == T_INT4 || type == T_INT8 || type == T_TEXT ||
     type == T_TIMESTAMPTZ || type == T_JSONB || type == T_H3INDEX ||
-    type == T_QUADBIN);
+    type == T_QUADBIN || type == T_S2CELL);
 }
 
 /**
@@ -783,7 +790,7 @@ spatial_basetype(MeosType type)
   return (type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT ||
     type == T_POSE || type == T_POSECHAIN || type == T_CBUFFER ||
     type == T_H3INDEX ||
-    type == T_QUADBIN
+    type == T_QUADBIN || type == T_S2CELL
 #if POINTCLOUD
     || type == T_PCPOINT || type == T_PCPATCH
 #endif
@@ -816,8 +823,8 @@ set_basetype(MeosType type)
     type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT ||
     type == T_POSE || type == T_POSECHAIN || type == T_CBUFFER ||
     type == T_JSONB ||
-    type == T_H3INDEX || type == T_QUADBIN || type == T_PCPOINT ||
-    type == T_PCPATCH);
+    type == T_H3INDEX || type == T_QUADBIN || type == T_S2CELL ||
+    type == T_PCPOINT || type == T_PCPATCH);
 }
 
 /**
@@ -831,8 +838,8 @@ set_type(MeosType type)
     type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET ||
     type == T_POSESET || type == T_POSECHAINSET || type == T_CBUFFERSET ||
     type == T_JSONBSET ||
-    type == T_H3INDEXSET || type == T_QUADBINSET || type == T_PCPOINTSET ||
-    type == T_PCPATCHSET);
+    type == T_H3INDEXSET || type == T_QUADBINSET || type == T_S2CELLSET ||
+    type == T_PCPOINTSET || type == T_PCPATCHSET);
 }
 
 /**
@@ -943,7 +950,7 @@ spatialset_type(MeosType type)
   return (type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET ||
     type == T_POSESET || type == T_POSECHAINSET || type == T_CBUFFERSET ||
     type == T_H3INDEXSET ||
-    type == T_QUADBINSET
+    type == T_QUADBINSET || type == T_S2CELLSET
 #if POINTCLOUD
     || type == T_PCPOINTSET || type == T_PCPATCHSET
 #endif
@@ -1162,7 +1169,7 @@ temporal_type(MeosType type)
     type == T_TGEOMETRY ||
     type == T_TGEOGRAPHY || type == T_TRGEOMETRY || type == T_TJSONB ||
     type == T_TBIGINT || type == T_TH3INDEX || type == T_TQUADBIN ||
-    type == T_TPCPOINT || type == T_TPCPATCH);
+    type == T_TS2CELL || type == T_TPCPOINT || type == T_TPCPATCH);
 }
 
 /**
@@ -1179,6 +1186,7 @@ temporal_basetype(MeosType type)
     type == T_NPOINT || type == T_POSE || type == T_POSECHAIN ||
     type == T_CBUFFER ||
     type == T_JSONB || type == T_H3INDEX || type == T_QUADBIN ||
+    type == T_S2CELL ||
     type == T_PCPOINT || type == T_PCPATCH);
 }
 
@@ -1364,7 +1372,7 @@ tspatial_type(MeosType type)
     type == T_TPOSE || type == T_TPOSECHAIN || type == T_TCBUFFER ||
     type == T_TGEOMETRY ||
     type == T_TGEOGRAPHY || type == T_TRGEOMETRY || type == T_TH3INDEX ||
-    type == T_TQUADBIN
+    type == T_TQUADBIN || type == T_TS2CELL
 #if POINTCLOUD
     || type == T_TPCPOINT || type == T_TPCPATCH
 #endif

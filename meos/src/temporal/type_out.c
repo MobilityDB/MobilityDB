@@ -92,6 +92,9 @@
 #if RGEO
   #include "rgeo/trgeo_all.h"
 #endif
+#if S2CELL
+  #include <meos_s2cell.h>
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -201,6 +204,10 @@ basetype_out(Datum value, MeosType type, int maxdd)
 #if QUADBIN
     case T_QUADBIN:
       return quadbin_index_to_string((Quadbin) DatumGetInt64(value));
+#endif
+#if S2CELL
+    case T_S2CELL:
+      return s2cell_out((S2CellId) DatumGetInt64(value));
 #endif
 #if RASTER
     case T_RAQUET:
@@ -1554,6 +1561,11 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
       return MEOS_WKB_INT8_SIZE;
 #endif /* QUADBIN */
+#if S2CELL
+    case T_S2CELL:
+      /* an S2 cell is a uint64 cell id, wire-format identical to int8 */
+      return MEOS_WKB_INT8_SIZE;
+#endif /* S2CELL */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal base type in WKB output: %s",
@@ -2503,6 +2515,12 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
       buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
       break;
 #endif /* QUADBIN */
+#if S2CELL
+    case T_S2CELL:
+      /* an S2 cell is a uint64 cell id; wire it as int8 */
+      buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
+      break;
+#endif /* S2CELL */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
         "Unknown basetype in WKB output: %s", meostype_name(basetype));

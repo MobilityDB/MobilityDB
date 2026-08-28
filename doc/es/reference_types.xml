@@ -147,6 +147,13 @@
 					<entry><varname>tquadbin</varname></entry>
 				</row>
 				<row>
+					<entry><emphasis role="bold"><varname>s2cell</varname></emphasis></entry>
+					<entry><varname>s2cellset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>ts2cell</varname></entry>
+				</row>
+				<row>
 					<entry><emphasis role="bold"><varname>pcpoint</varname></emphasis></entry>
 					<entry><varname>pcpointset</varname></entry>
 					<entry><varname/></entry>

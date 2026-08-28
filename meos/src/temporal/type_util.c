@@ -138,6 +138,9 @@ datum_cmp(Datum l, Datum r, MeosType type)
 #if QUADBIN
     case T_QUADBIN:
 #endif
+#if S2CELL
+    case T_S2CELL:
+#endif
     case T_INT8:
       return (DatumGetInt64(l) < DatumGetInt64(r)) ? -1 :
         ((DatumGetInt64(l) > DatumGetInt64(r)) ? 1 : 0);
@@ -259,6 +262,9 @@ datum_eq(Datum l, Datum r, MeosType type)
 #endif
 #if QUADBIN
     case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
 #endif
     case T_INT8:
       return l == r;
@@ -422,6 +428,9 @@ datum_add(Datum l, Datum r, MeosType type)
 #if QUADBIN
     case T_QUADBIN:
 #endif
+#if S2CELL
+    case T_S2CELL:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
     case T_FLOAT8:
@@ -455,6 +464,9 @@ datum_sub(Datum l, Datum r, MeosType type)
 #if QUADBIN
     case T_QUADBIN:
 #endif
+#if S2CELL
+    case T_S2CELL:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
     case T_FLOAT8:
@@ -485,6 +497,9 @@ datum_mul(Datum l, Datum r, MeosType type)
 #if QUADBIN
     case T_QUADBIN:
 #endif
+#if S2CELL
+    case T_S2CELL:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
     case T_FLOAT8:
@@ -511,6 +526,9 @@ datum_div(Datum l, Datum r, MeosType type)
 #endif
 #if QUADBIN
     case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
 #endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
@@ -552,6 +570,9 @@ datum_hash(Datum d, MeosType type)
 #endif
 #if QUADBIN
     case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
 #endif
     case T_INT8:
       return int64_hash(DatumGetInt64(d));
@@ -621,6 +642,9 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
 #endif
 #if QUADBIN
     case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
 #endif
     case T_INT8:
       return int64_hash_extended(DatumGetInt64(d), seed);
@@ -705,6 +729,9 @@ datum_double(Datum d, MeosType type)
 #if QUADBIN
     case T_QUADBIN:
 #endif
+#if S2CELL
+    case T_S2CELL:
+#endif
     case T_INT8:
       return (double) DatumGetInt64(d);
     case T_FLOAT8:
@@ -735,6 +762,9 @@ double_datum(double d, MeosType type)
 #endif
 #if QUADBIN
     case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
 #endif
     case T_INT8:
       return Int64GetDatum((int64) d);

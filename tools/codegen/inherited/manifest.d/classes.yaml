@@ -7,7 +7,7 @@
 classes:
   set:
     predicate: set_type
-    members: [dateset, floatset, intset, bigintset, textset, tstzset, geomset, geogset, npointset, poseset, posechainset, cbufferset, jsonbset, h3indexset, quadbinset, pcpointset, pcpatchset]
+    members: [dateset, floatset, intset, bigintset, textset, tstzset, geomset, geogset, npointset, poseset, posechainset, cbufferset, jsonbset, h3indexset, quadbinset, s2cellset, pcpointset, pcpatchset]
   numset:
     predicate: numset_type
     members: [dateset, floatset, intset, bigintset]
@@ -19,7 +19,7 @@ classes:
     members: [geomset, geogset]
   spatialset:
     predicate: spatialset_type
-    members: [geomset, geogset, npointset, poseset, posechainset, cbufferset, h3indexset, quadbinset, pcpointset, pcpatchset]
+    members: [geomset, geogset, npointset, poseset, posechainset, cbufferset, h3indexset, quadbinset, s2cellset, pcpointset, pcpatchset]
   alphanumset:
     predicate: alphanumset_type
     members: [dateset, floatset, intset, bigintset, textset, tstzset, jsonbset]
@@ -31,7 +31,7 @@ classes:
     members: [datespanset, floatspanset, intspanset, bigintspanset, tstzspanset]
   temporal:
     predicate: temporal_type
-    members: [tbool, tdouble2, tdouble3, tdouble4, tfloat, tint, ttext, tgeompoint, tgeogpoint, tnpoint, tpose, tposechain, tcbuffer, tgeometry, tgeography, trgeometry, tjsonb, tbigint, th3index, tquadbin, tpcpoint, tpcpatch]
+    members: [tbool, tdouble2, tdouble3, tdouble4, tfloat, tint, ttext, tgeompoint, tgeogpoint, tnpoint, tpose, tposechain, tcbuffer, tgeometry, tgeography, trgeometry, tjsonb, tbigint, th3index, tquadbin, ts2cell, tpcpoint, tpcpatch]
   talpha:
     predicate: talpha_type
     members: [tbool, tdouble2, tdouble3, tdouble4, ttext, tjsonb]
@@ -43,7 +43,7 @@ classes:
     members: [tint, tbigint, tfloat, ttext]
   tspatial:
     predicate: tspatial_type
-    members: [tgeompoint, tgeogpoint, tnpoint, tpose, tposechain, tcbuffer, tgeometry, tgeography, trgeometry, th3index, tquadbin, tpcpoint, tpcpatch]
+    members: [tgeompoint, tgeogpoint, tnpoint, tpose, tposechain, tcbuffer, tgeometry, tgeography, trgeometry, th3index, tquadbin, ts2cell, tpcpoint, tpcpatch]
   tgeo:
     predicate: tgeo_type
     members: [tgeometry, tgeography]
@@ -55,7 +55,7 @@ classes:
     members: [tgeompoint, tgeogpoint]
   tcellindex:
     predicate: tcellindex_type
-    members: [th3index, tquadbin]
+    members: [th3index, tquadbin, ts2cell]
   tpointcloud:
     predicate: tpointcloud_temptype
     members: [tpcpoint, tpcpatch]

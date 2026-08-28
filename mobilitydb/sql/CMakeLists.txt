@@ -95,6 +95,9 @@ endif()
 if(RGEO)
   add_subdirectory(rgeo)
 endif()
+if(S2CELL)
+  add_subdirectory(s2cell)
+endif()
 
 # Load order is significant: types must be created before the operators over
 # them, and 999_oid_cache must come last. It is encoded in the numeric filename

@@ -1,0 +1,136 @@
+SELECT s2cell '47c3c444c0000000';
+  s2cell   
+-----------
+ 47c3c444c
+(1 row)
+
+SELECT s2cell '47c3c444c';
+  s2cell   
+-----------
+ 47c3c444c
+(1 row)
+
+SELECT s2cell '1';
+ s2cell 
+--------
+ 1
+(1 row)
+
+SELECT s2cell '0';
+ERROR:  s2cell value "0" does not encode a valid S2 cell
+LINE 1: SELECT s2cell '0';
+                      ^
+SELECT s2cell 'zzz';
+ERROR:  The S2 token "zzz" holds the non-hexadecimal character 'z'
+LINE 1: SELECT s2cell 'zzz';
+                      ^
+SELECT s2cell '47c3c444c0000000' = s2cell '47c3c444c0000000';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cell '47c3c444c' = s2cell '47c3c444c0000000';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (s2cell '47c3c444c0000000')::bigint;
+        int8         
+---------------------
+ 5171192596709507072
+(1 row)
+
+SELECT ((s2cell '47c3c444c0000000')::bigint)::s2cell = s2cell '47c3c444c0000000';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cell '47c3c444c0000000' < s2cell '47c3c444c0000004';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cell '47c3c444c0000000' <= s2cell '47c3c444c0000000';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cell '47c3c444c0000004' > s2cell '47c3c444c0000000';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cell '47c3c444c0000000' <> s2cell '47c3c444c0000004';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cmp(s2cell '47c3c444c0000000', s2cell '47c3c444c0000004');
+ cmp 
+-----
+  -1
+(1 row)
+
+SELECT cmp(s2cell '47c3c444c0000000', s2cell '47c3c444c0000000');
+ cmp 
+-----
+   0
+(1 row)
+
+SELECT hash(s2cell '47c3c444c0000000') = hash(s2cell '47c3c444c0000000');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT hash(s2cell '47c3c444c0000000') = hash(s2cell '47c3c444c0000004');
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT hashExtended(s2cell '47c3c444c0000000', 1) =
+  hashExtended(s2cell '47c3c444c0000000', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT isValidCell(s2cell '47c3c444c0000000');
+ isvalidcell 
+-------------
+ t
+(1 row)
+
+SELECT isValidCell(s2cell '1');
+ isvalidcell 
+-------------
+ t
+(1 row)
+
+WITH Cells(cell) AS (VALUES
+  (s2cell '47c3c444c0000004'), (s2cell '47c3c444c0000000'),
+  (s2cell '47c3c444c0000004') )
+SELECT count(*), count(DISTINCT cell) FROM Cells;
+ count | count 
+-------+-------
+     3 |     2
+(1 row)
+
+WITH Cells(cell) AS (VALUES
+  (s2cell '47c3c444c0000004'), (s2cell '47c3c444c0000000'),
+  (s2cell '47c3c444c0000004') )
+SELECT cell, count(*) FROM Cells GROUP BY cell ORDER BY cell;
+       cell       | count 
+------------------+-------
+ 47c3c444c        |     1
+ 47c3c444c0000004 |     2
+(2 rows)
+
