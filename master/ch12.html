@@ -98,7 +98,7 @@ SELECT asText(round(cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789), 6))
 -- Cbuffer(POINT(1.123457 1.123457),0.123457)
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_spatial_functions"></a>Spatial Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_SRID"></a><a class="indexterm" name="id8273"></a><a class="indexterm" name="id8276"></a><p>Return or set the spatial reference identifier</p><pre class="programlisting">
 SRID(cbuffer) → integer
-setSRID(cbuffer) → cbuffer
+setSRID(cbuffer,integer) → cbuffer
 </pre><pre class="programlisting">
 SELECT SRID(cbuffer 'Cbuffer(SRID=5676;Point(1 1), 0.3)');
 -- 5676
