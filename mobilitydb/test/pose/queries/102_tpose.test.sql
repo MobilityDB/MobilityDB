@@ -127,6 +127,27 @@ SELECT asText(tposeSeq(ARRAY['Pose(Point(1 1),0)@2012-01-01'::tpose, 'Pose(Point
 
 SELECT asText(tposeSeqSet(ARRAY[tpose '[Pose(Point(1 1),0)@2012-01-01, Pose(Point(1 1),1)@2012-02-01]', '[Pose(Point(2 2),0)@2012-03-01, Pose(Point(2 2),1)@2012-04-01]']));
 
+-- From a temporal point and a temporal float: the result carries the point the
+-- trajectory holds at each instant and the float as the rotation theta, over the
+-- intersection of the two time frames.
+SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[1@2001-01-01, 2@2001-01-02)'));
+SELECT asText(tpose(tgeompoint 'POINT(1 1)@2001-01-01', tfloat '1@2001-01-01'));
+
+-- Time frames that do not intersect answer NULL
+SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[2@2001-01-03, 3@2001-01-04)')) IS NULL;
+
+-- A partial overlap is restricted to the shared frame
+SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]',
+  tfloat '[1@2001-01-02, 3@2001-01-04]'));
+
+-- The point must be 2D: a Z point resolves against the one declared overload
+-- and meets the kernel's own guard. A tgeogpoint argument is refused one layer
+-- lower, by PostgreSQL's overload resolution, whose message the suite does not
+-- state anywhere because it moves between server versions.
+SELECT asText(tpose(tgeompoint 'POINT Z(1 1 1)@2001-01-01', tfloat '1@2001-01-01'));
+
 -------------------------------------------------------------------------------
 -- Transformation functions
 -------------------------------------------------------------------------------

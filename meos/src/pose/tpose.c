@@ -366,14 +366,14 @@ tposeseqset_make(const TSequenceSet *ss1, const TSequenceSet *ss2)
  * @ingroup meos_pose_conversion
  * @brief Return a temporal pose from a temporal point and a temporal float
  * @param[in] tpoint Temporal point
- * @param[in] tradius Temporal float
+ * @param[in] ttheta Temporal float
  * @csqlfn #Tpose_make()
  */
 Temporal *
-tpose_make(const Temporal *tpoint, const Temporal *tradius)
+tpose_make(const Temporal *tpoint, const Temporal *ttheta)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEOMPOINT(tpoint, NULL); VALIDATE_TFLOAT(tradius, NULL);
+  VALIDATE_TGEOMPOINT(tpoint, NULL); VALIDATE_TFLOAT(ttheta, NULL);
   if (! ensure_has_not_Z(tpoint->temptype, tpoint->flags) ||
       ! ensure_not_geodetic(tpoint->flags))
     return NULL;
@@ -381,7 +381,7 @@ tpose_make(const Temporal *tpoint, const Temporal *tradius)
   Temporal *sync1, *sync2;
   /* Return false if the temporal values do not intersect in time
    * The operation is synchronization without adding crossings */
-  if (! intersection_temporal_temporal(tpoint, tradius, SYNCHRONIZE_NOCROSS,
+  if (! intersection_temporal_temporal(tpoint, ttheta, SYNCHRONIZE_NOCROSS,
       &sync1, &sync2))
     return NULL;
 
