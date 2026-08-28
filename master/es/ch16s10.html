@@ -1,20 +1,21 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Recorrido de la Cuadrícula</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s09.html" title="Vértices"><link rel="next" href="ch16s11.html" title="Métricas"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Recorrido de la Cuadrícula</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s11.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_traversal"></a>Recorrido de la Cuadrícula</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_h3_grid_distance"></a><a class="indexterm" name="id11638"></a><a class="indexterm" name="id11641"></a><p>Devolver la distancia temporal de saltos en la cuadrícula (número de pasos de una sola celda) entre dos celdas temporales</p><pre class="programlisting">
-th3GridDistance(th3index,th3index) → tbigint
-th3index &lt;-&gt; th3index → tbigint
-</pre><p>De forma equivalente, el operador <code class="varname">&lt;-&gt;</code> devuelve la misma distancia. Los dos operandos se sincronizan sobre su eje de tiempo compartido.</p><pre class="programlisting">
-SELECT th3index '880326b885fffff@2001-01-01'
-   &lt;-&gt; th3index '880326b88dfffff@2001-01-01';
--- 1@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_local_ij"></a><a class="indexterm" name="id11650"></a><a class="indexterm" name="id11653"></a><p>Convertir entre una celda temporal y un par de coordenadas locales (I, J) temporales relativas a una celda temporal de origen</p><pre class="programlisting">
-th3CellToLocalIj(th3index,th3index) → tgeompoint
-th3LocalIjToCell(th3index,tgeompoint) → th3index
-</pre><p>La coordenada local se expone como un <code class="varname">tgeompoint</code> con el eje I en el slot <code class="varname">x</code> y J en <code class="varname">y</code>.</p><pre class="programlisting">
-SELECT asText(th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
-  th3index '871fa44aeffffff@2001-01-01'));
--- POINT(497 320)@2001-01-01
--- The two are inverse of each other.
-SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
-  th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01'));
--- 871fa44aeffffff@2001-01-01
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s09.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s11.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Vértices </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Métricas</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Inspección</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s09.html" title="Cobertura de geometrías estáticas"><link rel="next" href="ch16s11.html" title="Jerarquía"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Inspección</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s11.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_inspection"></a>Inspección</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_get_resolution"></a><a class="indexterm" name="id11661"></a><p>Devolver la resolución de cada celda de una trayectoria</p><pre class="programlisting">
+getResolution(tcell) → tint
+</pre><p>Devolver la resolución de una celda, como un <code class="varname">integer</code> desde la forma estática y como un <code class="varname">tint</code> de la resolución de cada celda de una trayectoria desde la temporal. QUADBIN la llama nivel de zoom y S2 nivel, y el rango pertenece a la cuadrícula: de 0 a 15 para H3, de 0 a 26 para QUADBIN, de 0 a 30 para S2.</p><pre class="programlisting">
+SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
+-- 3@2001-01-01
+SELECT getResolution(tquadbin '48a6227affffffff@2001-01-01');
+-- 10@2001-01-01
+SELECT getResolution(ts2cell '47c3c@2001-01-01');
+-- 7@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_is_valid_cell"></a><a class="indexterm" name="id11671"></a><p>Devolver un booleano temporal que indica en cada instante si el valor es una celda válida</p><pre class="programlisting">
+isValidCell(tcell) → tbool
+</pre><p>Un valor es una celda válida cuando su patrón de bits denota algo que su cuadrícula indexa: para QUADBIN, coordenadas de tesela dentro de los límites de la resolución que declara el identificador; para H3, una celda base y una secuencia de dígitos que lleva el icosaedro; para S2, una cara y una posición de Hilbert en un nivel entre 0 y 30.</p><p>Solo a H3 se le puede plantear la pregunta sobre un valor que responde <code class="varname">false</code>: su función de entrada admite cualquier patrón de bits y deja el veredicto a esta función, mientras que las funciones de entrada de QUADBIN y de S2 rechazan un patrón que no indexa nada, de modo que <code class="varname">tquadbin '0'</code> y <code class="varname">ts2cell '0'</code> provocan un error antes de que se haga la llamada.</p><pre class="programlisting">
+SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
+-- t@2001-01-01
+SELECT isValidCell(th3index '0@2001-01-01');
+-- f@2001-01-01
+SELECT isValidCell(tquadbin '48a6227affffffff@2001-01-01');
+-- t@2001-01-01
+SELECT isValidCell(ts2cell '47c3c@2001-01-01');
+-- t@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s09.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s11.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Cobertura de geometrías estáticas </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Jerarquía</td></tr></table></div></body></html>

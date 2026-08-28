@@ -1,61 +1,38 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Relaciones Espaciales</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s14.html" title="Funciones que devuelven conjuntos"><link rel="next" href="ch16s16.html" title="Agregaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Relaciones Espaciales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s14.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s16.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_spatialrels"></a>Relaciones Espaciales</h2></div></div></div><p>Las relaciones espaciales evalúan un argumento <code class="varname">th3index</code> a través de la geometría de frontera de celda en cada instante,la huella hexagonal de cada celda, devuelta por <code class="varname">cellToBoundary</code>— y luego aplican la relación correspondiente de los tipos geométricos temporales. Cada relación tiene tres formas cuantificadas: la forma <span class="emphasis"><em>alguna vez</em></span> con prefijo <code class="varname">e</code> devuelve <code class="varname">true</code> cuando la relación se cumple en algún instante, la forma <span class="emphasis"><em>siempre</em></span> con prefijo <code class="varname">a</code> cuando se cumple en todos los instantes, y la forma <span class="emphasis"><em>temporal</em></span> con prefijo <code class="varname">t</code> devuelve un <code class="varname">tbool</code> con el resultado instante a instante. Todas las formas aceptan los tres órdenes de argumentos <code class="varname">(geometry, th3index)</code>, <code class="varname">(th3index, geometry)</code> y <code class="varname">(th3index, th3index)</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_rel_contains"></a><a class="indexterm" name="id11959"></a><a class="indexterm" name="id11962"></a><a class="indexterm" name="id11965"></a><p>Si una huella contiene a la otra (solo interiores)</p><pre class="programlisting">
-eContains, aContains, tContains
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Funciones que devuelven conjuntos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s14.html" title="Funciones métricas"><link rel="next" href="ch16s16.html" title="Relaciones siempre y alguna vez"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Funciones que devuelven conjuntos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s14.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s16.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_set_returning"></a>Funciones que devuelven conjuntos</h2></div></div></div><p>Las siguientes funciones auxiliares estáticas devuelven un <code class="varname">cellset</code>, el tipo compañero de colección finita de <code class="varname">cell</code>. Operan sobre una <code class="varname">cell</code> estática o sobre un <code class="varname">cellset</code> y no se elevan a <code class="varname">tcell</code>, quedando la elevación temporal aplazada a la espera de una primitiva <code class="varname">tset&lt;T&gt;</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_grid_disk"></a><a class="indexterm" name="id11835"></a><p>Todas las celdas dentro de <code class="varname">k</code> pasos de cuadrícula desde el origen</p><pre class="programlisting">
+h3GridDisk(h3index,integer) → h3indexset
+quadbinGridDisk(quadbin,integer) → quadbinset
+s2EdgeNeighbors(s2cell) → s2cellset
+</pre><p>El disco incluye el origen, que es todo el disco cuando <code class="varname">k</code> = 0. Su forma sigue a la cuadrícula: en la cuadrícula cuadrada QUADBIN el disco en el paso <code class="varname">k</code> es el bloque de <code class="varname">(2k+1)</code>×<code class="varname">(2k+1)</code> celdas centrado en el origen, mientras que en la cuadrícula hexagonal H3 es el anillo de hexágonos a esa cantidad de pasos y todo lo que hay dentro de él. S2 presenta las cuatro celdas que comparten una arista con el origen y no toma un número de pasos, de modo que responde el disco en <code class="varname">k</code> = 1 menos el propio origen.</p><pre class="programlisting">
+SELECT h3GridDisk(h3index '871fa44a8ffffff', 1);
+/* {"871fa44a8ffffff", "871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff",
+   "871fa44acffffff", "871fa44adffffff", "871fa44aeffffff"} */
+SELECT quadbinGridDisk(quadbin '48a6227affffffff', 1);
+/* {"48a6226dffffffff", "48a6226fffffffff", "48a62278ffffffff", "48a62279ffffffff",
+   "48a6227affffffff", "48a6227bffffffff", "48a622c5ffffffff", "48a622d0ffffffff",
+   "48a622d1ffffffff"} */
+SELECT s2EdgeNeighbors(s2cell '47c3c');
+-- {"47c14", "47c24", "47c34", "47c44"}
+</pre></li><li class="listitem"><a name="tcell_cell_to_children"></a><a class="indexterm" name="id11849"></a><p>Todos los hijos de una celda en la resolución de destino dada</p><pre class="programlisting">
+h3CellToChildren(h3index,integer) → h3indexset
+quadbinCellToChildren(quadbin,integer) → quadbinset
+s2CellToChildren(s2cell,integer) → s2cellset
+</pre><p>El número de hijos es el factor de ramificación de la cuadrícula: cuatro para una celda de árbol cuaternario QUADBIN o S2, siete para una celda H3. La función auxiliar es estática, siendo los hijos un conjunto por instante cuya elevación temporal queda aplazada a la espera de una primitiva <code class="varname">tset&lt;T&gt;</code>.</p><pre class="programlisting">
+SELECT h3CellToChildren(h3index '831c02fffffffff', 4);
+/* {"841c021ffffffff", "841c023ffffffff", "841c025ffffffff", "841c027ffffffff",
+   "841c029ffffffff", "841c02bffffffff", "841c02dffffffff"} */
+SELECT quadbinCellToChildren(quadbin '48a6227affffffff', 11);
+-- {"48b6227a3fffffff", "48b6227a7fffffff", "48b6227abfffffff", "48b6227affffffff"}
+SELECT s2CellToChildren(s2cell '47c3c', 8);
+-- {"47c39", "47c3b", "47c3d", "47c3f"}
+</pre></li><li class="listitem"><a name="tcell_compact_cells"></a><a class="indexterm" name="id11858"></a><p>Representación compactada de un conjunto de celdas, fusionándose las celdas más finas en su padre siempre que esté presente el conjunto completo de hijos del padre</p><pre class="programlisting">
+h3CompactCells(h3indexset) → h3indexset
+</pre><p>La compactación se presenta solo para H3: es la única cuadrícula para la que MobilityDB lleva el núcleo, y las formas para QUADBIN y S2 aún no están implementadas.</p><pre class="programlisting">
+SELECT h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4));
+-- {"831c02fffffffff"}
+</pre></li><li class="listitem"><a name="tcell_uncompact_cells"></a><a class="indexterm" name="id11866"></a><p>Representación descompactada en la resolución dada, la inversa de <code class="varname">compactCells</code></p><pre class="programlisting">
+h3UncompactCells(h3indexset,integer) → h3indexset
 </pre><pre class="programlisting">
-SELECT eContains(geometry 'SRID=4326;Polygon((-123 37,-123 38,-122 38,-122 37,-123 37))',
-  th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]');
--- true
-SELECT tContains(geometry 'SRID=4326;Polygon((-123 37,-123 38,-122 38,-122 37,-123 37))',
-  th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]');
--- [t@2001-01-01, t@2001-01-02]
-</pre></li><li class="listitem"><a name="th3_rel_covers"></a><a class="indexterm" name="id11972"></a><a class="indexterm" name="id11975"></a><a class="indexterm" name="id11978"></a><p>Si una huella cubre a la otra (frontera incluida)</p><pre class="programlisting">
-eCovers, aCovers, tCovers
-</pre><pre class="programlisting">
-SELECT eCovers(geometry 'SRID=4326;Polygon((-123 37,-123 38,-122 38,-122 37,-123 37))',
-  th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]');
--- true
-SELECT tCovers(geometry 'SRID=4326;Polygon((-123 37,-123 38,-122 38,-122 37,-123 37))',
-  th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]');
--- [t@2001-01-01, t@2001-01-02]
-</pre></li><li class="listitem"><a name="th3_rel_disjoint"></a><a class="indexterm" name="id11985"></a><a class="indexterm" name="id11988"></a><a class="indexterm" name="id11991"></a><p>Si las huellas no comparten ningún punto</p><pre class="programlisting">
-eDisjoint, aDisjoint, tDisjoint
-</pre><pre class="programlisting">
-SELECT eDisjoint(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
-  th3index '[88283082b3fffff@2001-01-01, 88283082b1fffff@2001-01-02]');
--- true
-SELECT tDisjoint(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
-  th3index '[88283082b3fffff@2001-01-01, 88283082b1fffff@2001-01-02]');
--- [t@2001-01-01, t@2001-01-02]
-</pre></li><li class="listitem"><a name="th3_rel_intersects"></a><a class="indexterm" name="id11998"></a><a class="indexterm" name="id12001"></a><a class="indexterm" name="id12004"></a><p>Si las huellas comparten al menos un punto</p><pre class="programlisting">
-eIntersects, aIntersects, tIntersects
-</pre><pre class="programlisting">
-SELECT eIntersects(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
-  th3index '[8828308281fffff@2001-01-01, 88283082b1fffff@2001-01-02]');
--- true
-SELECT tIntersects(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
-  th3index '[8828308281fffff@2001-01-01, 88283082b1fffff@2001-01-02]');
--- [t@2001-01-01, f@2001-01-02]
-</pre></li><li class="listitem"><a name="th3_rel_touches"></a><a class="indexterm" name="id12011"></a><a class="indexterm" name="id12014"></a><a class="indexterm" name="id12017"></a><p>Si las huellas comparten un punto de frontera pero ningún punto interior</p><pre class="programlisting">
-eTouches, aTouches, tTouches
-</pre><pre class="programlisting">
-SELECT eTouches(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
-  th3index '[8828308283fffff@2001-01-01, 8828308285fffff@2001-01-02]');
--- true
-SELECT tTouches(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
-  th3index '[8828308283fffff@2001-01-01, 8828308285fffff@2001-01-02]');
--- [t@2001-01-01, f@2001-01-02]
-</pre></li><li class="listitem"><a name="th3_rel_dwithin"></a><a class="indexterm" name="id12024"></a><a class="indexterm" name="id12027"></a><a class="indexterm" name="id12030"></a><p>Si las huellas se encuentran dentro de una distancia dada, pasada como tercer argumento</p><pre class="programlisting">
-eDwithin, aDwithin, tDwithin (…, dist float)
-</pre><pre class="programlisting">
-SELECT eDwithin(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
-  th3index '[88283082b3fffff@2001-01-01, 88283082b1fffff@2001-01-02]', 5000);
--- true
-SELECT tDwithin(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
-  th3index '[88283082b3fffff@2001-01-01, 88283082b1fffff@2001-01-02]', 5000);
--- [t@2001-01-01, t@2001-01-02]
-</pre></li></ul></div><pre class="programlisting">
-SELECT eContains(
-  geometry 'SRID=4326;Polygon((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90,
-  4.20 50.70))',
-  th3index '871fa44a8ffffff@2001-01-01');
--- true
-</pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s14.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s16.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Funciones que devuelven conjuntos </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Agregaciones</td></tr></table></div></body></html>
+SELECT numValues(h3UncompactCells(h3CompactCells(
+  h3CellToChildren(h3index '831c02fffffffff', 4)), 4));
+-- 7
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s14.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s16.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Funciones métricas </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Relaciones siempre y alguna vez</td></tr></table></div></body></html>

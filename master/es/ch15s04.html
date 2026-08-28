@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Entrada y salida</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch15.html" title="Capítulo 15. Tipos JSON en MobilityDB"><link rel="prev" href="ch15s03.html" title="Validez de los valores JSONB temporales"><link rel="next" href="ch15s05.html" title="Constructores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Entrada y salida</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 15. Tipos JSON en MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_inout"></a>Entrada y salida</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_asText"></a><a class="indexterm" name="id10788"></a><p>Devuelve la representación de texto conocido (WKT)</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Entrada y salida</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch15.html" title="Capítulo 15. Tipos JSON en MobilityDB"><link rel="prev" href="ch15s03.html" title="Validez de los valores JSONB temporales"><link rel="next" href="ch15s05.html" title="Constructores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Entrada y salida</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 15. Tipos JSON en MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_inout"></a>Entrada y salida</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_asText"></a><a class="indexterm" name="id10781"></a><p>Devuelve la representación de texto conocido (WKT)</p><pre class="programlisting">
 asText({tjsonb,tjsonb[]}) → {text,text[]}
 </pre><pre class="programlisting">
 SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
@@ -10,7 +10,7 @@ SELECT asText(ARRAY[tjsonb '"{\"vehicleId\":1, \"location\": \"Point(1 1)\"}"@20
 /* {"\"{\\\"location\\\": \\\"Point(1 1)\\\", \\\"vehicleId\\\":
    1}\"@2001-01-01","\"{\\\"location\\\": \\\"Point(2 2)\\\", \\\"vehicleId\\\":
    1}\"@2001-01-02"} */
-</pre><p>Como puede verse arriba, para los arreglos de valores JSONB, los elementos deben encerrarse entre comillas y, por lo tanto, las comillas internas deben escaparse.</p></li><li class="listitem"><a name="tjsonb_asBinary"></a><a class="indexterm" name="id10796"></a><a class="indexterm" name="id10799"></a><p>Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
+</pre><p>Como puede verse arriba, para los arreglos de valores JSONB, los elementos deben encerrarse entre comillas y, por lo tanto, las comillas internas deben escaparse.</p></li><li class="listitem"><a name="tjsonb_asBinary"></a><a class="indexterm" name="id10789"></a><a class="indexterm" name="id10792"></a><p>Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
 asBinary(tjsonb,endian text='') → bytea
 asHexWKB(tjsonb,endian text='') → text
 </pre><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
@@ -20,7 +20,7 @@ SELECT asBinary(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-
 SELECT asHexWKB(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-01-01');
 /* 0142000138000000000000000200002008000080090000000A000000090000106C6F636174696F6E7665
    6869636C654964506F696E7428312032290020000000008001000040EBA9C21C0000 */
-</pre></li><li class="listitem"><a name="tjsonb_asMFJSON"></a><a class="indexterm" name="id10807"></a><p>Devuelve la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonb_asMFJSON"></a><a class="indexterm" name="id10800"></a><p>Devuelve la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
 asMFJSON(text) → tjsonb
 </pre><pre class="programlisting">
 SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
@@ -28,14 +28,14 @@ SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
 /* {"type":"MovingJsonb","values":[{"Position": "Point(1 1)"},{"Position": "Point(2
    2)"}],"datetimes":["2001-01-01T00:00:00","2001-01-02T00:00:00"],"lower_inc":true,"up
    per_inc":true,"interpolation":"Step"} */
-</pre></li><li class="listitem"><a name="tjsonbFromText"></a><a class="indexterm" name="id10814"></a><p>Entrada desde la representación de texto conocido (WKT)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonbFromText"></a><a class="indexterm" name="id10807"></a><p>Entrada desde la representación de texto conocido (WKT)</p><pre class="programlisting">
 tjsonbFromText(text) → tjsonb
 </pre><pre class="programlisting">
 SELECT tjsonbFromText(text '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
   {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
 /* ["{\"location\": \"Point(1 1)\", \"vehicleId\": 1}"@2001-01-01, "{\"location\":
    \"Point(2 2)\", \"vehicleId\": 1}"@2001-01-02] */
-</pre></li><li class="listitem"><a name="tjsonbFromBinary"></a><a class="indexterm" name="id10821"></a><a class="indexterm" name="id10824"></a><p>Entrada desde la representación binaria conocida (WKB) o desde la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonbFromBinary"></a><a class="indexterm" name="id10814"></a><a class="indexterm" name="id10817"></a><p>Entrada desde la representación binaria conocida (WKB) o desde la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
 tjsonbFromBinary(bytea) → tjsonb
 tjsonbFromHexWKB(text) → tjsonb
 </pre><pre class="programlisting">
@@ -45,7 +45,7 @@ SELECT tjsonbFromBinary(asBinary( tjsonb '[{"vehicleId": 1,
 SELECT tjsonbFromHexWKB(asHexWKB( tjsonb '[{"vehicleId": 1,
   "location": "Point(1 2)"}@2001-01-01]'));
 -- ["{\"location\": \"Point(1 2)\", \"vehicleId\": 1}"@2001-01-01]
-</pre></li><li class="listitem"><a name="tjsonbFromMFJSON"></a><a class="indexterm" name="id10831"></a><p>Entrada desde la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonbFromMFJSON"></a><a class="indexterm" name="id10824"></a><p>Entrada desde la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
 tjsonbFromMFJSON(text) → tjsonb
 </pre><pre class="programlisting">
 SELECT tjsonbFromMFJSON('{"type": "MovingJsonb", "interpolation": "Step",

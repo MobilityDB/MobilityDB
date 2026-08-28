@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Poses and Pose Chains"><link rel="prev" href="ch13s08.html" title="Conversions"><link rel="next" href="ch13s10.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s08.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Poses and Pose Chains</th><td width="20%" align="right"> <a accesskey="n" href="ch13s10.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_accessors"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_getValues"></a><a class="indexterm" name="id9579"></a><p>Return the values</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Poses and Pose Chains"><link rel="prev" href="ch13s08.html" title="Conversions"><link rel="next" href="ch13s10.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s08.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Poses and Pose Chains</th><td width="20%" align="right"> <a accesskey="n" href="ch13s10.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_accessors"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_getValues"></a><a class="indexterm" name="id9572"></a><p>Return the values</p><pre class="programlisting">
 getValues({tpose,tposechain}) → {poseset,posechainset}
 </pre><pre class="programlisting">
 SELECT asText(getValues(tpose '{[Pose(Point(1 1), 0.3)@2001-01-01,
@@ -7,13 +7,13 @@ SELECT asText(getValues(tpose '{[Pose(Point(1 1), 0.3)@2001-01-01,
 SELECT asEWKT(getValues(tpose 'SRID=5676;
   {[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.3)@2001-01-02)}'));
 -- SRID=5676;{"Pose(POINT(1 1),0.3)"}
-</pre></li><li class="listitem"><a name="tpose_points"></a><a class="indexterm" name="id9586"></a><p>Return the points</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_points"></a><a class="indexterm" name="id9579"></a><p>Return the points</p><pre class="programlisting">
 points(tpose) → geomset
 </pre><pre class="programlisting">
 SELECT asEWKT(points(tpose 'SRID=5676;
   {Pose(Point(3 3), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02}'));
 -- SRID=5676;{POINT(1 1), POINT(3 3)}
-</pre></li><li class="listitem"><a name="tpose_trajectory"></a><a class="indexterm" name="id9593"></a><p>Return the trajectory</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_trajectory"></a><a class="indexterm" name="id9586"></a><p>Return the trajectory</p><pre class="programlisting">
 trajectory(tpose) → geometry
 </pre><p>A pose has a position and an orientation but no extent, so the geometry it covers over time is the trajectory of its position, as for a temporal point. A pose that interpolates moves along the line between two consecutive positions; one that does not stands at each of them and covers nothing between them.</p><pre class="programlisting">
 SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1),0.5)@2000-01-01,
@@ -22,7 +22,7 @@ SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1),0.5)@2000-01-01,
 SELECT ST_AsText(trajectory(tpose 'Interp=Step;
   [Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(3 3),0.5)@2000-01-02]'));
 -- MULTIPOINT((1 1),(3 3))
-</pre></li><li class="listitem"><a name="tpose_valueAtTimestamp"></a><a class="indexterm" name="id9601"></a><p>Return the value at a timestamp</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_valueAtTimestamp"></a><a class="indexterm" name="id9594"></a><p>Return the value at a timestamp</p><pre class="programlisting">
 valueAtTimestamp(tpose,timestamptz) → pose
 </pre><pre class="programlisting">
 SELECT asText(valueAtTimestamp(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
@@ -32,20 +32,20 @@ SELECT asText(valueAtTimestamp(tpose
   '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
   Pose(Point Z(3 3 3), 1, 0, 0, 0)@2001-01-03)', timestamptz '2001-01-02'), 6);
 -- Pose(POINT Z (2 2 2),0.866025,0.288675,0.288675,0.288675)
-</pre></li><li class="listitem"><a name="tpose_speed"></a><a class="indexterm" name="id9608"></a><p>Return the speed of a temporal pose as a temporal float, the magnitude of the position-component velocity (distance travelled per unit time)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_speed"></a><a class="indexterm" name="id9601"></a><p>Return the speed of a temporal pose as a temporal float, the magnitude of the position-component velocity (distance travelled per unit time)</p><pre class="programlisting">
 speed(tpose) → tfloat
 </pre><p>The orientation is not considered; for angular velocity see <code class="varname">angularSpeed</code>.</p><pre class="programlisting">
 SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01 08:00,
   Pose(Point(1 1), 0.5)@2000-01-02 08:00]') * 3600);
 -- Interp=Step;[1.414213562373095@2000-01-01, 1.414213562373095@2000-01-02]
-</pre><p>The answer is given in the units of the SRID's CRS, which multiplied by 3600 in this case, corresponds to meters per hour.</p></li><li class="listitem"><a name="tpose_angular_speed"></a><a class="indexterm" name="id9618"></a><p>Return the angular speed of a temporal pose as a step-interpolated temporal float (radians per unit time)</p><pre class="programlisting">
+</pre><p>The answer is given in the units of the SRID's CRS, which multiplied by 3600 in this case, corresponds to meters per hour.</p></li><li class="listitem"><a name="tpose_angular_speed"></a><a class="indexterm" name="id9611"></a><p>Return the angular speed of a temporal pose as a step-interpolated temporal float (radians per unit time)</p><pre class="programlisting">
 angularSpeed(tpose) → tfloat
 </pre><p>For 2D poses this is the per-segment shortest-arc theta delta divided by the segment duration; for 3D poses it is the SLERP arc angle <code class="varname">2 · acos(|q1 · q2|)</code> divided by the segment duration. SLERP is by construction constant-angular-velocity along a segment, so the result is piecewise-constant.</p><pre class="programlisting">
 -- 90-degree yaw rotation over one day -&gt; pi/2 rad / 86400 s
 SELECT asText(angularSpeed(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01,
   Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
 -- Interp=Step;[1.8181e-5@2000-01-01, 1.8181e-5@2000-01-02]
-</pre></li><li class="listitem"><a name="tposechain_getValue"></a><a class="indexterm" name="id9627"></a><a class="indexterm" name="id9630"></a><a class="indexterm" name="id9633"></a><p>Return the value of a temporal instant, the set of values, or the time span</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposechain_getValue"></a><a class="indexterm" name="id9620"></a><a class="indexterm" name="id9623"></a><a class="indexterm" name="id9626"></a><p>Return the value of a temporal instant, the set of values, or the time span</p><pre class="programlisting">
 getValue({tpose,tposechain}) → {pose,posechain}
 timeSpan({tpose,tposechain}) → tstzspan
 </pre><pre class="programlisting">

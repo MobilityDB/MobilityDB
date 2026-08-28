@@ -1,40 +1,12 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Métricas</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s10.html" title="Recorrido de la Cuadrícula"><link rel="next" href="ch16s12.html" title="Comparaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Métricas</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s10.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s12.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_metrics"></a>Métricas</h2></div></div></div><p>Un área se devuelve en metros cuadrados mediante <code class="varname">cellArea</code>, la unidad y el nombre que comparte cada índice de celdas, y en las otras dos unidades que publica libh3 mediante <code class="varname">th3CellAreaKm2</code> y <code class="varname">th3CellAreaRads2</code>. Una longitud acepta un argumento de unidad: <code class="varname">km</code> (por defecto), <code class="varname">m</code>, o <code class="varname">rads</code>; pasar una unidad de área a una función de longitud provoca un error.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_h3_cell_area"></a><a class="indexterm" name="id11674"></a><a class="indexterm" name="id11677"></a><a class="indexterm" name="id11680"></a><p>Devolver el área temporal de cada celda en una trayectoria, en metros cuadrados, kilómetros cuadrados o radianes cuadrados</p><pre class="programlisting">
-cellArea(th3index) → tfloat
-th3CellAreaKm2(th3index) → tfloat
-th3CellAreaRads2(th3index) → tfloat
-</pre><pre class="programlisting">
-SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
--- 4441914.270110932@2001-01-01
-SELECT th3CellAreaKm2(th3index '871fa44a8ffffff@2001-01-01');
--- 4.441914270110932@2001-01-01
-SELECT th3CellAreaRads2(th3index '871fa44a8ffffff@2001-01-01');
--- 0.000000109434431@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_edge_length"></a><a class="indexterm" name="id11687"></a><a class="indexterm" name="id11690"></a><a class="indexterm" name="id11693"></a><p>Devolver la longitud temporal de cada arista dirigida en una trayectoria, en kilómetros, metros o radianes</p><pre class="programlisting">
-th3EdgeLengthKm(th3index) → tfloat
-th3EdgeLengthM(th3index) → tfloat
-th3EdgeLengthRads(th3index) → tfloat
-</pre><pre class="programlisting">
-SELECT th3EdgeLengthKm(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01'));
--- 1.272084901305088@2001-01-01
-SELECT th3EdgeLengthM(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01'));
--- 1272.0849013050881@2001-01-01
-SELECT th3EdgeLengthRads(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01'));
--- 0.000199667786455@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_great_circle_distance"></a><a class="indexterm" name="id11700"></a><a class="indexterm" name="id11703"></a><a class="indexterm" name="id11706"></a><p>Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas), en kilómetros, metros o radianes</p><pre class="programlisting">
-greatCircleDistanceKm(tgeogpoint,tgeogpoint) → tfloat
-greatCircleDistanceM(tgeogpoint,tgeogpoint) → tfloat
-greatCircleDistanceRads(tgeogpoint,tgeogpoint) → tfloat
-</pre><p>Los dos operandos se sincronizan.</p><pre class="programlisting">
-SELECT greatCircleDistanceKm(tgeogpoint 'Point(0 0)@2001-01-01',
-  tgeogpoint 'Point(1 0)@2001-01-01');
--- 111.19505197522943@2001-01-01
-SELECT greatCircleDistanceM(tgeogpoint 'Point(0 0)@2001-01-01',
-  tgeogpoint 'Point(1 0)@2001-01-01');
--- 111195.05197522943@2001-01-01
-SELECT greatCircleDistanceRads(tgeogpoint 'Point(0 0)@2001-01-01',
-  tgeogpoint 'Point(1 0)@2001-01-01');
--- 0.017453292519943@2001-01-01
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s10.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s12.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Recorrido de la Cuadrícula </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Comparaciones</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Jerarquía</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s10.html" title="Inspección"><link rel="next" href="ch16s12.html" title="Conversiones de latitud y longitud"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Jerarquía</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s10.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s12.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_hierarchy"></a>Jerarquía</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_cell_to_parent"></a><a class="indexterm" name="id11686"></a><p>Devolver la celda padre temporal en la resolución dada</p><pre class="programlisting">
+cellToParent(tcell,integer) → tcell
+cellToParent(tcell) → tcell
+</pre><p>Devolver el ancestro de una celda en la resolución más gruesa dada. La forma estática toma una única <code class="varname">cell</code>; la forma temporal devuelve el ancestro de cada celda de una trayectoria. La forma sin argumento desciende a la resolución inmediatamente más gruesa.</p><pre class="programlisting">
+SELECT getResolution(cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
+-- 5@2001-01-01
+SELECT getResolution(cellToParent(tquadbin
+  '48a6227affffffff@2001-01-01', 5));
+-- 5@2001-01-01
+SELECT getResolution(cellToParent(ts2cell '47c3c@2001-01-01', 5));
+-- 5@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s10.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s12.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Inspección </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Conversiones de latitud y longitud</td></tr></table></div></body></html>

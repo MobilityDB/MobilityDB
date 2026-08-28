@@ -1,31 +1,51 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Index Inspection</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal H3 Cell Indices"><link rel="prev" href="ch16s04.html" title="Accessors"><link rel="next" href="ch16s06.html" title="Hierarchy"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Index Inspection</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal H3 Cell Indices</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_inspection"></a>Index Inspection</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_h3_get_resolution"></a><a class="indexterm" name="id12033"></a><p>Return the temporal resolution level (0–15) of each cell in a trajectory</p><pre class="programlisting">
-getResolution(th3index) → tint
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Cell Index Types"><link rel="prev" href="ch16s04.html" title="Conversions"><link rel="next" href="ch16s06.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Cell Index Types</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_accessors"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_startValue"></a><a class="indexterm" name="id12088"></a><a class="indexterm" name="id12091"></a><a class="indexterm" name="id12094"></a><p>Return the first, the last, or the nth distinct cell identifier of a temporal value</p><pre class="programlisting">
+startValue(tcell) → cell
+endValue(tcell) → cell
+valueN(tcell,integer) → cell
+</pre><p><code class="varname">valueN</code> counts from one and returns <code class="varname">NULL</code> when <code class="varname">n</code> is out of range.</p><pre class="programlisting">
+SELECT startValue(th3index '831c02fffffffff@2001-01-01');
+-- 831c02fffffffff
+SELECT endValue(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
+-- 831c00fffffffff
+SELECT valueN(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 1);
+-- 831c02fffffffff
+SELECT startValue(tquadbin '48a6227affffffff@2001-01-01');
+-- 48a6227affffffff
+SELECT endValue(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}');
+-- 485623ffffffffff
+SELECT valueN(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}', 1);
+-- 48a6227affffffff
+SELECT startValue(ts2cell '47c3c@2001-01-01');
+-- 47c3c
+SELECT endValue(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
+-- 47c4
+SELECT valueN(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}', 1);
+-- 47c3c
+</pre></li><li class="listitem"><a name="tcell_getValues"></a><a class="indexterm" name="id12105"></a><p>Return the set of distinct cell identifiers the trajectory takes</p><pre class="programlisting">
+getValues(tcell) → cellset
 </pre><pre class="programlisting">
-SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
--- 3@2001-01-01
-SELECT getResolution(th3index '880326b885fffff@2001-01-01');
--- 8@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_get_base_cell_number"></a><a class="indexterm" name="id12040"></a><p>Return the temporal base-cell number (0–121) of each cell in a trajectory</p><pre class="programlisting">
-th3GetBaseCellNumber(th3index) → tint
+SELECT getValues(th3index '831c02fffffffff@2001-01-01');
+-- {"831c02fffffffff"}
+SELECT getValues(th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02,
+    880326b885fffff@2001-01-03]');
+-- {"831c00fffffffff", "831c02fffffffff", "880326b885fffff"}
+SELECT getValues(tquadbin '48a6227affffffff@2001-01-01');
+-- {"48a6227affffffff"}
+SELECT getValues(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}');
+-- {"485623ffffffffff", "48a6227affffffff"}
+SELECT getValues(ts2cell '47c3c@2001-01-01');
+-- {"47c3c"}
+SELECT getValues(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
+-- {"47c3c", "47c4"}
+</pre></li><li class="listitem"><a name="tcell_valueAtTimestamp"></a><a class="indexterm" name="id12112"></a><p>Return the cell identifier at a given timestamp, using step interpolation</p><pre class="programlisting">
+valueAtTimestamp(tcell,timestamptz) → cell
 </pre><pre class="programlisting">
-SELECT th3GetBaseCellNumber(th3index '831c02fffffffff@2001-01-01');
-</pre></li><li class="listitem"><a name="th3_h3_is_valid_cell"></a><a class="indexterm" name="id12047"></a><p>Return a temporal boolean stating at each instant whether the value is a valid H3 cell</p><pre class="programlisting">
-isValidCell(th3index) → tbool
-</pre><pre class="programlisting">
-SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
--- t@2001-01-01
-SELECT isValidCell(th3index '0@2001-01-01');
--- f@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_is_res_class_iii"></a><a class="indexterm" name="id12054"></a><p>Return a temporal boolean stating whether each cell has Class-III orientation</p><pre class="programlisting">
-th3IsResClassIii(th3index) → tbool
-</pre><p>Class III alternates with resolution: odd resolutions are class III, even are class II.</p><pre class="programlisting">
-SELECT th3IsResClassIii(th3index '871fa44a8ffffff@2001-01-01');
--- t@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_is_pentagon"></a><a class="indexterm" name="id12062"></a><p>Return a temporal boolean stating whether each cell is a pentagon (12 cells per resolution are pentagons, the remaining 110 at each base cell descend as hexagons)</p><pre class="programlisting">
-th3IsPentagon(th3index) → tbool
-</pre><pre class="programlisting">
-SELECT th3IsPentagon(th3index '831c00fffffffff@2001-01-01');
--- t@2001-01-01
-SELECT th3IsPentagon(th3index '831c02fffffffff@2001-01-01');
--- f@2001-01-01
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Accessors </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Hierarchy</td></tr></table></div></body></html>
+SELECT valueAtTimestamp(th3index
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]', '2001-01-03');
+-- 831c02fffffffff
+SELECT valueAtTimestamp(tquadbin
+  '[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-05]', '2001-01-03');
+-- 48a6227affffffff
+SELECT valueAtTimestamp(ts2cell '47c3c@2001-01-01', timestamptz '2001-01-01');
+-- 47c3c
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Conversions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Transformations</td></tr></table></div></body></html>

@@ -1,53 +1,15 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Funciones que devuelven conjuntos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s13.html" title="Operadores de Caja Envolvente"><link rel="next" href="ch16s15.html" title="Relaciones Espaciales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Funciones que devuelven conjuntos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_set_returning"></a>Funciones que devuelven conjuntos</h2></div></div></div><p>Las siguientes funciones estáticas devuelven un <code class="varname">h3indexset</code> (o <code class="varname">intset</code> para <code class="varname">h3GetIcosahedronFaces</code>), el tipo compañero de colección finita de <code class="varname">h3index</code>. Operan sobre un <code class="varname">h3index</code> estático (o un <code class="varname">h3indexset</code>) y no están elevadas a <code class="varname">th3index</code>; el levantamiento temporal está diferido a la espera de una primitiva <code class="varname">tset&lt;T&gt;</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_h3_grid_disk"></a><a class="indexterm" name="id11874"></a><p>Todas las celdas dentro de <code class="varname">k</code> pasos de cuadrícula del origen (incluyendo el origen cuando k=0)</p><pre class="programlisting">
-h3GridDisk(h3index, integer) → h3indexset
-</pre><pre class="programlisting">
-SELECT h3GridDisk(h3index '871fa44a8ffffff', 1);
--- {"871fa44a8ffffff", "871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff",
---  "871fa44acffffff", "871fa44adffffff", "871fa44aeffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_grid_ring"></a><a class="indexterm" name="id11882"></a><p>Las celdas a <span class="emphasis"><em>exactamente</em></span> <code class="varname">k</code> pasos de cuadrícula del origen</p><pre class="programlisting">
-h3GridRing(h3index, integer) → h3indexset
-</pre><p>Falla cerca de pentágonos.</p><pre class="programlisting">
-SELECT h3GridRing(h3index '871fa44a8ffffff', 1);
--- {"871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff", "871fa44acffffff",
---  "871fa44adffffff", "871fa44aeffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_grid_path_cells"></a><a class="indexterm" name="id11892"></a><p>El camino inclusivo de celdas entre dos celdas de la misma resolución</p><pre class="programlisting">
-h3GridPathCells(h3index, h3index) → h3indexset
-</pre><pre class="programlisting">
-SELECT h3GridPathCells(h3index '871fa44a8ffffff', h3index '871fa44b1ffffff');
--- {"871fa4484ffffff", "871fa44a3ffffff", "871fa44a8ffffff", "871fa44aeffffff",
---  "871fa44b1ffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_children"></a><a class="indexterm" name="id11899"></a><p>Todas las celdas hijas de una celda en la resolución objetivo</p><pre class="programlisting">
-h3CellToChildren(h3index, integer) → h3indexset
-</pre><pre class="programlisting">
-SELECT h3CellToChildren(h3index '831c02fffffffff', 4);
--- {"841c021ffffffff", "841c023ffffffff", "841c025ffffffff", "841c027ffffffff",
---  "841c029ffffffff", "841c02bffffffff", "841c02dffffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_compact_cells"></a><a class="indexterm" name="id11906"></a><p>Representación compactada de un conjunto de celdas, las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente</p><pre class="programlisting">
-h3CompactCells(h3indexset) → h3indexset
-</pre><pre class="programlisting">
-SELECT h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4));
--- {"831c02fffffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_uncompact_cells"></a><a class="indexterm" name="id11913"></a><p>Representación descompactada a la resolución dada, la inversa de <code class="varname">h3CompactCells</code></p><pre class="programlisting">
-h3UncompactCells(h3indexset, integer) → h3indexset
-</pre><pre class="programlisting">
-SELECT numValues(h3UncompactCells(
-  h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4)), 4));
--- 7
-</pre></li><li class="listitem"><a name="th3_h3_origin_to_directed_edges"></a><a class="indexterm" name="id11921"></a><p>Todas las aristas dirigidas salientes de una celda (6 para hexágonos, 5 para pentágonos)</p><pre class="programlisting">
-h3OriginToDirectedEdges(h3index) → h3indexset
-</pre><pre class="programlisting">
-SELECT h3OriginToDirectedEdges(h3index '871fa44a8ffffff');
--- {"1171fa44a8ffffff", "1271fa44a8ffffff", "1371fa44a8ffffff",
---  "1471fa44a8ffffff", "1571fa44a8ffffff", "1671fa44a8ffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_vertexes"></a><a class="indexterm" name="id11928"></a><p>Todos los vértices de una celda (6 para hexágonos, 5 para pentágonos)</p><pre class="programlisting">
-h3CellToVertexes(h3index) → h3indexset
-</pre><pre class="programlisting">
-SELECT h3CellToVertexes(h3index '871fa44a8ffffff');
--- {"2071fa44a8ffffff", "2171fa44a8ffffff", "2271fa44a8ffffff",
---  "2371fa44a8ffffff", "2471fa44a8ffffff", "2571fa44a8ffffff"}
-</pre></li><li class="listitem"><a name="th3_h3_get_icosahedron_faces"></a><a class="indexterm" name="id11935"></a><p>Los índices de caras del icosaedro (0..19) intersectadas por una celda</p><pre class="programlisting">
-h3GetIcosahedronFaces(h3index) → intset
-</pre><pre class="programlisting">
-SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
--- {6, 11}
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s13.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s15.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operadores de Caja Envolvente </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Relaciones Espaciales</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Funciones métricas</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s13.html" title="Operaciones de cuadro delimitador"><link rel="next" href="ch16s15.html" title="Funciones que devuelven conjuntos"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Funciones métricas</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s13.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s15.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_metrics"></a>Funciones métricas</h2></div></div></div><p>El área de una celda es la única métrica que comparten las tres cuadrículas, y <code class="varname">cellArea</code> la responde en metros cuadrados para cada una de ellas. H3 publica las otras dos unidades que nombra libh3, como <code class="varname">th3CellAreaKm2</code> y <code class="varname">th3CellAreaRads2</code>. Las métricas que solo lleva H3, la longitud de una arista dirigida y la distancia de círculo máximo entre dos puntos temporales, se presentan en la sección específica de H3.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_cell_area"></a><a class="indexterm" name="id11813"></a><p>Devolver el área de una celda, y el área temporal de cada celda de una trayectoria</p><pre class="programlisting">
+cellArea(cell) → float8
+cellArea(tcell) → tfloat
+th3CellAreaKm2(th3index) → tfloat
+th3CellAreaRads2(th3index) → tfloat
+</pre><p>El área de una celda se encoge hacia los polos en la cuadrícula QUADBIN, ya que los cuadrados de Web-Mercator cubren progresivamente menos terreno en latitudes más altas. Una celda H3 o S2 se define sobre la esfera, de modo que su área varía únicamente con la resolución y con la posición de la celda en el sólido base.</p><p>La unidad es el metro cuadrado, fijada por la ranura <code class="varname">cell_area</code> del descriptor <code class="varname">DggsCellOps</code> al que se conecta cada cuadrícula, de modo que <code class="varname">cellArea</code> responde la misma cantidad sea cual sea la cuadrícula que contiene la celda.</p><pre class="programlisting">
+SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
+-- 4441914.270110932@2001-01-01
+SELECT th3CellAreaKm2(th3index '871fa44a8ffffff@2001-01-01');
+-- 4.441914270110932@2001-01-01
+SELECT cellArea(tquadbin '48a6227affffffff@2001-01-01');
+-- 609209287.1146417@2001-01-01
+SELECT cellArea(ts2cell '47c3c@2001-01-01');
+-- 4145164039.0857196@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s13.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s15.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de cuadro delimitador </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Funciones que devuelven conjuntos</td></tr></table></div></body></html>

@@ -1,29 +1,27 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversiones de Latitud/Longitud</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s06.html" title="Jerarquía"><link rel="next" href="ch16s08.html" title="Aristas Dirigidas"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversiones de Latitud/Longitud</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_latlng"></a>Conversiones de Latitud/Longitud</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_tgeompoint_to_th3"></a><a class="indexterm" name="id11539"></a><p>Devolver la celda H3 temporal en la resolución dada que contiene cada punto de un punto temporal geodésico o planar (el SRID debe ser 4326 para la sobrecarga de <code class="varname">tgeompoint</code>)</p><pre class="programlisting">
-th3index(tgeogpoint,integer) → th3index
-th3index(tgeompoint,integer) → th3index
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Modificaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s06.html" title="Transformaciones"><link rel="next" href="ch16s08.html" title="Restricciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Modificaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_modifications"></a>Modificaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_insert_update"></a><a class="indexterm" name="id11576"></a><a class="indexterm" name="id11579"></a><p>Insertar una celda temporal en otra, o actualizar una con otra</p><pre class="programlisting">
+insert(tcell,tcell,connect boolean=true) → tcell
+update(tcell,tcell,connect boolean=true) → tcell
 </pre><pre class="programlisting">
-SELECT getResolution(th3index(
-  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
--- 9@2001-01-01
-SELECT getResolution(th3index(
-  tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
--- 9@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_latlng"></a><a class="indexterm" name="id11547"></a><a class="indexterm" name="id11550"></a><p>Devolver el centroide geodésico temporal de cada celda en una trayectoria</p><pre class="programlisting">
-cellToPoint(th3index) → tgeogpoint
-tgeompoint(th3index) → tgeompoint
-</pre><p>Una sobrecarga planar (SRID 4326) está disponible bajo el nombre <code class="varname">tgeompoint</code>.</p><pre class="programlisting">
-SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
--- POINT(4.297401 50.8043)@2001-01-01
-SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
--- POINT(4.297401 50.8043)@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_boundary"></a><a class="indexterm" name="id11559"></a><p>Devolver el límite poligonal temporal de cada celda en una trayectoria, como una geografía temporal</p><pre class="programlisting">
-cellToBoundary(th3index) → tgeography
+SELECT insert(th3index '[871fa4418ffffff@2001-01-01,
+  871fa4418ffffff@2001-01-02]', th3index '[871fa44a8ffffff@2001-01-03,
+  871fa44a8ffffff@2001-01-04]');
+-- [871fa4418ffffff@2001-01-01, 871fa44a8ffffff@2001-01-03, 871fa44a8ffffff@2001-01-04]
+SELECT insert(tquadbin '[48a6227affffffff@2001-01-01,
+  48a6227affffffff@2001-01-02]', tquadbin '[485623ffffffffff@2001-01-03,
+  485623ffffffffff@2001-01-04]');
+/* [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-03,
+   485623ffffffffff@2001-01-04] */
+SELECT insert(ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02');
+-- {47c3c@2001-01-01, 47c4@2001-01-02}
+</pre></li><li class="listitem"><a name="tcell_delete"></a><a class="indexterm" name="id11586"></a><p>Eliminar un valor de tiempo de una celda temporal</p><pre class="programlisting">
+deleteTime(tcell,time,connect boolean=true) → tcell
 </pre><pre class="programlisting">
-SELECT ST_GeometryType(getValue(cellToBoundary(th3index
-  '871fa44a8ffffff@2001-01-01'))::geometry);
--- ST_Polygon
--- A hexagon closes on its first vertex, so it has seven points.
-SELECT ST_NPoints(getValue(cellToBoundary(th3index
-  '871fa44a8ffffff@2001-01-01'))::geometry);
--- 7
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Jerarquía </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Aristas Dirigidas</td></tr></table></div></body></html>
+SELECT deleteTime(th3index '[871fa4418ffffff@2001-01-01,
+  871fa4418ffffff@2001-01-04]', tstzspan '[2001-01-02, 2001-01-03]');
+-- [871fa4418ffffff@2001-01-01, 871fa4418ffffff@2001-01-04]
+SELECT deleteTime(tquadbin '[48a6227affffffff@2001-01-01,
+  48a6227affffffff@2001-01-04]', tstzspan '[2001-01-02, 2001-01-03]');
+-- [48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-04]
+SELECT deleteTime(ts2cell '47c3c@2001-01-01', tstzspan '[2001-01-02, 2001-01-03]');
+-- 47c3c@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Transformaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Restricciones</td></tr></table></div></body></html>

@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch03.html" title="Capítulo 3. Tipos de cuadro delimitador"><link rel="prev" href="ch03s03.html" title="Conversión de tipos"><link rel="next" href="ch03s05.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 3. Tipos de cuadro delimitador</th><td width="20%" align="right"> <a accesskey="n" href="ch03s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="box_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_hasX"></a><a class="indexterm" name="id2619"></a><a class="indexterm" name="id2622"></a><a class="indexterm" name="id2625"></a><p>¿Tiene dimensión X/Z/T?</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch03.html" title="Capítulo 3. Tipos de cuadro delimitador"><link rel="prev" href="ch03s03.html" title="Conversión de tipos"><link rel="next" href="ch03s05.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 3. Tipos de cuadro delimitador</th><td width="20%" align="right"> <a accesskey="n" href="ch03s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="box_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_hasX"></a><a class="indexterm" name="id2612"></a><a class="indexterm" name="id2615"></a><a class="indexterm" name="id2618"></a><p>¿Tiene dimensión X/Z/T?</p><pre class="programlisting">
 hasX(box) → boolean
 hasZ(stbox) → boolean
 hasT(box) → boolean
@@ -13,14 +13,14 @@ SELECT hasT(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03])');
 -- true
 SELECT hasT(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- false
-</pre></li><li class="listitem"><a name="stbox_isGeodetic"></a><a class="indexterm" name="id2632"></a><p>¿Es geodética?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="stbox_isGeodetic"></a><a class="indexterm" name="id2625"></a><p>¿Es geodética?</p><pre class="programlisting">
 isGeodetic(stbox) → boolean
 </pre><pre class="programlisting">
 SELECT isGeodetic(stbox 'GEODSTBOX Z((1.0,1.0,0.0),(3.0,3.0,1.0))');
 -- true
 SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])');
 -- false
-</pre></li><li class="listitem"><a name="box_xMin"></a><a class="indexterm" name="id2639"></a><a class="indexterm" name="id2642"></a><a class="indexterm" name="id2645"></a><a class="indexterm" name="id2648"></a><p>Devuelve el valor mínimo de X/Y/Z/T</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_xMin"></a><a class="indexterm" name="id2632"></a><a class="indexterm" name="id2635"></a><a class="indexterm" name="id2638"></a><a class="indexterm" name="id2641"></a><p>Devuelve el valor mínimo de X/Y/Z/T</p><pre class="programlisting">
 xMin(box) → float
 yMin(stbox) → float
 zMin(stbox) → float
@@ -34,7 +34,7 @@ SELECT zMin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 3
 SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
-</pre></li><li class="listitem"><a name="box_xMax"></a><a class="indexterm" name="id2655"></a><a class="indexterm" name="id2658"></a><a class="indexterm" name="id2661"></a><a class="indexterm" name="id2664"></a><p>Devuelve el valor máximo de X/Y/Z/T</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_xMax"></a><a class="indexterm" name="id2648"></a><a class="indexterm" name="id2651"></a><a class="indexterm" name="id2654"></a><a class="indexterm" name="id2657"></a><p>Devuelve el valor máximo de X/Y/Z/T</p><pre class="programlisting">
 xMax(box) → float
 yMax(stbox) → float
 zMax(stbox) → float
@@ -48,7 +48,7 @@ SELECT zMax(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 6
 SELECT tMax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
-</pre></li><li class="listitem"><a name="tbox_xMinInc"></a><a class="indexterm" name="id2671"></a><a class="indexterm" name="id2674"></a><p>Es el mínimo valor X/T inclusivo?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_xMinInc"></a><a class="indexterm" name="id2664"></a><a class="indexterm" name="id2667"></a><p>Es el mínimo valor X/T inclusivo?</p><pre class="programlisting">
 xMinInc(tbox) → boolean
 tMinInc(box) → boolean
 </pre><pre class="programlisting">
@@ -56,7 +56,7 @@ SELECT xMinInc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
 SELECT tMinInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- true
-</pre></li><li class="listitem"><a name="tbox_xMaxInc"></a><a class="indexterm" name="id2681"></a><a class="indexterm" name="id2684"></a><p>Es el máximo valor X/T inclusivo?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_xMaxInc"></a><a class="indexterm" name="id2674"></a><a class="indexterm" name="id2677"></a><p>Es el máximo valor X/T inclusivo?</p><pre class="programlisting">
 xMaxInc(tbox) → boolean
 tMaxInc(box) → boolean
 </pre><pre class="programlisting">
@@ -64,7 +64,7 @@ SELECT xMaxInc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
 SELECT tMaxInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- true
-</pre></li><li class="listitem"><a name="stbox_area"></a><a class="indexterm" name="id2691"></a><a class="indexterm" name="id2694"></a><a class="indexterm" name="id2697"></a><p>Área, volumen, perímetro</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="stbox_area"></a><a class="indexterm" name="id2684"></a><a class="indexterm" name="id2687"></a><a class="indexterm" name="id2690"></a><p>Área, volumen, perímetro</p><pre class="programlisting">
 area(stbox,spheroid boolean=true) → float
 volume(stbox) → float
 perimeter(stbox,spheroid boolean=true) → float

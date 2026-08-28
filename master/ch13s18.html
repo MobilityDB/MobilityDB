@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparisons</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Poses and Pose Chains"><link rel="prev" href="ch13s17.html" title="Spatiotemporal Relationships"><link rel="next" href="ch13s19.html" title="Aggregations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparisons</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s17.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Poses and Pose Chains</th><td width="20%" align="right"> <a accesskey="n" href="ch13s19.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_comparisons"></a>Comparisons</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_comp"></a><a class="indexterm" name="id9952"></a><p>Traditional comparisons</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparisons</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Poses and Pose Chains"><link rel="prev" href="ch13s17.html" title="Spatiotemporal Relationships"><link rel="next" href="ch13s19.html" title="Aggregations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparisons</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s17.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Poses and Pose Chains</th><td width="20%" align="right"> <a accesskey="n" href="ch13s19.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_comparisons"></a>Comparisons</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_comp"></a><a class="indexterm" name="id9945"></a><p>Traditional comparisons</p><pre class="programlisting">
 tpose {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tpose → boolean
 </pre><pre class="programlisting">
 SELECT tpose '{[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(1 1), 0.3)@2001-01-02),
@@ -11,7 +11,7 @@ SELECT tpose '{[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-
 SELECT tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-03]' &lt;
   tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(1 1), 0.6)@2001-01-03]';
 -- true
-</pre></li><li class="listitem"><a name="tpose_ever_always"></a><a class="indexterm" name="id9959"></a><a class="indexterm" name="id9962"></a><a class="indexterm" name="id9965"></a><a class="indexterm" name="id9968"></a><p>Ever and always comparisons</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_ever_always"></a><a class="indexterm" name="id9952"></a><a class="indexterm" name="id9955"></a><a class="indexterm" name="id9958"></a><a class="indexterm" name="id9961"></a><p>Ever and always comparisons</p><pre class="programlisting">
 tpose {?=, ?&lt;&gt;, %=, %&lt;&gt;} tpose → boolean
 </pre><pre class="programlisting">
 SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
@@ -20,7 +20,7 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
 SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
   Pose(Point(1 1), 0.2)@2001-01-04)' &amp;= Pose(Point(1 1), 0.2);
 -- true
-</pre></li><li class="listitem"><a name="tpose_tcomp"></a><a class="indexterm" name="id9975"></a><p>Temporal comparisons</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_tcomp"></a><a class="indexterm" name="id9968"></a><p>Temporal comparisons</p><pre class="programlisting">
 tpose {#=, #&lt;&gt;} tpose → tbool
 </pre><pre class="programlisting">
 SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
@@ -29,7 +29,7 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
 SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.8)@2001-01-03)' #&lt;&gt;
   tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.7)@2001-01-03)';
 -- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
-</pre></li><li class="listitem"><a name="tposechain_eq"></a><a class="indexterm" name="id9982"></a><p>Compare two temporal pose chains, or a temporal pose chain and a pose chain</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposechain_eq"></a><a class="indexterm" name="id9975"></a><p>Compare two temporal pose chains, or a temporal pose chain and a pose chain</p><pre class="programlisting">
 eEq({pose,posechain,tpose,tposechain},{pose,posechain,tpose,tposechain}) → boolean
 </pre><pre class="programlisting">
 SELECT tposechain 'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01' =

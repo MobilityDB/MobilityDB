@@ -1,20 +1,21 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Grid Traversal</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal H3 Cell Indices"><link rel="prev" href="ch16s09.html" title="Vertices"><link rel="next" href="ch16s11.html" title="Metrics"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Grid Traversal</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s09.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal H3 Cell Indices</th><td width="20%" align="right"> <a accesskey="n" href="ch16s11.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_traversal"></a>Grid Traversal</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_h3_grid_distance"></a><a class="indexterm" name="id12205"></a><a class="indexterm" name="id12208"></a><p>Return the temporal grid-hop distance (number of single-cell steps) between two temporal cells</p><pre class="programlisting">
-th3GridDistance(th3index,th3index) → tbigint
-th3index &lt;-&gt; th3index → tbigint
-</pre><p>Equivalently, the <code class="varname">&lt;-&gt;</code> operator returns the same distance. The two operands are synchronised over their shared time axis.</p><pre class="programlisting">
-SELECT th3index '880326b885fffff@2001-01-01'
-   &lt;-&gt; th3index '880326b88dfffff@2001-01-01';
--- 1@2001-01-01
-</pre></li><li class="listitem"><a name="th3_h3_cell_to_local_ij"></a><a class="indexterm" name="id12217"></a><a class="indexterm" name="id12220"></a><p>Convert between a temporal cell and a temporal local (I, J) coordinate pair relative to an origin temporal cell</p><pre class="programlisting">
-th3CellToLocalIj(th3index,th3index) → tgeompoint
-th3LocalIjToCell(th3index,tgeompoint) → th3index
-</pre><p>The local coordinate is exposed as a <code class="varname">tgeompoint</code> with the I axis in the <code class="varname">x</code> slot and J in <code class="varname">y</code>.</p><pre class="programlisting">
-SELECT asText(th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
-  th3index '871fa44aeffffff@2001-01-01'));
--- POINT(497 320)@2001-01-01
--- The two are inverse of each other.
-SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
-  th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
-    th3index '871fa44aeffffff@2001-01-01'));
--- 871fa44aeffffff@2001-01-01
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s09.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s11.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Vertices </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Metrics</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Inspection</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Cell Index Types"><link rel="prev" href="ch16s09.html" title="Static Geometry Coverage"><link rel="next" href="ch16s11.html" title="Hierarchy"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Inspection</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s09.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Cell Index Types</th><td width="20%" align="right"> <a accesskey="n" href="ch16s11.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_inspection"></a>Inspection</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_get_resolution"></a><a class="indexterm" name="id12230"></a><p>Return the resolution of each cell in a trajectory</p><pre class="programlisting">
+getResolution(tcell) → tint
+</pre><p>Return the resolution of a cell, as an <code class="varname">integer</code> from the static form and as a <code class="varname">tint</code> of the resolution of each cell in a trajectory from the temporal one. QUADBIN calls it a zoom level and S2 a level, and the range belongs to the grid: 0 to 15 for H3, 0 to 26 for QUADBIN, 0 to 30 for S2.</p><pre class="programlisting">
+SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
+-- 3@2001-01-01
+SELECT getResolution(tquadbin '48a6227affffffff@2001-01-01');
+-- 10@2001-01-01
+SELECT getResolution(ts2cell '47c3c@2001-01-01');
+-- 7@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_is_valid_cell"></a><a class="indexterm" name="id12240"></a><p>Return a temporal boolean stating at each instant whether the value is a valid cell</p><pre class="programlisting">
+isValidCell(tcell) → tbool
+</pre><p>A value is a valid cell when its bit pattern denotes something its grid indexes: for QUADBIN, tile coordinates within the bounds of the resolution the identifier states; for H3, a base cell and digit sequence the icosahedron carries; for S2, a face and a Hilbert position at a level between 0 and 30.</p><p>Only H3 can be asked the question of a value that answers <code class="varname">false</code>: its input function admits any bit pattern and leaves the verdict to this function, while the QUADBIN and the S2 input functions reject a pattern that indexes nothing, so <code class="varname">tquadbin '0'</code> and <code class="varname">ts2cell '0'</code> raise an error before the call is made.</p><pre class="programlisting">
+SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
+-- t@2001-01-01
+SELECT isValidCell(th3index '0@2001-01-01');
+-- f@2001-01-01
+SELECT isValidCell(tquadbin '48a6227affffffff@2001-01-01');
+-- t@2001-01-01
+SELECT isValidCell(ts2cell '47c3c@2001-01-01');
+-- t@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s09.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s11.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Static Geometry Coverage </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Hierarchy</td></tr></table></div></body></html>

@@ -1,0 +1,152 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones específicas de H3</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s20.html" title="Indexación"><link rel="next" href="ch16s22.html" title="Operaciones específicas de QUADBIN"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones específicas de H3</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s20.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s22.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_h3_specific"></a>Operaciones específicas de H3</h2></div></div></div><p>Una celda H3 es un hexágono sobre un icosaedro, de modo que tiene vecinos a través de seis aristas, vértices compartidos con ellos y una celda base entre las 122 que lleva el icosaedro. Doce celdas de cada resolución son pentágonos. Nada de eso tiene contrapartida en una cuadrícula de cuadrados o de cuadriláteros esféricos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_h3_get_base_cell_number"></a><a class="indexterm" name="id12116"></a><p>Devolver el número de celda base temporal (0–121) de cada celda de una trayectoria</p><pre class="programlisting">
+th3GetBaseCellNumber(th3index) → tint
+</pre><pre class="programlisting">
+SELECT th3GetBaseCellNumber(th3index '831c02fffffffff@2001-01-01');
+-- 14@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_is_res_class_iii"></a><a class="indexterm" name="id12123"></a><p>Devolver un booleano temporal que indica si cada celda tiene orientación de clase III</p><pre class="programlisting">
+th3IsResClassIii(th3index) → tbool
+</pre><p>La clase III alterna con la resolución: las resoluciones impares son de clase III, las pares de clase II.</p><pre class="programlisting">
+SELECT th3IsResClassIii(th3index '871fa44a8ffffff@2001-01-01');
+-- t@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_is_pentagon"></a><a class="indexterm" name="id12131"></a><p>Devolver un booleano temporal que indica si cada celda es un pentágono</p><pre class="programlisting">
+th3IsPentagon(th3index) → tbool
+</pre><p>12 celdas por resolución son pentágonos, las 110 restantes de cada celda base descienden como hexágonos.</p><pre class="programlisting">
+SELECT th3IsPentagon(th3index '831c00fffffffff@2001-01-01');
+-- t@2001-01-01
+SELECT th3IsPentagon(th3index '831c02fffffffff@2001-01-01');
+-- f@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_center_child"></a><a class="indexterm" name="id12139"></a><p>Devolver la celda hija central temporal en la resolución dada</p><pre class="programlisting">
+th3CellToCenterChild(th3index,integer) → th3index
+th3CellToCenterChild(th3index) → th3index
+</pre><p>La forma sin argumento desciende a la resolución inmediatamente más fina.</p><pre class="programlisting">
+SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01', 8);
+-- 881fa44a81fffff@2001-01-01
+SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01');
+-- 881fa44a81fffff@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_child_pos"></a><a class="indexterm" name="id12147"></a><p>Devolver la posición ordinal (basada en 0) de cada celda entre los hijos de su padre en la resolución dada</p><pre class="programlisting">
+th3CellToChildPos(th3index,integer) → tbigint
+</pre><pre class="programlisting">
+SELECT th3CellToChildPos(th3index '871fa44a8ffffff@2001-01-01', 6);
+-- 0@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_child_pos_to_cell"></a><a class="indexterm" name="id12154"></a><p>Devolver la celda hija temporal en una posición ordinal dada del padre dado, en la resolución de hijo dada</p><pre class="programlisting">
+th3ChildPosToCell(tbigint,th3index,integer) → th3index
+</pre><p>Los dos operandos temporales se sincronizan sobre su eje de tiempo compartido.</p><pre class="programlisting">
+SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01',
+  8);
+-- 881fa44a81fffff@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_grid_ring"></a><a class="indexterm" name="id12162"></a><p>Las celdas a <span class="emphasis"><em>exactamente</em></span> <code class="varname">k</code> pasos de cuadrícula desde el origen</p><pre class="programlisting">
+h3GridRing(h3index,integer) → h3indexset
+</pre><p>Falla cerca de los pentágonos.</p><pre class="programlisting">
+SELECT h3GridRing(h3index '871fa44a8ffffff', 1);
+/* {"871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff", "871fa44acffffff",
+   "871fa44adffffff", "871fa44aeffffff"} */
+</pre></li><li class="listitem"><a name="tcell_h3_grid_path_cells"></a><a class="indexterm" name="id12172"></a><p>El camino inclusivo de celdas entre dos celdas de la misma resolución</p><pre class="programlisting">
+h3GridPathCells(h3index,h3index) → h3indexset
+</pre><pre class="programlisting">
+SELECT h3GridPathCells(h3index '871fa44a8ffffff', h3index '871fa44b1ffffff');
+/* {"871fa4484ffffff", "871fa44a3ffffff", "871fa44a8ffffff", "871fa44aeffffff",
+   "871fa44b1ffffff"} */
+</pre></li><li class="listitem"><a name="tcell_h3_origin_to_directed_edges"></a><a class="indexterm" name="id12179"></a><p>Todas las aristas dirigidas salientes de una celda</p><pre class="programlisting">
+h3OriginToDirectedEdges(h3index) → h3indexset
+</pre><p>6 para un hexágono y 5 para un pentágono.</p><pre class="programlisting">
+SELECT h3OriginToDirectedEdges(h3index '871fa44a8ffffff');
+/* {"1171fa44a8ffffff", "1271fa44a8ffffff", "1371fa44a8ffffff", "1471fa44a8ffffff",
+   "1571fa44a8ffffff", "1671fa44a8ffffff"} */
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_vertexes"></a><a class="indexterm" name="id12187"></a><p>Todos los vértices de una celda</p><pre class="programlisting">
+h3CellToVertexes(h3index) → h3indexset
+</pre><p>6 para un hexágono y 5 para un pentágono.</p><pre class="programlisting">
+SELECT h3CellToVertexes(h3index '871fa44a8ffffff');
+/* {"2071fa44a8ffffff", "2171fa44a8ffffff", "2271fa44a8ffffff", "2371fa44a8ffffff",
+   "2471fa44a8ffffff", "2571fa44a8ffffff"} */
+</pre></li><li class="listitem"><a name="tcell_h3_get_icosahedron_faces"></a><a class="indexterm" name="id12195"></a><p>Los índices de las caras del icosaedro (0..19) que interseca una celda</p><pre class="programlisting">
+h3GetIcosahedronFaces(h3index) → intset
+</pre><pre class="programlisting">
+SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
+-- {6, 11}
+</pre></li><li class="listitem"><a name="tcell_h3_edge_length"></a><a class="indexterm" name="id12202"></a><p>Devolver la longitud temporal de cada arista dirigida de una trayectoria, en la unidad solicitada</p><pre class="programlisting">
+th3EdgeLengthKm(th3index) → tfloat
+th3EdgeLengthM(th3index) → tfloat
+th3EdgeLengthRads(th3index) → tfloat
+</pre><pre class="programlisting">
+SELECT th3EdgeLengthKm(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 1.272084901305088@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_great_circle_distance"></a><a class="indexterm" name="id12209"></a><p>Devolver la distancia de círculo máximo temporal entre dos puntos temporales geodésicos (no entre celdas)</p><pre class="programlisting">
+greatCircleDistanceKm(tgeogpoint,tgeogpoint) → tfloat
+greatCircleDistanceM(tgeogpoint,tgeogpoint) → tfloat
+greatCircleDistanceRads(tgeogpoint,tgeogpoint) → tfloat
+</pre><p>Los dos operandos se sincronizan.</p><pre class="programlisting">
+SELECT greatCircleDistanceKm(tgeogpoint 'Point(0 0)@2001-01-01',
+  tgeogpoint 'Point(1 0)@2001-01-01');
+-- 111.19505197522943@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_are_neighbor_cells"></a><a class="indexterm" name="id12217"></a><p>Devolver un booleano temporal que indica si dos celdas temporales son vecinas de cuadrícula en cada instante</p><pre class="programlisting">
+th3AreNeighborCells(th3index,th3index) → tbool
+</pre><p>Los dos operandos se sincronizan.</p><pre class="programlisting">
+SELECT th3AreNeighborCells(th3index '880326b885fffff@2001-01-01',
+  th3index '880326b88dfffff@2001-01-01');
+-- t@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_cells_to_directed_edge"></a><a class="indexterm" name="id12225"></a><p>Devolver un identificador de arista dirigida temporal a partir de un par de celdas temporales de origen y destino</p><pre class="programlisting">
+th3CellsToDirectedEdge(th3index,th3index) → th3index
+</pre><pre class="programlisting">
+SELECT th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01');
+-- 1671fa44a8ffffff@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_is_valid_directed_edge"></a><a class="indexterm" name="id12232"></a><p>Devolver un booleano temporal que indica en cada instante si el valor es una arista dirigida H3 válida</p><pre class="programlisting">
+isValidDirectedEdge(tcell) → tbool
+</pre><p>Las aristas dirigidas H3 son ellas mismas identificadores de 64 bits (codificados de forma distinta a los identificadores de celda, <code class="varname">isValidDirectedEdge</code> los distingue). El tipo <code class="varname">th3index</code> de MobilityDB lleva aristas dirigidas por convención: el mismo tipo, interpretado a través de accesores específicos de aristas.</p><pre class="programlisting">
+SELECT isValidDirectedEdge(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- t@2001-01-01
+SELECT isValidDirectedEdge(th3index '871fa44a8ffffff@2001-01-01');
+-- f@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_get_directed_edge_origin"></a><a class="indexterm" name="id12242"></a><a class="indexterm" name="id12245"></a><p>Devolver la celda de origen o de destino temporal de una arista dirigida temporal</p><pre class="programlisting">
+th3GetDirectedEdgeOrigin(th3index) → th3index
+th3GetDirectedEdgeDestination(th3index) → th3index
+</pre><pre class="programlisting">
+SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(th3index
+  '871fa44a8ffffff@2001-01-01', th3index '871fa44aeffffff@2001-01-01'));
+-- 871fa44a8ffffff@2001-01-01
+SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(th3index
+  '871fa44a8ffffff@2001-01-01', th3index '871fa44aeffffff@2001-01-01'));
+-- 871fa44aeffffff@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_directed_edge_to_boundary"></a><a class="indexterm" name="id12252"></a><p>Devolver la frontera poligonal temporal de cada arista dirigida de una trayectoria, como una geografía temporal</p><pre class="programlisting">
+th3DirectedEdgeToBoundary(th3index) → tgeography
+</pre><pre class="programlisting">
+SELECT ST_NPoints(getValue(th3DirectedEdgeToBoundary(
+  th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01')))::geometry);
+-- 3
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_vertex"></a><a class="indexterm" name="id12259"></a><p>Devolver el vértice H3 temporal en el número de vértice dado</p><pre class="programlisting">
+th3CellToVertex(th3index,integer) → th3index
+</pre><p>0–5 para hexágonos, 0–4 para pentágonos.</p><pre class="programlisting">
+SELECT th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0);
+-- 2071fa44a8ffffff@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_vertex_to_latlng"></a><a class="indexterm" name="id12267"></a><p>Devolver las coordenadas geodésicas temporales de cada vértice de una trayectoria</p><pre class="programlisting">
+th3VertexToPoint(th3index) → tgeogpoint
+</pre><pre class="programlisting">
+SELECT asText(th3VertexToPoint(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
+  0)), 6);
+-- POINT(4.280027 50.807655)@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_is_valid_vertex"></a><a class="indexterm" name="id12274"></a><p>Devolver un booleano temporal que indica en cada instante si el valor es un vértice H3 válido</p><pre class="programlisting">
+isValidVertex(tcell) → tbool
+</pre><pre class="programlisting">
+SELECT isValidVertex(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0));
+-- t@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_grid_distance"></a><a class="indexterm" name="id12281"></a><a class="indexterm" name="id12284"></a><p>Devolver la distancia temporal en saltos de cuadrícula (número de pasos de una sola celda) entre dos celdas temporales</p><pre class="programlisting">
+th3GridDistance(th3index,th3index) → tbigint
+tcell &lt;-&gt; tcell → tbigint
+</pre><p>De forma equivalente, el operador <code class="varname">&lt;-&gt;</code> devuelve la misma distancia. Los dos operandos se sincronizan sobre su eje de tiempo compartido.</p><pre class="programlisting">
+SELECT th3index '880326b885fffff@2001-01-01' &lt;-&gt; th3index '880326b88dfffff@2001-01-01';
+-- 1@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_local_ij"></a><a class="indexterm" name="id12293"></a><a class="indexterm" name="id12296"></a><p>Convertir entre una celda temporal y un par de coordenadas locales (I, J) temporales relativas a una celda temporal de origen</p><pre class="programlisting">
+th3CellToLocalIj(th3index,th3index) → tgeompoint
+th3LocalIjToCell(th3index,tgeompoint) → th3index
+</pre><p>La coordenada local se expone como un <code class="varname">tgeompoint</code> con el eje I en la ranura <code class="varname">x</code> y J en <code class="varname">y</code>.</p><pre class="programlisting">
+SELECT asText(th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
+  th3index '871fa44aeffffff@2001-01-01'));
+-- POINT(497 320)@2001-01-01
+SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
+  th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 871fa44aeffffff@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s20.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s22.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Indexación </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operaciones específicas de QUADBIN</td></tr></table></div></body></html>

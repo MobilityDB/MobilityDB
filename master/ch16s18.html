@@ -1,0 +1,30 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparisons</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Cell Index Types"><link rel="prev" href="ch16s17.html" title="Spatiotemporal Relationships"><link rel="next" href="ch16s19.html" title="Aggregations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparisons</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s17.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Cell Index Types</th><td width="20%" align="right"> <a accesskey="n" href="ch16s19.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_comparisons"></a>Comparisons</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_comp"></a><a class="indexterm" name="id12538"></a><a class="indexterm" name="id12541"></a><a class="indexterm" name="id12544"></a><a class="indexterm" name="id12547"></a><a class="indexterm" name="id12550"></a><a class="indexterm" name="id12553"></a><p>Traditional comparisons</p><pre class="programlisting">
+tcell {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tcell → boolean
+</pre><pre class="programlisting">
+SELECT th3index '831c02fffffffff@2001-01-01' = th3index '831c02fffffffff@2001-01-01';
+-- t
+SELECT tquadbin '48a6227affffffff@2001-01-01' &lt; tquadbin '485623ffffffffff@2001-01-01';
+-- f
+SELECT ts2cell '47c3c@2001-01-01' = ts2cell '47c3c@2001-01-01';
+-- t
+</pre></li><li class="listitem"><a name="tcell_ever_always"></a><a class="indexterm" name="id12560"></a><a class="indexterm" name="id12563"></a><a class="indexterm" name="id12566"></a><a class="indexterm" name="id12569"></a><a class="indexterm" name="id12572"></a><a class="indexterm" name="id12575"></a><a class="indexterm" name="id12578"></a><a class="indexterm" name="id12581"></a><p>Ever and always comparisons</p><pre class="programlisting">
+{cell,tcell} {?=, ?&lt;&gt;, %=, %&lt;&gt;} {cell,tcell} → boolean
+</pre><p>The probe operand may be a bare <code class="varname">cell</code> identifier or another <code class="varname">tcell</code> trajectory, in either operand position. The <code class="varname">e</code>-prefixed forms hold when the relationship holds at at least one instant, the <code class="varname">a</code>-prefixed forms when it holds across the entire time span.</p><pre class="programlisting">
+SELECT th3index '[831c02fffffffff@2001-01-01,
+  880326b885fffff@2001-01-05]' ?= h3index '880326b885fffff';
+-- t
+SELECT tquadbin '[48a6227affffffff@2001-01-01,
+  485623ffffffffff@2001-01-05]' %= quadbin '485623ffffffffff';
+-- f
+SELECT ts2cell '47c3c@2001-01-01' ?= s2cell '47c3c';
+-- t
+</pre></li><li class="listitem"><a name="tcell_tcomp"></a><a class="indexterm" name="id12593"></a><a class="indexterm" name="id12596"></a><a class="indexterm" name="id12599"></a><a class="indexterm" name="id12602"></a><p>Temporal comparisons</p><pre class="programlisting">
+{cell,tcell} {#=, #&lt;&gt;} {cell,tcell} → tbool
+</pre><p>Return a temporal boolean giving the per-instant equality, or inequality, between a temporal cell and a probe</p><pre class="programlisting">
+SELECT th3index '831c02fffffffff@2001-01-01' #= h3index '831c02fffffffff';
+-- t@2001-01-01
+SELECT tquadbin '48a6227affffffff@2001-01-01' #&lt;&gt; quadbin '485623ffffffffff';
+-- t@2001-01-01
+SELECT ts2cell '47c3c@2001-01-01' #= s2cell '47c3c';
+-- t@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s17.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s19.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Spatiotemporal Relationships </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Aggregations</td></tr></table></div></body></html>

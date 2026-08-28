@@ -1,34 +1,21 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Funciones de Acceso</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Índices de Celdas H3 Temporales"><link rel="prev" href="ch16s03.html" title="Cobertura de Geometrías Estáticas"><link rel="next" href="ch16s05.html" title="Inspección de Índices"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Funciones de Acceso</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Índices de Celdas H3 Temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="th3_accessors"></a>Funciones de Acceso</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="th3_startValue"></a><a class="indexterm" name="id11429"></a><a class="indexterm" name="id11432"></a><p>Devolver el primer o el último identificador de celda H3 de un valor temporal</p><pre class="programlisting">
-startValue(th3index) → h3index
-endValue(th3index) → h3index
-</pre><pre class="programlisting">
-SELECT startValue(th3index '831c02fffffffff@2001-01-01');
--- 831c02fffffffff
-SELECT endValue(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
--- 831c00fffffffff
-</pre></li><li class="listitem"><a name="th3_valueN"></a><a class="indexterm" name="id11439"></a><p>Devolver el <code class="varname">n</code>-ésimo identificador de celda H3 distinto (indexado desde 1)</p><pre class="programlisting">
-valueN(th3index,integer) → h3index
-</pre><p>Devuelve <code class="varname">NULL</code> si está fuera del rango.</p><pre class="programlisting">
-SELECT valueN(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 1);
--- 831c02fffffffff
-SELECT valueN(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 2);
--- 831c00fffffffff
-SELECT valueN(th3index '831c02fffffffff@2001-01-01', 99);
--- NULL
-</pre></li><li class="listitem"><a name="th3_getValues"></a><a class="indexterm" name="id11449"></a><p>Devolver el conjunto de identificadores de celda H3 distintos que toma la trayectoria</p><pre class="programlisting">
-getValues(th3index) → h3indexset
-</pre><pre class="programlisting">
-SELECT getValues(th3index '831c02fffffffff@2001-01-01');
--- {831c02fffffffff}
-SELECT getValues(th3index
-  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02,
-    880326b885fffff@2001-01-03]');
--- {831c00fffffffff, 831c02fffffffff, 880326b885fffff}
-</pre></li><li class="listitem"><a name="th3_valueAtTimestamp"></a><a class="indexterm" name="id11456"></a><p>Devolver el identificador de celda H3 en una marca de tiempo dada, utilizando interpolación de pasos</p><pre class="programlisting">
-valueAtTimestamp(th3index,timestamptz) → h3index
-</pre><pre class="programlisting">
-SELECT valueAtTimestamp(th3index
-  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]',
-  '2001-01-03');
--- 831c02fffffffff
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Cobertura de Geometrías Estáticas </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Inspección de Índices</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversión de tipos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s03.html" title="Constructores"><link rel="next" href="ch16s05.html" title="Accesores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversión de tipos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_conversions"></a>Conversión de tipos</h2></div></div></div><p>Un valor <code class="varname">tcell</code> comparte la misma representación en disco que <code class="varname">tbigint</code>. La conversión por coerción binaria entre ellos es <span class="emphasis"><em>explícita</em></span>, requiere <code class="varname">::</code>, de modo que las funciones específicas de celdas no puedan invocarse silenciosamente sobre trayectorias bigint arbitrarias.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_tbigint"></a><a class="indexterm" name="id11496"></a><p>Convertir entre un <code class="varname">tcell</code> y un <code class="varname">tbigint</code></p><pre class="programlisting">
+{tbigint,tcell}::{tcell,tbigint}
+</pre><p>La conversión es una coerción binaria en ambas direcciones, de modo que no cuesta nada más allá del cambio de tipo y da la vuelta completa: <code class="varname">((c::tbigint)::tcell) = c</code> para toda celda <code class="varname">c</code>.</p><pre class="programlisting">
+SELECT (tbigint '590464338553208831@2001-01-01')::th3index;
+-- 831c02fffffffff@2001-01-01
+SELECT (tbigint '5234909528541102079@2001-01-01')::tquadbin;
+-- 48a6227affffffff@2001-01-01
+SELECT (tbigint '5171187903383994368@2001-01-01')::ts2cell;
+-- 47c3c@2001-01-01
+</pre></li><li class="listitem"><a name="tcell_tgeogpoint"></a><a class="indexterm" name="id11508"></a><p>Convertir una celda temporal en un punto temporal geodésico o plano de centroides de celda</p><pre class="programlisting">
+tcell::{tgeogpoint,tgeompoint}
+</pre><p>La conversión de una celda QUADBIN responde un punto del plano Web-Mercator sobre el que se define la cuadrícula, mientras que la conversión de una celda S2 responde uno geodésico; cada cuadrícula declara la única conversión que exige su propia definición. H3 declara ambas, de modo que es la única cuadrícula en la que quien llama elige entre la representación geodésica y la plana en SRID 4326.</p><pre class="programlisting">
+SELECT asText((th3index '831c02fffffffff@2001-01-01')::tgeogpoint, 6);
+-- POINT(-144.523991 49.716503)@2001-01-01
+SELECT asText((th3index '831c02fffffffff@2001-01-01')::tgeompoint, 6);
+-- POINT(-144.523991 49.716503)@2001-01-01
+SELECT asText((tquadbin '48a6227affffffff@2001-01-01')::tgeompoint, 6);
+-- POINT(4.394531 50.847573)@2001-01-01
+SELECT asText((ts2cell '47c3c@2001-01-01')::tgeogpoint, 6);
+-- POINT(4.222019 50.936164)@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Constructores </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Accesores</td></tr></table></div></body></html>
