@@ -801,9 +801,6 @@
 					<para><link linkend="tnumber_bbox"><varname>::</varname>, <varname>valueSpan(tnumber)</varname>, <varname>timeSpan(tnumber)</varname>, <varname>tbox(tnumber)</varname>, <varname>valueSpan</varname>, <varname>timeSpan</varname>, <varname>tbox</varname></link>: Convert a temporal number to a span or to a temporal bounding box</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="talpha_valueSpan"><varname>valueSpan</varname></link>: Return the span of values, ignoring any gaps</para>
-				</listitem>
-				<listitem>
 					<para><link linkend="tbool_tint"><varname>::</varname>, <varname>tint(tbool)</varname>, <varname>tint</varname></link>: Convert between a temporal Boolean and a temporal integer</para>
 				</listitem>
 				<listitem>
@@ -814,6 +811,9 @@
 		<sect2>
 			<title>Accessors</title>
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="talpha_valueSpan"><varname>valueSpan</varname></link>: Return the span of values, ignoring any gaps</para>
+				</listitem>
 				<listitem>
 					<para><link linkend="talpha_valueSet"><varname>valueSet</varname></link>: Return the values of a temporal number as a set</para>
 				</listitem>
@@ -1827,7 +1827,7 @@
 				<title>Comparisons</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+						<para><link linkend="npoint_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1982,7 +1982,7 @@
 				<title>Comparisons</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;,</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+						<para><link linkend="tnpoint_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tnpoint_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>

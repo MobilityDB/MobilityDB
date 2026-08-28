@@ -119,13 +119,13 @@ spans @&gt; {spans,base} → boolean
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tstzset '{2001-01-01 08:00:00, 2001-01-03 09:30:00}';
--- Conjunto unitario
+-- Singleton set
 SELECT textset '{"highway"}';
--- Conjunto erróneo: elementos desordenados
+-- Erroneous set: unordered elements
 SELECT floatset '{3.5, 1.2}';
--- Conjunto erróneo: elementos duplicados
+-- Erroneous set: duplicate elements
 SELECT geomset '{"Point(1 1)", "Point(1 1)"}';
--- Conjunto de búferes circulares: cada elemento es un cbuffer en WKT
+-- Circular-buffer set: each element is a cbuffer WKT
 SELECT cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),1.0)"}';
 </programlisting>
 		<para>
@@ -139,13 +139,13 @@ SELECT cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),1.0)"}';
 SELECT intspan '[1, 3)';
 SELECT floatspan '[1.5, 3.5]';
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-03 09:30:00)';
--- Rangos instantáneos
+-- Instant spans
 SELECT intspan '[1, 1]';
 SELECT floatspan '[1.5, 1.5]';
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:00:00]';
--- Rango erróneo: límites inválidos
+-- Erroneous span: invalid bounds
 SELECT tstzspan '[2001-01-01 08:10:00, 2001-01-01 08:00:00]';
--- Rango erróneo: rango vacío
+-- Erroneous span: empty span
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:00:00)';
 </programlisting>
 		<para>
@@ -1461,7 +1461,7 @@ SELECT cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
 		<itemizedlist>
 			<listitem><para>La función <varname>extent</varname> devuelve el rango o período delimitador que engloba un conjunto de valores de rango o de tiempo.</para></listitem>
 			<listitem><para>La unión es una operación muy útil para los tipos de conjunto y de rango. Como hemos visto en la <xref linkend="setspan_set_ops" />, podemos calcular la unión de dos valores de conjunto o de rango usando el operador <varname>+</varname>. Sin embargo, también es muy útil tener una versión agregada del operador de unión para combinar un número arbitrario de valores. Las funciones <varname>setUnion</varname> y <varname>spanUnion</varname> se pueden utilizar para este propósito.</para></listitem>
-			<listitem><para>La función <varname>tCount</varname> generaliza la función de agregación tradicional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número of períodos). La función <varname>tCount</varname> devuelve un entero temporal (ver el <xref linkend="ttype_aggregation" />). La función tiene dos parámetros opcionales que especifican la granularidad (un <varname>interval</varname>) y el origen del tiempo (un <varname>timestamptz</varname>). Cuando se dan estos parámetros, el conteo temporal se calcula en rangos de tiempo de la granularidad dada (ver <xref linkend="ttype_tiling" />)</para></listitem>
+			<listitem><para>La función <varname>tCount</varname> generaliza la función de agregación tradicional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número of períodos). La función <varname>tCount</varname> devuelve un entero temporal (ver el <xref linkend="ttype_p1" />). La función tiene dos parámetros opcionales que especifican la granularidad (un <varname>interval</varname>) y el origen del tiempo (un <varname>timestamptz</varname>). Cuando se dan estos parámetros, el conteo temporal se calcula en rangos de tiempo de la granularidad dada (ver <xref linkend="ttype_tiling" />)</para></listitem>
 		</itemizedlist>
 
 		<itemizedlist>

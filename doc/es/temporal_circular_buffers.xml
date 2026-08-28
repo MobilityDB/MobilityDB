@@ -37,11 +37,11 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 10.0)';
 
 		<para>Los valores del tipo de búfer circular deben satisfacer varias restricciones para que estén bien definidos. Ejemplos de valores incorrectos del tipo de búfer circular son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Valor de punto incorrecto
+-- Incorrect point value
 SELECT cbuffer 'Cbuffer(Linestring(1 1,2 2), 1.0)';
--- punto 3D incorrecto
+-- Incorrect 3D point
 SELECT cbuffer 'Cbuffer(Point Z(1 1 1), 1.0)';
--- valor de radio incorrecto
+-- Incorrect radius value
 SELECT cbuffer 'Cbuffer(Point(1 1), -2.0)';
 </programlisting>
 		<para>A continuación damos las funciones y operadores para el tipo de búfer circular.</para>
@@ -391,10 +391,10 @@ SELECT asText(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01,
 
 		<para>Los valores de búfer circular temporal deben satisfacer las restricciones especificadas en la <xref linkend="ttype_validity"/> para que estén bien definidos. Se genera un error cuando no se cumple una de estas restricciones. Ejemplos de valores incorrectos son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- No se permiten valores nulos
+-- Null values are not allowed
 SELECT tcbuffer 'NULL@2001-01-01 08:05:00';
 SELECT tcbuffer 'Point(0 0)@NULL';
--- El tipo base no es un búfer circular
+-- Base type is not a circular buffer
 SELECT tcbuffer 'Point(0 0)@2001-01-01 08:05:00';
 </programlisting>
 		<para>A continuación damos las funciones y operadores para el búfer circular temporal. La mayoría de las funciones y operadores para tipos temporales descritos en los capítulos precedentes se pueden aplicar para los tipos de búfer circular temporal. Por lo tanto, en las firmas de las funciones, la notación <varname>base</varname> representa un <varname>cbuffer</varname> y las notaciones <varname>ttype</varname>, <varname>tpoint</varname> y <varname>tgeompoint</varname> también representan un <varname>tcbuffer</varname>. Además, las funciones que tienen un argumento de tipo <varname>geometry</varname> aceptan además un argumento de tipo <varname>cbuffer</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para búferes circulares temporales.</para>
@@ -1157,6 +1157,8 @@ SELECT g, minDistance(t1.Noise, t2.Noise) FROM Vessel v1, VesselTrip t1, Vessel 
 			<listitem xml:id="tcbuffer_eContains">
 				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
@@ -1165,8 +1167,6 @@ SELECT g, minDistance(t1.Noise, t2.Noise) FROM Vessel v1, VesselTrip t1, Vessel 
 				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
 				<para>Relaciones alguna vez y siempre</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eContains({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean

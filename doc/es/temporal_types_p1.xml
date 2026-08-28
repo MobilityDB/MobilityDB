@@ -37,13 +37,13 @@ SELECT tfloat '17@2018-01-01 08:00:00';
 		Un valor temporal de subtipo <emphasis>secuencia</emphasis> (brevemente, un <emphasis>valor de secuencia</emphasis>) representa la evolución del valor durante una secuencia de instantes de tiempo, donde los valores entre estos instantes se interpolan usando una función discreta, escalonada, o lineal (ver arriba). Un ejemplo es el siguiente:
 	</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Interpolación discreta
+-- Discrete interpolation
 SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00,
   18@2018-01-01 08:10:00}';
--- Interpolación escalonada
+-- Step interpolation
 SELECT tfloat 'Interp=Step;
   (10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
--- Interpolación lineal
+-- Linear interpolation
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 </programlisting>
 
@@ -171,23 +171,23 @@ CREATE TABLE Temperature(RoomNo integer, Temp tfloat);
 INSERT INTO Temperature VALUES
   (1001, tfloat '{18.5@2001-01-01 08:00:00, 20.0@2001-01-01 08:10:00}'),
   (2001, tfloat '{19.0@2001-01-01 08:00:00, 22.5@2001-01-01 08:10:00}');
--- Valor en una marca de tiempo
+-- Value at a timestamp
 SELECT RoomNo, valueAtTimestamp(Temp, '2001-01-01 08:10:00') FROM temperature;
 -- 1001 | 20
 -- 2001 | 22.5
--- Restricción a un valor
+-- Restriction to a value
 SELECT DeptNo, atValue(NoEmps, 10) FROM Department;
 -- 10 | [10@2001-01-01, 10@2001-04-01)
 -- 20 |
--- Restricción a un período
+-- Restriction to a period
 SELECT DeptNo, atTime(NoEmps, tstzspan '[2001-01-01, 2001-04-01]') FROM Department;
 -- 10 | [10@2001-01-01, 12@2001-04-01]
 -- 20 | [4@2001-02-01, 4@2001-04-01]
--- Comparación temporal
+-- Temporal comparison
 SELECT DeptNo, NoEmps #&lt;= 10 FROM Department;
 -- 10 | [t@2001-01-01, f@2001-04-01, f@2001-08-01)
 -- 20 | [t@2001-02-01, t@2001-10-01)
--- Agregación temporal
+-- Temporal aggregation
 SELECT tsum(NoEmps) FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01,
    18@2001-06-01, 6@2001-08-01, 6@2001-10-01)} */
@@ -200,21 +200,21 @@ INSERT INTO Trips VALUES
 Point(2 1)@2001-01-01 08:15:00)}'),
   (20, 1, tgeompoint '{[Point(0 0)@2001-01-01 08:05:00, Point(1 1)@2001-01-01 08:10:00,
   Point(3 3)@2001-01-01 08:20:00)}');
--- Valor en una marca de tiempo
+-- Value at a given timestamp
 SELECT CarId,
   ST_AsText(valueAtTimestamp(Trip, timestamptz '2001-01-01 08:10:00')) FROM Trips;
 -- 10 | POINT(2 0)
 -- 20 | POINT(1 1)
--- Restricción a un valor
+-- Restriction to a value
 SELECT CarId, asText(atValue(Trip, geometry 'Point(2 0)')) FROM Trips;
 -- 10 | {"[POINT(2 0)@2001-01-01 08:10:00]"}
 -- 20 | 
--- Restricción a un período
+-- Restriction to a period
 SELECT CarId,
   asText(atTime(Trip, tstzspan '[2001-01-01 08:05:00,2001-01-01 08:10:00]')) FROM Trips;
 -- 10 | {[POINT(1 0)@2001-01-01 08:05:00, POINT(2 0)@2001-01-01 08:10:00]}
 -- 20 | {[POINT(0 0)@2001-01-01 08:05:00, POINT(1 1)@2001-01-01 08:10:00]}
--- Distancia temporal
+-- Temporal distance
 SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip FROM Trips T1,
   Trips T2 WHERE T1.CarId &lt; T2.CarId;
 /* 10 | 20 | {[1@2001-01-01 08:05:00, 1.4142135623731@2001-01-01 08:10:00,
@@ -261,27 +261,27 @@ SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip FROM Trips T1,
 			Se genera un error cuando no se satisface una de estas restricciones. Ejemplos de valores temporales incorrectos son los siguientes.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Valor del tipo de base incorrecto
+-- Incorrect value for base type
 SELECT tbool '1.5@2001-01-01 08:00:00';
--- Valor del tipo base no es un punto
+-- Base type value is not a point
 SELECT tgeompoint 'Linestring(0 0,1 1)@2001-01-01 08:05:00';
--- Marca de tiempo incorrecta
+-- Incorrect timestamp
 SELECT tint '2@2001-02-31 08:00:00';
--- Secuencia vacía
+-- Empty sequence
 SELECT tint '';
--- Límites incorrectos para la secuencia instantánea
+-- Incorrect bounds for instantaneous sequence
 SELECT tint '[1@2001-01-01 09:00:00)';
--- Marcas de tiempo duplicadas
+-- Duplicate timestamps
 SELECT tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:00:00]';
--- Marcas de tiempo desordenadas
+-- Unordered timestamps
 SELECT tint '[1@2001-01-01 08:10:00, 2@2001-01-01 08:00:00]';
--- Valor final incorrecto para interpolación escalonada
+-- Incorrect end value for step interpolation
 SELECT tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:10:00)';
--- Conjunto de secuencias vacío
+-- Empty sequence set
 SELECT tint '{[]}';
--- Marcas de tiempo duplicadas
+-- Duplicate timestamps
 SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-01 08:00:00}';
--- Períodos superpuestos
+-- Overlapping periods
 SELECT tint '{[1@2001-01-01 08:00:00, 1@2001-01-01 10:00:00),
   [2@2001-01-01 09:00:00, 2@2001-01-01 11:00:00)}';
 </programlisting>
@@ -294,19 +294,19 @@ SELECT tint '{[1@2001-01-01 08:00:00, 1@2001-01-01 10:00:00),
 			Una forma común de generalizar las operaciones tradicionales a los tipos temporales es aplicar la operación en <emphasis>cada instante</emphasis>, lo que da un valor temporal como resultado. En ese caso, la operación sólo se define en la intersección de las extensiones temporales de los operandos; si las extensiones temporales son disjuntas, el resultado es nulo. Por ejemplo, los operadores de comparación temporal, como <varname>#&lt;</varname>, determinan si los valores tomados por sus operandos en cada instante satisfacen la condición y devuelven un booleano temporal. A continuación se dan ejemplos de las diversas generalizaciones de los operadores.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Comparación temporal
+-- Temporal comparison
 SELECT tfloat '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
 SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt; tfloat '[3@2001-01-03, 1@2001-01-05)';
 -- NULL
--- Adición temporal
+-- Temporal addition
 SELECT tint '[1@2001-01-01, 1@2001-01-03)' + tint '[2@2001-01-02, 2@2001-01-05)';
 -- [3@2001-01-02, 3@2001-01-03)
--- Intersección temporal
+-- Temporal intersects
 SELECT tIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
--- Distancia temporal
+-- Temporal distance
 SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
   tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
 -- [0.5@2001-01-02 08:05:00, 0.745184033794557@2001-01-03 08:10:00)
@@ -316,19 +316,19 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:
 			Otro requisito común es determinar si los operandos satisfacen <emphasis>alguna vez</emphasis> o <emphasis>siempre</emphasis> una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez o siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- ¿Se cruzan los operandos alguna vez?
+-- Does the operands ever intersect?
 SELECT eIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
 -- true
--- ¿Se cruzan los operandos siempre?
+-- Does the operands always intersect?
 SELECT aIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
--- ¿Es el operando izquierdo alguna vez menor que el derecho?
+-- Is the left operand ever less than the right one ?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
   tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
 -- true
--- ¿Es el operando izquierdo siempre menor que el derecho?
+-- Is the left operand always less than the right one ?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
   tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
 -- true
@@ -1068,8 +1068,8 @@ SELECT instantN(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-
 			</listitem>
 
 			<listitem xml:id="ttype_numTimestamps">
-				<indexterm significance="normal"><primary><varname>timestamps</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>numTimestamps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>timestamps</varname></primary></indexterm>
 				<para>Devuelve el número o las marcas de tiempo diferentes</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 numTimestamps(ttype) → integer
@@ -1193,7 +1193,6 @@ SELECT tfloatSeqSet(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-03}');
 -- {[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}
 </programlisting>
 			</listitem>
-
 			<listitem xml:id="ttype_setInterp">
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Transforma un valor temporal a otra interpolación</para>
@@ -1218,17 +1217,15 @@ SELECT setInterp(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-
 -- ERROR:  The temporal type cannot have linear interpolation
 </programlisting>
 			</listitem>
-
-			<listitem xml:id="ttype_shiftTime">
-				<indexterm significance="normal"><primary><varname>shiftTime</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>scaleTime</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>shiftScaleTime</varname></primary></indexterm>
-				<para>Desplaza y/o escalear el intervalo de tiempo de un valor temporal a uno o dos intervalos</para>
+			<listitem xml:id="ttype_segmentMinDuration">
+				<indexterm significance="normal"><primary><varname>segmentMinDuration</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>segmentMaxDuration</varname></primary></indexterm>
+				<para>Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 segmentMinDuration(temp,interval,strict boolean=true) → tbool
 segmentMaxDuration(temp,interval,strict boolean=true) → tbool
 </programlisting>
-				<para>Cuando se escalea, si el rango de valores o el intervalo de tiempo del valor temporal es cero (por ejemplo, para un instante temporal), el resultado es el valor temporal. Igualmente, el ancho o intervalo dado debe ser estrictamente mayor que cero.</para>
+				<para>Si el argumento <varname>strict</varname> no se especifica, se asume el valor <varname>true</varname> por defecto y, por lo tanto, la función verifica si la duración del segmento es estrictamente menor o mayor que el intervalo. Si el argumento es <varname>false</varname>, la función verifica si la duración del segmento es menor/mayor o <emphasis>igual</emphasis> que el intervalo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day');
@@ -1244,17 +1241,17 @@ SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
 -- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
 </programlisting>
 			</listitem>
-
-			<listitem xml:id="ttype_segmentMinDuration">
-				<indexterm significance="normal"><primary><varname>segmentMinDuration</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>segmentMaxDuration</varname></primary></indexterm>
-				<para>Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada</para>
+			<listitem xml:id="ttype_shiftTime">
+				<indexterm significance="normal"><primary><varname>shiftTime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>scaleTime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>shiftScaleTime</varname></primary></indexterm>
+				<para>Desplaza y/o escalear el intervalo de tiempo de un valor temporal a uno o dos intervalos</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 shiftTime(ttype,interval) → ttype
 scaleTime(ttype,interval) → ttype
 shiftScaleTime(ttype,interval,interval) → ttype
 </programlisting>
-				<para>Si el argumento <varname>strict</varname> no se especifica, se asume el valor <varname>true</varname> por defecto y, por lo tanto, la función verifica si la duración del segmento es estrictamente menor o mayor que el intervalo. Si el argumento es <varname>false</varname>, la función verifica si la duración del segmento es menor/mayor o <emphasis>igual</emphasis> que el intervalo.</para>
+				<para>Cuando se escalea, si el rango de valores o el intervalo de tiempo del valor temporal es cero (por ejemplo, para un instante temporal), el resultado es el valor temporal. Igualmente, el ancho o intervalo dado debe ser estrictamente mayor que cero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT shiftTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
 -- {1@2001-01-02, 2@2001-01-04, 1@2001-01-06}
@@ -1291,7 +1288,6 @@ SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01,
    POLYGON((1 1,2 2,3 1,1 1))@2001-01-03 00:00:00]} */
 </programlisting>
 			</listitem>
-
 			<listitem xml:id="ttype_unnest">
 				<indexterm significance="normal"><primary><varname>unnest</varname></primary></indexterm>
 				<para>Transforma un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base &SRF;</para>

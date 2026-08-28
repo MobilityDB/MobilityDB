@@ -679,7 +679,7 @@
 					<para><link linkend="ttype_startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Devuelve el instante inicial, final o enésimo</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_numTimestamps"><varname>timestamps</varname>, <varname>numTimestamps</varname></link>: Devuelve el número o las marcas de tiempo diferentes</para>
+					<para><link linkend="ttype_numTimestamps"><varname>numTimestamps</varname>, <varname>timestamps</varname></link>: Devuelve el número o las marcas de tiempo diferentes</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Devuelve la marca de tiempo inicial, final o enésima</para>
@@ -705,10 +705,10 @@
 					<para><link linkend="ttype_setInterp"><varname>setInterp</varname></link>: Transforma un valor temporal a otra interpolación</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Desplaza y/o escalear el intervalo de tiempo de un valor temporal a uno o dos intervalos</para>
+					<para><link linkend="ttype_segmentMinDuration"><varname>segmentMinDuration</varname>, <varname>segmentMaxDuration</varname></link>: Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="ttype_segmentMinDuration"><varname>segmentMinDuration</varname>, <varname>segmentMaxDuration</varname></link>: Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada</para>
+					<para><link linkend="ttype_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Desplaza y/o escalear el intervalo de tiempo de un valor temporal a uno o dos intervalos</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_unnest"><varname>unnest</varname></link>: Transforma un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base &SRF;</para>
@@ -1274,7 +1274,7 @@
 						<para><link linkend="tnumber_valueSplit"><varname>valueSplit</varname>, <varname>timeSplit</varname>, <varname>valueTimeSplit</varname></link>: Fragmenta un número temporal con respecto a intervalos de valores y/o de tiempo &SRF;</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tspatial_spaceSplit"><varname>spaceSplit</varname>, <varname>spaceTimeSplit</varname>, <varname>timeSplit</varname></link>: Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal &Z_support; &SRF;</para>
+						<para><link linkend="tspatial_spaceSplit"><varname>spaceSplit</varname>, <varname>timeSplit</varname>, <varname>spaceTimeSplit</varname></link>: Fragmenta un punto temporal con respecto a una malla espacial o espacio-temporal &Z_support; &SRF;</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1977,7 +1977,7 @@
 			<title>Comparaciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tnpoint_comp"><varname>::</varname></link>: Comparaciones tradicionales</para>
+					<para><link linkend="tnpoint_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tnpoint_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Comparaciones alguna vez y siempre</para>
@@ -2263,7 +2263,7 @@
 			<title>Relaciones siempre y alguna vez</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcbuffer_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname>, <varname>eCovers</varname>, <varname>aCovers</varname></link>: Relaciones alguna vez y siempre</para>
+					<para><link linkend="tcbuffer_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname></link>: Relaciones alguna vez y siempre</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3698,9 +3698,6 @@
 					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB) de una tesela Raquet</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Devuelve los bytes de píxeles de un mosaico Raquet</para>
-				</listitem>
-				<listitem>
 					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Devuelve una tesela Raquet a partir de su representación binaria conocida (WKB)</para>
 				</listitem>
 				<listitem>
@@ -3725,6 +3722,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_pixtype"><varname>pixtype</varname></link>: Devuelve el nombre del tipo de dato de píxel de una tesela Raquet</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Devuelve los bytes de píxeles de un mosaico Raquet</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convierte una tesela Raquet en una caja espaciotemporal</para>

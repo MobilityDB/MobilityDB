@@ -77,11 +77,11 @@ SELECT npoint(76, 0.33)::nsegment;
 		</itemizedlist>
 		<para>Ejemplos de valores de tipo de red estática incorrectos son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Valor rid incorrecto
+-- Incorrect rid value
 SELECT npoint 'Npoint(87.5, 1.0)';
--- Valor de posición incorrecto
+-- Incorrect position value
 SELECT npoint 'Npoint(87, 2.0)';
--- Valor rid inexistente en la table ways
+-- rid value not found in the ways table
 SELECT npoint 'Npoint(99999999, 1.0)';
 </programlisting>
 		<para>Damos a continuación las funciones y operadores para los tipos de redes estáticas.</para>
@@ -430,12 +430,12 @@ SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.3)@2001-01-02,
 		<title>Validez de los puntos de red temporal</title>
 		<para>Los valores de los puntos de red temporal deben satisfacer las restricciones especificadas en la <xref linkend="ttype_validity" /> para que estén bien definidos. Se genera un error cuando no se cumple una de estas restricciones. Ejemplos de valores incorrectos son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
--- No se permiten valores nulos
+-- Null values are not allowed
 SELECT tnpoint 'NULL@2001-01-01 08:05:00';
 SELECT tnpoint 'Point(0 0)@NULL';
--- El tipo base no es un punto de red
+-- Base type is not a network point
 SELECT tnpoint 'Point(0 0)@2001-01-01 08:05:00';
--- Múltiples rutas en una secuencia
+-- Multiple routes in a continuous sequence
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 09:05:00)';
 </programlisting>
 		<para>Damos a continuación las funciones y operadores para los tipos de puntos de red. La mayoría de las funciones para tipos temporales descritas en los capítulos precendentes se pueden aplicar para tipos de puntos de red temporales. Por lo tanto, en las firmas de las funciones, la notación <varname>base</varname> también representa un <varname>npoint</varname> y las notaciones <varname>ttype</varname>, <varname>tpoint</varname> y <varname>tgeompoint</varname> también representan un <varname>tnpoint</varname>. Además, las funciones que tienen un argumento de tipo <varname>geometry</varname> aceptan además un argumento de tipo <varname>npoint</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para puntos de red temporales.</para>
@@ -1069,7 +1069,12 @@ SELECT tDwithin(tnpoint '[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]'
 		<title>Comparaciones</title>
 		<itemizedlist>
 			<listitem xml:id="tnpoint_comp">
-				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 				<para>Comparaciones tradicionales</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tnpoint {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tnpoint → boolean

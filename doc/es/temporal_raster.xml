@@ -36,7 +36,7 @@ rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
 </programlisting>
 				<para>Evalúa el píxel de la <varname>band</varname> en cada instante de <varname>traj</varname> usando muestreo bilineal-vecino más próximo (<varname>ST_Value</varname> con <varname>resample=false</varname>). Devuelve un <varname>tfloat</varname> de conjunto de instantes cuyos valores se redondean a cuatro decimales. Devuelve <varname>NULL</varname> cuando ningún instante se interseca con el ráster.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Build a 3×3 synthetic elevation raster (SRID 4326, 1° pixels)
+-- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
     4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
@@ -148,10 +148,10 @@ raquet(bytea,width integer,height integer,quadbin bigint,pixtype text,
 </programlisting>
 				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Los píxeles de más de un byte son little-endian, que es el orden de bytes que les da la especificación RaQuet sea cual sea el orden de bytes del servidor, de modo que una tesela conserva sus valores cuando se lee en otra máquina. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Empaquetar las columnas sueltas de una tabla Raquet en valores raquet
+-- Package the loose tile columns of a Raquet table into raquet values
 SELECT raquet(band_data, width, height, quadbin, 'float32',
   nodata) AS tile FROM elevation_raquet;
--- Una tesela UINT8 de 2 x 2 sin nodata
+-- A 2 x 2 UINT8 tile with no nodata
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 </programlisting>
 			</listitem>
@@ -164,9 +164,9 @@ raquetRead(bytea,quadbin bigint) → raquet
 </programlisting>
 				<para>Lee los bytes de <varname>rasterfile</varname>, un ráster en cualquier formato compatible con GDAL (GeoTIFF, PNG, …), a través del sistema de archivos virtual <varname>/vsimem/</varname> de GDAL, y empaqueta su primera banda, en orden de fila mayor, en un único valor <varname>raquet</varname> autodescriptivo georreferenciado por la celda <varname>quadbin</varname>. El tipo de datos de la banda debe ser uno de <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname> o <varname>Float64</varname>; el valor de nodata de la banda, cuando está definido, se traslada a la tesela. Como el archivo se suministra como bytes, no se requiere acceso a archivos del lado del servidor. GDAL realiza la decodificación, por lo que el controlador de formato del ráster debe estar permitido por la configuración <varname>postgis.gdal_enabled_drivers</varname> de PostGIS (que deshabilita todos los controladores de forma predeterminada); habilítelo con, por ejemplo, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. Esta es la contraparte de ingesta del constructor <link linkend="raquet"><varname>raquet</varname></link>, que construye una tesela a partir de bytes de píxeles ya decodificados. Cuando se omite <varname>quadbin</varname> o es <varname>NULL</varname>, el identificador de la tesela se deriva de la georreferenciación del ráster: el ráster debe llevar una referencia espacial <varname>EPSG:3857</varname> (Web-Mercator) y una geotransformación alineada con los ejes que describa una única tesela QUADBIN. Un ráster sin referencia espacial, uno que no esté en <varname>EPSG:3857</varname>, o una geotransformación rotada o no alineada con la cuadrícula de teselas provoca un error en lugar de ser forzado.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Decodificar un GeoTIFF almacenado en una columna bytea en una tesela raquet
+-- Decode a GeoTIFF stored in a bytea column into a raquet tile
 SELECT raquetRead(file_bytes, quadbin) AS tile FROM elevation_files;
--- Derivar la celda QUADBIN de la georreferenciación de un GeoTIFF EPSG:3857
+-- Derive the QUADBIN cell from an EPSG:3857 GeoTIFF's georeferencing
 SELECT raquetRead(file_bytes) AS tile FROM elevation_files;
 </programlisting>
 			</listitem>
@@ -179,7 +179,7 @@ rasterTileValue(tgeompoint,rast raquet) → tfloat
 </programlisting>
 				<para>Evalúa la tesela en cada instante de <varname>traj</varname> (SRID 4326), devolviendo los valores de píxel muestreados como un <varname>tfloat</varname>. Es el equivalente tipado de <link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: las dimensiones, la celda QUADBIN, el tipo de píxel y el tratamiento de nodata se toman del valor <varname>raquet</varname> en lugar de argumentos separados. Devuelve <varname>NULL</varname> cuando ningún instante cae dentro de la tesela o sobrevive al filtrado de nodata.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Muestrear teselas raquet preempaquetadas a lo largo de trayectorias de barcos
+-- Sample pre-packaged raquet tiles along ship trajectories
 SELECT t.tripid, rasterTileValue(t.trip, r.tile)
 FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8));
 </programlisting>
@@ -193,7 +193,7 @@ rasterTileValue(tgeompoint,rast raquet[]) → tfloat
 </programlisting>
 				<para>Evalúa cada tesela de <varname>rast</varname> en cada instante de <varname>traj</varname> (SRID 4326) y devuelve los valores de píxel muestreados como un único <varname>tfloat</varname>. Una trayectoria que sale de una tesela queda cubierta por varias, y cada una aporta los instantes que caen dentro de ella. Las teselas de un mismo nivel de zoom particionan el plano, de modo que aportan instantes disjuntos. Las teselas de niveles de zoom distintos se solapan, y cuando dos de ellas muestrean el mismo instante se conserva el valor de la tesela de mayor zoom, que es la que tiene la resolución más fina. Devuelve <varname>NULL</varname> cuando ningún instante cae dentro de una tesela o sobrevive al filtrado de nodata.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Muestrear una trayectoria en todas las teselas que cruza, en un solo valor
+-- Sample a trajectory across every tile it crosses, in one value
 SELECT t.tripid, rasterTileValue(t.trip, array_agg(r.tile)) FROM trips t
 JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8)) GROUP BY t.tripid, t.trip;
 </programlisting>
@@ -231,28 +231,15 @@ SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'u
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="raquet_pixels">
-				<indexterm significance="normal"><primary><varname>pixels</varname></primary></indexterm>
-				<para>Devuelve los bytes de píxeles de un mosaico Raquet</para>
-				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-raquetFromBinary(bytea) → raquet
-</programlisting>
-				<para>Los bytes están en orden de fila mayor y empaquetados, <varname>width</varname> × <varname>height</varname> píxeles del tamaño de <varname>pixtype</varname> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
-  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
--- true
-</programlisting>
-			</listitem>
 
 			<listitem xml:id="raquetFromBinary">
 				<indexterm significance="normal"><primary><varname>raquetFromBinary</varname></primary></indexterm>
 				<para>Devuelve una tesela Raquet a partir de su representación binaria conocida (WKB)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-raquetFromHexWKB(text) → raquet
+raquetFromBinary(bytea) → raquet
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
   'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 -- true
 </programlisting>
@@ -262,11 +249,12 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265
 				<indexterm significance="normal"><primary><varname>raquetFromHexWKB</varname></primary></indexterm>
 				<para>Devuelve una tesela Raquet a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-quadbin(raquet) → bigint
+raquetFromHexWKB(text) → raquet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- 5193776270265024512
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
+-- true
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -284,6 +272,18 @@ SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 				<indexterm significance="normal"><primary><varname>quadbin</varname></primary></indexterm>
 				<para>Devuelve la celda QUADBIN de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+quadbin(raquet) → bigint
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 5193776270265024512
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raquet_width">
+				<indexterm significance="normal"><primary><varname>width</varname></primary></indexterm>
+				<para>Devuelve el ancho en píxeles de una tesela Raquet</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 width(raquet) → integer
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -292,9 +292,9 @@ SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="raquet_width">
-				<indexterm significance="normal"><primary><varname>width</varname></primary></indexterm>
-				<para>Devuelve el ancho en píxeles de una tesela Raquet</para>
+			<listitem xml:id="raquet_height">
+				<indexterm significance="normal"><primary><varname>height</varname></primary></indexterm>
+				<para>Devuelve el alto en píxeles de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 height(raquet) → integer
 </programlisting>
@@ -304,9 +304,9 @@ SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="raquet_height">
-				<indexterm significance="normal"><primary><varname>height</varname></primary></indexterm>
-				<para>Devuelve el alto en píxeles de una tesela Raquet</para>
+			<listitem xml:id="raquet_nodata">
+				<indexterm significance="normal"><primary><varname>nodata</varname></primary></indexterm>
+				<para>Devuelve el valor centinela nodata de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 nodata(raquet) → float8
 </programlisting>
@@ -319,33 +319,33 @@ SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="raquet_nodata">
-				<indexterm significance="normal"><primary><varname>nodata</varname></primary></indexterm>
-				<para>Devuelve el valor centinela nodata de una tesela Raquet</para>
+			<listitem xml:id="raquet_pixtype">
+				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
+				<para>Devuelve el nombre del tipo de dato de píxel de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 pixtype(raquet) → text
 </programlisting>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Leer la disposición de una tesela empaquetada
+				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela, por lo que se compara igual a ese campo tal cual.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Read back the layout of a packaged tile
 SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
 -- 5193776270265024512 | 2 | 2 | uint8 | 0
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="raquet_pixtype">
-				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
-				<para>Devuelve el nombre del tipo de dato de píxel de una tesela Raquet</para>
+			<listitem xml:id="raquet_pixels">
+				<indexterm significance="normal"><primary><varname>pixels</varname></primary></indexterm>
+				<para>Devuelve los bytes de píxeles de un mosaico Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 pixels(raquet) → bytea
 </programlisting>
-				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela, por lo que se compara igual a ese campo tal cual.</para>
+				<para>Los bytes están en orden de fila mayor y empaquetados, <varname>width</varname> × <varname>height</varname> píxeles del tamaño de <varname>pixtype</varname> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- \x01020304
 </programlisting>
 			</listitem>
-
 			<listitem xml:id="raquet_to_stbox">
 				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
 				<para>Convierte una tesela Raquet en una caja espaciotemporal</para>
@@ -388,11 +388,11 @@ raquet {=, &lt;&gt;, &lt;, &lt;=, &gt;=, &gt;} raquet → boolean
 </programlisting>
 				<para>Las funciones que respaldan estos operadores son <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> y <varname>gt</varname>, junto con <varname>cmp(raquet,raquet) → integer</varname>, que devuelve -1, 0 o 1.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Dos teselas con la misma celda, disposición y píxeles son iguales
+-- Two tiles with the same cell, layout and pixels are equal
 SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512,
   'uint8') = raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'uint8');
 -- true
--- Deduplicar teselas, lo que permiten las clases de operadores btree y hash
+-- Deduplicate tiles, which the btree and hash operator classes support
 SELECT DISTINCT tile FROM elevation_tiles;
 </programlisting>
 			</listitem>
