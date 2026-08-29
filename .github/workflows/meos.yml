@@ -78,6 +78,11 @@ jobs:
           # SIBLING-FROM bool_test (same compile+run idiom)
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o allocator_test allocator_test.c -L/usr/local/lib -lmeos
           ./allocator_test
+          # lifecycle_test drives meos_initialize/meos_finalize twice over
+          # populated caches, which is what a host running the lifecycle per
+          # unit of work does. SIBLING-FROM allocator_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o lifecycle_test lifecycle_test.c -L/usr/local/lib -lmeos
+          ./lifecycle_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o bool_test bool_test.c -L/usr/local/lib -lmeos
           ./bool_test
           # int_test is what reads <meos.h> and <pg_int.h> in one translation
