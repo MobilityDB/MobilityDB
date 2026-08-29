@@ -194,7 +194,7 @@ SELECT ts2cellSeq(ARRAY[ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02'], 
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {tbigint,tcell}::{tcell,tbigint}
 </programlisting>
-				<para>La conversión es una coerción binaria en ambas direcciones, de modo que no cuesta nada más allá del cambio de tipo y da la vuelta completa: <varname>((c::tbigint)::tcell) = c</varname> para toda celda <varname>c</varname>.</para>
+				<para>La conversión es una coerción binaria en ambas direcciones, de modo que no cuesta nada más allá del cambio de tipo. Da la vuelta completa: convertir una celda a <varname>tbigint</varname> y de vuelta devuelve la celda de la que se partió.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (tbigint '590464338553208831@2001-01-01')::th3index;
 -- 831c02fffffffff@2001-01-01
@@ -487,10 +487,14 @@ SELECT atTime(ts2cell '47c3c@2001-01-01', tstzspan '[2001-01-01, 2001-01-02]');
 
 		<itemizedlist>
 			<listitem xml:id="tcell_geoToH3Cell">
-				<indexterm significance="normal"><primary><varname>cell</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoToH3Cell</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoToQuadbinCell</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoToS2Cell</varname></primary></indexterm>
 				<para>Devolver la celda de una cuadrícula que contiene una geometría de punto en la resolución dada</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-geoTo<replaceable>Grid</replaceable>Cell(geo,integer) → cell
+geoToH3Cell(geometry,integer) → h3index
+geoToQuadbinCell(geometry,integer) → quadbin
+geoToS2Cell(geography,integer) → s2cell
 </programlisting>
 				<para>La geometría debe ser un <varname>POINT</varname>, y su longitud y su latitud se interpretan en el SRID 4326.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
