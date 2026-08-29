@@ -89,44 +89,6 @@ Distance_geo_pose(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Distance_pose_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_pose_stbox);
-/**
- * @ingroup mobilitydb_pose_dist
- * @brief Return the distance between a pose and a spatiotemporal box
- * @sqlfn distance()
- * @sqlop @p <->
- */
-Datum
-Distance_pose_stbox(PG_FUNCTION_ARGS)
-{
-  Pose *pose = PG_GETARG_POSE_P(0);
-  STBox *box = PG_GETARG_STBOX_P(1);
-  double result = distance_pose_stbox(pose, box);
-  if (result == DBL_MAX)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
-PGDLLEXPORT Datum Distance_stbox_pose(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_stbox_pose);
-/**
- * @ingroup mobilitydb_pose_dist
- * @brief Return the distance between a spatiotemporal box and a pose
- * @sqlfn distance()
- * @sqlop @p <->
- */
-Datum
-Distance_stbox_pose(PG_FUNCTION_ARGS)
-{
-  STBox *box = PG_GETARG_STBOX_P(0);
-  Pose *pose = PG_GETARG_POSE_P(1);
-  double result = distance_pose_stbox(pose, box);
-  if (result == DBL_MAX)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
 PGDLLEXPORT Datum Distance_pose_pose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_pose_pose);
 /**
@@ -360,6 +322,48 @@ NAI_tpose_tpose(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Nearest approach distance (NAD)
  *****************************************************************************/
+
+PGDLLEXPORT Datum NAD_pose_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_pose_stbox);
+/**
+ * @ingroup mobilitydb_pose_dist
+ * @brief Return the nearest approach distance between a pose and a
+ * spatiotemporal box
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_pose_stbox(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  double result = distance_pose_stbox(pose, box);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum NAD_stbox_pose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_stbox_pose);
+/**
+ * @ingroup mobilitydb_pose_dist
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a pose
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_stbox_pose(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Pose *pose = PG_GETARG_POSE_P(1);
+  double result = distance_pose_stbox(pose, box);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum NAD_geo_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_tpose);

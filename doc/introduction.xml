@@ -503,5 +503,15 @@ SET client_min_messages TO notice;
 			In addition, the API of MobilityDB and MEOS was extended with new functionality and streamlined to improve usability. Finally, version 1.3 also enables the latest versions PostgreSQL 18 and PostGIS 3.6.0. For all these reasons, the binary format of the temporal types have changed from version 1.2 to 1.3 and thus a backup and restore is needed for migrating to the newer version 1.3 of MobilityDB.
 		</para>
 	</sect1>
+
+	<sect1 xml:id="migrating_1.4">
+		<title>Migrating from Version 1.3 to Version 1.4</title>
+		<para>
+			Every type that defines the nearest approach distance against a spatiotemporal box states it in version 1.4 by the function <varname>nearestApproachDistance</varname> and the operator <varname>|=|</varname>. In version 1.3 the types <varname>cbuffer</varname> and <varname>pose</varname> stated it instead by the function <varname>distance</varname> and the operator <varname>&lt;-&gt;</varname>, where <varname>geometry</varname> and <varname>geography</varname> already used the former. The signatures concerned are <varname>(cbuffer, stbox)</varname>, <varname>(stbox, cbuffer)</varname>, <varname>(pose, stbox)</varname>, and <varname>(stbox, pose)</varname>.
+		</para>
+		<para>
+			The two functions answer different questions, which is what the change states. A spatiotemporal box carries a period, so <varname>nearestApproachDistance</varname> answers the least distance over the time that its two arguments share, and answers the null value when they share none. The function <varname>distance</varname> measures its two arguments as sets of points and reads no period. The signatures of <varname>distance</varname> whose arguments carry no period keep the name.
+		</para>
+	</sect1>
 </chapter>
 

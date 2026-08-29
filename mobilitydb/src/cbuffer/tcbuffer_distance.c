@@ -89,46 +89,6 @@ Distance_geo_cbuffer(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Distance_cbuffer_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_cbuffer_stbox);
-/**
- * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the temporal distance between a circular buffer and a
- * spatiotemporal box
- * @sqlfn distance()
- * @sqlop @p <->
- */
-Datum
-Distance_cbuffer_stbox(PG_FUNCTION_ARGS)
-{
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
-  STBox *box = PG_GETARG_STBOX_P(1);
-  double result = distance_cbuffer_stbox(cb, box);
-  if (result == DBL_MAX)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
-PGDLLEXPORT Datum Distance_stbox_cbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_stbox_cbuffer);
-/**
- * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the temporal distance between a circular buffer and a
- * spatiotemporal box
- * @sqlfn distance()
- * @sqlop @p <->
- */
-Datum
-Distance_stbox_cbuffer(PG_FUNCTION_ARGS)
-{
-  STBox *box = PG_GETARG_STBOX_P(0);
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
-  double result = distance_cbuffer_stbox(cb, box);
-  if (result == DBL_MAX)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
 PGDLLEXPORT Datum Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_cbuffer_cbuffer);
 /**
@@ -377,16 +337,36 @@ PGDLLEXPORT Datum NAD_cbuffer_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_cbuffer_stbox);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the temporal distance between a circular buffer and a
+ * @brief Return the nearest approach distance between a circular buffer and a
  * spatiotemporal box
- * @sqlfn tDistance()
- * @sqlop @p <->
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
  */
 Datum
 NAD_cbuffer_stbox(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
+  double result = nad_cbuffer_stbox(cb, box);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum NAD_stbox_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_stbox_cbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_dist
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a circular buffer
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_stbox_cbuffer(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   double result = nad_cbuffer_stbox(cb, box);
   if (result == DBL_MAX)
     PG_RETURN_NULL();

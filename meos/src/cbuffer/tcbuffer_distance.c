@@ -1657,7 +1657,7 @@ tcbufferseg_boundary_roots(const Cbuffer *cb1, const Cbuffer *cb2,
  * and a spatiotemporal box
  * @param[in] cb Circular buffer
  * @param[in] box Spatiotemporal box
- * @csqlfn #NAD_cbuffer_stbox()
+ * @csqlfn #NAD_cbuffer_stbox() #NAD_stbox_cbuffer()
  */
 double
 nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box)

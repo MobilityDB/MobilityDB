@@ -297,9 +297,9 @@ SELECT asEWKT(transformPipeline(transformPipeline(cbuffer, pipeline, 4326), pipe
 					<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 					<para>Return the distance</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-distance({geo,stbox,cbuffer},cbuffer) → float
-distance(cbuffer,{geo,stbox,cbuffer}) → float
-{geo,stbox,cbuffer} &lt;-&gt; cbuffer → float
+distance({geo,cbuffer},cbuffer) → float
+distance(cbuffer,{geo,cbuffer}) → float
+{geo,cbuffer} &lt;-&gt; cbuffer → float
 </programlisting>
 					<para>The distance between two circular buffers is the distance between their points reduced by both radii, and is zero when the buffers overlap. The result is <varname>NULL</varname> when the geometry is empty.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -309,6 +309,22 @@ SELECT round(cbuffer 'Cbuffer(Point(0 0),0.5)' &lt;-&gt; cbuffer 'Cbuffer(Point(
 -- 4
 SELECT round(cbuffer 'Cbuffer(Point(0 0),3)' &lt;-&gt; cbuffer 'Cbuffer(Point(3 4),3)', 6);
 -- 0
+</programlisting>
+				</listitem>
+				<listitem xml:id="cbuffer_nearestApproachDistance">
+					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+					<para>Return the nearest approach distance</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+nearestApproachDistance({stbox,cbuffer},{cbuffer,stbox}) → float
+{stbox,cbuffer} |=| {cbuffer,stbox} → float
+</programlisting>
+					<para>The value is the least distance over the time the two arguments share, and is <varname>NULL</varname> when they share none. A circular buffer carries no period, so it is present at every time the box spans.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', cbuffer 'Cbuffer(Point(4 0),0.5)'), 6);
+-- 0.5
+SELECT round(cbuffer 'Cbuffer(Point(4 0),0.5)' |=| stbox 'STBOX X((1,-1),(3,1))', 6);
+-- 0.5
 </programlisting>
 				</listitem>
 			</itemizedlist>
