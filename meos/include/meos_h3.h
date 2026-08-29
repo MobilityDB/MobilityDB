@@ -243,6 +243,8 @@ extern Temporal *tgeompoint_to_th3index(const Temporal *temp, int32 resolution);
 extern Temporal *th3index_to_tgeogpoint(const Temporal *temp);
 extern Temporal *th3index_to_tgeompoint(const Temporal *temp);
 
+extern Set    *h3index_to_set(H3Index cell);
+
 /* Static geometry → H3 cell / cell set.  See meos/src/h3/h3_geo.c. */
 extern H3Index geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution);
 extern Set    *geo_to_h3index_set(const GSERIALIZED *gs,    int32 resolution);

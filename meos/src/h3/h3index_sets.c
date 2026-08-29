@@ -471,3 +471,20 @@ meos_h3_get_icosahedron_faces(H3Index cell)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Conversion functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_set_conversion
+ * @brief Convert an H3 cell into a H3 cell set
+ * @param[in] cell Value
+ * @csqlfn #Value_to_set()
+ */
+Set *
+h3index_to_set(H3Index cell)
+{
+  Datum v = H3IndexGetDatum(cell);
+  return set_make_exp(&v, 1, 1, T_H3INDEX, ORDER_NO);
+}

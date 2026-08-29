@@ -131,3 +131,20 @@ s2cell_cell_to_children_set(S2CellId cell, int children_level)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Conversion functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_s2cell_set_conversion
+ * @brief Convert an S2 cell into a S2 cell set
+ * @param[in] cell Value
+ * @csqlfn #Value_to_set()
+ */
+Set *
+s2cell_to_set(S2CellId cell)
+{
+  Datum v = S2CellGetDatum(cell);
+  return set_make_exp(&v, 1, 1, T_S2CELL, ORDER_NO);
+}

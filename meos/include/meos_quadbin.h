@@ -216,6 +216,7 @@ extern bool tquadbin_value_at_timestamptz(const Temporal *temp, TimestampTz t,
 
 /* Conversions */
 
+extern Set *quadbin_to_set(Quadbin cell);
 extern Temporal *tbigint_to_tquadbin(const Temporal *temp);
 extern Temporal *tquadbin_to_tbigint(const Temporal *temp);
 
