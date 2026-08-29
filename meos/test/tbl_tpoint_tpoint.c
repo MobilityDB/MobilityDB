@@ -72,7 +72,7 @@ int main(void)
   meos_initialize_timezone("UTC");
 
   /* You may substitute the full file path in the first argument of fopen */
-  FILE *file = fopen("data/tbl_tgeompoint.csv", "r");
+  FILE *file = fopen("csv/tbl_tgeompoint.csv", "r");
 
   if (! file)
   {
@@ -145,7 +145,7 @@ int main(void)
 
           /* Compute the function, uncomment the desired function */
           // Temporal *rest = tintersects_tgeo_tgeo(temp1, temp2);
-          Temporal *rest = tdwithin_tspatial_tspatial(temp1, temp2, 10);
+          Temporal *rest = tdwithin_tgeo_tgeo(temp1, temp2, 10);
           // Temporal *rest = tdistance_tgeo_tgeo(temp1, temp2);
           if (rest)
           {

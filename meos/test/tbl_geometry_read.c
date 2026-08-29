@@ -60,12 +60,11 @@ int main(void)
   meos_initialize_timezone("UTC");
 
   /* You may substitute the full file1 path in the first argument of fopen */
-  FILE *file = fopen("data/tbl_geometry.csv", "r");
+  FILE *file = fopen("csv/tbl_geometry.csv", "r");
 
   if (! file)
   {
     printf("Error opening input file\n");
-    fclose(file);
     return 1;
   }
 

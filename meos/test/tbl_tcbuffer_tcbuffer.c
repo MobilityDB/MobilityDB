@@ -72,7 +72,7 @@ int main(void)
   meos_initialize_timezone("UTC");
 
   /* You may substitute the full file path in the first argument of fopen */
-  FILE *file = fopen("data/tbl_tcbuffer.csv", "r");
+  FILE *file = fopen("csv/tbl_tcbuffer.csv", "r");
 
   if (! file)
   {
@@ -98,7 +98,7 @@ int main(void)
     /* Continue reading the file until the like identified by the key `k` */
     do
     {
-      int read1 = fscanf(file, "%d,\"%7500[^\"\n]\"\n", &k1, tcbuffer_buffer);
+      int read1 = fscanf(file, "%d,%7500[^\n]\n", &k1, tcbuffer_buffer);
       if (ferror(file) || read1 != 2)
       {
         printf("Error reading input file\n");
@@ -129,7 +129,7 @@ int main(void)
       /* For each line in the file loop for every line in the second file */
       do
       {
-        int read2 = fscanf(file, "%d,\"%7500[^\"\n]\"\n", &k2, tcbuffer_buffer);
+        int read2 = fscanf(file, "%d,%7500[^\n]\n", &k2, tcbuffer_buffer);
         if (ferror(file) || read2 != 2)
         {
           printf("Error reading input file2\n");

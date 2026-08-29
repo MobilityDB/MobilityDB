@@ -243,7 +243,7 @@ int main(void)
           // Temporal *rest = tdistance_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = textcat_ttext_ttext(temp1, temp2);
           // Temporal *rest = tdistance_tgeo_tgeo(temp1, temp2);
-          // Temporal *rest = tdwithin_tspatial_tspatial(temp1, temp2, 5, false, false);
+          // Temporal *rest = tdwithin_tgeo_tgeo(temp1, temp2, 5);
           // Temporal *rest = temporal_append_tinstant(temp1, inst, LINEAR, 0.0,
           // Temporal *rest = temporal_append_tsequence(temp1, seq, false);
 
@@ -269,20 +269,17 @@ int main(void)
           // double result = temporal_frechet_distance(temp1, temp2);
           // double result = temporal_hausdorff_distance(temp1, temp2);
           int count;
-          // Match *result = temporal_dyntimewarp_path(temp1, temp2, &count);
+          Match *result = temporal_dyntimewarp_path(temp1, temp2, &count);
           // Match *result = temporal_frechet_path(temp1, temp2, &count);
 
-          // if (result != DBL_MAX)
           if (count > 0)
           {
             /* Increment the number of non-empty answers found */
             nrows++;
-            printf("k1: %d, k2: %d: Result of the function: %lf\n",
-              k1, k2, result);
-            printf("k1: %d, k2: %d: Result of the function: %d\n",
+            printf("k1: %d, k2: %d: Number of matches of the result: %d\n",
               k1, k2, count);
-            free(result);
           }
+          free(result);
 
           // free(inst);
           /* append_sequence: Free if the sequence was shifted */

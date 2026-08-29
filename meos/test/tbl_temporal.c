@@ -29,18 +29,23 @@
 
 /**
  * @file
- * @brief A simple program that a CSV file containing temporal values and
- * applies a function to them
+ * @brief A simple program that reads the CSV file of every temporal type and
+ * applies a function to the values it holds
  *
- * The corresponding SQL query would be
+ * The corresponding SQL query would be, for each temporal type in turn,
  * @code
- * SELECT k, numInstants(shiftScaleValue(temp, 5, 10))
+ * SELECT k, numInstants(tprecision(temp, interval '5 minutes', timestamptz
+     '2000-01-01'))
    FROM tbl_tfloat;
  * @endcode
  *
- * The program can be tested with several functions such as simplification
- * with Douglas-Peucker ... reduction such as `tsample`, `tprecision`, ...
- * 
+ * The function is one every temporal type answers, so one run reports every
+ * type rather than the one a reader uncomments. To exercise a type-specific
+ * function instead, apply it to the value the loop parses.
+ *
+ * The fixtures are written by `tools/gen_test_csv.py` from the archives the
+ * PostgreSQL suite loads.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o tbl_temporal tbl_temporal.c -L/usr/local/lib -lmeos
@@ -49,113 +54,162 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <meos.h>
 #include <meos_cbuffer.h>
 #include <meos_geo.h>
+#include <meos_npoint.h>
+#include <meos_pose.h>
+#include <meos_rgeo.h>
+#include <meos_catalog.h>
+#include <meos_internal.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_HEADER 1024
-/* Maximum length in characters of a temporal value in the input data as
- * computed by the following query on the corresponding table
- * SELECT MAX(length(temp::text)) FROM tbl_tgeometry;
- * -- 6273
+/* Maximum length in characters of a temporal value in the input data. The
+ * program reads every temporal table the archives carry, so the bound is the
+ * longest value across all of them rather than one table's:
+ * SELECT MAX(length(temp::text)) FROM tbl_tposechain;
+ * -- 20899
  */
-#define MAX_LEN_TEMP 8192
+#define MAX_LEN_TEMP 32768
+/* The scanf width, one below the buffer so a value reaching it is a value the
+ * buffer truncated rather than one that happened to fit exactly */
+#define SCAN_LEN_TEMP 32766
 
+/**
+ * @brief Return the temporal type whose name a fixture file carries
+ * @details A fixture is named after the table it exports, `tbl_<type>` for a
+ * temporal type, and the spatial tables that separate the dimensions add a
+ * `2d` or `3d` suffix to it. The name is looked up in the catalog, so what a
+ * file may be read as is what the library registers, and a file naming no
+ * type is refused rather than read as the wrong one.
+ */
+static MeosType
+fixture_temptype(const char *path)
+{
+  const char *base = strrchr(path, '/');
+  base = base ? base + 1 : path;
+  if (strncmp(base, "tbl_", 4) != 0)
+    return T_UNKNOWN;
+  base += 4;
+  size_t len = strlen(base);
+  if (len > 4 && strcmp(base + len - 4, ".csv") == 0)
+    len -= 4;
+  if (len > 2 && (strncmp(base + len - 2, "2d", 2) == 0 ||
+      strncmp(base + len - 2, "3d", 2) == 0))
+    len -= 2;
+  for (MeosType temptype = 0; temptype < NUM_MEOS_TYPES; temptype++)
+  {
+    if (! temporal_type(temptype))
+      continue;
+    const char *name = meostype_name(temptype);
+    if (strlen(name) == len && strncmp(name, base, len) == 0)
+      return temptype;
+  }
+  return T_UNKNOWN;
+}
 
 /* Main program */
-int main(void)
+int
+main(int argc, char **argv)
 {
-  /* Initialize MEOS */
-  meos_initialize();
-  meos_initialize_timezone("UTC");
-
-  /* You may substitute the full file path in the first argument of fopen */
-  // FILE *file = fopen("csv/tbl_tbool.csv", "r");
-  // FILE *file = fopen("csv/tbl_tint.csv", "r");
-  // FILE *file = fopen("csv/tbl_tfloat.csv", "r");
-  FILE *file = fopen("csv/tbl_ttext.csv", "r");
-  // FILE *file = fopen("csv/tbl_tgeompoint.csv", "r");
-  // FILE *file = fopen("csv/tbl_tgeogpoint.csv", "r");
-  // FILE *file = fopen("csv/tbl_tgeometry.csv", "r");
-  // FILE *file = fopen("csv/tbl_tgeography.csv", "r");
-  // FILE *file = fopen("csv/tbl_tcbuffer.csv", "r");
-  // FILE *file = fopen("csv/tbl_tnpoint.csv", "r");
-  // FILE *file = fopen("csv/tbl_tpose2d.csv", "r");
-  // FILE *file = fopen("csv/tbl_trgeometry.csv", "r");
-  if (! file)
+  if (argc != 2)
   {
-    printf("Error opening input file\n");
+    printf("Usage: %s <csv-file>\n", argv[0]);
     return 1;
   }
+  const char *path = argv[1];
+
+  /* Initialize MEOS. The handler is installed after meos_initialize, which
+   * installs the exiting default itself, so the order is what makes it take
+   * effect: a value the library declines then ends its own row rather than
+   * the run, and the loop reads the rest of the table. */
+  meos_initialize();
+  meos_initialize_timezone("UTC");
+  meos_initialize_noexit_error_handler();
+
+  MeosType temptype = fixture_temptype(path);
+  if (temptype == T_UNKNOWN)
+  {
+    /* The caller hands over every fixture the archives carry, so a table of
+     * some other type is an answer rather than a failure: say which file names
+     * no temporal type, and leave the exit status to the files that do. */
+    printf("%s names no temporal type\n", path);
+    meos_finalize();
+    return 0;
+  }
+
+  FILE *file = fopen(path, "r");
+  if (! file)
+  {
+    printf("Error opening input file %s\n", path);
+    meos_finalize();
+    return 1;
+  }
+
+  /* The function applied, which every temporal type answers because it moves
+   * the time axis and leaves the values alone */
+  Interval *interv = interval_in("5 minutes", -1);
 
   char header_buffer[MAX_LEN_HEADER];
   char temporal_buffer[MAX_LEN_TEMP];
 
-  /* Read the first line of the first file with the headers */
+  /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
 
-  /* Continue reading the first file */
+  /* Continue reading the file */
   int nrows = 0;
   do
   {
     int k;
-    int read = fscanf(file, "%d,%7500[^\n]\n", &k, temporal_buffer);
+    int read = fscanf(file, "%d,%32766[^\n]\n", &k, temporal_buffer);
+
+    /* A value as long as the width is one the read cut short, and a cut value
+     * parses as garbage or not at all. Say so rather than answer for it. */
+    if (read == 2 && strlen(temporal_buffer) >= SCAN_LEN_TEMP)
+    {
+      printf("Value of k %d in %s exceeds %d characters\n", k, path,
+        SCAN_LEN_TEMP);
+      fclose(file);
+      free(interv);
+      meos_finalize();
+      return 1;
+    }
 
     if (ferror(file))
     {
-      printf("Error reading input file\n");
+      printf("Error reading input file %s\n", path);
       fclose(file);
+      free(interv);
+      meos_finalize();
       return 1;
     }
     /* Ignore records with NULL values and continue reading */
     if (read != 2)
       continue;
 
-    /* Transform the string read into a temporal value */
-    // Temporal *temp = tbool_in(temporal_buffer);
-    // Temporal *temp = tint_in(temporal_buffer);
-    // Temporal *temp = tfloat_in(temporal_buffer);
-    Temporal *temp = ttext_in(temporal_buffer);
-    // Temporal *temp = tgeompoint_in(temporal_buffer);
-    // Temporal *temp = tgeogpoint_in(temporal_buffer);
-    // Temporal *temp = tgeometry_in(temporal_buffer);
-    // Temporal *temp = tgeography_in(temporal_buffer);
-    // Temporal *temp = tcbuffer_in(temporal_buffer);
-    // Temporal *temp = tnpoint_in(temporal_buffer);
-    // Temporal *temp = tpose_in(temporal_buffer);
-    // Temporal *temp = trgeometry_in(temporal_buffer);
+    /* Transform the string read into a temporal value of the fixture type */
+    Temporal *temp = temporal_in(temporal_buffer, temptype);
+    if (! temp)
+      continue;
 
-    /* Additional values required for the functions, uncomment as needed */
-    // Interval *interv = interval_in("5 minutes", -1);
-    // TimestampTz start = temporal_start_timestamptz(temp);
-
-    /* Uncomment the desired function to compute */
-    // Temporal *rest = temporal_simplify_dp(temp, 5, true);
-    // Temporal *rest = temporal_tsample(temp, interv, start, "linear");
-    // Temporal *rest = temporal_tprecision(temp, interv, start);
-    // Temporal *rest = tfloat_shift_scale_value(temp, 5, 10);
-    Temporal *rest = ttext_initcap(temp);
-    // Temporal *rest = tgeometry_to_tcbuffer(temp);
+    Temporal *rest = temporal_shift_time(temp, interv);
     if (rest)
     {
       /* Get the number of instants of the result */
       int count = temporal_num_instants(rest);
       printf("k: %d, Number of instants: %d\n", k, count);
-      // int count1 = temporal_num_instants(temp);
-      // int count2 = temporal_num_instants(rest);
-      // printf("k: %d, Number of instants: %d -> %d\n", k, count1, count2);
-
       free(rest);
       nrows++;
     }
     free(temp);
-    // free(interv);
   } while (! feof(file));
 
-  printf("Number of non-empty answers: %d\n", nrows);
+  printf("%s (%s): number of non-empty answers: %d\n", path,
+    meostype_name(temptype), nrows);
 
-  /* Close the files */
+  free(interv);
   fclose(file);
 
   /* Finalize MEOS */
