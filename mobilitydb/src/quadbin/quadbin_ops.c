@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Quadbin_cell_to_children);
  * @ingroup mobilitydb_quadbin_hierarchy
  * @brief Return the children of a cell at the given finer resolution
  * as a quadbinset
- * @sqlfn quadbinCellToChildren()
+ * @sqlfn cellToChildren()
  */
 Datum
 Quadbin_cell_to_children(PG_FUNCTION_ARGS)
@@ -151,7 +151,7 @@ PG_FUNCTION_INFO_V1(Quadbin_grid_disk);
  * @ingroup mobilitydb_quadbin_set
  * @brief Return all cells within grid distance k of the origin as a
  * quadbinset
- * @sqlfn quadbinGridDisk()
+ * @sqlfn gridDisk()
  */
 Datum
 Quadbin_grid_disk(PG_FUNCTION_ARGS)

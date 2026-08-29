@@ -92,11 +92,16 @@ quadbin_parse(const char *str)
 
   Quadbin cell = quadbin_string_to_index(str);
 
-  /* Reject anything that does not encode a valid quadbin cell. */
-  if (! quadbin_is_valid_cell(cell))
+  /* Reject anything that does not encode a well-formed quadbin index. The
+   * mode a well-formed index carries is a property of the value rather than
+   * of the type: a quadbin holds an index of any mode, as an h3index holds a
+   * cell, a vertex or a directed edge, and #quadbin_is_valid_cell is what
+   * answers whether the value at hand is a data cell. Validating the mode
+   * here makes that question unaskable for this grid alone. */
+  if (! quadbin_is_valid_index(cell))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "quadbin value \"%s\" does not encode a valid quadbin cell", str);
+      "quadbin value \"%s\" does not encode a valid quadbin index", str);
     return (Quadbin) 0;
   }
 

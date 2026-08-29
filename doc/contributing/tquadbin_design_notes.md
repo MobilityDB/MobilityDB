@@ -30,7 +30,7 @@ A few hazards reliably bite workloads using QUADBIN cells. Each is a property of
 
   **Mitigation**: `tquadbin` deliberately has no `quadbinspan` / `quadbinspanset` companion types (precedent: `geometry` has no `geometryspan`). Value-range filtering must go through the `quadbin_*` inspection functions (resolution, validity, hierarchy) or explicit set enumeration via `quadbinset`. Code that assumes `cell_a < cell_b` reflects spatial proximity will silently produce wrong results.
 
-- **Resolution mixing in operations**. QUADBIN cells at different resolutions (0&#x2013;26) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; `cellToParent(cell, coarser_res)` coarsens and `quadbinCellToChildren(parent, finer_res)` refines.
+- **Resolution mixing in operations**. QUADBIN cells at different resolutions (0&#x2013;26) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; `cellToParent(cell, coarser_res)` coarsens and `cellToChildren(parent, finer_res)` refines.
 
   **Mitigation**: consumers should document the resolution invariant per trajectory (e.g. "all cells are resolution 10") and validate inputs at the ingestion boundary. The `getResolution` accessor lets a CHECK constraint enforce this.
 

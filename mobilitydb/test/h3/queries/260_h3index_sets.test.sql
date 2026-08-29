@@ -11,23 +11,23 @@
 -- companion of h3index.
 
 -------------------------------------------------------------------------------
--- h3GridDisk
+-- gridDisk
 -------------------------------------------------------------------------------
 
 -- k=0 → singleton { origin }
-SELECT numValues(h3GridDisk(h3index '8a2a1072b59ffff', 0)) = 1;
+SELECT numValues(gridDisk(h3index '8a2a1072b59ffff', 0)) = 1;
 
 -- k=1 around a hexagon → 7 cells (origin + 6 neighbours)
-SELECT numValues(h3GridDisk(h3index '8a2a1072b59ffff', 1)) = 7;
+SELECT numValues(gridDisk(h3index '8a2a1072b59ffff', 1)) = 7;
 
 -- k=2 around a hexagon → up to 19 cells (7 + 12 second-ring)
-SELECT numValues(h3GridDisk(h3index '8a2a1072b59ffff', 2)) = 19;
+SELECT numValues(gridDisk(h3index '8a2a1072b59ffff', 2)) = 19;
 
 -- k=3 disk has 37 cells: 1 + 6 + 12 + 18
-SELECT numValues(h3GridDisk(h3index '8a2a1072b59ffff', 3)) = 37;
+SELECT numValues(gridDisk(h3index '8a2a1072b59ffff', 3)) = 37;
 
 /* Errors */
-SELECT h3GridDisk(h3index '8a2a1072b59ffff', -1);
+SELECT gridDisk(h3index '8a2a1072b59ffff', -1);
 
 -------------------------------------------------------------------------------
 -- h3GridRing
@@ -54,21 +54,21 @@ SELECT numValues(h3GridPathCells(
   h3index '8a2a1072b59ffff', h3index '8a2a1072b59ffff')) = 1;
 
 -------------------------------------------------------------------------------
--- h3CellToChildren
+-- cellToChildren
 -------------------------------------------------------------------------------
 
 -- Children at childRes = cellRes + 1 → 7 (hex) or 6 (pentagon)
-SELECT numValues(h3CellToChildren(h3index '8a2a1072b59ffff', 11)) = 7;
+SELECT numValues(cellToChildren(h3index '8a2a1072b59ffff', 11)) = 7;
 
 -- Children at childRes = cellRes → singleton { cell }
-SELECT numValues(h3CellToChildren(h3index '8a2a1072b59ffff', 10)) = 1;
+SELECT numValues(cellToChildren(h3index '8a2a1072b59ffff', 10)) = 1;
 
 -- Children at deeper resolution — counts follow 7^k (for hex cells)
-SELECT numValues(h3CellToChildren(h3index '8a2a1072b59ffff', 12)) = 49;
+SELECT numValues(cellToChildren(h3index '8a2a1072b59ffff', 12)) = 49;
 
 /* Errors */
 -- childRes coarser than cellRes
-SELECT h3CellToChildren(h3index '8a2a1072b59ffff', 5);
+SELECT cellToChildren(h3index '8a2a1072b59ffff', 5);
 
 -------------------------------------------------------------------------------
 -- h3CompactCells / h3UncompactCells
@@ -76,13 +76,13 @@ SELECT h3CellToChildren(h3index '8a2a1072b59ffff', 5);
 
 -- Round-trip: uncompact(compact(children)) recovers the input
 SELECT h3UncompactCells(
-         h3CompactCells(h3CellToChildren(
+         h3CompactCells(cellToChildren(
            h3index '8a2a1072b59ffff', 11)), 11)
-       = h3CellToChildren(h3index '8a2a1072b59ffff', 11);
+       = cellToChildren(h3index '8a2a1072b59ffff', 11);
 
 -- Full hexagonal set of siblings compacts to one parent
 SELECT numValues(h3CompactCells(
-         h3CellToChildren(h3index '8a2a1072b59ffff', 11))) = 1;
+         cellToChildren(h3index '8a2a1072b59ffff', 11))) = 1;
 
 -------------------------------------------------------------------------------
 -- h3OriginToDirectedEdges

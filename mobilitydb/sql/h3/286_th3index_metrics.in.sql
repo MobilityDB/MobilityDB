@@ -52,52 +52,22 @@ CREATE FUNCTION cellArea(th3index)
   AS 'MODULE_PATHNAME', 'Th3index_cell_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION th3CellAreaKm2(th3index)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Th3index_cell_area_km2'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+/******************************************************************************
+ * th3EdgeLength
+ ******************************************************************************/
 
-CREATE FUNCTION th3CellAreaRads2(th3index)
+CREATE FUNCTION th3EdgeLength(th3index)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Th3index_cell_area_rads2'
+  AS 'MODULE_PATHNAME', 'Th3index_edge_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * th3EdgeLengthKm, th3EdgeLengthM and th3EdgeLengthRads
+ * greatCircleDistance
  ******************************************************************************/
 
-CREATE FUNCTION th3EdgeLengthKm(th3index)
+CREATE FUNCTION greatCircleDistance(tgeogpoint, tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Th3index_edge_length_km'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION th3EdgeLengthM(th3index)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Th3index_edge_length_m'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION th3EdgeLengthRads(th3index)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Th3index_edge_length_rads'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************
- * greatCircleDistanceKm, greatCircleDistanceM and greatCircleDistanceRads
- ******************************************************************************/
-
-CREATE FUNCTION greatCircleDistanceKm(tgeogpoint, tgeogpoint)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tgeogpoint_great_circle_distance_km'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION greatCircleDistanceM(tgeogpoint, tgeogpoint)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tgeogpoint_great_circle_distance_m'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION greatCircleDistanceRads(tgeogpoint, tgeogpoint)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tgeogpoint_great_circle_distance_rads'
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_great_circle_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

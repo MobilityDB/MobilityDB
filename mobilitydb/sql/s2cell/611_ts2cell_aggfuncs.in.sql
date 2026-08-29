@@ -88,18 +88,6 @@ CREATE FUNCTION temporal_merge_transfn(internal, ts2cell)
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE merge(ts2cell) (
-  SFUNC = temporal_merge_transfn,
-  STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
-  FINALFUNC = ts2cell_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
 CREATE AGGREGATE mergeAgg(ts2cell) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
@@ -133,38 +121,14 @@ CREATE FUNCTION temporal_append_finalfn(ts2cell)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE appendInstant(ts2cell) (
-  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell),
-  STYPE = ts2cell,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstantAgg(ts2cell) (
   SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell),
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE appendInstant(ts2cell, interp text) (
-  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell, text),
-  STYPE = ts2cell,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstantAgg(ts2cell, interp text) (
   SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell, text),
-  STYPE = ts2cell,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE appendInstant(ts2cell, interp text, maxt interval) (
-  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell, text, maxt),
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -184,14 +148,6 @@ CREATE FUNCTION temporal_app_tseq_transfn(ts2cell, ts2cell)
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE appendSequence(ts2cell) (
-  SFUNC = temporal_app_tseq_transfn,
-  STYPE = ts2cell,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendSequenceAgg(ts2cell) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = ts2cell,

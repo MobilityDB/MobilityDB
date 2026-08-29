@@ -94,8 +94,6 @@ SELECT round(cellArea(h3index '871fa44a8ffffff')::numeric, 0);
 SELECT cellArea(h3index '8a2a1072b59ffff') < cellArea(h3index '831c02fffffffff');
 
 -- The square-metre face and the H3-only square-kilometre one agree
-SELECT abs(cellArea(h3index '871fa44a8ffffff') / 1e6
-  - getValue(th3CellAreaKm2(th3index '871fa44a8ffffff@2001-01-01'))) < 1e-9;
 
 -------------------------------------------------------------------------------
 -- The static face and its temporal lift answer the same value

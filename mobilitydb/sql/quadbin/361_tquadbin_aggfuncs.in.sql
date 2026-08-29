@@ -88,18 +88,6 @@ CREATE FUNCTION temporal_merge_transfn(internal, tquadbin)
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE merge(tquadbin) (
-  SFUNC = temporal_merge_transfn,
-  STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
-  FINALFUNC = tquadbin_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
 CREATE AGGREGATE mergeAgg(tquadbin) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
@@ -133,38 +121,14 @@ CREATE FUNCTION temporal_append_finalfn(tquadbin)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE appendInstant(tquadbin) (
-  SFUNC = temporal_app_tinst_transfn(tquadbin, tquadbin),
-  STYPE = tquadbin,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstantAgg(tquadbin) (
   SFUNC = temporal_app_tinst_transfn(tquadbin, tquadbin),
   STYPE = tquadbin,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE appendInstant(tquadbin, interp text) (
-  SFUNC = temporal_app_tinst_transfn(tquadbin, tquadbin, text),
-  STYPE = tquadbin,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstantAgg(tquadbin, interp text) (
   SFUNC = temporal_app_tinst_transfn(tquadbin, tquadbin, text),
-  STYPE = tquadbin,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE appendInstant(tquadbin, interp text, maxt interval) (
-  SFUNC = temporal_app_tinst_transfn(tquadbin, tquadbin, text, maxt),
   STYPE = tquadbin,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -184,14 +148,6 @@ CREATE FUNCTION temporal_app_tseq_transfn(tquadbin, tquadbin)
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
-CREATE AGGREGATE appendSequence(tquadbin) (
-  SFUNC = temporal_app_tseq_transfn,
-  STYPE = tquadbin,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendSequenceAgg(tquadbin) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tquadbin,

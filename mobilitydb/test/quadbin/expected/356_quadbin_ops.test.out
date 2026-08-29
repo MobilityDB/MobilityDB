@@ -28,20 +28,20 @@ SELECT getResolution(cellToParent(quadbin '48427fffffffffff', 2));
              2
 (1 row)
 
-SELECT numValues(quadbinCellToChildren(quadbin '480fffffffffffff', 1));
+SELECT numValues(cellToChildren(quadbin '480fffffffffffff', 1));
  numvalues 
 -----------
          4
 (1 row)
 
-SELECT quadbinCellToChildren(quadbin '480fffffffffffff', 1);
-                              quadbincelltochildren                               
+SELECT cellToChildren(quadbin '480fffffffffffff', 1);
+                                  celltochildren                                  
 ----------------------------------------------------------------------------------
  {"4813ffffffffffff", "4817ffffffffffff", "481bffffffffffff", "481fffffffffffff"}
 (1 row)
 
 SELECT bool_and(cellToParent(c, 0) = quadbin '480fffffffffffff')
-  FROM unnest(quadbinCellToChildren(quadbin '480fffffffffffff', 1)) AS c;
+  FROM unnest(cellToChildren(quadbin '480fffffffffffff', 1)) AS c;
  bool_and 
 ----------
  t
@@ -60,19 +60,19 @@ SELECT getResolution(quadbinCellSibling(quadbin '48427fffffffffff', 'up'));
              4
 (1 row)
 
-SELECT numValues(quadbinGridDisk(quadbin '48a6227affffffff', 0));
+SELECT numValues(gridDisk(quadbin '48a6227affffffff', 0));
  numvalues 
 -----------
          1
 (1 row)
 
-SELECT numValues(quadbinGridDisk(quadbin '48a6227affffffff', 1));
+SELECT numValues(gridDisk(quadbin '48a6227affffffff', 1));
  numvalues 
 -----------
          9
 (1 row)
 
-SELECT numValues(quadbinGridDisk(quadbin '48a6227affffffff', 2));
+SELECT numValues(gridDisk(quadbin '48a6227affffffff', 2));
  numvalues 
 -----------
         25

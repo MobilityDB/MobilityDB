@@ -169,7 +169,7 @@ PG_FUNCTION_INFO_V1(S2cell_cell_to_children);
  * @ingroup mobilitydb_s2cell_base_hierarchy
  * @brief Return the descendants of an S2 cell at the given finer level as
  * an s2cellset
- * @sqlfn s2CellToChildren()
+ * @sqlfn cellToChildren()
  */
 Datum
 S2cell_cell_to_children(PG_FUNCTION_ARGS)

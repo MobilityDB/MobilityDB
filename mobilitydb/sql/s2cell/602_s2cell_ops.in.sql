@@ -77,7 +77,7 @@ CREATE FUNCTION s2CellToChild(s2cell, integer, integer)
   AS 'MODULE_PATHNAME', 'S2cell_cell_to_child'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION s2CellToChildren(s2cell, integer)
+CREATE FUNCTION cellToChildren(s2cell, integer)
   RETURNS s2cellset
   AS 'MODULE_PATHNAME', 'S2cell_cell_to_children'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

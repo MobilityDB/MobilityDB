@@ -57,7 +57,7 @@ CREATE FUNCTION getResolution(h3index)
  * Hierarchy
  *
  * `cellToParent` drops to the requested coarser resolution;
- * `h3CellToChildren` returns the seven child cells at the requested
+ * `cellToChildren` returns the seven child cells at the requested
  * finer resolution as an `h3indexset`.
  ******************************************************************************/
 
@@ -111,7 +111,7 @@ CREATE FUNCTION geoToH3IndexSet(geometry, integer)
  * Grid traversal
  ******************************************************************************/
 
-CREATE FUNCTION h3GridDisk(h3index, integer)
+CREATE FUNCTION gridDisk(h3index, integer)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_grid_disk'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -130,7 +130,7 @@ CREATE FUNCTION h3GridPathCells(h3index, h3index)
  * Hierarchy
  ******************************************************************************/
 
-CREATE FUNCTION h3CellToChildren(h3index, integer)
+CREATE FUNCTION cellToChildren(h3index, integer)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_cell_to_children'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

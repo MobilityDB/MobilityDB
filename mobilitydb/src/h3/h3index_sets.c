@@ -61,7 +61,7 @@ PG_FUNCTION_INFO_V1(H3_grid_disk);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return all cells within k grid-steps of the origin
- * @sqlfn h3GridDisk()
+ * @sqlfn gridDisk()
  */
 Datum
 H3_grid_disk(PG_FUNCTION_ARGS)
@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(H3_cell_to_children);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return all children of the cell at the target resolution
- * @sqlfn h3CellToChildren()
+ * @sqlfn cellToChildren()
  */
 Datum
 H3_cell_to_children(PG_FUNCTION_ARGS)

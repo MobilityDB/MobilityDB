@@ -793,7 +793,7 @@ SELECT ts2cell '47c3c@2001-01-01' #&gt;&gt; ts2cell '47c3c@2001-01-05';
 	</sect1>
 	<sect1 xml:id="tcell_metrics">
 		<title>Metric Functions</title>
-		<para>Cell area is the one metric the three grids share, and <varname>cellArea</varname> answers it in square metres for each of them. H3 publishes the two other units libh3 names, as <varname>th3CellAreaKm2</varname> and <varname>th3CellAreaRads2</varname>. The metrics H3 alone carries, the length of a directed edge and the great-circle distance between two temporal points, are stated in the H3-specific section.</para>
+		<para>Cell area is the one metric the three grids share, and <varname>cellArea</varname> answers it in square metres for each of them. The length of a directed edge and the great-circle distance between two temporal points are stated in the H3-specific section.</para>
 		<itemizedlist>
 			<listitem xml:id="tcell_cell_area">
 				<indexterm significance="normal"><primary><varname>cellArea</varname></primary></indexterm>
@@ -801,16 +801,12 @@ SELECT ts2cell '47c3c@2001-01-01' #&gt;&gt; ts2cell '47c3c@2001-01-05';
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 cellArea(cell) → float8
 cellArea(tcell) → tfloat
-th3CellAreaKm2(th3index) → tfloat
-th3CellAreaRads2(th3index) → tfloat
 </programlisting>
 				<para>A cell area shrinks toward the poles on the QUADBIN grid, as Web-Mercator squares cover progressively less ground at higher latitudes. An H3 or an S2 cell is defined on the sphere, so its area varies only with resolution and with the cell's position in the base solid.</para>
-				<para>The unit is the square metre, fixed by the <varname>cell_area</varname> slot of the <varname>DggsCellOps</varname> descriptor every grid plugs into, so <varname>cellArea</varname> answers the same quantity whichever grid holds the cell.</para>
+				<para>The unit is the square metre for every grid, so <varname>cellArea</varname> answers the same quantity whichever grid holds the cell.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
 -- 4441914.270110932@2001-01-01
-SELECT th3CellAreaKm2(th3index '871fa44a8ffffff@2001-01-01');
--- 4.441914270110932@2001-01-01
 SELECT cellArea(tquadbin '48a6227affffffff@2001-01-01');
 -- 609209287.1146417@2001-01-01
 SELECT cellArea(ts2cell '47c3c@2001-01-01');
@@ -825,19 +821,19 @@ SELECT cellArea(ts2cell '47c3c@2001-01-01');
 
 		<itemizedlist>
 			<listitem xml:id="tcell_grid_disk">
-				<indexterm significance="normal"><primary><varname>h3GridDisk</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>gridDisk</varname></primary></indexterm>
 				<para>All cells within <varname>k</varname> grid steps of the origin</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-h3GridDisk(h3index,integer) → h3indexset
-quadbinGridDisk(quadbin,integer) → quadbinset
+gridDisk(h3index,integer) → h3indexset
+gridDisk(quadbin,integer) → quadbinset
 s2EdgeNeighbors(s2cell) → s2cellset
 </programlisting>
 				<para>The disk includes the origin, which is the whole of it at <varname>k</varname> = 0. Its shape follows the grid: on the QUADBIN square grid the disk at step <varname>k</varname> is the <varname>(2k+1)</varname>×<varname>(2k+1)</varname> block of cells centred on the origin, while on the H3 hexagonal grid it is the ring of hexagons at that many steps and everything inside it. S2 states the four cells sharing an edge with the origin and takes no step count, so it answers the disk at <varname>k</varname> = 1 less the origin itself.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT h3GridDisk(h3index '871fa44a8ffffff', 1);
+SELECT gridDisk(h3index '871fa44a8ffffff', 1);
 /* {"871fa44a8ffffff", "871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff",
    "871fa44acffffff", "871fa44adffffff", "871fa44aeffffff"} */
-SELECT quadbinGridDisk(quadbin '48a6227affffffff', 1);
+SELECT gridDisk(quadbin '48a6227affffffff', 1);
 /* {"48a6226dffffffff", "48a6226fffffffff", "48a62278ffffffff", "48a62279ffffffff",
    "48a6227affffffff", "48a6227bffffffff", "48a622c5ffffffff", "48a622d0ffffffff",
    "48a622d1ffffffff"} */
@@ -847,21 +843,21 @@ SELECT s2EdgeNeighbors(s2cell '47c3c');
 			</listitem>
 
 			<listitem xml:id="tcell_cell_to_children">
-				<indexterm significance="normal"><primary><varname>h3CellToChildren</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cellToChildren</varname></primary></indexterm>
 				<para>All children of a cell at the given target resolution</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-h3CellToChildren(h3index,integer) → h3indexset
-quadbinCellToChildren(quadbin,integer) → quadbinset
-s2CellToChildren(s2cell,integer) → s2cellset
+cellToChildren(h3index,integer) → h3indexset
+cellToChildren(quadbin,integer) → quadbinset
+cellToChildren(s2cell,integer) → s2cellset
 </programlisting>
 				<para>The number of children is the grid's branching factor: four for a QUADBIN or an S2 quadtree cell, seven for an H3 cell. The helper is static, children being a per-instant set whose temporal lift is deferred pending a <varname>tset&lt;T&gt;</varname> primitive.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT h3CellToChildren(h3index '831c02fffffffff', 4);
+SELECT cellToChildren(h3index '831c02fffffffff', 4);
 /* {"841c021ffffffff", "841c023ffffffff", "841c025ffffffff", "841c027ffffffff",
    "841c029ffffffff", "841c02bffffffff", "841c02dffffffff"} */
-SELECT quadbinCellToChildren(quadbin '48a6227affffffff', 11);
+SELECT cellToChildren(quadbin '48a6227affffffff', 11);
 -- {"48b6227a3fffffff", "48b6227a7fffffff", "48b6227abfffffff", "48b6227affffffff"}
-SELECT s2CellToChildren(s2cell '47c3c', 8);
+SELECT cellToChildren(s2cell '47c3c', 8);
 -- {"47c39", "47c3b", "47c3d", "47c3f"}
 </programlisting>
 			</listitem>
@@ -874,7 +870,7 @@ h3CompactCells(h3indexset) → h3indexset
 </programlisting>
 				<para>Compaction is stated for H3 alone: it is the one grid MobilityDB carries the kernel for, and the QUADBIN and S2 forms are not yet implemented.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4));
+SELECT h3CompactCells(cellToChildren(h3index '831c02fffffffff', 4));
 -- {"831c02fffffffff"}
 </programlisting>
 			</listitem>
@@ -887,7 +883,7 @@ h3UncompactCells(h3indexset,integer) → h3indexset
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numValues(h3UncompactCells(h3CompactCells(
-  h3CellToChildren(h3index '831c02fffffffff', 4)), 4));
+  cellToChildren(h3index '831c02fffffffff', 4)), 4));
 -- 7
 </programlisting>
 			</listitem>
@@ -1216,7 +1212,6 @@ SELECT th3CellToChildPos(th3index '871fa44a8ffffff@2001-01-01', 6);
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 th3ChildPosToCell(tbigint,th3index,integer) → th3index
 </programlisting>
-				<para>The two temporal operands are synchronised over their shared time axis.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01',
   8);
@@ -1286,30 +1281,25 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 </programlisting>
 			</listitem>
 			<listitem xml:id="tcell_h3_edge_length">
-				<indexterm significance="normal"><primary><varname>th3EdgeLengthKm</varname></primary></indexterm>
-				<para>Return the temporal length of each directed edge in a trajectory, in the requested unit</para>
+				<indexterm significance="normal"><primary><varname>th3EdgeLength</varname></primary></indexterm>
+				<para>Return the temporal length of each directed edge in a trajectory, in metres</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-th3EdgeLengthKm(th3index) → tfloat
-th3EdgeLengthM(th3index) → tfloat
-th3EdgeLengthRads(th3index) → tfloat
+th3EdgeLength(th3index) → tfloat
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3EdgeLengthKm(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+SELECT th3EdgeLength(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01'));
 -- 1.272084901305088@2001-01-01
 </programlisting>
 			</listitem>
 			<listitem xml:id="tcell_h3_great_circle_distance">
-				<indexterm significance="normal"><primary><varname>greatCircleDistanceKm</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>greatCircleDistance</varname></primary></indexterm>
 				<para>Return the temporal great-circle distance between two temporal geodetic points (not between cells)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-greatCircleDistanceKm(tgeogpoint,tgeogpoint) → tfloat
-greatCircleDistanceM(tgeogpoint,tgeogpoint) → tfloat
-greatCircleDistanceRads(tgeogpoint,tgeogpoint) → tfloat
+greatCircleDistance(tgeogpoint,tgeogpoint) → tfloat
 </programlisting>
-				<para>The two operands are synchronised.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT greatCircleDistanceKm(tgeogpoint 'Point(0 0)@2001-01-01',
+SELECT greatCircleDistance(tgeogpoint 'Point(0 0)@2001-01-01',
   tgeogpoint 'Point(1 0)@2001-01-01');
 -- 111.19505197522943@2001-01-01
 </programlisting>
@@ -1320,7 +1310,6 @@ SELECT greatCircleDistanceKm(tgeogpoint 'Point(0 0)@2001-01-01',
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 th3AreNeighborCells(th3index,th3index) → tbool
 </programlisting>
-				<para>The two operands are synchronised.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3AreNeighborCells(th3index '880326b885fffff@2001-01-01',
   th3index '880326b88dfffff@2001-01-01');
@@ -1427,7 +1416,7 @@ SELECT isValidVertex(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0));
 th3GridDistance(th3index,th3index) → tbigint
 tcell &lt;-&gt; tcell → tbigint
 </programlisting>
-				<para>Equivalently, the <varname>&lt;-&gt;</varname> operator returns the same distance. The two operands are synchronised over their shared time axis.</para>
+				<para>Equivalently, the <varname>&lt;-&gt;</varname> operator returns the same distance.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index '880326b885fffff@2001-01-01' &lt;-&gt; th3index '880326b88dfffff@2001-01-01';
 -- 1@2001-01-01
@@ -1620,7 +1609,7 @@ SELECT s2RangeMax(s2cell '47c3c3');
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 s2CellToChild(s2cell,level integer,position integer) → s2cell
 </programlisting>
-				<para>The level is exactly one finer than the cell's own, so the position runs from 0 to 3; <varname>s2CellToChildren</varname>, which the hierarchy section states, answers every descendant at any finer level.</para>
+				<para>The level is exactly one finer than the cell's own, so the position runs from 0 to 3; <varname>cellToChildren</varname>, which the hierarchy section states, answers every descendant at any finer level.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT s2CellToChild(s2cell '47c3c3', 11, 0);
 -- 47c3c24

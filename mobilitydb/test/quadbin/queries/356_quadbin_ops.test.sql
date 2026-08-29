@@ -44,12 +44,12 @@ SELECT cellToParent(quadbin '48427fffffffffff', 0) = quadbin '480fffffffffffff';
 SELECT getResolution(cellToParent(quadbin '48427fffffffffff', 2));
 
 -- Children: exactly 4 per finer level
-SELECT numValues(quadbinCellToChildren(quadbin '480fffffffffffff', 1));
-SELECT quadbinCellToChildren(quadbin '480fffffffffffff', 1);
+SELECT numValues(cellToChildren(quadbin '480fffffffffffff', 1));
+SELECT cellToChildren(quadbin '480fffffffffffff', 1);
 
 -- Round-trip: each child's parent is the origin cell
 SELECT bool_and(cellToParent(c, 0) = quadbin '480fffffffffffff')
-  FROM unnest(quadbinCellToChildren(quadbin '480fffffffffffff', 1)) AS c;
+  FROM unnest(cellToChildren(quadbin '480fffffffffffff', 1)) AS c;
 
 -- Sibling: moving right then left returns to the origin (same resolution)
 SELECT quadbinCellSibling(quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
@@ -60,9 +60,9 @@ SELECT getResolution(quadbinCellSibling(quadbin '48427fffffffffff', 'up'));
 -- Grid disk (k-ring): (2k+1)^2 cells, origin included
 -------------------------------------------------------------------------------
 
-SELECT numValues(quadbinGridDisk(quadbin '48a6227affffffff', 0));  -- 1
-SELECT numValues(quadbinGridDisk(quadbin '48a6227affffffff', 1));  -- 9
-SELECT numValues(quadbinGridDisk(quadbin '48a6227affffffff', 2));  -- 25
+SELECT numValues(gridDisk(quadbin '48a6227affffffff', 0));  -- 1
+SELECT numValues(gridDisk(quadbin '48a6227affffffff', 1));  -- 9
+SELECT numValues(gridDisk(quadbin '48a6227affffffff', 2));  -- 25
 
 -------------------------------------------------------------------------------
 -- Point <-> cell  (lon/lat, SRID 4326)

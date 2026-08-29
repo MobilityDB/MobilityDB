@@ -111,13 +111,6 @@ SELECT cellArea(h3index '8a2a1072b59ffff') < cellArea(h3index '831c02fffffffff')
  t
 (1 row)
 
-SELECT abs(cellArea(h3index '871fa44a8ffffff') / 1e6
-  - getValue(th3CellAreaKm2(th3index '871fa44a8ffffff@2001-01-01'))) < 1e-9;
- ?column? 
-----------
- t
-(1 row)
-
 SELECT getResolution(h3index '831c02fffffffff')
   = getValue(getResolution(th3index '831c02fffffffff@2001-01-01'));
  ?column? 

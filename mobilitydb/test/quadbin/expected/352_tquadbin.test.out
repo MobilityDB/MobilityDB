@@ -6,7 +6,7 @@ SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00';
 
 /* Errors */
 SELECT tquadbin 'ABC@2012-01-01 08:00:00';
-ERROR:  quadbin value "ABC" does not encode a valid quadbin cell
+ERROR:  quadbin value "ABC" does not encode a valid quadbin index
 LINE 2: SELECT tquadbin 'ABC@2012-01-01 08:00:00';
                         ^
 SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00,';
