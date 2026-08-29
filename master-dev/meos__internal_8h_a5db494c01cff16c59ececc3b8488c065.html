@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: MEOS_FLAGS_SET_T</title>
+<title>MobilityDB: basetype_in</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -94,7 +94,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__comp__ever_gaa390b9b4aadec472476bebfa1d60c86b.html#gaa390b9b4aadec472476bebfa1d60c86b">always_lt_temporal_base</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__comp__ever_ga0b052e843c338cd3100c0e725cddf749.html#ga0b052e843c338cd3100c0e725cddf749">always_ne_base_temporal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__comp__ever_ga689e40c6187cb1f6cd97a30f069f421a.html#ga689e40c6187cb1f6cd97a30f069f421a">always_ne_temporal_base</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_a5db494c01cff16c59ececc3b8488c065.html#a5db494c01cff16c59ececc3b8488c065">basetype_in</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__internal_8h_a5db494c01cff16c59ececc3b8488c065.html#a5db494c01cff16c59ececc3b8488c065">basetype_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_ab6d5ba72287921082f85153916635dac.html#ab6d5ba72287921082f85153916635dac">bbox_get_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_a586fd226d154984aded31c21186953cd.html#a586fd226d154984aded31c21186953cd">bbox_max_dims</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_a0cc335c202873267ac9be3ff4d9ce435.html#a0cc335c202873267ac9be3ff4d9ce435">bbox_temporal_split_boxes</a></td></tr>
@@ -195,7 +195,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_a3187c88037b4bbbac79cd18de0b367f3.html#a3187c88037b4bbbac79cd18de0b367f3">MEOS_FLAGS_SET_GEOM</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_a34e677613331cdc4cc8ffb7a70858530.html#a34e677613331cdc4cc8ffb7a70858530">MEOS_FLAGS_SET_INTERP</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_ad5a2fefb7591fd92e6a039cc69e055bf.html#ad5a2fefb7591fd92e6a039cc69e055bf">MEOS_FLAGS_SET_ORDERED</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__internal_8h_ac0170c7761da86096a249a0042072704.html#ac0170c7761da86096a249a0042072704">MEOS_FLAGS_SET_T</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_ac0170c7761da86096a249a0042072704.html#ac0170c7761da86096a249a0042072704">MEOS_FLAGS_SET_T</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_a05abcce7de590eeb4a54996b96e8a516.html#a05abcce7de590eeb4a54996b96e8a516">MEOS_FLAGS_SET_X</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_aee69854ff0009d10db1681d4fe0d2e8a.html#aee69854ff0009d10db1681d4fe0d2e8a">MEOS_FLAGS_SET_Z</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal_8h_aa269bf412b7ef27dfef92b586420f918.html#aa269bf412b7ef27dfef92b586420f918">MEOS_FLAGS_STEP_INTERP</a></td></tr>
@@ -648,31 +648,55 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac0170c7761da86096a249a0042072704" name="ac0170c7761da86096a249a0042072704"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac0170c7761da86096a249a0042072704">&#9670;&#160;</a></span>MEOS_FLAGS_SET_T</h2>
+<a id="a5db494c01cff16c59ececc3b8488c065" name="a5db494c01cff16c59ececc3b8488c065"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5db494c01cff16c59ececc3b8488c065">&#9670;&#160;</a></span>basetype_in()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MEOS_FLAGS_SET_T</td>
+          <td class="memname">bool basetype_in </td>
           <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">flags, </td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>str</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">value&#160;</td>
+          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool end&#160;</td>
+          <td class="paramname"><em>UNUSED</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;  ((flags) = (value) ? ((flags) | <a class="el" href="meos__internal_8h_afc967bcb43f2778832e53429ecadee1c.html#afc967bcb43f2778832e53429ecadee1c">MEOS_FLAG_T</a>) : ((flags) &amp; ~<a class="el" href="meos__internal_8h_afc967bcb43f2778832e53429ecadee1c.html#afc967bcb43f2778832e53429ecadee1c">MEOS_FLAG_T</a>))</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return a base value from its string representation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>String </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Base type of the value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">end</td><td>True when the string must end where the value ends, which the types parsing a value out of a larger string read </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Value read </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>false</code> </dd></dl>
 
 </div>
 </div>
