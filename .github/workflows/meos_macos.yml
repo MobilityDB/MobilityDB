@@ -41,7 +41,7 @@ jobs:
 
       - name: Install dependencies (Homebrew)
         run: |
-          brew install json-c geos proj cmake ninja
+          brew install json-c geos proj cmake ninja h3 gdal libxml2 zlib
 
       - name: Configure (MEOS=ON, no PostgreSQL extension)
         run: |
@@ -52,7 +52,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="$PWD/meos-install" \
             -DCMAKE_PREFIX_PATH="$BREW_PREFIX" \
             -DMEOS=ON \
-            -DCBUFFER=ON -DNPOINT=ON -DPOSE=ON -DRGEO=ON
+            -DALL=ON
 
       - name: Build libmeos.dylib
         run: cmake --build build-meos -j

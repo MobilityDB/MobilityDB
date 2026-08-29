@@ -289,13 +289,18 @@ jobs:
           sudo apt-get install -y \
             libgeos-dev \
             libproj-dev \
-            libjson-c-dev
+            libjson-c-dev \
+            libgdal-dev \
+            libh3-dev \
+            libxml2-dev \
+            zlib1g-dev \
+            autoconf automake libtool
 
       # Install into a local prefix rather than /usr/local, so the link test
       # below cannot silently resolve against a system-installed libmeos.
       - name: Build the static library
         run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DCBUFFER=on -DJSON=on \
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DALL=on \
             -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$PWD/prefix"
           cmake --build build -j $(nproc)
           cmake --install build

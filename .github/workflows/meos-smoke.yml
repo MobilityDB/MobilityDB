@@ -40,14 +40,21 @@ jobs:
             libgeos-dev \
             libproj-dev \
             libjson-c-dev \
+            libgdal-dev \
+            libh3-dev \
+            libxml2-dev \
+            zlib1g-dev \
             valgrind
 
       - name: Build and install MEOS
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on \
-            -DRGEO=on -DPOSE=on -DCBUFFER=on -DNPOINT=on ..
+          # ALL enables every optional family, as in meos.yml, so a family added
+          # later is smoke-tested here without editing this workflow: the list in
+          # CMakeLists.txt decides. A family left out installs no public header,
+          # and the suite generated from that header is then skipped in silence
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DALL=on ..
           make -j $(nproc)
           sudo make install
           sudo ldconfig

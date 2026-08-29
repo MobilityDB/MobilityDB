@@ -56,6 +56,7 @@ jobs:
           msystem: UCRT64
           update: true
           install: >-
+            git
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
@@ -63,8 +64,48 @@ jobs:
             mingw-w64-ucrt-x86_64-geos
             mingw-w64-ucrt-x86_64-proj
             mingw-w64-ucrt-x86_64-tzdata
+            mingw-w64-ucrt-x86_64-gdal
+            mingw-w64-ucrt-x86_64-libxml2
+            mingw-w64-ucrt-x86_64-zlib
 
       - uses: ./.github/actions/msys2-toolchain-report
+
+      - name: Build libh3 from source
+        # MSYS2 packages no h3, and H3=ON asks CMake for the library by name,
+        # so the family is unbuildable here until the library exists. The MEOS
+        # build needs the C library alone: the h3 PostgreSQL extension the
+        # control file names is a requirement of the extension target, which
+        # this job does not build.
+        run: |
+          git clone --depth 1 --branch v4.2.1 https://github.com/uber/h3.git h3-src
+          cmake -S h3-src -B h3-build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$PWD/h3-install" \
+            -DBUILD_SHARED_LIBS=ON \
+            -DBUILD_TESTING=OFF \
+            -DENABLE_DOCS=OFF \
+            -DBUILD_BENCHMARKS=OFF \
+            -DBUILD_FILTERS=OFF \
+            -DBUILD_GENERATORS=OFF
+          cmake --build h3-build -j
+          cmake --install h3-build
+
+      - name: Pin the libh3 paths the configure step reads
+        # The same read cppcheck.yml makes of the packaged library, against the
+        # tree this job just installed: name the header and the library outright
+        # so a layout change is a loud failure rather than a silent H3=OFF.
+        run: |
+          H3_INC=$(find "$PWD/h3-install" -name 'h3api.h' | head -1)
+          H3_LIB=$(find "$PWD/h3-install" -name 'libh3*.dll.a' -o -name 'libh3*.a' \
+            -o -name 'libh3*.dll' | head -1)
+          if [ -z "$H3_INC" ] || [ -z "$H3_LIB" ]; then
+            find "$PWD/h3-install" -name 'libh3*' -o -name 'h3api.h'
+            echo "::error::could not locate the libh3 headers/library just built"
+            exit 1
+          fi
+          echo "H3_INCLUDE_DIR=$(dirname "$H3_INC")" >> "$GITHUB_ENV"
+          echo "H3_LIBRARY=$H3_LIB" >> "$GITHUB_ENV"
 
       - name: Resolve native timezone data path
         run: |
@@ -76,15 +117,14 @@ jobs:
 
       - name: Configure (MEOS=ON, no PostgreSQL extension)
         run: |
-          # POSE pulls in RGEO via CMAKE_DEPENDENT_OPTION; RGEO stays off
-          # because rgeo's compilation on Windows depends on PostGIS
-          # build-tree generated headers that are not available there.
           cmake -S . -B build-meos \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX="$PWD/meos-install" \
             -DMEOS=ON \
-            -DCBUFFER=ON -DNPOINT=ON -DPOSE=OFF -DRGEO=OFF \
+            -DALL=ON \
+            -DH3_LIBRARY="$H3_LIBRARY" \
+            -DH3_INCLUDE_DIR="$H3_INCLUDE_DIR" \
             -DMEOS_TZDATA_DIR="$MEOS_TZDATA_WIN"
 
       - name: Build libmeos
@@ -109,5 +149,5 @@ jobs:
             -o meos-install/temporal_test.exe \
             meos/test/temporal_test.c \
             -lmeos
-          PATH="$PWD/meos-install/bin:$PWD/meos-install/lib:$PWD/build-meos:$PATH" ./meos-install/temporal_test.exe \
+          PATH="$PWD/meos-install/bin:$PWD/meos-install/lib:$PWD/build-meos:$PWD/h3-install/bin:$PATH" ./meos-install/temporal_test.exe \
             || (echo "temporal_test.exe failed at runtime"; exit 1)
