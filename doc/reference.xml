@@ -2851,6 +2851,12 @@
 					<para><link linkend="tcell_shift_scale"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Shift, scale, or shift and scale the time span of a temporal cell</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tcell_append"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Append a temporal instant or a temporal sequence</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tcell_merge"><varname>merge</varname></link>: Merge the temporal cells</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcell_set_interp"><varname>setInterp</varname></link>: Set the interpolation of a temporal cell</para>
 				</listitem>
 			</itemizedlist>
@@ -2928,6 +2934,9 @@
 			<title>Bounding Box Operations</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="tcell_stbox"><varname>stbox</varname>, <varname>expandSpace</varname></link>: Return the spatiotemporal bounding box of a temporal cell, or that box expanded in the spatial dimension by a float value</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcell_overlaps"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators</para>
 				</listitem>
 				<listitem>
@@ -3001,23 +3010,6 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_agg_twins"><varname>mergeAgg</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname></link>: Aggregate a set of temporal cells by merging them, or by assembling them into a sequence or a sequence set</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Indexing</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tcell_rtree_ops"><varname>tcell_rtree_ops</varname></link>: GiST operator class for temporal cells</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tcell_quadtree_ops"><varname>tcell_quadtree_ops</varname>, <varname>tcell_kdtree_ops</varname></link>: SP-GiST operator classes for temporal cells, keyed on the <varname>stbox</varname> spatiotemporal bounding box. The quadtree class is the default; the k-d tree class uses k-d tree partitioning and must be named explicitly</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tcell_btree_ops"><varname>tcell_btree_ops</varname></link>: Default B-tree operator class for temporal cells, ordering by the underlying temporal value</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tcell_hash_ops"><varname>tcell_hash_ops</varname></link>: Default hash operator class for temporal cells, used by hash joins and hash aggregation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
