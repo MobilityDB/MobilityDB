@@ -558,6 +558,10 @@ TRGEO_CONFIG = dict(
         # and hand back the same allocation, which is the one ownership model
         # the smoke harness cannot express; append without it.
         "trgeometry_append_tinstant":       {1: "trgeo_inst3", 5: "false"},
+        # The values of a trgeometry are poses, so the set it is restricted to
+        # is a poseset; the default tstzset1 is refused ("The set must be of
+        # type poseset").
+        "trgeometry_restrict_values":       {1: "poseset1"},
         "trgeometry_append_tsequence":      {1: "trgeo_tseq2", 2: "false"},
         # char * string constructors and interpolation projections. The WKT is
         # hand-written in the parser format; the MFJSON is pasted verbatim from
@@ -579,13 +583,6 @@ TRGEO_CONFIG = dict(
         # The generic emitter would allocate into geom_out_param and never free
         # it; the cleanup block below calls the function and frees the result.
         "trgeometry_value_n":         "out-param GSERIALIZED ** is exercised manually below",
-        # The function validates its argument as a geomset, but the
-        # temporal_restrict_values() it delegates to rejects every
-        # trgeometry/geomset pair ("Operation on mixed temporal and set types:
-        # trgeometry, geomset") because a trgeometry's base type is not a
-        # geometry. No set value can reach the restriction, so there is nothing
-        # to smoke-test until the base-type mismatch is resolved in MEOS.
-        "trgeometry_restrict_values": "every geomset is rejected as a mixed temporal/set type",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -599,6 +596,7 @@ TRGEO_CONFIG = dict(
   GSERIALIZED *geom_point1 = geom_in("Point(0 0)", -1);
   GSERIALIZED *geom_out_param = NULL;
   Pose *pose1 = pose_in("Pose(Point(0 0), 0.0)");
+  Set *poseset1 = poseset_in("{\\"Pose(Point(0 0), 0.0)\\", \\"Pose(Point(1 1), 0.5)\\"}");
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
   Datum geom1_datum = (Datum) geom1;
 
@@ -652,6 +650,7 @@ TRGEO_CONFIG = dict(
   if (tpoint1) free(tpoint1);
   if (tpose1) free(tpose1);
   free(stbox1);
+  free(poseset1);
   free(pose1);
   free(geom1);
   free(geom_point1);
