@@ -45,6 +45,9 @@
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/tspatial_parser.h"
+#if RGEO
+  #include "rgeo/trgeo_parser.h"
+#endif /* RGEO */
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -882,6 +885,14 @@ error:
 Temporal *
 temporal_parse(const char **str, MeosType temptype)
 {
+#if RGEO
+  /* A temporal rigid geometry states its reference geometry ahead of the
+   * temporal value, a form the general shape below does not read, so the
+   * parser owning that form answers for it. Without this a caller holding the
+   * type rather than the name cannot read a value that trgeometry_in reads. */
+  if (temptype == T_TRGEOMETRY)
+    return trgeo_parse(str, temptype);
+#endif /* RGEO */
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
   interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
