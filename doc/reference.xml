@@ -2887,7 +2887,7 @@
 			<title>Static Geometry Coverage</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcell_geoToH3Cell"><varname>cell</varname></link>: Return the cell of a grid that contains a point geometry at the given resolution</para>
+					<para><link linkend="tcell_geoToH3Cell"><varname>geoToH3Cell</varname>, <varname>geoToQuadbinCell</varname>, <varname>geoToS2Cell</varname></link>: Return the cell of a grid that contains a point geometry at the given resolution</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_geoToH3IndexSet"><varname>cellset</varname></link>: Return the set of cells of a grid covering a geometry at the given resolution</para>

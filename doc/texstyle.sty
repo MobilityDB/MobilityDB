@@ -15,3 +15,11 @@
 
 %% Give every label its own PDF destination, so no internal link is dropped as a duplicate
 \hypersetup{hypertexnames=false}
+
+%% A type or function name in prose is set in a typewriter font, which LaTeX refuses to
+%% hyphenate, so a paragraph holding a long one has no legal break and sets the line into
+%% the margin. The htt option lets such a name break, and the emergency stretch gives the
+%% paragraph a last pass at a wider tolerance before it overflows. Both reach running text
+%% only: a listing is set by listings, which breaks on its own rules.
+\usepackage[htt]{hyphenat}
+\emergencystretch=3em

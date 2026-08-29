@@ -194,7 +194,7 @@ SELECT ts2cellSeq(ARRAY[ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02'], 
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {tbigint,tcell}::{tcell,tbigint}
 </programlisting>
-				<para>The cast is a binary coercion in both directions, so it costs nothing beyond the type change and round trips: <varname>((c::tbigint)::tcell) = c</varname> for every cell <varname>c</varname>.</para>
+				<para>The cast is a binary coercion in both directions, so it costs nothing beyond the type change. It round trips: casting a cell to <varname>tbigint</varname> and back answers the cell it started from.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (tbigint '590464338553208831@2001-01-01')::th3index;
 -- 831c02fffffffff@2001-01-01
@@ -489,10 +489,14 @@ SELECT atTime(ts2cell '47c3c@2001-01-01', tstzspan '[2001-01-01, 2001-01-02]');
 
 		<itemizedlist>
 			<listitem xml:id="tcell_geoToH3Cell">
-				<indexterm significance="normal"><primary><varname>cell</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoToH3Cell</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoToQuadbinCell</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geoToS2Cell</varname></primary></indexterm>
 				<para>Return the cell of a grid that contains a point geometry at the given resolution</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-geoTo<replaceable>Grid</replaceable>Cell(geo,integer) → cell
+geoToH3Cell(geometry,integer) → h3index
+geoToQuadbinCell(geometry,integer) → quadbin
+geoToS2Cell(geography,integer) → s2cell
 </programlisting>
 				<para>The geometry must be a <varname>POINT</varname>, and its longitude and latitude are interpreted in SRID 4326.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

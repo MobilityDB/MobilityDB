@@ -2878,7 +2878,7 @@
 			<title>Cobertura de geometrías estáticas</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcell_geoToH3Cell"><varname>cell</varname></link>: Devolver la celda de una cuadrícula que contiene una geometría de punto en la resolución dada</para>
+					<para><link linkend="tcell_geoToH3Cell"><varname>geoToH3Cell</varname>, <varname>geoToQuadbinCell</varname>, <varname>geoToS2Cell</varname></link>: Devolver la celda de una cuadrícula que contiene una geometría de punto en la resolución dada</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_geoToH3IndexSet"><varname>cellset</varname></link>: Devolver el conjunto de celdas de una cuadrícula que cubren una geometría en la resolución dada</para>
