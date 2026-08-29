@@ -457,6 +457,11 @@ SELECT round(radians(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[
 SELECT round(deltaValue(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}'), 6);
 SELECT round(deltaValue(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]'), 6);
 SELECT round(deltaValue(tfloat '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}'), 6);
+-- A big integer answers as its integer twin does. A rising pair alone cannot
+-- witness the base type, so a falling one and one crossing zero stand beside it
+SELECT deltaValue(tint '[5@2000-01-01, 2@2000-01-02]');
+SELECT deltaValue(tbigint '[5@2000-01-01, 2@2000-01-02]');
+SELECT deltaValue(tbigint '[-3@2000-01-01, 4@2000-01-02]');
 /* NULL */
 SELECT round(deltaValue(tfloat '1@2000-01-01'), 6);
 SELECT round(deltaValue(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]'), 6);
@@ -526,6 +531,16 @@ SELECT round(tan(tfloat '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-
 -------------------------------------------------------------------------------
 
 SELECT abs(tfloat '[-1@2000-01-01,1@2000-01-02]');
+-- A big integer answers as its integer twin does, the two named side by side
+-- because the value is read through the base type the temporal type declares
+SELECT abs(tint '{-2@2000-01-01, 5@2000-01-02, -7@2000-01-03}');
+SELECT abs(tbigint '{-2@2000-01-01, 5@2000-01-02, -7@2000-01-03}');
+SELECT abs(tbigint '-9223372036854775807@2000-01-01');
+/* Errors */
+-- The most negative value of each integer type has no positive counterpart
+SELECT abs(tint '-2147483648@2000-01-01');
+SELECT abs(tbigint '-9223372036854775808@2000-01-01');
+SELECT abs(tint '{-2147483648@2000-01-01, 5@2000-01-02}');
 
 -------------------------------------------------------------------------------
 
