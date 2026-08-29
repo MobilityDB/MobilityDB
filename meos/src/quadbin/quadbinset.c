@@ -126,3 +126,20 @@ quadbin_cell_to_children_set(Quadbin origin, int children_resolution)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Conversion functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_quadbin_set_conversion
+ * @brief Convert a quadbin cell into a quadbin cell set
+ * @param[in] cell Value
+ * @csqlfn #Value_to_set()
+ */
+Set *
+quadbin_to_set(Quadbin cell)
+{
+  Datum v = QuadbinGetDatum(cell);
+  return set_make_exp(&v, 1, 1, T_QUADBIN, ORDER_NO);
+}
