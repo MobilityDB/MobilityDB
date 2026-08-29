@@ -134,6 +134,12 @@ extern LWGEOM *parse_geojson(json_object *geojson, int *hasz);
 
 /**
  * @brief Return a base value from its string representation
+ * @param[in] str String
+ * @param[in] type Base type of the value
+ * @param[in] end True when the string must end where the value ends, which
+ * the types parsing a value out of a larger string read
+ * @param[out] result Value read
+ * @return On error return @p false
  */
 bool
 #if CBUFFER || NPOINT || POSE || RGEO
