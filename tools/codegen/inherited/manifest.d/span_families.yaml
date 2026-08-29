@@ -3081,9 +3081,9 @@ span_families:
   - lit: "\n"
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
   - lit: "\n"
-  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - lit: "\n"
-  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
   - lit: "\n"
 
 - family: pcpointset_io
