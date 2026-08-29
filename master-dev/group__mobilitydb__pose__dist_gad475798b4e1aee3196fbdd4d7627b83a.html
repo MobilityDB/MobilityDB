@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Distance_pose_stbox</title>
+<title>MobilityDB: NAD_pose_stbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,10 +82,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_ga6182abffc1aabd35bb2fffba2c692907.html#ga6182abffc1aabd35bb2fffba2c692907">Distance_geo_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_ga1a09c6350c93528281fc5c4a2883605f.html#ga1a09c6350c93528281fc5c4a2883605f">Distance_pose_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_gacbbd9a2e59f8ec1a38c9e59d45d0b848.html#gacbbd9a2e59f8ec1a38c9e59d45d0b848">Distance_pose_pose</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pose__dist_ga83cf861005096200ea5d974056ae80e0.html#ga83cf861005096200ea5d974056ae80e0">Distance_pose_stbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_gaa4644055df24f82a457dcea31cafe87c.html#gaa4644055df24f82a457dcea31cafe87c">Distance_stbox_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_ga621ce9a846645fdd61a24fd6047046df.html#ga621ce9a846645fdd61a24fd6047046df">NAD_geo_tpose</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pose__dist_gad475798b4e1aee3196fbdd4d7627b83a.html#gad475798b4e1aee3196fbdd4d7627b83a">NAD_pose_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_ga27ca45854e81894ef507417bb6acd29c.html#ga27ca45854e81894ef507417bb6acd29c">NAD_pose_tpose</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_ga0c871c33d4fed6a7f364988940703ae2.html#ga0c871c33d4fed6a7f364988940703ae2">NAD_stbox_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_ga5511c730ef36407c1a2ef8ca779770ef.html#ga5511c730ef36407c1a2ef8ca779770ef">NAD_tpose_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_ga8e31b641ac3026d90870d22f68ba31cf.html#ga8e31b641ac3026d90870d22f68ba31cf">NAD_tpose_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__dist_gada597d1718a143245c26bd38771c40a2.html#gada597d1718a143245c26bd38771c40a2">NAD_tpose_tpose</a></td></tr>
@@ -108,14 +108,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga83cf861005096200ea5d974056ae80e0" name="ga83cf861005096200ea5d974056ae80e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga83cf861005096200ea5d974056ae80e0">&#9670;&#160;</a></span>Distance_pose_stbox()</h2>
+<a id="gad475798b4e1aee3196fbdd4d7627b83a" name="gad475798b4e1aee3196fbdd4d7627b83a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad475798b4e1aee3196fbdd4d7627b83a">&#9670;&#160;</a></span>NAD_pose_stbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Distance_pose_stbox </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> NAD_pose_stbox </td>
           <td>(</td>
           <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -124,8 +124,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the distance between a pose and a spatiotemporal box @sqlfn <a class="el" href="06__berlinmod__clip_8c_a2c5cf92c2199c4900c91e7b0aee454be.html#a2c5cf92c2199c4900c91e7b0aee454be">distance()</a> </p>
-<dl class="section user"><dt>SQL Operator:</dt><dd><code>&lt;-&gt;</code> </dd></dl>
+<p>Return the nearest approach distance between a pose and a spatiotemporal box @sqlfn nearestApproachDistance() </p>
+<dl class="section user"><dt>SQL Operator:</dt><dd><code></code>|=| </dd></dl>
 
 </div>
 </div>
