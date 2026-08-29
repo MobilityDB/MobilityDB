@@ -402,6 +402,14 @@ endif()
 # Added to build on Windows to avoid the error 'M_PI': undeclared identifier
 add_compile_definitions(_USE_MATH_DEFINES)
 
+# The Windows GDI header defines PC_NONE as a palette constant, which is also
+# the first enumerator of the pgPointCloud compression enum, so a translation
+# unit reading both parses "0 = 0," in place of the enumerator. NOGDI keeps the
+# drawing interface out of windows.h, which no target here draws through.
+if(WIN32)
+  add_compile_definitions(NOGDI)
+endif()
+
 # Set default compile flags and code coverage for GCC
 if(CMAKE_COMPILER_IS_GNUCC)
   # MobilityDB compiler flags valid for both C and C++
