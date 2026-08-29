@@ -87,9 +87,6 @@ $(function() {
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
-<code>#include &lt;liblwgeom.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -102,7 +99,7 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Check the DE-9IM matrix of the WKT geometry pairs read on the standard input, one <code>wkt1|wkt2</code> or <code>wkt1|wkt2|expected</code> record per line. </p>
 <p >A record without an expected matrix prints the nine-character matrix <a class="el" href="group__meos__geo__base__rel_ga29d40852f27e1ffeb838931f63727696.html#ga29d40852f27e1ffeb838931f63727696" title="Return the DE-9IM intersection matrix of two geometries.">geom_relate</a> answers, or the word <code>UNSUPPORTED</code> where it answers none. A record with an expected matrix is checked against it and counted, the exit status reporting whether every record passed. A pair left unanswered counts as a failure, so a coverage gap shows up as a red run rather than as a silently skipped record. The expected matrix follows the DE-9IM pattern alphabet, so <code>T</code> accepts any non-empty intersection and <code>*</code> accepts anything.</p>
-<p >The engine under test is the native one, reached through <a class="el" href="geo__funcs_8h_a26c9915acdbe188b513aa2cb7d525362.html#a26c9915acdbe188b513aa2cb7d525362" title="Compute the DE-9IM intersection matrix.">meos_relate</a>, so the answers are its own whether or not the library carries GEOS. The corpus of expected matrices comes from the GEOS suite through <code><a class="el" href="relate__harvest__geos_8py.html">relate_harvest_geos.py</a></code>, so the two answer the same question about the same records. </p>
+<p >The engine under test is the native one, reached through <a class="el" href="group__meos__geo__base__rel_ga29d40852f27e1ffeb838931f63727696.html#ga29d40852f27e1ffeb838931f63727696" title="Return the DE-9IM intersection matrix of two geometries.">geom_relate</a>, so the answers are its own whether or not the library carries GEOS. The corpus of expected matrices comes from the GEOS suite through <code><a class="el" href="relate__harvest__geos_8py.html">relate_harvest_geos.py</a></code>, so the two answer the same question about the same records. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

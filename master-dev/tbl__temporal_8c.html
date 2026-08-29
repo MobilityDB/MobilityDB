@@ -81,31 +81,44 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A simple program that a CSV file containing temporal values and applies a function to them.  
+<p>A simple program that reads the CSV file of every temporal type and applies a function to the values it holds.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__cbuffer_8h_source.html">meos_cbuffer.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__npoint_8h_source.html">meos_npoint.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__pose_8h_source.html">meos_pose.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__rgeo_8h_source.html">meos_rgeo.h</a>&gt;</code><br />
+<code>#include &lt;meos_catalog.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ac58386431fc4f90cd57ced06279f3a4b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__temporal_8c_ac58386431fc4f90cd57ced06279f3a4b.html#ac58386431fc4f90cd57ced06279f3a4b">MAX_LEN_HEADER</a>&#160;&#160;&#160;1024</td></tr>
 <tr class="separator:ac58386431fc4f90cd57ced06279f3a4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d756be27d26ef6769f227bf2485f98c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__temporal_8c_a7d756be27d26ef6769f227bf2485f98c.html#a7d756be27d26ef6769f227bf2485f98c">MAX_LEN_TEMP</a>&#160;&#160;&#160;8192</td></tr>
+<tr class="memitem:a7d756be27d26ef6769f227bf2485f98c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__temporal_8c_a7d756be27d26ef6769f227bf2485f98c.html#a7d756be27d26ef6769f227bf2485f98c">MAX_LEN_TEMP</a>&#160;&#160;&#160;32768</td></tr>
 <tr class="separator:a7d756be27d26ef6769f227bf2485f98c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa5a26ecff218f34a586b80c4d0cf2e8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__temporal_8c_afa5a26ecff218f34a586b80c4d0cf2e8.html#afa5a26ecff218f34a586b80c4d0cf2e8">SCAN_LEN_TEMP</a>&#160;&#160;&#160;32766</td></tr>
+<tr class="separator:afa5a26ecff218f34a586b80c4d0cf2e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a840291bc02cba5474a4cb46a9b9566fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__temporal_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a> (void)</td></tr>
-<tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5414b4023b0a23c0f45efff9ba006f0d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__temporal_8c_a5414b4023b0a23c0f45efff9ba006f0d.html#a5414b4023b0a23c0f45efff9ba006f0d">fixture_temptype</a> (const char *path)</td></tr>
+<tr class="memdesc:a5414b4023b0a23c0f45efff9ba006f0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal type whose name a fixture file carries.  <a href="tbl__temporal_8c_a5414b4023b0a23c0f45efff9ba006f0d.html#a5414b4023b0a23c0f45efff9ba006f0d">More...</a><br /></td></tr>
+<tr class="separator:a5414b4023b0a23c0f45efff9ba006f0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbl__temporal_8c_a3c04138a5bfe5d72780bb7e82a18e627.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
+<tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A simple program that a CSV file containing temporal values and applies a function to them. </p>
-<p >The corresponding SQL query would be </p><div class="fragment"><div class="line">SELECT k, numInstants(shiftScaleValue(temp, 5, 10))</div>
+<div class="textblock"><p >A simple program that reads the CSV file of every temporal type and applies a function to the values it holds. </p>
+<p >The corresponding SQL query would be, for each temporal type in turn, </p><div class="fragment"><div class="line">SELECT k, numInstants(tprecision(temp, interval <span class="stringliteral">&#39;5 minutes&#39;</span>, timestamptz</div>
+<div class="line">  <span class="stringliteral">&#39;2000-01-01&#39;</span>))</div>
 <div class="line">FROM tbl_tfloat;</div>
-</div><!-- fragment --><p >The program can be tested with several functions such as simplification with Douglas-Peucker ... reduction such as <code>tsample</code>, <code>tprecision</code>, ...</p>
+</div><!-- fragment --><p >The function is one every temporal type answers, so one run reports every type rather than the one a reader uncomments. To exercise a type-specific function instead, apply it to the value the loop parses.</p>
+<p >The fixtures are written by <code>tools/gen_test_csv.py</code> from the archives the PostgreSQL suite loads.</p>
 <p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o tbl_temporal tbl_temporal.c -L/usr/local/lib -lmeos</div>
 <div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->

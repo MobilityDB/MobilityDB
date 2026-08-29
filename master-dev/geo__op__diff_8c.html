@@ -159,6 +159,12 @@ Functions</h2></td></tr>
 <div class="line">geo_op_diff <a class="code hl_function" href="postgis_8h_a74d867942f2875ba66afa5be324dfd82.html#a74d867942f2875ba66afa5be324dfd82">issimple</a>          &lt; issimple_corpus_geos.txt</div>
 <div class="ttc" id="apostgis_8h_a551fe3a81f4def6c5994da54d4bcf7b1_html_a551fe3a81f4def6c5994da54d4bcf7b1"><div class="ttname"><a href="postgis_8h_a551fe3a81f4def6c5994da54d4bcf7b1.html#a551fe3a81f4def6c5994da54d4bcf7b1">buffer</a></div><div class="ttdeci">Datum buffer(PG_FUNCTION_ARGS)</div></div>
 <div class="ttc" id="apostgis_8h_a74d867942f2875ba66afa5be324dfd82_html_a74d867942f2875ba66afa5be324dfd82"><div class="ttname"><a href="postgis_8h_a74d867942f2875ba66afa5be324dfd82.html#a74d867942f2875ba66afa5be324dfd82">issimple</a></div><div class="ttdeci">Datum issimple(PG_FUNCTION_ARGS)</div></div>
+</div><!-- fragment --><p >The program compares two engines, so unlike its siblings it does not build against the installed MEOS alone: it reads the geometry through liblwgeom and answers the reference through GEOS, and neither header nor symbol is part of the MEOS library surface. It builds against the source and build trees, where <code>$SRC</code> is a MobilityDB checkout and <code>$BLD</code> its build directory </p><div class="fragment"><div class="line">gcc -Wall -g -DMEOS=1 -I$SRC/meos/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -isystem $SRC/pgtypes \</div>
+<div class="line">  -isystem $BLD/pgtypes -isystem $SRC/postgis -isystem $BLD/postgis \</div>
+<div class="line">  -isystem $SRC/postgis/liblwgeom -isystem $BLD/postgis/liblwgeom \</div>
+<div class="line">  -o geo_op_diff geo_op_diff.c -lmeos $BLD/postgis/libpostgis.a \</div>
+<div class="line">  -lgeos_c -lproj -ljson-c -lm</div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
