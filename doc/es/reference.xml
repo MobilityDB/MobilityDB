@@ -2842,6 +2842,12 @@
 					<para><link linkend="tcell_shift_scale"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Desplazar, escalar, o desplazar y escalar el lapso de tiempo de una celda temporal</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tcell_append"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Añadir un instante temporal o una secuencia temporal</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tcell_merge"><varname>merge</varname></link>: Fusionar las celdas temporales</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcell_set_interp"><varname>setInterp</varname></link>: Establecer la interpolación de una celda temporal</para>
 				</listitem>
 			</itemizedlist>
@@ -2919,6 +2925,9 @@
 			<title>Operaciones de cuadro delimitador</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="tcell_stbox"><varname>stbox</varname>, <varname>expandSpace</varname></link>: Devolver el cuadro delimitador espaciotemporal de una celda temporal, o ese cuadro expandido en la dimensión espacial por un valor flotante</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcell_overlaps"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Operadores topológicos</para>
 				</listitem>
 				<listitem>
@@ -2992,23 +3001,6 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_agg_twins"><varname>mergeAgg</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequenceAgg</varname></link>: Agregar un conjunto de celdas temporales fusionándolas, o ensamblándolas en una secuencia o en un conjunto de secuencias</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Indexación</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tcell_rtree_ops"><varname>tcell_rtree_ops</varname></link>: Clase de operadores GiST para celdas temporales</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tcell_quadtree_ops"><varname>tcell_quadtree_ops</varname>, <varname>tcell_kdtree_ops</varname></link>: Clases de operadores SP-GiST para celdas temporales, indexadas sobre el cuadro delimitador espaciotemporal <varname>stbox</varname>. La clase de árbol cuaternario es la predeterminada; la clase de árbol k-d usa particionamiento de árbol k-d y debe nombrarse explícitamente</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tcell_btree_ops"><varname>tcell_btree_ops</varname></link>: Clase de operadores B-tree predeterminada para celdas temporales, que ordena por el valor temporal subyacente</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="tcell_hash_ops"><varname>tcell_hash_ops</varname></link>: Clase de operadores hash predeterminada para celdas temporales, usada por las reuniones hash y la agregación hash</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

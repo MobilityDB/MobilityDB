@@ -335,6 +335,41 @@ SELECT scaleTime(ts2cell '[47c3c@2001-01-01, 47c4@2001-01-03]', interval '4 days
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tcell_append">
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Append a temporal instant or a temporal sequence</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+appendInstant(tcell,tcellInst) &#8594; tcell
+appendSequence(tcell,tcellSeq) &#8594; tcell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(appendInstant(th3index '831c02fffffffff@2001-01-01',
+  th3index '831c00fffffffff@2001-01-02'));
+-- [831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]
+SELECT asText(appendSequence(tquadbin '[48a6227affffffff@2001-01-01]',
+  tquadbin '[485623ffffffffff@2001-01-02]'));
+-- {[48a6227affffffff@2001-01-01], [485623ffffffffff@2001-01-02]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcell_merge">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<para>Merge the temporal cells</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+merge(tcell,tcell) &#8594; tcell
+merge(tcell[]) &#8594; tcell
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(merge(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-03]',
+  ts2cell '[47c3c@2001-01-03, 47c4@2001-01-05]'));
+-- [47c3c@2001-01-01, 47c4@2001-01-05]
+SELECT asText(merge(ARRAY[th3index '831c02fffffffff@2001-01-01',
+  th3index '831c00fffffffff@2001-01-03']));
+-- {831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-03}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcell_set_interp">
 				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
 				<para>Set the interpolation of a temporal cell</para>
@@ -660,6 +695,23 @@ SELECT ST_NPoints(getValue(cellToBoundary(ts2cell '47c3c@2001-01-01'))::geometry
 		</note>
 
 		<itemizedlist>
+			<listitem xml:id="tcell_stbox">
+				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>expandSpace</varname></primary></indexterm>
+				<para>Return the spatiotemporal bounding box of a temporal cell, or that box expanded in the spatial dimension by a float value</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stbox(tcell) &#8594; stbox
+expandSpace(tcell,float) &#8594; stbox
+</programlisting>
+				<para>The box is the geodetic envelope of the cell boundaries together with the trajectory's time period, so it is the key both index operator classes of the indexing section store.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(stbox(tquadbin '48a6227affffffff@2001-01-01'), 6);
+-- SRID=4326;STBOX XT(((4.21875,50.736455),(4.570313,50.958427)),[2001-01-01, 2001-01-01])
+SELECT round(expandSpace(tquadbin '48a6227affffffff@2001-01-01', 1), 6);
+-- SRID=4326;STBOX XT(((3.21875,49.736455),(5.570313,51.958427)),[2001-01-01, 2001-01-01])
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcell_overlaps">
 				<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
@@ -1065,45 +1117,27 @@ SELECT mergeAgg(temp) FROM (VALUES (ts2cell '47c3c@2001-01-01')) AS t(temp);
 	</sect1>
 	<sect1 xml:id="tcell_indexing">
 		<title>Indexing</title>
-		<para>GiST and SP-GiST operator classes are defined so the bounding-box operators of the previous section can be used with corresponding indexes.</para>
+		<para>GiST and SP-GiST indexes can be created for table columns of temporal cells. An example of index creation is as follows:</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX Trips_Cells_SPGist_Idx ON Trips USING SPGist(Cells);
+</programlisting>
+		<para>The GiST and SP-GiST indexes store the bounding box for the temporal cells, which is an <varname>stbox</varname>, as all spatiotemporal types: the geodetic extent of the cell boundaries together with the time period.</para>
 
-		<para>Each operator class carries the name of the temporal type it indexes, so <varname>tcell_rtree_ops</varname> below stands for <varname>th3index_rtree_ops</varname>, <varname>tquadbin_rtree_ops</varname>, and <varname>ts2cell_rtree_ops</varname>, and the other four names likewise.</para>
+		<para>Each operator class carries the name of the temporal type it indexes, so a <varname>th3index</varname> column takes <varname>th3index_rtree_ops</varname> for GiST and <varname>th3index_quadtree_ops</varname> or <varname>th3index_kdtree_ops</varname> for SP-GiST, and the <varname>tquadbin</varname> and <varname>ts2cell</varname> names likewise. The quadtree class is the SP-GiST default and the k-d tree class is named explicitly. A B-tree and a hash operator class are defined as well, ordering and hashing by the underlying temporal value.</para>
 
+		<para>A GiST or SP-GiST index can accelerate queries involving the following operators:</para>
 		<itemizedlist>
-			<listitem xml:id="tcell_rtree_ops">
-				<indexterm significance="normal"><primary><varname>tcell_rtree_ops</varname></primary></indexterm>
-				<para>GiST operator class for temporal cells</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE INDEX ON trips USING gist(cells);       -- uses th3index_rtree_ops by default
-CREATE INDEX ON trips USING gist(cells th3index_rtree_ops);
-</programlisting>
-				<para>Indexes an <varname>stbox</varname> spatiotemporal bounding box per row, the geodetic extent of the cell boundaries together with the time period.</para>
+			<listitem>
+				<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, which only consider the spatial dimension in temporal cells,</para>
 			</listitem>
-
-			<listitem xml:id="tcell_quadtree_ops">
-				<indexterm significance="normal"><primary><varname>tcell_quadtree_ops</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tcell_kdtree_ops</varname></primary></indexterm>
-				<para>SP-GiST operator classes for temporal cells, keyed on the <varname>stbox</varname> spatiotemporal bounding box. The quadtree class is the default; the k-d tree class uses k-d tree partitioning and must be named explicitly</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE INDEX ON trips USING spgist(cells);     -- uses th3index_quadtree_ops by default
-CREATE INDEX ON trips USING spgist(cells th3index_kdtree_ops);
-</programlisting>
+			<listitem>
+				<para><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>, <varname>#&gt;&gt;</varname>, which only consider the time dimension in temporal cells,</para>
 			</listitem>
-			<listitem xml:id="tcell_btree_ops">
-				<indexterm significance="normal"><primary><varname>tcell_btree_ops</varname></primary></indexterm>
-				<para>Default B-tree operator class for temporal cells, ordering by the underlying temporal value</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE INDEX ON trips USING btree(cells);      -- uses tquadbin_btree_ops by default
-</programlisting>
-			</listitem>
-			<listitem xml:id="tcell_hash_ops">
-				<indexterm significance="normal"><primary><varname>tcell_hash_ops</varname></primary></indexterm>
-				<para>Default hash operator class for temporal cells, used by hash joins and hash aggregation</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE INDEX ON trips USING hash(cells);       -- uses tquadbin_hash_ops by default
-</programlisting>
+			<listitem>
+				<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument.</para>
 			</listitem>
 		</itemizedlist>
+		<para>These operators work on bounding boxes, not the entire values.</para>
 	</sect1>
 	<sect1 xml:id="tcell_h3_specific">
 		<title>H3-Specific Operations</title>
