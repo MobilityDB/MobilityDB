@@ -40,17 +40,9 @@ CREATE FUNCTION distance(geometry, pose)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geo_pose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION distance(stbox, pose)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_stbox_pose'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(pose, geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_pose_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION distance(pose, stbox)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_pose_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(pose, pose)
   RETURNS float
@@ -65,20 +57,8 @@ CREATE OPERATOR <-> (
 );
 CREATE OPERATOR <-> (
   PROCEDURE = distance,
-  LEFTARG = stbox,
-  RIGHTARG = pose,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = distance,
   LEFTARG = pose,
   RIGHTARG = geometry,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = distance,
-  LEFTARG = pose,
-  RIGHTARG = stbox,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
@@ -171,6 +151,14 @@ CREATE FUNCTION nearestApproachInstant(tpose, tpose)
 
 /*****************************************************************************/
 
+CREATE FUNCTION nearestApproachDistance(pose, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_pose_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(stbox, pose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(geometry, tpose)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_geo_tpose'
@@ -200,6 +188,16 @@ CREATE FUNCTION nearestApproachDistance(tpose, tpose)
   AS 'MODULE_PATHNAME', 'NAD_tpose_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR |=| (
+  LEFTARG = pose, RIGHTARG = stbox,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = stbox, RIGHTARG = pose,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
 CREATE OPERATOR |=| (
   LEFTARG = geometry, RIGHTARG = tpose,
   PROCEDURE = nearestApproachDistance,

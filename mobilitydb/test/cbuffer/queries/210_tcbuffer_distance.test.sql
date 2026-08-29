@@ -30,9 +30,11 @@
 -------------------------------------------------------------------------------
 
 SELECT round(distance(geometry 'Point(1 0)', cbuffer 'Cbuffer(Point(4 0),0.5)'), 6);
-SELECT round(distance(stbox 'STBOX X((1,-1),(3,1))', cbuffer 'Cbuffer(Point(4 0),0.5)'), 6);
+SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', cbuffer 'Cbuffer(Point(4 0),0.5)'), 6);
 SELECT round(distance(cbuffer 'Cbuffer(Point(4 0),0.5)', geometry 'Point(1 0)'), 6);
-SELECT round(distance(cbuffer 'Cbuffer(Point(4 0),0.5)', stbox 'STBOX X((1,-1),(3,1))'), 6);
+SELECT round(nearestApproachDistance(cbuffer 'Cbuffer(Point(4 0),0.5)', stbox 'STBOX X((1,-1),(3,1))'), 6);
+SELECT round(stbox 'STBOX X((1,-1),(3,1))' |=| cbuffer 'Cbuffer(Point(4 0),0.5)', 6);
+SELECT round(cbuffer 'Cbuffer(Point(4 0),0.5)' |=| stbox 'STBOX X((1,-1),(3,1))', 6);
 SELECT round(distance(cbuffer 'Cbuffer(Point(0 0),0.5)', cbuffer 'Cbuffer(Point(3 4),0.5)'), 6);
 
 SELECT round(geometry 'Point(1 0)' <-> cbuffer 'Cbuffer(Point(4 0),0.5)', 6);

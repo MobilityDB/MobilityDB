@@ -4,7 +4,7 @@ SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
      3
 (1 row)
 
-SELECT round(distance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
+SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
  round 
 -------
      1
@@ -16,7 +16,19 @@ SELECT round(distance(pose 'Pose(Point(4 0),0)', geometry 'Point(1 0)'), 6);
      3
 (1 row)
 
-SELECT round(distance(pose 'Pose(Point(4 0),0)', stbox 'STBOX X((1,-1),(3,1))'), 6);
+SELECT round(nearestApproachDistance(pose 'Pose(Point(4 0),0)', stbox 'STBOX X((1,-1),(3,1))'), 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(stbox 'STBOX X((1,-1),(3,1))' |=| pose 'Pose(Point(4 0),0)', 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(pose 'Pose(Point(4 0),0)' |=| stbox 'STBOX X((1,-1),(3,1))', 6);
  round 
 -------
      1
@@ -35,11 +47,10 @@ SELECT round(geometry 'Point(1 0)' <-> pose 'Pose(Point(4 0),0)', 6);
 (1 row)
 
 SELECT round(stbox 'STBOX X((1,-1),(3,1))' <-> pose 'Pose(Point(4 0),0)', 6);
- round 
--------
-     1
-(1 row)
-
+ERROR:  operator does not exist: stbox <-> pose
+LINE 1: SELECT round(stbox 'STBOX X((1,-1),(3,1))' <-> pose 'Pose(Po...
+                                                   ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
 SELECT round(pose 'Pose(Point(4 0),0)' <-> geometry 'Point(1 0)', 6);
  round 
 -------
@@ -47,11 +58,10 @@ SELECT round(pose 'Pose(Point(4 0),0)' <-> geometry 'Point(1 0)', 6);
 (1 row)
 
 SELECT round(pose 'Pose(Point(4 0),0)' <-> stbox 'STBOX X((1,-1),(3,1))', 6);
- round 
--------
-     1
-(1 row)
-
+ERROR:  operator does not exist: pose <-> stbox
+LINE 1: SELECT round(pose 'Pose(Point(4 0),0)' <-> stbox 'STBOX X((1...
+                                               ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
 SELECT round(pose 'Pose(Point(0 0),0)' <-> pose 'Pose(Point(3 4),0)', 6);
  round 
 -------
@@ -101,11 +111,10 @@ SELECT NULL::geometry <-> pose 'Pose(Point(4 0),0)';
 (1 row)
 
 SELECT pose 'Pose(Point(4 0),0)' <-> NULL::stbox;
- ?column? 
-----------
-         
-(1 row)
-
+ERROR:  operator does not exist: pose <-> stbox
+LINE 1: SELECT pose 'Pose(Point(4 0),0)' <-> NULL::stbox;
+                                         ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
 SELECT NULL::pose <-> pose 'Pose(Point(4 0),0)';
  ?column? 
 ----------

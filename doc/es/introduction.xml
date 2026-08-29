@@ -502,4 +502,14 @@ SET client_min_messages TO notice;
 			Además, la API de MobilityDB y de MEOS se amplió con nuevas funcionalidades y se simplificó para mejorar su usabilidad. Por último, la versión 1.3 también habilita las últimas versiones PostgreSQL 18 y PostGIS 3.6.0. Por todas estas razones, el formato binario de los tipos temporales cambió de la versión 1.2 a la 1.3 y, por lo tanto, es necesario hacer una copia de seguridad y restaurarla para migrar a la nueva versión 1.3 de MobilityDB.
 		</para>
 	</sect1>
+
+	<sect1 xml:id="migrating_1.4">
+		<title>Migración de la versión 1.3 a la versión 1.4</title>
+		<para>
+			Todo tipo que define la distancia de aproximación más cercana con respecto a una caja espaciotemporal la expresa en la versión 1.4 mediante la función <varname>nearestApproachDistance</varname> y el operador <varname>|=|</varname>. En la versión 1.3 los tipos <varname>cbuffer</varname> y <varname>pose</varname> la expresaban mediante la función <varname>distance</varname> y el operador <varname>&lt;-&gt;</varname>, mientras que <varname>geometry</varname> y <varname>geography</varname> ya usaban la primera. Las signaturas afectadas son <varname>(cbuffer, stbox)</varname>, <varname>(stbox, cbuffer)</varname>, <varname>(pose, stbox)</varname> y <varname>(stbox, pose)</varname>.
+		</para>
+		<para>
+			Las dos funciones responden preguntas distintas, que es lo que expresa el cambio. Una caja espaciotemporal lleva un período, de modo que <varname>nearestApproachDistance</varname> responde la distancia mínima durante el tiempo que comparten sus dos argumentos, y responde el valor nulo cuando no comparten ninguno. La función <varname>distance</varname> mide sus dos argumentos como conjuntos de puntos y no lee ningún período. Las signaturas de <varname>distance</varname> cuyos argumentos no llevan período conservan el nombre.
+		</para>
+	</sect1>
 </chapter>

@@ -2258,7 +2258,7 @@ distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between a pose and a spatiotemporal box
  * @return On error return @p DBL_MAX
- * @csqlfn #Distance_pose_stbox() #Distance_stbox_pose()
+ * @csqlfn #NAD_pose_stbox() #NAD_stbox_pose()
  */
 double
 distance_pose_stbox(const Pose *pose, const STBox *box)

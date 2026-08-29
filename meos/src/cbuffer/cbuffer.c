@@ -1026,7 +1026,6 @@ distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between a circular buffer and a spatiotemporal box
  * @return On error return @p DBL_MAX
- * @csqlfn #Distance_cbuffer_stbox() #Distance_stbox_cbuffer()
  */
 double
 distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)

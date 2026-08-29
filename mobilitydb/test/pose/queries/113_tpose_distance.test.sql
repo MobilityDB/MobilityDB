@@ -32,9 +32,11 @@
 -------------------------------------------------------------------------------
 
 SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
-SELECT round(distance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
+SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
 SELECT round(distance(pose 'Pose(Point(4 0),0)', geometry 'Point(1 0)'), 6);
-SELECT round(distance(pose 'Pose(Point(4 0),0)', stbox 'STBOX X((1,-1),(3,1))'), 6);
+SELECT round(nearestApproachDistance(pose 'Pose(Point(4 0),0)', stbox 'STBOX X((1,-1),(3,1))'), 6);
+SELECT round(stbox 'STBOX X((1,-1),(3,1))' |=| pose 'Pose(Point(4 0),0)', 6);
+SELECT round(pose 'Pose(Point(4 0),0)' |=| stbox 'STBOX X((1,-1),(3,1))', 6);
 SELECT round(distance(pose 'Pose(Point(0 0),0)', pose 'Pose(Point(3 4),0)'), 6);
 
 SELECT round(geometry 'Point(1 0)' <-> pose 'Pose(Point(4 0),0)', 6);

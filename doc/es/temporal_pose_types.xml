@@ -414,16 +414,14 @@ SELECT asEWKT(transformPipeline(transformPipeline(pose, pipeline, 4326), pipelin
 					<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 					<para>Devuelve la distancia</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-distance({geo,stbox,pose},pose) → float
-distance(pose,{geo,stbox,pose}) → float
-{geo,stbox,pose} &lt;-&gt; pose → float
+distance({geo,pose},pose) → float
+distance(pose,{geo,pose}) → float
+{geo,pose} &lt;-&gt; pose → float
 </programlisting>
 					<para>Solo se tiene en cuenta el componente de punto de la pose, la orientación se ignora. La distancia se calcula en dos dimensiones, incluso cuando los argumentos son tridimensionales. El resultado es <varname>NULL</varname> cuando la geometría está vacía.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
 -- 3
-SELECT round(distance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
--- 1
 SELECT round(pose 'Pose(Point(0 0),0)' &lt;-&gt; pose 'Pose(Point(3 4),0)', 6);
 -- 5
 SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' &lt;-&gt;
@@ -431,6 +429,22 @@ SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' &lt;-&gt;
 -- 5
 SELECT round(geometry 'Point empty' &lt;-&gt; pose 'Pose(Point(4 0),0)', 6);
 -- NULL
+</programlisting>
+				</listitem>
+				<listitem xml:id="pose_nearestApproachDistance">
+					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+					<para>Devuelve la distancia de aproximación más cercana</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+nearestApproachDistance({stbox,pose},{pose,stbox}) → float
+{stbox,pose} |=| {pose,stbox} → float
+</programlisting>
+					<para>El valor es la menor distancia sobre el tiempo que comparten los dos argumentos, y es <varname>NULL</varname> cuando no comparten ninguno. Una pose no lleva período, por lo que está presente en todo tiempo que abarca la caja. Solo se tiene en cuenta el componente de punto de la pose, la orientación se ignora.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
+-- 1
+SELECT round(pose 'Pose(Point(4 0),0)' |=| stbox 'STBOX X((1,-1),(3,1))', 6);
+-- 1
 </programlisting>
 				</listitem>
 			</itemizedlist>

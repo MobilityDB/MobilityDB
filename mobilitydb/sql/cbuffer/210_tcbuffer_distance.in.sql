@@ -41,17 +41,9 @@ CREATE FUNCTION distance(geometry, cbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geo_cbuffer'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION distance(stbox, cbuffer)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_stbox_cbuffer'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_cbuffer_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION distance(cbuffer, stbox)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_cbuffer_stbox'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, cbuffer)
   RETURNS float
@@ -66,20 +58,8 @@ CREATE OPERATOR <-> (
 );
 CREATE OPERATOR <-> (
   PROCEDURE = distance,
-  LEFTARG = stbox,
-  RIGHTARG = cbuffer,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = distance,
   LEFTARG = cbuffer,
   RIGHTARG = geometry,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = distance,
-  LEFTARG = cbuffer,
-  RIGHTARG = stbox,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
@@ -172,6 +152,14 @@ CREATE FUNCTION nearestApproachInstant(tcbuffer, tcbuffer)
 
 /*****************************************************************************/
 
+CREATE FUNCTION nearestApproachDistance(cbuffer, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_cbuffer_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(stbox, cbuffer)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(geometry, tcbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_geo_tcbuffer'
@@ -201,6 +189,16 @@ CREATE FUNCTION nearestApproachDistance(tcbuffer, tcbuffer)
   AS 'MODULE_PATHNAME', 'NAD_tcbuffer_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR |=| (
+  LEFTARG = cbuffer, RIGHTARG = stbox,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = stbox, RIGHTARG = cbuffer,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
 CREATE OPERATOR |=| (
   LEFTARG = geometry, RIGHTARG = tcbuffer,
   PROCEDURE = nearestApproachDistance,

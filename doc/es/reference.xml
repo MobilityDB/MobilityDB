@@ -1383,6 +1383,9 @@
 					<listitem>
 						<para><link linkend="pose_distance_op"><varname>distance</varname>, <varname>&lt;-&gt;</varname></link>: Devuelve la distancia</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="pose_nearestApproachDistance"><varname>nearestApproachDistance</varname>, <varname>|=|</varname></link>: Devuelve la distancia de aproximación más cercana</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -2086,6 +2089,9 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="cbuffer_distance_op"><varname>distance</varname>, <varname>&lt;-&gt;</varname></link>: Devuelve la distancia</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="cbuffer_nearestApproachDistance"><varname>nearestApproachDistance</varname>, <varname>|=|</varname></link>: Devuelve la distancia de aproximación más cercana</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
