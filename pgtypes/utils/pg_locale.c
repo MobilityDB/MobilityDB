@@ -1339,10 +1339,14 @@ void
 meos_finalize_collation(void)
 {
   // collation_cache_my_destroy(CollationCache);
+  /* Idempotency: null the slot after freeing it so a second finalize call
+   * does not double-free, and so meos_initialize_collation finds the slot
+   * free, as its assertion requires. */
   if (default_locale != NULL)
   {
     pfree((void *) default_locale->info.builtin.locale);
     pfree(default_locale);
+    default_locale = NULL;
   }
 }
 

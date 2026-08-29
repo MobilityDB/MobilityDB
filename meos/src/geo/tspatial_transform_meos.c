@@ -172,16 +172,19 @@ GetMEOSPROJSRSCache()
 void
 meos_finalize_projsrs(void)
 {
+  /* Idempotency: only destroy a live cache, and null the slot so a
+   * second finalize call does not double-free the cache and its
+   * stored projections. */
   MEOSPROJSRSCache *cache = MEOS_PROJ_CACHE;
-  if (cache)
+  if (! cache)
+    return;
+  for (uint32_t i = 0; i < cache->PROJSRSCacheCount; i++)
   {
-    for (uint32_t i = 0; i < cache->PROJSRSCacheCount; i++)
-    {
-      if (cache->MEOSPROJSRSCache[i].projection)
-        PROJSRSDestroyPJ(cache->MEOSPROJSRSCache[i].projection);
-    }
+    if (cache->MEOSPROJSRSCache[i].projection)
+      PROJSRSDestroyPJ(cache->MEOSPROJSRSCache[i].projection);
   }
   pfree(cache);
+  MEOS_PROJ_CACHE = NULL;
   return;
 }
 
