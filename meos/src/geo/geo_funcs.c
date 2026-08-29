@@ -3460,7 +3460,8 @@ static void relate_area_add_parameter(double t, double *params, int *nparams,
   int maxparams);
 static int relate_area_parameter_cmp(const void *a, const void *b);
 static int relate_area_edge_intersection(const Edge *a, const Edge *b,
-  double ix[2], double iy[2]);
+  double ix[2], double iy[2], bool *overlap);
+static bool relate_point_on_edge(double x, double y, const Edge *e);
 
 /**
  * @brief One operand of a relationship, together with the edges it draws
@@ -5005,7 +5006,9 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
         if (line->etype != EDGE_LINESEG && line->etype != EDGE_LINEARC)
           continue;
         double ix[2], iy[2];
-        int n = relate_area_edge_intersection(boundary, line, ix, iy);
+        bool overlap;
+        int n = relate_area_edge_intersection(boundary, line, ix, iy,
+          &overlap);
         for (int k = 0; k < n; k++)
           relate_area_add_parameter(relate_area_edge_parameter(boundary,
             ix[k], iy[k]), bparams, &nbparams, maxbparams);
@@ -5300,31 +5303,19 @@ relate_area_parameter_cmp(const void *a, const void *b)
 }
 
 /**
- * @brief Return true if two polygon boundary edges are collinear and
- * overlap over a non-zero length.
- */
-static bool
-relate_area_line_overlap(const Edge *a, const Edge *b)
-{
-  if (a->etype != EDGE_POLYSEG || b->etype != EDGE_POLYSEG)
-    return false;
-  IntersectResult r = linesegm_intersect(a->x1, a->y1, a->dx, a->dy,
-      b->x1, b->y1, b->x2, b->y2);
-  return r.type == INTERSECT_OVERLAP;
-}
-
-/**
  * @brief Determine intersections between two polygon boundary edges.
- * @details Return:
- *   0 = no intersection
- *   1 = point intersections
- *   2 = one-dimensional overlap
- * The intersection points are returned in x/y.
+ * @details Return the number of point intersections, written in x/y, and set
+ * @p overlap when the two edges share a one-dimensional portion. The two
+ * answers are separate because a shared portion carries no discrete
+ * intersection point: reporting it as a count would name coordinates the
+ * function never wrote. This mirrors #relate_arc_arc_points, which the arc
+ * case delegates to.
  */
 static int
 relate_area_edge_intersection(const Edge *a, const Edge *b, double ix[2],
-  double iy[2])
+  double iy[2], bool *overlap)
 {
+  *overlap = false;
   /* Line / Line */
   if (a->etype == EDGE_POLYSEG && b->etype == EDGE_POLYSEG)
   {
@@ -5333,7 +5324,10 @@ relate_area_edge_intersection(const Edge *a, const Edge *b, double ix[2],
     if (r.type == INTERSECT_NONE)
       return 0;
     if (r.type == INTERSECT_OVERLAP)
-      return 2;
+    {
+      *overlap = true;
+      return 0;
+    }
     if (r.type == INTERSECT_POINT)
     {
       ix[0] = a->x1 + r.t0 * a->dx;
@@ -5379,13 +5373,7 @@ relate_area_edge_intersection(const Edge *a, const Edge *b, double ix[2],
 
   /* Arc / Arc */
   if (a->etype == EDGE_POLYARC && b->etype == EDGE_POLYARC)
-  {
-    bool overlap = false;
-    int n = relate_arc_arc_points(a, b, ix, iy, &overlap);
-    if (overlap)
-      return 2;
-    return n;
-  }
+    return relate_arc_arc_points(a, b, ix, iy, overlap);
   return 0;
 }
 
@@ -5454,21 +5442,20 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
     if (! relate_area_boundary_edge(oedge))
       continue;
     double ix[2], iy[2];
-    int n = relate_area_edge_intersection(edge, oedge, ix, iy);
-    if (n == 2 && relate_area_line_overlap(edge, oedge))
+    bool overlap;
+    int n = relate_area_edge_intersection(edge, oedge, ix, iy, &overlap);
+    if (overlap)
     {
-      /* The two boundary edges overlap over a line. Add the endpoints of the
-       * overlapping portion as split parameters. This is mainly needed for the
-       * classification of the remaining portions. */
-      if (point_on_segment(oedge->x1, oedge->y1, edge->x1, edge->y1,
-            edge->x2, edge->y2))
+      /* The two boundary edges share a one-dimensional portion. Add the
+       * endpoints of that portion as split parameters. This is mainly needed
+       * for the classification of the remaining portions. */
+      if (relate_point_on_edge(oedge->x1, oedge->y1, edge))
       {
         relate_area_add_parameter(relate_area_edge_parameter(edge, oedge->x1,
           oedge->y1), params, &nparams, maxparams);
       }
 
-      if (point_on_segment(oedge->x2, oedge->y2, edge->x1, edge->y1,
-            edge->x2, edge->y2))
+      if (relate_point_on_edge(oedge->x2, oedge->y2, edge))
       {
         relate_area_add_parameter(relate_area_edge_parameter(edge, oedge->x2,
           oedge->y2), params, &nparams, maxparams);
@@ -5565,27 +5552,15 @@ relate_area_boundary_points(const RelateEdges *are, const RelateEdges *bre,
       if (!relate_area_boundary_edge(b))
         continue;
       double ix[2], iy[2];
-      int n = relate_area_edge_intersection(a, b, ix, iy);
+      bool overlap;
+      int n = relate_area_edge_intersection(a, b, ix, iy, &overlap);
 
-      /*  A one-dimensional overlap */
-      if (n == 2 && relate_area_line_overlap(a, b))
+      /* A one-dimensional overlap, whether the two edges are segments or
+       * coincident arcs */
+      if (overlap)
       {
         de9im_add(&m->bb, 1);
         continue;
-      }
-
-      /* Circular coincident arcs are represented as overlap by
-       * relate_arc_arc_points(), and therefore also produce a
-       * one-dimensional BB intersection. */
-      if (a->etype == EDGE_POLYARC && b->etype == EDGE_POLYARC)
-      {
-        bool overlap = false;
-        (void) relate_arc_arc_points(a, b, ix, iy, &overlap);
-        if (overlap)
-        {
-          de9im_add(&m->bb, 1);
-          continue;
-        }
       }
 
       /* Point intersections. The cell keeps the largest dimension found over
@@ -6219,16 +6194,17 @@ relate_union_edges(const LWGEOM *geom)
       if (j == i || ! relate_area_boundary_edge(other))
         continue;
       double ix[2], iy[2];
-      int n = relate_area_edge_intersection(e, other, ix, iy);
-      if (n == 2 && relate_area_line_overlap(e, other))
+      bool overlap;
+      int n = relate_area_edge_intersection(e, other, ix, iy, &overlap);
+      if (overlap)
       {
         /* The two boundary edges run along one another. What splits this one
          * is where the other one starts and ends, not the two points an
          * intersection reports for a pair that merely crosses */
-        if (point_on_segment(other->x1, other->y1, e->x1, e->y1, e->x2, e->y2))
+        if (relate_point_on_edge(other->x1, other->y1, e))
           relate_area_add_parameter(relate_area_edge_parameter(e, other->x1,
             other->y1), params, &nparams, maxparams);
-        if (point_on_segment(other->x2, other->y2, e->x1, e->y1, e->x2, e->y2))
+        if (relate_point_on_edge(other->x2, other->y2, e))
           relate_area_add_parameter(relate_area_edge_parameter(e, other->x2,
             other->y2), params, &nparams, maxparams);
         continue;
