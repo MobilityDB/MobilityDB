@@ -209,7 +209,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Write into the buffer a timestamptz in the MF-JSON representation. </p>
-<dl class="section note"><dt>Note</dt><dd>The MF-JSON encoding requires ISO 8601 datetimes. The value is thus encoded with the ISO date style, whatever the DateStyle setting of the session is, in the same way as PostgreSQL function <code>JsonEncodeDateTime()</code> forces the date style when encoding a datetime into JSON </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The value is encoded with the XSD date style, whatever the DateStyle setting of the session is, in the same way as PostgreSQL function <code>JsonEncodeDateTime()</code> forces the date style when encoding a datetime into JSON. That style writes 'T' between the date and the time parts and writes the UTC offset as hours AND minutes, which is what RFC 3339 requires and therefore what a JSON Schema <code>format: date-time</code> is defined against. The ISO style writes a space, and abbreviates a whole-hour offset to the hour alone, so a consumer receives <code>+01</code> where the format requires <code>+01:00</code> </dd></dl>
 
 </div>
 </div>
