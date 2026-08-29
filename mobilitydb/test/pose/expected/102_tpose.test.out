@@ -2535,15 +2535,15 @@ WITH ais(mmsi, temp) AS (
   FROM tbl_ais_instant GROUP BY mmsi )
 -- The MF-JSON angle of a 2D pose is its yaw; a 3D pose carries a quaternion.
 SELECT asMFJSON(tpose 'SRID=4326;Pose(Point(1 2), 0.5)@2000-01-01');
-                                                                                            asmfjson                                                                                             
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2000-01-01T00:00:00-08"],"interpolation":"None"}
+                                                                                              asmfjson                                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2000-01-01T00:00:00-08:00"],"interpolation":"None"}
 (1 row)
 
 SELECT asMFJSON(tpose 'SRID=4326;Pose(Point Z(1 2 3), 1, 0, 0, 0)@2000-01-01');
-                                                                                                              asmfjson                                                                                                              
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],"datetimes":["2000-01-01T00:00:00-08"],"interpolation":"None"}
+                                                                                                               asmfjson                                                                                                                
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],"datetimes":["2000-01-01T00:00:00-08:00"],"interpolation":"None"}
 (1 row)
 
 SELECT asText(tposeFromMFJSON('{"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2000-01-01T00:00:00+00"],"interpolation":"None"}'));

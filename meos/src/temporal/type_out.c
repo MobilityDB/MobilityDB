@@ -563,10 +563,14 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
 
 /**
  * @brief Write into the buffer a timestamptz in the MF-JSON representation
- * @note The MF-JSON encoding requires ISO 8601 datetimes. The value is thus
- * encoded with the ISO date style, whatever the DateStyle setting of the
- * session is, in the same way as PostgreSQL function @p JsonEncodeDateTime()
- * forces the date style when encoding a datetime into JSON
+ * @note The value is encoded with the XSD date style, whatever the DateStyle
+ * setting of the session is, in the same way as PostgreSQL function
+ * @p JsonEncodeDateTime() forces the date style when encoding a datetime into
+ * JSON. That style writes 'T' between the date and the time parts and writes
+ * the UTC offset as hours AND minutes, which is what RFC 3339 requires and
+ * therefore what a JSON Schema `format: date-time` is defined against. The ISO
+ * style writes a space, and abbreviates a whole-hour offset to the hour alone,
+ * so a consumer receives `+01` where the format requires `+01:00`
  */
 static void
 datetimes_as_mfjson_sb(stringbuffer_t *sb, TimestampTz t)
@@ -577,20 +581,11 @@ datetimes_as_mfjson_sb(stringbuffer_t *sb, TimestampTz t)
   int tz;
   const char *tzn = NULL;
   char buf[MAXDATELEN + 1];
-  char *sep;
 
   if (TIMESTAMP_NOT_FINITE(t))
     EncodeSpecialTimestamp(t, buf);
   else if (timestamp2tm(t, &tz, tm, &fsec, &tzn, NULL) == 0)
-  {
-    EncodeDateTime(tm, fsec, true, tz, tzn, USE_ISO_DATES, buf);
-    /* Replace ' ' by 'T' as separator between the date and the time parts.
-     * The ISO date style has no other space, so the separator is found even
-     * for years having more than four digits */
-    sep = strchr(buf, ' ');
-    if (sep)
-      *sep = 'T';
-  }
+    EncodeDateTime(tm, fsec, true, tz, tzn, USE_XSD_DATES, buf);
   else
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, "Timestamp out of range");

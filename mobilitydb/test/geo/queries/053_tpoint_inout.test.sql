@@ -225,3 +225,16 @@ select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'ABCD');
 SELECT astext('{}'::geometry[]);
 
 ----------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Every datetime an MF-JSON document carries is RFC 3339, which is what a JSON
+-- Schema `format: date-time` is defined against: the UTC offset carries hours
+-- AND minutes. The assertion is a shape rather than a literal, so it says the
+-- same thing under any session time zone.
+-------------------------------------------------------------------------------
+
+SELECT bool_and(d ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([+-]\d{2}:\d{2}|Z)$')
+FROM jsonb_array_elements_text(
+  (asMFJSON(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]')::jsonb)->'datetimes') AS d;
+
+----------------------------------------------------------------------
