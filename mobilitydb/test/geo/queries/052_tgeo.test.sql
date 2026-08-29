@@ -1098,6 +1098,10 @@ SELECT asText(atValues(tgeometry 'Point(1 1)@2000-01-01', geomset '{"Point(1 1)"
 SELECT asText(atValues(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geomset '{"Point(1 1)"}'));
 SELECT asText(atValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geomset '{"Point(1 1)"}'));
 SELECT asText(atValues(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geomset '{"Point(1 1)"}'));
+-- A set element outside the extent of the temporal geometry must not discard
+-- the elements inside it
+SELECT asText(atValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', geomset '{"Point(1 1)", "Point(9 9)"}'));
+SELECT asText(minusValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', geomset '{"Point(1 1)", "Point(9 9)"}'));
 SELECT asText(atValues(tgeography 'Point(1.5 1.5)@2000-01-01', geogset '{"Point(1.5 1.5)"}'));
 SELECT asText(atValues(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geogset '{"Point(1.5 1.5)"}'));
 SELECT asText(atValues(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geogset '{"Point(1.5 1.5)"}'));

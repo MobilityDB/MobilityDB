@@ -475,7 +475,14 @@ SELECT COUNT(*) FROM tbl_tnpoint,
 WHERE atValues(temp, s) IS NOT NULL;
  count 
 -------
-     0
+    30
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t
+WHERE EXISTS (SELECT 1 FROM tbl_npoint n WHERE atValue(t.temp, n.np) IS NOT NULL);
+ count 
+-------
+    30
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint,

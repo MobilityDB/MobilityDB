@@ -244,7 +244,13 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *s)
   {
     STBox box;
     tspatial_set_stbox(temp, &box);
-    return contains_stbox_stbox(&box, (STBox *) SET_BBOX_PTR(s));
+    /* The set bounds every value the restriction may match, so what excludes
+     * the temporal value is the two boxes standing apart, exactly as the
+     * numeric branch above reads it. Asking the temporal box to CONTAIN the
+     * set box makes one set element lying outside the temporal extent discard
+     * the elements that do lie inside it, and a restriction to a larger set
+     * answers less than a restriction to a smaller one */
+    return overlaps_stbox_stbox(&box, (STBox *) SET_BBOX_PTR(s));
   }
   return true;
 }

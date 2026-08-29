@@ -3666,6 +3666,18 @@ SELECT asText(atValues(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02
  {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST), [POINT(1 1)@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(atValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', geomset '{"Point(1 1)", "Point(9 9)"}'));
+                                        astext                                        
+--------------------------------------------------------------------------------------
+ {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST)}
+(1 row)
+
+SELECT asText(minusValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', geomset '{"Point(1 1)", "Point(9 9)"}'));
+                   astext                    
+---------------------------------------------
+ {[POINT(2 2)@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
 SELECT asText(atValues(tgeography 'Point(1.5 1.5)@2000-01-01', geogset '{"Point(1.5 1.5)"}'));
                    astext                    
 ---------------------------------------------
