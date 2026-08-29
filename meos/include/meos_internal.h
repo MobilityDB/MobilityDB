@@ -797,6 +797,8 @@ extern uint32 meos_random_binomial20_half(pg_prng_state *rng);
  * Generic type functions
  *****************************************************************************/
 
+extern bool basetype_in(const char *str, MeosType type, bool end,
+  Datum *result);
 extern Datum datum_ceil(Datum d);
 extern Datum datum_degrees(Datum d, Datum normalize);
 extern Datum datum_float_round(Datum value, Datum size);
