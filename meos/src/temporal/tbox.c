@@ -915,7 +915,6 @@ tbox_xmin(const TBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @return On error return false, otherwise return true
- * @csqlfn #Tbox_xmin()
  */
 bool
 tboxint_xmin(const TBox *box, int *result)
@@ -935,7 +934,6 @@ tboxint_xmin(const TBox *box, int *result)
  * @param[in] box Box
  * @param[out] result Result
  * @return On error return false, otherwise return true
- * @csqlfn #Tbox_xmin()
  */
 bool
 tboxbigint_xmin(const TBox *box, int64 *result)
@@ -955,7 +953,6 @@ tboxbigint_xmin(const TBox *box, int64 *result)
  * @param[in] box Box
  * @param[out] result Result
  * @return On error return false, otherwise return true
- * @csqlfn #Tbox_xmin()
  */
 bool
 tboxfloat_xmin(const TBox *box, double *result)
@@ -1022,7 +1019,6 @@ tbox_xmax(const TBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @return On error return false, otherwise return true
- * @csqlfn #Tbox_xmax()
  */
 bool
 tboxint_xmax(const TBox *box, int *result)
@@ -1042,7 +1038,6 @@ tboxint_xmax(const TBox *box, int *result)
  * @param[in] box Box
  * @param[out] result Result
  * @return On error return false, otherwise return true
- * @csqlfn #Tbox_xmax()
  */
 bool
 tboxbigint_xmax(const TBox *box, int64 *result)
@@ -1062,7 +1057,6 @@ tboxbigint_xmax(const TBox *box, int64 *result)
  * @param[in] box Box
  * @param[out] result Result
  * @return On error return false, otherwise return true
- * @csqlfn #Tbox_xmax()
  */
 bool
 tboxfloat_xmax(const TBox *box, double *result)
