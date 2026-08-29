@@ -58,7 +58,8 @@ jobs:
             postgresql-server-devel postgis \
             geos-devel proj-devel json-c-devel \
             gdal-devel h3-devel \
-            autoconf automake libtool libxml2-devel zlib-devel
+            autoconf automake libtool libxml2-devel zlib-devel which \
+            redhat-rpm-config
           gcc --version | head -1
 
       - uses: actions/checkout@v4
@@ -103,7 +104,9 @@ jobs:
         run: |
           dnf -y install gcc gcc-c++ cmake make git tar xz diffutils \
             postgresql-server postgresql-server-devel postgis \
-            geos-devel proj-devel json-c-devel gdal-devel
+            geos-devel proj-devel json-c-devel gdal-devel h3-devel \
+            autoconf automake libtool libxml2-devel zlib-devel which \
+            redhat-rpm-config
           locale
 
       - uses: actions/checkout@v4
@@ -118,12 +121,42 @@ jobs:
           useradd -m builder
           chown -R builder "$GITHUB_WORKSPACE"
 
-      - name: Configure with the families Fedora can run
+      - name: Build and install the vendored pgPointCloud
+        # POINTCLOUD maps to a PostgreSQL extension of its own, which the
+        # extension's `requires` names, so CREATE EXTENSION ... CASCADE asks
+        # the cluster for it. Fedora packages no build of pgPointCloud and the
+        # tree carries one, built here the way the repository builds it.
+        run: |
+          cd "$GITHUB_WORKSPACE/pointcloud-pg"
+          ./autogen.sh
+          ./configure --with-pgconfig="$(command -v pg_config)"
+          make -j$(nproc)
+          make install
+
+      - name: Build and install the h3 PostgreSQL extension
+        # H3 names the h3 extension in the extension's own requires clause, so
+        # CREATE EXTENSION ... CASCADE asks the cluster for it. Fedora packages
+        # the libh3 C library alone, which is a different thing, so the
+        # extension is built from the repository and tag h3-pg/H3PG_REVISION
+        # records for the bindings this tree embeds.
+        run: |
+          # h3-pg/ in the tree holds the binding sources this extension
+          # compiles into its own library, so the checkout is cloned beside it.
+          git clone --depth 1 --recurse-submodules --branch v4.2.3 \
+            https://github.com/postgis/h3-pg.git h3-pg-checkout
+          cmake -S h3-pg-checkout -B h3-pg-build -DCMAKE_BUILD_TYPE=Release
+          cmake --build h3-pg-build -j$(nproc)
+          cmake --install h3-pg-build
+          # Installing into the cluster needs root, and the configure below runs
+          # as builder and writes pointcloud-pg/lib/pc_config.h into the tree,
+          # so the workspace returns to that user.
+          chown -R builder "$GITHUB_WORKSPACE"
+
+      - name: Configure with every family
         run: |
           su builder -c "cmake -S '$GITHUB_WORKSPACE' -B '$GITHUB_WORKSPACE/build' \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCBUFFER=ON -DJSON=ON -DNPOINT=ON -DPOSE=ON -DRGEO=ON \
-            -DQUADBIN=ON -DRASTER=ON"
+            -DALL=ON"
 
       - name: Build
         run: su builder -c "make -C '$GITHUB_WORKSPACE/build' -j$(nproc)"
