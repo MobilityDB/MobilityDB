@@ -1907,6 +1907,11 @@ SELECT tprecision(tfloat '[1@2001-01-01, 5@2001-01-05, 1@2001-01-09]', '1 day', 
 -- A bin can start before the sequence does, which is every bin holding a
 -- discrete sequence whose instants sit inside it
 SELECT tprecision(tint '{54@2001-02-27 16:21:00, 52@2001-02-27 16:29:00}', '15 minutes', '2001-01-01');
+-- A big integer answers the bin average as its integer twin does, the two named
+-- side by side because the average is a float neither integer type carries
+SELECT tprecision(tint '[-4@2000-01-01, -4@2000-01-03]', interval '1 day');
+SELECT tprecision(tbigint '[-4@2000-01-01, -4@2000-01-03]', interval '1 day');
+SELECT tprecision(tbigint '{54@2001-02-27 16:21:00, 52@2001-02-27 16:29:00}', '15 minutes', '2001-01-01');
 
 -- Which bin ends on the bound follows from the bin width, so the containment
 -- holds over a sweep of widths rather than at one of them

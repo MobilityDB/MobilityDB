@@ -737,7 +737,10 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   lower = lower_bin;
   upper = lower_bin + tunits;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  MeosType temptype_out = (seq->temptype == T_TINT) ? T_TFLOAT : seq->temptype;
+  /* The value of a bin is a time-weighted average, which an integer type does
+   * not carry, so both of them answer it as the float it is */
+  MeosType temptype_out = (seq->temptype == T_TINT ||
+    seq->temptype == T_TBIGINT) ? T_TFLOAT : seq->temptype;
   /* Determine whether we are computing the twAvg or the twCentroid */
   bool twavg = tnumber_type(seq->temptype);
 #if RGEO
@@ -947,7 +950,10 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   lower = lower_bin;
   upper = lower_bin + tunits;
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
-  MeosType temptype_out = (ss->temptype == T_TINT) ? T_TFLOAT : ss->temptype;
+  /* The value of a bin is a time-weighted average, which an integer type does
+   * not carry, so both of them answer it as the float it is */
+  MeosType temptype_out = (ss->temptype == T_TINT ||
+    ss->temptype == T_TBIGINT) ? T_TFLOAT : ss->temptype;
   MeosType basetype_out = temptype_basetype(temptype_out);
   /* Determine whether we are computing the twAvg or the twCentroid */
   bool twavg = tnumber_type(ss->temptype);
