@@ -56,6 +56,8 @@ jobs:
         run: python3 tools/scripts/check_csqlfn.py --gaps
       - name: Check every wrapper a @csqlfn tag backs is named
         run: python3 tools/scripts/check_csqlfn.py --complete
+      - name: Check every wrapper a @csqlfn tag names is one the SQL reaches
+        run: python3 tools/scripts/check_csqlfn.py --targets
 
   spatialrel_orthogonality_check:
     runs-on: ubuntu-latest
@@ -134,5 +136,5 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Check that every @sqlfn tag names a function the extension creates
+      - name: Check that every @sqlfn tag names a surface the extension builds
         run: python3 tools/scripts/check_sqlfn_names.py

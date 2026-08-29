@@ -2834,7 +2834,6 @@ geom_array_union(GSERIALIZED **gsarr, int count)
  * question: a geodesic is not the segment joining two positions in degree
  * space, and two geodesics meet where those segments need not, so the answer
  * awaits an overlay that works on the spheroid.
- * @csqlfn #Geo_union()
  */
 GSERIALIZED *
 geog_array_union(GSERIALIZED **gsarr, int count)
