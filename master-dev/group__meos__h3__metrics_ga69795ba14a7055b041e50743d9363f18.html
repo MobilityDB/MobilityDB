@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Tgeogpoint_great_circle_distance_km</title>
+<title>MobilityDB: th3index_edge_length</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__mobilitydb__h3__metrics.html">Metric functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__h3__metrics.html">Metric functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,36 +79,29 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__h3__metrics_ga232472bf1dee26f283a54de470035b4f.html#ga232472bf1dee26f283a54de470035b4f">Tgeogpoint_great_circle_distance_km</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__metrics_gaf3093f55bb6ba72154790891dba62ff6.html#gaf3093f55bb6ba72154790891dba62ff6">Tgeogpoint_great_circle_distance_m</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__metrics_ga19f60770ccc7233a9439d211f5b1a0d6.html#ga19f60770ccc7233a9439d211f5b1a0d6">Tgeogpoint_great_circle_distance_rads</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__metrics_gae46b4c517acadb16ee0f3019ff302782.html#gae46b4c517acadb16ee0f3019ff302782">Th3index_cell_area</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__metrics_ga62f6b195ba14f016ed1ccfcab5b1072e.html#ga62f6b195ba14f016ed1ccfcab5b1072e">Th3index_cell_area_km2</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__metrics_ga5131edc1d423598b85d84fb219594c23.html#ga5131edc1d423598b85d84fb219594c23">Th3index_cell_area_rads2</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__metrics_ga51232d2fd664e107d1d2aeaed45583a1.html#ga51232d2fd664e107d1d2aeaed45583a1">Th3index_edge_length_km</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__metrics_ga64bd0e53170baa5494f936b34ed94cd9.html#ga64bd0e53170baa5494f936b34ed94cd9">Th3index_edge_length_m</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__metrics_gac32cca94fd01d2d173f5fd47968ebc6a.html#gac32cca94fd01d2d173f5fd47968ebc6a">Th3index_edge_length_rads</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__metrics_ga45d0dcfa422720f7600ed2ee02f64114.html#ga45d0dcfa422720f7600ed2ee02f64114">tgeogpoint_great_circle_distance</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__h3__metrics_ga69795ba14a7055b041e50743d9363f18.html#ga69795ba14a7055b041e50743d9363f18">th3index_edge_length</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga232472bf1dee26f283a54de470035b4f" name="ga232472bf1dee26f283a54de470035b4f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga232472bf1dee26f283a54de470035b4f">&#9670;&#160;</a></span>Tgeogpoint_great_circle_distance_km()</h2>
+<a id="ga69795ba14a7055b041e50743d9363f18" name="ga69795ba14a7055b041e50743d9363f18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga69795ba14a7055b041e50743d9363f18">&#9670;&#160;</a></span>th3index_edge_length()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Tgeogpoint_great_circle_distance_km </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * th3index_edge_length </td>
           <td>(</td>
-          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the per-instant great-circle distance between two temporal geodetic points in kilometres @sqlfn greatCircleDistanceKm() </p>
+<p>Return the per-instant length of a temporal H3 directed edge in metres, the quantity libh3 answers as edgeLengthM @csqlfn <a class="el" href="group__mobilitydb__h3__metrics_ga355015e7b1892ad99a6a88516d734dd4.html#ga355015e7b1892ad99a6a88516d734dd4" title="Return the per-instant length of a temporal H3 directed edge in metres @sqlfn th3EdgeLength()">Th3index_edge_length()</a> </p>
 
 </div>
 </div>
