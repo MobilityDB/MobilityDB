@@ -20,6 +20,7 @@
 #
 # Exit status is non-zero when --gaps finds an auto-resolvable gap (CI guard).
 
+import collections
 import glob
 import os
 import re
@@ -319,6 +320,35 @@ def incomplete(dirs):
     return commuted, mistagged, dispatch, bare
 
 
+# A wrapper is bound by one CREATE FUNCTION per SQL overload, and each overload
+# is answered by at most one MEOS function, so a wrapper carrying MORE @csqlfn
+# tags than it has SQL declarations has tags naming no callable surface. That is
+# not cosmetic: a binding generating from the catalog registers one function per
+# tag, and DuckDB, which cannot overload on return type, answers
+# `Could not choose a best candidate function for the function call "Xmax(tbox)"`
+# once the int and bigint accessors register beside the float one -- a function
+# that works today becomes uncallable, and the surface diff reports it as a
+# clean addition.
+#
+# The invariant only names CANDIDATES. A wrapper that dispatches on subtype
+# reaches several MEOS functions through one declaration legitimately, so each
+# row is read before its tag is touched, exactly as the gap side is.
+def overtagged():
+    """Return (rows, excess): wrappers carrying more @csqlfn tags than SQL declarations."""
+    tags = collections.Counter()
+    for path in glob.glob(f'{ROOT}/meos/src/**/*.c', recursive=True):
+        for m in re.finditer(r'@csqlfn\s+([^\n*]*)', read_text(path)):
+            for w in re.findall(r'#(\w+)\(\)', m.group(1)):
+                tags[w] += 1
+    decl = collections.Counter()
+    for path in glob.glob(f'{ROOT}/mobilitydb/sql/**/*.in.sql', recursive=True):
+        for w in re.findall(r"MODULE_PATHNAME'\s*,\s*'(\w+)'", read_text(path)):
+            decl[w] += 1
+    rows = [(w, t, decl.get(w, 0)) for w, t in tags.items() if t > decl.get(w, 0)]
+    rows.sort(key=lambda r: (-(r[1] - r[2]), r[0]))
+    return rows, sum(t - d for _, t, d in rows)
+
+
 def main():
     """Dispatch on the mode argument and report the @csqlfn coverage."""
     mode = sys.argv[1] if len(sys.argv) > 1 else '--gaps'
@@ -342,6 +372,13 @@ def main():
         print(f'\n{bare} bare "AS \'MODULE_PATHNAME\'" bindings carry no wrapper '
               f'symbol and are outside this check')
         sys.exit(1 if commuted else 0)
+    elif mode == '--overtagged':
+        rows, excess = overtagged()
+        print(f'wrappers carrying more @csqlfn tags than SQL declarations: '
+              f'{len(rows)} ({excess} excess tags)')
+        for w, t, d in rows:
+            print(f'  {w:38s} tags={t:<3} declarations={d}')
+        sys.exit(0)
     elif mode == '--fix':
         n = 0
         for fn, pg, f, _how in auto:
