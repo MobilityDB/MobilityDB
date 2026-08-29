@@ -587,6 +587,22 @@ SELECT Xmax(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])');
     2
 (1 row)
 
+SELECT Xmin(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])');
+ERROR:  The big integer bound of the box is not representable as a double. Received: 9007199254740993. Read it from bigintspan(box) instead
+SELECT Xmax(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])');
+ERROR:  The big integer bound of the box is not representable as a double. Received: 9007199254740995. Read it from bigintspan(box) instead
+SELECT lower(bigintspan(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])'));
+      lower       
+------------------
+ 9007199254740993
+(1 row)
+
+SELECT upper(bigintspan(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])'));
+      upper       
+------------------
+ 9007199254740996
+(1 row)
+
 SELECT Tmin(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])');
              tmin             
 ------------------------------

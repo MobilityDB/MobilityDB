@@ -388,6 +388,7 @@ SELECT zMin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
 </programlisting>
+				<para>Observe que para <varname>tbox</varname> el valor resultante de <varname>xMin</varname> y <varname>xMax</varname> se convierte a <varname>float</varname> para las cajas temporales con un span de enteros. Un límite de entero grande que ningún <varname>float</varname> representa exactamente se rechaza en lugar de redondearse; lea ese límite de <varname>bigintspan(box)</varname>.</para>
 			</listitem>
 
 			<listitem xml:id="box_xMax">
@@ -412,6 +413,7 @@ SELECT zMax(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 SELECT tMax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
 </programlisting>
+				<para>Observe que para <varname>tbox</varname> el valor resultante de <varname>xMin</varname> y <varname>xMax</varname> se convierte a <varname>float</varname> para las cajas temporales con un span de enteros. Un límite de entero grande que ningún <varname>float</varname> representa exactamente se rechaza en lugar de redondearse; lea ese límite de <varname>bigintspan(box)</varname>.</para>
 			</listitem>
 
 			<listitem xml:id="tbox_xMinInc">

@@ -186,6 +186,12 @@ SELECT Tmax(tbox 'TBOX T([2001-01-01,2001-01-02])');
 
 SELECT Xmin(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])');
 SELECT Xmax(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])');
+-- A big integer bound above 2^53 has no exact float, so the double accessor
+-- refuses it rather than answering a neighbouring value; bigintspan reads it
+SELECT Xmin(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])');
+SELECT Xmax(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])');
+SELECT lower(bigintspan(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])'));
+SELECT upper(bigintspan(tbox 'TBOXBIGINT XT([9007199254740993,9007199254740995],[2001-01-01,2001-01-02])'));
 SELECT Tmin(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])');
 SELECT Tmax(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])');
 

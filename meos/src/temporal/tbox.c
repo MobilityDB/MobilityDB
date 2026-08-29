@@ -890,6 +890,32 @@ tbox_hast(const TBox *box)
 }
 
 /**
+ * @brief Return in the last argument a big integer bound of a temporal box as
+ * a double
+ * @details A double holds every 32-bit integer and every float bound exactly,
+ * but only the big integers up to 2^53. Narrowing a larger one answers a
+ * neighbouring value, so it is refused and the exact bound is read from the
+ * value span of the box instead.
+ * @param[in] i Bound
+ * @param[out] result Result
+ * @return On error return false, otherwise return true
+ */
+static bool
+tbox_bigint_bound_double(int64 i, double *result)
+{
+  double d = (double) i;
+  if ((int64) d != i)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "The big integer bound of the box is not representable as a double. "
+      "Received: " INT64_FORMAT ". Read it from bigintspan(box) instead", i);
+    return false;
+  }
+  *result = d;
+  return true;
+}
+
+/**
  * @ingroup meos_box_accessor
  * @brief Return in the last argument the minimum X value of a temporal box as
  * a double
@@ -905,6 +931,8 @@ tbox_xmin(const TBox *box, double *result)
   VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
+  if (box->span.basetype == T_INT8)
+    return tbox_bigint_bound_double(DatumGetInt64(box->span.lower), result);
   *result = datum_double(box->span.lower, box->span.basetype);
   return true;
 }
@@ -1007,7 +1035,7 @@ tbox_xmax(const TBox *box, double *result)
     *result = (double) (DatumGetInt32(box->span.upper) - 1);
   else if (box->span.basetype == T_INT8)
     /* Integer spans are canonicalized, i.e., the upper bound is exclusive */
-    *result = (double) (DatumGetInt64(box->span.upper) - 1);
+    return tbox_bigint_bound_double(DatumGetInt64(box->span.upper) - 1, result);
   else
     *result = DatumGetFloat8(box->span.upper);
   return true;
