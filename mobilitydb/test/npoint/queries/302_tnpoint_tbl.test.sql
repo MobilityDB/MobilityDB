@@ -218,6 +218,10 @@ WHERE minusValue(temp, np) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tnpoint,
 ( SELECT setUnion(np) AS s FROM tbl_npoint) tmp
 WHERE atValues(temp, s) IS NOT NULL;
+-- Restricting to a set answers what restricting to its elements one by one
+-- answers, so the two counts are the same number
+SELECT COUNT(*) FROM tbl_tnpoint t
+WHERE EXISTS (SELECT 1 FROM tbl_npoint n WHERE atValue(t.temp, n.np) IS NOT NULL);
 
 SELECT COUNT(*) FROM tbl_tnpoint,
 ( SELECT setUnion(np) AS s FROM tbl_npoint) tmp
