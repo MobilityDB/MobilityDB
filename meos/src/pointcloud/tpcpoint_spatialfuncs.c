@@ -182,7 +182,6 @@ tpointcloud_to_tgeompoint(const Temporal *temp)
  * @brief Return true if the tpcpoint instant position intersects the geometry
  * @param[in] temp Temporal pointcloud value (single instant)
  * @param[in] gs Geometry
- * @csqlfn #Eintersects_tpcpoint_geo()
  */
 bool
 eintersects_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -204,7 +203,6 @@ eintersects_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal pointcloud value (single instant)
  * @param[in] gs Geometry
  * @return @p DBL_MAX on error (missing X/Y dimensions or NULL input)
- * @csqlfn #NAD_tpcpoint_geo()
  */
 double
 nad_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)

@@ -13,18 +13,30 @@
 # so the binding code generators (PyMEOS / JMEOS / MEOS.NET / ...) can derive the
 # SQL function and operator for each MEOS API function.
 #
-# Usage:
-#   check_csqlfn.py --table [dir...]   print the (meos_fn, @csqlfn, @sqlfn, @sqlop) table
-#   check_csqlfn.py --gaps  [dir...]   list MEOS API functions missing the @csqlfn link
-#   check_csqlfn.py --fix   [dir...]   insert the auto-resolvable @csqlfn tags
+# A gap and a tag pointing nowhere are the two ways the link can be wrong, and
+# only the first has a shape the tag itself shows. A tag names a wrapper, and
+# the wrapper is a C symbol the extension either creates a SQL surface for or
+# does not; the tag says nothing about which. --targets asks the other side of
+# the question, so that a tag naming a wrapper the tree does not define, or one
+# the SQL reaches from nothing, is a finding rather than a comment nobody reads.
 #
-# Exit status is non-zero when --gaps finds an auto-resolvable gap (CI guard).
+# Usage:
+#   check_csqlfn.py --table   [dir...] print the (meos_fn, @csqlfn, @sqlfn, @sqlop) table
+#   check_csqlfn.py --gaps    [dir...] list MEOS API functions missing the @csqlfn link
+#   check_csqlfn.py --targets          list @csqlfn tags naming no reachable wrapper
+#   check_csqlfn.py --fix     [dir...] insert the auto-resolvable @csqlfn tags
+#
+# Exit status is non-zero when --gaps finds an auto-resolvable gap, and when
+# --targets finds a tag naming a wrapper the tree does not define or one the
+# SQL reaches from nothing that the baseline does not already carry (CI guard).
 
 import collections
 import glob
 import os
 import re
 import sys
+
+import check_sqlfn_names
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 KW = {'if', 'for', 'while', 'return', 'sizeof', 'switch', 'else', 'do', 'assert',
@@ -349,6 +361,57 @@ def overtagged():
     return rows, sum(t - d for _, t, d in rows)
 
 
+# A tag names a wrapper, so the wrapper is where the tag is answered. The
+# extension defines a wrapper with PG_FUNCTION_INFO_V1 and reaches it from a
+# CREATE FUNCTION, or from a CREATE OPERATOR, CREATE AGGREGATE, CREATE OPERATOR
+# CLASS or CREATE CAST naming the function that binds it; a wrapper reached that
+# way is a legitimate target and is NOT a finding. A tag naming a wrapper the
+# tree defines nowhere names nothing at all, and one naming a wrapper the SQL
+# reaches from nothing names a symbol that has no callable surface. The
+# generators read the tag either way and publish the name it states.
+def pg_defined():
+    """Map every PG wrapper symbol to the file registering it."""
+    out = {}
+    for path in glob.glob(f'{ROOT}/mobilitydb/src/**/*.c', recursive=True):
+        for m in re.finditer(r'PG_FUNCTION_INFO_V1\((\w+)\)', read_text(path)):
+            out[m.group(1)] = os.path.relpath(path, ROOT)
+    return out
+
+
+def csqlfn_tags():
+    """List of (target, meos_fn, file, line) for every @csqlfn reference."""
+    rows = []
+    for path in sorted(glob.glob(f'{ROOT}/meos/src/**/*.c', recursive=True)):
+        rel = os.path.relpath(path, ROOT)
+        lines = read_text(path).split('\n')
+        for i, ln in enumerate(lines):
+            if '@csqlfn' not in ln:
+                continue
+            fn = ''
+            for k in range(i + 1, min(i + 12, len(lines))):
+                mm = re.match(r'^([a-z][A-Za-z0-9_]+)\s*\(', lines[k])
+                if mm:
+                    fn = mm.group(1)
+                    break
+            for target in CSQLFN_REF.findall(ln):
+                rows.append((target, fn, rel, i + 1))
+    return rows
+
+
+def targets():
+    """Return (missing, unreachable): @csqlfn tags naming no reachable wrapper."""
+    defined = pg_defined()
+    declared_of = check_sqlfn_names.sql_names()
+    backed = check_sqlfn_names.sql_backed()
+    missing, unreachable = [], []
+    for target, fn, rel, line in csqlfn_tags():
+        if target not in defined:
+            missing.append((target, fn, rel, line, ''))
+        elif target not in declared_of and target not in backed:
+            unreachable.append((target, fn, rel, line, defined[target]))
+    return missing, unreachable
+
+
 def main():
     """Dispatch on the mode argument and report the @csqlfn coverage."""
     mode = sys.argv[1] if len(sys.argv) > 1 else '--gaps'
@@ -372,6 +435,26 @@ def main():
         print(f'\n{bare} bare "AS \'MODULE_PATHNAME\'" bindings carry no wrapper '
               f'symbol and are outside this check')
         sys.exit(1 if commuted else 0)
+    elif mode == '--targets':
+        missing, unreachable = targets()
+        # The unreachable wrapper is the finding check_sqlfn_names.py already
+        # states and baselines, so its baseline answers here too: one wrapper,
+        # one grandfathering, and a tag added toward it fails on both sides.
+        tag_of = {sym: tag for sym, tag, _p, _s in check_sqlfn_names.wrappers()}
+        baseline = check_sqlfn_names.read_baseline()
+        fresh = [r for r in unreachable
+                 if check_sqlfn_names.baseline_key(r[0], tag_of.get(r[0], ''))
+                 not in baseline]
+        print(f'@csqlfn tags naming a wrapper the tree does not define: '
+              f'{len(missing)}')
+        for target, fn, rel, line, _w in missing:
+            print(f'  {rel}:{line}: {fn or "?"} -> #{target}()')
+        print(f'\n@csqlfn tags naming a wrapper the SQL reaches from nothing: '
+              f'{len(unreachable)} ({len(fresh)} outside the baseline)')
+        for target, fn, rel, line, wrapper in unreachable:
+            print(f'  {rel}:{line}: {fn or "?"} -> #{target}()  defined in '
+                  f'{wrapper}')
+        sys.exit(1 if missing or fresh else 0)
     elif mode == '--overtagged':
         rows, excess = overtagged()
         print(f'wrappers carrying more @csqlfn tags than SQL declarations: '
