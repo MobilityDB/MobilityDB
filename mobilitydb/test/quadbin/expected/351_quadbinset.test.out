@@ -18,7 +18,7 @@ SELECT quadbinset '{480fffffffffffff}';
 
 /* Errors */
 SELECT quadbinset '{480fffffffffffff, not-a-cell}';
-ERROR:  quadbin value "not-a-cell" does not encode a valid quadbin cell
+ERROR:  quadbin value "not-a-cell" does not encode a valid quadbin index
 LINE 2: SELECT quadbinset '{480fffffffffffff, not-a-cell}';
                           ^
 SELECT quadbinset '{480fffffffffffff';

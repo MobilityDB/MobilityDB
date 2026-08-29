@@ -54,10 +54,10 @@ SELECT wCount(Temp, interval '2 days') FROM Temp;
  {[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 2@Fri Jan 05 00:00:00 2001 PST], (1@Fri Jan 05 00:00:00 2001 PST, 1@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
-SELECT merge(temp) FROM (VALUES
+SELECT mergeAgg(temp) FROM (VALUES
   (th3index '831c02fffffffff@2001-01-01'),
   (th3index '831c00fffffffff@2001-01-02')) t(temp);
-                                            merge                                             
+                                           mergeagg                                           
 ----------------------------------------------------------------------------------------------
  {831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
@@ -75,7 +75,7 @@ WITH temp(inst) AS (
   SELECT th3index '831c00fffffffff@2001-01-02' UNION
   SELECT th3index '871fa44a8ffffff@2001-01-03' UNION
   SELECT th3index '880326b885fffff@2001-01-04' )
-SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM temp;
                                                                                           astext                                                                                          
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  [831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST, 871fa44a8ffffff@Wed Jan 03 00:00:00 2001 PST, 880326b885fffff@Thu Jan 04 00:00:00 2001 PST]
@@ -97,7 +97,7 @@ WITH temp(inst) AS (
   SELECT th3index '831c02fffffffff@2001-01-01' UNION
   SELECT th3index '831c00fffffffff@2001-01-02' UNION
   SELECT th3index '871fa44a8ffffff@2001-01-03' )
-SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM temp;
                                                                    astext                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------
  [831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST, 871fa44a8ffffff@Wed Jan 03 00:00:00 2001 PST]
@@ -107,7 +107,7 @@ WITH temp(inst) AS (
   SELECT th3index '831c02fffffffff@2001-01-01' UNION
   SELECT th3index '831c00fffffffff@2001-01-02' UNION
   SELECT th3index '871fa44a8ffffff@2001-01-03' )
-SELECT asText(appendInstant(inst ORDER BY inst, 'step')) FROM temp;
+SELECT asText(appendInstantAgg(inst ORDER BY inst, 'step')) FROM temp;
                                                                    astext                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------
  [831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST, 871fa44a8ffffff@Wed Jan 03 00:00:00 2001 PST]
@@ -118,7 +118,7 @@ WITH temp(inst) AS (
   SELECT th3index '831c00fffffffff@2001-01-02' UNION
   SELECT th3index '871fa44a8ffffff@2001-01-04' UNION
   SELECT th3index '880326b885fffff@2001-01-08' )
-SELECT asText(appendInstant(inst, 'step', interval '1 day' ORDER BY inst)) FROM temp;
+SELECT asText(appendInstantAgg(inst, 'step', interval '1 day' ORDER BY inst)) FROM temp;
                                                                                              astext                                                                                             
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST], [871fa44a8ffffff@Thu Jan 04 00:00:00 2001 PST], [880326b885fffff@Mon Jan 08 00:00:00 2001 PST]}
@@ -128,7 +128,7 @@ SELECT asText(appendInstant(inst, 'step', interval '1 day' ORDER BY inst)) FROM 
 WITH temp(inst) AS (
   SELECT th3index '831c02fffffffff@2001-01-01' UNION
   SELECT th3index '831c00fffffffff@2001-01-01' )
-SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM temp;
 ERROR:  The temporal values have different value at their common timestamp Mon Jan 01 00:00:00 2001 PST
 WITH temp1(k, inst) AS (
   SELECT 1, th3index '831c02fffffffff@2001-01-01' UNION
@@ -138,10 +138,10 @@ WITH temp1(k, inst) AS (
   SELECT 5, th3index '880326b88dfffff@2001-01-05' UNION
   SELECT 6, th3index '8a2a100d645ffff@2001-01-06' ),
 temp2(k, seq) AS (
-  SELECT (k - 1) / 2, appendInstant(inst ORDER BY inst)
+  SELECT (k - 1) / 2, appendInstantAgg(inst ORDER BY inst)
   FROM temp1
   GROUP BY (k - 1) / 2)
-SELECT asText(appendSequence(seq ORDER BY seq)) FROM temp2;
+SELECT asText(appendSequenceAgg(seq ORDER BY seq)) FROM temp2;
                                                                                                                                            astext                                                                                                                                           
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST], [871fa44a8ffffff@Wed Jan 03 00:00:00 2001 PST, 880326b885fffff@Thu Jan 04 00:00:00 2001 PST], [880326b88dfffff@Fri Jan 05 00:00:00 2001 PST, 8a2a100d645ffff@Sat Jan 06 00:00:00 2001 PST]}
@@ -155,20 +155,12 @@ WITH temp1(k, inst) AS (
   SELECT 5, th3index '880326b88dfffff@2001-01-05' UNION
   SELECT 6, th3index '8a2a100d645ffff@2001-01-06' ),
 temp2(k, seq) AS (
-  SELECT (k - 1) / 2, appendInstant(inst ORDER BY inst)
+  SELECT (k - 1) / 2, appendInstantAgg(inst ORDER BY inst)
   FROM temp1
   GROUP BY (k - 1) / 2)
 SELECT asText(appendSequenceAgg(seq ORDER BY seq)) FROM temp2;
                                                                                                                                            astext                                                                                                                                           
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST], [871fa44a8ffffff@Wed Jan 03 00:00:00 2001 PST, 880326b885fffff@Thu Jan 04 00:00:00 2001 PST], [880326b88dfffff@Fri Jan 05 00:00:00 2001 PST, 8a2a100d645ffff@Sat Jan 06 00:00:00 2001 PST]}
-(1 row)
-
-SELECT merge(temp) = mergeAgg(temp) FROM (VALUES
-  (th3index '831c02fffffffff@2001-01-01'),
-  (th3index '831c00fffffffff@2001-01-02')) t(temp);
- ?column? 
-----------
- t
 (1 row)
 

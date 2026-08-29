@@ -16,89 +16,60 @@
 -- per-instant adapters being filled in.
 
 -------------------------------------------------------------------------------
--- cellArea(th3index), th3CellAreaKm2 and th3CellAreaRads2 — lift_with_const
+-- cellArea(th3index) — lift_with_const
 -------------------------------------------------------------------------------
 
--- cellArea answers square metres, the unit the DggsCellOps cell_area slot
--- declares, and the two H3 units are the ones libh3 names
+-- cellArea answers square metres for every grid
 SELECT round(startValue(cellArea(th3index '831c02fffffffff@2001-01-01'))::numeric, 1);
-SELECT round(startValue(th3CellAreaKm2(th3index '831c02fffffffff@2001-01-01'))::numeric, 7);
-SELECT round(startValue(th3CellAreaRads2(th3index '831c02fffffffff@2001-01-01'))::numeric, 9);
 
--- The three answer one quantity in three units
-SELECT startValue(cellArea(th3index '831c02fffffffff@2001-01-01'))
-  = startValue(th3CellAreaKm2(th3index '831c02fffffffff@2001-01-01')) * 1e6;
-SELECT startValue(th3CellAreaRads2(th3index '831c02fffffffff@2001-01-01'))
-  < startValue(th3CellAreaKm2(th3index '831c02fffffffff@2001-01-01'));
+-- A finer cell covers less ground than a coarser one
+SELECT startValue(cellArea(th3index '8a2a1072b59ffff@2001-01-01'))
+  < startValue(cellArea(th3index '831c02fffffffff@2001-01-01'));
 
 -- Sequence form
-SELECT th3CellAreaKm2(th3index
-  '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]')
-  IS NOT NULL;
 SELECT cellArea(th3index
   '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]')
   IS NOT NULL;
 
 -------------------------------------------------------------------------------
--- th3EdgeLengthKm, th3EdgeLengthM and th3EdgeLengthRads — lift_with_const
+-- th3EdgeLength — lift_with_const
 -------------------------------------------------------------------------------
 
--- The three name the units libh3 names
-SELECT round(startValue(th3EdgeLengthKm(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01')))::numeric, 7);
-SELECT round(startValue(th3EdgeLengthM(th3CellsToDirectedEdge(
+-- The length of a directed edge, in metres
+SELECT round(startValue(th3EdgeLength(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
     th3index '880326b88dfffff@2001-01-01')))::numeric, 4);
-SELECT round(startValue(th3EdgeLengthRads(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01')))::numeric, 9);
 
--- The three answer one quantity in three units
-SELECT startValue(th3EdgeLengthM(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01')))
-  = startValue(th3EdgeLengthKm(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01'))) * 1000;
-SELECT startValue(th3EdgeLengthRads(th3CellsToDirectedEdge(
-    th3index '880326b885fffff@2001-01-01',
-    th3index '880326b88dfffff@2001-01-01')))
-  < startValue(th3EdgeLengthKm(th3CellsToDirectedEdge(
+-- An edge of a finer cell is shorter
+SELECT startValue(th3EdgeLength(th3CellsToDirectedEdge(
+    th3index '890326b8853ffff@2001-01-01',
+    th3index '890326b8857ffff@2001-01-01')))
+  < startValue(th3EdgeLength(th3CellsToDirectedEdge(
     th3index '880326b885fffff@2001-01-01',
     th3index '880326b88dfffff@2001-01-01')));
 
 -------------------------------------------------------------------------------
--- greatCircleDistanceKm, greatCircleDistanceM and greatCircleDistanceRads —
--- binary_synced
+-- greatCircleDistance — binary_synced
 -------------------------------------------------------------------------------
 
 -- Distance from a point to itself is 0
-SELECT greatCircleDistanceKm(
+SELECT greatCircleDistance(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01');
 
--- One degree of longitude at the equator, in the three units libh3 names.
--- The radian answer is pi/180 exactly, which is the oracle for the trio.
-SELECT round(startValue(greatCircleDistanceKm(
-  tgeogpoint 'POINT(0 0)@2001-01-01',
-  tgeogpoint 'POINT(1 0)@2001-01-01'))::numeric, 6);
-SELECT round(startValue(greatCircleDistanceM(
+-- One degree of longitude at the equator, in metres
+SELECT round(startValue(greatCircleDistance(
   tgeogpoint 'POINT(0 0)@2001-01-01',
   tgeogpoint 'POINT(1 0)@2001-01-01'))::numeric, 3);
-SELECT round(startValue(greatCircleDistanceRads(
-  tgeogpoint 'POINT(0 0)@2001-01-01',
-  tgeogpoint 'POINT(1 0)@2001-01-01'))::numeric, 9)
-  = round((pi() / 180)::numeric, 9);
 
--- The three answer one quantity in three units
-SELECT startValue(greatCircleDistanceM(
-    tgeogpoint 'POINT(0 0)@2001-01-01', tgeogpoint 'POINT(1 0)@2001-01-01'))
-  = startValue(greatCircleDistanceKm(
-    tgeogpoint 'POINT(0 0)@2001-01-01', tgeogpoint 'POINT(1 0)@2001-01-01')) * 1000;
+-- The same span of longitude is shorter away from the equator
+SELECT startValue(greatCircleDistance(
+    tgeogpoint 'POINT(0 60)@2001-01-01', tgeogpoint 'POINT(1 60)@2001-01-01'))
+  < startValue(greatCircleDistance(
+    tgeogpoint 'POINT(0 0)@2001-01-01', tgeogpoint 'POINT(1 0)@2001-01-01'));
 
 -- Sequence form
-SELECT greatCircleDistanceKm(
+SELECT greatCircleDistance(
   tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
   tgeogpoint '[POINT(2.35 48.86)@2001-01-01, POINT(-73.96 40.78)@2001-01-02]')
   IS NOT NULL;

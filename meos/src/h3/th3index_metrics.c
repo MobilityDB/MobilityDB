@@ -142,59 +142,7 @@ h3_gs_great_circle_distance_meos(const GSERIALIZED *a, const GSERIALIZED *b,
 }
 
 /*****************************************************************************
- * cellArea(th3index), th3CellAreaKm2 and th3CellAreaRads2 — lift_with_const
- *****************************************************************************/
-
-/**
- * @brief Return the per-instant area of a temporal H3 cell in the given
- * H3 unit
- */
-static Temporal *
-th3index_cell_area_in(const Temporal *temp, H3Unit u)
-{
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_h3_cell_area;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Int32GetDatum((int32) u);
-  lfinfo.argtype[0] = T_TH3INDEX;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = false;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  return tfunc_temporal(temp, &lfinfo);
-}
-
-/**
- * @ingroup meos_h3_metrics
- * @brief Return the per-instant area of a temporal H3 cell in square
- * kilometres, the quantity libh3 answers as cellAreaKm2
- * @csqlfn #Th3index_cell_area_km2()
- */
-Temporal *
-th3index_cell_area_km2(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL);
-  return th3index_cell_area_in(temp, H3_UNIT_KM2);
-}
-
-/**
- * @ingroup meos_h3_metrics
- * @brief Return the per-instant area of a temporal H3 cell in square
- * radians, the quantity libh3 answers as cellAreaRads2
- * @csqlfn #Th3index_cell_area_rads2()
- */
-Temporal *
-th3index_cell_area_rads2(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL);
-  return th3index_cell_area_in(temp, H3_UNIT_RADS2);
-}
-
-/*****************************************************************************
- * th3EdgeLengthKm, th3EdgeLengthM and th3EdgeLengthRads — lift_with_const
+ * th3EdgeLength — lift_with_const
  *****************************************************************************/
 
 /**
@@ -220,43 +168,15 @@ th3index_edge_length_in(const Temporal *temp, H3Unit u)
 /**
  * @ingroup meos_h3_metrics
  * @brief Return the per-instant length of a temporal H3 directed edge in
- * kilometres, the quantity libh3 answers as edgeLengthKm
- * @csqlfn #Th3index_edge_length_km()
- */
-Temporal *
-th3index_edge_length_km(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL);
-  return th3index_edge_length_in(temp, H3_UNIT_KM);
-}
-
-/**
- * @ingroup meos_h3_metrics
- * @brief Return the per-instant length of a temporal H3 directed edge in
  * metres, the quantity libh3 answers as edgeLengthM
- * @csqlfn #Th3index_edge_length_m()
+ * @csqlfn #Th3index_edge_length()
  */
 Temporal *
-th3index_edge_length_m(const Temporal *temp)
+th3index_edge_length(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
   return th3index_edge_length_in(temp, H3_UNIT_M);
-}
-
-/**
- * @ingroup meos_h3_metrics
- * @brief Return the per-instant length of a temporal H3 directed edge in
- * radians, the quantity libh3 answers as edgeLengthRads
- * @csqlfn #Th3index_edge_length_rads()
- */
-Temporal *
-th3index_edge_length_rads(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TH3INDEX(temp, NULL);
-  return th3index_edge_length_in(temp, H3_UNIT_RADS);
 }
 
 /*****************************************************************************
@@ -295,46 +215,16 @@ tgeogpoint_great_circle_distance_in(const Temporal *a, const Temporal *b,
 /**
  * @ingroup meos_h3_metrics
  * @brief Return the per-instant great-circle distance between two temporal
- * geodetic points in kilometres, the quantity libh3 answers as
- * greatCircleDistanceKm
- * @csqlfn #Tgeogpoint_great_circle_distance_km()
- */
-Temporal *
-tgeogpoint_great_circle_distance_km(const Temporal *a, const Temporal *b)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEOGPOINT(a, NULL); VALIDATE_TGEOGPOINT(b, NULL);
-  return tgeogpoint_great_circle_distance_in(a, b, H3_UNIT_KM);
-}
-
-/**
- * @ingroup meos_h3_metrics
- * @brief Return the per-instant great-circle distance between two temporal
  * geodetic points in metres, the quantity libh3 answers as
  * greatCircleDistanceM
- * @csqlfn #Tgeogpoint_great_circle_distance_m()
+ * @csqlfn #Tgeogpoint_great_circle_distance()
  */
 Temporal *
-tgeogpoint_great_circle_distance_m(const Temporal *a, const Temporal *b)
+tgeogpoint_great_circle_distance(const Temporal *a, const Temporal *b)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGPOINT(a, NULL); VALIDATE_TGEOGPOINT(b, NULL);
   return tgeogpoint_great_circle_distance_in(a, b, H3_UNIT_M);
-}
-
-/**
- * @ingroup meos_h3_metrics
- * @brief Return the per-instant great-circle distance between two temporal
- * geodetic points in radians, the quantity libh3 answers as
- * greatCircleDistanceRads
- * @csqlfn #Tgeogpoint_great_circle_distance_rads()
- */
-Temporal *
-tgeogpoint_great_circle_distance_rads(const Temporal *a, const Temporal *b)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEOGPOINT(a, NULL); VALIDATE_TGEOGPOINT(b, NULL);
-  return tgeogpoint_great_circle_distance_in(a, b, H3_UNIT_RADS);
 }
 
 /*****************************************************************************/

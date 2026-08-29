@@ -85,6 +85,13 @@ SELECT isValidIndex(quadbin '480fffffffffffff');
 SELECT isValidCell(quadbin '480fffffffffffff');
 SELECT isValidCell(quadbin '48427fffffffffff');
 
+-- A well-formed index whose mode is not the data-cell mode is a value of the
+-- type, so isValidCell is the question that answers whether the value at hand
+-- is a cell. 504b5fffffffffff carries mode 2, 484b5fffffffffff mode 1.
+SELECT isValidIndex(quadbin '504b5fffffffffff');
+SELECT isValidCell(quadbin '504b5fffffffffff');
+SELECT isValidCell(quadbin '484b5fffffffffff');
+
 -------------------------------------------------------------------------------
 -- btree opclass: ORDER BY, DISTINCT, GROUP BY
 -------------------------------------------------------------------------------

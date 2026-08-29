@@ -30,13 +30,13 @@ Five hazards reliably bite workloads using H3 cells. Each is a property of the H
 
   **Mitigation**: `th3index` deliberately has no `h3span` / `h3spanset` companion types (precedent: `geometry` has no `geometryspan`), and the bbox indexes capture the cells' spatiotemporal extent (`stbox`), not the cell-id value. Value-range filtering must go through `h3_*` inspection functions (resolution, base cell, hierarchy checks) or explicit set enumeration via `h3indexset`. Code that assumes `cell_a < cell_b` reflects spatial proximity will silently produce wrong results.
 
-- **Resolution mixing in operations**. H3 cells at different resolutions (0&#x2013;15) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; `cellToParent(cell, coarser_res)` coarsens, `h3CellToChildren(parent, finer_res)` refines, and `h3CompactCells` / `h3UncompactCells` round-trip correctly only when input resolutions are compatible.
+- **Resolution mixing in operations**. H3 cells at different resolutions (0&#x2013;15) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; `cellToParent(cell, coarser_res)` coarsens, `cellToChildren(parent, finer_res)` refines, and `h3CompactCells` / `h3UncompactCells` round-trip correctly only when input resolutions are compatible.
 
   **Mitigation**: consumers should document the resolution invariant per trajectory (e.g. "all cells are resolution 9") and validate inputs at the ingestion boundary. The `getResolution` accessor lets a CHECK constraint enforce this.
 
 - **Pentagon cells**. The H3 grid has 12 pentagonal (instead of hexagonal) cells per resolution &#x2014; the Eisenstein duals of the icosahedron's 12 vertices. `h3GridRing` may fail near these pentagons; `h3GridPathCells` fails if the path crosses one. The error is loud (libh3 raises an explicit failure), but workloads that expect ring / path operations to always succeed need a guard.
 
-  **Mitigation**: defensive code should wrap pentagon-sensitive calls and check `h3_is_pentagon_cell` on inputs and key outputs. For trajectories that pass near a pentagon, fall back to `h3GridDisk` (which is pentagon-safe) or compute path segments in pieces around the pentagon.
+  **Mitigation**: defensive code should wrap pentagon-sensitive calls and check `h3_is_pentagon_cell` on inputs and key outputs. For trajectories that pass near a pentagon, fall back to `gridDisk` (which is pentagon-safe) or compute path segments in pieces around the pentagon.
 
 - **Compaction / decompaction round-trip**. `h3CompactCells` produces the most compact mixed-resolution representation of a set of cells; `h3UncompactCells` expands it back. The round-trip is lossless in spatial extent, but **cell ordering is not preserved** &#x2014; libh3 does not guarantee a sorted output. Queries that consume the output as if its order were stable will return different results before and after compaction even when the underlying spatial set is identical.
 

@@ -58,7 +58,7 @@ CREATE FUNCTION getResolution(quadbin)
  * Hierarchy
  *
  * `cellToParent` drops to the requested coarser resolution;
- * `quadbinCellToChildren` returns the four child cells at the
+ * `cellToChildren` returns the four child cells at the
  * requested finer resolution as a `quadbinset`. `quadbinCellSibling`
  * returns the neighbouring cell at the same resolution in the given
  * direction (`up` / `down` / `left` / `right`).
@@ -69,7 +69,7 @@ CREATE FUNCTION cellToParent(quadbin, integer)
   AS 'MODULE_PATHNAME', 'Quadbin_cell_to_parent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbinCellToChildren(quadbin, integer)
+CREATE FUNCTION cellToChildren(quadbin, integer)
   RETURNS quadbinset
   AS 'MODULE_PATHNAME', 'Quadbin_cell_to_children'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -82,12 +82,12 @@ CREATE FUNCTION quadbinCellSibling(quadbin, text)
 /******************************************************************************
  * Grid traversal — k-ring
  *
- * `quadbinGridDisk` returns every cell within grid distance k of the
+ * `gridDisk` returns every cell within grid distance k of the
  * origin (the origin plus its k-step square neighbourhood) as a
  * `quadbinset`.
  ******************************************************************************/
 
-CREATE FUNCTION quadbinGridDisk(quadbin, integer)
+CREATE FUNCTION gridDisk(quadbin, integer)
   RETURNS quadbinset
   AS 'MODULE_PATHNAME', 'Quadbin_grid_disk'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

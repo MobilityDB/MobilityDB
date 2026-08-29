@@ -60,8 +60,8 @@ SELECT s2CellContains(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8),
   s2CellToChild(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 9, 2));
 -- A child is exactly one level finer than the cell it is a child of.
 SELECT s2CellToChild(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 10, 0);
-SELECT numValues(s2CellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 9));
-SELECT numValues(s2CellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 10));
+SELECT numValues(cellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 9));
+SELECT numValues(cellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 10));
 
 -------------------------------------------------------------------------------
 -- The Hilbert range

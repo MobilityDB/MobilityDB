@@ -2956,10 +2956,10 @@
 			<title>Set-Returning Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcell_grid_disk"><varname>h3GridDisk</varname></link>: All cells within <varname>k</varname> grid steps of the origin</para>
+					<para><link linkend="tcell_grid_disk"><varname>gridDisk</varname></link>: All cells within <varname>k</varname> grid steps of the origin</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_cell_to_children"><varname>h3CellToChildren</varname></link>: All children of a cell at the given target resolution</para>
+					<para><link linkend="tcell_cell_to_children"><varname>cellToChildren</varname></link>: All children of a cell at the given target resolution</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_compact_cells"><varname>compactCells</varname></link>: Compacted representation of a cell set, finer cells being merged into their parent whenever the parent's full set of children is present</para>
@@ -3050,10 +3050,10 @@
 					<para><link linkend="tcell_h3_get_icosahedron_faces"><varname>h3GetIcosahedronFaces</varname></link>: The icosahedron face indexes (0..19) intersected by a cell</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_h3_edge_length"><varname>th3EdgeLengthKm</varname></link>: Return the temporal length of each directed edge in a trajectory, in the requested unit</para>
+					<para><link linkend="tcell_h3_edge_length"><varname>th3EdgeLength</varname></link>: Return the temporal length of each directed edge in a trajectory, in metres</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_h3_great_circle_distance"><varname>greatCircleDistanceKm</varname></link>: Return the temporal great-circle distance between two temporal geodetic points (not between cells)</para>
+					<para><link linkend="tcell_h3_great_circle_distance"><varname>greatCircleDistance</varname></link>: Return the temporal great-circle distance between two temporal geodetic points (not between cells)</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_h3_are_neighbor_cells"><varname>th3AreNeighborCells</varname></link>: Return a temporal boolean stating whether two temporal cells are grid neighbours at each instant</para>

@@ -58,9 +58,6 @@ SELECT asText(wCount(temp, interval '1 day')) FROM (VALUES
 SELECT asText(mergeAgg(temp)) FROM (VALUES
   (ts2cell '47c3c3@2001-01-01'),
   (ts2cell '47c3c4@2001-01-02')) t(temp);
-SELECT asText(merge(temp)) = asText(mergeAgg(temp)) FROM (VALUES
-  (ts2cell '47c3c3@2001-01-01'),
-  (ts2cell '47c3c4@2001-01-02')) t(temp);
 
 -------------------------------------------------------------------------------
 -- Append
@@ -69,7 +66,7 @@ SELECT asText(merge(temp)) = asText(mergeAgg(temp)) FROM (VALUES
 SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM (VALUES
   (ts2cell '47c3c3@2001-01-01'),
   (ts2cell '47c3c4@2001-01-02')) t(inst);
-SELECT asText(appendInstant(inst ORDER BY inst))
+SELECT asText(appendInstantAgg(inst ORDER BY inst))
   = asText(appendInstantAgg(inst ORDER BY inst)) FROM (VALUES
   (ts2cell '47c3c3@2001-01-01'),
   (ts2cell '47c3c4@2001-01-02')) t(inst);

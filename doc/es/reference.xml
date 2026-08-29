@@ -2947,10 +2947,10 @@
 			<title>Funciones que devuelven conjuntos</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcell_grid_disk"><varname>h3GridDisk</varname></link>: Todas las celdas dentro de <varname>k</varname> pasos de cuadrícula desde el origen</para>
+					<para><link linkend="tcell_grid_disk"><varname>gridDisk</varname></link>: Todas las celdas dentro de <varname>k</varname> pasos de cuadrícula desde el origen</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_cell_to_children"><varname>h3CellToChildren</varname></link>: Todos los hijos de una celda en la resolución de destino dada</para>
+					<para><link linkend="tcell_cell_to_children"><varname>cellToChildren</varname></link>: Todos los hijos de una celda en la resolución de destino dada</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_compact_cells"><varname>compactCells</varname></link>: Representación compactada de un conjunto de celdas, fusionándose las celdas más finas en su padre siempre que esté presente el conjunto completo de hijos del padre</para>
@@ -3041,10 +3041,10 @@
 					<para><link linkend="tcell_h3_get_icosahedron_faces"><varname>h3GetIcosahedronFaces</varname></link>: Los índices de las caras del icosaedro (0..19) que interseca una celda</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_h3_edge_length"><varname>th3EdgeLengthKm</varname></link>: Devolver la longitud temporal de cada arista dirigida de una trayectoria, en la unidad solicitada</para>
+					<para><link linkend="tcell_h3_edge_length"><varname>th3EdgeLength</varname></link>: Devolver la longitud temporal de cada arista dirigida de una trayectoria, en la unidad solicitada</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_h3_great_circle_distance"><varname>greatCircleDistanceKm</varname></link>: Devolver la distancia de círculo máximo temporal entre dos puntos temporales geodésicos (no entre celdas)</para>
+					<para><link linkend="tcell_h3_great_circle_distance"><varname>greatCircleDistance</varname></link>: Devolver la distancia de círculo máximo temporal entre dos puntos temporales geodésicos (no entre celdas)</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_h3_are_neighbor_cells"><varname>th3AreNeighborCells</varname></link>: Devolver un booleano temporal que indica si dos celdas temporales son vecinas de cuadrícula en cada instante</para>

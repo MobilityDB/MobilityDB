@@ -71,13 +71,13 @@ SELECT s2CellContains(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8),
 
 SELECT s2CellToChild(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 10, 0);
 ERROR:  The child level 10 must be exactly one finer than the cell level 8
-SELECT numValues(s2CellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 9));
+SELECT numValues(cellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 9));
  numvalues 
 -----------
          4
 (1 row)
 
-SELECT numValues(s2CellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 10));
+SELECT numValues(cellToChildren(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 8), 10));
  numvalues 
 -----------
         16

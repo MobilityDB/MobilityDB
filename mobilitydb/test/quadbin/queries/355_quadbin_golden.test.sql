@@ -97,7 +97,7 @@ SELECT round(yMax(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 50.958427;
 -------------------------------------------------------------------------------
 
 SELECT cellToParent(quadbin '48a6227affffffff', 5) = quadbin '485623ffffffffff';
-SELECT quadbinCellToChildren(quadbin '480fffffffffffff', 1)
+SELECT cellToChildren(quadbin '480fffffffffffff', 1)
   = quadbinset '{4813ffffffffffff, 4817ffffffffffff, 481bffffffffffff, 481fffffffffffff}';
 
 -------------------------------------------------------------------------------

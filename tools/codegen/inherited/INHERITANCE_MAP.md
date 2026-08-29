@@ -310,7 +310,7 @@ Two more reference chapters carry inherited surface:
 
 | chapter → `<sect1>` | prefix | generated? | notes |
 |---|---|---|---|
-| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **13 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, posechain, rgeo, tpoint, th3index, quadbin, ts2cell) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant; `--gaps`: 20/20, full coverage |
+| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **13 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, posechain, rgeo, tpoint, th3index, quadbin, ts2cell) — tCount/extent/tMin/tMax/tSum/tAvg/mergeAgg/appendInstantAgg; `--gaps`: 20/20, full coverage. ⛔ THE THREE CELL INDEX FAMILIES PUBLISH THE `Agg` SPELLING ALONE — `th3index`, `tquadbin` and `ts2cell` each declare **0** bare against **5** `Agg` aggregates, where every family whose bare names sit in released SQL declares both in equal number (tcbuffer 5/5, tjsonb 5/5, tnpoint 5/5, tpose 5/5, tposechain 5/5, trgeo 5/5, tgeo 10/10, tpoint 10/10, tpc 7/7, temporal 25/25). A type introduced in 1.4 has no released bare spelling to keep compatible, so it takes the canonical name alone |
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
