@@ -388,7 +388,7 @@ SELECT zMin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
 </programlisting>
-				<para>Notice that for <varname>tbox</varname> the result value for <varname>xMin</varname> and <varname>xMin</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span.</para>
+				<para>Notice that for <varname>tbox</varname> the result value for <varname>xMin</varname> and <varname>xMax</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span. A big integer bound that no <varname>float</varname> represents exactly is refused rather than rounded; read such a bound from <varname>bigintspan(box)</varname>.</para>
 			</listitem>
 
 			<listitem xml:id="box_xMax">
@@ -413,7 +413,7 @@ SELECT zMax(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 SELECT tMax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
 </programlisting>
-				<para>Notice that for <varname>tbox</varname> the result value for <varname>xMin</varname> and <varname>xMin</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span.</para>
+				<para>Notice that for <varname>tbox</varname> the result value for <varname>xMin</varname> and <varname>xMax</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span. A big integer bound that no <varname>float</varname> represents exactly is refused rather than rounded; read such a bound from <varname>bigintspan(box)</varname>.</para>
 			</listitem>
 
 			<listitem xml:id="tbox_xMinInc">
