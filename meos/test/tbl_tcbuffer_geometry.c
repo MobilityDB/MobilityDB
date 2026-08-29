@@ -74,7 +74,7 @@ int main(void)
   meos_initialize_timezone("UTC");
 
   /* You may substitute the full file1 path in the first argument of fopen */
-  FILE *file1 = fopen("data/tbl_tcbuffer.csv", "r");
+  FILE *file1 = fopen("csv/tbl_tcbuffer.csv", "r");
 
   if (! file1)
   {
@@ -83,7 +83,7 @@ int main(void)
   }
 
   /* You may substitute the full file1 path in the first argument of fopen */
-  FILE *file2 = fopen("data/tbl_geometry.csv", "r");
+  FILE *file2 = fopen("csv/tbl_geometry.csv", "r");
 
   if (! file2)
   {
@@ -103,7 +103,7 @@ int main(void)
   do
   {
     int k1;
-    int read1 = fscanf(file1, "%d,\"%7500[^\"\n]\"\n", &k1, tcbuffer_buffer);
+    int read1 = fscanf(file1, "%d,%7500[^\n]\n", &k1, tcbuffer_buffer);
 
     if (ferror(file1) || read1 != 2)
     {

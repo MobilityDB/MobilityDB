@@ -12,7 +12,7 @@
  * DE-9IM pattern alphabet, so `T` accepts any non-empty intersection and `*`
  * accepts anything.
  *
- * The engine under test is the native one, reached through #meos_relate, so
+ * The engine under test is the native one, reached through #geom_relate, so
  * the answers are its own whether or not the library carries GEOS. The corpus
  * of expected matrices comes from the GEOS suite through
  * `relate_harvest_geos.py`, so the two answer the same question about the
@@ -25,10 +25,6 @@
 
 #include <meos.h>
 #include <meos_geo.h>
-#include <meos_internal_geo.h>
-#include <liblwgeom.h>
-
-#include "geo/geo_funcs.h"
 
 /**
  * @brief Return true if a matrix satisfies an expected DE-9IM pattern
@@ -82,7 +78,6 @@ main(int argc, char **argv)
     if (expected)
       *expected++ = '\0';
 
-    char matrix[10];
     GSERIALIZED *gs1 = geom_in(line, -1);
     GSERIALIZED *gs2 = geom_in(second, -1);
     if (! gs1 || ! gs2)
@@ -92,10 +87,8 @@ main(int argc, char **argv)
       if (gs2) free(gs2);
       continue;
     }
-    LWGEOM *g1 = lwgeom_from_gserialized(gs1);
-    LWGEOM *g2 = lwgeom_from_gserialized(gs2);
-    bool covered = meos_relate(g1, g2, matrix);
-    lwgeom_free(g1); lwgeom_free(g2);
+    char *matrix = geom_relate(gs1, gs2);
+    bool covered = (matrix != NULL);
     free(gs1); free(gs2);
 
     if (! expected)
@@ -114,6 +107,8 @@ main(int argc, char **argv)
         printf("FAIL got=%s expected=%s  %s|%s\n", matrix, expected, line,
           second);
     }
+    if (matrix)
+      free(matrix);
   }
   free(line);
   meos_finalize();

@@ -8,6 +8,12 @@
 /tgeometry_smoketest.c
 /tjsonb_smoketest.c
 
+# Table fixtures exported from the pg_regress archives by
+# tools/gen_test_csv.py. mobilitydb/test/<family>/data/load_*.sql.xz is the one
+# copy of this data; the CSV form is written from it before the programs that
+# read it run, so neither form can drift from the other.
+/csv/
+
 # Compiled smoke-test binaries and valgrind logs
 /build/
 __pycache__/

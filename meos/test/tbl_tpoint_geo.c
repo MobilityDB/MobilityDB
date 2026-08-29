@@ -75,7 +75,7 @@ int main(void)
   meos_initialize_timezone("UTC");
 
   /* You may substitute the full file1 path in the first argument of fopen */
-  FILE *file1 = fopen("data/tbl_tgeompoint.csv", "r");
+  FILE *file1 = fopen("csv/tbl_tgeompoint.csv", "r");
 
   if (! file1)
   {
@@ -84,8 +84,8 @@ int main(void)
   }
 
   /* You may substitute the full file1 path in the first argument of fopen */
-  // FILE *file2 = fopen("data/tbl_geom.csv", "r");
-  FILE *file2 = fopen("data/tbl_geom_point.csv", "r");
+  // FILE *file2 = fopen("csv/tbl_geom.csv", "r");
+  FILE *file2 = fopen("csv/tbl_geom_point.csv", "r");
 
   if (! file2)
   {

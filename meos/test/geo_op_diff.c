@@ -56,6 +56,20 @@
  * geo_op_diff orientedenvelope  < any corpus, whose first field is read
  * geo_op_diff issimple          < issimple_corpus_geos.txt
  * @endcode
+ *
+ * The program compares two engines, so unlike its siblings it does not build
+ * against the installed MEOS alone: it reads the geometry through liblwgeom
+ * and answers the reference through GEOS, and neither header nor symbol is
+ * part of the MEOS library surface. It builds against the source and build
+ * trees, where @p $SRC is a MobilityDB checkout and @p $BLD its build
+ * directory
+ * @code
+ * gcc -Wall -g -DMEOS=1 -I$SRC/meos/include -isystem $SRC/pgtypes \
+ *   -isystem $BLD/pgtypes -isystem $SRC/postgis -isystem $BLD/postgis \
+ *   -isystem $SRC/postgis/liblwgeom -isystem $BLD/postgis/liblwgeom \
+ *   -o geo_op_diff geo_op_diff.c -lmeos $BLD/postgis/libpostgis.a \
+ *   -lgeos_c -lproj -ljson-c -lm
+ * @endcode
  */
 
 #include <math.h>

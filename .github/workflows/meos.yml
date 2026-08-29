@@ -191,6 +191,40 @@ jobs:
           ./rtree_span_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o sptree_test sptree_test.c -L/usr/local/lib -lmeos -lm
           ./sptree_test
+          # The programs below read the tables the PostgreSQL suite loads, in
+          # the CSV form tools/gen_test_csv.py writes from the same archives,
+          # so the two suites answer their queries over one set of fixtures
+          python3 ../../tools/gen_test_csv.py
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_geometry_read tbl_geometry_read.c -L/usr/local/lib -lmeos -lm
+          ./tbl_geometry_read
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_value_value tbl_value_value.c -L/usr/local/lib -lmeos -lm
+          ./tbl_value_value
+          # The program reads the fixture it is given and takes the type from
+          # its name, so the loop covers every temporal table the archives
+          # carry, including the ones a family adds later
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_temporal tbl_temporal.c -L/usr/local/lib -lmeos -lm
+          for f in csv/tbl_t*.csv; do ./tbl_temporal "$f" > /dev/null; done
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_temporal_value tbl_temporal_value.c -L/usr/local/lib -lmeos -lm
+          ./tbl_temporal_value
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_temporal_temporal tbl_temporal_temporal.c -L/usr/local/lib -lmeos -lm
+          ./tbl_temporal_temporal
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tpoint tbl_tpoint.c -L/usr/local/lib -lmeos -lm
+          ./tbl_tpoint
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tpoint_geo tbl_tpoint_geo.c -L/usr/local/lib -lmeos -lm
+          ./tbl_tpoint_geo
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tpoint_tpoint tbl_tpoint_tpoint.c -L/usr/local/lib -lmeos -lm
+          ./tbl_tpoint_tpoint
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tgeo_tgeo tbl_tgeo_tgeo.c -L/usr/local/lib -lmeos -lm
+          ./tbl_tgeo_tgeo
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tcbuffer_geometry tbl_tcbuffer_geometry.c -L/usr/local/lib -lmeos -lm
+          ./tbl_tcbuffer_geometry
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tcbuffer_tcbuffer tbl_tcbuffer_tcbuffer.c -L/usr/local/lib -lmeos -lm
+          ./tbl_tcbuffer_tcbuffer
+          # The DE-9IM harness reaches the engine through the public geom_relate,
+          # so it builds against the installed library like every program here
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o relate_diff relate_diff.c -L/usr/local/lib -lmeos -lm
+          ./relate_diff < relate_corpus.txt
+          ./relate_diff < relate_corpus_types.txt
 
   threaded:
     name: Thread-safety (TSan)
