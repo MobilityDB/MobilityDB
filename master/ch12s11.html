@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Spatial Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch12.html" title="Chapter 12. Temporal Circular Buffers"><link rel="prev" href="ch12s10.html" title="Restrictions"><link rel="next" href="ch12s12.html" title="Bounding Box Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Spatial Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s10.html">Prev</a> </td><th width="60%" align="center">Chapter 12. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch12s12.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_spatial"></a>Spatial Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_SRID"></a><a class="indexterm" name="id8627"></a><a class="indexterm" name="id8630"></a><p>Return or set the spatial reference identifier</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Spatial Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch12.html" title="Chapter 12. Temporal Circular Buffers"><link rel="prev" href="ch12s10.html" title="Restrictions"><link rel="next" href="ch12s12.html" title="Bounding Box Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Spatial Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s10.html">Prev</a> </td><th width="60%" align="center">Chapter 12. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch12s12.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_spatial"></a>Spatial Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_SRID"></a><a class="indexterm" name="id8658"></a><a class="indexterm" name="id8661"></a><p>Return or set the spatial reference identifier</p><pre class="programlisting">
 SRID(tcbuffer) → integer
 setSRID(tcbuffer,integer) → tcbuffer
 </pre><pre class="programlisting">
@@ -8,7 +8,7 @@ SELECT SRID(tcbuffer 'SRID=5676;
 SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01,
   Cbuffer(Point(1 1),2)@2001-01-02)', 5676));
 -- SRID=5676;[Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
-</pre></li><li class="listitem"><a name="tcbuffer_transform"></a><a class="indexterm" name="id8637"></a><a class="indexterm" name="id8640"></a><p>Transform to a spatial reference identifier</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_transform"></a><a class="indexterm" name="id8668"></a><a class="indexterm" name="id8671"></a><p>Transform to a spatial reference identifier</p><pre class="programlisting">
 transform(tcbuffer,integer) → tcbuffer
 transformPipeline(tcbuffer,pipeline text,srid integer,
   is_forward boolean=true) → tcbuffer
@@ -25,19 +25,19 @@ SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326), pip
   4326, false), 6) FROM test;
 /* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01, 
    Cbuffer(POINT(-0.1275 51.507222),2)@2001-01-02} */
-</pre></li><li class="listitem"><a name="tcbuffer_traversedArea"></a><a class="indexterm" name="id8653"></a><p>Return the area traversed by the temporal circular buffer</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_traversedArea"></a><a class="indexterm" name="id8684"></a><p>Return the area traversed by the temporal circular buffer</p><pre class="programlisting">
 traversedArea(tcbuffer,unary_union bool=false) → geometry
 </pre><pre class="programlisting">
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
 -- CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
-</pre></li><li class="listitem"><a name="tcbuffer_centroid"></a><a class="indexterm" name="id8660"></a><p>Return the temporal geometric point given by the centers of a temporal circular buffer</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_centroid"></a><a class="indexterm" name="id8691"></a><p>Return the temporal geometric point given by the centers of a temporal circular buffer</p><pre class="programlisting">
 centroid(tcbuffer) → tgeompoint
 </pre><pre class="programlisting">
 SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(3 3), 0.5)@2001-01-03]'));
 -- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
-</pre></li><li class="listitem"><a name="tcbuffer_convexHull"></a><a class="indexterm" name="id8667"></a><p>Return the convex hull of the area traversed by the temporal circular buffer</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_convexHull"></a><a class="indexterm" name="id8698"></a><p>Return the convex hull of the area traversed by the temporal circular buffer</p><pre class="programlisting">
 convexHull(tcbuffer) → geometry
 </pre><p>The convex hull is computed on the exact traversed area, arcs included: an arc reaches past the points that define it, so it contributes to the hull the piece of its circle that no other feature of the area reaches past. The result is therefore a curved <code class="varname">CURVEPOLYGON</code> bounded by a <code class="varname">COMPOUNDCURVE</code> of circular arcs and straight segments, as exact as the region returned by <code class="varname">traversedArea</code>. The hull is linear only when the buffer keeps a zero radius, since the traversed area then carries no arc.</p><pre class="programlisting">
 SELECT ST_AsText(convexHull(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
