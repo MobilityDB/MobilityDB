@@ -38,6 +38,19 @@
  * demand.
  */
 
+/* librtcore.h reads GDAL, which reads <sys/stat.h> under its own name, while
+ * PostgreSQL's win32_port.h renames stat away and states the condition itself:
+ * "We must pull in sys/stat.h before this part, else our overrides lose". The
+ * header is therefore read RENAMED here first, which is PostgreSQL's own
+ * prologue (pgtypes/port/win32_port.h), so its struct stat is the only one. */
+#ifdef _WIN32
+#define fstat microsoft_native_fstat
+#define stat microsoft_native_stat
+#include <sys/stat.h>
+#undef fstat
+#undef stat
+#endif
+
 #include "librtcore.h"
 
 /* C */
