@@ -228,8 +228,28 @@ tnumberinst_abs(const TInstant *inst)
   assert(tnumber_basetype(basetype));
   Datum value = tinstant_value_p(inst);
   Datum absvalue;
+  /* The most negative value of a two's complement integer has no positive
+   * counterpart, which is why PostgreSQL's own abs reports it out of range */
   if (basetype == T_INT4)
-    absvalue = Int32GetDatum(abs(DatumGetInt32(value)));
+  {
+    int32 i = DatumGetInt32(value);
+    if (i == PG_INT32_MIN)
+    {
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "Integer out of range");
+      return NULL;
+    }
+    absvalue = Int32GetDatum(abs(i));
+  }
+  else if (basetype == T_INT8)
+  {
+    int64 i = DatumGetInt64(value);
+    if (i == PG_INT64_MIN)
+    {
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "Bigint out of range");
+      return NULL;
+    }
+    absvalue = Int64GetDatum(llabs(i));
+  }
   else /* basetype == T_FLOAT8 */
     absvalue = Float8GetDatum(fabs(DatumGetFloat8(value)));
   return tinstant_make(absvalue, inst->temptype, inst->t);
@@ -245,7 +265,17 @@ tnumberseq_iter_abs(const TSequence *seq)
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
+  {
     instants[i] = tnumberinst_abs(TSEQUENCE_INST_N(seq, i));
+    /* An instant whose absolute value the type cannot represent reports the
+     * range error and answers NULL, which an error handler installed by a
+     * MEOS program returns through, so the instants built here are released */
+    if (! instants[i])
+    {
+      pfree_array((void **) instants, i);
+      return NULL;
+    }
+  }
   return tsequence_make_free(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
 }
@@ -331,6 +361,11 @@ tnumberseqset_abs(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     sequences[i] = linear ?
       tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
+    if (! sequences[i])
+    {
+      pfree_array((void **) sequences, i);
+      return NULL;
+    }
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
@@ -372,6 +407,8 @@ delta_value(Datum value1, Datum value2, MeosType basetype)
   assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8);
   if (basetype == T_INT4)
     return Int32GetDatum(DatumGetInt32(value2) - DatumGetInt32(value1));
+  else if (basetype == T_INT8)
+    return Int64GetDatum(DatumGetInt64(value2) - DatumGetInt64(value1));
   else /* basetype == T_FLOAT8 */
     return Float8GetDatum(DatumGetFloat8(value2) - DatumGetFloat8(value1));
 }
