@@ -8,7 +8,7 @@ SELECT cbuffer 'Cbuffer(Linestring(1 1,2 2), 1.0)';
 SELECT cbuffer 'Cbuffer(Point Z(1 1 1), 1.0)';
 -- Incorrect radius value
 SELECT cbuffer 'Cbuffer(Point(1 1), -2.0)';
-</pre><p>A continuación damos las funciones y operadores para el tipo de búfer circular.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_inout"></a>Entrada y salida</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_asText"></a><a class="indexterm" name="id7584"></a><a class="indexterm" name="id7587"></a><p>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+</pre><p>A continuación damos las funciones y operadores para el tipo de búfer circular.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_inout"></a>Entrada y salida</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_asText"></a><a class="indexterm" name="id7583"></a><a class="indexterm" name="id7586"></a><p>Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
 asText({cbuffer,cbuffer[]}) → {text,text[]}
 asEWKT({cbuffer,cbuffer[]}) → {text,text[]}
 </pre><pre class="programlisting">
@@ -21,7 +21,7 @@ SELECT asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.2)',
   'Cbuffer(SRID=5676;Point(1 1),0.5)']);
 -- {"SRID=5676;Cbuffer(POINT(1 1),0.2)","SRID=5676;Cbuffer(POINT(1 1),0.5)"}
-</pre></li><li class="listitem"><a name="cbuffer_asBinary"></a><a class="indexterm" name="id7594"></a><a class="indexterm" name="id7597"></a><a class="indexterm" name="id7600"></a><a class="indexterm" name="id7603"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="cbuffer_asBinary"></a><a class="indexterm" name="id7593"></a><a class="indexterm" name="id7596"></a><a class="indexterm" name="id7599"></a><a class="indexterm" name="id7602"></a><p>Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), la representación hexadecimal binaria conocida (HexWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 asBinary(cbuffer,endian text='') → bytea
 asEWKB(cbuffer,endian text='') → bytea
 asHexWKB(cbuffer,endian text='') → text
@@ -35,7 +35,7 @@ SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 -- 0100000000000000F03F000000000000F03F000000000000E03F
 SELECT asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 -- 01402C160000000000000000F03F000000000000F03F000000000000E03F
-</pre></li><li class="listitem"><a name="cbuffer_cbufferFromText"></a><a class="indexterm" name="id7615"></a><a class="indexterm" name="id7618"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="cbuffer_cbufferFromText"></a><a class="indexterm" name="id7614"></a><a class="indexterm" name="id7617"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</p><pre class="programlisting">
 cbufferFromText(text) → cbuffer
 cbufferFromEWKT(text) → cbuffer
 </pre><pre class="programlisting">
@@ -43,7 +43,7 @@ SELECT asText(cbufferFromText(text 'Cbuffer(Point(1 1),0.5)'));
 -- Cbuffer(POINT(1 1),0.5)
 SELECT asEWKT(cbufferFromEWKT(text 'SRID=5676;Cbuffer(Point(1 1),0.5)'));
 -- SRID=5676;Cbuffer(POINT(1 1),0.5)
-</pre></li><li class="listitem"><a name="cbuffer_cbufferFromBinary"></a><a class="indexterm" name="id7625"></a><a class="indexterm" name="id7628"></a><a class="indexterm" name="id7631"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="cbuffer_cbufferFromBinary"></a><a class="indexterm" name="id7624"></a><a class="indexterm" name="id7627"></a><a class="indexterm" name="id7630"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 cbufferFromBinary(bytea) → cbuffer
 cbufferFromEWKB(bytea) → cbuffer
 cbufferFromHexEWKB(text) → cbuffer
@@ -57,12 +57,12 @@ SELECT asEWKT(cbufferFromEWKB(
 SELECT asEWKT(cbufferFromHexEWKB(
   '01402C160000000000000000F03F000000000000F03F000000000000E03F'));
 -- SRID=5676;Cbuffer(POINT(1 1),0.5)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_cbuffer"></a><a class="indexterm" name="id7641"></a><p>Constructor para búferes circulares</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_cbuffer"></a><a class="indexterm" name="id7640"></a><p>Constructor para búferes circulares</p><pre class="programlisting">
 cbuffer(geompoint,float) → cbuffer
 </pre><pre class="programlisting">
 SELECT asText(cbuffer(ST_Point(1,1), 0.3));
 -- Cbuffer(POINT(1 1),0.3)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_conversions"></a>Conversión de tipos</h3></div></div></div><p>Los valores del tipo <code class="varname">cbuffer</code> se pueden convertir al tipo <code class="varname">geometry</code> utilizando un <code class="varname">CAST</code> explícito o utilizando la notación <code class="varname">::</code> como se muestra a continuación. De manera similar, una <code class="varname">geometry</code> se puede convertir a un valor <code class="varname">cbuffer</code> utilizando la función <a class="ulink" href="https://postgis.net/docs/ST_MinimumBoundingRadius.html" target="_top"><code class="varname">ST_MinimumBoundingRadius</code></a> de PostGIS.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_geometry"></a><a class="indexterm" name="id7660"></a><p>Convierte entre un búfer circular y una geometría</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_conversions"></a>Conversión de tipos</h3></div></div></div><p>Los valores del tipo <code class="varname">cbuffer</code> se pueden convertir al tipo <code class="varname">geometry</code> utilizando un <code class="varname">CAST</code> explícito o utilizando la notación <code class="varname">::</code> como se muestra a continuación. De manera similar, una <code class="varname">geometry</code> se puede convertir a un valor <code class="varname">cbuffer</code> utilizando la función <a class="ulink" href="https://postgis.net/docs/ST_MinimumBoundingRadius.html" target="_top"><code class="varname">ST_MinimumBoundingRadius</code></a> de PostGIS.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_geometry"></a><a class="indexterm" name="id7659"></a><p>Convierte entre un búfer circular y una geometría</p><pre class="programlisting">
 {geometry,cbuffer}::{cbuffer,geometry}
 </pre><pre class="programlisting">
 SELECT ST_AsText(cbuffer(ST_Point(1,1), 1)::geometry);
@@ -71,7 +71,7 @@ SELECT asText(geometry 'SRID=5676;CIRCULARSTRING(0 1,2 1,0 1)'::cbuffer);
 -- Cbuffer(POINT(1 1),1)
 SELECT asText(geometry 'SRID=5676;LINESTRING(0 0,2 2)'::cbuffer);
 -- Cbuffer(POINT(1 1),1.414213562373095)
-</pre></li><li class="listitem"><a name="cbuffer_stbox"></a><a class="indexterm" name="id7667"></a><p>Convierte un búfer circular y, opcionalmente, una marca de tiempo o un período, a un cuadro espaciotemporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="cbuffer_stbox"></a><a class="indexterm" name="id7666"></a><p>Convierte un búfer circular y, opcionalmente, una marca de tiempo o un período, a un cuadro espaciotemporal</p><pre class="programlisting">
 stbox(cbuffer) → stbox
 stbox(cbuffer,{timestamptz,tstzspan}) → stbox
 </pre><pre class="programlisting">
@@ -81,22 +81,22 @@ SELECT stbox(cbuffer 'Cbuffer(Point(1 1),0.3)', timestamptz '2001-01-01');
 -- STBOX XT(((0.7,0.7),(1.3,1.3)),[2001-01-01, 2001-01-01])
 SELECT stbox(cbuffer 'Cbuffer(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
 -- STBOX XT(((0.7,0.7),(1.3,1.3)),[2001-01-01, 2001-01-02])
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_accessors"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_point"></a><a class="indexterm" name="id7677"></a><p>Devuelve el punto</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_accessors"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_point"></a><a class="indexterm" name="id7676"></a><p>Devuelve el punto</p><pre class="programlisting">
 point(cbuffer) → geompoint
 </pre><pre class="programlisting">
 SELECT ST_AsText(point(cbuffer 'Cbuffer(Point(1 1), 0.3)'));
 -- POINT(1 1)
-</pre></li><li class="listitem"><a name="cbuffer_radius"></a><a class="indexterm" name="id7684"></a><p>Devuelve el radio</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="cbuffer_radius"></a><a class="indexterm" name="id7683"></a><p>Devuelve el radio</p><pre class="programlisting">
 radius(cbuffer) → float
 </pre><pre class="programlisting">
 SELECT radius(cbuffer 'Cbuffer(Point(1 1), 0.3)');
 -- 0.3
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_round"></a><a class="indexterm" name="id7694"></a><p>Redondea el punto y el radio del búfer circular en el número de lugares decimales</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_transformations"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_round"></a><a class="indexterm" name="id7693"></a><p>Redondea el punto y el radio del búfer circular en el número de lugares decimales</p><pre class="programlisting">
 round(cbuffer,integer=0) → cbuffer
 </pre><pre class="programlisting">
 SELECT asText(round(cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
 -- Cbuffer(POINT(1.123457 1.123457),0.123457)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_spatial_functions"></a>Operaciones espaciales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_SRID"></a><a class="indexterm" name="id7704"></a><a class="indexterm" name="id7707"></a><p>Devuelve o establece el identificador de referencia espacial</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_spatial_functions"></a>Operaciones espaciales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_SRID"></a><a class="indexterm" name="id7703"></a><a class="indexterm" name="id7706"></a><p>Devuelve o establece el identificador de referencia espacial</p><pre class="programlisting">
 SRID(cbuffer) → integer
 setSRID(cbuffer,integer) → cbuffer
 </pre><pre class="programlisting">
@@ -104,7 +104,7 @@ SELECT SRID(cbuffer 'Cbuffer(SRID=5676;Point(1 1), 0.3)');
 -- 5676
 SELECT asEWKT(setSRID(cbuffer 'Cbuffer(Point(0 0),1)', 4326));
 -- SRID=4326;Cbuffer(POINT(0 0),1)
-</pre></li><li class="listitem"><a name="cbuffer_transform"></a><a class="indexterm" name="id7714"></a><a class="indexterm" name="id7717"></a><p>Transforma a una referencia espacial diferente</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="cbuffer_transform"></a><a class="indexterm" name="id7713"></a><a class="indexterm" name="id7716"></a><p>Transforma a una referencia espacial diferente</p><pre class="programlisting">
 transform(cbuffer,integer) → cbuffer
 transformPipeline(cbuffer,pipeline text,srid integer,
   is_forward boolean=true) → cbuffer
@@ -118,7 +118,7 @@ WITH test(cbuffer, pipeline) AS (
 SELECT asEWKT(transformPipeline(transformPipeline(cbuffer, pipeline, 4326), pipeline,
   4326, false), 6) FROM test;
 -- SRID=4326;Cbuffer(POINT(4.3525 50.846667),1)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_distance"></a>Operaciones de distancia</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_distance_op"></a><a class="indexterm" name="id7736"></a><a class="indexterm" name="id7739"></a><p>Devuelve la distancia</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_distance"></a>Operaciones de distancia</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_distance_op"></a><a class="indexterm" name="id7735"></a><a class="indexterm" name="id7738"></a><p>Devuelve la distancia</p><pre class="programlisting">
 distance({geo,stbox,cbuffer},cbuffer) → float
 distance(cbuffer,{geo,stbox,cbuffer}) → float
 {geo,stbox,cbuffer} &lt;-&gt; cbuffer → float
@@ -129,7 +129,7 @@ SELECT round(cbuffer 'Cbuffer(Point(0 0),0.5)' &lt;-&gt; cbuffer 'Cbuffer(Point(
 -- 4
 SELECT round(cbuffer 'Cbuffer(Point(0 0),3)' &lt;-&gt; cbuffer 'Cbuffer(Point(3 4),3)', 6);
 -- 0
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_static_operators"></a>Comparaciones</h3></div></div></div><p>Los operadores de comparación (=, &lt; y así sucesivamente) están disponibles para búferes circulares. Comparan primero los puntos y luego el radio de los argumentos. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en búferes circulares.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_comp"></a><a class="indexterm" name="id7752"></a><a class="indexterm" name="id7755"></a><a class="indexterm" name="id7758"></a><a class="indexterm" name="id7761"></a><a class="indexterm" name="id7764"></a><a class="indexterm" name="id7767"></a><p>Comparaciones tradicionales</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_static_operators"></a>Comparaciones</h3></div></div></div><p>Los operadores de comparación (=, &lt; y así sucesivamente) están disponibles para búferes circulares. Comparan primero los puntos y luego el radio de los argumentos. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en búferes circulares.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_comp"></a><a class="indexterm" name="id7751"></a><a class="indexterm" name="id7754"></a><a class="indexterm" name="id7757"></a><a class="indexterm" name="id7760"></a><a class="indexterm" name="id7763"></a><a class="indexterm" name="id7766"></a><p>Comparaciones tradicionales</p><pre class="programlisting">
 cbuffer {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} cbuffer
 </pre><pre class="programlisting">
 SELECT cbuffer 'Cbuffer(Point(3 3), 0.5)' = cbuffer 'Cbuffer(Point(3 3), 0.5)';

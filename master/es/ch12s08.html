@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch12.html" title="Capítulo 12. Búferes circulares temporales"><link rel="prev" href="ch12s07.html" title="Accesores"><link rel="next" href="ch12s09.html" title="Modificaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 12. Búferes circulares temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch12s09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_tcbufferInst"></a><a class="indexterm" name="id7961"></a><a class="indexterm" name="id7964"></a><a class="indexterm" name="id7967"></a><p>Transforma un búfer circular temporal en otro subtipo</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch12.html" title="Capítulo 12. Búferes circulares temporales"><link rel="prev" href="ch12s07.html" title="Accesores"><link rel="next" href="ch12s09.html" title="Modificaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 12. Búferes circulares temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch12s09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_tcbufferInst"></a><a class="indexterm" name="id7960"></a><a class="indexterm" name="id7963"></a><a class="indexterm" name="id7966"></a><p>Transforma un búfer circular temporal en otro subtipo</p><pre class="programlisting">
 tcbufferInst(tcbuffer) → tcbufferInst
 tcbufferSeq(tcbuffer) → tcbufferSeq
 tcbufferSeqSet(tcbuffer) → tcbufferSeqSet
@@ -9,7 +9,7 @@ SELECT asText(tcbufferSeq(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'));
 -- [Cbuffer(POINT(1 1),0.5)@2001-01-01]
 SELECT asText(tcbufferSeqSet(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'));
 -- {[Cbuffer(POINT(1 1),0.5)@2001-01-01]}
-</pre></li><li class="listitem"><a name="tcbuffer_setInterp"></a><a class="indexterm" name="id7974"></a><p>Transforma un búfer circular temporal en otra interpolación</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_setInterp"></a><a class="indexterm" name="id7973"></a><p>Transforma un búfer circular temporal en otra interpolación</p><pre class="programlisting">
 setInterp(tcbuffer,interp) → tcbuffer
 </pre><pre class="programlisting">
 SELECT asText(setInterp(tcbuffer 'Cbuffer(Point(1 1),0.2)@2001-01-01','linear'));
@@ -17,13 +17,13 @@ SELECT asText(setInterp(tcbuffer 'Cbuffer(Point(1 1),0.2)@2001-01-01','linear'))
 SELECT asText(setInterp(tcbuffer '{[Cbuffer(Point(1 1),0.1)@2001-01-01],
   [Cbuffer(Point(1 1),0.2)@2001-01-02]}', 'discrete'));
 -- {Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(1 1),0.2)@2001-01-02}
-</pre></li><li class="listitem"><a name="tcbuffer_round"></a><a class="indexterm" name="id7981"></a><p>Redondea los puntos y los radios del búfer circular temporal en el número de lugares decimales</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_round"></a><a class="indexterm" name="id7980"></a><p>Redondea los puntos y los radios del búfer circular temporal en el número de lugares decimales</p><pre class="programlisting">
 round(tcbuffer,integer) → tcbuffer
 </pre><pre class="programlisting">
 SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-01-01,
   Cbuffer(Point(1 1),0.5)@2001-01-02)}', 3));
 -- {[Cbuffer(POINT(1 1.123),0.123)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-02)}
-</pre></li><li class="listitem"><a name="tcbuffer_stops"></a><a class="indexterm" name="id7988"></a><p>Extrae las subsecuencias en las que el búfer circular temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_stops"></a><a class="indexterm" name="id7987"></a><p>Extrae las subsecuencias en las que el búfer circular temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</p><pre class="programlisting">
 stops(tcbuffer,maxdist float=0.0,minduration interval='0 minutes') → tcbuffer
 </pre><p>El tamaño del área es la mayor distancia entre dos centros de la subsecuencia, como se indica para un punto temporal en <a class="link" href="ch07s07.html#tgeo_stops"><code class="varname">stops</code></a>.</p><pre class="programlisting">
 SELECT asText(stops(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
