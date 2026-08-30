@@ -263,8 +263,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Determine whether two buffer boundaries have a proper crossing. </p>
-<p >A proper crossing means that at least one boundary intersection is an isolated point and the two surfaces overlap in their interiors. A point-touch without interior overlap is NOT a crossing. </p>
+<p>Determine whether two buffer boundaries meet at nodes the overlay can split them at. </p>
+<p >Two boundaries meet either at isolated POINTS or along a CURVE, and both give the overlay something to work with: a point is a node, and a coincident stretch is bounded by two of them, which <a class="el" href="geo__buffer_8c_a9aa7fc166227907f22c71c043125e135.html#a9aa7fc166227907f22c71c043125e135" title="Collect intersections between two straight buffer edges.">buffer_collect_line_line_intersections()</a> emits from the parameters of the overlap. What follows splits both boundaries at those nodes and classifies each piece, and a piece lying ON the other boundary is resolved by the side each geometry occupies &ndash; opposite sides put the stretch INSIDE the union, so it is dropped, and the two surfaces come out as one. A point-touch without interior overlap answers true here as well; it is the boundary SELECTION that leaves such a pair as two surfaces, because every piece of both boundaries survives it. </p>
 
 </div>
 </div>
