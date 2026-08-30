@@ -1,4 +1,4 @@
-SELECT tContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.2)@2000-01-01');
+SELECT tContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.2)@2001-01-01');
  tcontains 
 -----------
  
@@ -11,8 +11,8 @@ SELECT tContains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))', NULL::tpose);
 (1 row)
 
 WITH t AS (
-  SELECT tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-03]' AS seq1,
-         tpose 'Interp=Step;[Pose(Point(2 2), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-03]' AS seq2,
+  SELECT tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]' AS seq1,
+         tpose 'Interp=Step;[Pose(Point(2 2), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]' AS seq2,
          geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))' AS region,
          geometry 'Point(50 50)' AS far_point
 )
@@ -37,30 +37,30 @@ FROM t;
 (1 row)
 
 SELECT tContains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))',
-  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-03]');
+  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]');
                             tcontains                             
 ------------------------------------------------------------------
- [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tDisjoint(geometry 'Point(50 50)',
-  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-03]');
+  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]');
                             tdisjoint                             
 ------------------------------------------------------------------
- [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tDwithin(
-  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-03]',
-  tpose 'Interp=Step;[Pose(Point(2 2), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-03]', 1.0);
+  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]',
+  tpose 'Interp=Step;[Pose(Point(2 2), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]', 1.0);
                              tdwithin                             
 ------------------------------------------------------------------
- [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 WITH t AS (
-  SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(4 4), 0.4)@2000-01-03]' AS lin1,
-         tpose '[Pose(Point(4 4), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-03]' AS lin2,
+  SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(4 4), 0.4)@2001-01-03]' AS lin1,
+         tpose '[Pose(Point(4 4), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]' AS lin2,
          geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))' AS region
 )
 SELECT
@@ -72,11 +72,11 @@ SELECT
 FROM t;
                                                               ti_geo_po                                                               |                                                              ti_po_geo                                                               |                                                              tdj_po_geo                                                              |                                                                     tdw_po_geo                                                                     |                                                                                         tdw_po_po                                                                                         
 --------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[t@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 16:00:00 2000 PST], (f@Sat Jan 01 16:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]} | {[t@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 16:00:00 2000 PST], (f@Sat Jan 01 16:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]} | {[f@Sat Jan 01 00:00:00 2000 PST, f@Sat Jan 01 16:00:00 2000 PST], (t@Sat Jan 01 16:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]} | {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 03:18:49.350596 2000 PST], (f@Sun Jan 02 03:18:49.350596 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]} | {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 18:20:35.324701 2000 PST, t@Sun Jan 02 05:39:24.675298 2000 PST], (f@Sun Jan 02 05:39:24.675298 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 16:00:00 2001 PST], (f@Mon Jan 01 16:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]} | {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 16:00:00 2001 PST], (f@Mon Jan 01 16:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]} | {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 16:00:00 2001 PST], (t@Mon Jan 01 16:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]} | {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 03:18:49.350596 2001 PST], (f@Tue Jan 02 03:18:49.350596 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]} | {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 18:20:35.324701 2001 PST, t@Tue Jan 02 05:39:24.675298 2001 PST], (f@Tue Jan 02 05:39:24.675298 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 WITH t AS (
-  SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(4 4), 0.4)@2000-01-03]' AS lin1,
+  SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(4 4), 0.4)@2001-01-03]' AS lin1,
          geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))' AS region
 )
 SELECT

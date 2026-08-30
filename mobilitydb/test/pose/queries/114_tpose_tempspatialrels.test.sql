@@ -45,7 +45,7 @@
 -------------------------------------------------------------------------------
 
 -- Test for NULL inputs since the functions are not STRICT
-SELECT tContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.2)@2000-01-01');
+SELECT tContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.2)@2001-01-01');
 SELECT tContains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))', NULL::tpose);
 
 -------------------------------------------------------------------------------
@@ -53,8 +53,8 @@ SELECT tContains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))', NULL::tpose);
 -------------------------------------------------------------------------------
 
 WITH t AS (
-  SELECT tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-03]' AS seq1,
-         tpose 'Interp=Step;[Pose(Point(2 2), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-03]' AS seq2,
+  SELECT tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]' AS seq1,
+         tpose 'Interp=Step;[Pose(Point(2 2), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]' AS seq2,
          geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))' AS region,
          geometry 'Point(50 50)' AS far_point
 )
@@ -79,12 +79,12 @@ FROM t;
 -------------------------------------------------------------------------------
 
 SELECT tContains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))',
-  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-03]');
+  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]');
 SELECT tDisjoint(geometry 'Point(50 50)',
-  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-03]');
+  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]');
 SELECT tDwithin(
-  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-03]',
-  tpose 'Interp=Step;[Pose(Point(2 2), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-03]', 1.0);
+  tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-03]',
+  tpose 'Interp=Step;[Pose(Point(2 2), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]', 1.0);
 
 -------------------------------------------------------------------------------
 
@@ -93,8 +93,8 @@ SELECT tDwithin(
 -------------------------------------------------------------------------------
 
 WITH t AS (
-  SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(4 4), 0.4)@2000-01-03]' AS lin1,
-         tpose '[Pose(Point(4 4), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-03]' AS lin2,
+  SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(4 4), 0.4)@2001-01-03]' AS lin1,
+         tpose '[Pose(Point(4 4), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-03]' AS lin2,
          geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))' AS region
 )
 SELECT
@@ -107,7 +107,7 @@ FROM t;
 
 -- The answer is the one the pose's own tgeompoint gives, turning points and all
 WITH t AS (
-  SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(4 4), 0.4)@2000-01-03]' AS lin1,
+  SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(4 4), 0.4)@2001-01-03]' AS lin1,
          geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))' AS region
 )
 SELECT

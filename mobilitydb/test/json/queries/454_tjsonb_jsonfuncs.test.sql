@@ -31,96 +31,96 @@
 -- Temporal JSON functions
 -------------------------------------------------------------------------------
 
-SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' - 'geom';
-SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' - 'geom';
-SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' - 'geom';
-SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}' - 'geom';
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' - 'geom';
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03}' - 'geom';
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]' - 'geom';
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03],[{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}' - 'geom';
 
-SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' - 'xxx';
-SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' - 'xxx';
-SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' - 'xxx';
-SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}' - 'xxx';
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' - 'xxx';
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03}' - 'xxx';
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]' - 'xxx';
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03],[{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}' - 'xxx';
 
-SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' - ARRAY[text 'geom'];
-SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' - ARRAY[text 'geom'];
-SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' - ARRAY[text 'geom'];
-SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}' - ARRAY[text 'geom'];
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' - ARRAY[text 'geom'];
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03}' - ARRAY[text 'geom'];
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]' - ARRAY[text 'geom'];
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03],[{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}' - ARRAY[text 'geom'];
 
-SELECT tjsonb '"[\"Point(1 1)\", \"Point(2 2)\"]"@2000-01-01' - 0;
-SELECT tjsonb '{"[\"Point(1 1)\", \"Point(2 2)\"]"@2000-01-01, "[\"Point(2 2)\", \"Point(3 3)\"]"@2000-01-02, "[\"Point(1 1)\", \"Point(2 2)\"]"@2000-01-03}' - 0;
-SELECT tjsonb '["[\"Point(1 1)\", \"Point(2 2)\"]"@2000-01-01, "[\"Point(2 2)\", \"Point(3 3)\"]"@2000-01-02, "[\"Point(1 1)\", \"Point(2 2)\"]"@2000-01-03]' - 0;
-SELECT tjsonb '{["[\"Point(1 1)\", \"Point(2 2)\"]"@2000-01-01, "[\"Point(2 2)\", \"Point(3 3)\"]"@2000-01-02, "[\"Point(1 1)\", \"Point(2 2)\"]"@2000-01-03],["[\"Point(2 2)\", \"Point(3 3)\"]"@2000-01-04, "[\"Point(2 2)\", \"Point(3 3)\"]"@2000-01-05]}' - 0;
+SELECT tjsonb '"[\"Point(1 1)\", \"Point(2 2)\"]"@2001-01-01' - 0;
+SELECT tjsonb '{"[\"Point(1 1)\", \"Point(2 2)\"]"@2001-01-01, "[\"Point(2 2)\", \"Point(3 3)\"]"@2001-01-02, "[\"Point(1 1)\", \"Point(2 2)\"]"@2001-01-03}' - 0;
+SELECT tjsonb '["[\"Point(1 1)\", \"Point(2 2)\"]"@2001-01-01, "[\"Point(2 2)\", \"Point(3 3)\"]"@2001-01-02, "[\"Point(1 1)\", \"Point(2 2)\"]"@2001-01-03]' - 0;
+SELECT tjsonb '{["[\"Point(1 1)\", \"Point(2 2)\"]"@2001-01-01, "[\"Point(2 2)\", \"Point(3 3)\"]"@2001-01-02, "[\"Point(1 1)\", \"Point(2 2)\"]"@2001-01-03],["[\"Point(2 2)\", \"Point(3 3)\"]"@2001-01-04, "[\"Point(2 2)\", \"Point(3 3)\"]"@2001-01-05]}' - 0;
 /* Errors */
-SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' - 0;
-SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' - 0;
-SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' - 0;
-SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}' - 0;
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' - 0;
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03}' - 0;
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]' - 0;
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03],[{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}' - 0;
 
-SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #- ARRAY[text 'geom'];
-SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #- ARRAY[text 'geom'];
-SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #- ARRAY[text 'geom'];
-SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}' #- ARRAY[text 'geom'];
-
--------------------------------------------------------------------------------
-
-SELECT tjsonbSet(tjsonb '"{\"speed\": 10}"@2000-01-01', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonbSet(tjsonb '{{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03}', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonbSet(tjsonb '[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03]', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonbSet(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03],[{"geom": 30}@2000-01-04, {"speed": 30}@2000-01-05]}', ARRAY['units'], '"km/h"'::jsonb);
-
-SELECT tjsonbInsert(tjsonb '"{\"speed\": 10}"@2000-01-01', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonbInsert(tjsonb '{{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03}', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonbInsert(tjsonb '[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03]', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonbInsert(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03],[{"geom": 30}@2000-01-04, {"speed": 30}@2000-01-05]}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2001-01-01' #- ARRAY[text 'geom'];
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03}' #- ARRAY[text 'geom'];
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03]' #- ARRAY[text 'geom'];
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2001-01-01, {"geom": "Point(1 1)"}@2001-01-02, {"geom": "Point(1 1)"}@2001-01-03],[{"geom": "Point(2 2)"}@2001-01-04, {"geom": "Point(2 2)"}@2001-01-05]}' #- ARRAY[text 'geom'];
 
 -------------------------------------------------------------------------------
 
-SELECT tjsonbExtractPath(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01', ARRAY['speed']);
-SELECT tjsonbExtractPath(tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}', ARRAY['speed']);
-SELECT tjsonbExtractPath(tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]', ARRAY['speed']);
-SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed']);
+SELECT tjsonbSet(tjsonb '"{\"speed\": 10}"@2001-01-01', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbSet(tjsonb '{{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02, {"speed": 30}@2001-01-03}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbSet(tjsonb '[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02, {"speed": 30}@2001-01-03]', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbSet(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02, {"speed": 30}@2001-01-03],[{"geom": 30}@2001-01-04, {"speed": 30}@2001-01-05]}', ARRAY['units'], '"km/h"'::jsonb);
 
-/* Null handling */
-SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'raise_exception');
-SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'use_json_null');
-SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'delete_key');
-SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'return_null');
-
-SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01' #> ARRAY['speed'];
-SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}' #> ARRAY['speed'];
-SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]' #> ARRAY['speed'];
-SELECT tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"speed": "30", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}' #> ARRAY['speed'];
-
-/* Null handling */
-SELECT tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"speed": "30", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}' #> ARRAY['units'];
-
-SELECT tjsonbExtractPathText(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01', ARRAY['speed']);
-SELECT tjsonbExtractPathText(tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}', ARRAY['speed']);
-SELECT tjsonbExtractPathText(tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]', ARRAY['speed']);
-SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed']);
-
-/* Null handling */
-SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'raise_exception');
-SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'use_json_null');
-SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'delete_key');
-SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'return_null');
-
-SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01' #>> ARRAY['speed'];
-SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}' #>> ARRAY['speed'];
-SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]' #>> ARRAY['speed'];
-SELECT tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}' #>> ARRAY['speed'];
+SELECT tjsonbInsert(tjsonb '"{\"speed\": 10}"@2001-01-01', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbInsert(tjsonb '{{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02, {"speed": 30}@2001-01-03}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbInsert(tjsonb '[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02, {"speed": 30}@2001-01-03]', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbInsert(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02, {"speed": 30}@2001-01-03],[{"geom": 30}@2001-01-04, {"speed": 30}@2001-01-05]}', ARRAY['units'], '"km/h"'::jsonb);
 
 -------------------------------------------------------------------------------
 
-SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01' -> 'speed';
-SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}' -> 'speed';
-SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]' -> 'speed';
-SELECT tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}' -> 'speed';
+SELECT tjsonbExtractPath(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01', ARRAY['speed']);
+SELECT tjsonbExtractPath(tjsonb '{{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03}', ARRAY['speed']);
+SELECT tjsonbExtractPath(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03]', ARRAY['speed']);
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['speed']);
 
-SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01' ->> 'speed';
-SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}' ->> 'speed';
-SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]' ->> 'speed';
-SELECT tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}' ->> 'speed';
+/* Null handling */
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['speed'],'raise_exception');
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['speed'],'use_json_null');
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['speed'],'delete_key');
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['speed'],'return_null');
+
+SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01' #> ARRAY['speed'];
+SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03}' #> ARRAY['speed'];
+SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03]' #> ARRAY['speed'];
+SELECT tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"speed": "30", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}' #> ARRAY['speed'];
+
+/* Null handling */
+SELECT tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"speed": "30", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}' #> ARRAY['units'];
+
+SELECT tjsonbExtractPathText(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01', ARRAY['speed']);
+SELECT tjsonbExtractPathText(tjsonb '{{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03}', ARRAY['speed']);
+SELECT tjsonbExtractPathText(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03]', ARRAY['speed']);
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['speed']);
+
+/* Null handling */
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['units'], 'raise_exception');
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['units'], 'use_json_null');
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['units'], 'delete_key');
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['units'], 'return_null');
+
+SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01' #>> ARRAY['speed'];
+SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03}' #>> ARRAY['speed'];
+SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03]' #>> ARRAY['speed'];
+SELECT tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}' #>> ARRAY['speed'];
+
+-------------------------------------------------------------------------------
+
+SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01' -> 'speed';
+SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03}' -> 'speed';
+SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03]' -> 'speed';
+SELECT tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}' -> 'speed';
+
+SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01' ->> 'speed';
+SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03}' ->> 'speed';
+SELECT tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03]' ->> 'speed';
+SELECT tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}' ->> 'speed';
 
 -------------------------------------------------------------------------------
 

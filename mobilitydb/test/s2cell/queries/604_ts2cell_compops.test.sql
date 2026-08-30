@@ -30,19 +30,19 @@
 -- Ever and always
 -------------------------------------------------------------------------------
 
-SELECT eEq(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3');
-SELECT aEq(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3');
-SELECT aEq(ts2cell '[47c3c3@2000-01-01, 47c3c3@2000-01-02]', s2cell '47c3c3');
-SELECT eNe(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3');
-SELECT eEq(s2cell '54b5c9', ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
-SELECT eEq(ts2cell '[47c3c3@2000-01-01]', ts2cell '[47c3c3@2000-01-01]');
+SELECT eEq(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
+SELECT aEq(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
+SELECT aEq(ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]', s2cell '47c3c3');
+SELECT eNe(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
+SELECT eEq(s2cell '54b5c9', ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT eEq(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]');
 
 -------------------------------------------------------------------------------
 -- Temporal comparisons
 -------------------------------------------------------------------------------
 
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]' #= s2cell '47c3c3');
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]' #<> s2cell '47c3c3');
-SELECT asText(s2cell '47c3c3' #= ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]' #= s2cell '47c3c3');
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]' #<> s2cell '47c3c3');
+SELECT asText(s2cell '47c3c3' #= ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
 
 -------------------------------------------------------------------------------

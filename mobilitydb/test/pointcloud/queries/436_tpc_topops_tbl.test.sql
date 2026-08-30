@@ -53,20 +53,20 @@ SELECT bool_and(NOT (temp -|- temp)) FROM tbl_tpcpatch;
 -------------------------------------------------------------------------------
 
 SELECT bool_and(tpcbox_zt(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2000-01-01, 2030-01-01]', 1, 0) @> temp)
+  tstzspan '[2001-01-01, 2030-01-01]', 1, 0) @> temp)
 FROM tbl_tpcpoint;
 SELECT bool_and(tpcbox_zt(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2000-01-01, 2030-01-01]', 1, 0) @> temp)
+  tstzspan '[2001-01-01, 2030-01-01]', 1, 0) @> temp)
 FROM tbl_tpcpatch;
 
 -- Reverse direction: every row is contained in that big box.
 SELECT bool_and(temp <@ tpcbox_zt(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2000-01-01, 2030-01-01]', 1, 0)) FROM tbl_tpcpoint;
+  tstzspan '[2001-01-01, 2030-01-01]', 1, 0)) FROM tbl_tpcpoint;
 SELECT bool_and(temp <@ tpcbox_zt(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2000-01-01, 2030-01-01]', 1, 0)) FROM tbl_tpcpatch;
+  tstzspan '[2001-01-01, 2030-01-01]', 1, 0)) FROM tbl_tpcpatch;
 
 -- Time-only: every row's tstzspan is contained in this wide span.
-SELECT bool_and(temp <@ tstzspan '[2000-01-01, 2030-01-01]') FROM tbl_tpcpoint;
-SELECT bool_and(temp <@ tstzspan '[2000-01-01, 2030-01-01]') FROM tbl_tpcpatch;
+SELECT bool_and(temp <@ tstzspan '[2001-01-01, 2030-01-01]') FROM tbl_tpcpoint;
+SELECT bool_and(temp <@ tstzspan '[2001-01-01, 2030-01-01]') FROM tbl_tpcpatch;
 
 -------------------------------------------------------------------------------

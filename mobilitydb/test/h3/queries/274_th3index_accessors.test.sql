@@ -82,6 +82,6 @@ SELECT valueAtTimestamp(th3index
 -- Before the start of a sequence — returns NULL
 SELECT valueAtTimestamp(th3index
   '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]',
-  '2000-12-31');
+  '2001-12-31');
 
 -------------------------------------------------------------------------------

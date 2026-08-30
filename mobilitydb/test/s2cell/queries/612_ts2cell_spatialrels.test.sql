@@ -33,22 +33,22 @@
 -- The delegation identity
 -------------------------------------------------------------------------------
 
-SELECT eIntersects(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(4.35 50.85)')
-  = eIntersects(cellToBoundary(ts2cell '[47c3c3@2000-01-01]')::tgeometry,
+SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)')
+  = eIntersects(cellToBoundary(ts2cell '[47c3c3@2001-01-01]')::tgeometry,
       geometry 'SRID=4326;Point(4.35 50.85)');
-SELECT aIntersects(geometry 'SRID=4326;Point(4.35 50.85)', ts2cell '[47c3c3@2000-01-01]')
+SELECT aIntersects(geometry 'SRID=4326;Point(4.35 50.85)', ts2cell '[47c3c3@2001-01-01]')
   = aIntersects(geometry 'SRID=4326;Point(4.35 50.85)',
-      cellToBoundary(ts2cell '[47c3c3@2000-01-01]')::tgeometry);
+      cellToBoundary(ts2cell '[47c3c3@2001-01-01]')::tgeometry);
 
 -------------------------------------------------------------------------------
 -- A point inside its own cell, and one far away
 -------------------------------------------------------------------------------
 
-SELECT eIntersects(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(4.35 50.85)');
-SELECT eIntersects(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)');
-SELECT eDisjoint(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)');
+SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)');
+SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)');
+SELECT eDisjoint(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)');
 SELECT eContains(geometry 'SRID=4326;Polygon((0 45,0 55,10 55,10 45,0 45))',
-  ts2cell '[47c3c3@2000-01-01]');
-SELECT eDwithin(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(4.35 50.85)', 0.1);
+  ts2cell '[47c3c3@2001-01-01]');
+SELECT eDwithin(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)', 0.1);
 
 -------------------------------------------------------------------------------

@@ -30,23 +30,23 @@
 SELECT extent(temp) FROM (VALUES
 (NULL::tstzset),(NULL::tstzset)) t(temp);
 SELECT extent(temp) FROM (VALUES
-(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
+(NULL::tstzset),('{2001-01-01}'::tstzset)) t(temp);
 SELECT extent(temp) FROM (VALUES
-('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
+('{2001-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
 SELECT extent(temp) FROM (VALUES
 (NULL::tstzspan),(NULL::tstzspan)) t(temp);
 SELECT extent(temp) FROM (VALUES
-(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
+(NULL::tstzspan),('[2001-01-01, 2001-01-02]'::tstzspan)) t(temp);
 SELECT extent(temp) FROM (VALUES
-('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
+('[2001-01-01, 2001-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
 
 SELECT extent(temp) FROM (VALUES
 (NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
 SELECT extent(temp) FROM (VALUES
-(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
+(NULL::tstzspanset),('{[2001-01-01, 2001-01-02]}'::tstzspanset)) t(temp);
 SELECT extent(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
+('{[2001-01-01, 2001-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 SELECT extent(t) FROM tbl_timestamptz;
 SELECT extent(t) FROM tbl_tstzset;
@@ -85,23 +85,23 @@ SELECT extent(NULL::tstzspanset) FROM generate_series(1,10);
 SELECT tcount(temp) FROM (VALUES
 (NULL::tstzset),(NULL::tstzset)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
+(NULL::tstzset),('{2001-01-01}'::tstzset)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
+('{2001-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
 (NULL::tstzspan),(NULL::tstzspan)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
+(NULL::tstzspan),('[2001-01-01, 2001-01-02]'::tstzspan)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
+('[2001-01-01, 2001-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
 (NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
+(NULL::tstzspanset),('{[2001-01-01, 2001-01-02]}'::tstzspanset)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
+('{[2001-01-01, 2001-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
 SELECT numInstants(tcount(t)) FROM tbl_tstzset;
@@ -113,50 +113,50 @@ SELECT numInstants(tcount(t)) FROM tbl_tstzspanset;
 SELECT setUnion(temp) FROM (VALUES
 (NULL::tstzset),(NULL::tstzset)) t(temp);
 SELECT setUnion(temp) FROM (VALUES
-(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
+(NULL::tstzset),('{2001-01-01}'::tstzset)) t(temp);
 SELECT setUnion(temp) FROM (VALUES
-('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
+('{2001-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
 SELECT spanUnion(temp) FROM (VALUES
 (NULL::tstzspan),(NULL::tstzspan)) t(temp);
 SELECT spanUnion(temp) FROM (VALUES
-(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
+(NULL::tstzspan),('[2001-01-01, 2001-01-02]'::tstzspan)) t(temp);
 SELECT spanUnion(temp) FROM (VALUES
-('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
+('[2001-01-01, 2001-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
 
 SELECT spansetUnion(temp) FROM (VALUES
 (NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
 SELECT spansetUnion(temp) FROM (VALUES
-(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
+(NULL::tstzspanset),('{[2001-01-01, 2001-01-02]}'::tstzspanset)) t(temp);
 SELECT spansetUnion(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
+('{[2001-01-01, 2001-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT setUnion(temp) FROM (VALUES
-('{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}'::tstzset),
-('{2000-01-02, 2000-01-06}'::tstzset)) t(temp);
+('{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}'::tstzset),
+('{2001-01-02, 2001-01-06}'::tstzset)) t(temp);
 
 SELECT spanUnion(temp) FROM (VALUES
-('[2000-01-01, 2000-01-03]'::tstzspan),
-('[2000-01-02, 2000-01-06]'::tstzspan)) t(temp);
+('[2001-01-01, 2001-01-03]'::tstzspan),
+('[2001-01-02, 2001-01-06]'::tstzspan)) t(temp);
 
 SELECT spansetUnion(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-03]}'::tstzspanset),
-('{[2000-01-02, 2000-01-06]}'::tstzspanset)) t(temp);
+('{[2001-01-01, 2001-01-03]}'::tstzspanset),
+('{[2001-01-02, 2001-01-06]}'::tstzspanset)) t(temp);
 
 WITH Temp(t) AS (
-  SELECT tstzset '{2000-01-01}' UNION
-  SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-04}'
+  SELECT tstzset '{2001-01-01}' UNION
+  SELECT tstzset '{2001-01-01, 2001-01-02, 2001-01-04}'
 )
 SELECT setUnion(t) FROM Temp;
 
 WITH Temp(t) AS (
   SELECT set(array_agg(t))
-  FROM generate_series(timestamp '2000-01-01 00:00', timestamp '2000-01-01 00:30', interval '1 sec') t
+  FROM generate_series(timestamp '2001-01-01 00:00', timestamp '2001-01-01 00:30', interval '1 sec') t
   UNION
   SELECT set(array_agg(t))
-  FROM generate_series(timestamp '2000-01-01 00:15', timestamp '2000-01-01 00:45', interval '1 sec') t
+  FROM generate_series(timestamp '2001-01-01 00:15', timestamp '2001-01-01 00:45', interval '1 sec') t
 )
 SELECT startValue(setUnion(t)) FROM Temp;
 

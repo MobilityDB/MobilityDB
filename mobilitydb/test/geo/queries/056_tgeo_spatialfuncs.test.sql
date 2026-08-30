@@ -28,37 +28,37 @@
 -------------------------------------------------------------------------------
 -- Conversions
 
-SELECT asText(tgeompoint(tgeometry 'Point(1 1)@2000-01-01'));
-SELECT asText(tgeompoint(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
-SELECT asText(tgeompoint(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
-SELECT asText(tgeompoint(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
-SELECT asText(tgeogpoint(tgeography 'Point(1.5 1.5)@2000-01-01'));
-SELECT asText(tgeogpoint(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-SELECT asText(tgeogpoint(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
-SELECT asText(tgeogpoint(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+SELECT asText(tgeompoint(tgeometry 'Point(1 1)@2001-01-01'));
+SELECT asText(tgeompoint(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'));
+SELECT asText(tgeompoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'));
+SELECT asText(tgeompoint(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'));
+SELECT asText(tgeogpoint(tgeography 'Point(1.5 1.5)@2001-01-01'));
+SELECT asText(tgeogpoint(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}'));
+SELECT asText(tgeogpoint(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'));
+SELECT asText(tgeogpoint(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'));
 /* Errors */
-SELECT tgeompoint(tgeometry 'Linestring(1 1,2 2)@2000-01-01');
-SELECT tgeompoint(tgeometry '{Linestring(1 1,2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
-SELECT tgeompoint(tgeometry '[Linestring(1 1,2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
-SELECT tgeompoint(tgeometry '{[Linestring(1 1,2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+SELECT tgeompoint(tgeometry 'Linestring(1 1,2 2)@2001-01-01');
+SELECT tgeompoint(tgeometry '{Linestring(1 1,2 2)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT tgeompoint(tgeometry '[Linestring(1 1,2 2)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT tgeompoint(tgeometry '{[Linestring(1 1,2 2)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
 
 -------------------------------------------------------------------------------
 
-SELECT asText(tgeometry(tgeompoint 'Point(1 1)@2000-01-01'));
-SELECT asText(tgeometry(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
-SELECT asText(tgeometry(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
-SELECT asText(tgeometry(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
-SELECT asText(tgeography(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
-SELECT asText(tgeography(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-SELECT asText(tgeography(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
-SELECT asText(tgeography(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+SELECT asText(tgeometry(tgeompoint 'Point(1 1)@2001-01-01'));
+SELECT asText(tgeometry(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'));
+SELECT asText(tgeometry(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'));
+SELECT asText(tgeometry(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'));
+SELECT asText(tgeography(tgeogpoint 'Point(1.5 1.5)@2001-01-01'));
+SELECT asText(tgeography(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}'));
+SELECT asText(tgeography(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'));
+SELECT asText(tgeography(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'));
 /* Errors */
-SELECT tgeography(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
-SELECT tgeography(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
-SELECT tgeompoint(tgeometry 'Linestring(1 1,2 2)@2000-01-01');
-SELECT tgeompoint(tgeometry '{Linestring(1 1,2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
-SELECT tgeompoint(tgeometry 'Interp=Step;[Linestring(1 1,2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
-SELECT tgeompoint(tgeometry 'Interp=Step;{[Linestring(1 1,2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+SELECT tgeography(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]');
+SELECT tgeography(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}');
+SELECT tgeompoint(tgeometry 'Linestring(1 1,2 2)@2001-01-01');
+SELECT tgeompoint(tgeometry '{Linestring(1 1,2 2)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT tgeompoint(tgeometry 'Interp=Step;[Linestring(1 1,2 2)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT tgeompoint(tgeometry 'Interp=Step;{[Linestring(1 1,2 2)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
 
 -------------------------------------------------------------------------------
 -- Geoset
@@ -90,28 +90,28 @@ SELECT asEWKT(transform(transform(geoset, 909090), 4326), 6) FROM test;
 -------------------------------------------------------------------------------
 -- STBOX
 
-SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT SRID(stbox 'SRID=4326;STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT SRID(stbox 'SRID=4326;STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
 /* Errors */
-SELECT SRID(stbox 'STBOX T([2000-01-01,2000-01-02])');
+SELECT SRID(stbox 'STBOX T([2001-01-01,2001-01-02])');
 
 SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 5676);
-SELECT setSRID(stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676);
+SELECT setSRID(stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])', 5676);
 SELECT setSRID(stbox 'STBOX Z((1,1,1),(2,2,2))', 5676);
-SELECT setSRID(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 5676);
+SELECT setSRID(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 5676);
 SELECT setSRID(stbox 'GEODSTBOX Z((1,1,1),(2,2,2))', 4326);
-SELECT setSRID(stbox 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 4326);
+SELECT setSRID(stbox 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 4326);
 /* Errors */
-SELECT setSRID(stbox 'STBOX T([2000-01-01,2000-01-02])', 5676);
-SELECT setSRID(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])', 4326);
+SELECT setSRID(stbox 'STBOX T([2001-01-01,2001-01-02])', 5676);
+SELECT setSRID(stbox 'GEODSTBOX T([2001-01-01,2001-01-02])', 4326);
 
 -- Robustness tests
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 5676), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676), 4326), 1);
+SELECT round(transform(transform(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])', 5676), 4326), 1);
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 5676), 4326), 1);
+SELECT round(transform(transform(stbox 'SRID=4326;STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 5676), 4326), 1);
 SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX Z((1,1,1),(2,2,2))', 4269), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 4269), 4326), 1);
+SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 4269), 4326), 1);
 
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
 SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
@@ -127,40 +127,40 @@ SELECT transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 0);
 
 -------------------------------------------------------------------------------
 -- 2D
-SELECT SRID(tgeometry 'Point(1 1)@2000-01-01');
-SELECT SRID(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
-SELECT SRID(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
-SELECT SRID(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-SELECT SRID(tgeography 'Point(1.5 1.5)@2000-01-01');
-SELECT SRID(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
-SELECT SRID(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
-SELECT SRID(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+SELECT SRID(tgeometry 'Point(1 1)@2001-01-01');
+SELECT SRID(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
+SELECT SRID(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+SELECT SRID(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
+SELECT SRID(tgeography 'Point(1.5 1.5)@2001-01-01');
+SELECT SRID(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}');
+SELECT SRID(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]');
+SELECT SRID(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}');
 -- 3D
-SELECT SRID(tgeometry 'Point(1 1 1)@2000-01-01');
-SELECT SRID(tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-SELECT SRID(tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-SELECT SRID(tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-SELECT SRID(tgeography 'Point(1.5 1.5 1.5)@2000-01-01');
-SELECT SRID(tgeography '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
-SELECT SRID(tgeography '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
-SELECT SRID(tgeography '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+SELECT SRID(tgeometry 'Point(1 1 1)@2001-01-01');
+SELECT SRID(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}');
+SELECT SRID(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]');
+SELECT SRID(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}');
+SELECT SRID(tgeography 'Point(1.5 1.5 1.5)@2001-01-01');
+SELECT SRID(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}');
+SELECT SRID(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]');
+SELECT SRID(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}');
 
-SELECT asEWKT(setSRID(tgeometry 'Point(1 1 1)@2000-01-01', 5676));
-SELECT asEWKT(setSRID(tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 5676));
-SELECT asEWKT(setSRID(tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 5676));
-SELECT asEWKT(setSRID(tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 5676));
-SELECT asEWKT(setSRID(tgeography 'Point(1.5 1.5 1.5)@2000-01-01', 4269));
-SELECT asEWKT(setSRID(tgeography '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 4269));
-SELECT asEWKT(setSRID(tgeography '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 4269));
-SELECT asEWKT(setSRID(tgeography '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 4269));
+SELECT asEWKT(setSRID(tgeometry 'Point(1 1 1)@2001-01-01', 5676));
+SELECT asEWKT(setSRID(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 5676));
+SELECT asEWKT(setSRID(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 5676));
+SELECT asEWKT(setSRID(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 5676));
+SELECT asEWKT(setSRID(tgeography 'Point(1.5 1.5 1.5)@2001-01-01', 4269));
+SELECT asEWKT(setSRID(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', 4269));
+SELECT asEWKT(setSRID(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', 4269));
+SELECT asEWKT(setSRID(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 4269));
 
-SELECT startValue(transform(tgeometry 'SRID=5676;Point(1 2 3)@2000-01-01', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
-SELECT startValue(transform(tgeometry 'SRID=5676;{Point(1 2 3)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 2 3)@2000-01-03}', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
-SELECT startValue(transform(tgeometry 'SRID=5676;[Point(1 2 3)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 2 3)@2000-01-03]', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
-SELECT startValue(transform(tgeometry 'SRID=5676;{[Point(1 2 3)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 2 3)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
+SELECT startValue(transform(tgeometry 'SRID=5676;Point(1 2 3)@2001-01-01', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
+SELECT startValue(transform(tgeometry 'SRID=5676;{Point(1 2 3)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 2 3)@2001-01-03}', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
+SELECT startValue(transform(tgeometry 'SRID=5676;[Point(1 2 3)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 2 3)@2001-01-03]', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
+SELECT startValue(transform(tgeometry 'SRID=5676;{[Point(1 2 3)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 2 3)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
 -- Noop
-SELECT startValue(transform(tgeometry 'SRID=5676;Point(1 2 3)@2000-01-01', 5676)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 5676);
-SELECT startValue(transform(tgeometry 'SRID=5676;Point(1 2 3)@2000-01-01', 4326)) = st_transform(geometry 'SRID=4326;Point(1 2 3)', 4326);
+SELECT startValue(transform(tgeometry 'SRID=5676;Point(1 2 3)@2001-01-01', 5676)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 5676);
+SELECT startValue(transform(tgeometry 'SRID=5676;Point(1 2 3)@2001-01-01', 4326)) = st_transform(geometry 'SRID=4326;Point(1 2 3)', 4326);
 
 -------------------------------------------------------------------------------
 -- Transform with pipeline
@@ -172,7 +172,7 @@ SELECT asText(transformPipeline(transformPipeline(geoset, pipeline, 4326), pipel
 FROM test;
 
 WITH test(box, pipeline) AS (
-  SELECT tgeometry 'SRID=4326;[POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02]'::stbox,
+  SELECT tgeometry 'SRID=4326;[POINT(2.123456 49.123456)@2001-01-01, POINT(3.123456 50.123456)@2001-01-02]'::stbox,
    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
 SELECT asText(transformPipeline(transformPipeline(box, pipeline, 4326), pipeline, 4326, false), 3) = asText(box, 3)
 FROM test;
@@ -180,13 +180,13 @@ FROM test;
 -- This test ensure correctness between PostGIS and MobilityDB results.
 -- However, it was commented out since not all installations have the latest
 -- PostGIS version 3.4
--- SELECT startValue(transformPipeline(tgeometry 'SRID=4326;Point(1 2 3)@2000-01-01',
+-- SELECT startValue(transformPipeline(tgeometry 'SRID=4326;Point(1 2 3)@2001-01-01',
   -- 'urn:ogc:def:coordinateOperation:EPSG::16031', 5676, true)) =
   -- st_transformpipeline(geometry 'SRID=4326;Point(1 2 3)', 'urn:ogc:def:coordinateOperation:EPSG::16031', 5676);
 
-SELECT asText(transformPipeline(tgeometry 'SRID=4326;POINT(2 49)@2000-01-01',
+SELECT asText(transformPipeline(tgeometry 'SRID=4326;POINT(2 49)@2001-01-01',
   text 'urn:ogc:def:coordinateOperation:EPSG::16031'));
-SELECT asText(transformPipeline(tgeometry 'POINT(426857.9877165967 5427937.523342293)@2000-01-01 00:00:00+01',
+SELECT asText(transformPipeline(tgeometry 'POINT(426857.9877165967 5427937.523342293)@2001-01-01 00:00:00+01',
   text 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, false), 3);
 
 --------------------------------------------------------
@@ -194,29 +194,29 @@ SELECT asText(transformPipeline(tgeometry 'POINT(426857.9877165967 5427937.52334
 WITH test1(pipeline) AS (
   SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
 test2(temp) AS (
-  SELECT tgeometry 'SRID=4326;POINT(2.123456 49.123456)@2000-01-01' )
+  SELECT tgeometry 'SRID=4326;POINT(2.123456 49.123456)@2001-01-01' )
 SELECT DISTINCT asText(transformPipeline(transformPipeline(temp, pipeline, 4326), pipeline, 4326, false), 3) = asText(temp, 3)
 FROM test1, test2;
 
 WITH test1(pipeline) AS (
   SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
 test2(temp) AS (
-  SELECT tgeometry 'SRID=4326;{POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02}' )
+  SELECT tgeometry 'SRID=4326;{POINT(2.123456 49.123456)@2001-01-01, POINT(3.123456 50.123456)@2001-01-02}' )
 SELECT DISTINCT asText(transformPipeline(transformPipeline(temp, pipeline, 4326), pipeline, 4326, false), 3) = asText(temp, 3)
 FROM test1, test2;
 
 WITH test1(pipeline) AS (
   SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
 test2(temp) AS (
-  SELECT tgeometry 'SRID=4326;[POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02]' )
+  SELECT tgeometry 'SRID=4326;[POINT(2.123456 49.123456)@2001-01-01, POINT(3.123456 50.123456)@2001-01-02]' )
 SELECT DISTINCT asText(transformPipeline(transformPipeline(temp, pipeline, 4326), pipeline, 4326, false), 3) = asText(temp, 3)
 FROM test1, test2;
 
 WITH test1(pipeline) AS (
   SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
 test2(temp) AS (
-  SELECT tgeometry 'SRID=4326;{[POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02],'
-    '[POINT(2.123456 49.123456)@2000-01-03, POINT(3.123456 50.123456)@2000-01-04]}' )
+  SELECT tgeometry 'SRID=4326;{[POINT(2.123456 49.123456)@2001-01-01, POINT(3.123456 50.123456)@2001-01-02],'
+    '[POINT(2.123456 49.123456)@2001-01-03, POINT(3.123456 50.123456)@2001-01-04]}' )
 SELECT DISTINCT asText(transformPipeline(transformPipeline(temp, pipeline, 4326), pipeline, 4326, false), 3) = asText(temp, 3)
 FROM test1, test2;
 
@@ -320,79 +320,79 @@ SELECT asEWKT(geography 'SRID=4326;Point(4.35 50.85)') =
 --------------------------------------------------------
 
 -- 2D
-SELECT asText(round(tgeometry 'Point(1.12345 1.12345)@2000-01-01', 2));
-SELECT asText(round(tgeometry '{Point(1.12345 1.12345)@2000-01-01, Point(2 2)@2000-01-02, Point(1.12345 1.12345)@2000-01-03}', 2));
-SELECT asText(round(tgeometry '[Point(1.12345 1.12345)@2000-01-01, Point(2 2)@2000-01-02, Point(1.12345 1.12345)@2000-01-03]', 2));
-SELECT asText(round(tgeometry '{[Point(1.12345 1.12345)@2000-01-01, Point(2 2)@2000-01-02, Point(1.12345 1.12345)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2));
-SELECT asText(round(tgeography 'Point(1.12345 1.12345)@2000-01-01', 2));
-SELECT asText(round(tgeography '{Point(1.12345 1.12345)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.12345 1.12345)@2000-01-03}', 2));
-SELECT asText(round(tgeography '[Point(1.12345 1.12345)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.12345 1.12345)@2000-01-03]', 2));
-SELECT asText(round(tgeography '{[Point(1.12345 1.12345)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.12345 1.12345)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2));
+SELECT asText(round(tgeometry 'Point(1.12345 1.12345)@2001-01-01', 2));
+SELECT asText(round(tgeometry '{Point(1.12345 1.12345)@2001-01-01, Point(2 2)@2001-01-02, Point(1.12345 1.12345)@2001-01-03}', 2));
+SELECT asText(round(tgeometry '[Point(1.12345 1.12345)@2001-01-01, Point(2 2)@2001-01-02, Point(1.12345 1.12345)@2001-01-03]', 2));
+SELECT asText(round(tgeometry '{[Point(1.12345 1.12345)@2001-01-01, Point(2 2)@2001-01-02, Point(1.12345 1.12345)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2));
+SELECT asText(round(tgeography 'Point(1.12345 1.12345)@2001-01-01', 2));
+SELECT asText(round(tgeography '{Point(1.12345 1.12345)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.12345 1.12345)@2001-01-03}', 2));
+SELECT asText(round(tgeography '[Point(1.12345 1.12345)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.12345 1.12345)@2001-01-03]', 2));
+SELECT asText(round(tgeography '{[Point(1.12345 1.12345)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.12345 1.12345)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', 2));
 -- 3D
-SELECT asText(round(tgeometry 'Point(1.12345 1.12345 1.12345)@2000-01-01', 2));
-SELECT asText(round(tgeometry '{Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
-SELECT asText(round(tgeometry '[Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03]', 2));
-SELECT asText(round(tgeometry '{[Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2));
-SELECT asText(round(tgeography 'Point(1.12345 1.12345 1.12345)@2000-01-01', 2));
-SELECT asText(round(tgeography '{Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
-SELECT asText(round(tgeography '[Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03]', 2));
-SELECT asText(round(tgeography '{[Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2));
+SELECT asText(round(tgeometry 'Point(1.12345 1.12345 1.12345)@2001-01-01', 2));
+SELECT asText(round(tgeometry '{Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));
+SELECT asText(round(tgeometry '[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03]', 2));
+SELECT asText(round(tgeometry '{[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2));
+SELECT asText(round(tgeography 'Point(1.12345 1.12345 1.12345)@2001-01-01', 2));
+SELECT asText(round(tgeography '{Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));
+SELECT asText(round(tgeography '[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03]', 2));
+SELECT asText(round(tgeography '{[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 2));
 
-SELECT asText(round(ARRAY[tgeometry '[Point(1.55 1.55)@2000-01-01, Point(2.55 2.55)@2000-01-02, Point(1.55 1.55)@2000-01-03]', '[Point(3.55 3.55)@2000-01-04, Point(3.55 3.55)@2000-01-05]'],1));
+SELECT asText(round(ARRAY[tgeometry '[Point(1.55 1.55)@2001-01-01, Point(2.55 2.55)@2001-01-02, Point(1.55 1.55)@2001-01-03]', '[Point(3.55 3.55)@2001-01-04, Point(3.55 3.55)@2001-01-05]'],1));
 SELECT round(ARRAY[]::tgeometry[]);
 
 --------------------------------------------------------
 
-SELECT asEWKT(tgeometry 'Point(1 1)@2000-01-01'::tgeography);
-SELECT asEWKT(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::tgeography);
-SELECT asEWKT(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::tgeography);
-SELECT asEWKT(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'::tgeography);
+SELECT asEWKT(tgeometry 'Point(1 1)@2001-01-01'::tgeography);
+SELECT asEWKT(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'::tgeography);
+SELECT asEWKT(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'::tgeography);
+SELECT asEWKT(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'::tgeography);
 
-SELECT asEWKT(tgeography 'Point(1.5 1.5)@2000-01-01'::tgeometry);
-SELECT asEWKT(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'::tgeometry);
-SELECT asEWKT(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'::tgeometry);
-SELECT asEWKT(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'::tgeometry);
+SELECT asEWKT(tgeography 'Point(1.5 1.5)@2001-01-01'::tgeometry);
+SELECT asEWKT(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}'::tgeometry);
+SELECT asEWKT(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'::tgeometry);
+SELECT asEWKT(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'::tgeometry);
 
 -- A temporal point widened to a temporal geometry keeps its values and its
 -- SRID, including the unknown SRID
-SELECT asEWKT(tgeompoint 'Point(1 1)@2000-01-01'::tgeometry);
-SELECT asEWKT(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::tgeometry);
-SELECT asEWKT(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'::tgeometry);
-SELECT asEWKT(tgeompoint 'SRID=3812;Point(1 1)@2000-01-01'::tgeometry);
-SELECT asEWKT(tgeogpoint 'SRID=4326;Point(1 1)@2000-01-01'::tgeography);
+SELECT asEWKT(tgeompoint 'Point(1 1)@2001-01-01'::tgeometry);
+SELECT asEWKT(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'::tgeometry);
+SELECT asEWKT(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]'::tgeometry);
+SELECT asEWKT(tgeompoint 'SRID=3812;Point(1 1)@2001-01-01'::tgeometry);
+SELECT asEWKT(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01'::tgeography);
 
 /* Errors */
-SELECT asEWKT(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'::tgeometry);
+SELECT asEWKT(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]'::tgeometry);
 
 --------------------------------------------------------
 
 -- 2D
-SELECT ST_AsText(traversedArea(tgeometry 'Point(1 1)@2000-01-01'));
+SELECT ST_AsText(traversedArea(tgeometry 'Point(1 1)@2001-01-01'));
 -- PostGIS 3.3 changed the output of MULTIPOINT
--- SELECT ST_AsText(traversedArea(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
-SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'))) AS t(dp);
-SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
-SELECT ST_AsText(traversedArea(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
-SELECT ST_AsText(traversedArea(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
-SELECT ST_AsText(traversedArea(tgeography 'Point(1.5 1.5)@2000-01-01'));
+-- SELECT ST_AsText(traversedArea(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'));
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'))) AS t(dp);
+SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'));
+SELECT ST_AsText(traversedArea(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'));
+SELECT ST_AsText(traversedArea(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'));
+SELECT ST_AsText(traversedArea(tgeography 'Point(1.5 1.5)@2001-01-01'));
 -- PostGIS 3.3 changed the output of MULTIPOINT
--- SELECT ST_AsText(traversedArea(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}')::geometry)) AS t(dp);
-SELECT ST_AsText(traversedArea(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
-SELECT ST_AsText(traversedArea(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+-- SELECT ST_AsText(traversedArea(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}'));
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}')::geometry)) AS t(dp);
+SELECT ST_AsText(traversedArea(tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'));
+SELECT ST_AsText(traversedArea(tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'));
 -- 3D
-SELECT ST_AsText(traversedArea(tgeometry 'Point(1 1 1)@2000-01-01'));
+SELECT ST_AsText(traversedArea(tgeometry 'Point(1 1 1)@2001-01-01'));
 -- PostGIS 3.3 changed the output of MULTIPOINT
--- SELECT ST_AsText(traversedArea(tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'));
-SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'))) AS t(dp);
-SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
-SELECT ST_AsText(traversedArea(tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
-SELECT ST_AsText(traversedArea(tgeography 'Point(1.5 1.5 1.5)@2000-01-01'));
+-- SELECT ST_AsText(traversedArea(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}'));
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}'))) AS t(dp);
+SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'));
+SELECT ST_AsText(traversedArea(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'));
+SELECT ST_AsText(traversedArea(tgeography 'Point(1.5 1.5 1.5)@2001-01-01'));
 -- PostGIS 3.3 changed the output of MULTIPOINT
--- SELECT ST_AsText(traversedArea(tgeography '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}'));
-SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeography '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}')::geometry)) AS t(dp);
-SELECT ST_AsText(traversedArea(tgeography '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'));
-SELECT ST_AsText(traversedArea(tgeography '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'));
+-- SELECT ST_AsText(traversedArea(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}'));
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}')::geometry)) AS t(dp);
+SELECT ST_AsText(traversedArea(tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]'));
+SELECT ST_AsText(traversedArea(tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'));
 
 -- PostGIS 3.3 changed the output of MULTIPOINT
 -- SELECT ST_AsText(traversedArea(tgeometry '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}'));
@@ -402,92 +402,92 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(
 
 ---------------------------------------------------------
 
-SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,7 1,1 1))@2000-01-03]'));
-SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, Polygon((1 1,4 4,7 1,1 1))@2000-01-02]'),6);
+SELECT asText(centroid(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,3 3)@2001-01-02, Polygon((1 1,4 4,7 1,1 1))@2001-01-03]'));
+SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2001-01-01, Polygon((1 1,4 4,7 1,1 1))@2001-01-02]'),6);
 
 -- The centroid is a mean, so it is taken in every dimension the value states.
 -- The centroid of a single point is that point, ordinates included
-SELECT asText(centroid(tgeometry '[Point Z(1 2 3)@2000-01-01]'));
-SELECT asText(centroid(tgeometry '[Polygon Z((0 0 5,0 4 5,4 4 5,4 0 5,0 0 5))@2000-01-01]'));
-SELECT asText(centroid(tgeometry '[MultiPoint Z(0 0 1,2 0 3,0 2 5)@2000-01-01]'),6);
+SELECT asText(centroid(tgeometry '[Point Z(1 2 3)@2001-01-01]'));
+SELECT asText(centroid(tgeometry '[Polygon Z((0 0 5,0 4 5,4 4 5,4 0 5,0 0 5))@2001-01-01]'));
+SELECT asText(centroid(tgeometry '[MultiPoint Z(0 0 1,2 0 3,0 2 5)@2001-01-01]'),6);
 -- A hole is what its POSITION in the polygon says it is: both rings here run
 -- the same way round, so a winding rule would add the hole instead of taking
 -- it away, and the centroid would read 1.970588 rather than 2.033333
-SELECT asText(centroid(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0),(1 1,1 2,2 2,2 1,1 1))@2000-01-01]'),6);
+SELECT asText(centroid(tgeometry '[Polygon((0 0,0 4,4 4,4 0,0 0),(1 1,1 2,2 2,2 1,1 1))@2001-01-01]'),6);
 -- An arc is answered by its own closed form rather than by stroking it: the
 -- centroid of this semicircle stands 2r/pi = 0.636620 above its ends
-SELECT asText(centroid(tgeometry '[Circularstring(0 0,1 1,2 0)@2000-01-01]'),6);
+SELECT asText(centroid(tgeometry '[Circularstring(0 0,1 1,2 0)@2001-01-01]'),6);
 
 ---------------------------------------------------------
 -- Only 2D is allowed for atGeometry/minusGeometry on tgeometry
 
-SELECT asText(atGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
-SELECT asText(atGeometry(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring(0 0,3 3)'));
-SELECT asText(atGeometry(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring(0 0,3 3)'));
-SELECT asText(atGeometry(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
-SELECT asText(atGeometry(tgeometry '[Point(0 3)@2000-01-01, Point(1 1)@2000-01-02, Point(3 2)@2000-01-03, Point(0 3)@2000-01-04]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
-SELECT astext(atGeometry(tgeometry '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-02, Point(0 3)@2000-01-03, Point(
-3 0)@2000-01-04]', 'Polygon((1 1,2 1,2 2,1 2,1 1))'));
+SELECT asText(atGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'));
+SELECT asText(atGeometry(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Linestring(0 0,3 3)'));
+SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Linestring(0 0,3 3)'));
+SELECT asText(atGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Linestring(0 0,3 3)'));
+SELECT asText(atGeometry(tgeometry '[Point(0 3)@2001-01-01, Point(1 1)@2001-01-02, Point(3 2)@2001-01-03, Point(0 3)@2001-01-04]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+SELECT astext(atGeometry(tgeometry '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-02, Point(0 3)@2001-01-03, Point(
+3 0)@2001-01-04]', 'Polygon((1 1,2 1,2 2,1 2,1 1))'));
 
-SELECT asText(atGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));
-SELECT asText(atGeometry(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring empty'));
-SELECT asText(atGeometry(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring empty'));
-SELECT asText(atGeometry(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring empty'));
+SELECT asText(atGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring empty'));
+SELECT asText(atGeometry(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Linestring empty'));
+SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Linestring empty'));
+SELECT asText(atGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Linestring empty'));
 
-SELECT asText(atGeometry(tgeometry '[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0,1 1)'));
-SELECT asText(atGeometry(tgeometry '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02]','Point(2 2)'));
-SELECT asText(atGeometry(tgeometry '[Point(0 1)@2000-01-01,Point(5 1)@2000-01-05]', geometry 'Linestring(0 0,2 2,3 1,4 1,5 0)'));
-SELECT asText(atGeometry(tgeometry '[Point(0 0)@2000-01-01]', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))'));
-SELECT asText(atGeometry(tgeometry '{[Point(0 0)@2000-01-01, Point(0 0)@2000-01-02],[Point(0 0)@2000-01-03]}', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))'));
+SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01]', geometry 'Linestring(0 0,1 1)'));
+SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-02]','Point(2 2)'));
+SELECT asText(atGeometry(tgeometry '[Point(0 1)@2001-01-01,Point(5 1)@2001-01-05]', geometry 'Linestring(0 0,2 2,3 1,4 1,5 0)'));
+SELECT asText(atGeometry(tgeometry '[Point(0 0)@2001-01-01]', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))'));
+SELECT asText(atGeometry(tgeometry '{[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02],[Point(0 0)@2001-01-03]}', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))'));
 
 -- NULL
-SELECT asText(atGeometry(tgeometry '[Point(1 1)@2000-01-01]', geometry 'Linestring(2 2,3 3)'));
-SELECT asText(atGeometry(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}', geometry 'Linestring(0 1,1 2)'));
-SELECT asText(atGeometry(tgeometry '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Linestring(1 1,2 2)'));
+SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01]', geometry 'Linestring(2 2,3 3)'));
+SELECT asText(atGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]}', geometry 'Linestring(0 1,1 2)'));
+SELECT asText(atGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02)', geometry 'Linestring(1 1,2 2)'));
 
 /* Errors */
-SELECT atGeometry(tgeometry 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)');
-SELECT atGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
-SELECT atGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
+SELECT atGeometry(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)');
+SELECT atGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
+SELECT atGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(1 1 1,2 2 2)');
 
-SELECT asText(minusGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
-SELECT asText(minusGeometry(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring(0 0,3 3)'));
-SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring(0 0,3 3)'));
-SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
-SELECT asText(minusGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));
-SELECT asText(minusGeometry(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring empty'));
-SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring empty'));
-SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring empty'));
+SELECT asText(minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'));
+SELECT asText(minusGeometry(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Linestring(0 0,3 3)'));
+SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Linestring(0 0,3 3)'));
+SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Linestring(0 0,3 3)'));
+SELECT asText(minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring empty'));
+SELECT asText(minusGeometry(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Linestring empty'));
+SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Linestring empty'));
+SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Linestring empty'));
 
-SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Linestring(0 1,2 1)'));
-SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)}', geometry 'Linestring(0 1,2 1)'));
-SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02]','Point(2 2)'));
-SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02],[Point(3 3)@2000-01-03]}','Point(2 2)'));
+SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02)', geometry 'Linestring(0 1,2 1)'));
+SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02)}', geometry 'Linestring(0 1,2 1)'));
+SELECT asText(minusGeometry(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-02]','Point(2 2)'));
+SELECT asText(minusGeometry(tgeometry '{[Point(1 1)@2001-01-01, Point(3 3)@2001-01-02],[Point(3 3)@2001-01-03]}','Point(2 2)'));
 
 /* Errors */
-SELECT minusGeometry(tgeometry 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)');
-SELECT minusGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
-SELECT minusGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
+SELECT minusGeometry(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)');
+SELECT minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
+SELECT minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(1 1 1,2 2 2)');
 
 --------------------------------------------------------
 
 -- Equivalences
 WITH test(temp, geo) AS (
-  SELECT tgeometry '[Point(1 1)@2000-01-01, Point(3 1)@2000-01-03,
-    Point(3 1)@2000-01-05]', geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))' )
+  SELECT tgeometry '[Point(1 1)@2001-01-01, Point(3 1)@2001-01-03,
+    Point(3 1)@2001-01-05]', geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))' )
 SELECT temp = merge(atGeometry(temp, geo), minusGeometry(temp, geo))
 FROM test;
 
 --------------------------------------------------------
 
-SELECT asText(atStbox(tgeometry 'Point(1 1)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(atStbox(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(atStbox(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(atStbox(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
+SELECT asText(atStbox(tgeometry 'Point(1 1)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
+SELECT asText(atStbox(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
+SELECT asText(atStbox(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
+SELECT asText(atStbox(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
 
-SELECT asText(atStbox(tgeometry 'Point(1 1)@2000-01-01', 'STBOX X((1,1),(2,2))'));
-SELECT asText(atStbox(tgeometry 'Point(1 1)@2000-01-01', 'STBOX T([2000-01-01,2000-01-02])'));
-SELECT asText(atStbox(tgeometry '(Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]', 'STBOX T([2000-01-01,2000-01-02])'));
+SELECT asText(atStbox(tgeometry 'Point(1 1)@2001-01-01', 'STBOX X((1,1),(2,2))'));
+SELECT asText(atStbox(tgeometry 'Point(1 1)@2001-01-01', 'STBOX T([2001-01-01,2001-01-02])'));
+SELECT asText(atStbox(tgeometry '(Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]', 'STBOX T([2001-01-01,2001-01-02])'));
 
 -- borderInc set to false
 SELECT asText(atStbox(tgeometry '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02,
@@ -497,14 +497,14 @@ SELECT asText(atStbox(tgeometry '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02,
   Point(2 2)@2001-01-03, Point(2 1)@2001-01-04, Point(1 1)@2001-01-05]',
   stbox 'STBOX X((0,0),(2,2))', false));
 
-SELECT asText(minusStbox(tgeometry 'Point(1 1)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(minusStbox(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(minusStbox(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(minusStbox(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
+SELECT asText(minusStbox(tgeometry 'Point(1 1)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
+SELECT asText(minusStbox(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
+SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
+SELECT asText(minusStbox(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
 -- Values inside the box's period but outside its spatial extent belong to
 -- the complement.
-SELECT asText(minusStbox(tgeometry 'Point(5 5)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(minusStbox(tgeometry '{Point(1 1)@2000-01-01, Point(5 5)@2000-01-02}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-03])'));
+SELECT asText(minusStbox(tgeometry 'Point(5 5)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
+SELECT asText(minusStbox(tgeometry '{Point(1 1)@2001-01-01, Point(5 5)@2001-01-02}', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-03])'));
 
 -- borderInc set to false
 SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02,
@@ -515,35 +515,35 @@ SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-0
   stbox 'STBOX X((0,0),(2,2))', false));
 
 -- Instantaneous sequence
-SELECT asText(atStbox(tgeometry '{Point(1 1)@2000-01-01}', stbox 'STBOX X((1 1),(3 3))'));
-SELECT asText(atStbox(tgeometry '[Point(1 1)@2000-01-01]', stbox 'STBOX X((1 1),(3 3))'));
+SELECT asText(atStbox(tgeometry '{Point(1 1)@2001-01-01}', stbox 'STBOX X((1 1),(3 3))'));
+SELECT asText(atStbox(tgeometry '[Point(1 1)@2001-01-01]', stbox 'STBOX X((1 1),(3 3))'));
 
 -- Edge cases
-SELECT astext(atStbox(tgeometry '[Point(1 1)@2000-01-01, Point(1 3)@2000-01-02, Point(1 1)@2000-01-03]', stbox 'STBOX X((0,0),(2 2))'));
-SELECT astext(atStbox(tgeometry '[Point(1 1)@2000-01-01, Point(1 2)@2000-01-02, Point(1 1)@2000-01-03]', stbox 'STBOX X((0,0),(2 2))'));
-SELECT astext(atStbox(tgeometry '[Point(1 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 1)@2000-01-03]', stbox 'STBOX X((0,0),(1 1))'));
-SELECT astext(atStbox(tgeometry '[Point(0 2)@2000-01-01, Point(2 0)@2000-01-02]', stbox 'STBOX X((0,0),(1 1))'));
-SELECT astext(atStbox(tgeometry '[Point(0 0)@2000-01-01, Point(2 2)@2000-01-02]', stbox 'STBOX X((0,0),(1 1))'));
-SELECT astext(atStbox(tgeometry '[Point(-2 1)@2000-01-01, Point(2 1)@2000-01-02]', stbox 'STBOX X((0,0),(1 1))'));
+SELECT astext(atStbox(tgeometry '[Point(1 1)@2001-01-01, Point(1 3)@2001-01-02, Point(1 1)@2001-01-03]', stbox 'STBOX X((0,0),(2 2))'));
+SELECT astext(atStbox(tgeometry '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02, Point(1 1)@2001-01-03]', stbox 'STBOX X((0,0),(2 2))'));
+SELECT astext(atStbox(tgeometry '[Point(1 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 1)@2001-01-03]', stbox 'STBOX X((0,0),(1 1))'));
+SELECT astext(atStbox(tgeometry '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-02]', stbox 'STBOX X((0,0),(1 1))'));
+SELECT astext(atStbox(tgeometry '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]', stbox 'STBOX X((0,0),(1 1))'));
+SELECT astext(atStbox(tgeometry '[Point(-2 1)@2001-01-01, Point(2 1)@2001-01-02]', stbox 'STBOX X((0,0),(1 1))'));
 
 -- Edge cases with lower_inc / upper_inc = false
-SELECT astext(atStbox(tgeometry '(Point(2 1)@2000-01-01, Point(2 1)@2000-01-02)', stbox 'STBOX X((0,0),(2 2))'));
-SELECT astext(atStbox(tgeometry '(Point(3 1)@2000-01-01, Point(3 1)@2000-01-02)', stbox 'STBOX X((0,0),(2 2))'));
-SELECT astext(atStbox(tgeometry '(Point(1 1)@2000-01-01, Point(3 1)@2000-01-02, Point(3 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
-SELECT astext(atStbox(tgeometry '(Point(3 1)@2000-01-01, Point(2 1)@2000-01-02, Point(2 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
-SELECT astext(atStbox(tgeometry '(Point(1 1)@2000-01-01, Point(3 1)@2000-01-02, Point(3 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
-SELECT astext(atStbox(tgeometry '(Point(3 1)@2000-01-01, Point(1 1)@2000-01-02, Point(1 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+SELECT astext(atStbox(tgeometry '(Point(2 1)@2001-01-01, Point(2 1)@2001-01-02)', stbox 'STBOX X((0,0),(2 2))'));
+SELECT astext(atStbox(tgeometry '(Point(3 1)@2001-01-01, Point(3 1)@2001-01-02)', stbox 'STBOX X((0,0),(2 2))'));
+SELECT astext(atStbox(tgeometry '(Point(1 1)@2001-01-01, Point(3 1)@2001-01-02, Point(3 1)@2001-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+SELECT astext(atStbox(tgeometry '(Point(3 1)@2001-01-01, Point(2 1)@2001-01-02, Point(2 1)@2001-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+SELECT astext(atStbox(tgeometry '(Point(1 1)@2001-01-01, Point(3 1)@2001-01-02, Point(3 1)@2001-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+SELECT astext(atStbox(tgeometry '(Point(3 1)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-04)', stbox 'STBOX X((0,0),(2 2))'));
 
 /* Errors */
-SELECT asText(atStbox(tgeometry 'SRID=4326;Point(1 1)@2000-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(atStbox(tgeometry 'SRID=5676;Point(1 1)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
+SELECT asText(atStbox(tgeometry 'SRID=4326;Point(1 1)@2001-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])'));
+SELECT asText(atStbox(tgeometry 'SRID=5676;Point(1 1)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
 
 -------------------------------------------------------------------------------
 
 -- Equivalences
 WITH temp(trip, box) AS (
-  SELECT tgeometry '[Point(1 1)@2000-01-01, Point(3 1)@2000-01-03,
-    Point(3 1)@2000-01-05]', stbox 'STBox X((2 0),(4 2))' )
+  SELECT tgeometry '[Point(1 1)@2001-01-01, Point(3 1)@2001-01-03,
+    Point(3 1)@2001-01-05]', stbox 'STBox X((2 0),(4 2))' )
 SELECT trip = merge(atStbox(trip, box), minusStbox(trip,box))
 FROM temp;
 

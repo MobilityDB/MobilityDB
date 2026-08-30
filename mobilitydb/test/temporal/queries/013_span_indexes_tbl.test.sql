@@ -83,7 +83,7 @@ DROP INDEX IF EXISTS tbl_tstzspanset_big_rtree_idx;
 
 DROP TABLE IF EXISTS tbl_tstzspan_test;
 CREATE TABLE tbl_tstzspan_test AS
-SELECT tstzspan '[2000-01-01,2000-01-02]';
+SELECT tstzspan '[2001-01-01,2001-01-02]';
 ANALYZE tbl_tstzspan_test;
 DELETE FROM tbl_tstzspan_test;
 INSERT INTO tbl_tstzspan_test

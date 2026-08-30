@@ -10,100 +10,100 @@ SELECT minTimeDeltaSimplify(NULL::tcbuffer, interval '1 day');
  
 (1 row)
 
-SELECT minDistSimplify(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 1.0);
+SELECT minDistSimplify(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', 1.0);
                                    mindistsimplify                                    
 --------------------------------------------------------------------------------------
- Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Sat Jan 01 00:00:00 2000 PST
+ Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT minDistSimplify(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 1.0);
+SELECT minDistSimplify(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03}', 1.0);
                                                                                                                           mindistsimplify                                                                                                                           
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(010100000000000000000000400000000000000040,0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 03 00:00:00 2000 PST}
+ {Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(010100000000000000000000400000000000000040,0.5)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT minDistSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03, Cbuffer(Point(4 4),0.5)@2000-01-04]', 2.0);
+SELECT minDistSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(3 1),0.5)@2001-01-03, Cbuffer(Point(4 4),0.5)@2001-01-04]', 2.0);
                                                                                mindistsimplify                                                                                
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Tue Jan 04 00:00:00 2000 PST]
+ [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT minTimeDeltaSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03, Cbuffer(Point(4 4),0.5)@2000-01-04]', interval '2 days');
+SELECT minTimeDeltaSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(3 1),0.5)@2001-01-03, Cbuffer(Point(4 4),0.5)@2001-01-04]', interval '2 days');
                                                                              mintimedeltasimplify                                                                             
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Tue Jan 04 00:00:00 2000 PST]
+ [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT maxDistSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03, Cbuffer(Point(4 4),0.5)@2000-01-04]', 1.0);
+SELECT maxDistSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(3 1),0.5)@2001-01-03, Cbuffer(Point(4 4),0.5)@2001-01-04]', 1.0);
                                                                                                                           maxdistsimplify                                                                                                                           
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(01010000000000000000000840000000000000F03F,0.5)@Mon Jan 03 00:00:00 2000 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Tue Jan 04 00:00:00 2000 PST]
+ [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(01010000000000000000000840000000000000F03F,0.5)@Wed Jan 03 00:00:00 2001 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT maxDistSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03, Cbuffer(Point(4 4),0.5)@2000-01-04]', 1.0, false);
+SELECT maxDistSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(3 1),0.5)@2001-01-03, Cbuffer(Point(4 4),0.5)@2001-01-04]', 1.0, false);
                                                                                                                           maxdistsimplify                                                                                                                           
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(01010000000000000000000840000000000000F03F,0.5)@Mon Jan 03 00:00:00 2000 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Tue Jan 04 00:00:00 2000 PST]
+ [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(01010000000000000000000840000000000000F03F,0.5)@Wed Jan 03 00:00:00 2001 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03, Cbuffer(Point(4 4),0.5)@2000-01-04]', 1.0);
+SELECT douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(3 1),0.5)@2001-01-03, Cbuffer(Point(4 4),0.5)@2001-01-04]', 1.0);
                                                                                                                        douglaspeuckersimplify                                                                                                                       
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(01010000000000000000000840000000000000F03F,0.5)@Mon Jan 03 00:00:00 2000 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Tue Jan 04 00:00:00 2000 PST]
+ [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(01010000000000000000000840000000000000F03F,0.5)@Wed Jan 03 00:00:00 2001 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03, Cbuffer(Point(4 4),0.5)@2000-01-04]', 1.0, false);
+SELECT douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(3 1),0.5)@2001-01-03, Cbuffer(Point(4 4),0.5)@2001-01-04]', 1.0, false);
                                                                                                                        douglaspeuckersimplify                                                                                                                       
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(01010000000000000000000840000000000000F03F,0.5)@Mon Jan 03 00:00:00 2000 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Tue Jan 04 00:00:00 2000 PST]
+ [Cbuffer(0101000000000000000000F03F000000000000F03F,0.5)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(01010000000000000000000840000000000000F03F,0.5)@Wed Jan 03 00:00:00 2001 PST, Cbuffer(010100000000000000000010400000000000001040,0.5)@Thu Jan 04 00:00:00 2001 PST]
 (1 row)
 
-SELECT interp(minDistSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(1 0),1)@2000-01-02, Cbuffer(Point(4 0),1)@2000-01-03]', 2.0));
+SELECT interp(minDistSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]', 2.0));
  interp 
 --------
  Linear
 (1 row)
 
-SELECT interp(minTimeDeltaSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(1 0),1)@2000-01-02, Cbuffer(Point(4 0),1)@2000-01-03]', interval '2 days'));
+SELECT interp(minTimeDeltaSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]', interval '2 days'));
  interp 
 --------
  Linear
 (1 row)
 
-SELECT interp(maxDistSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(1 0),1)@2000-01-02, Cbuffer(Point(4 0),1)@2000-01-03]', 2.0));
+SELECT interp(maxDistSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]', 2.0));
  interp 
 --------
  Linear
 (1 row)
 
-SELECT interp(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(1 0),1)@2000-01-02, Cbuffer(Point(4 0),1)@2000-01-03]', 2.0));
+SELECT interp(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]', 2.0));
  interp 
 --------
  Linear
 (1 row)
 
-SELECT interp(minDistSimplify(tcbuffer 'Interp=Step;[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(1 0),1)@2000-01-02, Cbuffer(Point(4 0),1)@2000-01-03]', 2.0));
+SELECT interp(minDistSimplify(tcbuffer 'Interp=Step;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]', 2.0));
  interp 
 --------
  Step
 (1 row)
 
-SELECT minDistSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(1 0),1)@2000-01-02, Cbuffer(Point(4 0),1)@2000-01-03]', 0.5) =
-  tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(1 0),1)@2000-01-02, Cbuffer(Point(4 0),1)@2000-01-03]';
+SELECT minDistSimplify(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]', 0.5) =
+  tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT numSequences(minDistSimplify(tcbuffer '{[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(1 0),1)@2000-01-02, Cbuffer(Point(4 0),1)@2000-01-03], [Cbuffer(Point(9 0),1)@2000-01-05, Cbuffer(Point(20 0),1)@2000-01-06]}', 2.0));
+SELECT numSequences(minDistSimplify(tcbuffer '{[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03], [Cbuffer(Point(9 0),1)@2001-01-05, Cbuffer(Point(20 0),1)@2001-01-06]}', 2.0));
  numsequences 
 --------------
             2
 (1 row)
 
-SELECT minDistSimplify(tcbuffer '{[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(1 0),1)@2000-01-02, Cbuffer(Point(4 0),1)@2000-01-03], [Cbuffer(Point(9 0),1)@2000-01-05, Cbuffer(Point(20 0),1)@2000-01-06]}', 2.0);
+SELECT minDistSimplify(tcbuffer '{[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 0),1)@2001-01-02, Cbuffer(Point(4 0),1)@2001-01-03], [Cbuffer(Point(9 0),1)@2001-01-05, Cbuffer(Point(20 0),1)@2001-01-06]}', 2.0);
                                                                                                                                                                    mindistsimplify                                                                                                                                                                    
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[Cbuffer(010100000000000000000000000000000000000000,1)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(010100000000000000000010400000000000000000,1)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(010100000000000000000022400000000000000000,1)@Wed Jan 05 00:00:00 2000 PST, Cbuffer(010100000000000000000034400000000000000000,1)@Thu Jan 06 00:00:00 2000 PST]}
+ {[Cbuffer(010100000000000000000000000000000000000000,1)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(010100000000000000000010400000000000000000,1)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(010100000000000000000022400000000000000000,1)@Fri Jan 05 00:00:00 2001 PST, Cbuffer(010100000000000000000034400000000000000000,1)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 

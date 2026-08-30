@@ -34,10 +34,10 @@
 -- Input/output
 -------------------------------------------------------------------------------
 
-SELECT asEWKT(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01');
-SELECT asEWKT(tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02}');
-SELECT asEWKT(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]');
-SELECT asEWKT(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02], [PoseChain(Pose(Point(2 2), 0))@2000-01-03]}');
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01');
+SELECT asEWKT(tposechain '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02}');
+SELECT asEWKT(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]');
+SELECT asEWKT(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02], [PoseChain(Pose(Point(2 2), 0))@2001-01-03]}');
 
 -------------------------------------------------------------------------------
 -- Errors
@@ -46,8 +46,8 @@ SELECT asEWKT(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain
 -- one.
 -------------------------------------------------------------------------------
 
-SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2000-01-02]';
-SELECT tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2000-01-02}';
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2001-01-02]';
+SELECT tposechain '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2001-01-02}';
 
 -------------------------------------------------------------------------------
 -- Comparison against a chain of another length
@@ -55,12 +55,12 @@ SELECT tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Po
 -- comparison against it answers false rather than refusing the question.
 -------------------------------------------------------------------------------
 
-SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
-SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
-SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]' %= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
-SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' ?= tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]';
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]' %= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' ?= tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]';
 -- The same chain still compares equal where the lengths agree
-SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0))';
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0))';
 
 -------------------------------------------------------------------------------
 -- Interpolation
@@ -73,53 +73,53 @@ SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Po
 SELECT asEWKT(round(valueAtTimestamp(
   appendInstant(
     tposechain(posechain(ARRAY[pose(ST_Point(0,0), 0), pose(ST_Point(10,0), 0)]),
-      timestamptz '2000-01-01'),
+      timestamptz '2001-01-01'),
     tposechain(posechain(ARRAY[pose(ST_Point(0,0), pi()/2), pose(ST_Point(10,0), 0)]),
-      timestamptz '2000-01-03')),
-  timestamptz '2000-01-02'), 6));
+      timestamptz '2001-01-03')),
+  timestamptz '2001-01-02'), 6));
 
 -------------------------------------------------------------------------------
 -- Conversions
 -- Composing the chain at every instant answers where its innermost frame sits
 -------------------------------------------------------------------------------
 
-SELECT asEWKT(round(tpose(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01'), 6));
-SELECT asEWKT(round((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01')::tpose, 6));
+SELECT asEWKT(round(tpose(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01'), 6));
+SELECT asEWKT(round((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01')::tpose, 6));
 
 -------------------------------------------------------------------------------
 -- Accessors
 -------------------------------------------------------------------------------
 
-SELECT numPoses(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01');
-SELECT tempSubtype(tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01');
-SELECT interp(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]');
-SELECT asEWKT(getValue(tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01'));
-SELECT numInstants(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]');
-SELECT timeSpan(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]');
+SELECT numPoses(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01');
+SELECT tempSubtype(tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01');
+SELECT interp(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]');
+SELECT asEWKT(getValue(tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01'));
+SELECT numInstants(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]');
+SELECT timeSpan(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]');
 
 -------------------------------------------------------------------------------
 -- Spatial reference system
 -- Only the outer link names a frame, so only the outer link is transformed
 -------------------------------------------------------------------------------
 
-SELECT SRID(tposechain 'SRID=3812;PoseChain(Pose(Point(1 2), 0))@2000-01-01');
-SELECT asEWKT(setSRID(tposechain 'PoseChain(Pose(Point(1 2), 0))@2000-01-01', 3812));
-SELECT asEWKT(round(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2000-01-01', 3812), 6));
-SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2000-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
+SELECT SRID(tposechain 'SRID=3812;PoseChain(Pose(Point(1 2), 0))@2001-01-01');
+SELECT asEWKT(setSRID(tposechain 'PoseChain(Pose(Point(1 2), 0))@2001-01-01', 3812));
+SELECT asEWKT(round(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2001-01-01', 3812), 6));
+SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
 
 -------------------------------------------------------------------------------
 -- Restrictions
 -------------------------------------------------------------------------------
 
-SELECT asEWKT(atTime(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-03]', timestamptz '2000-01-02'));
-SELECT asEWKT(atValue(tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02}', posechain 'PoseChain(Pose(Point(1 1), 0))'));
+SELECT asEWKT(atTime(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-03]', timestamptz '2001-01-02'));
+SELECT asEWKT(atValue(tposechain '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02}', posechain 'PoseChain(Pose(Point(1 1), 0))'));
 
 -------------------------------------------------------------------------------
 -- Comparisons
 -------------------------------------------------------------------------------
 
-SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' = tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01';
-SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' <> tposechain 'PoseChain(Pose(Point(1 1), 0))@2000-01-01';
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01' = tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01';
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2001-01-01' <> tposechain 'PoseChain(Pose(Point(1 1), 0))@2001-01-01';
 
 -------------------------------------------------------------------------------
 
@@ -129,8 +129,8 @@ SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' <> tposechain 'Pos
 -- instant carries the reach of the whole chain and not only of its last link
 -------------------------------------------------------------------------------
 
-SELECT stbox(tposechain 'PoseChain(Pose(Point(1 2), 0), Pose(Point(3 4), 0))@2000-01-01');
-SELECT stbox(tposechain '{PoseChain(Pose(Point(1 2), 0))@2000-01-01, PoseChain(Pose(Point(5 6), 0))@2000-01-02}');
-SELECT stbox(tposechain '[PoseChain(Pose(Point(1 2), 0))@2000-01-01, PoseChain(Pose(Point(5 6), 0))@2000-01-02]');
+SELECT stbox(tposechain 'PoseChain(Pose(Point(1 2), 0), Pose(Point(3 4), 0))@2001-01-01');
+SELECT stbox(tposechain '{PoseChain(Pose(Point(1 2), 0))@2001-01-01, PoseChain(Pose(Point(5 6), 0))@2001-01-02}');
+SELECT stbox(tposechain '[PoseChain(Pose(Point(1 2), 0))@2001-01-01, PoseChain(Pose(Point(5 6), 0))@2001-01-02]');
 
 -------------------------------------------------------------------------------

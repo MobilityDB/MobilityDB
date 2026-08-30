@@ -194,7 +194,7 @@ DROP TABLE IF EXISTS tbl_tstzspan_test;
 NOTICE:  table "tbl_tstzspan_test" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_tstzspan_test AS
-SELECT tstzspan '[2000-01-01,2000-01-02]';
+SELECT tstzspan '[2001-01-01,2001-01-02]';
 SELECT 1
 ANALYZE tbl_tstzspan_test;
 ANALYZE

@@ -91,30 +91,30 @@ SELECT tposechainFromGeoPose(
 
 -- Two limbs off the one topocentric frame
 SELECT asGeoPose(ARRAY[
-  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0), Pose(Point(0 1 0), 1, 0, 0, 0))@2000-01-01',
-  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0), Pose(Point(2 0 0), 1, 0, 0, 0))@2000-01-01'
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0), Pose(Point(0 1 0), 1, 0, 0, 0))@2001-01-01',
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0), Pose(Point(2 0 0), 1, 0, 0, 0))@2001-01-01'
 ], 6);
 
 -- A path is a graph of one limb
 SELECT asGeoPose(ARRAY[
-  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2000-01-01'
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2001-01-01'
 ], 6);
 
 -- Errors
 -- A graph carries one valid time, so a value holding several has none to write
 SELECT asGeoPose(ARRAY[
-  tposechain 'SRID=4326;[PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2000-01-01, PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(2 0 0), 1, 0, 0, 0))@2000-01-02]'
+  tposechain 'SRID=4326;[PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2001-01-01, PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(2 0 0), 1, 0, 0, 0))@2001-01-02]'
 ], 6);
 -- Chains read at different instants name no single valid time
 SELECT asGeoPose(ARRAY[
-  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2000-01-01',
-  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(2 0 0), 1, 0, 0, 0))@2000-01-02'
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2001-01-01',
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(2 0 0), 1, 0, 0, 0))@2001-01-02'
 ], 6);
 -- An empty array names no frame at all
 SELECT asGeoPose(ARRAY[]::tposechain[], 6);
 -- A projected frame has no conformant encoding
 SELECT asGeoPose(ARRAY[
-  tposechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2000-01-01'
+  tposechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2001-01-01'
 ], 6);
 
 -------------------------------------------------------------------------------

@@ -31,21 +31,21 @@
 -- The delegation identity
 -------------------------------------------------------------------------------
 
-SELECT asText(tIntersects(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(4.35 50.85)'))
-  = asText(tIntersects(cellToBoundary(ts2cell '[47c3c3@2000-01-01]')::tgeometry,
+SELECT asText(tIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)'))
+  = asText(tIntersects(cellToBoundary(ts2cell '[47c3c3@2001-01-01]')::tgeometry,
       geometry 'SRID=4326;Point(4.35 50.85)'));
-SELECT asText(tDisjoint(geometry 'SRID=4326;Point(-122.4 37.8)', ts2cell '[47c3c3@2000-01-01]'))
+SELECT asText(tDisjoint(geometry 'SRID=4326;Point(-122.4 37.8)', ts2cell '[47c3c3@2001-01-01]'))
   = asText(tDisjoint(geometry 'SRID=4326;Point(-122.4 37.8)',
-      cellToBoundary(ts2cell '[47c3c3@2000-01-01]')::tgeometry));
+      cellToBoundary(ts2cell '[47c3c3@2001-01-01]')::tgeometry));
 
 -------------------------------------------------------------------------------
 -- The answers themselves
 -------------------------------------------------------------------------------
 
-SELECT asText(tIntersects(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(4.35 50.85)'));
-SELECT asText(tDisjoint(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)'));
+SELECT asText(tIntersects(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)'));
+SELECT asText(tDisjoint(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(-122.4 37.8)'));
 SELECT asText(tContains(geometry 'SRID=4326;Polygon((0 45,0 55,10 55,10 45,0 45))',
-  ts2cell '[47c3c3@2000-01-01]'));
-SELECT asText(tDwithin(ts2cell '[47c3c3@2000-01-01]', geometry 'SRID=4326;Point(4.35 50.85)', 0.1));
+  ts2cell '[47c3c3@2001-01-01]'));
+SELECT asText(tDwithin(ts2cell '[47c3c3@2001-01-01]', geometry 'SRID=4326;Point(4.35 50.85)', 0.1));
 
 -------------------------------------------------------------------------------
