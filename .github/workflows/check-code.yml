@@ -99,6 +99,14 @@ jobs:
       - name: Check that every error sentinel is the maximum of the return type
         run: python3 tools/scripts/check_error_sentinels.py
 
+  fixture_dates_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Reject a test or manual value dated on the PostgreSQL epoch year
+        run: python3 tools/scripts/check_fixture_dates.py
+
   liblwgeom_geos_check:
     runs-on: ubuntu-latest
     steps:
