@@ -41,6 +41,11 @@ SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 SELECT tstzset '2000-01-01, 2000-01-02';
 SELECT tstzset '{2000-01-01, 2000-01-02';
 
+-- The UTC designator of RFC 3339, which every OGC Moving Features datetime is
+-- written in, denotes the same instant as the zero offset it abbreviates
+SELECT tstzset '{2000-01-01T00:00:00Z, 2000-01-02T00:00:00Z}' =
+  tstzset '{2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00}';
+
 -- Output in WKT format
 
 SELECT asText(floatset '{1.12345678, 2.123456789}', 6);

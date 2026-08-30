@@ -37,6 +37,13 @@ SELECT tstzset '{2000-01-01, 2000-01-02';
 ERROR:  Could not parse tstzset value: Missing closing brace
 LINE 1: SELECT tstzset '{2000-01-01, 2000-01-02';
                        ^
+SELECT tstzset '{2000-01-01T00:00:00Z, 2000-01-02T00:00:00Z}' =
+  tstzset '{2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00}';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
         astext        
 ----------------------

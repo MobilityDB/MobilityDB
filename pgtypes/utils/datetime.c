@@ -107,6 +107,19 @@ const char *const days[] = {"Sunday", "Monday", "Tuesday", "Wednesday",
  * The static table contains no TZ, DTZ, or DYNTZ entries; rather those
  * are loaded from configuration files and stored in zoneabbrevtbl, whose
  * abbrevs[] field has the same format as the static datetktbl.
+ *
+ * MEOS: except for the universal ones, which are marked below. A server reads
+ * its abbreviations from the file the timezone_abbreviations setting names, and
+ * MEOS has neither that setting nor a configuration directory to read, so
+ * zoneabbrevtbl stays empty and every abbreviation has to come from the session
+ * zone. That leaves "Z" unreadable, because it is the designator of no zone: it
+ * is the UTC designator of RFC 3339 section 5.6, the format every OGC Moving
+ * Features datetime is written in, and PostgreSQL reads it from the ETC block
+ * of its Default set. The entries below are that block, the abbreviations
+ * PostgreSQL gives a fixed zero offset, so a MEOS build and a server agree on
+ * what they mean. They are reached only after the session zone, exactly as a
+ * loaded set would be, so an abbreviation the zone defines keeps its local
+ * meaning.
  */
 static const datetkn datetktbl[] = {
   /* token, type, value */
@@ -132,6 +145,7 @@ static const datetkn datetktbl[] = {
   {"february", MONTH, 2},
   {"fri", DOW, 5},
   {"friday", DOW, 5},
+  {"gmt", TZ, 0},  /* MEOS: universal */
   {"h", UNITS, DTK_HOUR},    /* "hour" */
   {LATE, RESERV, DTK_LATE},  /* "infinity" reserved for "late time" */
   {"isodow", UNITS, DTK_ISODOW},  /* ISO day of week, Sunday == 7 */
@@ -177,11 +191,16 @@ static const datetkn datetktbl[] = {
   {"tue", DOW, 2},
   {"tues", DOW, 2},
   {"tuesday", DOW, 2},
+  {"uct", TZ, 0},  /* MEOS: universal */
+  {"ut", TZ, 0},  /* MEOS: universal */
+  {"utc", TZ, 0},  /* MEOS: universal */
   {"wed", DOW, 3},
   {"wednesday", DOW, 3},
   {"weds", DOW, 3},
   {"y", UNITS, DTK_YEAR},    /* "year" for ISO input */
-  {YESTERDAY, RESERV, DTK_YESTERDAY}  /* yesterday midnight */
+  {YESTERDAY, RESERV, DTK_YESTERDAY}, /* yesterday midnight */
+  {"z", TZ, 0},  /* MEOS: universal */
+  {"zulu", TZ, 0}  /* MEOS: universal */
 };
 
 static const int szdatetktbl = sizeof datetktbl / sizeof datetktbl[0];
