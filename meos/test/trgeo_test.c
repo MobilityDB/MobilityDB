@@ -67,7 +67,7 @@ int main(void)
   /* Well-formed trgeometry value: a reference geometry followed by the
    * ';'-delimited temporal (pose) part */
   const char *trgeo1_in =
-    "Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2000-01-01";
+    "Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2001-01-01";
 
   /* Temporal *trgeometry_in(const char *str); */
   Temporal *trgeo1 = trgeometry_in(trgeo1_in);

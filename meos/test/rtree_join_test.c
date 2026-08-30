@@ -262,7 +262,7 @@ test_degenerate(void)
     rtree_join(empty1, empty2, INDEX_OVERLAPS, result) == 0);
 
   RTree *filled = rtree_create_stbox();
-  STBox *box = stbox_in("STBOX XT(((0,0),(1,1)),[2000-01-01, 2000-01-02])");
+  STBox *box = stbox_in("STBOX XT(((0,0),(1,1)),[2001-01-01, 2001-01-02])");
   rtree_insert(filled, box, 0);
   check("empty joined with a filled index reports no pair",
     rtree_join(empty1, filled, INDEX_OVERLAPS, result) == 0);
@@ -273,14 +273,14 @@ test_degenerate(void)
    * report their single pair once the boxes are made to overlap */
   RTree *far = rtree_create_stbox();
   STBox *farbox = stbox_in(
-    "STBOX XT(((1000,1000),(1001,1001)),[2000-01-01, 2000-01-02])");
+    "STBOX XT(((1000,1000),(1001,1001)),[2001-01-01, 2001-01-02])");
   rtree_insert(far, farbox, 0);
   check("indexes that share no box report no pair",
     rtree_join(filled, far, INDEX_OVERLAPS, result) == 0);
 
   RTree *near = rtree_create_stbox();
   STBox *nearbox = stbox_in(
-    "STBOX XT(((0.5,0.5),(2,2)),[2000-01-01, 2000-01-02])");
+    "STBOX XT(((0.5,0.5),(2,2)),[2001-01-01, 2001-01-02])");
   rtree_insert(near, nearbox, 7);
   int n = rtree_join(filled, near, INDEX_OVERLAPS, result);
   check("a single overlapping pair is reported once", n == 1);
@@ -292,7 +292,7 @@ test_degenerate(void)
    * STBox pair must overlap in every dimension the two boxes share */
   RTree *later = rtree_create_stbox();
   STBox *laterbox = stbox_in(
-    "STBOX XT(((0,0),(1,1)),[2001-01-01, 2001-01-02])");
+    "STBOX XT(((0,0),(1,1)),[2002-01-01, 2002-01-02])");
   rtree_insert(later, laterbox, 0);
   check("boxes apart in time only are not reported",
     rtree_join(filled, later, INDEX_OVERLAPS, result) == 0);

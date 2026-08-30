@@ -70,14 +70,14 @@ int main(void)
   meos_initialize_timezone("UTC");
 
   /* Self-describing serializations: the concrete type is recovered */
-  check("tint", temporal_as_hexwkb(tint_in("1@2000-01-01"), 0, &sz), T_TINT);
-  check("tfloat", temporal_as_hexwkb(tfloat_in("1.5@2000-01-01"), 0, &sz),
+  check("tint", temporal_as_hexwkb(tint_in("1@2001-01-01"), 0, &sz), T_TINT);
+  check("tfloat", temporal_as_hexwkb(tfloat_in("1.5@2001-01-01"), 0, &sz),
     T_TFLOAT);
   check("intspan", span_as_hexwkb(intspan_in("[1, 3]"), 0, &sz), T_INTSPAN);
   check("floatspan", span_as_hexwkb(floatspan_in("[1.0, 3.0]"), 0, &sz),
     T_FLOATSPAN);
   check("tstzspan",
-    span_as_hexwkb(tstzspan_in("[2000-01-01, 2000-01-02]"), 0, &sz),
+    span_as_hexwkb(tstzspan_in("[2001-01-01, 2001-01-02]"), 0, &sz),
     T_TSTZSPAN);
   check("intset", set_as_hexwkb(intset_in("{1, 2, 3}"), 0, &sz), T_INTSET);
   check("intspanset", spanset_as_hexwkb(intspanset_in("{[1,2],[4,5]}"), 0, &sz),

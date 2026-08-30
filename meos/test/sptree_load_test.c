@@ -381,7 +381,7 @@ test_stbox(SPTreeKind kind, const char *kindname)
   {
     int x = random_int(0, 1000), y = random_int(0, 1000);
     snprintf(buf, sizeof(buf),
-      "STBOX XT(((%d,%d),(%d,%d)),[2000-01-01,2000-01-02])",
+      "STBOX XT(((%d,%d),(%d,%d)),[2001-01-01,2001-01-02])",
       x, y, x + 20, y + 20);
     STBox *box = stbox_in(buf);
     memcpy(&boxes[i], box, sizeof(STBox));
@@ -397,7 +397,7 @@ test_stbox(SPTreeKind kind, const char *kindname)
   {
     int x = random_int(0, 1000), y = random_int(0, 1000);
     snprintf(buf, sizeof(buf),
-      "STBOX XT(((%d,%d),(%d,%d)),[2000-01-01,2000-01-02])",
+      "STBOX XT(((%d,%d),(%d,%d)),[2001-01-01,2001-01-02])",
       x, y, x + 60, y + 60);
     STBox *query = stbox_in(buf);
 

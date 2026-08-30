@@ -124,7 +124,7 @@ main(void)
   {
     int x = i % 64, y = i / 64;
     snprintf(buf, sizeof(buf),
-      "STBOX XT(((%d,%d),(%d,%d)),[2000-01-01,2000-01-02])", x, y, x + 1, y + 1);
+      "STBOX XT(((%d,%d),(%d,%d)),[2001-01-01,2001-01-02])", x, y, x + 1, y + 1);
     STBox *box = stbox_in(buf);
     memcpy(&boxes[i], box, sizeof(STBox));
     free(box);
@@ -144,7 +144,7 @@ main(void)
   {
     int x = (q * 7) % 60, y = (q * 11) % 30;
     snprintf(buf, sizeof(buf),
-      "STBOX XT(((%d,%d),(%d,%d)),[2000-01-01,2000-01-02])", x, y, x + 5, y + 5);
+      "STBOX XT(((%d,%d),(%d,%d)),[2001-01-01,2001-01-02])", x, y, x + 5, y + 5);
     STBox *query = stbox_in(buf);
     int ngrown, npacked;
     int64 *g = search_sorted(grown, query, &ngrown);
@@ -174,7 +174,7 @@ main(void)
 
   /* (iii) and (iv) a window over the whole extent returns every id unchanged */
   snprintf(buf, sizeof(buf),
-    "STBOX XT(((-1,-1),(1000,1000)),[2000-01-01,2000-01-02])");
+    "STBOX XT(((-1,-1),(1000,1000)),[2001-01-01,2001-01-02])");
   STBox *whole = stbox_in(buf);
   int nall;
   int64 *got = search_sorted(packed, whole, &nall);

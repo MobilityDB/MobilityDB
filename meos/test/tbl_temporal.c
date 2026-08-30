@@ -35,7 +35,7 @@
  * The corresponding SQL query would be, for each temporal type in turn,
  * @code
  * SELECT k, numInstants(tprecision(temp, interval '5 minutes', timestamptz
-     '2000-01-01'))
+     '2000-01-03'))
    FROM tbl_tfloat;
  * @endcode
  *
