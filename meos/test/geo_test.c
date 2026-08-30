@@ -53,6 +53,9 @@
 #include <string.h>
 #include <meos.h>
 #include <meos_geo.h>
+#include <meos_h3.h>
+#include <meos_quadbin.h>
+#include <meos_s2cell.h>
 
 /* Main program */
 int main(void)
@@ -988,6 +991,42 @@ int main(void)
     ggdwkt);
   assert(strcmp(ggdwkt, "SRID=4326;MULTIPOINT(1 1,2 2)") == 0);
   free(ggd1); free(ggd2); free(ggdu); free(ggdwkt);
+  meos_errno_reset();
+
+  /* Every base type #spatial_basetype admits renders in WKT. A cell index
+   * value carries no coordinate, so the digits argument is vacuous and the
+   * text is the cell identifier -- which is what the generic output function
+   * writes for that same value, an identity independent of the session zone */
+  meos_errno_reset();
+  Temporal *cell = th3index_in("[831c02fffffffff@2001-01-01, "
+    "880326b885fffff@2001-01-02]");
+  assert(cell != NULL);
+  char *cell_text = tspatial_as_text(cell, 6);
+  char *cell_out = tspatial_out(cell, 6);
+  assert(cell_text != NULL); assert(cell_out != NULL);
+  assert(meos_errno() == 0);
+  printf("the WKT of a temporal cell index: %s\n", cell_text);
+  assert(strcmp(cell_text, cell_out) == 0);
+  free(cell_text); free(cell_out); free(cell);
+  meos_errno_reset();
+
+  /* A set reads its elements through that same renderer, and a cell set
+   * carries no timestamp, so the three grids are stated exactly */
+  Set *h3s = h3index_to_set((H3Index) 0x831c02fffffffffULL);
+  Set *qbs = quadbin_to_set((Quadbin) 5209574053332910079ULL);
+  Set *s2s = s2cell_to_set((S2CellId) 0x47c3cULL);
+  assert(h3s != NULL); assert(qbs != NULL); assert(s2s != NULL);
+  char *h3t = spatialset_as_text(h3s, 6);
+  char *qbt = spatialset_as_text(qbs, 6);
+  char *s2t = spatialset_as_text(s2s, 6);
+  assert(h3t != NULL); assert(qbt != NULL); assert(s2t != NULL);
+  assert(meos_errno() == 0);
+  printf("the WKT of a cell set: %s %s %s\n", h3t, qbt, s2t);
+  assert(strcmp(h3t, "{\"831c02fffffffff\"}") == 0);
+  assert(strcmp(qbt, "{\"484c1fffffffffff\"}") == 0);
+  assert(strcmp(s2t, "{\"0000000000047c3c\"}") == 0);
+  free(h3t); free(qbt); free(s2t);
+  free(h3s); free(qbs); free(s2s);
   meos_errno_reset();
 
   /* Finalize MEOS */
