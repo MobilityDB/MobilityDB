@@ -7,27 +7,27 @@ SELECT floatspan '[1,2] xxx';
 ERROR:  Could not parse floatspan value: Extraneous characters at the end
 LINE 1: SELECT floatspan '[1,2] xxx';
                          ^
-SELECT tstzspan '[2000-01-01,2000-01-02] xxx';
+SELECT tstzspan '[2001-01-01,2001-01-02] xxx';
 ERROR:  Could not parse tstzspan value: Extraneous characters at the end
-LINE 1: SELECT tstzspan '[2000-01-01,2000-01-02] xxx';
+LINE 1: SELECT tstzspan '[2001-01-01,2001-01-02] xxx';
                         ^
-SELECT tstzspan '2000-01-01, 2000-01-02';
+SELECT tstzspan '2001-01-01, 2001-01-02';
 ERROR:  Could not parse tstzspan value: Missing opening bracket/parenthesis
-LINE 1: SELECT tstzspan '2000-01-01, 2000-01-02';
+LINE 1: SELECT tstzspan '2001-01-01, 2001-01-02';
                         ^
-SELECT tstzspan '[2000-01-01, 2000-01-02';
+SELECT tstzspan '[2001-01-01, 2001-01-02';
 ERROR:  Could not parse tstzspan value: Missing closing bracket/parenthesis
-LINE 1: SELECT tstzspan '[2000-01-01, 2000-01-02';
+LINE 1: SELECT tstzspan '[2001-01-01, 2001-01-02';
                         ^
-SELECT tstzspan '[2000-01-01T00:00:00Z, 2000-01-02T00:00:00Z]' =
-  tstzspan '[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]';
+SELECT tstzspan '[2001-01-01T00:00:00Z, 2001-01-02T00:00:00Z]' =
+  tstzspan '[2001-01-01 00:00:00+00, 2001-01-02 00:00:00+00]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzspan '[2000-01-01T00:00:00UTC, 2000-01-02T00:00:00UTC]' =
-  tstzspan '[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]';
+SELECT tstzspan '[2001-01-01T00:00:00UTC, 2001-01-02T00:00:00UTC]' =
+  tstzspan '[2001-01-01 00:00:00+00, 2001-01-02 00:00:00+00]';
  ?column? 
 ----------
  t
@@ -42,409 +42,409 @@ SELECT asText(floatspan '[1.12345678, 2.123456789]', 6);
 /* Errors */
 SELECT asText(floatspan '[1.12345678, 2.123456789]', -6);
 ERROR:  The value cannot be negative: -6
-SELECT span(timestamptz '2000-01-01', '2000-01-02');
+SELECT span(timestamptz '2001-01-01', '2001-01-02');
                              span                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST)
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST)
 (1 row)
 
-SELECT span(timestamptz '2000-01-01', '2000-01-01', true, true);
+SELECT span(timestamptz '2001-01-01', '2001-01-01', true, true);
                              span                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
 /* Errors */
-SELECT span(timestamptz '2000-01-01', '2000-01-01');
+SELECT span(timestamptz '2001-01-01', '2001-01-01');
 ERROR:  Span cannot be empty
-SELECT span(timestamptz '2000-01-02', '2000-01-01');
+SELECT span(timestamptz '2001-01-02', '2001-01-01');
 ERROR:  Span lower bound must be less than or equal to span upper bound
-SELECT range(datespan '[2000-01-01,2000-01-01]');
+SELECT range(datespan '[2001-01-01,2001-01-01]');
           range          
 -------------------------
- [01-01-2000,01-02-2000)
+ [01-01-2001,01-02-2001)
 (1 row)
 
-SELECT range(datespan '[2000-01-01,2000-01-02]');
+SELECT range(datespan '[2001-01-01,2001-01-02]');
           range          
 -------------------------
- [01-01-2000,01-03-2000)
+ [01-01-2001,01-03-2001)
 (1 row)
 
-SELECT range(datespan '(2000-01-01,2000-01-02]');
+SELECT range(datespan '(2001-01-01,2001-01-02]');
           range          
 -------------------------
- [01-02-2000,01-03-2000)
+ [01-02-2001,01-03-2001)
 (1 row)
 
-SELECT range(datespan '[2000-01-01,2000-01-02)');
+SELECT range(datespan '[2001-01-01,2001-01-02)');
           range          
 -------------------------
- [01-01-2000,01-02-2000)
+ [01-01-2001,01-02-2001)
 (1 row)
 
-SELECT range(datespan '(2000-01-01,2000-01-03)');
+SELECT range(datespan '(2001-01-01,2001-01-03)');
           range          
 -------------------------
- [01-02-2000,01-03-2000)
+ [01-02-2001,01-03-2001)
 (1 row)
 
-SELECT span(daterange '[2000-01-01,2000-01-01]');
+SELECT span(daterange '[2001-01-01,2001-01-01]');
            span           
 --------------------------
- [01-01-2000, 01-02-2000)
+ [01-01-2001, 01-02-2001)
 (1 row)
 
-SELECT span(daterange '[2000-01-01,2000-01-02]');
+SELECT span(daterange '[2001-01-01,2001-01-02]');
            span           
 --------------------------
- [01-01-2000, 01-03-2000)
+ [01-01-2001, 01-03-2001)
 (1 row)
 
-SELECT span(daterange '(2000-01-01,2000-01-02]');
+SELECT span(daterange '(2001-01-01,2001-01-02]');
            span           
 --------------------------
- [01-02-2000, 01-03-2000)
+ [01-02-2001, 01-03-2001)
 (1 row)
 
-SELECT span(daterange '[2000-01-01,2000-01-02)');
+SELECT span(daterange '[2001-01-01,2001-01-02)');
            span           
 --------------------------
- [01-01-2000, 01-02-2000)
+ [01-01-2001, 01-02-2001)
 (1 row)
 
-SELECT span(daterange'(2000-01-01,2000-01-03)');
+SELECT span(daterange'(2001-01-01,2001-01-03)');
            span           
 --------------------------
- [01-02-2000, 01-03-2000)
+ [01-02-2001, 01-03-2001)
 (1 row)
 
-SELECT span(date '2000-01-01');
+SELECT span(date '2001-01-01');
            span           
 --------------------------
- [01-01-2000, 01-02-2000)
+ [01-01-2001, 01-02-2001)
 (1 row)
 
-SELECT date '2000-01-01'::datespan;
+SELECT date '2001-01-01'::datespan;
          datespan         
 --------------------------
- [01-01-2000, 01-02-2000)
+ [01-01-2001, 01-02-2001)
 (1 row)
 
-SELECT range(tstzspan '[2000-01-01,2000-01-01]');
+SELECT range(tstzspan '[2001-01-01,2001-01-01]');
                               range                              
 -----------------------------------------------------------------
- ["Sat Jan 01 00:00:00 2000 PST","Sat Jan 01 00:00:00 2000 PST"]
+ ["Mon Jan 01 00:00:00 2001 PST","Mon Jan 01 00:00:00 2001 PST"]
 (1 row)
 
-SELECT range(tstzspan '[2000-01-01,2000-01-02]');
+SELECT range(tstzspan '[2001-01-01,2001-01-02]');
                               range                              
 -----------------------------------------------------------------
- ["Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST"]
+ ["Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST"]
 (1 row)
 
-SELECT range(tstzspan '(2000-01-01,2000-01-02]');
+SELECT range(tstzspan '(2001-01-01,2001-01-02]');
                               range                              
 -----------------------------------------------------------------
- ("Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST"]
+ ("Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST"]
 (1 row)
 
-SELECT range(tstzspan '[2000-01-01,2000-01-02)');
+SELECT range(tstzspan '[2001-01-01,2001-01-02)');
                               range                              
 -----------------------------------------------------------------
- ["Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST")
+ ["Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST")
 (1 row)
 
-SELECT range(tstzspan '(2000-01-01,2000-01-02)');
+SELECT range(tstzspan '(2001-01-01,2001-01-02)');
                               range                              
 -----------------------------------------------------------------
- ("Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST")
+ ("Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST")
 (1 row)
 
-SELECT span(tstzrange '[2000-01-01,2000-01-01]');
+SELECT span(tstzrange '[2001-01-01,2001-01-01]');
                              span                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
-SELECT span(tstzrange '[2000-01-01,2000-01-02]');
+SELECT span(tstzrange '[2001-01-01,2001-01-02]');
                              span                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT span(tstzrange '(2000-01-01,2000-01-02]');
+SELECT span(tstzrange '(2001-01-01,2001-01-02]');
                              span                             
 --------------------------------------------------------------
- (Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ (Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT span(tstzrange '[2000-01-01,2000-01-02)');
+SELECT span(tstzrange '[2001-01-01,2001-01-02)');
                              span                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST)
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST)
 (1 row)
 
-SELECT span(tstzrange'(2000-01-01,2000-01-02)');
+SELECT span(tstzrange'(2001-01-01,2001-01-02)');
                              span                             
 --------------------------------------------------------------
- (Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST)
+ (Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST)
 (1 row)
 
-SELECT span(timestamptz '2000-01-01');
+SELECT span(timestamptz '2001-01-01');
                              span                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
-SELECT timestamptz '2000-01-01'::tstzspan;
+SELECT timestamptz '2001-01-01'::tstzspan;
                            tstzspan                           
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
-SELECT (date '2000-01-01'::timestamptz)::tstzspan;
+SELECT (date '2001-01-01'::timestamptz)::tstzspan;
                            tstzspan                           
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
-SELECT span(date '2000-01-01'::timestamptz);
+SELECT span(date '2001-01-01'::timestamptz);
                              span                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
 /* Errors */
-SELECT tstzrange '[2000-01-01,]'::tstzspan;
+SELECT tstzrange '[2001-01-01,]'::tstzspan;
 ERROR:  Range bounds cannot be infinite
-SELECT tstzrange '[,2000-01-01]'::tstzspan;
+SELECT tstzrange '[,2001-01-01]'::tstzspan;
 ERROR:  Range bounds cannot be infinite
 SELECT tstzrange 'empty'::tstzspan;
 ERROR:  Range cannot be empty
-SELECT lower(tstzspan '[2000-01-01,2000-01-01]');
+SELECT lower(tstzspan '[2001-01-01,2001-01-01]');
             lower             
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT lower(tstzspan '[2000-01-01,2000-01-02]');
+SELECT lower(tstzspan '[2001-01-01,2001-01-02]');
             lower             
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT lower(tstzspan '(2000-01-01,2000-01-02]');
+SELECT lower(tstzspan '(2001-01-01,2001-01-02]');
             lower             
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT lower(tstzspan '[2000-01-01,2000-01-02)');
+SELECT lower(tstzspan '[2001-01-01,2001-01-02)');
             lower             
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT lower(tstzspan '(2000-01-01,2000-01-02)');
+SELECT lower(tstzspan '(2001-01-01,2001-01-02)');
             lower             
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT upper(tstzspan '[2000-01-01,2000-01-01]');
+SELECT upper(tstzspan '[2001-01-01,2001-01-01]');
             upper             
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT upper(tstzspan '[2000-01-01,2000-01-02]');
+SELECT upper(tstzspan '[2001-01-01,2001-01-02]');
             upper             
 ------------------------------
- Sun Jan 02 00:00:00 2000 PST
+ Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT upper(tstzspan '(2000-01-01,2000-01-02]');
+SELECT upper(tstzspan '(2001-01-01,2001-01-02]');
             upper             
 ------------------------------
- Sun Jan 02 00:00:00 2000 PST
+ Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT upper(tstzspan '[2000-01-01,2000-01-02)');
+SELECT upper(tstzspan '[2001-01-01,2001-01-02)');
             upper             
 ------------------------------
- Sun Jan 02 00:00:00 2000 PST
+ Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT upper(tstzspan '(2000-01-01,2000-01-02)');
+SELECT upper(tstzspan '(2001-01-01,2001-01-02)');
             upper             
 ------------------------------
- Sun Jan 02 00:00:00 2000 PST
+ Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT lowerInc(tstzspan '[2000-01-01,2000-01-01]');
+SELECT lowerInc(tstzspan '[2001-01-01,2001-01-01]');
  lowerinc 
 ----------
  t
 (1 row)
 
-SELECT lowerInc(tstzspan '[2000-01-01,2000-01-02]');
+SELECT lowerInc(tstzspan '[2001-01-01,2001-01-02]');
  lowerinc 
 ----------
  t
 (1 row)
 
-SELECT lowerInc(tstzspan '(2000-01-01,2000-01-02]');
- lowerinc 
-----------
- f
-(1 row)
-
-SELECT lowerInc(tstzspan '[2000-01-01,2000-01-02)');
- lowerinc 
-----------
- t
-(1 row)
-
-SELECT lowerInc(tstzspan '(2000-01-01,2000-01-02)');
+SELECT lowerInc(tstzspan '(2001-01-01,2001-01-02]');
  lowerinc 
 ----------
  f
 (1 row)
 
-SELECT upperInc(tstzspan '[2000-01-01,2000-01-01]');
+SELECT lowerInc(tstzspan '[2001-01-01,2001-01-02)');
+ lowerinc 
+----------
+ t
+(1 row)
+
+SELECT lowerInc(tstzspan '(2001-01-01,2001-01-02)');
+ lowerinc 
+----------
+ f
+(1 row)
+
+SELECT upperInc(tstzspan '[2001-01-01,2001-01-01]');
  upperinc 
 ----------
  t
 (1 row)
 
-SELECT upperInc(tstzspan '[2000-01-01,2000-01-02]');
+SELECT upperInc(tstzspan '[2001-01-01,2001-01-02]');
  upperinc 
 ----------
  t
 (1 row)
 
-SELECT upperInc(tstzspan '(2000-01-01,2000-01-02]');
+SELECT upperInc(tstzspan '(2001-01-01,2001-01-02]');
  upperinc 
 ----------
  t
 (1 row)
 
-SELECT upperInc(tstzspan '[2000-01-01,2000-01-02)');
+SELECT upperInc(tstzspan '[2001-01-01,2001-01-02)');
  upperinc 
 ----------
  f
 (1 row)
 
-SELECT upperInc(tstzspan '(2000-01-01,2000-01-02)');
+SELECT upperInc(tstzspan '(2001-01-01,2001-01-02)');
  upperinc 
 ----------
  f
 (1 row)
 
-SELECT duration(tstzspan '[2000-01-01,2000-01-01]');
+SELECT duration(tstzspan '[2001-01-01,2001-01-01]');
  duration 
 ----------
  00:00:00
 (1 row)
 
-SELECT duration(tstzspan '[2000-01-01,2000-01-02]');
+SELECT duration(tstzspan '[2001-01-01,2001-01-02]');
  duration 
 ----------
  1 day
 (1 row)
 
-SELECT duration(tstzspan '(2000-01-01,2000-01-02]');
+SELECT duration(tstzspan '(2001-01-01,2001-01-02]');
  duration 
 ----------
  1 day
 (1 row)
 
-SELECT duration(tstzspan '[2000-01-01,2000-01-02)');
+SELECT duration(tstzspan '[2001-01-01,2001-01-02)');
  duration 
 ----------
  1 day
 (1 row)
 
-SELECT duration(tstzspan '(2000-01-01,2000-01-02)');
+SELECT duration(tstzspan '(2001-01-01,2001-01-02)');
  duration 
 ----------
  1 day
 (1 row)
 
-SELECT cmp(tstzspan '[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
+SELECT cmp(tstzspan '[2001-01-01,2001-01-01]', '(2001-01-01,2001-01-02)');
  cmp 
 -----
   -1
 (1 row)
 
-SELECT cmp(tstzspan '[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
+SELECT cmp(tstzspan '[2001-01-01, 2001-01-02]', '[2001-01-01, 2001-01-02)');
  cmp 
 -----
    1
 (1 row)
 
-SELECT tstzspan '[2000-01-01,2000-01-01]' = tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' = tstzspan '(2001-01-01,2001-01-02)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tstzspan '[2000-01-01,2000-01-01]' <> tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' <> tstzspan '(2001-01-01,2001-01-02)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzspan '[2000-01-01,2000-01-01]' < tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' < tstzspan '(2001-01-01,2001-01-02)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzspan '[2000-01-01,2000-01-01]' <= tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' <= tstzspan '(2001-01-01,2001-01-02)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzspan '[2000-01-01,2000-01-01]' > tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' > tstzspan '(2001-01-01,2001-01-02)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tstzspan '[2000-01-01,2000-01-01]' >= tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' >= tstzspan '(2001-01-01,2001-01-02)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tstzspan '[2000-01-01,2000-01-01]' = tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2001-01-01,2001-01-01]' = tstzspan '(2001-01-01,2001-01-02)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT hash(tstzspan '[2000-01-01,2000-01-02]') = hash(tstzspan '[2000-01-01,2000-01-02]');
+SELECT hash(tstzspan '[2001-01-01,2001-01-02]') = hash(tstzspan '[2001-01-01,2001-01-02]');
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT hash(tstzspan '[2000-01-01,2000-01-02]') <> hash(tstzspan '[2000-01-02,2000-01-02]');
+SELECT hash(tstzspan '[2001-01-01,2001-01-02]') <> hash(tstzspan '[2001-01-02,2001-01-02]');
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT hashExtended(tstzspan '[2000-01-01,2000-01-02]', 1) = hashExtended(tstzspan '[2000-01-01,2000-01-02]', 1);
+SELECT hashExtended(tstzspan '[2001-01-01,2001-01-02]', 1) = hashExtended(tstzspan '[2001-01-01,2001-01-02]', 1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT hashExtended(tstzspan '[2000-01-01,2000-01-02]', 1) <> hashExtended(tstzspan '[2000-01-02,2000-01-02]', 1);
+SELECT hashExtended(tstzspan '[2001-01-01,2001-01-02]', 1) <> hashExtended(tstzspan '[2001-01-02,2001-01-02]', 1);
  ?column? 
 ----------
  t
@@ -462,16 +462,16 @@ SELECT intspan '(1,2]';
  [2, 3)
 (1 row)
 
-SELECT datespan '[2000-01-01,2000-01-02]';
+SELECT datespan '[2001-01-01,2001-01-02]';
          datespan         
 --------------------------
- [01-01-2000, 01-03-2000)
+ [01-01-2001, 01-03-2001)
 (1 row)
 
-SELECT datespan '(2000-01-01,2000-01-02]';
+SELECT datespan '(2001-01-01,2001-01-02]';
          datespan         
 --------------------------
- [01-02-2000, 01-03-2000)
+ [01-02-2001, 01-03-2001)
 (1 row)
 
 SELECT expand(intspan '[1,1]', 1);
@@ -504,10 +504,10 @@ SELECT expand(bigintspan '[1,5]', -1);
  [2, 5)
 (1 row)
 
-SELECT expand(datespan '[2000-01-01,2000-01-02]', 1);
+SELECT expand(datespan '[2001-01-01,2001-01-02]', 1);
           expand          
 --------------------------
- [12-31-1999, 01-04-2000)
+ [12-31-2000, 01-04-2001)
 (1 row)
 
 SELECT expand(floatspan '[1,1]', 1);
@@ -546,37 +546,37 @@ SELECT expand(floatspan '(1,2)', -2);
  
 (1 row)
 
-SELECT expand(tstzspan '[2000-01-01,2000-01-01]', '1 day');
+SELECT expand(tstzspan '[2001-01-01,2001-01-01]', '1 day');
                             expand                            
 --------------------------------------------------------------
- [Fri Dec 31 00:00:00 1999 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Sun Dec 31 00:00:00 2000 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT expand(tstzspan '[2000-01-01,2000-01-02]', '1 day');
+SELECT expand(tstzspan '[2001-01-01,2001-01-02]', '1 day');
                             expand                            
 --------------------------------------------------------------
- [Fri Dec 31 00:00:00 1999 PST, Mon Jan 03 00:00:00 2000 PST]
+ [Sun Dec 31 00:00:00 2000 PST, Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT expand(tstzspan '(2000-01-01,2000-01-04]', '-1 day');
+SELECT expand(tstzspan '(2001-01-01,2001-01-04]', '-1 day');
                             expand                            
 --------------------------------------------------------------
- (Sun Jan 02 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]
+ (Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT expand(tstzspan '[2000-01-01,2000-01-03]', '-1 day');
+SELECT expand(tstzspan '[2001-01-01,2001-01-03]', '-1 day');
                             expand                            
 --------------------------------------------------------------
- [Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT expand(tstzspan '[2000-01-01,2000-01-03)', '-1 day');
+SELECT expand(tstzspan '[2001-01-01,2001-01-03)', '-1 day');
  expand 
 --------
  
 (1 row)
 
-SELECT expand(tstzspan '(2000-01-01,2000-01-02)', '-2 days');
+SELECT expand(tstzspan '(2001-01-01,2001-01-02)', '-2 days');
  expand 
 --------
  
@@ -588,40 +588,40 @@ SELECT shift(intspan '[1,2)', 2);
  [3, 4)
 (1 row)
 
-SELECT shift(datespan '[2000-01-01,2000-01-02)', 2);
+SELECT shift(datespan '[2001-01-01,2001-01-02)', 2);
           shift           
 --------------------------
- [01-03-2000, 01-04-2000)
+ [01-03-2001, 01-04-2001)
 (1 row)
 
-SELECT shift(tstzspan '[2000-01-01,2000-01-01]', '5 min');
+SELECT shift(tstzspan '[2001-01-01,2001-01-01]', '5 min');
                             shift                             
 --------------------------------------------------------------
- [Sat Jan 01 00:05:00 2000 PST, Sat Jan 01 00:05:00 2000 PST]
+ [Mon Jan 01 00:05:00 2001 PST, Mon Jan 01 00:05:00 2001 PST]
 (1 row)
 
-SELECT shift(tstzspan '[2000-01-01,2000-01-02]', '5 min');
+SELECT shift(tstzspan '[2001-01-01,2001-01-02]', '5 min');
                             shift                             
 --------------------------------------------------------------
- [Sat Jan 01 00:05:00 2000 PST, Sun Jan 02 00:05:00 2000 PST]
+ [Mon Jan 01 00:05:00 2001 PST, Tue Jan 02 00:05:00 2001 PST]
 (1 row)
 
-SELECT shift(tstzspan '(2000-01-01,2000-01-02]', '5 min');
+SELECT shift(tstzspan '(2001-01-01,2001-01-02]', '5 min');
                             shift                             
 --------------------------------------------------------------
- (Sat Jan 01 00:05:00 2000 PST, Sun Jan 02 00:05:00 2000 PST]
+ (Mon Jan 01 00:05:00 2001 PST, Tue Jan 02 00:05:00 2001 PST]
 (1 row)
 
-SELECT shift(tstzspan '[2000-01-01,2000-01-02)', '5 min');
+SELECT shift(tstzspan '[2001-01-01,2001-01-02)', '5 min');
                             shift                             
 --------------------------------------------------------------
- [Sat Jan 01 00:05:00 2000 PST, Sun Jan 02 00:05:00 2000 PST)
+ [Mon Jan 01 00:05:00 2001 PST, Tue Jan 02 00:05:00 2001 PST)
 (1 row)
 
-SELECT shift(tstzspan '(2000-01-01,2000-01-02)', '5 min');
+SELECT shift(tstzspan '(2001-01-01,2001-01-02)', '5 min');
                             shift                             
 --------------------------------------------------------------
- (Sat Jan 01 00:05:00 2000 PST, Sun Jan 02 00:05:00 2000 PST)
+ (Mon Jan 01 00:05:00 2001 PST, Tue Jan 02 00:05:00 2001 PST)
 (1 row)
 
 SELECT scale(intspan '[1,2)', 4);
@@ -630,40 +630,40 @@ SELECT scale(intspan '[1,2)', 4);
  [1, 6)
 (1 row)
 
-SELECT scale(datespan '[2000-01-01,2000-01-02)', 4);
+SELECT scale(datespan '[2001-01-01,2001-01-02)', 4);
           scale           
 --------------------------
- [01-01-2000, 01-06-2000)
+ [01-01-2001, 01-06-2001)
 (1 row)
 
-SELECT scale(tstzspan '[2000-01-01,2000-01-01]', '1 hour');
+SELECT scale(tstzspan '[2001-01-01,2001-01-01]', '1 hour');
                             scale                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
-SELECT scale(tstzspan '[2000-01-01,2000-01-02]', '1 hour');
+SELECT scale(tstzspan '[2001-01-01,2001-01-02]', '1 hour');
                             scale                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 01:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 01:00:00 2001 PST]
 (1 row)
 
-SELECT scale(tstzspan '(2000-01-01,2000-01-02]', '1 hour');
+SELECT scale(tstzspan '(2001-01-01,2001-01-02]', '1 hour');
                             scale                             
 --------------------------------------------------------------
- (Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 01:00:00 2000 PST]
+ (Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 01:00:00 2001 PST]
 (1 row)
 
-SELECT scale(tstzspan '[2000-01-01,2000-01-02)', '1 hour');
+SELECT scale(tstzspan '[2001-01-01,2001-01-02)', '1 hour');
                             scale                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 01:00:00 2000 PST)
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 01:00:00 2001 PST)
 (1 row)
 
-SELECT scale(tstzspan '(2000-01-01,2000-01-02)', '1 hour');
+SELECT scale(tstzspan '(2001-01-01,2001-01-02)', '1 hour');
                             scale                             
 --------------------------------------------------------------
- (Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 01:00:00 2000 PST)
+ (Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 01:00:00 2001 PST)
 (1 row)
 
 SELECT shiftScale(intspan '[1,2)', 4, 4);
@@ -672,40 +672,40 @@ SELECT shiftScale(intspan '[1,2)', 4, 4);
  [5, 10)
 (1 row)
 
-SELECT shiftScale(datespan '[2000-01-01,2000-01-02)', 4, 4);
+SELECT shiftScale(datespan '[2001-01-01,2001-01-02)', 4, 4);
         shiftscale        
 --------------------------
- [01-05-2000, 01-10-2000)
+ [01-05-2001, 01-10-2001)
 (1 row)
 
-SELECT shiftScale(tstzspan '[2000-01-01,2000-01-01]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2001-01-01,2001-01-01]', '5 min', '1 hour');
                           shiftscale                          
 --------------------------------------------------------------
- [Sat Jan 01 00:05:00 2000 PST, Sat Jan 01 00:05:00 2000 PST]
+ [Mon Jan 01 00:05:00 2001 PST, Mon Jan 01 00:05:00 2001 PST]
 (1 row)
 
-SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2001-01-01,2001-01-02]', '5 min', '1 hour');
                           shiftscale                          
 --------------------------------------------------------------
- [Sat Jan 01 00:05:00 2000 PST, Sat Jan 01 01:05:00 2000 PST]
+ [Mon Jan 01 00:05:00 2001 PST, Mon Jan 01 01:05:00 2001 PST]
 (1 row)
 
-SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2001-01-01,2001-01-02]', '5 min', '1 hour');
                           shiftscale                          
 --------------------------------------------------------------
- (Sat Jan 01 00:05:00 2000 PST, Sat Jan 01 01:05:00 2000 PST]
+ (Mon Jan 01 00:05:00 2001 PST, Mon Jan 01 01:05:00 2001 PST]
 (1 row)
 
-SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2001-01-01,2001-01-02)', '5 min', '1 hour');
                           shiftscale                          
 --------------------------------------------------------------
- [Sat Jan 01 00:05:00 2000 PST, Sat Jan 01 01:05:00 2000 PST)
+ [Mon Jan 01 00:05:00 2001 PST, Mon Jan 01 01:05:00 2001 PST)
 (1 row)
 
-SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2001-01-01,2001-01-02)', '5 min', '1 hour');
                           shiftscale                          
 --------------------------------------------------------------
- (Sat Jan 01 00:05:00 2000 PST, Sat Jan 01 01:05:00 2000 PST)
+ (Mon Jan 01 00:05:00 2001 PST, Mon Jan 01 01:05:00 2001 PST)
 (1 row)
 
 SELECT floor(floatspan '[1.5,2.5]');
@@ -882,61 +882,61 @@ SELECT 5.5 -|- floatspan '[3.5, 5.5]';
  t
 (1 row)
 
-SELECT datespan '[2000-01-03,2000-01-05)' <<# date '2000-01-05';
+SELECT datespan '[2001-01-03,2001-01-05)' <<# date '2001-01-05';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT date '2000-01-05' <<# datespan '[2000-01-03,2000-01-05)';
+SELECT date '2001-01-05' <<# datespan '[2001-01-03,2001-01-05)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT datespan '[2000-01-03,2000-01-05)' #>> date '2000-01-05';
+SELECT datespan '[2001-01-03,2001-01-05)' #>> date '2001-01-05';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT date '2000-01-05' #>> datespan '[2000-01-03,2000-01-05)';
+SELECT date '2001-01-05' #>> datespan '[2001-01-03,2001-01-05)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT datespan '[2000-01-03,2000-01-05)' &<# date '2000-01-05';
+SELECT datespan '[2001-01-03,2001-01-05)' &<# date '2001-01-05';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT date '2000-01-05' &<# datespan '[2000-01-03,2000-01-05)';
+SELECT date '2001-01-05' &<# datespan '[2001-01-03,2001-01-05)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT datespan '[2000-01-03,2000-01-05)' #&> date '2000-01-05';
+SELECT datespan '[2001-01-03,2001-01-05)' #&> date '2001-01-05';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT date '2000-01-05' #&> datespan '[2000-01-03,2000-01-05)';
+SELECT date '2001-01-05' #&> datespan '[2001-01-03,2001-01-05)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT datespan '[2000-01-03,2000-01-05)' -|- date '2000-01-05';
+SELECT datespan '[2001-01-03,2001-01-05)' -|- date '2001-01-05';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT date '2000-01-05' -|- datespan '[2000-01-03,2000-01-05)';
+SELECT date '2001-01-05' -|- datespan '[2001-01-03,2001-01-05)';
  ?column? 
 ----------
  t

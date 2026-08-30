@@ -92,7 +92,7 @@ DROP TABLE IF EXISTS test;
 CREATE TABLE test(t) AS
 WITH test(t) AS (
   SELECT span(day, day + interval '1 hour')
-  FROM generate_series(timestamptz '2000-01-01', timestamptz '2000-04-01', '1 day') AS day )
+  FROM generate_series(timestamptz '2001-01-01', timestamptz '2001-04-01', '1 day') AS day )
 SELECT spanset(array_agg(t)) FROM test;
 SELECT t::stbox FROM test;
 DROP TABLE test;

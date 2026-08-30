@@ -28,37 +28,37 @@
 -------------------------------------------------------------------------------
 
 -- Maximum decimal digits
-SELECT asText(tfloat '0.123456789@2000-01-01', 6);
-SELECT asText(tfloat '{0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03}', 6);
-SELECT asText(tfloat '[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03]', 6);
-SELECT asText(tfloat '{[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03],[3.723456789@2000-01-04, 3.723456789@2000-01-05]}', 6);
-SELECT asText(tfloat 'Interp=Step;[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03]', 6);
-SELECT asText(tfloat 'Interp=Step;{[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03],[3.723456789@2000-01-04, 3.723456789@2000-01-05]}', 6);
+SELECT asText(tfloat '0.123456789@2001-01-01', 6);
+SELECT asText(tfloat '{0.123456789@2001-01-01, 1.523456789@2001-01-02, 0.123456789@2001-01-03}', 6);
+SELECT asText(tfloat '[0.123456789@2001-01-01, 1.523456789@2001-01-02, 0.123456789@2001-01-03]', 6);
+SELECT asText(tfloat '{[0.123456789@2001-01-01, 1.523456789@2001-01-02, 0.123456789@2001-01-03],[3.723456789@2001-01-04, 3.723456789@2001-01-05]}', 6);
+SELECT asText(tfloat 'Interp=Step;[0.123456789@2001-01-01, 1.523456789@2001-01-02, 0.123456789@2001-01-03]', 6);
+SELECT asText(tfloat 'Interp=Step;{[0.123456789@2001-01-01, 1.523456789@2001-01-02, 0.123456789@2001-01-03],[3.723456789@2001-01-04, 3.723456789@2001-01-05]}', 6);
 
 -- Array of temporal values
 SELECT asText('{}'::tfloat[]);
-SELECT asText(ARRAY[tbool 'true@2000-01-01']);
-SELECT asText(ARRAY[tint '1@2000-01-01']);
-SELECT asText(ARRAY[tfloat '1@2000-01-01']);
-SELECT asText(ARRAY[ttext 'ABC@2000-01-01']);
+SELECT asText(ARRAY[tbool 'true@2001-01-01']);
+SELECT asText(ARRAY[tint '1@2001-01-01']);
+SELECT asText(ARRAY[tfloat '1@2001-01-01']);
+SELECT asText(ARRAY[ttext 'ABC@2001-01-01']);
 
 -------------------------------------------------------------------------------
 -- Additional pretty-print attribute
 -- Notice that the Linux and Mac versions of json_c produce slightly different versions of the pretty-print JSON
-SELECT tintFromMFJSON(asMFJSON(tint '1@2000-01-01', 1, 3));
-SELECT tintFromMFJSON(asMFJSON(tint '{1@2000-01-01, 2@2000-01-02}', 1, 3));
-SELECT tintFromMFJSON(asMFJSON(tint '[1@2000-01-01, 2@2000-01-02]', 1, 3));
-SELECT tintFromMFJSON(asMFJSON(tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 3@2000-01-04]}', 1, 3));
+SELECT tintFromMFJSON(asMFJSON(tint '1@2001-01-01', 1, 3));
+SELECT tintFromMFJSON(asMFJSON(tint '{1@2001-01-01, 2@2001-01-02}', 1, 3));
+SELECT tintFromMFJSON(asMFJSON(tint '[1@2001-01-01, 2@2001-01-02]', 1, 3));
+SELECT tintFromMFJSON(asMFJSON(tint '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 3@2001-01-04]}', 1, 3));
 
-SELECT tfloatFromMFJSON(asMFJSON(tfloat '1@2000-01-01', 1, 3, 15));
-SELECT tfloatFromMFJSON(asMFJSON(tfloat '{1@2000-01-01, 2@2000-01-02}', 1, 3, 15));
-SELECT tfloatFromMFJSON(asMFJSON(tfloat '[1@2000-01-01, 2@2000-01-02]', 1, 3, 15));
-SELECT tfloatFromMFJSON(asMFJSON(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 3@2000-01-04]}', 1, 3, 15));
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '1@2001-01-01', 1, 3, 15));
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '{1@2001-01-01, 2@2001-01-02}', 1, 3, 15));
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '[1@2001-01-01, 2@2001-01-02]', 1, 3, 15));
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 3@2001-01-04]}', 1, 3, 15));
 
-SELECT ttextFromMFJSON(asMFJSON(ttext 'AAA@2000-01-01', 1, 5));
-SELECT ttextFromMFJSON(asMFJSON(ttext '{AAA@2000-01-01, BBB@2000-01-02}', 1, 5));
-SELECT ttextFromMFJSON(asMFJSON(ttext '[AAA@2000-01-01, BBB@2000-01-02]', 1, 5));
-SELECT ttextFromMFJSON(asMFJSON(ttext '{[AAA@2000-01-01, BBB@2000-01-02], [CCC@2000-01-03, CCC@2000-01-04]}', 1, 5));
+SELECT ttextFromMFJSON(asMFJSON(ttext 'AAA@2001-01-01', 1, 5));
+SELECT ttextFromMFJSON(asMFJSON(ttext '{AAA@2001-01-01, BBB@2001-01-02}', 1, 5));
+SELECT ttextFromMFJSON(asMFJSON(ttext '[AAA@2001-01-01, BBB@2001-01-02]', 1, 5));
+SELECT ttextFromMFJSON(asMFJSON(ttext '{[AAA@2001-01-01, BBB@2001-01-02], [CCC@2001-01-03, CCC@2001-01-04]}', 1, 5));
 
 -------------------------------------------------------------------------------
 -- Combination of input/output functions

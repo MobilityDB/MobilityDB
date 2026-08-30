@@ -48,9 +48,9 @@
 -------------------------------------------------------------------------------
 
 -- Test for NULL inputs since the functions are STRICT
-SELECT eContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT eContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2001-01-01');
 SELECT eContains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
-SELECT tContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2001-01-01');
 SELECT tContains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
 
 -------------------------------------------------------------------------------

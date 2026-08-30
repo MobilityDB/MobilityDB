@@ -65,59 +65,59 @@ SELECT geometry 'SRID=5676;Point(1 0)' <-> pose 'Pose(Point(4 0),0)';
 -- tDistance
 -------------------------------------------------------------------------------
 
-SELECT round(tDistance(geometry 'Point(1 0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(tDistance(pose 'Pose(Point(1 0),0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(tDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', geometry 'Point(1 0)'), 6);
-SELECT round(tDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', pose 'Pose(Point(1 0),0)'), 6);
+SELECT round(tDistance(geometry 'Point(1 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
+SELECT round(tDistance(pose 'Pose(Point(1 0),0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
+SELECT round(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Point(1 0)'), 6);
+SELECT round(tDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', pose 'Pose(Point(1 0),0)'), 6);
 SELECT round(tDistance(
-  tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  tpose '[Pose(Point(0 2),0)@2000-01-01, Pose(Point(4 2),0)@2000-01-05]'), 6);
+  tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  tpose '[Pose(Point(0 2),0)@2001-01-01, Pose(Point(4 2),0)@2001-01-05]'), 6);
 
 -------------------------------------------------------------------------------
 -- nearestApproachInstant
 -------------------------------------------------------------------------------
 
-SELECT asText(nearestApproachInstant(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT asText(nearestApproachInstant(pose 'Pose(Point(2 0),0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT asText(nearestApproachInstant(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', geometry 'Point(2 0)'));
-SELECT asText(nearestApproachInstant(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', pose 'Pose(Point(2 0),0)'));
+SELECT asText(nearestApproachInstant(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'));
+SELECT asText(nearestApproachInstant(pose 'Pose(Point(2 0),0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'));
+SELECT asText(nearestApproachInstant(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Point(2 0)'));
+SELECT asText(nearestApproachInstant(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', pose 'Pose(Point(2 0),0)'));
 SELECT asText(nearestApproachInstant(
-  tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  tpose '[Pose(Point(0 2),0)@2000-01-01, Pose(Point(4 2),0)@2000-01-05]'));
+  tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  tpose '[Pose(Point(0 2),0)@2001-01-01, Pose(Point(4 2),0)@2001-01-05]'));
 
 -------------------------------------------------------------------------------
 -- nearestApproachDistance
 -------------------------------------------------------------------------------
 
-SELECT round(nearestApproachDistance(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(nearestApproachDistance(pose 'Pose(Point(2 0),0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', geometry 'Point(2 0)'), 6);
-SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', stbox 'STBOX X((1,-1),(3,1))'), 6);
-SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', pose 'Pose(Point(2 0),0)'), 6);
+SELECT round(nearestApproachDistance(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
+SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
+SELECT round(nearestApproachDistance(pose 'Pose(Point(2 0),0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
+SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Point(2 0)'), 6);
+SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', stbox 'STBOX X((1,-1),(3,1))'), 6);
+SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', pose 'Pose(Point(2 0),0)'), 6);
 
 -- A box carrying a period measures the part of the temporal pose inside it
-SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2000-01-01, 2000-01-03])'), 6);
-SELECT round(nearestApproachDistance(stbox 'STBOX XT(((10,-1),(12,1)),[2000-01-01, 2000-01-03])', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
+SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2001-01-01, 2001-01-03])'), 6);
+SELECT round(nearestApproachDistance(stbox 'STBOX XT(((10,-1),(12,1)),[2001-01-01, 2001-01-03])', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'), 6);
 -- The same box with no period measures the whole temporal pose
-SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', stbox 'STBOX X((10,-1),(12,1))'), 6);
+SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', stbox 'STBOX X((10,-1),(12,1))'), 6);
 -- No part of the temporal pose is inside the period
-SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2000-02-01, 2000-02-02])'), 6);
+SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2001-02-01, 2001-02-02])'), 6);
 SELECT round(nearestApproachDistance(
-  tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  tpose '[Pose(Point(0 2),0)@2000-01-01, Pose(Point(4 2),0)@2000-01-05]'), 6);
+  tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  tpose '[Pose(Point(0 2),0)@2001-01-01, Pose(Point(4 2),0)@2001-01-05]'), 6);
 
 -------------------------------------------------------------------------------
 -- shortestLine
 -------------------------------------------------------------------------------
 
-SELECT ST_AsText(shortestLine(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT ST_AsText(shortestLine(pose 'Pose(Point(2 0),0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT ST_AsText(shortestLine(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', geometry 'Point(2 0)'));
-SELECT ST_AsText(shortestLine(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', pose 'Pose(Point(2 0),0)'));
+SELECT ST_AsText(shortestLine(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'));
+SELECT ST_AsText(shortestLine(pose 'Pose(Point(2 0),0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'));
+SELECT ST_AsText(shortestLine(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Point(2 0)'));
+SELECT ST_AsText(shortestLine(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', pose 'Pose(Point(2 0),0)'));
 SELECT ST_AsText(shortestLine(
-  tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  tpose '[Pose(Point(0 2),0)@2000-01-01, Pose(Point(4 2),0)@2000-01-05]'));
+  tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  tpose '[Pose(Point(0 2),0)@2001-01-01, Pose(Point(4 2),0)@2001-01-05]'));
 
 -------------------------------------------------------------------------------
 -- Table queries

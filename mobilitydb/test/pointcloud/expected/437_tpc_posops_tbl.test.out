@@ -72,7 +72,7 @@ SELECT bool_and(NOT (temp #>> temp)) FROM tbl_tpcpatch;
 
 SELECT COUNT(*) FROM tbl_tpcpoint
 WHERE temp << tpcbox_zt(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2000-01-01, 2030-01-01]', 1, 0);
+  tstzspan '[2001-01-01, 2030-01-01]', 1, 0);
  count 
 -------
      0
@@ -80,7 +80,7 @@ WHERE temp << tpcbox_zt(-200, -200, -200, 200, 200, 200,
 
 SELECT COUNT(*) FROM tbl_tpcpoint
 WHERE tpcbox_zt(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2000-01-01, 2030-01-01]', 1, 0) >> temp;
+  tstzspan '[2001-01-01, 2030-01-01]', 1, 0) >> temp;
  count 
 -------
      0

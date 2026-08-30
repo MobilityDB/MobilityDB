@@ -254,7 +254,7 @@ SELECT ST_SRID(applyPose(geometry 'Point(1 2)', pose 'Pose(Point(0 0), 0)'));
 SELECT applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
   pose 'SRID=5676;Pose(Point(0 0), 0)');
 SELECT applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
-  tpose 'SRID=5676;Pose(Point(0 0), 0)@2000-01-01');
+  tpose 'SRID=5676;Pose(Point(0 0), 0)@2001-01-01');
 
 -- Quaternion drift tolerance. Real sensor-fusion clients (IMUs, AR/VR
 -- runtimes, physics engines) deliver quaternions with |q|=1+e where e

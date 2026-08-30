@@ -35,10 +35,10 @@
 -- Input and output
 -------------------------------------------------------------------------------
 
-SELECT asText(ts2cell '47c3c3@2000-01-01');
-SELECT asText(ts2cell '{47c3c3@2000-01-01, 54b5c9@2000-01-02}');
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
-SELECT asText(ts2cell '{[47c3c3@2000-01-01, 54b5c9@2000-01-02],[47c3c3@2000-01-03]}');
+SELECT asText(ts2cell '47c3c3@2001-01-01');
+SELECT asText(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}');
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT asText(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}');
 
 -------------------------------------------------------------------------------
 -- Interpolation
@@ -47,39 +47,39 @@ SELECT asText(ts2cell '{[47c3c3@2000-01-01, 54b5c9@2000-01-02],[47c3c3@2000-01-0
 -- a linear one is refused.
 -------------------------------------------------------------------------------
 
-SELECT interp(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
-SELECT interp(ts2cell '{47c3c3@2000-01-01, 54b5c9@2000-01-02}');
-SELECT asText(ts2cell 'Interp=Step;[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT interp(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT interp(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}');
+SELECT asText(ts2cell 'Interp=Step;[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
 
 -------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT asText(ts2cell(s2cell '47c3c3', timestamptz '2000-01-01'));
-SELECT asText(ts2cellInst(ts2cell '[47c3c3@2000-01-01]'));
-SELECT asText(ts2cellSeq(ARRAY[ts2cell '47c3c3@2000-01-01', ts2cell '54b5c9@2000-01-02']));
-SELECT asText(ts2cell(s2cell '47c3c3', tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(ts2cell(s2cell '47c3c3', timestamptz '2001-01-01'));
+SELECT asText(ts2cellInst(ts2cell '[47c3c3@2001-01-01]'));
+SELECT asText(ts2cellSeq(ARRAY[ts2cell '47c3c3@2001-01-01', ts2cell '54b5c9@2001-01-02']));
+SELECT asText(ts2cell(s2cell '47c3c3', tstzspan '[2001-01-01, 2001-01-02]'));
 
 -------------------------------------------------------------------------------
 -- Accessors
 -------------------------------------------------------------------------------
 
-SELECT tempSubtype(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
-SELECT tempBasetype(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
-SELECT startValue(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
-SELECT endValue(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
-SELECT getValues(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
-SELECT numInstants(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
-SELECT valueAtTimestamp(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', '2000-01-01 12:00');
-SELECT duration(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT tempSubtype(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT tempBasetype(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT startValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT endValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT getValues(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT numInstants(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT valueAtTimestamp(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', '2001-01-01 12:00');
+SELECT duration(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
 
 -------------------------------------------------------------------------------
 -- Restrictions
 -------------------------------------------------------------------------------
 
-SELECT asText(atValue(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3'));
-SELECT asText(minusValue(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3'));
-SELECT asText(atTime(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', tstzspan '[2000-01-01, 2000-01-01 12:00]'));
+SELECT asText(atValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3'));
+SELECT asText(minusValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3'));
+SELECT asText(atTime(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', tstzspan '[2001-01-01, 2001-01-01 12:00]'));
 
 -------------------------------------------------------------------------------
 -- Conversions
@@ -88,10 +88,10 @@ SELECT asText(atTime(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', tstzspan 
 -- ASSIGNMENT so it must be spelled out.
 -------------------------------------------------------------------------------
 
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'::tbigint);
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'::tbigint::ts2cell);
-SELECT ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'::tbigint::ts2cell
-  = ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]';
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint);
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint::ts2cell);
+SELECT ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint::ts2cell
+  = ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]';
 
 -------------------------------------------------------------------------------
 -- Time spans
@@ -100,9 +100,9 @@ SELECT ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'::tbigint::ts2cell
 -- answers are those of its time dimension, as th3index and tquadbin answer.
 -------------------------------------------------------------------------------
 
-SELECT spans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]');
-SELECT splitNSpans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]', 2);
-SELECT splitEachNSpans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]', 2);
+SELECT spans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]');
+SELECT splitNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
+SELECT splitEachNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
 
 -------------------------------------------------------------------------------
 -- Comparisons
@@ -115,10 +115,10 @@ SELECT splitEachNSpans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]', 2);
 -- way.
 -------------------------------------------------------------------------------
 
-SELECT ts2cell '[47c3c3@2000-01-01]' = ts2cell '[47c3c3@2000-01-01]';
-SELECT ts2cell '[47c3c3@2000-01-01]' <> ts2cell '[54b5c9@2000-01-01]';
-SELECT cmp(ts2cell '[47c3c3@2000-01-01]', ts2cell '[47c3c3@2000-01-01]');
+SELECT ts2cell '[47c3c3@2001-01-01]' = ts2cell '[47c3c3@2001-01-01]';
+SELECT ts2cell '[47c3c3@2001-01-01]' <> ts2cell '[54b5c9@2001-01-01]';
+SELECT cmp(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]');
 SELECT s2cell '47c3c3' < s2cell '54b5c9';
-SELECT cmp(ts2cell '[47c3c3@2000-01-01]', ts2cell '[54b5c9@2000-01-01]');
+SELECT cmp(ts2cell '[47c3c3@2001-01-01]', ts2cell '[54b5c9@2001-01-01]');
 
 -------------------------------------------------------------------------------

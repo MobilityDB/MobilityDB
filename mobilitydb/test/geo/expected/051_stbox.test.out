@@ -141,9 +141,9 @@ SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2)';
 ERROR:  invalid input syntax for type timestamp with time zone: "1"
 LINE 1: SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2)';
                      ^
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02]';
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02]';
 ERROR:  Could not parse stbox value: Missing closing parenthesis
-LINE 1: SELECT stbox 'STBOX T([2000-01-01, 2000-01-02]';
+LINE 1: SELECT stbox 'STBOX T([2001-01-01, 2001-01-02]';
                      ^
 SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2,2001-01-03)';
 ERROR:  invalid input syntax for type timestamp with time zone: "1"
@@ -178,22 +178,22 @@ SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_stbox3d_tmp;
 DROP TABLE
-SELECT asText(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)),[2000-01-01,2000-01-02])', 6);
+SELECT asText(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)),[2001-01-01,2001-01-02])', 6);
                                                       astext                                                      
 ------------------------------------------------------------------------------------------------------------------
- STBOX XT(((1.123457,1.234568),(2.123457,2.123457)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+ STBOX XT(((1.123457,1.234568),(2.123457,2.123457)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxFromBinary(asBinary(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2000-01-01, 2000-01-01])'));
+SELECT stboxFromBinary(asBinary(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
                                             stboxfrombinary                                             
 --------------------------------------------------------------------------------------------------------
- SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
+ SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxFromHexWKB(asHexWKB(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2000-01-01, 2000-01-01])'));
+SELECT stboxFromHexWKB(asHexWKB(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
                                             stboxfromhexwkb                                             
 --------------------------------------------------------------------------------------------------------
- SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
+ SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromBinary(asBinary(b)) <> b;
@@ -304,114 +304,114 @@ SELECT geodstboxZT(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
  SRID=4326;GEODSTBOX ZT(((3,2,1),(6,5,4)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])'::tstzspan;
+SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])'::tstzspan;
                            tstzspan                           
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'::tstzspan;
+SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])'::tstzspan;
                            tstzspan                           
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::tstzspan;
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02])'::tstzspan;
                            tstzspan                           
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::box2d;
+SELECT stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05])'::box2d;
     box2d     
 --------------
  BOX(1 1,5 5)
 (1 row)
 
-SELECT stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::box3d;
+SELECT stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])'::box3d;
        box3d        
 --------------------
  BOX3D(1 1 1,5 5 5)
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05])'::geometry);
                 st_asewkt                 
 ------------------------------------------
  SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2001-01-01,2001-01-05])'::geometry);
            st_asewkt           
 -------------------------------
  SRID=4326;LINESTRING(1 1,1 5)
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,1)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,1)),[2001-01-01,2001-01-05])'::geometry);
            st_asewkt           
 -------------------------------
  SRID=4326;LINESTRING(1 1,5 1)
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-05])'::geometry);
       st_asewkt       
 ----------------------
  SRID=4326;POINT(1 1)
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])'::geometry);
                                                                                                                 st_asewkt                                                                                                                 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;POLYHEDRALSURFACE(((1 1 1,1 5 1,5 5 1,5 1 1,1 1 1)),((1 1 5,5 1 5,5 5 5,1 5 5,1 1 5)),((1 1 1,1 1 5,1 5 5,1 5 1,1 1 1)),((5 1 1,5 5 1,5 5 5,5 1 5,5 1 1)),((1 1 1,5 1 1,5 1 5,1 1 5,1 1 1)),((1 5 1,1 5 5,5 5 5,5 5 1,1 5 1)))
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,5,5)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,5,5)),[2001-01-01,2001-01-05])'::geometry);
                      st_asewkt                      
 ----------------------------------------------------
  SRID=4326;POLYGON((1 1 1,1 5 1,1 5 5,1 1 5,1 1 1))
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,5)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,5)),[2001-01-01,2001-01-05])'::geometry);
                      st_asewkt                      
 ----------------------------------------------------
  SRID=4326;POLYGON((1 1 1,5 1 1,5 1 5,1 1 5,1 1 1))
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,1)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,1)),[2001-01-01,2001-01-05])'::geometry);
                      st_asewkt                      
 ----------------------------------------------------
  SRID=4326;POLYGON((1 1 1,1 5 1,5 5 1,5 1 1,1 1 1))
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,5)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,5)),[2001-01-01,2001-01-05])'::geometry);
              st_asewkt             
 -----------------------------------
  SRID=4326;LINESTRING(1 1 1,1 1 5)
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,5,1)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,5,1)),[2001-01-01,2001-01-05])'::geometry);
              st_asewkt             
 -----------------------------------
  SRID=4326;LINESTRING(1 1 1,1 5 1)
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,1)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,1)),[2001-01-01,2001-01-05])'::geometry);
              st_asewkt             
 -----------------------------------
  SRID=4326;LINESTRING(1 1 1,5 1 1)
 (1 row)
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2001-01-01,2001-01-05])'::geometry);
        st_asewkt        
 ------------------------
  SRID=4326;POINT(1 1 1)
 (1 row)
 
 /* Errors */
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box2d;
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02])'::box2d;
 ERROR:  The stbox must have X dimension
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box3d;
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02])'::box3d;
 ERROR:  The stbox must have X dimension
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02])'::geometry;
 ERROR:  The stbox must have X dimension
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;
 ERROR:  The stbox must have T dimension
@@ -603,224 +603,224 @@ SELECT perimeter(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
         48
 (1 row)
 
-SELECT xmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT xmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  xmin 
 ------
     1
 (1 row)
 
-SELECT ymin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT ymin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  ymin 
 ------
     2
 (1 row)
 
-SELECT zmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT zmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  zmin 
 ------
      
 (1 row)
 
-SELECT tmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT tmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
              tmin             
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tminInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT tminInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  tmininc 
 ---------
  t
 (1 row)
 
-SELECT xmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT xmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  xmax 
 ------
     3
 (1 row)
 
-SELECT ymax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT ymax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  ymax 
 ------
     4
 (1 row)
 
-SELECT zmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT zmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  zmax 
 ------
      
 (1 row)
 
-SELECT tmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT tmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
              tmax             
 ------------------------------
- Sun Jan 02 00:00:00 2000 PST
+ Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT tmaxInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT tmaxInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  tmaxinc 
 ---------
  t
 (1 row)
 
-SELECT area(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT area(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  area 
 ------
     4
 (1 row)
 
-SELECT perimeter(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT perimeter(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
  perimeter 
 -----------
          8
 (1 row)
 
-SELECT xmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT xmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
  xmin 
 ------
     1
 (1 row)
 
-SELECT ymin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT ymin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
  ymin 
 ------
     2
 (1 row)
 
-SELECT zmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT zmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
  zmin 
 ------
     3
 (1 row)
 
-SELECT tmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT tmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
              tmin             
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT xmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT xmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
  xmax 
 ------
     4
 (1 row)
 
-SELECT ymax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT ymax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
  ymax 
 ------
     5
 (1 row)
 
-SELECT zmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT zmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
  zmax 
 ------
     6
 (1 row)
 
-SELECT tmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT tmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
              tmax             
 ------------------------------
- Sun Jan 02 00:00:00 2000 PST
+ Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT area(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT area(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
  area 
 ------
     9
 (1 row)
 
-SELECT volume(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT volume(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
  volume 
 --------
      27
 (1 row)
 
-SELECT perimeter(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT perimeter(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
  perimeter 
 -----------
         48
 (1 row)
 
-SELECT xmin(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT xmin(stbox 'STBOX T([2001-01-01, 2001-01-02])');
  xmin 
 ------
      
 (1 row)
 
-SELECT ymin(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT ymin(stbox 'STBOX T([2001-01-01, 2001-01-02])');
  ymin 
 ------
      
 (1 row)
 
-SELECT zmin(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT zmin(stbox 'STBOX T([2001-01-01, 2001-01-02])');
  zmin 
 ------
      
 (1 row)
 
-SELECT tmin(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT tmin(stbox 'STBOX T([2001-01-01, 2001-01-02])');
              tmin             
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT xmax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT xmax(stbox 'STBOX T([2001-01-01, 2001-01-02])');
  xmax 
 ------
      
 (1 row)
 
-SELECT ymax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT ymax(stbox 'STBOX T([2001-01-01, 2001-01-02])');
  ymax 
 ------
      
 (1 row)
 
-SELECT zmax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT zmax(stbox 'STBOX T([2001-01-01, 2001-01-02])');
  zmax 
 ------
      
 (1 row)
 
-SELECT tmax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT tmax(stbox 'STBOX T([2001-01-01, 2001-01-02])');
              tmax             
 ------------------------------
- Sun Jan 02 00:00:00 2000 PST
+ Tue Jan 02 00:00:00 2001 PST
 (1 row)
 
-SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'), 1);
+SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])'), 1);
      round      
 ----------------
  110593375170.3
 (1 row)
 
-SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false), 1);
+SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])', false), 1);
      round      
 ----------------
  111083945187.3
 (1 row)
 
-SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'), 1);
+SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])'), 1);
    round   
 -----------
  1329924.2
 (1 row)
 
-SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false), 1);
+SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])', false), 1);
   round  
 ---------
  1332868
 (1 row)
 
 /* Errors */
-SELECT area(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT area(stbox 'STBOX T([2001-01-01, 2001-01-02])');
 ERROR:  The stbox must have X dimension
-SELECT volume(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT volume(stbox 'STBOX T([2001-01-01, 2001-01-02])');
 ERROR:  The stbox must have X dimension
-SELECT volume(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT volume(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
 ERROR:  The stbox must have Z dimension
-SELECT perimeter(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT perimeter(stbox 'STBOX T([2001-01-01, 2001-01-02])');
 ERROR:  The stbox must have X dimension
 SELECT round(stbox 'STBOX X((1.12345,1.12345),(2.12345,2.12345))', 2);
               round               
@@ -828,10 +828,10 @@ SELECT round(stbox 'STBOX X((1.12345,1.12345),(2.12345,2.12345))', 2);
  STBOX X((1.12,1.12),(2.12,2.12))
 (1 row)
 
-SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),[2000-01-01,2000-01-02])', 2);
+SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
                                               round                                               
 --------------------------------------------------------------------------------------------------
- STBOX XT(((1.12,1.12),(2.12,2.12)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+ STBOX XT(((1.12,1.12),(2.12,2.12)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
 SELECT round(stbox 'STBOX Z((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))', 2);
@@ -840,22 +840,22 @@ SELECT round(stbox 'STBOX Z((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))
  STBOX Z((1.12,1.12,1.12),(2.12,2.12,2.12))
 (1 row)
 
-SELECT round(stbox 'STBOX ZT(((1.12345,1.12345,1.123451),(2.12345,2.12345,2.12345)),[2000-01-01,2000-01-02])', 2);
+SELECT round(stbox 'STBOX ZT(((1.12345,1.12345,1.123451),(2.12345,2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
                                                    round                                                    
 ------------------------------------------------------------------------------------------------------------
- STBOX ZT(((1.12,1.12,1.12),(2.12,2.12,2.12)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+ STBOX ZT(((1.12,1.12,1.12),(2.12,2.12,2.12)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT round(stbox 'GEODSTBOX ZT(((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345)),[2000-01-01,2000-01-02])', 2);
+SELECT round(stbox 'GEODSTBOX ZT(((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
                                                           round                                                           
 --------------------------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX ZT(((1.12,1.12,1.12),(2.12,2.12,2.12)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+ SRID=4326;GEODSTBOX ZT(((1.12,1.12,1.12),(2.12,2.12,2.12)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
 /* Errors */
-SELECT round(stbox 'STBOX T([2000-01-01,2000-01-02])', 2);
+SELECT round(stbox 'STBOX T([2001-01-01,2001-01-02])', 2);
 ERROR:  The stbox must have X dimension
-SELECT round(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])', 2);
+SELECT round(stbox 'GEODSTBOX T([2001-01-01,2001-01-02])', 2);
 ERROR:  The stbox must have X dimension
 SELECT MIN(xmin(b)) FROM tbl_stbox;
    min    
@@ -905,123 +905,123 @@ SELECT MAX(tmax(b)) FROM tbl_stbox;
  Sat Dec 22 15:29:00 2001 PST
 (1 row)
 
-SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day');
+SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '1 day');
                                       shifttime                                       
 --------------------------------------------------------------------------------------
- STBOX XT(((1,1),(2,2)),[Sun Jan 02 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST])
+ STBOX XT(((1,1),(2,2)),[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
-SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '-1 day');
+SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '-1 day');
                                       shifttime                                       
 --------------------------------------------------------------------------------------
- STBOX XT(((1,1),(2,2)),[Fri Dec 31 00:00:00 1999 PST, Sat Jan 01 00:00:00 2000 PST])
+ STBOX XT(((1,1),(2,2)),[Sun Dec 31 00:00:00 2000 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day');
+SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '1 day');
                                       scaletime                                       
 --------------------------------------------------------------------------------------
- STBOX XT(((1,1),(2,2)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+ STBOX XT(((1,1),(2,2)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 hour');
+SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '1 hour');
                                       scaletime                                       
 --------------------------------------------------------------------------------------
- STBOX XT(((1,1),(2,2)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 01:00:00 2000 PST])
+ STBOX XT(((1,1),(2,2)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 01:00:00 2001 PST])
 (1 row)
 
-SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day', '1 hour');
+SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '1 day', '1 hour');
                                     shiftscaletime                                    
 --------------------------------------------------------------------------------------
- STBOX XT(((1,1),(2,2)),[Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 01:00:00 2000 PST])
+ STBOX XT(((1,1),(2,2)),[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 01:00:00 2001 PST])
 (1 row)
 
-SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '-1 day', '1 hour');
+SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '-1 day', '1 hour');
                                     shiftscaletime                                    
 --------------------------------------------------------------------------------------
- STBOX XT(((1,1),(2,2)),[Fri Dec 31 00:00:00 1999 PST, Fri Dec 31 01:00:00 1999 PST])
+ STBOX XT(((1,1),(2,2)),[Sun Dec 31 00:00:00 2000 PST, Sun Dec 31 01:00:00 2000 PST])
 (1 row)
 
-SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
        getspace       
 ----------------------
  STBOX X((1,2),(1,2))
 (1 row)
 
 /* Errors */
-SELECT getSpace(stbox 'STBOX T([2000-01-01,2000-01-01])');
+SELECT getSpace(stbox 'STBOX T([2001-01-01,2001-01-01])');
 ERROR:  The stbox must have X dimension
-SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', 2.0);
+SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])', 2.0);
                                       expandspace                                      
 ---------------------------------------------------------------------------------------
- STBOX XT(((-1,0),(3,4)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
+ STBOX XT(((-1,0),(3,4)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-01])', -0.5);
+SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-01])', -0.5);
                                          expandspace                                          
 ----------------------------------------------------------------------------------------------
- STBOX XT(((1.5,1.5),(1.5,1.5)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
+ STBOX XT(((1.5,1.5),(1.5,1.5)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', '1 day');
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])', '1 day');
                                       expandtime                                      
 --------------------------------------------------------------------------------------
- STBOX XT(((1,2),(1,2)),[Fri Dec 31 00:00:00 1999 PST, Sun Jan 02 00:00:00 2000 PST])
+ STBOX XT(((1,2),(1,2)),[Sun Dec 31 00:00:00 2000 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02])', '-12 hours');
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-02])', '-12 hours');
                                       expandtime                                      
 --------------------------------------------------------------------------------------
- STBOX XT(((1,2),(1,2)),[Sat Jan 01 12:00:00 2000 PST, Sat Jan 01 12:00:00 2000 PST])
+ STBOX XT(((1,2),(1,2)),[Mon Jan 01 12:00:00 2001 PST, Mon Jan 01 12:00:00 2001 PST])
 (1 row)
 
-SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(1.0,1.0)),[2000-01-01,2000-01-01])', -0.5);
+SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(1.0,1.0)),[2001-01-01,2001-01-01])', -0.5);
  expandspace 
 -------------
  
 (1 row)
 
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02))', '-12 hours');
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-02))', '-12 hours');
  expandtime 
 ------------
  
 (1 row)
 
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02])', '-1 day');
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-02])', '-1 day');
  expandtime 
 ------------
  
 (1 row)
 
 /* Errors */
-SELECT expandSpace(stbox 'STBOX T([2000-01-01,2000-01-01])', 2.0);
+SELECT expandSpace(stbox 'STBOX T([2001-01-01,2001-01-01])', 2.0);
 ERROR:  The stbox must have X dimension
 SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
 ERROR:  The stbox must have T dimension
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
  ?column? 
 ----------
  f
@@ -1033,31 +1033,31 @@ SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' ~= stbox 'STBOX Z((1.0,1.0,1
  f
 (1 row)
 
-SELECT overlaps(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT overlaps(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
  overlaps 
 ----------
  t
 (1 row)
 
-SELECT contains(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT contains(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
  contains 
 ----------
  t
 (1 row)
 
-SELECT contained(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT contained(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
  contained 
 -----------
  f
 (1 row)
 
-SELECT adjacent(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT adjacent(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
  adjacent 
 ----------
  t
 (1 row)
 
-SELECT same(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT same(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
  same 
 ------
  f
@@ -1069,19 +1069,19 @@ SELECT stbox 'STBOX Z((0 0 0),(2 2 2))' -|- stbox 'STBOX Z((1 1 1),(3 3 3))';
  f
 (1 row)
 
-SELECT tstzspan '[2000-01-01, 2000-01-02]'::stbox -|- tstzspan '[2000-01-02, 2000-01-03]'::stbox;
+SELECT tstzspan '[2001-01-01, 2001-01-02]'::stbox -|- tstzspan '[2001-01-02, 2001-01-03]'::stbox;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05))' -|- stbox 'STBOX XT(((1,1),(5,5)),[2000-01-05,2000-01-09])';
+SELECT stbox 'STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05))' -|- stbox 'STBOX XT(((1,1),(5,5)),[2001-01-05,2001-01-09])';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])' -|- stbox 'STBOX XT(((5,1),(9,5)),[2000-06-01,2000-06-05])';
+SELECT stbox 'STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05])' -|- stbox 'STBOX XT(((5,1),(9,5)),[2001-06-01,2001-06-05])';
  ?column? 
 ----------
  f
@@ -1116,15 +1116,15 @@ SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'GEODSTBOX Z((1.0,2.0,3.0)
 ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 ERROR:  Operation on mixed planar and geodetic coordinates
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX T([2000-01-01, 2000-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX T([2001-01-01, 2001-01-02])';
 ERROR:  The temporal values must have at least one common dimension
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'STBOX T([2000-01-01, 2000-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'STBOX T([2001-01-01, 2001-01-02])';
 ERROR:  The temporal values must have at least one common dimension
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'STBOX T([2000-01-01, 2000-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'STBOX T([2001-01-01, 2001-01-02])';
 ERROR:  The temporal values must have at least one common dimension
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'STBOX T([2000-01-01, 2000-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'STBOX T([2001-01-01, 2001-01-02])';
 ERROR:  The temporal values must have at least one common dimension
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'STBOX T([2000-01-01, 2000-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'STBOX T([2001-01-01, 2001-01-02])';
 ERROR:  The temporal values must have at least one common dimension
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b;
  count 
@@ -1787,12 +1787,12 @@ SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_stbox t1, tbl_stbox t2;
 (1 row)
 
 WITH test(box) AS (
-  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(2,2))[2000-01-01,2000-01-02])' UNION ALL
-  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(3,3))[2000-01-01,2000-01-03])' )
+  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(2,2))[2001-01-01,2001-01-02])' UNION ALL
+  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(3,3))[2001-01-01,2001-01-03])' )
 SELECT extent(box) FROM test;
                                         extent                                        
 --------------------------------------------------------------------------------------
- STBOX XT(((1,1),(3,3)),[Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST])
+ STBOX XT(((1,1),(3,3)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
 set parallel_setup_cost=0;

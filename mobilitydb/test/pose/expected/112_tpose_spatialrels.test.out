@@ -1,4 +1,4 @@
-SELECT eContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.1)@2000-01-01');
+SELECT eContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.1)@2001-01-01');
  econtains 
 -----------
  
@@ -16,7 +16,7 @@ SELECT aDwithin(NULL::tpose, geometry 'Point(1 1)', 1.0);
  
 (1 row)
 
-SELECT eDwithin(tpose 'Pose(Point(1 1), 0.1)@2000-01-01', NULL::geometry, 1.0);
+SELECT eDwithin(tpose 'Pose(Point(1 1), 0.1)@2001-01-01', NULL::geometry, 1.0);
  edwithin 
 ----------
  

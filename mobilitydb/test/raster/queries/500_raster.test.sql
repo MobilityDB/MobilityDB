@@ -57,8 +57,8 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-  POINT(2.5 2.5)@2000-01-02, POINT(0.5 0.5)@2000-01-03]', r)::text AS result
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r)::text AS result
 FROM rast;
 
 -- One instant outside the raster extent is silently dropped.
@@ -75,8 +75,8 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-  POINT(5.5 5.5)@2000-01-02, POINT(0.5 0.5)@2000-01-03]', r)::text AS result
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(5.5 5.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r)::text AS result
 FROM rast;
 
 -- An instant on a nodata pixel is dropped, as one outside the extent is: the
@@ -94,8 +94,8 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-  POINT(1.5 2.5)@2000-01-02, POINT(0.5 0.5)@2000-01-03]', r)::text AS result
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(1.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r)::text AS result
 FROM rast;
 
 -- All instants outside the raster → NULL.
@@ -111,8 +111,8 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(5.5 5.5)@2000-01-01,
-  POINT(6.5 6.5)@2000-01-02]', r)::text AS result
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(5.5 5.5)@2001-01-01,
+  POINT(6.5 6.5)@2001-01-02]', r)::text AS result
 FROM rast;
 
 -- Single-instant trajectory.
@@ -130,7 +130,7 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2000-01-01}', r)::text AS result
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r)::text AS result
 FROM rast;
 
 -------------------------------------------------------------------------------
@@ -154,8 +154,8 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT asText(atRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-  POINT(1.5 1.5)@2000-01-02, POINT(0.5 0.5)@2000-01-03]', r,
+SELECT asText(atRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(1.5 1.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r,
   floatspan '[40, 90]'))::text AS result
 FROM rast;
 
@@ -173,7 +173,7 @@ WITH rast AS (
   ) AS r
 )
 SELECT asText(minusRasterValue(
-  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01, POINT(1.5 1.5)@2000-01-02, POINT(0.5 0.5)@2000-01-03]',
+  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01, POINT(1.5 1.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]',
   r, floatspan '[40, 90]'))::text AS result
 FROM rast;
 
@@ -192,10 +192,10 @@ WITH rast AS (
   ) AS r
 )
 SELECT
-  eRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-    POINT(0.5 0.5)@2000-01-02]', r, floatspan '[70, 90]') AS e_true,
-  eRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-    POINT(0.5 0.5)@2000-01-02]', r, floatspan '[80, 90]') AS e_false
+  eRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+    POINT(0.5 0.5)@2001-01-02]', r, floatspan '[70, 90]') AS e_true,
+  eRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+    POINT(0.5 0.5)@2001-01-02]', r, floatspan '[80, 90]') AS e_false
 FROM rast;
 
 -- aRasterValue([70,90]): traj2 has 10 not in range → false.
@@ -213,10 +213,10 @@ WITH rast AS (
   ) AS r
 )
 SELECT
-  aRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-    POINT(0.5 0.5)@2000-01-02]', r, floatspan '[70, 90]') AS a_false,
-  aRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-    POINT(0.5 0.5)@2000-01-02]', r, floatspan '[0, 100]') AS a_true
+  aRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+    POINT(0.5 0.5)@2001-01-02]', r, floatspan '[70, 90]') AS a_false,
+  aRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+    POINT(0.5 0.5)@2001-01-02]', r, floatspan '[0, 100]') AS a_true
 FROM rast;
 
 -------------------------------------------------------------------------------

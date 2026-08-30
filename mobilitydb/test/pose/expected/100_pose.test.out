@@ -518,7 +518,7 @@ SELECT applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
   pose 'SRID=5676;Pose(Point(0 0), 0)');
 ERROR:  SRID of geometry (4326) and temporal type (5676) must correspond
 SELECT applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
-  tpose 'SRID=5676;Pose(Point(0 0), 0)@2000-01-01');
+  tpose 'SRID=5676;Pose(Point(0 0), 0)@2001-01-01');
 ERROR:  SRID of geometry (4326) and temporal type (5676) must correspond
 SELECT asEWKT(pose(0::float, 0::float, 0::float, 1.0000005::float, 0::float, 0::float, 0::float, 0));
             asewkt             

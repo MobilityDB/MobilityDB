@@ -47,10 +47,10 @@
 -------------------------------------------------------------------------------
 
 -- Test for NULL inputs since the functions are STRICT
-SELECT eContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.1)@2000-01-01');
+SELECT eContains(NULL::geometry, tpose 'Pose(Point(1 1), 0.1)@2001-01-01');
 SELECT eContains(geometry 'Point(1 1)', NULL::tpose);
 SELECT aDwithin(NULL::tpose, geometry 'Point(1 1)', 1.0);
-SELECT eDwithin(tpose 'Pose(Point(1 1), 0.1)@2000-01-01', NULL::geometry, 1.0);
+SELECT eDwithin(tpose 'Pose(Point(1 1), 0.1)@2001-01-01', NULL::geometry, 1.0);
 
 -------------------------------------------------------------------------------
 -- Every declared cell agrees with the cast written out by hand, on the

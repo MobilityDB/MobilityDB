@@ -4,19 +4,19 @@ SELECT traversedArea(NULL::tcbuffer);
  
 (1 row)
 
-SELECT ST_AsText(traversedArea(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01'));
+SELECT ST_AsText(traversedArea(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01'));
                     st_astext                    
 -------------------------------------------------
  CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
 (1 row)
 
-SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1),0.3)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]'));
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02]'));
                     st_astext                    
 -------------------------------------------------
  CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
 (1 row)
 
-SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.3)@2000-01-02]'));
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(1 1),0.3)@2001-01-02]'));
                     st_astext                    
 -------------------------------------------------
  CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
@@ -34,42 +34,42 @@ SELECT minusGeometry(NULL::tcbuffer, geometry 'Point(1 1)');
  
 (1 row)
 
-SELECT atGeometry(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL::geometry);
+SELECT atGeometry(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', NULL::geometry);
  atgeometry 
 ------------
  
 (1 row)
 
-SELECT asText(atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', geometry 'Point(1.5 1)'));
+SELECT asText(atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2001-01-01', geometry 'Point(1.5 1)'));
                        astext                       
 ----------------------------------------------------
- Cbuffer(POINT(1 1),1)@Sat Jan 01 00:00:00 2000 PST
+ Cbuffer(POINT(1 1),1)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', geometry 'Point(5 5)');
+SELECT atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2001-01-01', geometry 'Point(5 5)');
  atgeometry 
 ------------
  
 (1 row)
 
 SELECT getTime(atGeometry(
-  tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-05]',
+  tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-05]',
   geometry 'Polygon((1.5 0.5,2.5 0.5,2.5 1.5,1.5 1.5,1.5 0.5))'));
                                    gettime                                    
 ------------------------------------------------------------------------------
- {[Sat Jan 01 15:12:55.405113 2000 PST, Tue Jan 04 08:47:04.594887 2000 PST]}
+ {[Mon Jan 01 15:12:55.405113 2001 PST, Thu Jan 04 08:47:04.594887 2001 PST]}
 (1 row)
 
 SELECT getTime(minusGeometry(
-  tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-05]',
+  tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-05]',
   geometry 'Polygon((1.5 0.5,2.5 0.5,2.5 1.5,1.5 1.5,1.5 0.5))'));
                                                                   gettime                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------
- {[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 15:12:55.405113 2000 PST), (Tue Jan 04 08:47:04.594887 2000 PST, Wed Jan 05 00:00:00 2000 PST]}
+ {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 15:12:55.405113 2001 PST), (Thu Jan 04 08:47:04.594887 2001 PST, Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT atGeometry(
-  tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-05]',
+  tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-05]',
   geometry 'Point(2 50)');
  atgeometry 
 ------------
@@ -77,11 +77,11 @@ SELECT atGeometry(
 (1 row)
 
 SELECT getTime(minusGeometry(
-  tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-05]',
+  tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),1)@2001-01-05]',
   geometry 'Point(2 50)'));
                             gettime                             
 ----------------------------------------------------------------
- {[Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST]}
+ {[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asText(atGeometry(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffer(Point(4 4), 0)@2001-01-04]', 'Polygon((2 2,2 3,3 3,3 2,2 2))'));
@@ -102,22 +102,22 @@ SELECT centroid(NULL::tcbuffer);
  
 (1 row)
 
-SELECT asText(centroid(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01'));
+SELECT asText(centroid(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01'));
                  astext                  
 -----------------------------------------
- POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+ POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(centroid(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}'));
+SELECT asText(centroid(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03}'));
                                                            astext                                                            
 -----------------------------------------------------------------------------------------------------------------------------
- {POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST}
+ {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(3 3),0.5)@2000-01-03]'));
+SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 3),0.5)@2001-01-03]'));
                                        astext                                       
 ------------------------------------------------------------------------------------
- [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(3 3)@Mon Jan 03 00:00:00 2000 PST]
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(3 3)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT convexHull(NULL::tcbuffer);
@@ -126,13 +126,13 @@ SELECT convexHull(NULL::tcbuffer);
  
 (1 row)
 
-SELECT ST_GeometryType(convexHull(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01'));
+SELECT ST_GeometryType(convexHull(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01'));
  st_geometrytype 
 -----------------
  ST_CurvePolygon
 (1 row)
 
-SELECT ST_GeometryType(convexHull(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(3 3),0.5)@2000-01-03]'));
+SELECT ST_GeometryType(convexHull(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 3),0.5)@2001-01-03]'));
  st_geometrytype 
 -----------------
  ST_CurvePolygon

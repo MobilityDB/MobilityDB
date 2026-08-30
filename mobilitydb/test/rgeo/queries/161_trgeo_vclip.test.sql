@@ -66,51 +66,51 @@ SELECT round(vClipPolyPoly(
 -------------------------------------------------------------------------------
 
 SELECT round(vClipTpolyPoint(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01',
   'Point(0.5 0.5)'::geometry,
-  timestamptz '2000-01-01'), 6);
+  timestamptz '2001-01-01'), 6);
 SELECT round(vClipTpolyPoint(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2000-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2001-01-01',
   'Point(0.5 0.5)'::geometry,
-  timestamptz '2000-01-01'), 6);
+  timestamptz '2001-01-01'), 6);
 
 -------------------------------------------------------------------------------
 -- vClipTpolyPoly (trgeometry × static polygon at given timestamptz)
 -------------------------------------------------------------------------------
 
 SELECT round(vClipTpolyPoly(
-  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(0 0),0)@2000-01-01',
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(0 0),0)@2001-01-01',
   'Polygon((1 1,3 1,3 3,1 3,1 1))'::geometry,
-  timestamptz '2000-01-01'), 6);
+  timestamptz '2001-01-01'), 6);
 SELECT round(vClipTpolyPoly(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2000-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2001-01-01',
   'Polygon((1 1,3 1,3 3,1 3,1 1))'::geometry,
-  timestamptz '2000-01-01'), 6);
+  timestamptz '2001-01-01'), 6);
 
 -------------------------------------------------------------------------------
 -- vClip (trgeometry × tgeompoint at given timestamptz)
 -------------------------------------------------------------------------------
 
 SELECT round(vClip(
-  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(0 0),0)@2000-01-01',
-  tgeompoint 'Point(1 1)@2000-01-01',
-  timestamptz '2000-01-01'), 6);
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(0 0),0)@2001-01-01',
+  tgeompoint 'Point(1 1)@2001-01-01',
+  timestamptz '2001-01-01'), 6);
 SELECT round(vClip(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2000-01-01',
-  tgeompoint 'Point(1 1)@2000-01-01',
-  timestamptz '2000-01-01'), 6);
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2001-01-01',
+  tgeompoint 'Point(1 1)@2001-01-01',
+  timestamptz '2001-01-01'), 6);
 
 -------------------------------------------------------------------------------
 -- vClip (trgeometry × trgeometry at given timestamptz)
 -------------------------------------------------------------------------------
 
 SELECT round(vClip(
-  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(0 0),0)@2000-01-01',
-  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(1 1),0)@2000-01-01',
-  timestamptz '2000-01-01'), 6);
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(0 0),0)@2001-01-01',
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(1 1),0)@2001-01-01',
+  timestamptz '2001-01-01'), 6);
 SELECT round(vClip(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2000-01-01',
-  timestamptz '2000-01-01'), 6);
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2001-01-01',
+  timestamptz '2001-01-01'), 6);
 
 -------------------------------------------------------------------------------

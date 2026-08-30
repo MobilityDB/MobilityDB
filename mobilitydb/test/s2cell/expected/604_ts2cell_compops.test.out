@@ -1,54 +1,54 @@
-SELECT eEq(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3');
+SELECT eEq(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
  eeq 
 -----
  t
 (1 row)
 
-SELECT aEq(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3');
+SELECT aEq(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
  aeq 
 -----
  f
 (1 row)
 
-SELECT aEq(ts2cell '[47c3c3@2000-01-01, 47c3c3@2000-01-02]', s2cell '47c3c3');
+SELECT aEq(ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]', s2cell '47c3c3');
  aeq 
 -----
  t
 (1 row)
 
-SELECT eNe(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3');
+SELECT eNe(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
  ene 
 -----
  t
 (1 row)
 
-SELECT eEq(s2cell '54b5c9', ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT eEq(s2cell '54b5c9', ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
  eeq 
 -----
  t
 (1 row)
 
-SELECT eEq(ts2cell '[47c3c3@2000-01-01]', ts2cell '[47c3c3@2000-01-01]');
+SELECT eEq(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]');
  eeq 
 -----
  t
 (1 row)
 
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]' #= s2cell '47c3c3');
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]' #= s2cell '47c3c3');
                               astext                              
 ------------------------------------------------------------------
- [t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]
+ [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]' #<> s2cell '47c3c3');
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]' #<> s2cell '47c3c3');
                               astext                              
 ------------------------------------------------------------------
- [f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST]
+ [f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(s2cell '47c3c3' #= ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT asText(s2cell '47c3c3' #= ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
                               astext                              
 ------------------------------------------------------------------
- [t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]
+ [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 

@@ -6,17 +6,17 @@ SELECT extent(temp) FROM (VALUES
 (1 row)
 
 SELECT extent(temp) FROM (VALUES
-(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
+(NULL::tstzset),('{2001-01-01}'::tstzset)) t(temp);
                             extent                            
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
 SELECT extent(temp) FROM (VALUES
-('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
+('{2001-01-01}'::tstzset),(NULL::tstzset)) t(temp);
                             extent                            
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
 SELECT extent(temp) FROM (VALUES
@@ -27,17 +27,17 @@ SELECT extent(temp) FROM (VALUES
 (1 row)
 
 SELECT extent(temp) FROM (VALUES
-(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
+(NULL::tstzspan),('[2001-01-01, 2001-01-02]'::tstzspan)) t(temp);
                             extent                            
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT extent(temp) FROM (VALUES
-('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
+('[2001-01-01, 2001-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
                             extent                            
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT extent(temp) FROM (VALUES
@@ -48,17 +48,17 @@ SELECT extent(temp) FROM (VALUES
 (1 row)
 
 SELECT extent(temp) FROM (VALUES
-(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
+(NULL::tstzspanset),('{[2001-01-01, 2001-01-02]}'::tstzspanset)) t(temp);
                             extent                            
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT extent(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
+('{[2001-01-01, 2001-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
                             extent                            
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT extent(t) FROM tbl_timestamptz;
@@ -207,17 +207,17 @@ SELECT tcount(temp) FROM (VALUES
 (1 row)
 
 SELECT tcount(temp) FROM (VALUES
-(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
+(NULL::tstzset),('{2001-01-01}'::tstzset)) t(temp);
               tcount              
 ----------------------------------
- {1@Sat Jan 01 00:00:00 2000 PST}
+ {1@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
 SELECT tcount(temp) FROM (VALUES
-('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
+('{2001-01-01}'::tstzset),(NULL::tstzset)) t(temp);
               tcount              
 ----------------------------------
- {1@Sat Jan 01 00:00:00 2000 PST}
+ {1@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
 SELECT tcount(temp) FROM (VALUES
@@ -228,17 +228,17 @@ SELECT tcount(temp) FROM (VALUES
 (1 row)
 
 SELECT tcount(temp) FROM (VALUES
-(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
+(NULL::tstzspan),('[2001-01-01, 2001-01-02]'::tstzspan)) t(temp);
                                tcount                               
 --------------------------------------------------------------------
- {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
+ {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tcount(temp) FROM (VALUES
-('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
+('[2001-01-01, 2001-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
                                tcount                               
 --------------------------------------------------------------------
- {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
+ {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tcount(temp) FROM (VALUES
@@ -249,17 +249,17 @@ SELECT tcount(temp) FROM (VALUES
 (1 row)
 
 SELECT tcount(temp) FROM (VALUES
-(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
+(NULL::tstzspanset),('{[2001-01-01, 2001-01-02]}'::tstzspanset)) t(temp);
                                tcount                               
 --------------------------------------------------------------------
- {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
+ {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tcount(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
+('{[2001-01-01, 2001-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
                                tcount                               
 --------------------------------------------------------------------
- {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
+ {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
@@ -294,17 +294,17 @@ SELECT setUnion(temp) FROM (VALUES
 (1 row)
 
 SELECT setUnion(temp) FROM (VALUES
-(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
+(NULL::tstzset),('{2001-01-01}'::tstzset)) t(temp);
              setunion             
 ----------------------------------
- {"Sat Jan 01 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST"}
 (1 row)
 
 SELECT setUnion(temp) FROM (VALUES
-('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
+('{2001-01-01}'::tstzset),(NULL::tstzset)) t(temp);
              setunion             
 ----------------------------------
- {"Sat Jan 01 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST"}
 (1 row)
 
 SELECT spanUnion(temp) FROM (VALUES
@@ -315,17 +315,17 @@ SELECT spanUnion(temp) FROM (VALUES
 (1 row)
 
 SELECT spanUnion(temp) FROM (VALUES
-(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
+(NULL::tstzspan),('[2001-01-01, 2001-01-02]'::tstzspan)) t(temp);
                            spanunion                            
 ----------------------------------------------------------------
- {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 SELECT spanUnion(temp) FROM (VALUES
-('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
+('[2001-01-01, 2001-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
                            spanunion                            
 ----------------------------------------------------------------
- {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 SELECT spansetUnion(temp) FROM (VALUES
@@ -336,64 +336,64 @@ SELECT spansetUnion(temp) FROM (VALUES
 (1 row)
 
 SELECT spansetUnion(temp) FROM (VALUES
-(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
+(NULL::tstzspanset),('{[2001-01-01, 2001-01-02]}'::tstzspanset)) t(temp);
                           spansetunion                          
 ----------------------------------------------------------------
- {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 SELECT spansetUnion(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
+('{[2001-01-01, 2001-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
                           spansetunion                          
 ----------------------------------------------------------------
- {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
 SELECT setUnion(temp) FROM (VALUES
-('{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}'::tstzset),
-('{2000-01-02, 2000-01-06}'::tstzset)) t(temp);
+('{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}'::tstzset),
+('{2001-01-02, 2001-01-06}'::tstzset)) t(temp);
                                                                                              setunion                                                                                             
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"Sat Jan 01 00:00:00 2000 PST", "Sun Jan 02 00:00:00 2000 PST", "Mon Jan 03 00:00:00 2000 PST", "Wed Jan 05 00:00:00 2000 PST", "Thu Jan 06 00:00:00 2000 PST", "Fri Jan 07 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST", "Tue Jan 02 00:00:00 2001 PST", "Wed Jan 03 00:00:00 2001 PST", "Fri Jan 05 00:00:00 2001 PST", "Sat Jan 06 00:00:00 2001 PST", "Sun Jan 07 00:00:00 2001 PST"}
 (1 row)
 
 SELECT spanUnion(temp) FROM (VALUES
-('[2000-01-01, 2000-01-03]'::tstzspan),
-('[2000-01-02, 2000-01-06]'::tstzspan)) t(temp);
+('[2001-01-01, 2001-01-03]'::tstzspan),
+('[2001-01-02, 2001-01-06]'::tstzspan)) t(temp);
                            spanunion                            
 ----------------------------------------------------------------
- {[Sat Jan 01 00:00:00 2000 PST, Thu Jan 06 00:00:00 2000 PST]}
+ {[Mon Jan 01 00:00:00 2001 PST, Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
 SELECT spansetUnion(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-03]}'::tstzspanset),
-('{[2000-01-02, 2000-01-06]}'::tstzspanset)) t(temp);
+('{[2001-01-01, 2001-01-03]}'::tstzspanset),
+('{[2001-01-02, 2001-01-06]}'::tstzspanset)) t(temp);
                           spansetunion                          
 ----------------------------------------------------------------
- {[Sat Jan 01 00:00:00 2000 PST, Thu Jan 06 00:00:00 2000 PST]}
+ {[Mon Jan 01 00:00:00 2001 PST, Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
 WITH Temp(t) AS (
-  SELECT tstzset '{2000-01-01}' UNION
-  SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-04}'
+  SELECT tstzset '{2001-01-01}' UNION
+  SELECT tstzset '{2001-01-01, 2001-01-02, 2001-01-04}'
 )
 SELECT setUnion(t) FROM Temp;
                                              setunion                                             
 --------------------------------------------------------------------------------------------------
- {"Sat Jan 01 00:00:00 2000 PST", "Sun Jan 02 00:00:00 2000 PST", "Tue Jan 04 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST", "Tue Jan 02 00:00:00 2001 PST", "Thu Jan 04 00:00:00 2001 PST"}
 (1 row)
 
 WITH Temp(t) AS (
   SELECT set(array_agg(t))
-  FROM generate_series(timestamp '2000-01-01 00:00', timestamp '2000-01-01 00:30', interval '1 sec') t
+  FROM generate_series(timestamp '2001-01-01 00:00', timestamp '2001-01-01 00:30', interval '1 sec') t
   UNION
   SELECT set(array_agg(t))
-  FROM generate_series(timestamp '2000-01-01 00:15', timestamp '2000-01-01 00:45', interval '1 sec') t
+  FROM generate_series(timestamp '2001-01-01 00:15', timestamp '2001-01-01 00:45', interval '1 sec') t
 )
 SELECT startValue(setUnion(t)) FROM Temp;
           startvalue          
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT numValues(setUnion(t)) FROM tbl_timestamptz;

@@ -378,7 +378,7 @@ SELECT jsonbsetPathExistsTz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"uni
 (1 row)
 
 /* .datetime() casts a JSON string to a date/time value for comparison */
-SELECT jsonbsetPathExistsTz(jsonbset '{"{\"d\": \"2001-01-01\"}", "{\"d\": \"1999-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+SELECT jsonbsetPathExistsTz(jsonbset '{"{\"d\": \"2003-01-01\"}", "{\"d\": \"2001-01-01\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
  jsonbsetpathexiststz 
 ----------------------
  {t,t}
@@ -415,27 +415,27 @@ SELECT jsonbsetPathMatchTz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"unit
 (1 row)
 
 /* .datetime() casts a JSON string to a date/time value for comparison */
-SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2001-01-01\"}", "{\"d\": \"1999-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2003-01-01\"}", "{\"d\": \"2001-01-01\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
  jsonbsetpathmatch 
 -------------------
  {f,t}
 (1 row)
 
 /* Every datetime comparison in a session parses its format afresh */
-SELECT jsonbsetPathMatchTz(jsonbset '{"{\"d\": \"2001-01-01\"}", "{\"d\": \"1999-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+SELECT jsonbsetPathMatchTz(jsonbset '{"{\"d\": \"2003-01-01\"}", "{\"d\": \"2001-01-01\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
  jsonbsetpathmatchtz 
 ---------------------
  {f,t}
 (1 row)
 
-SELECT jsonbsetPathExists(jsonbset '{"{\"d\": \"2001-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+SELECT jsonbsetPathExists(jsonbset '{"{\"d\": \"2003-01-01\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
  jsonbsetpathexists 
 --------------------
  {t}
 (1 row)
 
 /* Each ISO format is tried in turn, so an input any of them describes parses */
-SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2001-01-01T12:00:00\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2003-01-01T12:00:00\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
  jsonbsetpathmatch 
 -------------------
  {t}
@@ -448,9 +448,9 @@ SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"12:30:45\"}"}', '$.d.datetime() >
 (1 row)
 
 /* Errors */
-SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"not a date\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"not a date\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
 ERROR:  datetime format is not recognized: "not a date"
-SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"d\": \"2001-01-01\"}"}', '$.d.datetime("HH24:MI:SS")');
+SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"d\": \"2003-01-01\"}"}', '$.d.datetime("HH24:MI:SS")');
 ERROR:  unmatched format separator ":"
 /* A path matching nothing is unknown, that is, false, for every element */
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);

@@ -64,7 +64,7 @@ SELECT stbox 'STBOX T((1, 2, 2001-01-03),()';
 SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1)';
 SELECT stbox 'STBOX Z((1, 2, 3),(1,2)';
 SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2)';
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02]';
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02]';
 SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2,2001-01-03)';
 SELECT stbox 'SRID=4326;STBOX T(((),()),[2001-01-04,2001-01-08])';
 SELECT stbox 'SRID=4326;GEODSTBOX ZT(((5,6,7),(1,2,3)),[2001-01-08,2001-01-04])';
@@ -84,10 +84,10 @@ DROP TABLE tbl_stbox3d_tmp;
 -------------------------------------------------------------------------------
 
 -- Maximum decimal digits
-SELECT asText(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)),[2000-01-01,2000-01-02])', 6);
+SELECT asText(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)),[2001-01-01,2001-01-02])', 6);
 
-SELECT stboxFromBinary(asBinary(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2000-01-01, 2000-01-01])'));
-SELECT stboxFromHexWKB(asHexWKB(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2000-01-01, 2000-01-01])'));
+SELECT stboxFromBinary(asBinary(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
+SELECT stboxFromHexWKB(asHexWKB(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
 
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
@@ -119,29 +119,29 @@ SELECT geodstboxZT(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
 -- Conversions
 -------------------------------------------------------------------------------
 
-SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])'::tstzspan;
-SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'::tstzspan;
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::tstzspan;
+SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])'::tstzspan;
+SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])'::tstzspan;
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02])'::tstzspan;
 
-SELECT stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::box2d;
-SELECT stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::box3d;
+SELECT stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05])'::box2d;
+SELECT stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])'::box3d;
 
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,1)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,5,5)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,5)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,1)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,5)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,5,1)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,1)),[2000-01-01,2000-01-05])'::geometry);
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01,2000-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,1)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,5,5)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,5)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,1)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,5)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,5,1)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,1)),[2001-01-01,2001-01-05])'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2001-01-01,2001-01-05])'::geometry);
 /* Errors */
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box2d;
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box3d;
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02])'::box2d;
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02])'::box3d;
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02])'::geometry;
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;
 SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::tstzspan;
 
@@ -187,58 +187,58 @@ SELECT area(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 SELECT volume(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 SELECT perimeter(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 
-SELECT xmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT ymin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT zmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT tmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT tminInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT xmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT ymax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT zmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT tmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT tmaxInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT area(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT perimeter(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT xmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT ymin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT zmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT tmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT tminInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT xmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT ymax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT zmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT tmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT tmaxInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT area(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT perimeter(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
 
-SELECT xmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT ymin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT zmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT tmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT xmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT ymax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT zmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT tmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT area(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT volume(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT perimeter(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT xmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT ymin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT zmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT tmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT xmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT ymax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT zmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT tmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT area(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT volume(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+SELECT perimeter(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
 
-SELECT xmin(stbox 'STBOX T([2000-01-01, 2000-01-02])');
-SELECT ymin(stbox 'STBOX T([2000-01-01, 2000-01-02])');
-SELECT zmin(stbox 'STBOX T([2000-01-01, 2000-01-02])');
-SELECT tmin(stbox 'STBOX T([2000-01-01, 2000-01-02])');
-SELECT xmax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
-SELECT ymax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
-SELECT zmax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
-SELECT tmax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT xmin(stbox 'STBOX T([2001-01-01, 2001-01-02])');
+SELECT ymin(stbox 'STBOX T([2001-01-01, 2001-01-02])');
+SELECT zmin(stbox 'STBOX T([2001-01-01, 2001-01-02])');
+SELECT tmin(stbox 'STBOX T([2001-01-01, 2001-01-02])');
+SELECT xmax(stbox 'STBOX T([2001-01-01, 2001-01-02])');
+SELECT ymax(stbox 'STBOX T([2001-01-01, 2001-01-02])');
+SELECT zmax(stbox 'STBOX T([2001-01-01, 2001-01-02])');
+SELECT tmax(stbox 'STBOX T([2001-01-01, 2001-01-02])');
 
-SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'), 1);
-SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false), 1);
-SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'), 1);
-SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false), 1);
+SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])'), 1);
+SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])', false), 1);
+SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])'), 1);
+SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])', false), 1);
 /* Errors */
-SELECT area(stbox 'STBOX T([2000-01-01, 2000-01-02])');
-SELECT volume(stbox 'STBOX T([2000-01-01, 2000-01-02])');
-SELECT volume(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT perimeter(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+SELECT area(stbox 'STBOX T([2001-01-01, 2001-01-02])');
+SELECT volume(stbox 'STBOX T([2001-01-01, 2001-01-02])');
+SELECT volume(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
+SELECT perimeter(stbox 'STBOX T([2001-01-01, 2001-01-02])');
 
 SELECT round(stbox 'STBOX X((1.12345,1.12345),(2.12345,2.12345))', 2);
-SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),[2000-01-01,2000-01-02])', 2);
+SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
 SELECT round(stbox 'STBOX Z((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))', 2);
-SELECT round(stbox 'STBOX ZT(((1.12345,1.12345,1.123451),(2.12345,2.12345,2.12345)),[2000-01-01,2000-01-02])', 2);
-SELECT round(stbox 'GEODSTBOX ZT(((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345)),[2000-01-01,2000-01-02])', 2);
+SELECT round(stbox 'STBOX ZT(((1.12345,1.12345,1.123451),(2.12345,2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
+SELECT round(stbox 'GEODSTBOX ZT(((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
 /* Errors */
-SELECT round(stbox 'STBOX T([2000-01-01,2000-01-02])', 2);
-SELECT round(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])', 2);
+SELECT round(stbox 'STBOX T([2001-01-01,2001-01-02])', 2);
+SELECT round(stbox 'GEODSTBOX T([2001-01-01,2001-01-02])', 2);
 
 -------------------------------------------------------------------------------
 
@@ -255,57 +255,57 @@ SELECT MAX(tmax(b)) FROM tbl_stbox;
 -- Transformation function
 -------------------------------------------------------------------------------
 
-SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day');
-SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '-1 day');
+SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '1 day');
+SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '-1 day');
 
-SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day');
-SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 hour');
+SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '1 day');
+SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '1 hour');
 
-SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day', '1 hour');
-SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '-1 day', '1 hour');
+SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '1 day', '1 hour');
+SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])', '-1 day', '1 hour');
 
-SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
 /* Errors */
-SELECT getSpace(stbox 'STBOX T([2000-01-01,2000-01-01])');
+SELECT getSpace(stbox 'STBOX T([2001-01-01,2001-01-01])');
 
-SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', 2.0);
-SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-01])', -0.5);
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', '1 day');
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02])', '-12 hours');
+SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])', 2.0);
+SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-01])', -0.5);
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])', '1 day');
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-02])', '-12 hours');
 -- NULL
-SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(1.0,1.0)),[2000-01-01,2000-01-01])', -0.5);
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02))', '-12 hours');
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02])', '-1 day');
+SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(1.0,1.0)),[2001-01-01,2001-01-01])', -0.5);
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-02))', '-12 hours');
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-02])', '-1 day');
 /* Errors */
-SELECT expandSpace(stbox 'STBOX T([2000-01-01,2000-01-01])', 2.0);
+SELECT expandSpace(stbox 'STBOX T([2001-01-01,2001-01-01])', 2.0);
 SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
 
 -------------------------------------------------------------------------------
 -- Topological operators
 -------------------------------------------------------------------------------
 
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])';
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' ~= stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,3.0))';
 
 -- The portable spelling of each operator above answers the same
-SELECT overlaps(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
-SELECT contains(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
-SELECT contained(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
-SELECT adjacent(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
-SELECT same(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT overlaps(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
+SELECT contains(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
+SELECT contained(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
+SELECT adjacent(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
+SELECT same(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-01,2001-01-01])');
 
 SELECT stbox 'STBOX Z((0 0 0),(2 2 2))' -|- stbox 'STBOX Z((1 1 1),(3 3 3))';
-SELECT tstzspan '[2000-01-01, 2000-01-02]'::stbox -|- tstzspan '[2000-01-02, 2000-01-03]'::stbox;
+SELECT tstzspan '[2001-01-01, 2001-01-02]'::stbox -|- tstzspan '[2001-01-02, 2001-01-03]'::stbox;
 
 -- Adjacency reads every dimension the boxes share and asks one of them to
 -- touch: periods meeting at an excluded bound are adjacent as their spans are,
 -- while a box lying inside another only meets it
-SELECT stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05))' -|- stbox 'STBOX XT(((1,1),(5,5)),[2000-01-05,2000-01-09])';
-SELECT stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])' -|- stbox 'STBOX XT(((5,1),(9,5)),[2000-06-01,2000-06-05])';
+SELECT stbox 'STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05))' -|- stbox 'STBOX XT(((1,1),(5,5)),[2001-01-05,2001-01-09])';
+SELECT stbox 'STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05])' -|- stbox 'STBOX XT(((5,1),(9,5)),[2001-06-01,2001-06-05])';
 SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((3,3),(3,3))';
 SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((5,1),(9,5))';
 SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((5,5),(9,9))';
@@ -317,11 +317,11 @@ SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'GEODSTBOX Z((1.0,2.0,3.0),
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX T([2000-01-01, 2000-01-02])';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'STBOX T([2000-01-01, 2000-01-02])';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'STBOX T([2000-01-01, 2000-01-02])';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'STBOX T([2000-01-01, 2000-01-02])';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'STBOX T([2000-01-01, 2000-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX T([2001-01-01, 2001-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'STBOX T([2001-01-01, 2001-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'STBOX T([2001-01-01, 2001-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'STBOX T([2001-01-01, 2001-01-02])';
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'STBOX T([2001-01-01, 2001-01-02])';
 
 -------------------------------------------------------------------------------
 
@@ -513,8 +513,8 @@ SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_stbox t1, tbl_stbox t2;
 -------------------------------------------------------------------------------
 
 WITH test(box) AS (
-  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(2,2))[2000-01-01,2000-01-02])' UNION ALL
-  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(3,3))[2000-01-01,2000-01-03])' )
+  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(2,2))[2001-01-01,2001-01-02])' UNION ALL
+  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(3,3))[2001-01-01,2001-01-03])' )
 SELECT extent(box) FROM test;
 
 -- encourage use of parallel plans

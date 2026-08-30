@@ -1,7 +1,7 @@
 CREATE TABLE tbl_ts2cell_idx AS
 SELECT k, ts2cell(geoToS2Cell(geography(ST_SetSRID(ST_MakePoint(
     4.0 + k * 0.01, 50.0 + k * 0.01), 4326)), 12),
-  timestamptz '2000-01-01' + k * interval '1 hour') AS temp
+  timestamptz '2001-01-01' + k * interval '1 hour') AS temp
 FROM generate_series(1, 200) k;
 SELECT 200
 SELECT COUNT(*) FROM tbl_ts2cell_idx

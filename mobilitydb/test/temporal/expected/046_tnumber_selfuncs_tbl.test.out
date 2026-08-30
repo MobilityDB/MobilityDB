@@ -1,574 +1,574 @@
-SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
     96
@@ -580,25 +580,25 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp && tstzspan '[2001-06-01, 2001-07-01]'
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -616,31 +616,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -658,31 +658,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tstzspan '[2001-06-01, 2001-07-01]
      6
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -694,28 +694,28 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzspan '[2001-06-01, 2001-07-01]'
      5
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
@@ -724,25 +724,25 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -760,31 +760,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -802,31 +802,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -838,25 +838,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
@@ -868,25 +868,25 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]'
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -904,31 +904,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -946,31 +946,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]
      6
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -982,28 +982,28 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]'
      5
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
@@ -1012,25 +1012,25 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -1048,31 +1048,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -1090,31 +1090,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -1126,25 +1126,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
@@ -1156,25 +1156,25 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -1192,31 +1192,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -1234,31 +1234,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -1270,25 +1270,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
@@ -1300,31 +1300,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp << intspan '[1,3]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -1336,31 +1336,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp << floatspan '[1,3]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -1372,31 +1372,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp &< intspan '[1,3]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -1408,31 +1408,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< floatspan '[1,3]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -1444,31 +1444,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp >> intspan '[1,3]';
     82
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
     88
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '1@2001-01-01';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     88
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     88
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     82
@@ -1480,31 +1480,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> floatspan '[1,3]';
     81
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
     85
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '1.5@2001-01-01';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     85
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     85
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     77
@@ -1516,31 +1516,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp &> intspan '[1,3]';
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
@@ -1552,55 +1552,55 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> floatspan '[1,3]';
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '1.5@2001-01-01';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -1612,31 +1612,31 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -1648,31 +1648,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]'
     40
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -1684,25 +1684,25 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
@@ -1714,37 +1714,37 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]
     38
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' <<# temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}' <<# temp;
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' &<# temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}' &<# temp;
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool 'true@2000-01-01';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -1756,34 +1756,34 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]
     54
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
- count 
--------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
@@ -1792,34 +1792,34 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]'
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
- count 
--------
-     0
+     2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
@@ -1828,28 +1828,28 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
@@ -1858,25 +1858,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
@@ -1888,34 +1888,34 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]
     42
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
+ count 
+-------
+    95
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
-    96
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
- count 
--------
-    96
+    95
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
@@ -1924,34 +1924,34 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]'
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
+ count 
+-------
+    95
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
-    96
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
- count 
--------
-    96
+    94
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
@@ -1960,28 +1960,28 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
-    96
+    95
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
@@ -1990,25 +1990,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
@@ -2020,31 +2020,31 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
@@ -2056,31 +2056,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]'
     56
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     96
@@ -2092,25 +2092,25 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
     96
@@ -2142,601 +2142,601 @@ analyze tbl_tfloat;
 ANALYZE
 analyze tbl_ttext;
 ANALYZE
-SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp = tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <> tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp < tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <= tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp > tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp >= tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp = tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp < tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <= tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp > tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >= tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp = tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp < tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <= tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp > tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >= tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp = ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <> ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp < ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <= ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp > ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp >= ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -2760,31 +2760,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -2802,31 +2802,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tstzspan '[2001-06-01, 2001-07-01]
      6
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -2838,28 +2838,28 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzspan '[2001-06-01, 2001-07-01]'
      5
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
@@ -2868,25 +2868,25 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -2904,31 +2904,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -2946,31 +2946,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -2982,25 +2982,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
@@ -3012,25 +3012,25 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]'
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -3048,31 +3048,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -3090,31 +3090,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]
      6
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -3126,28 +3126,28 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]'
      5
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
@@ -3156,25 +3156,25 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -3192,31 +3192,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -3234,31 +3234,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -3270,25 +3270,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
@@ -3300,25 +3300,25 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -3336,31 +3336,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -3378,31 +3378,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -3414,25 +3414,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
@@ -3444,31 +3444,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp << intspan '[1,3]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp << tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -3480,31 +3480,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp << floatspan '[1,3]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp << tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -3516,31 +3516,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp &< intspan '[1,3]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &< tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -3552,31 +3552,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< floatspan '[1,3]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &< tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -3588,31 +3588,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp >> intspan '[1,3]';
     82
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
     88
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '1@2001-01-01';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     88
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     88
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp >> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     82
@@ -3624,31 +3624,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> floatspan '[1,3]';
     81
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
     85
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '1.5@2001-01-01';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     85
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     85
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp >> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     77
@@ -3660,31 +3660,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp &> intspan '[1,3]';
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
@@ -3696,31 +3696,31 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> floatspan '[1,3]';
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '1.5@2001-01-01';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     90
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     90
@@ -3732,55 +3732,55 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
      0
@@ -3792,31 +3792,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]'
     40
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
      0
@@ -3828,25 +3828,25 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
      0
@@ -3858,37 +3858,37 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]
     38
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' <<# temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}' <<# temp;
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' &<# temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}' &<# temp;
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool 'true@2000-01-01';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool 'true@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
      0
@@ -3900,34 +3900,34 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]
     54
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '1@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
- count 
--------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
@@ -3936,34 +3936,34 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]'
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '1.5@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
- count 
--------
-     0
+     2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
@@ -3972,28 +3972,28 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext 'AAA@2001-01-01';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
-     0
+     1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
@@ -4002,25 +4002,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
@@ -4032,34 +4032,34 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]
     42
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
+ count 
+-------
+    95
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
-    96
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
- count 
--------
-    96
+    95
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
@@ -4068,34 +4068,34 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]'
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
+ count 
+-------
+    95
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
-    96
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
- count 
--------
-    96
+    94
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
@@ -4104,28 +4104,28 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
-    96
+    95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
-    96
+    95
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
@@ -4134,25 +4134,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool 'true@2000-01-01';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool 'true@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '{true@2000-01-01, false@2000-01-02, true@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '{true@2001-01-01, false@2001-01-02, true@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '[true@2001-01-01, false@2001-01-02, true@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '{[true@2000-01-01, false@2000-01-02, true@2000-01-03],[true@2000-01-04, true@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool '{[true@2001-01-01, false@2001-01-02, true@2001-01-03],[true@2001-01-04, true@2001-01-05]}';
  count 
 -------
     96
@@ -4164,31 +4164,31 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tbox 'TBOXINT XT([1,3),[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tbox 'TBOXINT XT([1,3),[2001-01-01, 2001-01-03])';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '1@2000-01-01';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '1@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
  count 
 -------
     96
@@ -4200,31 +4200,31 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]'
     56
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tbox 'TBOXFLOAT XT([1.5,2.5],[2000-01-01, 2000-01-03])';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tbox 'TBOXFLOAT XT([1.5,2.5],[2001-01-01, 2001-01-03])';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '1.5@2000-01-01';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '1.5@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}';
  count 
 -------
     96
@@ -4236,25 +4236,25 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext 'AAA@2000-01-01';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext 'AAA@2001-01-01';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]';
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}';
  count 
 -------
     96

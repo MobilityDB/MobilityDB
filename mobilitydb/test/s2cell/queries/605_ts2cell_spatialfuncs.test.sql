@@ -33,19 +33,19 @@
 -- Resolution, validity and area
 -------------------------------------------------------------------------------
 
-SELECT asText(getResolution(ts2cell '[47c3c3@2000-01-01, 47c3c38705f@2000-01-02]'));
-SELECT asText(isValidCell(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'));
-SELECT startValue(getResolution(ts2cell '[47c3c3@2000-01-01]'))
+SELECT asText(getResolution(ts2cell '[47c3c3@2001-01-01, 47c3c38705f@2001-01-02]'));
+SELECT asText(isValidCell(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
+SELECT startValue(getResolution(ts2cell '[47c3c3@2001-01-01]'))
   = getResolution(s2cell '47c3c3');
-SELECT round(startValue(cellArea(ts2cell '[47c3c3@2000-01-01]'))::numeric, 6)
+SELECT round(startValue(cellArea(ts2cell '[47c3c3@2001-01-01]'))::numeric, 6)
   = round(cellArea(s2cell '47c3c3')::numeric, 6);
 
 -------------------------------------------------------------------------------
 -- Hierarchy
 -------------------------------------------------------------------------------
 
-SELECT asText(cellToParent(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', 5));
-SELECT startValue(cellToParent(ts2cell '[47c3c3@2000-01-01]', 5))
+SELECT asText(cellToParent(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 5));
+SELECT startValue(cellToParent(ts2cell '[47c3c3@2001-01-01]', 5))
   = cellToParent(s2cell '47c3c3', 5);
 
 -------------------------------------------------------------------------------
@@ -55,20 +55,20 @@ SELECT startValue(cellToParent(ts2cell '[47c3c3@2000-01-01]', 5))
 -- boundary a tgeography, both in SRID 4326.
 -------------------------------------------------------------------------------
 
-SELECT tempSubtype(cellToPoint(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'));
-SELECT tempBasetype(cellToPoint(ts2cell '[47c3c3@2000-01-01]'));
-SELECT tempBasetype(cellToBoundary(ts2cell '[47c3c3@2000-01-01]'));
-SELECT startValue(cellToPoint(ts2cell '[47c3c3@2000-01-01]'))::geometry
+SELECT tempSubtype(cellToPoint(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
+SELECT tempBasetype(cellToPoint(ts2cell '[47c3c3@2001-01-01]'));
+SELECT tempBasetype(cellToBoundary(ts2cell '[47c3c3@2001-01-01]'));
+SELECT startValue(cellToPoint(ts2cell '[47c3c3@2001-01-01]'))::geometry
   = cellToPoint(s2cell '47c3c3')::geometry;
-SELECT ST_NPoints(startValue(cellToBoundary(ts2cell '[47c3c3@2000-01-01]'))::geometry);
-SELECT ST_SRID(startValue(cellToBoundary(ts2cell '[47c3c3@2000-01-01]'))::geometry);
+SELECT ST_NPoints(startValue(cellToBoundary(ts2cell '[47c3c3@2001-01-01]'))::geometry);
+SELECT ST_SRID(startValue(cellToBoundary(ts2cell '[47c3c3@2001-01-01]'))::geometry);
 
 -------------------------------------------------------------------------------
 -- The token
 -------------------------------------------------------------------------------
 
-SELECT asText(ts2CellToToken(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'));
-SELECT startValue(ts2CellToToken(ts2cell '[47c3c3@2000-01-01]'))
+SELECT asText(ts2CellToToken(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
+SELECT startValue(ts2CellToToken(ts2cell '[47c3c3@2001-01-01]'))
   = s2CellToToken(s2cell '47c3c3');
 
 -------------------------------------------------------------------------------

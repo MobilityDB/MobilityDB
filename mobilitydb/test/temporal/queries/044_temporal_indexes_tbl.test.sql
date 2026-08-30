@@ -33,7 +33,7 @@ ANALYZE test;
 DROP TABLE test;
 
 CREATE TABLE test AS
-SELECT NULL::tfloat UNION SELECT tfloat '1@2000-01-01';
+SELECT NULL::tfloat UNION SELECT tfloat '1@2001-01-01';
 ANALYZE test;
 DROP TABLE test;
 

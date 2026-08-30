@@ -16,29 +16,29 @@ SELECT floatset '{1.5,2.5,3.5}';
  {1.5, 2.5, 3.5}
 (1 row)
 
-SELECT dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
                dateset                
 --------------------------------------
- {01-01-2000, 01-02-2000, 01-03-2000}
+ {01-01-2001, 01-02-2001, 01-03-2001}
 (1 row)
 
-SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
                                              tstzset                                              
 --------------------------------------------------------------------------------------------------
- {"Sat Jan 01 00:00:00 2000 PST", "Sun Jan 02 00:00:00 2000 PST", "Mon Jan 03 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST", "Tue Jan 02 00:00:00 2001 PST", "Wed Jan 03 00:00:00 2001 PST"}
 (1 row)
 
 /* Errors */
-SELECT tstzset '2000-01-01, 2000-01-02';
+SELECT tstzset '2001-01-01, 2001-01-02';
 ERROR:  Could not parse tstzset value: Missing opening brace
-LINE 2: SELECT tstzset '2000-01-01, 2000-01-02';
+LINE 2: SELECT tstzset '2001-01-01, 2001-01-02';
                        ^
-SELECT tstzset '{2000-01-01, 2000-01-02';
+SELECT tstzset '{2001-01-01, 2001-01-02';
 ERROR:  Could not parse tstzset value: Missing closing brace
-LINE 1: SELECT tstzset '{2000-01-01, 2000-01-02';
+LINE 1: SELECT tstzset '{2001-01-01, 2001-01-02';
                        ^
-SELECT tstzset '{2000-01-01T00:00:00Z, 2000-01-02T00:00:00Z}' =
-  tstzset '{2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00}';
+SELECT tstzset '{2001-01-01T00:00:00Z, 2001-01-02T00:00:00Z}' =
+  tstzset '{2001-01-01 00:00:00+00, 2001-01-02 00:00:00+00}';
  ?column? 
 ----------
  t
@@ -53,28 +53,28 @@ SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
 /* Errors */
 SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
 ERROR:  The value cannot be negative: -6
-SELECT set(ARRAY [date '2000-01-01', '2000-01-02', '2000-01-03']);
+SELECT set(ARRAY [date '2001-01-01', '2001-01-02', '2001-01-03']);
                  set                  
 --------------------------------------
- {01-01-2000, 01-02-2000, 01-03-2000}
+ {01-01-2001, 01-02-2001, 01-03-2001}
 (1 row)
 
-SELECT set(ARRAY [date '2000-01-01', '2000-01-01', '2000-01-03']);
+SELECT set(ARRAY [date '2001-01-01', '2001-01-01', '2001-01-03']);
            set            
 --------------------------
- {01-01-2000, 01-03-2000}
+ {01-01-2001, 01-03-2001}
 (1 row)
 
-SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
+SELECT set(ARRAY [timestamptz '2001-01-01', '2001-01-02', '2001-01-03']);
                                                set                                                
 --------------------------------------------------------------------------------------------------
- {"Sat Jan 01 00:00:00 2000 PST", "Sun Jan 02 00:00:00 2000 PST", "Mon Jan 03 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST", "Tue Jan 02 00:00:00 2001 PST", "Wed Jan 03 00:00:00 2001 PST"}
 (1 row)
 
-SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
+SELECT set(ARRAY [timestamptz '2001-01-01', '2001-01-01', '2001-01-03']);
                                set                                
 ------------------------------------------------------------------
- {"Sat Jan 01 00:00:00 2000 PST", "Mon Jan 03 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST", "Wed Jan 03 00:00:00 2001 PST"}
 (1 row)
 
 /* Errors */
@@ -99,76 +99,76 @@ SELECT set(ARRAY[geometry 'Point(1 1)', 'Point empty']);
 ERROR:  Only non-empty geometries accepted
 SELECT set(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 ERROR:  Operation on mixed SRID
-SELECT set(date '2000-01-01');
+SELECT set(date '2001-01-01');
      set      
 --------------
- {01-01-2000}
+ {01-01-2001}
 (1 row)
 
-SELECT date '2000-01-01'::dateset;
+SELECT date '2001-01-01'::dateset;
    dateset    
 --------------
- {01-01-2000}
+ {01-01-2001}
 (1 row)
 
-SELECT set(timestamptz '2000-01-01');
+SELECT set(timestamptz '2001-01-01');
                set                
 ----------------------------------
- {"Sat Jan 01 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST"}
 (1 row)
 
-SELECT timestamptz '2000-01-01'::tstzset;
+SELECT timestamptz '2001-01-01'::tstzset;
              tstzset              
 ----------------------------------
- {"Sat Jan 01 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST"}
 (1 row)
 
-SELECT memSize(dateset '{2000-01-01}');
+SELECT memSize(dateset '{2001-01-01}');
  memsize 
 ---------
       32
 (1 row)
 
-SELECT memSize(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT memSize(dateset '{2001-01-01, 2001-01-02, 2001-01-03}');
  memsize 
 ---------
       48
 (1 row)
 
-SELECT memSize(tstzset '{2000-01-01}');
+SELECT memSize(tstzset '{2001-01-01}');
  memsize 
 ---------
       32
 (1 row)
 
-SELECT memSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT memSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
  memsize 
 ---------
       48
 (1 row)
 
-SELECT span(dateset '{2000-01-01}');
+SELECT span(dateset '{2001-01-01}');
            span           
 --------------------------
- [01-01-2000, 01-02-2000)
+ [01-01-2001, 01-02-2001)
 (1 row)
 
-SELECT span(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT span(dateset '{2001-01-01, 2001-01-02, 2001-01-03}');
            span           
 --------------------------
- [01-01-2000, 01-04-2000)
+ [01-01-2001, 01-04-2001)
 (1 row)
 
-SELECT span(tstzset '{2000-01-01}');
+SELECT span(tstzset '{2001-01-01}');
                              span                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
-SELECT span(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT span(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
                              span                             
 --------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]
+ [Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT spans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}');
@@ -231,22 +231,22 @@ SELECT splitNspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', 2);
  {"[1.5, 3.5]","[4.5, 5.5]"}
 (1 row)
 
-SELECT splitNspans(dateset '{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}', 2);
+SELECT splitNspans(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', 2);
                        splitnspans                       
 ---------------------------------------------------------
- {"[01-01-2000, 01-04-2000)","[01-05-2000, 01-08-2000)"}
+ {"[01-01-2001, 01-04-2001)","[01-05-2001, 01-08-2001)"}
 (1 row)
 
-SELECT splitNspans(tstzset '{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}', 2);
+SELECT splitNspans(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', 2);
                                                            splitnspans                                                           
 ---------------------------------------------------------------------------------------------------------------------------------
- {"[Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]","[Wed Jan 05 00:00:00 2000 PST, Fri Jan 07 00:00:00 2000 PST]"}
+ {"[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]","[Fri Jan 05 00:00:00 2001 PST, Sun Jan 07 00:00:00 2001 PST]"}
 (1 row)
 
 /* Errors */
 SELECT splitNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
 ERROR:  The value must be strictly positive: -1
-SELECT splitNspans(tstzset '{2000-01-01, 2000-01-03}', 0);
+SELECT splitNspans(tstzset '{2001-01-01, 2001-01-03}', 0);
 ERROR:  The value must be strictly positive: 0
 SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
                                         spliteachnspans                                         
@@ -296,304 +296,304 @@ SELECT splitEachNspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', 2);
  {"[1.5, 2.5]","[3.5, 4.5]","[5.5, 5.5]"}
 (1 row)
 
-SELECT splitEachNspans(dateset '{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}', 2);
+SELECT splitEachNspans(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', 2);
                      spliteachnspans                     
 ---------------------------------------------------------
- {"[01-01-2000, 01-04-2000)","[01-05-2000, 01-08-2000)"}
+ {"[01-01-2001, 01-04-2001)","[01-05-2001, 01-08-2001)"}
 (1 row)
 
-SELECT splitEachNspans(tstzset '{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}', 2);
+SELECT splitEachNspans(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}', 2);
                                                          spliteachnspans                                                         
 ---------------------------------------------------------------------------------------------------------------------------------
- {"[Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]","[Wed Jan 05 00:00:00 2000 PST, Fri Jan 07 00:00:00 2000 PST]"}
+ {"[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]","[Fri Jan 05 00:00:00 2001 PST, Sun Jan 07 00:00:00 2001 PST]"}
 (1 row)
 
 /* Errors */
 SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
 ERROR:  The value must be strictly positive: -1
-SELECT numValues(dateset '{2000-01-01}');
+SELECT numValues(dateset '{2001-01-01}');
  numvalues 
 -----------
          1
 (1 row)
 
-SELECT numValues(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT numValues(dateset '{2001-01-01, 2001-01-02, 2001-01-03}');
  numvalues 
 -----------
          3
 (1 row)
 
-SELECT numValues(tstzset '{2000-01-01}');
+SELECT numValues(tstzset '{2001-01-01}');
  numvalues 
 -----------
          1
 (1 row)
 
-SELECT numValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT numValues(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
  numvalues 
 -----------
          3
 (1 row)
 
-SELECT startValue(dateset '{2000-01-01}');
+SELECT startValue(dateset '{2001-01-01}');
  startvalue 
 ------------
- 01-01-2000
+ 01-01-2001
 (1 row)
 
-SELECT startValue(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT startValue(dateset '{2001-01-01, 2001-01-02, 2001-01-03}');
  startvalue 
 ------------
- 01-01-2000
+ 01-01-2001
 (1 row)
 
-SELECT startValue(tstzset '{2000-01-01}');
+SELECT startValue(tstzset '{2001-01-01}');
           startvalue          
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT startValue(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT startValue(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
           startvalue          
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT endValue(dateset '{2000-01-01}');
+SELECT endValue(dateset '{2001-01-01}');
   endvalue  
 ------------
- 01-01-2000
+ 01-01-2001
 (1 row)
 
-SELECT endValue(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT endValue(dateset '{2001-01-01, 2001-01-02, 2001-01-03}');
   endvalue  
 ------------
- 01-03-2000
+ 01-03-2001
 (1 row)
 
-SELECT endValue(tstzset '{2000-01-01}');
+SELECT endValue(tstzset '{2001-01-01}');
            endvalue           
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT endValue(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT endValue(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
            endvalue           
 ------------------------------
- Mon Jan 03 00:00:00 2000 PST
+ Wed Jan 03 00:00:00 2001 PST
 (1 row)
 
-SELECT valueN(dateset '{2000-01-01}', 1);
+SELECT valueN(dateset '{2001-01-01}', 1);
    valuen   
 ------------
- 01-01-2000
+ 01-01-2001
 (1 row)
 
-SELECT valueN(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
+SELECT valueN(dateset '{2001-01-01, 2001-01-02, 2001-01-03}', 1);
    valuen   
 ------------
- 01-01-2000
+ 01-01-2001
 (1 row)
 
-SELECT valueN(dateset '{2000-01-01}', 2);
+SELECT valueN(dateset '{2001-01-01}', 2);
  valuen 
 --------
  
 (1 row)
 
-SELECT valueN(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+SELECT valueN(dateset '{2001-01-01, 2001-01-02, 2001-01-03}', 4);
  valuen 
 --------
  
 (1 row)
 
-SELECT valueN(tstzset '{2000-01-01}', 1);
+SELECT valueN(tstzset '{2001-01-01}', 1);
             valuen            
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT valueN(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
+SELECT valueN(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}', 1);
             valuen            
 ------------------------------
- Sat Jan 01 00:00:00 2000 PST
+ Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT valueN(tstzset '{2000-01-01}', 2);
+SELECT valueN(tstzset '{2001-01-01}', 2);
  valuen 
 --------
  
 (1 row)
 
-SELECT valueN(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+SELECT valueN(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}', 4);
  valuen 
 --------
  
 (1 row)
 
-SELECT getValues(dateset '{2000-01-01}');
+SELECT getValues(dateset '{2001-01-01}');
   getvalues   
 --------------
- {01-01-2000}
+ {01-01-2001}
 (1 row)
 
-SELECT getValues(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT getValues(dateset '{2001-01-01, 2001-01-02, 2001-01-03}');
              getvalues              
 ------------------------------------
- {01-01-2000,01-02-2000,01-03-2000}
+ {01-01-2001,01-02-2001,01-03-2001}
 (1 row)
 
-SELECT getValues(tstzset '{2000-01-01}');
+SELECT getValues(tstzset '{2001-01-01}');
             getvalues             
 ----------------------------------
- {"Sat Jan 01 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST"}
 (1 row)
 
-SELECT getValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT getValues(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
                                            getvalues                                            
 ------------------------------------------------------------------------------------------------
- {"Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST","Wed Jan 03 00:00:00 2001 PST"}
 (1 row)
 
-SELECT cmp(dateset '{2000-01-01}', dateset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
+SELECT cmp(dateset '{2001-01-01}', dateset '{2001-01-01, 2001-01-02, 2001-01-03}') = -1;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT dateset '{2000-01-01}' = dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT dateset '{2001-01-01}' = dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT dateset '{2000-01-01}' <> dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT dateset '{2001-01-01}' <> dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT dateset '{2000-01-01}' < dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT dateset '{2001-01-01}' < dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT dateset '{2000-01-01, 2000-01-02, 2000-01-03}' < dateset '{2000-01-01}';
+SELECT dateset '{2001-01-01, 2001-01-02, 2001-01-03}' < dateset '{2001-01-01}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT dateset '{2000-01-01}' <= dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT dateset '{2001-01-01}' <= dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT dateset '{2000-01-01}' > dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT dateset '{2001-01-01}' > dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT dateset '{2000-01-01}' >= dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT dateset '{2001-01-01}' >= dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT cmp(tstzset '{2000-01-01}', tstzset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
+SELECT cmp(tstzset '{2001-01-01}', tstzset '{2001-01-01, 2001-01-02, 2001-01-03}') = -1;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzset '{2000-01-01}' = tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2001-01-01}' = tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tstzset '{2000-01-01}' <> tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2001-01-01}' <> tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzset '{2000-01-01}' < tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2001-01-01}' < tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}' < tstzset '{2000-01-01}';
+SELECT tstzset '{2001-01-01, 2001-01-02, 2001-01-03}' < tstzset '{2001-01-01}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tstzset '{2000-01-01}' <= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2001-01-01}' <= tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzset '{2000-01-01}' > tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2001-01-01}' > tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tstzset '{2000-01-01}' >= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2001-01-01}' >= tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT hash(dateset '{2000-01-01,2000-01-02}') = hash(dateset '{2000-01-01,2000-01-02}');
+SELECT hash(dateset '{2001-01-01,2001-01-02}') = hash(dateset '{2001-01-01,2001-01-02}');
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT hash(dateset '{2000-01-01,2000-01-02}') <> hash(dateset '{2000-01-01,2000-01-02}');
+SELECT hash(dateset '{2001-01-01,2001-01-02}') <> hash(dateset '{2001-01-01,2001-01-02}');
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT hash(tstzset '{2000-01-01,2000-01-02}') = hash(tstzset '{2000-01-01,2000-01-02}');
+SELECT hash(tstzset '{2001-01-01,2001-01-02}') = hash(tstzset '{2001-01-01,2001-01-02}');
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT hash(tstzset '{2000-01-01,2000-01-02}') <> hash(tstzset '{2000-01-01,2000-01-02}');
+SELECT hash(tstzset '{2001-01-01,2001-01-02}') <> hash(tstzset '{2001-01-01,2001-01-02}');
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT hashExtended(dateset '{2000-01-01,2000-01-02}', 1) = hashExtended(dateset '{2000-01-01,2000-01-02}', 1);
+SELECT hashExtended(dateset '{2001-01-01,2001-01-02}', 1) = hashExtended(dateset '{2001-01-01,2001-01-02}', 1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT hashExtended(dateset '{2000-01-01,2000-01-02}', 1) <> hashExtended(dateset '{2000-01-01,2000-01-02}', 1);
+SELECT hashExtended(dateset '{2001-01-01,2001-01-02}', 1) <> hashExtended(dateset '{2001-01-01,2001-01-02}', 1);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT hashExtended(tstzset '{2000-01-01,2000-01-02}', 1) = hashExtended(tstzset '{2000-01-01,2000-01-02}', 1);
+SELECT hashExtended(tstzset '{2001-01-01,2001-01-02}', 1) = hashExtended(tstzset '{2001-01-01,2001-01-02}', 1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT hashExtended(tstzset '{2000-01-01,2000-01-02}', 1) <> hashExtended(tstzset '{2000-01-01,2000-01-02}', 1);
+SELECT hashExtended(tstzset '{2001-01-01,2001-01-02}', 1) <> hashExtended(tstzset '{2001-01-01,2001-01-02}', 1);
  ?column? 
 ----------
  f
@@ -605,22 +605,22 @@ SELECT shift(intset '{1}', 4);
  {5}
 (1 row)
 
-SELECT shift(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+SELECT shift(dateset '{2001-01-01, 2001-01-02, 2001-01-03}', 4);
                 shift                 
 --------------------------------------
- {01-05-2000, 01-06-2000, 01-07-2000}
+ {01-05-2001, 01-06-2001, 01-07-2001}
 (1 row)
 
-SELECT shift(tstzset '{2000-01-01}', '5 min');
+SELECT shift(tstzset '{2001-01-01}', '5 min');
               shift               
 ----------------------------------
- {"Sat Jan 01 00:05:00 2000 PST"}
+ {"Mon Jan 01 00:05:00 2001 PST"}
 (1 row)
 
-SELECT shift(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
+SELECT shift(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}', '5 min');
                                               shift                                               
 --------------------------------------------------------------------------------------------------
- {"Sat Jan 01 00:05:00 2000 PST", "Sun Jan 02 00:05:00 2000 PST", "Mon Jan 03 00:05:00 2000 PST"}
+ {"Mon Jan 01 00:05:00 2001 PST", "Tue Jan 02 00:05:00 2001 PST", "Wed Jan 03 00:05:00 2001 PST"}
 (1 row)
 
 SELECT scale(intset '{1}', 4);
@@ -629,22 +629,22 @@ SELECT scale(intset '{1}', 4);
  {1}
 (1 row)
 
-SELECT scale(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+SELECT scale(dateset '{2001-01-01, 2001-01-02, 2001-01-03}', 4);
                 scale                 
 --------------------------------------
- {01-01-2000, 01-03-2000, 01-06-2000}
+ {01-01-2001, 01-03-2001, 01-06-2001}
 (1 row)
 
-SELECT scale(tstzset '{2000-01-01}', '1 hour');
+SELECT scale(tstzset '{2001-01-01}', '1 hour');
               scale               
 ----------------------------------
- {"Sat Jan 01 00:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST"}
 (1 row)
 
-SELECT scale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
+SELECT scale(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}', '1 hour');
                                               scale                                               
 --------------------------------------------------------------------------------------------------
- {"Sat Jan 01 00:00:00 2000 PST", "Sat Jan 01 00:30:00 2000 PST", "Sat Jan 01 01:00:00 2000 PST"}
+ {"Mon Jan 01 00:00:00 2001 PST", "Mon Jan 01 00:30:00 2001 PST", "Mon Jan 01 01:00:00 2001 PST"}
 (1 row)
 
 SELECT shiftScale(intset '{1}', 4, 4);
@@ -653,22 +653,22 @@ SELECT shiftScale(intset '{1}', 4, 4);
  {5}
 (1 row)
 
-SELECT shiftScale(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4, 4);
+SELECT shiftScale(dateset '{2001-01-01, 2001-01-02, 2001-01-03}', 4, 4);
               shiftscale              
 --------------------------------------
- {01-05-2000, 01-07-2000, 01-10-2000}
+ {01-05-2001, 01-07-2001, 01-10-2001}
 (1 row)
 
-SELECT shiftScale(tstzset '{2000-01-01}', '1 day', '1 hour');
+SELECT shiftScale(tstzset '{2001-01-01}', '1 day', '1 hour');
             shiftscale            
 ----------------------------------
- {"Sun Jan 02 00:00:00 2000 PST"}
+ {"Tue Jan 02 00:00:00 2001 PST"}
 (1 row)
 
-SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
+SELECT shiftScale(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}', '1 day', '1 hour');
                                             shiftscale                                            
 --------------------------------------------------------------------------------------------------
- {"Sun Jan 02 00:00:00 2000 PST", "Sun Jan 02 00:30:00 2000 PST", "Sun Jan 02 01:00:00 2000 PST"}
+ {"Tue Jan 02 00:00:00 2001 PST", "Tue Jan 02 00:30:00 2001 PST", "Tue Jan 02 01:00:00 2001 PST"}
 (1 row)
 
 SELECT floor(floatset '{0.5, 1.5, 2.5}');

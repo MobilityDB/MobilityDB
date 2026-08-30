@@ -1,185 +1,185 @@
-SELECT asText(ts2cell '47c3c3@2000-01-01');
+SELECT asText(ts2cell '47c3c3@2001-01-01');
                astext                
 -------------------------------------
- 47c3c3@Sat Jan 01 00:00:00 2000 PST
+ 47c3c3@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(ts2cell '{47c3c3@2000-01-01, 54b5c9@2000-01-02}');
+SELECT asText(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}');
                                    astext                                   
 ----------------------------------------------------------------------------
- {47c3c3@Sat Jan 01 00:00:00 2000 PST, 54b5c9@Sun Jan 02 00:00:00 2000 PST}
+ {47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
                                    astext                                   
 ----------------------------------------------------------------------------
- [47c3c3@Sat Jan 01 00:00:00 2000 PST, 54b5c9@Sun Jan 02 00:00:00 2000 PST]
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(ts2cell '{[47c3c3@2000-01-01, 54b5c9@2000-01-02],[47c3c3@2000-01-03]}');
+SELECT asText(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}');
                                                        astext                                                        
 ---------------------------------------------------------------------------------------------------------------------
- {[47c3c3@Sat Jan 01 00:00:00 2000 PST, 54b5c9@Sun Jan 02 00:00:00 2000 PST], [47c3c3@Mon Jan 03 00:00:00 2000 PST]}
+ {[47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST], [47c3c3@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT interp(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT interp(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
  interp 
 --------
  Step
 (1 row)
 
-SELECT interp(ts2cell '{47c3c3@2000-01-01, 54b5c9@2000-01-02}');
+SELECT interp(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}');
   interp  
 ----------
  Discrete
 (1 row)
 
-SELECT asText(ts2cell 'Interp=Step;[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT asText(ts2cell 'Interp=Step;[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
                                    astext                                   
 ----------------------------------------------------------------------------
- [47c3c3@Sat Jan 01 00:00:00 2000 PST, 54b5c9@Sun Jan 02 00:00:00 2000 PST]
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(ts2cell(s2cell '47c3c3', timestamptz '2000-01-01'));
+SELECT asText(ts2cell(s2cell '47c3c3', timestamptz '2001-01-01'));
                astext                
 -------------------------------------
- 47c3c3@Sat Jan 01 00:00:00 2000 PST
+ 47c3c3@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(ts2cellInst(ts2cell '[47c3c3@2000-01-01]'));
+SELECT asText(ts2cellInst(ts2cell '[47c3c3@2001-01-01]'));
                astext                
 -------------------------------------
- 47c3c3@Sat Jan 01 00:00:00 2000 PST
+ 47c3c3@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(ts2cellSeq(ARRAY[ts2cell '47c3c3@2000-01-01', ts2cell '54b5c9@2000-01-02']));
+SELECT asText(ts2cellSeq(ARRAY[ts2cell '47c3c3@2001-01-01', ts2cell '54b5c9@2001-01-02']));
                                    astext                                   
 ----------------------------------------------------------------------------
- [47c3c3@Sat Jan 01 00:00:00 2000 PST, 54b5c9@Sun Jan 02 00:00:00 2000 PST]
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(ts2cell(s2cell '47c3c3', tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(ts2cell(s2cell '47c3c3', tstzspan '[2001-01-01, 2001-01-02]'));
                                    astext                                   
 ----------------------------------------------------------------------------
- [47c3c3@Sat Jan 01 00:00:00 2000 PST, 47c3c3@Sun Jan 02 00:00:00 2000 PST]
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 47c3c3@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT tempSubtype(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT tempSubtype(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT tempBasetype(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT tempBasetype(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
  tempbasetype 
 --------------
  s2cell
 (1 row)
 
-SELECT startValue(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT startValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
  startvalue 
 ------------
  47c3c3
 (1 row)
 
-SELECT endValue(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT endValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
  endvalue 
 ----------
  54b5c9
 (1 row)
 
-SELECT getValues(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT getValues(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
       getvalues       
 ----------------------
  {"47c3c3", "54b5c9"}
 (1 row)
 
-SELECT numInstants(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT numInstants(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
  numinstants 
 -------------
            2
 (1 row)
 
-SELECT valueAtTimestamp(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', '2000-01-01 12:00');
+SELECT valueAtTimestamp(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', '2001-01-01 12:00');
  valueattimestamp 
 ------------------
  47c3c3
 (1 row)
 
-SELECT duration(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]');
+SELECT duration(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
  duration 
 ----------
  1 day
 (1 row)
 
-SELECT asText(atValue(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3'));
+SELECT asText(atValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3'));
                                     astext                                    
 ------------------------------------------------------------------------------
- {[47c3c3@Sat Jan 01 00:00:00 2000 PST, 47c3c3@Sun Jan 02 00:00:00 2000 PST)}
+ {[47c3c3@Mon Jan 01 00:00:00 2001 PST, 47c3c3@Tue Jan 02 00:00:00 2001 PST)}
 (1 row)
 
-SELECT asText(minusValue(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', s2cell '47c3c3'));
+SELECT asText(minusValue(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3'));
                  astext                  
 -----------------------------------------
- {[54b5c9@Sun Jan 02 00:00:00 2000 PST]}
+ {[54b5c9@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(atTime(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]', tstzspan '[2000-01-01, 2000-01-01 12:00]'));
+SELECT asText(atTime(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', tstzspan '[2001-01-01, 2001-01-01 12:00]'));
                                    astext                                   
 ----------------------------------------------------------------------------
- [47c3c3@Sat Jan 01 00:00:00 2000 PST, 47c3c3@Sat Jan 01 12:00:00 2000 PST]
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 47c3c3@Mon Jan 01 12:00:00 2001 PST]
 (1 row)
 
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'::tbigint);
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint);
                                                 astext                                                
 ------------------------------------------------------------------------------------------------------
- [5171191201918877696@Sat Jan 01 00:00:00 2000 PST, 6104005871807758336@Sun Jan 02 00:00:00 2000 PST]
+ [5171191201918877696@Mon Jan 01 00:00:00 2001 PST, 6104005871807758336@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'::tbigint::ts2cell);
+SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint::ts2cell);
                                    astext                                   
 ----------------------------------------------------------------------------
- [47c3c3@Sat Jan 01 00:00:00 2000 PST, 54b5c9@Sun Jan 02 00:00:00 2000 PST]
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]'::tbigint::ts2cell
-  = ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-02]';
+SELECT ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'::tbigint::ts2cell
+  = ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT spans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]');
+SELECT spans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]');
                               spans                               
 ------------------------------------------------------------------
- {"[Sat Jan 01 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST]"}
+ {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
 (1 row)
 
-SELECT splitNSpans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]', 2);
+SELECT splitNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
                            splitnspans                            
 ------------------------------------------------------------------
- {"[Sat Jan 01 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST]"}
+ {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
 (1 row)
 
-SELECT splitEachNSpans(ts2cell '[47c3c3@2000-01-01, 54b5c9@2000-01-04]', 2);
+SELECT splitEachNSpans(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-04]', 2);
                          spliteachnspans                          
 ------------------------------------------------------------------
- {"[Sat Jan 01 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST]"}
+ {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
 (1 row)
 
-SELECT ts2cell '[47c3c3@2000-01-01]' = ts2cell '[47c3c3@2000-01-01]';
+SELECT ts2cell '[47c3c3@2001-01-01]' = ts2cell '[47c3c3@2001-01-01]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT ts2cell '[47c3c3@2000-01-01]' <> ts2cell '[54b5c9@2000-01-01]';
+SELECT ts2cell '[47c3c3@2001-01-01]' <> ts2cell '[54b5c9@2001-01-01]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT cmp(ts2cell '[47c3c3@2000-01-01]', ts2cell '[47c3c3@2000-01-01]');
+SELECT cmp(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]');
  cmp 
 -----
    0
@@ -191,7 +191,7 @@ SELECT s2cell '47c3c3' < s2cell '54b5c9';
  t
 (1 row)
 
-SELECT cmp(ts2cell '[47c3c3@2000-01-01]', ts2cell '[54b5c9@2000-01-01]');
+SELECT cmp(ts2cell '[47c3c3@2001-01-01]', ts2cell '[54b5c9@2001-01-01]');
  cmp 
 -----
    1

@@ -28,356 +28,356 @@
 -------------------------------------------------------------------------------
 
 SELECT merge(seq) FROM (VALUES
-(tint '{1@2000-01-01, 2@2000-01-02}'),(tint '{2@2000-01-02, 3@2000-01-03}')) t(seq);
+(tint '{1@2001-01-01, 2@2001-01-02}'),(tint '{2@2001-01-02, 3@2001-01-03}')) t(seq);
 SELECT merge(seq) FROM (VALUES
-(tint '[1@2000-01-01, 2@2000-01-02]'),(tint '[2@2000-01-02, 3@2000-01-03]')) t(seq);
+(tint '[1@2001-01-01, 2@2001-01-02]'),(tint '[2@2001-01-02, 3@2001-01-03]')) t(seq);
 SELECT merge(seq) FROM (VALUES
-(tbigint '{1@2000-01-01, 2@2000-01-02}'),(tbigint '{2@2000-01-02, 3@2000-01-03}')) t(seq);
+(tbigint '{1@2001-01-01, 2@2001-01-02}'),(tbigint '{2@2001-01-02, 3@2001-01-03}')) t(seq);
 SELECT merge(seq) FROM (VALUES
-(tbigint '[1@2000-01-01, 2@2000-01-02]'),(tbigint '[2@2000-01-02, 3@2000-01-03]')) t(seq);
+(tbigint '[1@2001-01-01, 2@2001-01-02]'),(tbigint '[2@2001-01-02, 3@2001-01-03]')) t(seq);
 SELECT merge(inst) FROM (VALUES
-(tfloat '1@2000-01-01'),(tfloat '2@2000-01-02')) t(inst);
+(tfloat '1@2001-01-01'),(tfloat '2@2001-01-02')) t(inst);
 SELECT merge(seq) FROM (VALUES
-(tfloat '[1@2000-01-01]'),(tfloat '[2@2000-01-02]')) t(seq);
+(tfloat '[1@2001-01-01]'),(tfloat '[2@2001-01-02]')) t(seq);
 
 /* Errors */
 SELECT merge(inst) FROM (VALUES
-(tfloat '1@2000-01-01'),(tfloat '2@2000-01-01')) t(inst);
+(tfloat '1@2001-01-01'),(tfloat '2@2001-01-01')) t(inst);
 SELECT merge(seq) FROM (VALUES
-(tfloat '[1@2000-01-01]'),(tfloat '[2@2000-01-01]')) t(seq);
+(tfloat '[1@2001-01-01]'),(tfloat '[2@2001-01-01]')) t(seq);
 
 -------------------------------------------------------------------------------
 
 SELECT tand(temp) FROM (VALUES
 (NULL::tbool),(NULL::tbool)) t(temp);
 SELECT tand(temp) FROM (VALUES
-(NULL::tbool),('true@2000-01-01'::tbool)) t(temp);
+(NULL::tbool),('true@2001-01-01'::tbool)) t(temp);
 
 SELECT tor(temp) FROM (VALUES
 (NULL::tbool),(NULL::tbool)) t(temp);
 SELECT tor(temp) FROM (VALUES
-(NULL::tbool),('true@2000-01-01'::tbool)) t(temp);
+(NULL::tbool),('true@2001-01-01'::tbool)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
 (NULL::tbool),(NULL::tbool)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::tbool),('true@2000-01-01'::tbool)) t(temp);
+(NULL::tbool),('true@2001-01-01'::tbool)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT tmin(temp) FROM (VALUES
 (NULL::tint),(NULL::tint)) t(temp);
 SELECT tmin(temp) FROM (VALUES
-(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+(NULL::tint),('1@2001-01-01'::tint)) t(temp);
 
 SELECT tmax(temp) FROM (VALUES
 (NULL::tint),(NULL::tint)) t(temp);
 SELECT tmax(temp) FROM (VALUES
-(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+(NULL::tint),('1@2001-01-01'::tint)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
 (NULL::tint),(NULL::tint)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+(NULL::tint),('1@2001-01-01'::tint)) t(temp);
 
 SELECT tsum(temp) FROM (VALUES
 (NULL::tint),(NULL::tint)) t(temp);
 SELECT tsum(temp) FROM (VALUES
-(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+(NULL::tint),('1@2001-01-01'::tint)) t(temp);
 
 SELECT tavg(temp) FROM (VALUES
 (NULL::tint),(NULL::tint)) t(temp);
 SELECT tavg(temp) FROM (VALUES
-(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+(NULL::tint),('1@2001-01-01'::tint)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT tmin(temp) FROM (VALUES
 (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT tmin(temp) FROM (VALUES
-(NULL::tbigint),('1@2000-01-01'::tbigint)) t(temp);
+(NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);
 
 SELECT tmax(temp) FROM (VALUES
 (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT tmax(temp) FROM (VALUES
-(NULL::tbigint),('1@2000-01-01'::tbigint)) t(temp);
+(NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
 (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::tbigint),('1@2000-01-01'::tbigint)) t(temp);
+(NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);
 
 SELECT tsum(temp) FROM (VALUES
 (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT tsum(temp) FROM (VALUES
-(NULL::tbigint),('1@2000-01-01'::tbigint)) t(temp);
+(NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);
 
 SELECT tavg(temp) FROM (VALUES
 (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT tavg(temp) FROM (VALUES
-(NULL::tbigint),('1@2000-01-01'::tbigint)) t(temp);
+(NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT tmin(temp) FROM (VALUES
 (NULL::tfloat),(NULL::tfloat)) t(temp);
 SELECT tmin(temp) FROM (VALUES
-(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+(NULL::tfloat),('1@2001-01-01'::tfloat)) t(temp);
 
 SELECT tmax(temp) FROM (VALUES
 (NULL::tfloat),(NULL::tfloat)) t(temp);
 SELECT tmax(temp) FROM (VALUES
-(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+(NULL::tfloat),('1@2001-01-01'::tfloat)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
 (NULL::tfloat),(NULL::tfloat)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+(NULL::tfloat),('1@2001-01-01'::tfloat)) t(temp);
 
 SELECT tsum(temp) FROM (VALUES
 (NULL::tfloat),(NULL::tfloat)) t(temp);
 SELECT tsum(temp) FROM (VALUES
-(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+(NULL::tfloat),('1@2001-01-01'::tfloat)) t(temp);
 
 SELECT tavg(temp) FROM (VALUES
 (NULL::tfloat),(NULL::tfloat)) t(temp);
 SELECT tavg(temp) FROM (VALUES
-(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+(NULL::tfloat),('1@2001-01-01'::tfloat)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT tmin(temp) FROM (VALUES
 (NULL::ttext),(NULL::ttext)) t(temp);
 SELECT tmin(temp) FROM (VALUES
-(NULL::ttext),('AAAA@2000-01-01'::ttext)) t(temp);
+(NULL::ttext),('AAAA@2001-01-01'::ttext)) t(temp);
 
 SELECT tmax(temp) FROM (VALUES
 (NULL::ttext),(NULL::ttext)) t(temp);
 SELECT tmax(temp) FROM (VALUES
-(NULL::ttext),('AAAA@2000-01-01'::ttext)) t(temp);
+(NULL::ttext),('AAAA@2001-01-01'::ttext)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
 (NULL::ttext),(NULL::ttext)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::ttext),('AAAA@2000-01-01'::ttext)) t(temp);
+(NULL::ttext),('AAAA@2001-01-01'::ttext)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT extent(temp) FROM (VALUES
-('[true@2000-01-01, false@2000-01-03, true@2000-01-05, false@2000-01-07]'::tbool),
-('[true@2000-01-02, false@2000-01-06]'::tbool)) t(temp);
+('[true@2001-01-01, false@2001-01-03, true@2001-01-05, false@2001-01-07]'::tbool),
+('[true@2001-01-02, false@2001-01-06]'::tbool)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
-('[true@2000-01-01, false@2000-01-03, true@2000-01-05, false@2000-01-07]'::tbool),
-('[true@2000-01-02, false@2000-01-06]'::tbool)) t(temp);
+('[true@2001-01-01, false@2001-01-03, true@2001-01-05, false@2001-01-07]'::tbool),
+('[true@2001-01-02, false@2001-01-06]'::tbool)) t(temp);
 
 SELECT tand(temp) FROM (VALUES
-('[true@2000-01-01, false@2000-01-03, true@2000-01-05, false@2000-01-07]'::tbool),
-('[true@2000-01-02, false@2000-01-06]'::tbool)) t(temp);
+('[true@2001-01-01, false@2001-01-03, true@2001-01-05, false@2001-01-07]'::tbool),
+('[true@2001-01-02, false@2001-01-06]'::tbool)) t(temp);
 
 SELECT tor(temp) FROM (VALUES
-('[true@2000-01-01, false@2000-01-03, true@2000-01-05, false@2000-01-07]'::tbool),
-('[true@2000-01-02, false@2000-01-06]'::tbool)) t(temp);
+('[true@2001-01-01, false@2001-01-03, true@2001-01-05, false@2001-01-07]'::tbool),
+('[true@2001-01-02, false@2001-01-06]'::tbool)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT extent(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint),
-('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tint),
+('[3@2001-01-02, 4@2001-01-06]'::tint)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint),
-('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tint),
+('[3@2001-01-02, 4@2001-01-06]'::tint)) t(temp);
 
 SELECT tmin(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint),
-('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tint),
+('[3@2001-01-02, 4@2001-01-06]'::tint)) t(temp);
 
 SELECT tmax(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint),
-('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tint),
+('[3@2001-01-02, 4@2001-01-06]'::tint)) t(temp);
 
 SELECT tsum(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint),
-('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tint),
+('[3@2001-01-02, 4@2001-01-06]'::tint)) t(temp);
 
 SELECT tavg(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint),
-('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tint),
+('[3@2001-01-02, 4@2001-01-06]'::tint)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT extent(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tbigint),
-('[3@2000-01-02, 4@2000-01-06]'::tbigint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tbigint),
+('[3@2001-01-02, 4@2001-01-06]'::tbigint)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tbigint),
-('[3@2000-01-02, 4@2000-01-06]'::tbigint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tbigint),
+('[3@2001-01-02, 4@2001-01-06]'::tbigint)) t(temp);
 
 SELECT tmin(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tbigint),
-('[3@2000-01-02, 4@2000-01-06]'::tbigint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tbigint),
+('[3@2001-01-02, 4@2001-01-06]'::tbigint)) t(temp);
 
 SELECT tmax(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tbigint),
-('[3@2000-01-02, 4@2000-01-06]'::tbigint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tbigint),
+('[3@2001-01-02, 4@2001-01-06]'::tbigint)) t(temp);
 
 SELECT tsum(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tbigint),
-('[3@2000-01-02, 4@2000-01-06]'::tbigint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tbigint),
+('[3@2001-01-02, 4@2001-01-06]'::tbigint)) t(temp);
 
 SELECT tavg(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tbigint),
-('[3@2000-01-02, 4@2000-01-06]'::tbigint)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tbigint),
+('[3@2001-01-02, 4@2001-01-06]'::tbigint)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT extent(temp) FROM (VALUES
-('Interp=Step;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('Interp=Step;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('Interp=Step;[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('Interp=Step;[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
-('Interp=Step;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('Interp=Step;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('Interp=Step;[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('Interp=Step;[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT tmin(temp) FROM (VALUES
-('Interp=Step;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('Interp=Step;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('Interp=Step;[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('Interp=Step;[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT tmax(temp) FROM (VALUES
-('Interp=Step;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('Interp=Step;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('Interp=Step;[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('Interp=Step;[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT tsum(temp) FROM (VALUES
-('Interp=Step;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('Interp=Step;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('Interp=Step;[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('Interp=Step;[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT tavg(temp) FROM (VALUES
-('Interp=Step;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('Interp=Step;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('Interp=Step;[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('Interp=Step;[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 -------------------------------------------------------------------------------
 
 SELECT extent(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT round(tmin(temp), 6) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT round(tmax(temp), 6) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT tsum(temp) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 SELECT round(tavg(temp), 6) FROM (VALUES
-('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 
 -------------------------------------------------------------------------------
 
 /* Errors */
 SELECT tsum(temp) FROM ( VALUES
-(tfloat '[1@2000-01-01, 2@2000-01-02]'),
-(tfloat '{3@2000-01-03, 4@2000-01-04}')) t(temp);
+(tfloat '[1@2001-01-01, 2@2001-01-02]'),
+(tfloat '{3@2001-01-03, 4@2001-01-04}')) t(temp);
 SELECT tsum(temp) FROM ( VALUES
-(tfloat '{3@2000-01-03, 4@2000-01-04}'),
-(tfloat '[1@2000-01-01, 2@2000-01-02]')) t(temp);
+(tfloat '{3@2001-01-03, 4@2001-01-04}'),
+(tfloat '[1@2001-01-01, 2@2001-01-02]')) t(temp);
 SELECT tsum(temp) FROM ( VALUES
-(tfloat '{1@2000-01-01, 2@2000-01-02}'),
-(tfloat '[3@2000-01-03, 4@2000-01-04]')) t(temp);
+(tfloat '{1@2001-01-01, 2@2001-01-02}'),
+(tfloat '[3@2001-01-03, 4@2001-01-04]')) t(temp);
 SELECT tsum(temp) FROM (VALUES
-('Interp=Step;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat),
-('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+('Interp=Step;[1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07]'::tfloat),
+('[3@2001-01-02, 4@2001-01-06]'::tfloat)) t(temp);
 SELECT tsum(temp) FROM (VALUES
-('{1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07}'::tfloat),
-('{[3@2000-01-02, 4@2000-01-06]}'::tfloat)) t(temp);
+('{1@2001-01-01, 2@2001-01-03, 1@2001-01-05, 2@2001-01-07}'::tfloat),
+('{[3@2001-01-02, 4@2001-01-06]}'::tfloat)) t(temp);
 SELECT tsum(temp) FROM (VALUES
-('Interp=Step;{[1@2000-01-01, 2@2000-01-03], [1@2000-01-05, 2@2000-01-07]}'::tfloat),
-('{[3@2000-01-02, 4@2000-01-06]}'::tfloat)) t(temp);
+('Interp=Step;{[1@2001-01-01, 2@2001-01-03], [1@2001-01-05, 2@2001-01-07]}'::tfloat),
+('{[3@2001-01-02, 4@2001-01-06]}'::tfloat)) t(temp);
 
 -------------------------------------------------------------------------------
 
 WITH temp(inst) AS (
-  SELECT tint '1@2000-01-01' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '3@2000-01-03' UNION
-  SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05' )
+  SELECT tint '1@2001-01-01' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '3@2001-01-03' UNION
+  SELECT tint '4@2001-01-04' UNION
+  SELECT tint '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tint '1@2000-01-01' UNION
-  SELECT tint '1@2000-01-01' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '3@2000-01-03' UNION
-  SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05' )
+  SELECT tint '1@2001-01-01' UNION
+  SELECT tint '1@2001-01-01' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '3@2001-01-03' UNION
+  SELECT tint '4@2001-01-04' UNION
+  SELECT tint '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tbigint '1@2000-01-01' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '3@2000-01-03' UNION
-  SELECT tbigint '4@2000-01-04' UNION
-  SELECT tbigint '5@2000-01-05' )
+  SELECT tbigint '1@2001-01-01' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '3@2001-01-03' UNION
+  SELECT tbigint '4@2001-01-04' UNION
+  SELECT tbigint '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tbigint '1@2000-01-01' UNION
-  SELECT tbigint '1@2000-01-01' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '3@2000-01-03' UNION
-  SELECT tbigint '4@2000-01-04' UNION
-  SELECT tbigint '5@2000-01-05' )
+  SELECT tbigint '1@2001-01-01' UNION
+  SELECT tbigint '1@2001-01-01' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '3@2001-01-03' UNION
+  SELECT tbigint '4@2001-01-04' UNION
+  SELECT tbigint '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
   SELECT NULL UNION
-  SELECT tfloat '1@2000-01-01' UNION
-  SELECT tfloat '2@2000-01-02' UNION
-  SELECT tfloat '3@2000-01-03' UNION
-  SELECT tfloat '4@2000-01-04' UNION
-  SELECT tfloat '5@2000-01-05' )
+  SELECT tfloat '1@2001-01-01' UNION
+  SELECT tfloat '2@2001-01-02' UNION
+  SELECT tfloat '3@2001-01-03' UNION
+  SELECT tfloat '4@2001-01-04' UNION
+  SELECT tfloat '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT ttext 'AA@2000-01-01' UNION
-  SELECT ttext 'BB@2000-01-02' UNION
-  SELECT ttext 'CC@2000-01-03' UNION
-  SELECT ttext 'DD@2000-01-04' UNION
-  SELECT ttext 'EE@2000-01-05' )
+  SELECT ttext 'AA@2001-01-01' UNION
+  SELECT ttext 'BB@2001-01-02' UNION
+  SELECT ttext 'CC@2001-01-03' UNION
+  SELECT ttext 'DD@2001-01-04' UNION
+  SELECT ttext 'EE@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tint(extract(day from d)::int % 2, d)
-  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+  FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tintSeq(tint(extract(day from d)::int % 2, d))
-  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+  FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendSequence(inst ORDER BY inst)) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tbigint(extract(day from d)::int % 2, d)
-  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+  FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tbigintSeq(tbigint(extract(day from d)::int % 2, d))
-  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+  FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendSequence(inst ORDER BY inst)) FROM temp;
 
 -- Coverage
@@ -388,184 +388,184 @@ SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 /* Errors */
 WITH temp(inst) AS (
-  SELECT tint '1@2000-01-01' UNION
-  SELECT tint '2@2000-01-01' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '3@2000-01-03' UNION
-  SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05' )
+  SELECT tint '1@2001-01-01' UNION
+  SELECT tint '2@2001-01-01' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '3@2001-01-03' UNION
+  SELECT tint '4@2001-01-04' UNION
+  SELECT tint '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tbigint '1@2000-01-01' UNION
-  SELECT tbigint '2@2000-01-01' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '3@2000-01-03' UNION
-  SELECT tbigint '4@2000-01-04' UNION
-  SELECT tbigint '5@2000-01-05' )
+  SELECT tbigint '1@2001-01-01' UNION
+  SELECT tbigint '2@2001-01-01' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '3@2001-01-03' UNION
+  SELECT tbigint '4@2001-01-04' UNION
+  SELECT tbigint '5@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 -------------------------------------------------------------------------------
 -- Interpolation stated
 
 WITH temp(inst) AS (
-  SELECT tint '1@2000-01-01' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '3@2000-01-03' UNION
-  SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05' )
+  SELECT tint '1@2001-01-01' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '3@2001-01-03' UNION
+  SELECT tint '4@2001-01-04' UNION
+  SELECT tint '5@2001-01-05' )
 SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tint '1@2000-01-01' UNION
-  SELECT tint '1@2000-01-01' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '3@2000-01-03' UNION
-  SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05' )
+  SELECT tint '1@2001-01-01' UNION
+  SELECT tint '1@2001-01-01' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '3@2001-01-03' UNION
+  SELECT tint '4@2001-01-04' UNION
+  SELECT tint '5@2001-01-05' )
 SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tbigint '1@2000-01-01' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '3@2000-01-03' UNION
-  SELECT tbigint '4@2000-01-04' UNION
-  SELECT tbigint '5@2000-01-05' )
+  SELECT tbigint '1@2001-01-01' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '3@2001-01-03' UNION
+  SELECT tbigint '4@2001-01-04' UNION
+  SELECT tbigint '5@2001-01-05' )
 SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tbigint '1@2000-01-01' UNION
-  SELECT tbigint '1@2000-01-01' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '3@2000-01-03' UNION
-  SELECT tbigint '4@2000-01-04' UNION
-  SELECT tbigint '5@2000-01-05' )
+  SELECT tbigint '1@2001-01-01' UNION
+  SELECT tbigint '1@2001-01-01' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '3@2001-01-03' UNION
+  SELECT tbigint '4@2001-01-04' UNION
+  SELECT tbigint '5@2001-01-05' )
 SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
   SELECT NULL UNION
-  SELECT tfloat '1@2000-01-01' UNION
-  SELECT tfloat '2@2000-01-02' UNION
-  SELECT tfloat '3@2000-01-03' UNION
-  SELECT tfloat '4@2000-01-04' UNION
-  SELECT tfloat '5@2000-01-05' )
+  SELECT tfloat '1@2001-01-01' UNION
+  SELECT tfloat '2@2001-01-02' UNION
+  SELECT tfloat '3@2001-01-03' UNION
+  SELECT tfloat '4@2001-01-04' UNION
+  SELECT tfloat '5@2001-01-05' )
 SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT ttext 'AA@2000-01-01' UNION
-  SELECT ttext 'BB@2000-01-02' UNION
-  SELECT ttext 'CC@2000-01-03' UNION
-  SELECT ttext 'DD@2000-01-04' UNION
-  SELECT ttext 'EE@2000-01-05' )
+  SELECT ttext 'AA@2001-01-01' UNION
+  SELECT ttext 'BB@2001-01-02' UNION
+  SELECT ttext 'CC@2001-01-03' UNION
+  SELECT ttext 'DD@2001-01-04' UNION
+  SELECT ttext 'EE@2001-01-05' )
 SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tint(extract(day from d)::int % 2, d)
-  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+  FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst, 'discrete' ORDER BY inst)) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tintSeq(tint(extract(day from d)::int % 2, d))
-  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+  FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendSequence(inst ORDER BY inst, 'discrete')) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tbigint(extract(day from d)::int % 2, d)
-  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+  FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst, 'discrete' ORDER BY inst)) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tbigintSeq(tbigint(extract(day from d)::int % 2, d))
-  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+  FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendSequence(inst ORDER BY inst, 'discrete')) FROM temp;
 
 -------------------------------------------------------------------------------
 
 WITH temp(inst) AS (
-  SELECT tint '1@2000-01-01' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05' UNION
-  SELECT tint '7@2000-01-07' )
+  SELECT tint '1@2001-01-01' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '4@2001-01-04' UNION
+  SELECT tint '5@2001-01-05' UNION
+  SELECT tint '7@2001-01-07' )
 SELECT appendInstant(inst, NULL, 1, NULL ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tint '1@2000-01-01' UNION
-  SELECT tint '2@2000-01-02' UNION
-  SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05' UNION
-  SELECT tint '7@2000-01-07' )
+  SELECT tint '1@2001-01-01' UNION
+  SELECT tint '2@2001-01-02' UNION
+  SELECT tint '4@2001-01-04' UNION
+  SELECT tint '5@2001-01-05' UNION
+  SELECT tint '7@2001-01-07' )
 SELECT appendInstant(inst, NULL, NULL, interval '1 day' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tbigint '1@2000-01-01' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '4@2000-01-04' UNION
-  SELECT tbigint '5@2000-01-05' UNION
-  SELECT tbigint '7@2000-01-07' )
+  SELECT tbigint '1@2001-01-01' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '4@2001-01-04' UNION
+  SELECT tbigint '5@2001-01-05' UNION
+  SELECT tbigint '7@2001-01-07' )
 SELECT appendInstant(inst, NULL, 1, NULL ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tbigint '1@2000-01-01' UNION
-  SELECT tbigint '2@2000-01-02' UNION
-  SELECT tbigint '4@2000-01-04' UNION
-  SELECT tbigint '5@2000-01-05' UNION
-  SELECT tbigint '7@2000-01-07' )
+  SELECT tbigint '1@2001-01-01' UNION
+  SELECT tbigint '2@2001-01-02' UNION
+  SELECT tbigint '4@2001-01-04' UNION
+  SELECT tbigint '5@2001-01-05' UNION
+  SELECT tbigint '7@2001-01-07' )
 SELECT appendInstant(inst, NULL, NULL, interval '1 day' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tfloat '1@2000-01-01' UNION
-  SELECT tfloat '2@2000-01-02' UNION
-  SELECT tfloat '4@2000-01-04' UNION
-  SELECT tfloat '5@2000-01-05' UNION
-  SELECT tfloat '7@2000-01-07' )
+  SELECT tfloat '1@2001-01-01' UNION
+  SELECT tfloat '2@2001-01-02' UNION
+  SELECT tfloat '4@2001-01-04' UNION
+  SELECT tfloat '5@2001-01-05' UNION
+  SELECT tfloat '7@2001-01-07' )
 SELECT appendInstant(inst, NULL, 1, NULL ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT tfloat '1@2000-01-01' UNION
-  SELECT tfloat '2@2000-01-02' UNION
-  SELECT tfloat '4@2000-01-04' UNION
-  SELECT tfloat '5@2000-01-05' UNION
-  SELECT tfloat '7@2000-01-07' )
+  SELECT tfloat '1@2001-01-01' UNION
+  SELECT tfloat '2@2001-01-02' UNION
+  SELECT tfloat '4@2001-01-04' UNION
+  SELECT tfloat '5@2001-01-05' UNION
+  SELECT tfloat '7@2001-01-07' )
 SELECT appendInstant(inst, NULL, NULL, interval '1 day' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
-  SELECT ttext 'AA@2000-01-01' UNION
-  SELECT ttext 'BB@2000-01-02' UNION
-  SELECT ttext 'CC@2000-01-04' UNION
-  SELECT ttext 'DD@2000-01-05' UNION
-  SELECT ttext 'EE@2000-01-07' )
+  SELECT ttext 'AA@2001-01-01' UNION
+  SELECT ttext 'BB@2001-01-02' UNION
+  SELECT ttext 'CC@2001-01-04' UNION
+  SELECT ttext 'DD@2001-01-05' UNION
+  SELECT ttext 'EE@2001-01-07' )
 SELECT appendInstant(inst, NULL, interval '1 day' ORDER BY inst) FROM temp;
 
 -------------------------------------------------------------------------------
 
 WITH temp(k, seq) AS (
-  SELECT 1, tint '[1@2000-01-01, 2@2000-01-02]' UNION
-  SELECT 2, tint '[2@2000-01-02, 3@2000-01-03]' UNION
-  SELECT 3, tint '[3@2000-01-03, 4@2000-01-04]' UNION
-  SELECT 4, tint '[4@2000-01-04, 5@2000-01-05]' UNION
-  SELECT 5, tint '[5@2000-01-05, 6@2000-01-06]' )
+  SELECT 1, tint '[1@2001-01-01, 2@2001-01-02]' UNION
+  SELECT 2, tint '[2@2001-01-02, 3@2001-01-03]' UNION
+  SELECT 3, tint '[3@2001-01-03, 4@2001-01-04]' UNION
+  SELECT 4, tint '[4@2001-01-04, 5@2001-01-05]' UNION
+  SELECT 5, tint '[5@2001-01-05, 6@2001-01-06]' )
 SELECT appendSequence(seq ORDER BY k) FROM temp;
 
 WITH temp(k, seq) AS (
-  SELECT 1, tint '[1@2000-01-01, 2@2000-01-02]' UNION
-  SELECT 2, tint '[3@2000-01-03, 4@2000-01-04]' UNION
-  SELECT 3, tint '[5@2000-01-05, 6@2000-01-06]' )
+  SELECT 1, tint '[1@2001-01-01, 2@2001-01-02]' UNION
+  SELECT 2, tint '[3@2001-01-03, 4@2001-01-04]' UNION
+  SELECT 3, tint '[5@2001-01-05, 6@2001-01-06]' )
 SELECT appendSequence(seq ORDER BY k) FROM temp;
 
 WITH temp1(k, inst) AS (
-  SELECT 1, tint '1@2000-01-01' UNION
-  SELECT 2, tint '2@2000-01-02' UNION
-  SELECT 3, tint '3@2000-01-03' UNION
-  SELECT 4, tint '4@2000-01-04' UNION
-  SELECT 5, tint '5@2000-01-05' UNION
-  SELECT 6, tint '5@2000-01-06' UNION
-  SELECT 7, tint '5@2000-01-07' UNION
-  SELECT 8, tint '5@2000-01-08' ),
+  SELECT 1, tint '1@2001-01-01' UNION
+  SELECT 2, tint '2@2001-01-02' UNION
+  SELECT 3, tint '3@2001-01-03' UNION
+  SELECT 4, tint '4@2001-01-04' UNION
+  SELECT 5, tint '5@2001-01-05' UNION
+  SELECT 6, tint '5@2001-01-06' UNION
+  SELECT 7, tint '5@2001-01-07' UNION
+  SELECT 8, tint '5@2001-01-08' ),
 temp2(k, seq) AS (
   SELECT k / 3, appendInstant(inst ORDER BY inst)
   FROM temp1
@@ -573,28 +573,28 @@ temp2(k, seq) AS (
 SELECT appendSequence(seq ORDER BY seq) FROM temp2;
 
 WITH temp(k, seq) AS (
-  SELECT 1, tbigint '[1@2000-01-01, 2@2000-01-02]' UNION
-  SELECT 2, tbigint '[2@2000-01-02, 3@2000-01-03]' UNION
-  SELECT 3, tbigint '[3@2000-01-03, 4@2000-01-04]' UNION
-  SELECT 4, tbigint '[4@2000-01-04, 5@2000-01-05]' UNION
-  SELECT 5, tbigint '[5@2000-01-05, 6@2000-01-06]' )
+  SELECT 1, tbigint '[1@2001-01-01, 2@2001-01-02]' UNION
+  SELECT 2, tbigint '[2@2001-01-02, 3@2001-01-03]' UNION
+  SELECT 3, tbigint '[3@2001-01-03, 4@2001-01-04]' UNION
+  SELECT 4, tbigint '[4@2001-01-04, 5@2001-01-05]' UNION
+  SELECT 5, tbigint '[5@2001-01-05, 6@2001-01-06]' )
 SELECT appendSequence(seq ORDER BY k) FROM temp;
 
 WITH temp(k, seq) AS (
-  SELECT 1, tbigint '[1@2000-01-01, 2@2000-01-02]' UNION
-  SELECT 2, tbigint '[3@2000-01-03, 4@2000-01-04]' UNION
-  SELECT 3, tbigint '[5@2000-01-05, 6@2000-01-06]' )
+  SELECT 1, tbigint '[1@2001-01-01, 2@2001-01-02]' UNION
+  SELECT 2, tbigint '[3@2001-01-03, 4@2001-01-04]' UNION
+  SELECT 3, tbigint '[5@2001-01-05, 6@2001-01-06]' )
 SELECT appendSequence(seq ORDER BY k) FROM temp;
 
 WITH temp1(k, inst) AS (
-  SELECT 1, tbigint '1@2000-01-01' UNION
-  SELECT 2, tbigint '2@2000-01-02' UNION
-  SELECT 3, tbigint '3@2000-01-03' UNION
-  SELECT 4, tbigint '4@2000-01-04' UNION
-  SELECT 5, tbigint '5@2000-01-05' UNION
-  SELECT 6, tbigint '5@2000-01-06' UNION
-  SELECT 7, tbigint '5@2000-01-07' UNION
-  SELECT 8, tbigint '5@2000-01-08' ),
+  SELECT 1, tbigint '1@2001-01-01' UNION
+  SELECT 2, tbigint '2@2001-01-02' UNION
+  SELECT 3, tbigint '3@2001-01-03' UNION
+  SELECT 4, tbigint '4@2001-01-04' UNION
+  SELECT 5, tbigint '5@2001-01-05' UNION
+  SELECT 6, tbigint '5@2001-01-06' UNION
+  SELECT 7, tbigint '5@2001-01-07' UNION
+  SELECT 8, tbigint '5@2001-01-08' ),
 temp2(k, seq) AS (
   SELECT k / 3, appendInstant(inst ORDER BY inst)
   FROM temp1
@@ -602,14 +602,14 @@ temp2(k, seq) AS (
 SELECT appendSequence(seq ORDER BY seq) FROM temp2;
 
 WITH temp1(k, inst) AS (
-  SELECT 1, tfloat '1@2000-01-01' UNION
-  SELECT 2, tfloat '2@2000-01-02' UNION
-  SELECT 3, tfloat '3@2000-01-03' UNION
-  SELECT 4, tfloat '4@2000-01-04' UNION
-  SELECT 5, tfloat '5@2000-01-05' UNION
-  SELECT 6, tfloat '5@2000-01-06' UNION
-  SELECT 7, tfloat '5@2000-01-07' UNION
-  SELECT 8, tfloat '5@2000-01-08' ),
+  SELECT 1, tfloat '1@2001-01-01' UNION
+  SELECT 2, tfloat '2@2001-01-02' UNION
+  SELECT 3, tfloat '3@2001-01-03' UNION
+  SELECT 4, tfloat '4@2001-01-04' UNION
+  SELECT 5, tfloat '5@2001-01-05' UNION
+  SELECT 6, tfloat '5@2001-01-06' UNION
+  SELECT 7, tfloat '5@2001-01-07' UNION
+  SELECT 8, tfloat '5@2001-01-08' ),
 temp2(seq) AS (
   SELECT appendInstant(inst ORDER BY inst)
   FROM temp1
@@ -617,22 +617,22 @@ temp2(seq) AS (
 SELECT appendSequence(seq ORDER BY seq) FROM temp2;
 
 WITH temp(k, seq) AS (
-  SELECT 1, ttext '[AA@2000-01-01, BB@2000-01-02]' UNION
-  SELECT 2, ttext '[BB@2000-01-02, CC@2000-01-03]' UNION
-  SELECT 3, ttext '[CC@2000-01-03, DD@2000-01-04]' UNION
-  SELECT 4, ttext '[DD@2000-01-04, EE@2000-01-05]' UNION
-  SELECT 5, ttext '[EE@2000-01-05, FF@2000-01-06]' )
+  SELECT 1, ttext '[AA@2001-01-01, BB@2001-01-02]' UNION
+  SELECT 2, ttext '[BB@2001-01-02, CC@2001-01-03]' UNION
+  SELECT 3, ttext '[CC@2001-01-03, DD@2001-01-04]' UNION
+  SELECT 4, ttext '[DD@2001-01-04, EE@2001-01-05]' UNION
+  SELECT 5, ttext '[EE@2001-01-05, FF@2001-01-06]' )
 SELECT appendSequence(seq ORDER BY k) FROM temp;
 
 WITH temp(seq) AS (
   SELECT NULL UNION
-  SELECT tfloat '[1@2000-01-01, 2@2000-01-02]' UNION
-  SELECT tfloat '[3@2000-01-03, 4@2000-01-04]' )
+  SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' UNION
+  SELECT tfloat '[3@2001-01-03, 4@2001-01-04]' )
 SELECT appendSequence(seq ORDER BY seq) FROM temp;
 
 WITH temp1(k, inst) AS (
   SELECT extract(day from d)::int % 2, tint(extract(day from d)::int % 2, d)
-  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d ),
+  FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d ),
 temp2(seq) AS (
   SELECT appendInstant(inst ORDER BY inst)
   FROM temp1

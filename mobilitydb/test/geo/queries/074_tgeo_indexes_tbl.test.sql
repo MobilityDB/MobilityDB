@@ -58,59 +58,59 @@ SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<# tstzspan '[2001-01-01, 2
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
 
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp < tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <= tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp > tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp >= tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp < tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp > tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp >= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp && tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp @> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <@ tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp ~= tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp -|- tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp && tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp @> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <@ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp ~= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp -|- tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp << tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &< tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp >> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<| tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) > 0 FROM tbl_tgeometry3D_big WHERE temp &<| tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |>> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <</ tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &</ tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp />> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp /&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<# tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<# tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #>> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp << tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &< tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp >> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) > 0 FROM tbl_tgeometry3D_big WHERE temp &<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp />> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp /&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
 
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp < tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <= tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp > tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp >= tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp < tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp > tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp >= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp && tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp && tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp && stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(10,10,10)),[2001-01-01, 2001-02-01])';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp @> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <@ tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp ~= tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp -|- tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <<# tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp &<# tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp @> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <@ tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp ~= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp -|- tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp &<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
 -- Test the commutator for the selectivity
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]' <<# temp;
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]' &<# temp;
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]' <<# temp;
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]' &<# temp;
 
 -------------------------------------------------------------------------------
 
@@ -124,50 +124,50 @@ CREATE INDEX tbl_tgeography3D_big_quadtree_idx ON tbl_tgeography3D_big USING SPG
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp && tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp @> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <@ tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp ~= tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp -|- tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp && tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp @> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <@ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp ~= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp -|- tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
 
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp << tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &< tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp >> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<| tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<| tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |>> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <</ tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &</ tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp />> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp /&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<# tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<# tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #>> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp << tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &< tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp >> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp />> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp /&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
 
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp && tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp && tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp && stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(10,10,10)),[2001-01-01, 2001-02-01])';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp @> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <@ tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp ~= tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp -|- tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <<# tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp &<# tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp @> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <@ tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp ~= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp -|- tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp &<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
 -------------------------------------------------------------------------------
 
@@ -181,50 +181,50 @@ CREATE INDEX tbl_tgeography3D_big_kdtree_idx ON tbl_tgeography3D_big USING SPGIS
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp && tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp @> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <@ tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp ~= tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp -|- tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp && tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp @> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <@ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp ~= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp -|- tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
 
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp << tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &< tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp >> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<| tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<| tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |>> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <</ tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &</ tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp />> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp /&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<# tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<# tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #>> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #&> tgeometry 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp << tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &< tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp >> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp />> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp /&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp <<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp &<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeometry3D_big WHERE temp #&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
 
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp && tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp && tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp && stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(10,10,10)),[2001-01-01, 2001-02-01])';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp @> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <@ tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp ~= tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp -|- tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <<# tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp &<# tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp @> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <@ tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp ~= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp -|- tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp <<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp &<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
 
 -------------------------------------------------------------------------------
 

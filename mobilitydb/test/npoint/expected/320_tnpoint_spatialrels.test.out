@@ -1,4 +1,4 @@
-SELECT eContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT eContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2001-01-01');
  econtains 
 -----------
  
@@ -10,7 +10,7 @@ SELECT eContains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
  
 (1 row)
 
-SELECT tContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2001-01-01');
  tcontains 
 -----------
  
