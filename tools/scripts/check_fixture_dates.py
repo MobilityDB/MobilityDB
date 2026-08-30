@@ -42,6 +42,7 @@ The list only ever shrinks: delete a line when its file is migrated.
 Usage: check_fixture_dates.py [--list]
   --list  print every offending file and count, for refreshing the baseline
 """
+import lzma
 import os
 import re
 import sys
@@ -54,12 +55,29 @@ BASELINE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 # (`2000-2022`) and a longer number never match.
 EPOCH_DATE = re.compile(r"(?<!\d)2000-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])(?!\d)")
 
-# What CI compares, and what a reader copies out of the manual.
+# WHAT THE GATE READS, AND WHY THE TEST TREES CARRY NO EXTENSION LIST.  A fixture
+# arrives in whatever form its family needs -- the .sql the suite runs, the .out
+# it is compared against, a .c program, a .json schema, and the .sql.xz pg_dump
+# the _tbl tests load -- so naming extensions names the forms that existed when
+# the list was written, and the next one enters unread.  A date inside the
+# pg_dump is the case that proves it: it reaches every _tbl table in the suite
+# and no ordinary read sees it.  The two test trees are therefore read WHOLE.
+# `doc` names .xml because the manual is one form beside built artifacts.
 AREAS = (
-    ("mobilitydb/test", (".sql", ".out")),
-    ("meos/test", (".c",)),
+    ("mobilitydb/test", None),
+    ("meos/test", None),
     ("doc", (".xml",)),
 )
+
+
+def read_text(path):
+    """The file's text, decompressing an archive; None when it cannot be read."""
+    try:
+        opener = lzma.open if path.endswith(".xz") else open
+        with opener(path, "rt", encoding="utf-8", errors="replace") as fh:
+            return fh.read()
+    except (OSError, lzma.LZMAError):
+        return None
 
 
 def offending_files():
@@ -68,14 +86,13 @@ def offending_files():
     for area, exts in AREAS:
         for dirpath, _, names in os.walk(os.path.join(ROOT, area)):
             for name in names:
-                if not name.endswith(exts):
+                if exts is not None and not name.endswith(exts):
                     continue
                 path = os.path.join(dirpath, name)
-                try:
-                    with open(path, encoding="utf-8", errors="replace") as fh:
-                        n = len(EPOCH_DATE.findall(fh.read()))
-                except OSError:
+                text = read_text(path)
+                if text is None:
                     continue
+                n = len(EPOCH_DATE.findall(text))
                 if n:
                     found[os.path.relpath(path, ROOT)] = n
     return found

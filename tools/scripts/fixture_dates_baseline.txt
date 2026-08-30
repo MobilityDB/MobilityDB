@@ -38,3 +38,4 @@ meos/test/timestamp_test.c 4
 meos/test/trajclip_test.c 6
 meos/test/trgeo_test.c 1
 meos/test/typeof_test.c 4
+mobilitydb/test/temporal/data/load.sql.xz 1000
