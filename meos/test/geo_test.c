@@ -262,6 +262,33 @@ int main(void)
   free(holed_geo); free(holed_buf);
   meos_errno_reset();
 
+  /* A circle is read as the two arcs between one pair of points, so a portion
+   * of it is told from the complementary one by a point strictly inside it
+   * and never by the endpoints alone. What locates a point against a
+   * collection of two or more surfaces is the union of their boundaries, and
+   * a circle contributing one half of itself there bounds nothing: every
+   * point of the surface reads as lying outside it. The buffer of a geometry
+   * of several parts is such a collection, each part bounded by a circle */
+  char pair_covers_patt[10] = "T*****FF*";
+  GSERIALIZED *pair_geo = geom_in("MULTIPOINT(0 0,10 0)", -1);
+  assert(pair_geo != NULL);
+  meos_errno_reset();
+  GSERIALIZED *pair_buf = geom_buffer(pair_geo, 1.0, "");
+  printf("geom_buffer(a geometry of two points): %d, errno %d\n",
+    pair_buf != NULL, meos_errno());
+  assert(pair_buf != NULL);
+  assert(meos_errno() == 0);
+  bool pair_covers = geom_relate_pattern(pair_buf, pair_geo, pair_covers_patt);
+  printf("  it covers the geometry it is taken of: %d\n", pair_covers);
+  assert(pair_covers == true);
+  char *pair_matrix = geom_relate(pair_buf, pair_geo);
+  printf("  its matrix against the two points: %s\n", pair_matrix);
+  assert(pair_matrix != NULL);
+  assert(strcmp(pair_matrix, "0F2FF1FF2") == 0);
+  assert(meos_errno() == 0);
+  free(pair_geo); free(pair_buf); free(pair_matrix);
+  meos_errno_reset();
+
   /* Two computations of one node read as one node when they lie nearer than
    * the tolerance the buffer allows a node, and that tolerance takes the
    * square root of the machine epsilon and scales it by the COORDINATES. The
