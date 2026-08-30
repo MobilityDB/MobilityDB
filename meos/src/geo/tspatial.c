@@ -73,12 +73,20 @@
   #include "rgeo/trgeo_boxops.h"
 #endif
 #if H3
+  #include <h3api.h>
+  #include "h3/h3index.h"
   #include "h3/th3index_boxops.h"
 #endif
+#if POINTCLOUD
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
+#endif
 #if QUADBIN
+  #include <meos_quadbin.h>
   #include "quadbin/tquadbin_boxops.h"
 #endif
 #if S2CELL
+  #include <meos_s2cell.h>
   #include "s2cell/ts2cell_boxops.h"
 #endif
 
@@ -108,9 +116,19 @@ spatialbase_as_text(Datum value, MeosType type, int maxdd)
     case T_CBUFFER:
       return cbuffer_as_text(DatumGetCbufferP(value), maxdd);
 #endif
+#if H3
+    case T_H3INDEX:
+      return meos_h3index_out((H3Index) DatumGetInt64(value));
+#endif
 #if NPOINT
     case T_NPOINT:
       return npoint_as_text(DatumGetNpointP(value), maxdd);
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_hex_out((const Pcpoint *) DatumGetPointer(value), maxdd);
+    case T_PCPATCH:
+      return pcpatch_hex_out((const Pcpatch *) DatumGetPointer(value), maxdd);
 #endif
 #if POSE
     case T_POSE:
@@ -119,6 +137,14 @@ spatialbase_as_text(Datum value, MeosType type, int maxdd)
 #if POSECHAIN
     case T_POSECHAIN:
       return posechain_as_text(DatumGetPoseChainP(value), maxdd);
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+      return quadbin_index_to_string((Quadbin) DatumGetInt64(value));
+#endif
+#if S2CELL
+    case T_S2CELL:
+      return s2cell_out((S2CellId) DatumGetInt64(value));
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
