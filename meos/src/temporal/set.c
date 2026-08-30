@@ -785,6 +785,13 @@ set_round(const Set *s, int maxdd)
   Datum *values = palloc(sizeof(Datum) * s->count);
   Datum size = Int32GetDatum(maxdd);
   datum_func2 func = round_fn(s->basetype);
+  /* A base type carrying no decimal has no round function and #round_fn
+   * reports it, so the decline is propagated rather than called */
+  if (! func)
+  {
+    pfree(values);
+    return NULL;
+  }
   for (int i = 0; i < s->count; i++)
     values[i] = func(SET_VAL_N(s, i), size);
   return set_make_free(values, s->count, s->basetype, ORDER);

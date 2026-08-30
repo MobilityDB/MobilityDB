@@ -1438,6 +1438,14 @@ temporal_round(const Temporal *temp, int maxdd)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) round_fn(temptype_basetype(work->temptype));
+  /* A base type carrying no decimal has no round function and #round_fn
+   * reports it, so the decline is propagated rather than lifted */
+  if (! lfinfo.func)
+  {
+    if (work != temp)
+      pfree(work);
+    return NULL;
+  }
   lfinfo.numparam = 1;
   lfinfo.param[0] = Int32GetDatum(maxdd);
   lfinfo.argtype[0] = work->temptype;

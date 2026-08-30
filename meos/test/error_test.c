@@ -48,8 +48,10 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <meos.h>
 #include <meos_geo.h>
+#include <meos_h3.h>
 #include <meos_pose.h>
 
 /* Main program */
@@ -263,6 +265,37 @@ int main(void)
   assert(meos_errno() == 0);
   printf("temporal_at_max(tint): answered, errno %d\n", meos_errno());
   free(extremum);
+
+  /* A base type carrying no decimal has no round function, and the two
+   * entries that lift one report the decline instead of calling it: a cell
+   * index identifier is an integer with nothing to round */
+  meos_errno_reset();
+  Set *cellset = h3index_to_set((H3Index) 0x831c02fffffffffULL);
+  assert(cellset != NULL && meos_errno() == 0);
+  assert(set_round(cellset, 2) == NULL);
+  printf("set_round(h3indexset): declined, errno %d\n", meos_errno());
+  assert(meos_errno() == MEOS_ERR_INTERNAL_TYPE_ERROR);
+  free(cellset);
+
+  meos_errno_reset();
+  Temporal *cell = th3index_in("[831c02fffffffff@2001-01-01]");
+  assert(cell != NULL && meos_errno() == 0);
+  assert(temporal_round(cell, 2) == NULL);
+  printf("temporal_round(th3index): declined, errno %d\n", meos_errno());
+  assert(meos_errno() == MEOS_ERR_INTERNAL_TYPE_ERROR);
+  free(cell);
+
+  /* A set of floats rounds, so the two declines discriminate */
+  meos_errno_reset();
+  Set *fset = floatset_in("{1.234567, 2.345678}");
+  assert(fset != NULL);
+  Set *frounded = set_round(fset, 2);
+  assert(frounded != NULL && meos_errno() == 0);
+  char *ftext = floatset_out(frounded, 6);
+  printf("set_round(floatset): answered %s\n", ftext);
+  assert(strcmp(ftext, "{1.23, 2.35}") == 0);
+  free(ftext); free(frounded); free(fset);
+  meos_errno_reset();
 
   free(tpt1); free(tpt2);
 
