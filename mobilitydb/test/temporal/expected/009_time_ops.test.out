@@ -1530,8 +1530,8 @@ SELECT t <-> timestamptz '2001-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
         0
-     1080
-     3840
+        0
+        0
 (3 rows)
 
 SELECT t <-> tstzspan '[2001-06-01, 2001-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
@@ -1567,7 +1567,7 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-   998
+  1498
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
@@ -1579,7 +1579,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspan '[2001-06-01, 2001-
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
-   998
+  1498
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
@@ -1597,7 +1597,7 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
-     1
+   501
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> timestamptz '2001-06-01';
@@ -1645,7 +1645,7 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
-     1
+   501
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ t;
@@ -1801,7 +1801,7 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-   998
+  1498
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
@@ -1813,7 +1813,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspan '[2001-06-01, 2001-
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
-   998
+  1498
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
@@ -1831,7 +1831,7 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
-     1
+   501
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> timestamptz '2001-06-01';
@@ -1879,7 +1879,7 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
-     1
+   501
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ t;
