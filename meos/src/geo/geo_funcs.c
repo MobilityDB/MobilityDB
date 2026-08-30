@@ -6106,11 +6106,21 @@ relate_same_portion(const Edge *a, const Edge *b)
 {
   if (a->etype != b->etype)
     return false;
-  if (a->etype == EDGE_POLYARC &&
-      (fabs(a->cx - b->cx) > MEOS_GEOM_TOLERANCE ||
-       fabs(a->cy - b->cy) > MEOS_GEOM_TOLERANCE ||
-       fabs(a->radius - b->radius) > MEOS_GEOM_TOLERANCE))
-    return false;
+  if (a->etype == EDGE_POLYARC)
+  {
+    if (fabs(a->cx - b->cx) > MEOS_GEOM_TOLERANCE ||
+        fabs(a->cy - b->cy) > MEOS_GEOM_TOLERANCE ||
+        fabs(a->radius - b->radius) > MEOS_GEOM_TOLERANCE)
+      return false;
+    /* Two endpoints do not determine an arc of a circle: the two arcs a full
+     * circle is read as carry the same pair and bow to opposite sides, so a
+     * portion is told from its complement by a point strictly inside it */
+    double amx, amy, bmx, bmy;
+    relate_area_edge_point(a, 0.5, &amx, &amy);
+    relate_area_edge_point(b, 0.5, &bmx, &bmy);
+    if (! relate_same_point(amx, amy, bmx, bmy))
+      return false;
+  }
   /* The two components may traverse the portion in opposite directions */
   return (relate_same_point(a->x1, a->y1, b->x1, b->y1) &&
       relate_same_point(a->x2, a->y2, b->x2, b->y2)) ||
