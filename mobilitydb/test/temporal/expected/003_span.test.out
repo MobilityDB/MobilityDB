@@ -19,6 +19,20 @@ SELECT tstzspan '[2000-01-01, 2000-01-02';
 ERROR:  Could not parse tstzspan value: Missing closing bracket/parenthesis
 LINE 1: SELECT tstzspan '[2000-01-01, 2000-01-02';
                         ^
+SELECT tstzspan '[2000-01-01T00:00:00Z, 2000-01-02T00:00:00Z]' =
+  tstzspan '[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01T00:00:00UTC, 2000-01-02T00:00:00UTC]' =
+  tstzspan '[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT asText(floatspan '[1.12345678, 2.123456789]', 6);
         astext        
 ----------------------
