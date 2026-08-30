@@ -140,5 +140,9 @@ FROM (SELECT spaceTimeSplit(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-
 
 /* Errors */
 SELECT spaceTimeSplit(tgeometry 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, interval '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
+-- A grid needs a dimension to be laid on: a zero spatial size with no duration
+-- leaves every dimension unset
+SELECT spaceSplit(tgeompoint 'SRID=25832;[Point(0 0)@2000-01-01, Point(1000 1000)@2000-01-01 01:00]', 0.0);
+SELECT spaceTimeSplit(tgeompoint 'SRID=25832;[Point(0 0)@2000-01-01, Point(1000 1000)@2000-01-01 01:00]', 0.0, NULL);
 
 -------------------------------------------------------------------------------

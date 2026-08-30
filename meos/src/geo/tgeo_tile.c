@@ -1316,7 +1316,12 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
    * what differs between the families is which restriction reads the value,
    * which is the caller's to supply */
   VALIDATE_NOT_NULL(ntiles, NULL); VALIDATE_TSPATIAL(temp, NULL);
-  if ((xsize && ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8)) ||
+  /* A grid needs at least one dimension to be laid on, which is what the state
+   * constructor asserts. The per-size checks below are guarded by `xsize &&`, so
+   * a zero size skips its own positivity check rather than failing it; without
+   * this the value reaches the binning arithmetic and divides by that zero */
+  if (! ensure_one_tile_dimension(xsize, duration) ||
+      (xsize && ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||
       (xsize && (! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin))) ||
