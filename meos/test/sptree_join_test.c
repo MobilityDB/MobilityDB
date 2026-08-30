@@ -115,7 +115,7 @@ random_stbox(double span, double minext, double maxext)
   char buf[256];
   snprintf(buf, sizeof(buf),
     "STBOX XT(((%.6f,%.6f),(%.6f,%.6f)),"
-    "[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])", x, y, x + dx, y + dy);
+    "[2001-01-01 00:00:00+00, 2001-01-02 00:00:00+00])", x, y, x + dx, y + dy);
   return stbox_in(buf);
 }
 
@@ -321,7 +321,7 @@ test_degenerate(void)
     sptree_join(empty1, empty2, INDEX_OVERLAPS, result) == 0);
 
   SPTree *filled = sptree_create_stbox(SPTREE_QUADTREE);
-  STBox *box = stbox_in("STBOX XT(((0,0),(1,1)),[2000-01-01, 2000-01-02])");
+  STBox *box = stbox_in("STBOX XT(((0,0),(1,1)),[2001-01-01, 2001-01-02])");
   sptree_insert(filled, box, 0);
   check("empty joined with a filled index reports no pair",
     sptree_join(empty1, filled, INDEX_OVERLAPS, result) == 0);
@@ -332,14 +332,14 @@ test_degenerate(void)
    * report their single pair once the boxes are made to overlap */
   SPTree *far = sptree_create_stbox(SPTREE_KDTREE);
   STBox *farbox = stbox_in(
-    "STBOX XT(((1000,1000),(1001,1001)),[2000-01-01, 2000-01-02])");
+    "STBOX XT(((1000,1000),(1001,1001)),[2001-01-01, 2001-01-02])");
   sptree_insert(far, farbox, 0);
   check("indexes that share no box report no pair",
     sptree_join(filled, far, INDEX_OVERLAPS, result) == 0);
 
   SPTree *near = sptree_create_stbox(SPTREE_KDTREE);
   STBox *nearbox = stbox_in(
-    "STBOX XT(((0.5,0.5),(2,2)),[2000-01-01, 2000-01-02])");
+    "STBOX XT(((0.5,0.5),(2,2)),[2001-01-01, 2001-01-02])");
   sptree_insert(near, nearbox, 7);
   int n = sptree_join(filled, near, INDEX_OVERLAPS, result);
   check("a single overlapping pair is reported once", n == 1);
@@ -351,7 +351,7 @@ test_degenerate(void)
    * STBox pair must overlap in every dimension the two boxes share */
   SPTree *later = sptree_create_stbox(SPTREE_QUADTREE);
   STBox *laterbox = stbox_in(
-    "STBOX XT(((0,0),(1,1)),[2001-01-01, 2001-01-02])");
+    "STBOX XT(((0,0),(1,1)),[2002-01-01, 2002-01-02])");
   sptree_insert(later, laterbox, 0);
   check("boxes apart in time only are not reported",
     sptree_join(filled, later, INDEX_OVERLAPS, result) == 0);
@@ -375,7 +375,7 @@ test_refused(void)
   SPTree *stboxtree = sptree_create_stbox(SPTREE_QUADTREE);
   SPTree *other = sptree_create_stbox(SPTREE_KDTREE);
   SPTree *tboxtree = sptree_create_tbox(SPTREE_QUADTREE);
-  STBox *box = stbox_in("STBOX XT(((0,0),(1,1)),[2000-01-01, 2000-01-02])");
+  STBox *box = stbox_in("STBOX XT(((0,0),(1,1)),[2001-01-01, 2001-01-02])");
   sptree_insert(stboxtree, box, 0);
   sptree_insert(other, box, 1);
 

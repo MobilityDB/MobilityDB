@@ -106,7 +106,7 @@ counting_free(void *ptr)
 /* Main program */
 int main(void)
 {
-  const char *tint_str = "[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]";
+  const char *tint_str = "[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]";
 
   /* Initialize MEOS (which installs the default libc allocator) */
   meos_initialize();

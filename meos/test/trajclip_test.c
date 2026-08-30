@@ -95,16 +95,16 @@ main(void)
    * 056_tpoint_spatialfuncs_tbl, 087_tnpoint_spatialfuncs and
    * 087_tnpoint_spatialfuncs_tbl on PR #18's CI. */
   fails += run_case("quantised exit on slanted segment",
-    "[POINT(69.790369 81.452098)@2000-01-01,"
-    " POINT(55.752648 78.953813)@2000-01-02,"
-    " POINT(48.718663 77.764071)@2000-01-03]",
+    "[POINT(69.790369 81.452098)@2001-01-01,"
+    " POINT(55.752648 78.953813)@2001-01-02,"
+    " POINT(48.718663 77.764071)@2001-01-03]",
     "POLYGON((50 50,50 100,100 100,100 50,50 50))",
-    "{[POINT(69.790369 81.452098)@2000-01-01 00:00:00+00,"
-    " POINT(55.752648 78.953813)@2000-01-02 00:00:00+00,"
+    "{[POINT(69.790369 81.452098)@2001-01-01 00:00:00+00,"
+    " POINT(55.752648 78.953813)@2001-01-02 00:00:00+00,"
     /* The segment reaches x = 50 at 0.81783626209040821... of the way from the
      * first instant, which is 70661.053044611... seconds into the day, and a
      * timestamp holds whole microseconds */
-    " POINT(50 77.980799)@2000-01-02 19:37:41.053044+00]}");
+    " POINT(50 77.980799)@2001-01-02 19:37:41.053044+00]}");
 
   /* Multi-path open-path output where each output path is two crossings on
    * the same segment (no input vertex inside the path). The earlier

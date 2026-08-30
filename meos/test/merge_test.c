@@ -64,8 +64,8 @@ int main(void)
   meos_initialize_noexit_error_handler();
 
   /* Two instant sets sharing a timestamp with different values */
-  Temporal *conflict1 = tfloat_in("{77@2000-01-01}");
-  Temporal *conflict2 = tfloat_in("{88@2000-01-01}");
+  Temporal *conflict1 = tfloat_in("{77@2001-01-01}");
+  Temporal *conflict2 = tfloat_in("{88@2001-01-01}");
   assert(conflict1); assert(conflict2);
 
   /* temporal_merge_array reports the conflict */
@@ -73,7 +73,7 @@ int main(void)
   meos_errno_reset();
   Temporal *merged = temporal_merge_array(conflictarr, 2);
   printf("temporal_merge_array({%s, %s}, 2): NULL, errno %d\n",
-    "{77@2000-01-01}", "{88@2000-01-01}", meos_errno());
+    "{77@2001-01-01}", "{88@2001-01-01}", meos_errno());
   assert(merged == NULL);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
 
@@ -81,13 +81,13 @@ int main(void)
   meos_errno_reset();
   merged = temporal_merge(conflict1, conflict2);
   printf("temporal_merge(%s, %s): NULL, errno %d\n",
-    "{77@2000-01-01}", "{88@2000-01-01}", meos_errno());
+    "{77@2001-01-01}", "{88@2001-01-01}", meos_errno());
   assert(merged == NULL);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
 
   /* A conflict on a shared timestamp of temporal points is reported alike */
-  Temporal *point1 = tgeompoint_in("SRID=4326;{POINT(1 1)@2000-01-01}");
-  Temporal *point2 = tgeompoint_in("SRID=4326;{POINT(2 2)@2000-01-01}");
+  Temporal *point1 = tgeompoint_in("SRID=4326;{POINT(1 1)@2001-01-01}");
+  Temporal *point2 = tgeompoint_in("SRID=4326;{POINT(2 2)@2001-01-01}");
   assert(point1); assert(point2);
   Temporal *pointarr[2] = {point1, point2};
   meos_errno_reset();
@@ -100,20 +100,20 @@ int main(void)
   /* Two CONTINUOUS sequences meeting at a shared instant with different
    * values. This reaches a different merge path from the instant sets above:
    * the sequences are merged as an array and assembled into a sequence set */
-  Temporal *seq1 = tfloat_in("[77@2000-01-01, 88@2000-01-03]");
-  Temporal *seq2 = tfloat_in("[99@2000-01-03, 44@2000-01-05]");
+  Temporal *seq1 = tfloat_in("[77@2001-01-01, 88@2001-01-03]");
+  Temporal *seq2 = tfloat_in("[99@2001-01-03, 44@2001-01-05]");
   assert(seq1); assert(seq2);
   meos_errno_reset();
   merged = temporal_merge(seq1, seq2);
   printf("temporal_merge(%s, %s): NULL, errno %d\n",
-    "[77@2000-01-01, 88@2000-01-03]", "[99@2000-01-03, 44@2000-01-05]",
+    "[77@2001-01-01, 88@2001-01-03]", "[99@2001-01-03, 44@2001-01-05]",
     meos_errno());
   assert(merged == NULL);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
 
   /* The same conflict between two sequence SETS */
-  Temporal *ss1 = tfloat_in("{[77@2000-01-01, 88@2000-01-03]}");
-  Temporal *ss2 = tfloat_in("{[99@2000-01-03, 44@2000-01-05]}");
+  Temporal *ss1 = tfloat_in("{[77@2001-01-01, 88@2001-01-03]}");
+  Temporal *ss2 = tfloat_in("{[99@2001-01-03, 44@2001-01-05]}");
   assert(ss1); assert(ss2);
   meos_errno_reset();
   merged = temporal_merge(ss1, ss2);
@@ -124,44 +124,44 @@ int main(void)
 
   /* Two continuous sequences meeting at a shared instant that carries the
    * SAME value merge into one sequence */
-  Temporal *join1 = tfloat_in("[77@2000-01-01, 88@2000-01-03]");
-  Temporal *join2 = tfloat_in("[88@2000-01-03, 44@2000-01-05]");
+  Temporal *join1 = tfloat_in("[77@2001-01-01, 88@2001-01-03]");
+  Temporal *join2 = tfloat_in("[88@2001-01-03, 44@2001-01-05]");
   assert(join1); assert(join2);
   meos_errno_reset();
   Temporal *joined = temporal_merge(join1, join2);
   assert(joined);
   char *joined_out = tfloat_out(joined, 6);
-  printf("temporal_merge(%s, %s): %s\n", "[77@2000-01-01, 88@2000-01-03]",
-    "[88@2000-01-03, 44@2000-01-05]", joined_out);
+  printf("temporal_merge(%s, %s): %s\n", "[77@2001-01-01, 88@2001-01-03]",
+    "[88@2001-01-03, 44@2001-01-05]", joined_out);
   assert(joined_out[0] == '[');
 
   free(seq1); free(seq2); free(ss1); free(ss2);
   free(join1); free(join2); free(joined); free(joined_out);
 
   /* Merging compatible values still succeeds after the reported conflicts */
-  Temporal *ok1 = tfloat_in("{77@2000-01-01}");
-  Temporal *ok2 = tfloat_in("{88@2000-01-02}");
+  Temporal *ok1 = tfloat_in("{77@2001-01-01}");
+  Temporal *ok2 = tfloat_in("{88@2001-01-02}");
   assert(ok1); assert(ok2);
   Temporal *okarr[2] = {ok1, ok2};
   merged = temporal_merge_array(okarr, 2);
   assert(merged);
   char *merged_out = tfloat_out(merged, 6);
   printf("temporal_merge_array({%s, %s}, 2): %s\n",
-    "{77@2000-01-01}", "{88@2000-01-02}", merged_out);
+    "{77@2001-01-01}", "{88@2001-01-02}", merged_out);
   assert(strcmp(merged_out,
-    "{77@2000-01-01 00:00:00+00, 88@2000-01-02 00:00:00+00}") == 0);
+    "{77@2001-01-01 00:00:00+00, 88@2001-01-02 00:00:00+00}") == 0);
 
   /* Values sharing a timestamp with the SAME value merge into one instant */
-  Temporal *same1 = tfloat_in("{77@2000-01-01}");
-  Temporal *same2 = tfloat_in("{77@2000-01-01}");
+  Temporal *same1 = tfloat_in("{77@2001-01-01}");
+  Temporal *same2 = tfloat_in("{77@2001-01-01}");
   assert(same1); assert(same2);
   Temporal *samearr[2] = {same1, same2};
   Temporal *sameres = temporal_merge_array(samearr, 2);
   assert(sameres);
   char *sameres_out = tfloat_out(sameres, 6);
   printf("temporal_merge_array({%s, %s}, 2): %s\n",
-    "{77@2000-01-01}", "{77@2000-01-01}", sameres_out);
-  assert(strcmp(sameres_out, "77@2000-01-01 00:00:00+00") == 0);
+    "{77@2001-01-01}", "{77@2001-01-01}", sameres_out);
+  assert(strcmp(sameres_out, "77@2001-01-01 00:00:00+00") == 0);
 
   free(conflict1); free(conflict2);
   free(point1); free(point2);

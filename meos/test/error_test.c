@@ -81,10 +81,10 @@ int main(void)
   assert(meos_errno() == 0);
 
   /* A succeeding call leaves the status clear */
-  Temporal *good = tfloat_in("{77@2000-01-01}");
+  Temporal *good = tfloat_in("{77@2001-01-01}");
   assert(good != NULL);
   char *good_out = tfloat_out(good, 6);
-  printf("tfloat_in(\"{77@2000-01-01}\"): %s, errno %d\n", good_out,
+  printf("tfloat_in(\"{77@2001-01-01}\"): %s, errno %d\n", good_out,
     meos_errno());
   assert(meos_errno() == 0);
 
@@ -106,7 +106,7 @@ int main(void)
    * inside the rejected check. The count starts at a value the functions never
    * produce, so that leaving it untouched is distinguishable from setting it. */
   int count = -559038737;
-  Temporal *inst = tint_in("1@2000-01-01");
+  Temporal *inst = tint_in("1@2001-01-01");
   assert(inst != NULL);
   meos_errno_reset();
   /* temporal_segments takes a sequence (set), so an instant is rejected */
@@ -116,7 +116,7 @@ int main(void)
   assert(count == 0);
 
   count = -559038737;
-  Temporal *seq = tint_in("{1@2000-01-01, 2@2000-01-02}");
+  Temporal *seq = tint_in("{1@2001-01-01, 2@2001-01-02}");
   assert(seq != NULL);
   meos_errno_reset();
   /* a span count of zero is rejected */
@@ -136,7 +136,7 @@ int main(void)
   assert(count == 0);
 
   count = -559038737;
-  Temporal *num = tint_in("{1@2000-01-01}");
+  Temporal *num = tint_in("{1@2001-01-01}");
   assert(num != NULL);
   meos_errno_reset();
   /* the two values must share a type, so a temporal float is rejected */
@@ -208,8 +208,8 @@ int main(void)
    * an order. A geometry has a B-tree order so that it can be indexed, which is
    * not a meaning to compare over time, so the call declines */
   meos_errno_reset();
-  Temporal *tpt1 = tgeompoint_in("[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]");
-  Temporal *tpt2 = tgeompoint_in("[Point(2 2)@2000-01-01, Point(3 3)@2000-01-02]");
+  Temporal *tpt1 = tgeompoint_in("[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]");
+  Temporal *tpt2 = tgeompoint_in("[Point(2 2)@2001-01-01, Point(3 3)@2001-01-02]");
   assert(tpt1 != NULL && tpt2 != NULL && meos_errno() == 0);
   Temporal *unordered = tlt_temporal_temporal(tpt1, tpt2);
   printf("tlt_temporal_temporal(tgeompoint, tgeompoint): %s, errno %d\n",
@@ -249,8 +249,8 @@ int main(void)
   /* A temporal pose declines them for the same reason, and a pose is the value
    * a temporal rigid geometry carries */
   meos_errno_reset();
-  Temporal *tps = tpose_in("[Pose(Point(0 0),0)@2000-01-01, "
-    "Pose(Point(2 2),0.5)@2000-01-02]");
+  Temporal *tps = tpose_in("[Pose(Point(0 0),0)@2001-01-01, "
+    "Pose(Point(2 2),0.5)@2001-01-02]");
   assert(tps != NULL && meos_errno() == 0);
   assert(temporal_minus_max(tps) == NULL);
   printf("temporal_minus_max(tpose): declined, errno %d\n", meos_errno());

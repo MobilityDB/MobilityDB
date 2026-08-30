@@ -3,6 +3,10 @@
 # count above the one recorded, so a migrated area is protected the day it is
 # clean while the rest cannot drift further. The list only shrinks: delete a line
 # when its file is migrated.
+#
+# The four meos/test entries are the bin origin 2000-01-03, the first Monday of
+# 2000 and the default every tprecision and tsample signature declares, so they
+# name a reference point rather than a fixture instant and stay as they are.
 doc/box_types.xml 2
 doc/es/box_types.xml 2
 doc/es/set_span_types.xml 10
@@ -23,19 +27,8 @@ doc/temporal_raster.xml 11
 doc/temporal_rigid_geometries.xml 22
 doc/temporal_spatial_p1.xml 10
 doc/temporal_types_analytics.xml 454
-meos/test/allocator_test.c 3
-meos/test/error_test.c 12
-meos/test/index_position_test.c 4
-meos/test/merge_test.c 39
-meos/test/rtree_join_test.c 6
-meos/test/rtree_load_test.c 6
-meos/test/sptree_join_test.c 10
-meos/test/sptree_load_test.c 4
 meos/test/tbl_temporal.c 1
 meos/test/tbl_temporal_value.c 1
 meos/test/tbl_value_value.c 1
 meos/test/timestamp_test.c 4
-meos/test/trajclip_test.c 6
-meos/test/trgeo_test.c 1
-meos/test/typeof_test.c 4
 mobilitydb/test/temporal/data/load.sql.xz 1000
