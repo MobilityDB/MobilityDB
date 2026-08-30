@@ -305,3 +305,11 @@ FROM (SELECT spaceTimeSplit(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-
 SELECT spaceTimeSplit(tgeometry 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, interval '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
 ERROR:  The tgeometry cannot have Z dimension
 CONTEXT:  SQL function "spacetimesplit" statement 1
+SELECT spaceSplit(tgeompoint 'SRID=25832;[Point(0 0)@2000-01-01, Point(1000 1000)@2000-01-01 01:00]', 0.0);
+ERROR:  At least one of the arguments xsize or duration must be given
+CONTEXT:  SQL function "spacesplit" statement 1
+SELECT spaceTimeSplit(tgeompoint 'SRID=25832;[Point(0 0)@2000-01-01, Point(1000 1000)@2000-01-01 01:00]', 0.0, NULL);
+ spacetimesplit 
+----------------
+(0 rows)
+
