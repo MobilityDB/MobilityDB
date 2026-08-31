@@ -131,7 +131,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Mirrors <code>tstzspan_set_stbox</code>. The span names no schema, so <code>pcid</code> stays 0 — the "unknown" value <code>ensure_same_pcid_tpcbox</code> accepts against any schema, which is what lets a time-only query meet an indexed box. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Mirrors <code>tstzspan_set_stbox</code>. The span names no schema, so <code>pcid</code> stays 0. A box carrying no coordinates has nothing for a schema to give a meaning to, so <code>ensure_valid_tpcbox_tpcbox</code> leaves its schema unread, which is what lets a time-only query meet an indexed box. </dd></dl>
 
 </div>
 </div>

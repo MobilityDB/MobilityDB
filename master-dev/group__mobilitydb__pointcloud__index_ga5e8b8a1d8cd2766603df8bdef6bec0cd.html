@@ -109,7 +109,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>GiST same method — exact equality, not the user-facing <code>same_tpcbox_tpcbox</code> (which is fuzzy on the same-pcid front) @sqlfn tpcbox_gist_same() </p>
+<p>GiST same method — exact equality, not the user-facing <code>same_tpcbox_tpcbox</code>, which refuses two boxes naming different schemas rather than answering false. </p>
+<p >An index method has to answer, so this one reads a differing schema as one more way for two keys to differ @sqlfn tpcbox_gist_same() </p>
 
 </div>
 </div>
