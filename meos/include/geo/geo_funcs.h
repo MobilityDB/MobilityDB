@@ -448,8 +448,17 @@ arc_set_bbox(Edge *e)
 static inline bool
 point_on_arc(double px, double py, const Edge *e)
 {
+  /* The radial distance is read from the coordinates of the point and of the
+   * centre, so what it misses by is a property of their arithmetic and not of
+   * the arc: a few units in the last place of the largest of them. An absolute
+   * band asks a point at a projected 6.4e6 to sit on its own circle to a
+   * thousandth of what that coordinate can express, and the point the engine
+   * itself places on the arc then reads as lying off it. The edge carries the
+   * tolerance its own coordinates call for -- the same quantity
+   * #point_on_segment reads for a straight edge -- and the floor leaves the
+   * band at MEOS_GEOM_TOLERANCE where an edge carries none */
   double d = hypot(px - e->cx, py - e->cy);
-  if (fabs(d - e->radius) > MEOS_GEOM_TOLERANCE)
+  if (fabs(d - e->radius) > fmax(e->tol, MEOS_GEOM_TOLERANCE))
     return false;
   return arc_contains_angle(e, atan2(py - e->cy, px - e->cx));
 }

@@ -262,6 +262,37 @@ int main(void)
   free(holed_geo); free(holed_buf);
   meos_errno_reset();
 
+  /* What a radial distance misses its arc by is a property of the coordinates
+   * it is read from, so the band it is judged against is theirs. At projected
+   * coordinates the point this states lies 1.6e-11 off the circle it is placed
+   * on, which is under a tenth of what those coordinates express and far over
+   * an absolute 1e-12, so a band that does not scale reads the boundary of a
+   * disc as its exterior. The same disc at the origin answers the same way,
+   * which is what makes the case about the scale rather than the geometry */
+  const char *disc_wkt[2] = {
+    "CURVEPOLYGON(CIRCULARSTRING(-1000 0,1000 0,-1000 0))",
+    "CURVEPOLYGON(CIRCULARSTRING(6399000 4600000,6401000 4600000,"
+      "6399000 4600000))" };
+  const char *edge_wkt[2] = {
+    "POINT(707.10678118654755 707.10678118654755)",
+    "POINT(6400707.1067811865 4600707.1067811865)" };
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *disc = geom_in(disc_wkt[i], -1);
+    GSERIALIZED *edge_pt = geom_in(edge_wkt[i], -1);
+    assert(disc != NULL); assert(edge_pt != NULL);
+    meos_errno_reset();
+    char *disc_matrix = geom_relate(disc, edge_pt);
+    printf("a disc %s its own boundary point: %s\n",
+      i ? "at projected coordinates against" : "at the origin against",
+      disc_matrix);
+    assert(disc_matrix != NULL);
+    assert(strcmp(disc_matrix, "FF20F1FF2") == 0);
+    assert(meos_errno() == 0);
+    free(disc); free(edge_pt); free(disc_matrix);
+    meos_errno_reset();
+  }
+
   /* A circle is read as the two arcs between one pair of points, so a portion
    * of it is told from the complementary one by a point strictly inside it
    * and never by the endpoints alone. What locates a point against a
