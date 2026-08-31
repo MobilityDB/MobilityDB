@@ -62,7 +62,7 @@ setSRID(tpcbox,integer) → tpcbox
 </pre><p>No reproyecta las coordenadas, para ello, proyecte primero el tpcpoint subyacente y tome la caja delimitadora del resultado</p><pre class="programlisting">
 SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
 -- 4326
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_setops"></a>Operaciones de conjuntos</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_union"></a><a class="indexterm" name="id12938"></a><a class="indexterm" name="id12941"></a><p>Unión e intersección de dos tpcboxes</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_setops"></a>Operaciones de conjuntos</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcboxUnion"></a><a class="indexterm" name="id12938"></a><a class="indexterm" name="id12941"></a><p>Unión e intersección de dos tpcboxes</p><pre class="programlisting">
 tpcbox {+, *} tpcbox → tpcbox
 </pre><p>Ambos operandos deben compartir el mismo <code class="varname">pcid</code>, y la intersección es NULL cuando las dos cajas son disjuntas.</p><pre class="programlisting">
 SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);

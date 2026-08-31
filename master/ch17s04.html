@@ -62,7 +62,7 @@ setSRID(tpcbox,integer) → tpcbox
 </pre><p>Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</p><pre class="programlisting">
 SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
 -- 4326
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_setops"></a>Set Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_union"></a><a class="indexterm" name="id13491"></a><a class="indexterm" name="id13494"></a><p>Union and intersection of two tpcboxes</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_setops"></a>Set Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcboxUnion"></a><a class="indexterm" name="id13491"></a><a class="indexterm" name="id13494"></a><p>Union and intersection of two tpcboxes</p><pre class="programlisting">
 tpcbox {+, *} tpcbox → tpcbox
 </pre><p>Both operands must share the same <code class="varname">pcid</code>, and the intersection is NULL when the two boxes are disjoint.</p><pre class="programlisting">
 SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
