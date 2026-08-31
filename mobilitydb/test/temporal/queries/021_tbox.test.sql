@@ -342,6 +342,11 @@ SELECT tbox 'TBOXFLOAT X([1,2])' &<# tbox 'TBOX T([2001-01-01,2001-01-02])';
 SELECT tbox 'TBOXFLOAT X([1,2])' #>> tbox 'TBOX T([2001-01-01,2001-01-02])';
 SELECT tbox 'TBOXFLOAT X([1,2])' #&> tbox 'TBOX T([2001-01-01,2001-01-02])';
 
+SELECT tbox 'TBOXINT X([1,2])' << tbox 'TBOXFLOAT X([1,2])';
+SELECT tbox 'TBOXINT X([1,2])' &< tbox 'TBOXFLOAT X([1,2])';
+SELECT tbox 'TBOXINT X([1,2])' >> tbox 'TBOXFLOAT X([1,2])';
+SELECT tbox 'TBOXINT X([1,2])' &> tbox 'TBOXFLOAT X([1,2])';
+
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b << t2.b;
