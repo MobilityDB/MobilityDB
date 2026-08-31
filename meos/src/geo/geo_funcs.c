@@ -3244,7 +3244,9 @@ relate_point_on_boundary(double x, double y, Edge **edges, int nedges)
         if (point_on_arc(x, y, e))
           return true;
         break;
-      default:
+      case EDGE_POINT:
+      case EDGE_LINESEG:
+      case EDGE_LINEARC:
         break;
     }
   }
@@ -6834,9 +6836,13 @@ relate_point_on_edge(double x, double y, const Edge *e)
     case EDGE_LINEARC:
     case EDGE_POLYARC:
       return point_on_arc(x, y, e);
-    default:
+    case EDGE_LINESEG:
+    case EDGE_POLYSEG:
       return point_on_segment(x, y, e->x1, e->y1, e->x2, e->y2);
   }
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown edge type: %d", e->etype);
+  return false;
 }
 
 /**
