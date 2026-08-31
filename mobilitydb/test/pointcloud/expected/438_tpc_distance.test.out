@@ -16,13 +16,13 @@ SELECT (tpcpoint(PC_MakePoint(1, ARRAY[3.0, 4.0, 0.0]::float[]), '2024-01-01'::t
         5
 (1 row)
 
-SELECT (tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1, 0)) |=| (tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
+SELECT (tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1)) |=| (tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1));
  ?column? 
 ----------
         0
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
+SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1));
  ?column? 
 ----------
         0
@@ -31,14 +31,14 @@ SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::t
 SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
                  '2024-01-01'::timestamptz)) |=|
        (tpcboxZT(0, 0, 0, 0, 0, 0,
-                  tstzspan '[2099-01-01, 2099-01-02]', 1, 0)) IS NULL;
+                  tstzspan '[2099-01-01, 2099-01-02]', 1)) IS NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2024-01-01, 2024-01-02]', 999, 0)) > 1e10;
+SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcbox
+  'TPCBOX(ZT(((0,0,0),(0,0,0)),[2024-01-01, 2024-01-02]), 999)') > 1e10;
 ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
 INSERT INTO pointcloud_formats (pcid, srid, schema)
 SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;

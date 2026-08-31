@@ -239,7 +239,36 @@ tpcbox_parse(const char **str)
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
-  TPCBox *result = tpcbox_make(hasx, hasz, hast, geodetic, box->srid, pcid,
+
+  /* Reconcile the two levels a TPCBox states its reference system at: the
+   * `SRID=` prefix the value carries and the schema its pcid names. This is
+   * the one site where both are genuinely written, so it is the one site that
+   * owes the reconciliation. A level reading `SRID_UNKNOWN` states nothing, so
+   * either level alone carries the answer and the schema is preferred where it
+   * speaks; two levels stating different systems is a value contradicting
+   * itself, which is an error rather than a choice between them. Where no
+   * schema resolves — a pcid of 0, or a MEOS program with no catalog behind
+   * it — the prefix is the only level there is, so reading a value never
+   * requires a catalog to be reachable */
+  srid = box->srid;
+  if (pcid != 0)
+  {
+    int32_t schema_srid = meos_pc_schema_srid(pcid);
+    if (schema_srid != SRID_INVALID && schema_srid != SRID_UNKNOWN)
+    {
+      if (srid != SRID_UNKNOWN && srid != schema_srid)
+      {
+        pfree(box);
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "Could not parse %s value: The value states SRID %d and the schema "
+          "of pcid %u states SRID %d", type_str, srid, pcid, schema_srid);
+        return NULL;
+      }
+      srid = schema_srid;
+    }
+  }
+
+  TPCBox *result = tpcbox_make(hasx, hasz, hast, geodetic, srid, pcid,
     box->xmin, box->xmax, box->ymin, box->ymax, box->zmin, box->zmax,
     hast ? &box->period : NULL);
   pfree(box);
@@ -804,9 +833,9 @@ tpcbox_expand(const TPCBox *box1, TPCBox *box2)
   }
   if (MEOS_FLAGS_GET_T(box2->flags) && MEOS_FLAGS_GET_T(box1->flags))
     span_expand(&box1->period, &box2->period);
-  /* Propagate pcid / srid from the enriching box if box2's was unset */
-  if (box2->pcid == 0) box2->pcid = box1->pcid;
-  if (box2->srid == 0) box2->srid = box1->srid;
+  /* The schema and its SRID are not extent: a combine grows what the boxes
+   * measure and leaves what they are measured in alone, the comparability
+   * gate having already established the two agree */
 }
 
 /**
@@ -914,8 +943,8 @@ inter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2, TPCBox *result)
     return false;  /* no shared dimensions → no intersection */
 
   memset(result, 0, sizeof(TPCBox));
-  result->srid = (box1->srid != 0) ? box1->srid : box2->srid;
-  result->pcid = (box1->pcid != 0) ? box1->pcid : box2->pcid;
+  result->srid = box1->srid;
+  result->pcid = box1->pcid;
   MEOS_FLAGS_SET_X(result->flags, hasx);
   MEOS_FLAGS_SET_Z(result->flags, hasz);
   MEOS_FLAGS_SET_T(result->flags, hast);

@@ -31,8 +31,8 @@
 
 \set p1 'tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), ''2024-01-01''::timestamptz)'
 \set p2 'tpcpoint(PC_MakePoint(1, ARRAY[3.0, 4.0, 0.0]::float[]), ''2024-01-01''::timestamptz)'
-\set box_at_origin 'tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1, 0)'
-\set box_far       'tpcboxZT(3, 4, 0, 3, 4, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1, 0)'
+\set box_at_origin 'tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1)'
+\set box_far       'tpcboxZT(3, 4, 0, 3, 4, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1)'
 
 -- Self-distance is zero.
 SELECT (:p1) |=| (:p1);
@@ -51,11 +51,12 @@ SELECT (:p1) |=| (:box_at_origin);
 SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
                  '2024-01-01'::timestamptz)) |=|
        (tpcboxZT(0, 0, 0, 0, 0, 0,
-                  tstzspan '[2099-01-01, 2099-01-02]', 1, 0)) IS NULL;
+                  tstzspan '[2099-01-01, 2099-01-02]', 1)) IS NULL;
 
--- Pcid mismatch is an error: values of two schemas cannot be compared.
-SELECT (:p1) |=| (tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2024-01-01, 2024-01-02]', 999, 0)) > 1e10;
+-- Pcid mismatch is an error: values of two schemas cannot be compared. The
+-- box is written rather than built, 999 naming no registered schema.
+SELECT (:p1) |=| (tpcbox
+  'TPCBOX(ZT(((0,0,0),(0,0,0)),[2024-01-01, 2024-01-02]), 999)') > 1e10;
 
 -- The same holds between two temporal pointcloud values. A second schema is
 -- registered as a copy of the first one, as the typmod test does.

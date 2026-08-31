@@ -30,39 +30,55 @@
 -- Value-level tests for tpcbox (constructors, accessors, set operations,
 -- topological predicates, comparison operators).
 
+-- A box reads its reference system off the schema its pcid names, so every
+-- pcid constructed with below names one. Schema 2 states the same reference
+-- system as schema 1, which is what leaves the schemas themselves as the only
+-- thing two such boxes disagree about; schema 5 states a different one.
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 5, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
+
 -------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT tpcboxX(0, 0, 10, 10, 1, 0);
-SELECT tpcboxZ(0, 0, 0, 10, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1);
+SELECT tpcboxZ(0, 0, 0, 10, 10, 10, 1);
 SELECT tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 1);
-SELECT tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+SELECT tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1);
 SELECT tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+  tstzspan '[2024-01-01, 2024-01-02]', 1);
 
 -------------------------------------------------------------------------------
 -- Accessors
 -------------------------------------------------------------------------------
 
 SELECT hasX(tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
+  tstzspan '[2024-01-01, 2024-01-02]', 1));
 SELECT hasZ(tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
+  tstzspan '[2024-01-01, 2024-01-02]', 1));
 SELECT hasT(tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
-SELECT hasZ(tpcboxX(0, 0, 10, 10, 1, 0));   -- false: no Z
-SELECT hasT(tpcboxX(0, 0, 10, 10, 1, 0));   -- false: no T
+  tstzspan '[2024-01-01, 2024-01-02]', 1));
+SELECT hasZ(tpcboxX(0, 0, 10, 10, 1));   -- false: no Z
+SELECT hasT(tpcboxX(0, 0, 10, 10, 1));   -- false: no T
 
-SELECT xmin(tpcboxX(0, 0, 10, 10, 1, 0));
-SELECT xmax(tpcboxX(0, 0, 10, 10, 1, 0));
-SELECT ymin(tpcboxX(0, 0, 10, 10, 1, 0));
-SELECT ymax(tpcboxX(0, 0, 10, 10, 1, 0));
-SELECT zmin(tpcboxZ(0, 0, 1, 10, 10, 9, 1, 0));
-SELECT zmax(tpcboxZ(0, 0, 1, 10, 10, 9, 1, 0));
-SELECT zmin(tpcboxX(0, 0, 10, 10, 1, 0));   -- NULL: no Z
-SELECT pcid(tpcboxX(0, 0, 10, 10, 7, 0));
-SELECT SRID(tpcboxX(0, 0, 10, 10, 1, 4326));
+SELECT xmin(tpcboxX(0, 0, 10, 10, 1));
+SELECT xmax(tpcboxX(0, 0, 10, 10, 1));
+SELECT ymin(tpcboxX(0, 0, 10, 10, 1));
+SELECT ymax(tpcboxX(0, 0, 10, 10, 1));
+SELECT zmin(tpcboxZ(0, 0, 1, 10, 10, 9, 1));
+SELECT zmax(tpcboxZ(0, 0, 1, 10, 10, 9, 1));
+SELECT zmin(tpcboxX(0, 0, 10, 10, 1));   -- NULL: no Z
+SELECT pcid(tpcboxX(0, 0, 10, 10, 2));
+SELECT SRID(tpcboxX(0, 0, 10, 10, 1));
+-- The SRID is the one the schema states, so it is not the caller's to supply
+SELECT SRID(tpcboxX(0, 0, 10, 10, 5));
+
+-- A pcid naming no registered schema states no reference system to read, so
+-- the box is refused rather than built with an assumed one, which is how
+-- PC_MakePoint answers the same input
+SELECT tpcboxX(0, 0, 10, 10, 7);
 
 -------------------------------------------------------------------------------
 -- Conversions
@@ -97,33 +113,33 @@ FROM (SELECT pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
 -- Set operations
 -------------------------------------------------------------------------------
 
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) + tpcboxX(3, 3, 10, 10, 1, 0);
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) * tpcboxX(3, 3, 10, 10, 1, 0);
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) * tpcboxX(50, 50, 60, 60, 1, 0);  -- NULL (disjoint)
+SELECT tpcboxX(0, 0, 5, 5, 1) + tpcboxX(3, 3, 10, 10, 1);
+SELECT tpcboxX(0, 0, 5, 5, 1) * tpcboxX(3, 3, 10, 10, 1);
+SELECT tpcboxX(0, 0, 5, 5, 1) * tpcboxX(50, 50, 60, 60, 1);  -- NULL (disjoint)
 
 -- A box carrying coordinates states the schema they are read in, so a box
 -- naming schema 0 and one naming schema 1 have no common extent to combine
-SELECT tpcboxX(0, 0, 5, 5, 0, 0) + tpcboxX(3, 3, 10, 10, 1, 0);
-SELECT tpcboxX(0, 0, 5, 5, 0, 0) * tpcboxX(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 0) + tpcboxX(3, 3, 10, 10, 1);
+SELECT tpcboxX(0, 0, 5, 5, 0) * tpcboxX(3, 3, 10, 10, 1);
 
 -------------------------------------------------------------------------------
 -- Topological predicates — same pcid
 -------------------------------------------------------------------------------
 
-SELECT tpcboxX(0, 0, 10, 10, 1, 0) @> tpcboxX(2, 2, 8, 8, 1, 0);
-SELECT tpcboxX(0, 0, 10, 10, 1, 0) @> tpcboxX(2, 2, 20, 20, 1, 0);
-SELECT tpcboxX(2, 2, 8, 8, 1, 0)   <@ tpcboxX(0, 0, 10, 10, 1, 0);
-SELECT tpcboxX(0, 0, 5, 5, 1, 0)   && tpcboxX(3, 3, 10, 10, 1, 0);
-SELECT tpcboxX(0, 0, 5, 5, 1, 0)   && tpcboxX(50, 50, 60, 60, 1, 0);
-SELECT tpcboxX(0, 0, 5, 5, 1, 0)   ~= tpcboxX(0, 0, 5, 5, 1, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1) @> tpcboxX(2, 2, 8, 8, 1);
+SELECT tpcboxX(0, 0, 10, 10, 1) @> tpcboxX(2, 2, 20, 20, 1);
+SELECT tpcboxX(2, 2, 8, 8, 1)   <@ tpcboxX(0, 0, 10, 10, 1);
+SELECT tpcboxX(0, 0, 5, 5, 1)   && tpcboxX(3, 3, 10, 10, 1);
+SELECT tpcboxX(0, 0, 5, 5, 1)   && tpcboxX(50, 50, 60, 60, 1);
+SELECT tpcboxX(0, 0, 5, 5, 1)   ~= tpcboxX(0, 0, 5, 5, 1);
 
 -- The portable spelling of each operator above answers the same
-SELECT contains(tpcboxX(0, 0, 10, 10, 1, 0), tpcboxX(2, 2, 8, 8, 1, 0));
-SELECT contained(tpcboxX(2, 2, 8, 8, 1, 0), tpcboxX(0, 0, 10, 10, 1, 0));
-SELECT overlaps(tpcboxX(0, 0, 5, 5, 1, 0), tpcboxX(3, 3, 10, 10, 1, 0));
-SELECT same(tpcboxX(0, 0, 5, 5, 1, 0), tpcboxX(0, 0, 5, 5, 1, 0));
-SELECT tpcboxX(0, 0, 5, 5, 1, 0)  -|- tpcboxX(5, 0, 10, 5, 1, 0);
-SELECT adjacent(tpcboxX(0, 0, 5, 5, 1, 0), tpcboxX(5, 0, 10, 5, 1, 0));
+SELECT contains(tpcboxX(0, 0, 10, 10, 1), tpcboxX(2, 2, 8, 8, 1));
+SELECT contained(tpcboxX(2, 2, 8, 8, 1), tpcboxX(0, 0, 10, 10, 1));
+SELECT overlaps(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
+SELECT same(tpcboxX(0, 0, 5, 5, 1), tpcboxX(0, 0, 5, 5, 1));
+SELECT tpcboxX(0, 0, 5, 5, 1)  -|- tpcboxX(5, 0, 10, 5, 1);
+SELECT adjacent(tpcboxX(0, 0, 5, 5, 1), tpcboxX(5, 0, 10, 5, 1));
 
 -------------------------------------------------------------------------------
 -- Topological predicates — the schema decides what a coordinate means
@@ -131,18 +147,23 @@ SELECT adjacent(tpcboxX(0, 0, 5, 5, 1, 0), tpcboxX(5, 0, 10, 5, 1, 0));
 
 -- Two schemas give the same number two meanings, so the boxes are not
 -- comparable and the predicate has no answer to give
-SELECT tpcboxX(0, 0, 10, 10, 1, 0) @> tpcboxX(2, 2, 8, 8, 2, 0);
-SELECT tpcboxX(0, 0, 5, 5, 1, 0)   && tpcboxX(0, 0, 5, 5, 2, 0);
-SELECT tpcboxX(0, 0, 5, 5, 1, 0)   ~= tpcboxX(0, 0, 5, 5, 2, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1) @> tpcboxX(2, 2, 8, 8, 2);
+SELECT tpcboxX(0, 0, 5, 5, 1)   && tpcboxX(0, 0, 5, 5, 2);
+SELECT tpcboxX(0, 0, 5, 5, 1)   ~= tpcboxX(0, 0, 5, 5, 2);
 
 -- Schema 0 is a schema like any other once a box carries coordinates
-SELECT tpcboxX(0, 0, 5, 5, 0, 0) && tpcboxX(3, 3, 10, 10, 1, 0);
-SELECT tpcboxX(0, 0, 5, 5, 0, 0) @> tpcboxX(1, 1, 4, 4, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 0) && tpcboxX(3, 3, 10, 10, 1);
+SELECT tpcboxX(0, 0, 5, 5, 0) @> tpcboxX(1, 1, 4, 4, 1);
 
--- The SRID is read on the same terms: one schema, two reference systems, so
--- the same pair of numbers denotes two different places
-SELECT tpcboxX(0, 0, 5, 5, 1, 4326) && tpcboxX(3, 3, 10, 10, 1, 3857);
-SELECT tpcboxX(0, 0, 5, 5, 1, 4326) + tpcboxX(3, 3, 10, 10, 1, 3857);
+-- The SRID is read on the same terms. A constructor can no longer state one
+-- apart from the schema, so the disagreeing pair is written: the schema pcid 1
+-- names states no reference system, which leaves the `SRID=` prefix the only
+-- level that speaks, and two values whose prefixes differ denote two different
+-- places
+SELECT tpcbox 'SRID=4326;TPCBOX(X((0,0),(5,5)), 1)' &&
+  tpcbox 'SRID=3857;TPCBOX(X((3,3),(10,10)), 1)';
+SELECT tpcbox 'SRID=4326;TPCBOX(X((0,0),(5,5)), 1)' +
+  tpcbox 'SRID=3857;TPCBOX(X((3,3),(10,10)), 1)';
 
 -- A box carrying no coordinates names no schema, so it meets a box of any
 -- schema: this is the shape a time-only query box takes against an index
@@ -158,21 +179,45 @@ SELECT tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0) +
 -- The aggregate answers the extent of the boxes it folds, so it is bounded by
 -- the same comparability the operators are: an extent spanning two schemas, or
 -- two reference systems, states a region no schema can read
-SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 1, 0)),
-  (tpcboxX(3, 3, 10, 10, 1, 0))) t(b);
-SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 1, 0)),
-  (tpcboxX(3, 3, 10, 10, 2, 0))) t(b);
-SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 0, 0)),
-  (tpcboxX(3, 3, 10, 10, 1, 0))) t(b);
-SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 1, 4326)),
-  (tpcboxX(3, 3, 10, 10, 1, 3857))) t(b);
+SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 1)),
+  (tpcboxX(3, 3, 10, 10, 1))) t(b);
+SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 1)),
+  (tpcboxX(3, 3, 10, 10, 2))) t(b);
+SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 0)),
+  (tpcboxX(3, 3, 10, 10, 1))) t(b);
+SELECT extent(b) FROM (VALUES (tpcbox 'SRID=4326;TPCBOX(X((0,0),(5,5)), 1)'),
+  (tpcbox 'SRID=3857;TPCBOX(X((3,3),(10,10)), 1)')) t(b);
 
 -------------------------------------------------------------------------------
 -- Comparison operators
 -------------------------------------------------------------------------------
 
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) =  tpcboxX(0, 0, 5, 5, 1, 0);
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) <> tpcboxX(0, 0, 5, 5, 2, 0);
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) <  tpcboxX(0, 0, 5, 5, 2, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1) =  tpcboxX(0, 0, 5, 5, 1);
+SELECT tpcboxX(0, 0, 5, 5, 1) <> tpcboxX(0, 0, 5, 5, 2);
+SELECT tpcboxX(0, 0, 5, 5, 1) <  tpcboxX(0, 0, 5, 5, 2);
+
+-------------------------------------------------------------------------------
+-- Input — the two levels that state the reference system
+--
+-- The written form is the one place a value states its reference system twice,
+-- as an `SRID=` prefix and as the schema its pcid names, so it is the one place
+-- the two are reconciled. A level reading SRID_UNKNOWN states nothing.
+-------------------------------------------------------------------------------
+
+-- The schema is the level that holds the SRID, so a value stating none takes
+-- the schema's, and the constructor has no other level to read
+SELECT tpcbox 'TPCBOX(X((0,0),(10,10)), 5)';
+-- Both levels stating the same system is one statement written twice
+SELECT tpcbox 'SRID=4326;TPCBOX(X((0,0),(10,10)), 5)';
+-- Two levels stating different systems is a value contradicting itself
+SELECT tpcbox 'SRID=3857;TPCBOX(X((0,0),(10,10)), 5)';
+-- Where no schema resolves the prefix is the only level there is, which is
+-- what lets a value be read where its schema is not registered
+SELECT tpcbox 'SRID=3857;TPCBOX(X((0,0),(10,10)), 7)';
+SELECT tpcbox 'TPCBOX(X((0,0),(10,10)), 7)';
+
+-------------------------------------------------------------------------------
+
+DELETE FROM pointcloud_formats WHERE pcid IN (2, 5);
 
 -------------------------------------------------------------------------------

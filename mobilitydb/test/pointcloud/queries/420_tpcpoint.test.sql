@@ -189,13 +189,15 @@ SELECT atValue(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
 SELECT atTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
   tstzspan '[2024-01-02, 2024-01-03]') IS NOT NULL;
 SELECT atTpcbox(:inst2, tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-31]', 1, 0)) IS NOT NULL;
+  tstzspan '[2024-01-01, 2024-01-31]', 1)) IS NOT NULL;
 SELECT minusTpcbox(:inst2, tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-31]', 1, 0)) IS NULL;
+  tstzspan '[2024-01-01, 2024-01-31]', 1)) IS NULL;
 
--- Pcid-mismatch identity: at → NULL, minus → unchanged.
-SELECT atTpcbox(:inst1, tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-31]', 999, 0)) IS NULL;
+-- Pcid-mismatch identity: at → NULL, minus → unchanged. The box is written
+-- rather than constructed because the constructor reads the reference system
+-- off the schema its pcid names, and 999 names none.
+SELECT atTpcbox(:inst1, tpcbox
+  'TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)') IS NULL;
 
 -- Boxes without every dimension: a spatial-only box restricts spatially, a
 -- temporal-only box temporally. Minus of a box covering the whole value is
@@ -356,6 +358,6 @@ SELECT splitEachNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 
 SELECT tpcpoint '2300000063000000000000000000F03F00000000000000400000000000000840000000@2024-01-01';
 SELECT tpcpoint '2300000063000000000000000000F03F00000000000000400000000000000840000000@2024-01-01' &&
-  tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 99, 0);
+  tpcbox 'TPCBOX(XT(((0,0),(10,10)),[2024-01-01, 2024-01-31]), 99)';
 
 -------------------------------------------------------------------------------

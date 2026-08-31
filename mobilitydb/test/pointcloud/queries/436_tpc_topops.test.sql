@@ -32,9 +32,11 @@
 
 \set p1 'tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), ''2024-01-01''::timestamptz)'
 \set p2 'tpcpoint(PC_MakePoint(1, ARRAY[5.0, 5.0, 5.0]::float[]), ''2024-01-05''::timestamptz)'
-\set big_box 'tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan ''[2024-01-01, 2024-01-31]'', 1, 0)'
-\set far_box 'tpcboxZT(100, 100, 100, 110, 110, 110, tstzspan ''[2099-01-01, 2099-12-31]'', 1, 0)'
-\set bad_box 'tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan ''[2024-01-01, 2024-01-31]'', 999, 0)'
+\set big_box 'tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan ''[2024-01-01, 2024-01-31]'', 1)'
+\set far_box 'tpcboxZT(100, 100, 100, 110, 110, 110, tstzspan ''[2099-01-01, 2099-12-31]'', 1)'
+-- The box of a schema that is not registered is written rather than built: a
+-- constructor reads the reference system off the schema its pcid names.
+\set bad_box 'tpcbox ''TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)'''
 \set span_in 'tstzspan ''[2024-01-01, 2024-01-31]'''
 \set span_far 'tstzspan ''[2099-01-01, 2099-12-31]'''
 

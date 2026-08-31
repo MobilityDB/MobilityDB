@@ -142,15 +142,16 @@ WHERE atTime(temp, tstzspan '[2001-01-01, 2002-01-01]') IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tpcpatch WHERE atTpcbox(temp,
   tpcboxZT(-100, -100, 0, 100, 100, 100,
-    tstzspan '[2001-01-01, 2001-12-31]', 1, 0)) IS NOT NULL;
+    tstzspan '[2001-01-01, 2001-12-31]', 1)) IS NOT NULL;
  count 
 -------
    100
 (1 row)
 
 SELECT bool_and(atTpcbox(temp,
-  tpcboxZT(-100, -100, 0, 100, 100, 100,
-    tstzspan '[2001-01-01, 2001-12-31]', 999, 0)) IS NULL)
+  tpcbox
+    'TPCBOX(ZT(((-100,-100,0),(100,100,100)),[2001-01-01, 2001-12-31]), 999)')
+  IS NULL)
 FROM tbl_tpcpatch;
  bool_and 
 ----------
@@ -158,8 +159,9 @@ FROM tbl_tpcpatch;
 (1 row)
 
 SELECT bool_and(minusTpcbox(temp,
-  tpcboxZT(-100, -100, 0, 100, 100, 100,
-    tstzspan '[2001-01-01, 2001-12-31]', 999, 0)) IS NOT NULL)
+  tpcbox
+    'TPCBOX(ZT(((-100,-100,0),(100,100,100)),[2001-01-01, 2001-12-31]), 999)')
+  IS NOT NULL)
 FROM tbl_tpcpatch;
  bool_and 
 ----------
@@ -169,7 +171,7 @@ FROM tbl_tpcpatch;
 SELECT COUNT(*) FROM tbl_tpcpatch
 WHERE atTpcboxFine(temp,
   tpcboxZT(-1000, -1000, -1000, 1000, 1000, 1000,
-    tstzspan '[2001-01-01, 2002-01-01]', 1, 0)) IS NOT NULL;
+    tstzspan '[2001-01-01, 2002-01-01]', 1)) IS NOT NULL;
  count 
 -------
    100
@@ -177,11 +179,11 @@ WHERE atTpcboxFine(temp,
 
 SELECT bool_and(numPoints(atTpcboxFine(temp,
   tpcboxZT(-1000, -1000, -1000, 1000, 1000, 1000,
-    tstzspan '[2001-01-01, 2002-01-01]', 1, 0))) <= numPoints(temp))
+    tstzspan '[2001-01-01, 2002-01-01]', 1))) <= numPoints(temp))
 FROM tbl_tpcpatch
 WHERE atTpcboxFine(temp,
   tpcboxZT(-1000, -1000, -1000, 1000, 1000, 1000,
-    tstzspan '[2001-01-01, 2002-01-01]', 1, 0)) IS NOT NULL;
+    tstzspan '[2001-01-01, 2002-01-01]', 1)) IS NOT NULL;
  bool_and 
 ----------
  t

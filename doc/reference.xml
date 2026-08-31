@@ -3217,7 +3217,7 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_tpcbox"><varname>tpcbox</varname>, <varname>tpcbox_z</varname>, <varname>tpcbox_t</varname>, <varname>tpcbox_xt</varname>, <varname>tpcbox_zt</varname></link>: Construct a tpcbox from explicit X/Y/Z/T bounds and a pcid</para>
+						<para><link linkend="tpcbox_tpcbox"><varname>tpcbox</varname>, <varname>tpcbox_z</varname>, <varname>tpcbox_t</varname>, <varname>tpcbox_xt</varname>, <varname>tpcbox_zt</varname></link>: Construct a tpcbox from explicit X/Y/Z/T bounds and a pcid, whose schema states the SRID</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3245,7 +3245,7 @@
 						<para><link linkend="tpcbox_tmin"><varname>tmin</varname>, <varname>tmax</varname></link>: Return a temporal bound, NULL if the box has no T dimension</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_pcid"><varname>pcid</varname>, <varname>SRID</varname></link>: Return the schema id and SRID</para>
+						<para><link linkend="tpcbox_pcid"><varname>pcid</varname>, <varname>SRID</varname></link>: Return the schema id and the SRID its schema states</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

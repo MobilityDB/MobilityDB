@@ -259,18 +259,19 @@ SELECT numValues(set(ARRAY[pcpoint(1, 10.0, 20.0, 30.0),
 					<indexterm significance="normal"><primary><varname>tpcbox_t</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tpcbox_xt</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tpcbox_zt</varname></primary></indexterm>
-					<para>Construye un tpcbox a partir de límites X/Y/Z/T explícitos y un pcid</para>
+					<para>Construye un tpcbox a partir de límites X/Y/Z/T explícitos y un pcid, cuyo esquema declara el SRID</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpcboxX(xmin,ymin,xmax,ymax,pcid,srid integer=0) → tpcbox
-tpcboxZ(xmin,ymin,zmin,xmax,ymax,zmax,pcid,srid integer=0) → tpcbox
+tpcboxX(xmin,ymin,xmax,ymax,pcid) → tpcbox
+tpcboxZ(xmin,ymin,zmin,xmax,ymax,zmax,pcid) → tpcbox
 tpcboxT(period,pcid) → tpcbox
-tpcboxXT(xmin,ymin,xmax,ymax,period,pcid,srid integer=0) → tpcbox
-tpcboxZT(xmin,ymin,zmin,xmax,ymax,zmax,period,pcid,srid integer=0) → tpcbox
+tpcboxXT(xmin,ymin,xmax,ymax,period,pcid) → tpcbox
+tpcboxZT(xmin,ymin,zmin,xmax,ymax,zmax,period,pcid) → tpcbox
 </programlisting>
+					<para>El SRID no es un parámetro: se lee del esquema nombrado por el pcid, y un pcid que no nombra ningún esquema registrado es un error</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcboxX(0, 0, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1);
 -- TPCBOX(X((0,0),(10,10)), 1)
-SELECT tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+SELECT tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1);
 -- TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-02]), 1)
 </programlisting>
 				</listitem>
@@ -297,9 +298,8 @@ SELECT tpcbox(pcpoint(1, 10.0, 20.0, 30.0));
 					<para>Convierte un pcpatch a un tpcbox</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpcbox(pcpatch) → tpcbox
-tpcbox(pcpatch,integer) → tpcbox
 </programlisting>
-					<para>La extensión en X y en Y del resultado es la de los límites PCBOUNDS integrados en el parche, y su extensión en Z, cuando el esquema que nombra el pcid tiene una dimensión Z, es la que indican los puntos del parche. La segunda forma acepta un SRID explícito en lugar de buscarlo en el esquema.</para>
+					<para>La extensión en X y en Y del resultado es la de los límites PCBOUNDS integrados en el parche, y su extensión en Z, cuando el esquema que nombra el pcid tiene una dimensión Z, es la que indican los puntos del parche. El SRID es el que declara el esquema nombrado por el pcid.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(pcpatch(pcpoint(1, 10.0, 20.0, 30.0)));
 -- TPCBOX(Z((10,20,30),(10,20,30)), 1)
@@ -322,7 +322,7 @@ hasZ(tpcbox) → boolean
 hasT(tpcbox) → boolean
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 1, 0) AS b)
+WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 1) AS b)
   SELECT hasX(b), hasZ(b) FROM b;
 -- t | f
 </programlisting>
@@ -345,7 +345,7 @@ zmin(tpcbox) → float
 zmax(tpcbox) → float
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 1, 0) AS b)
+WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 1) AS b)
   SELECT xmin(b), xmax(b) FROM b;
 -- 0 | 10
 </programlisting>
@@ -368,15 +368,15 @@ SELECT tmin(tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 1));
 				<listitem xml:id="tpcbox_pcid">
 					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
-					<para>Devuelve el identificador de esquema y el SRID</para>
+					<para>Devuelve el identificador de esquema y el SRID que declara dicho esquema</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 pcid(tpcbox) → integer
 SRID(tpcbox) → integer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 7, 4326) AS b)
+WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 1) AS b)
   SELECT pcid(b), SRID(b) FROM b;
--- 7 | 4326
+-- 1 | 4326
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -392,7 +392,7 @@ WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 7, 4326) AS b)
 round(tpcbox,integer=0) → tpcbox
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1, 0), 2);
+SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1), 2);
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
 </programlisting>
 				</listitem>
@@ -405,7 +405,7 @@ setSRID(tpcbox,integer) → tpcbox
 </programlisting>
 					<para>No reproyecta las coordenadas, para ello, proyecte primero el tpcpoint subyacente y tome la caja delimitadora del resultado</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10, 1, 0), 4326));
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10, 1), 4326));
 -- 4326
 </programlisting>
 				</listitem>
@@ -423,9 +423,9 @@ tpcbox {+, *} tpcbox → tpcbox
 </programlisting>
 					<para>Ambos operandos deben compartir el mismo <varname>pcid</varname>, y la intersección es NULL cuando las dos cajas son disjuntas.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) + tpcboxX(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1) + tpcboxX(3, 3, 10, 10, 1);
 -- TPCBOX(X((0,0),(10,10)), 1)
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) * tpcboxX(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1) * tpcboxX(3, 3, 10, 10, 1);
 -- TPCBOX(X((3,3),(5,5)), 1)
 </programlisting>
 				</listitem>
@@ -448,17 +448,17 @@ SELECT tpcboxX(0, 0, 5, 5, 1, 0) * tpcboxX(3, 3, 10, 10, 1, 0);
 tpcbox {&amp;&amp;, @&gt;, &lt;@, ~=, -|-} tpcbox → boolean
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcboxX(0, 0, 10, 10, 1, 0) @&gt; tpcboxX(2, 2, 8, 8, 1, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1) @&gt; tpcboxX(2, 2, 8, 8, 1);
 -- t
-SELECT tpcboxX(2, 2, 8, 8, 1, 0) &lt;@ tpcboxX(0, 0, 10, 10, 1, 0);
+SELECT tpcboxX(2, 2, 8, 8, 1) &lt;@ tpcboxX(0, 0, 10, 10, 1);
 -- t
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) &amp;&amp; tpcboxX(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1) &amp;&amp; tpcboxX(3, 3, 10, 10, 1);
 -- t
 SELECT tpcboxX(0, 0, 2, 2) ~= tpcboxX(0, 0, 2, 2);
 -- t
 SELECT tpcboxX(0, 0, 2, 2) -|- tpcboxX(5, 5, 7, 7);
 -- f
-SELECT tpcboxX(0, 0, 5, 5, 1, 0) &amp;&amp; tpcboxX(0, 0, 5, 5, 2, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1) &amp;&amp; tpcboxX(0, 0, 5, 5, 2);
 -- ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
 </programlisting>
 				</listitem>

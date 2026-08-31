@@ -338,21 +338,21 @@ SELECT atTime(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::f
 (1 row)
 
 SELECT atTpcbox(tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-31]', 1, 0)) IS NOT NULL;
+  tstzspan '[2024-01-01, 2024-01-31]', 1)) IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
 SELECT minusTpcbox(tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-31]', 1, 0)) IS NULL;
+  tstzspan '[2024-01-01, 2024-01-31]', 1)) IS NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT atTpcbox(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-31]', 999, 0)) IS NULL;
+SELECT atTpcbox(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcbox
+  'TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-31]), 999)') IS NULL;
  ?column? 
 ----------
  t
@@ -670,5 +670,5 @@ SELECT tpcpoint '2300000063000000000000000000F03F0000000000000040000000000000084
 (1 row)
 
 SELECT tpcpoint '2300000063000000000000000000F03F00000000000000400000000000000840000000@2024-01-01' &&
-  tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 99, 0);
+  tpcbox 'TPCBOX(XT(((0,0),(10,10)),[2024-01-01, 2024-01-31]), 99)';
 ERROR:  No schema registered for pcid 99

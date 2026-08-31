@@ -49,20 +49,20 @@ SET enable_seqscan = on;
 SET enable_indexscan = off;
 SET enable_bitmapscan = off;
 SELECT k, ((temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2001-06-01, 2001-06-30]', 1, 0)) > 0)::text AS finite
+  tstzspan '[2001-06-01, 2001-06-30]', 1)) > 0)::text AS finite
 FROM tbl_tpcpoint
 ORDER BY temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2001-06-01, 2001-06-30]', 1, 0)
+  tstzspan '[2001-06-01, 2001-06-30]', 1)
 LIMIT 5;
 
 SET enable_seqscan = off;
 SET enable_indexscan = on;
 SET enable_bitmapscan = on;
 SELECT k, ((temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2001-06-01, 2001-06-30]', 1, 0)) > 0)::text AS finite
+  tstzspan '[2001-06-01, 2001-06-30]', 1)) > 0)::text AS finite
 FROM tbl_tpcpoint
 ORDER BY temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2001-06-01, 2001-06-30]', 1, 0)
+  tstzspan '[2001-06-01, 2001-06-30]', 1)
 LIMIT 5;
 
 DROP INDEX tbl_tpcpoint_gist_dist_idx;

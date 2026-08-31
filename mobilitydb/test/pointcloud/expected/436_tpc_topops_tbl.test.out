@@ -59,7 +59,7 @@ SELECT bool_and(NOT (temp -|- temp)) FROM tbl_tpcpatch;
 (1 row)
 
 SELECT bool_and(tpcboxZT(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2001-01-01, 2030-01-01]', 1, 0) @> temp)
+  tstzspan '[2001-01-01, 2030-01-01]', 1) @> temp)
 FROM tbl_tpcpoint;
  bool_and 
 ----------
@@ -67,7 +67,7 @@ FROM tbl_tpcpoint;
 (1 row)
 
 SELECT bool_and(tpcboxZT(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2001-01-01, 2030-01-01]', 1, 0) @> temp)
+  tstzspan '[2001-01-01, 2030-01-01]', 1) @> temp)
 FROM tbl_tpcpatch;
  bool_and 
 ----------
@@ -75,14 +75,14 @@ FROM tbl_tpcpatch;
 (1 row)
 
 SELECT bool_and(temp <@ tpcboxZT(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2001-01-01, 2030-01-01]', 1, 0)) FROM tbl_tpcpoint;
+  tstzspan '[2001-01-01, 2030-01-01]', 1)) FROM tbl_tpcpoint;
  bool_and 
 ----------
  t
 (1 row)
 
 SELECT bool_and(temp <@ tpcboxZT(-200, -200, -200, 200, 200, 200,
-  tstzspan '[2001-01-01, 2030-01-01]', 1, 0)) FROM tbl_tpcpatch;
+  tstzspan '[2001-01-01, 2030-01-01]', 1)) FROM tbl_tpcpatch;
  bool_and 
 ----------
  t
