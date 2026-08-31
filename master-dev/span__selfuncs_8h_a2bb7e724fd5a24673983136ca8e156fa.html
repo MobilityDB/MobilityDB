@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: span_const_to_span</title>
+<title>MobilityDB: span_const_convertible</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,8 +79,8 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8h_a2bb7e724fd5a24673983136ca8e156fa.html#a2bb7e724fd5a24673983136ca8e156fa">span_const_convertible</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="span__selfuncs_8h_ad8dce9439c71d83df6d359906bf07627.html#ad8dce9439c71d83df6d359906bf07627">span_const_to_span</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="span__selfuncs_8h_a2bb7e724fd5a24673983136ca8e156fa.html#a2bb7e724fd5a24673983136ca8e156fa">span_const_convertible</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8h_ad8dce9439c71d83df6d359906bf07627.html#ad8dce9439c71d83df6d359906bf07627">span_const_to_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8h_afbf3c6f6d422d6d4822dd7ac9ae9795b.html#afbf3c6f6d422d6d4822dd7ac9ae9795b">span_joinsel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8h_a160ef198b259671b051f0811ba356a11.html#a160ef198b259671b051f0811ba356a11">span_joinsel_default</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8h_a51509e1b2e8e9b880ba1f9b8fc9862f0.html#a51509e1b2e8e9b880ba1f9b8fc9862f0">span_sel</a></td></tr>
@@ -90,33 +90,24 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad8dce9439c71d83df6d359906bf07627" name="ad8dce9439c71d83df6d359906bf07627"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad8dce9439c71d83df6d359906bf07627">&#9670;&#160;</a></span>span_const_to_span()</h2>
+<a id="a2bb7e724fd5a24673983136ca8e156fa" name="a2bb7e724fd5a24673983136ca8e156fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bb7e724fd5a24673983136ca8e156fa">&#9670;&#160;</a></span>span_const_convertible()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void span_const_to_span </td>
+          <td class="memname">bool span_const_convertible </td>
           <td>(</td>
           <td class="paramtype">const Node *&#160;</td>
-          <td class="paramname"><em>other</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>other</em></td><td>)</td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSpan.html">Span</a> *&#160;</td>
-          <td class="paramname"><em>span</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Transform the constant into a span. </p>
+<p>Return true if the constant has a span to be reduced to. </p>
+<p >These are the types <a class="el" href="span__selfuncs_8c_ad8dce9439c71d83df6d359906bf07627.html#ad8dce9439c71d83df6d359906bf07627" title="Transform the constant into a span.">span_const_to_span</a> converts. A set whose bounding box is not a span &ndash; a geometry, cell, pose or text set &ndash; has no span for an estimate to be read from, and its operators reach the span estimator through the <code>span_sel</code> they declare. </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: span_joinsel_oper</title>
+<title>MobilityDB: span_const_convertible</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -86,14 +86,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_ab41c1f1f0e3a95ae7ce6e910b696f150.html#ab41c1f1f0e3a95ae7ce6e910b696f150">length_hist_bsearch</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_a95feeca2edbc22dee2273c5e2b601ade.html#a95feeca2edbc22dee2273c5e2b601ade">span_bound_bsearch</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_a4f87e45b34678f4236478ab395b1116f.html#a4f87e45b34678f4236478ab395b1116f">span_bound_distance</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_a2bb7e724fd5a24673983136ca8e156fa.html#a2bb7e724fd5a24673983136ca8e156fa">span_const_convertible</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="span__selfuncs_8c_a2bb7e724fd5a24673983136ca8e156fa.html#a2bb7e724fd5a24673983136ca8e156fa">span_const_convertible</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_ad8dce9439c71d83df6d359906bf07627.html#ad8dce9439c71d83df6d359906bf07627">span_const_to_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_ad77706e8459e94d84d7d09ce76c88ea9.html#ad77706e8459e94d84d7d09ce76c88ea9">Span_joinsel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_aa9aee4bae1795c00a18a982a1a67dcf0.html#aa9aee4bae1795c00a18a982a1a67dcf0">span_joinsel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_a18220ecbd29f80d3ff484d9e6ac900ce.html#a18220ecbd29f80d3ff484d9e6ac900ce">span_joinsel_default</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_ab447e8d769c291f10c6b24b4a0f95e7b.html#ab447e8d769c291f10c6b24b4a0f95e7b">span_joinsel_hist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_a2bdb860204ac72a2aac4c658a4ddce12.html#a2bdb860204ac72a2aac4c658a4ddce12">span_joinsel_hist1</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="span__selfuncs_8c_a2c0f7e77d21ba80810b23e29b6450d9d.html#a2c0f7e77d21ba80810b23e29b6450d9d">span_joinsel_oper</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_a2c0f7e77d21ba80810b23e29b6450d9d.html#a2c0f7e77d21ba80810b23e29b6450d9d">span_joinsel_oper</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_aa5d38ce1ad345badd2f2a1e026c6caea.html#aa5d38ce1ad345badd2f2a1e026c6caea">span_joinsel_scalar</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_acfb50ccc62b950c8c5ec52f5f71176f5.html#acfb50ccc62b950c8c5ec52f5f71176f5">span_position</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="span__selfuncs_8c_a88ba5118ba9ac4a212ca4100bbc48027.html#a88ba5118ba9ac4a212ca4100bbc48027">Span_sel</a></td></tr>
@@ -111,83 +111,24 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a2c0f7e77d21ba80810b23e29b6450d9d" name="a2c0f7e77d21ba80810b23e29b6450d9d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c0f7e77d21ba80810b23e29b6450d9d">&#9670;&#160;</a></span>span_joinsel_oper()</h2>
+<a id="a2bb7e724fd5a24673983136ca8e156fa" name="a2bb7e724fd5a24673983136ca8e156fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bb7e724fd5a24673983136ca8e156fa">&#9670;&#160;</a></span>span_const_convertible()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static Selectivity span_joinsel_oper </td>
+          <td class="memname">bool span_const_convertible </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structSpanBound.html">SpanBound</a> *&#160;</td>
-          <td class="paramname"><em>lower1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const Node *&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSpanBound.html">SpanBound</a> *&#160;</td>
-          <td class="paramname"><em>upper1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nhist1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structSpanBound.html">SpanBound</a> *&#160;</td>
-          <td class="paramname"><em>lower2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structSpanBound.html">SpanBound</a> *&#160;</td>
-          <td class="paramname"><em>upper2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nhist2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> *&#160;</td>
-          <td class="paramname"><em>length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>length_nvalues</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870db">MeosOper</a>&#160;</td>
-          <td class="paramname"><em>oper</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Look up the fraction of values in the first histogram that satisfy an operator with respect to a value in the second histogram. </p>
+<p>Return true if the constant has a span to be reduced to. </p>
+<p >These are the types <a class="el" href="span__selfuncs_8c_ad8dce9439c71d83df6d359906bf07627.html#ad8dce9439c71d83df6d359906bf07627" title="Transform the constant into a span.">span_const_to_span</a> converts. A set whose bounding box is not a span &ndash; a geometry, cell, pose or text set &ndash; has no span for an estimate to be read from, and its operators reach the span estimator through the <code>span_sel</code> they declare. </p>
 
 </div>
 </div>
