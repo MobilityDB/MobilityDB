@@ -1,56 +1,31 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: PostgreSQL
 #
-# BINDING-HEADER-PARSE-OK: this is a CI source guard under tools/scripts/,
-# not a binding generator. It scans meos/src/**.c and CMakeLists.txt for a
-# build-layout rule and extracts no API surface, exactly as its siblings
-# check_csqlfn.py and check_btree_gist_operators.py scan sources and SQL.
+# This MobilityDB code is provided under The PostgreSQL License.
+# Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+# contributors
 #
-# Enforce the file-selection rule for MEOS-only code.
+# MobilityDB includes portions of PostGIS version 3 source code released
+# under the GNU General Public License (GPLv2 or later).
+# Copyright (c) 2001-2025, PostGIS contributors
 #
-# Why
-# ---
-# `Datum` is a PostgreSQL type that no binding (PyMEOS, JMEOS, GoMEOS,
-# meos-rs, MEOS.NET, MEOS.js) can construct, so it appears only in
-# `meos_internal.h`. Every operation the PG extension implements
-# generically through a single Datum-taking function therefore needs
-# typed instantiations for the public MEOS surface, and those live in
-# `<module>_meos.c` files that CMake compiles only for the MEOS
-# library:
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for any purpose, without fee, and without a written
+# agreement is hereby granted, provided that the above copyright notice and
+# this paragraph and the following two paragraphs appear in all copies.
 #
-#   if(MEOS)
-#     list(APPEND <FAM>_SOURCES <module>_meos.c)
-#   endif()
+# IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+# LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+# EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+# OF SUCH DAMAGE.
 #
-# The selection is made by the FILE, never by a `#if MEOS` inside a C
-# file: a source that is compiled at all is compiled whole. Two ways
-# to break that, both of which this tool rejects:
+# UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+# AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+# PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#   * a `*_meos.c` that CMake compiles into the PG extension -- either
-#     because it is listed outside `if(MEOS)`, or because the PG side
-#     calls a function it defines. Content the extension needs is not
-#     MEOS-only and belongs in a file without the `_meos` suffix.
-#
-#   * a `#if MEOS` block at file scope in a shared source. The block
-#     holds the MEOS-only definitions of that module, so it belongs in
-#     the module's `_meos.c` file instead.
-#
-# The late-binding dispatchers are the one exception: they resolve a
-# type at run time over every family, so they carry `#if <FAMILY>`
-# conditionals by construction and are listed in EXEMPT_FILES.
-#
-# Blocks that sit INSIDE a function body are a different animal: they
-# select a PG-specific detail of a shared implementation (an aggregate
-# memory context, an allocation limit) rather than a whole definition,
-# so moving them would duplicate the function. They are reported for
-# the record but do not fail the check.
-#
-# Usage:
-#   python3 tools/scripts/check_meos_only_files.py              # check
-#   python3 tools/scripts/check_meos_only_files.py --report     # list all
-#   python3 tools/scripts/check_meos_only_files.py --rebaseline # regen
-#
-# Run from the repo root.
+
 """Check that MEOS-only code is selected by file rather than by `#if MEOS`."""
 
 from __future__ import annotations

@@ -1,59 +1,31 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: PostgreSQL
 #
-# BINDING-HEADER-PARSE-OK: CI source guard under tools/scripts/, in the
-# shape of check_csqlfn.py. It reads meos/src/**.c to compare a function
-# signature with its own error sentinel; it extracts no API surface and
-# generates nothing.
+# This MobilityDB code is provided under The PostgreSQL License.
+# Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+# contributors
 #
-# Check that every error sentinel is the maximum of the return type.
+# MobilityDB includes portions of PostGIS version 3 source code released
+# under the GNU General Public License (GPLv2 or later).
+# Copyright (c) 2001-2025, PostGIS contributors
 #
-# Why
-# ---
-# A MEOS function that cannot compute its result reports the failure
-# through `meos_error()` and returns a sentinel value. Every binding
-# derives its null guard from that sentinel, and the guard must be a
-# pure function of the C return type so the generator can emit it
-# without a per-function table:
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for any purpose, without fee, and without a written
+# agreement is hereby granted, provided that the above copyright notice and
+# this paragraph and the following two paragraphs appear in all copies.
 #
-#   int     -> INT_MAX      double -> DBL_MAX
-#   int64   -> INT64_MAX    T *    -> NULL
-#   bool    -> false
+# IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+# LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+# EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+# OF SUCH DAMAGE.
 #
-# Rust makes the reason concrete. `distance_set_bigint` projects to
-# `-> Option<i64>` and the generated guard reads
-# `if raw == i64::MAX { None } else { Some(raw) }`. A sentinel outside
-# the return type cannot be written there at all: `f64::MAX` does not
-# inhabit an `i64`, and widening the signature to `f64` makes the
-# round trip lossy above 2^53 -- a wrong answer rather than a type
-# error. `-1` does inhabit it, which is worse: it is a legal distance
-# in the eyes of the type system and it collides with the `< 0` guard
-# of the three-valued integer predicates.
+# UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+# AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+# PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# The ordering matters as much as the typing. A nearest-neighbour scan
-# ranks candidates by distance, so a sentinel that sorts BEFORE real
-# distances -- any negative one -- hands the top of the result set to
-# the entries whose distance could not be computed. The maximum of the
-# type sorts last, in every type, in every host.
-#
-# `LONG_MAX` is rejected as an int64 sentinel: `long` is 32 bits on
-# LLP64 Windows, which this project builds (windows_msys2.yml), so
-# `LONG_MAX` silently becomes `INT32_MAX` there. `INT64_MAX` is the
-# portable spelling.
-#
-# What is checked, per function whose body has a VALIDATE_* guard or
-# whose doxygen carries an `@return On error return X` line:
-#
-#   * the sentinel of the VALIDATE_* macro matches the return type
-#   * the documented sentinel matches the return type
-#   * the two agree with each other
-#
-# Usage:
-#   python3 tools/scripts/check_error_sentinels.py              # check
-#   python3 tools/scripts/check_error_sentinels.py --report     # list all
-#   python3 tools/scripts/check_error_sentinels.py --rebaseline # regen
-#
-# Run from the repo root.
+
 """Check that every MEOS error sentinel is the maximum of its return type."""
 
 from __future__ import annotations
