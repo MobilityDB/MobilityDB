@@ -1450,38 +1450,77 @@ tbox_expand_value(const TBox *box, Datum value, MeosType basetype)
 {
   /* Ensure the validity of the arguments */
   assert(box); assert(tnumber_basetype(basetype));
+  /* A box with no X dimension carries no value base type, so the dimension is
+   * read BEFORE the dispatch: the dispatch would otherwise report an unknown
+   * base type where the absent dimension is what the caller needs. The expand
+   * functions below hold the same check for their own callers */
+  if (! ensure_has_X(T_TBOX, box->flags))
+    return NULL;
+  /* A temporal number carries one of THREE base types, and every arm below names
+   * all three and then ERRORS. A binary test reads each remaining type as the
+   * last one, so it hands an integer Datum to DatumGetFloat8, which reinterprets
+   * the bits rather than converting the number, and a base type added later
+   * inherits that silently instead of being reported */
   if (box->span.basetype == T_INT4)
   {
     /* If it is a temporal integer box */
     if (basetype == T_INT4)
       return tintbox_expand(box, DatumGetInt32(value));
-    else /* basetype == T_FLOAT8 */
+    if (basetype == T_INT8)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Invalid value to expand box: " INT64_FORMAT, DatumGetInt64(value));
+      return NULL;
+    }
+    if (basetype == T_FLOAT8)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Invalid value to expand box: %lf", DatumGetFloat8(value));
       return NULL;
     }
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Unknown base type to expand box: %s", meostype_name(basetype));
+    return NULL;
   }
-  else if (box->span.basetype == T_INT8)
+  if (box->span.basetype == T_INT8)
   {
     /* If it is a temporal big integer box */
     if (basetype == T_INT8)
       return tbigintbox_expand(box, DatumGetInt64(value));
-    else /* basetype == T_FLOAT8 */
+    if (basetype == T_INT4)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Invalid value to expand box: %d", DatumGetInt32(value));
+      return NULL;
+    }
+    if (basetype == T_FLOAT8)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Invalid value to expand box: %lf", DatumGetFloat8(value));
       return NULL;
     }
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Unknown base type to expand box: %s", meostype_name(basetype));
+    return NULL;
   }
-  else
+  if (box->span.basetype == T_FLOAT8)
   {
-    /* If it is a temporal float box */
+    /* If it is a temporal float box, an integer value converts to the box's own
+     * representation, which is a double */
     if (basetype == T_INT4)
       return tfloatbox_expand(box, (double) DatumGetInt32(value));
-    else /* basetype == T_FLOAT8 */
+    if (basetype == T_INT8)
+      return tfloatbox_expand(box, (double) DatumGetInt64(value));
+    if (basetype == T_FLOAT8)
       return tfloatbox_expand(box, DatumGetFloat8(value));
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Unknown base type to expand box: %s", meostype_name(basetype));
+    return NULL;
   }
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Unknown base type of the temporal box: %s",
+    meostype_name(box->span.basetype));
+  return NULL;
 }
 
 /**

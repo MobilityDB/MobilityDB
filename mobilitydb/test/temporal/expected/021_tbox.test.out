@@ -770,6 +770,16 @@ SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 2.0);
  TBOXFLOAT XT([-1, 4],[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
+SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 2::bigint);
+                                    expandvalue                                     
+------------------------------------------------------------------------------------
+ TBOXFLOAT XT([-1, 4],[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT expandValue(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])', 2::bigint);
+ERROR:  Invalid value to expand box: 2
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])', 2);
+ERROR:  Invalid value to expand box: 2
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', interval '1 day');
                                     expandtime                                     
 -----------------------------------------------------------------------------------
