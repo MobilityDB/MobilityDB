@@ -555,22 +555,22 @@ CREATE OPERATOR #&> (
  * Set operators
  *****************************************************************************/
 
-CREATE FUNCTION tbox_union(tbox, tbox)
+CREATE FUNCTION tboxUnion(tbox, tbox)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Union_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_intersection(tbox, tbox)
+CREATE FUNCTION tboxIntersection(tbox, tbox)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Intersection_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
-  PROCEDURE = tbox_union,
+  PROCEDURE = tboxUnion,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = +
 );
 CREATE OPERATOR * (
-  PROCEDURE = tbox_intersection,
+  PROCEDURE = tboxIntersection,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = *
 );

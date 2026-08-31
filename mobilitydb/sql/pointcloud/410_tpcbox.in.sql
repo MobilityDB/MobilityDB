@@ -217,22 +217,22 @@ CREATE FUNCTION setSRID(tpcbox, integer)
  * Set operations
  ******************************************************************************/
 
-CREATE FUNCTION tpcbox_union(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxUnion(tpcbox, tpcbox)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Union_tpcbox_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_intersection(tpcbox, tpcbox)
+CREATE FUNCTION tpcboxIntersection(tpcbox, tpcbox)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Intersection_tpcbox_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
-  PROCEDURE = tpcbox_union,
+  PROCEDURE = tpcboxUnion,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = +
 );
 CREATE OPERATOR * (
-  PROCEDURE = tpcbox_intersection,
+  PROCEDURE = tpcboxIntersection,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = *
 );

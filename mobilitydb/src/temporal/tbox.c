@@ -1017,7 +1017,7 @@ PG_FUNCTION_INFO_V1(Union_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_set
  * @brief Return the union of two temporal boxes
- * @sqlfn union()
+ * @sqlfn tboxUnion()
  * @sqlop @p +
  */
 Datum
@@ -1033,7 +1033,7 @@ PG_FUNCTION_INFO_V1(Intersection_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_set
  * @brief Return the intersection of two temporal boxes
- * @sqlfn intersection()
+ * @sqlfn tboxIntersection()
  * @sqlop @p *
  */
 Datum
