@@ -115,7 +115,7 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >A simple program that reads the CSV file of every temporal type and applies a function to the values it holds. </p>
 <p >The corresponding SQL query would be, for each temporal type in turn, </p><div class="fragment"><div class="line">SELECT k, numInstants(tprecision(temp, interval <span class="stringliteral">&#39;5 minutes&#39;</span>, timestamptz</div>
-<div class="line">  <span class="stringliteral">&#39;2000-01-01&#39;</span>))</div>
+<div class="line">  <span class="stringliteral">&#39;2000-01-03&#39;</span>))</div>
 <div class="line">FROM tbl_tfloat;</div>
 </div><!-- fragment --><p >The function is one every temporal type answers, so one run reports every type rather than the one a reader uncomments. To exercise a type-specific function instead, apply it to the value the loop parses.</p>
 <p >The fixtures are written by <code>tools/gen_test_csv.py</code> from the archives the PostgreSQL suite loads.</p>
