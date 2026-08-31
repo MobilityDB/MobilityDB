@@ -3588,6 +3588,15 @@ SELECT cmp(tbool '{[t@2001-01-01, f@2001-01-02, t@2001-01-03],[t@2001-01-04, t@2
 
 SELECT cmp(tint '1@2001-01-01', '{1@2001-01-01}');
 SELECT cmp(tint '[1@2001-01-01, 2@2001-01-02]', '(1@2001-01-01, 2@2001-01-02]');
+
+-- A discrete sequence holds one instant where a sequence set holds one
+-- sequence, so a set of another size holds another function of time. The
+-- comparison answers from the two sizes; reading a sequence per instant walks
+-- past a set that holds fewer
+SELECT tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}' = tfloat '{[1@2001-01-01],[2@2001-01-02]}';
+SELECT tfloat '{1@2001-01-01, 2@2001-01-02}' = tfloat '{[1@2001-01-01],[2@2001-01-02],[3@2001-01-03]}';
+SELECT tfloat '{1@2001-01-01, 2@2001-01-02}' = tfloat '{[1@2001-01-01],[2@2001-01-02]}';
+SELECT cmp(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}', tfloat '{[1@2001-01-01],[2@2001-01-02]}');
 SELECT cmp(tint '(1@2001-01-01, 2@2001-01-02]', '[1@2001-01-01, 2@2001-01-02]');
 SELECT cmp(tint 'Interp=Step;[1@2001-01-01, 2@2001-01-02]', '[1@2001-01-01, 2@2001-01-02]');
 SELECT cmp(tint '[1@2001-01-01, 2@2001-01-02]', 'Interp=Step;[1@2001-01-01, 2@2001-01-02]');

@@ -3603,6 +3603,12 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
   const TSequence *seq1;
   if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
   {
+    /* A discrete sequence holds one instant where the sequence set holds one
+     * sequence, so a set of another size holds another function of time. The
+     * test also bounds the walk below, which reads the i-th sequence for every
+     * instant the sequence carries */
+    if (seq->count != ss->count)
+      return false;
     for (int i = 0; i < seq->count; i++)
     {
       seq1 = TSEQUENCESET_SEQ_N(ss, i);
