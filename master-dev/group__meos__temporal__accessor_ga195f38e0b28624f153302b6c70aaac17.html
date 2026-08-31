@@ -171,7 +171,9 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>UINT32_MAX</code> @csqlfn <a class="el" href="group__mobilitydb__temporal__accessor_ga1a5b48fa9b053f92ce53facc9b5a8d5e.html#ga1a5b48fa9b053f92ce53facc9b5a8d5e" title="Return the hash value of a temporal value @sqlfn hash()">Temporal_hash()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>UINT32_MAX</code> @csqlfn <a class="el" href="group__mobilitydb__temporal__accessor_ga1a5b48fa9b053f92ce53facc9b5a8d5e.html#ga1a5b48fa9b053f92ce53facc9b5a8d5e" title="Return the hash value of a temporal value @sqlfn hash()">Temporal_hash()</a></dd></dl>
+<p>The hash reads the instants the value holds, in time order, and nothing else. A hash opclass requires equal values to hash equally, and two equal temporal values hold the same instants: the subtype is a spelling, so an instant, the sequence holding only that instant, and the sequence set holding only that sequence denote one function of time and belong in one bucket. A hash that reads the subtype separates them, each wrapper folding another constant in.</p>
+<p >Two values differing only in interpolation or in a bound therefore share a hash. That is a collision, which a hash index resolves by comparing, and not a wrong answer: the contract runs one way, from equality to sameness of hash. </p>
 
 </div>
 </div>
