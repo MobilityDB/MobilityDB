@@ -19,14 +19,14 @@ SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
 asText({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
 </pre><pre class="programlisting">
 SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));
-  Pose(Point(1.123456789 1.123456789), 0.5)@2000-01-01', 6);
--- POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1.123457 1.123457),0.5)@2000-01-01
+  Pose(Point(1.123456789 1.123456789), 0.5)@2001-01-01', 6);
+-- POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1.123457 1.123457),0.5)@2001-01-01
 </pre></li><li class="listitem"><a name="trgeometry_asEWKT"></a><a class="indexterm" name="id10450"></a><p>Return the Extended Well-Known Text (EWKT) representation, prefixed with the SRID</p><pre class="programlisting">
 asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text
 </pre><pre class="programlisting">
 SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));
-  Pose(Point(1 1),0.5)@2000-01-01');
--- SRID=25832;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@2000-01-01
+  Pose(Point(1 1),0.5)@2001-01-01');
+-- SRID=25832;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@2001-01-01
 </pre></li><li class="listitem"><a name="trgeometry_asMFJSON"></a><a class="indexterm" name="id10457"></a><p>Return the Moving Features JSON representation</p><pre class="programlisting">
 asMFJSON(trgeometry [, options int=0 [, flags int=0 [, maxdecimaldigits int=15]]]) → text
 </pre><pre class="programlisting">

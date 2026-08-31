@@ -161,42 +161,42 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 valueBins(tnumber,vsize number,vorigin number=0) → numspan[]
 timeBins(temp,tsize interval,torigin timestamptz='2000-01-03') → tstzspan[]
 </pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of values or time is not specified, it is set by default to 0 for value spans or to Monday, January 3, 2000 for time spans.</p><pre class="programlisting">
-SELECT valueBins(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
-  1@2000-01-05}', 3);
+SELECT valueBins(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05}', 3);
 -- {"[0, 3)","[3, 6)"}
-SELECT valueBins(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
-  1@2000-01-05]', 3, 1);
+SELECT valueBins(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05]', 3, 1);
 -- {"[1, 4)","[4, 7)"}
 </pre><pre class="programlisting">
-SELECT timeBins(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03, CCC@2000-01-04,
-  AAA@2000-01-05}', '3 days');
-/* {"[1999-12-31 08:00:00, 2000-01-03 08:00:00)","[2000-01-03 08:00:00, 2000-01-06
+SELECT timeBins(ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03, CCC@2001-01-04,
+  AAA@2001-01-05}', '3 days');
+/* {"[1999-12-31 08:00:00, 2001-01-03 08:00:00)","[2001-01-03 08:00:00, 2001-01-06
    08:00:00)"} */
-SELECT timeBins(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
-  1@2000-01-05]', '3 days', '2000-01-01');
--- {"[2000-01-01, 2000-01-04)","[2000-01-04, 2000-01-07)"}
+SELECT timeBins(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05]', '3 days', '2001-01-01');
+-- {"[2001-01-01, 2001-01-04)","[2001-01-04, 2001-01-07)"}
 </pre></li><li class="listitem"><a name="tnumber_valueTimeBoxes"></a><a class="indexterm" name="id6897"></a><a class="indexterm" name="id6900"></a><a class="indexterm" name="id6903"></a><p>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</p><pre class="programlisting">
 valueBoxes(tnumber,vsize number,vorigin number=0) → tbox[]
 timeBoxes(tnumber,tsize interval,torigin timestamptz='2000-01-03') → tbox[]
 valueTimeBoxes(tnumber,vsize number,tsize interval,vorigin number=0,
   torigin timestamptz='2000-01-03') → tbox[]
 </pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</p><pre class="programlisting">
-SELECT valueBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
-  1@2000-01-05}', 3);
-/* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-05])","TBOXINT XT([4, 5),[2000-01-04,
-   2000-01-04])"} */
-SELECT timeBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
-  1@2000-01-05}', '3 days');
-/* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-03])","TBOXINT XT([1, 5),[2000-01-04,
-   2000-01-05])"} */
-SELECT valueTimeBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
-  1@2000-01-05}', 3, '3 days');
-/* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-03])","TBOXINT XT([1, 2),[2000-01-05,
-   2000-01-05])","TBOXINT XT([4, 5),[2000-01-04, 2000-01-04])"} */
-SELECT valueTimeBoxes(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
-  1@2000-01-05]', 3, '3 days', 1, '2000-01-01');
-/* {"TBOXFLOAT XT([1, 4),[2000-01-01, 2000-01-04))","TBOXFLOAT XT([1, 4),(2000-01-04,
-   2000-01-05])","TBOXFLOAT XT([4, 4],[2000-01-04, 2000-01-04])"} */
+SELECT valueBoxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05}', 3);
+/* {"TBOXINT XT([1, 3),[2001-01-01, 2001-01-05])","TBOXINT XT([4, 5),[2001-01-04,
+   2001-01-04])"} */
+SELECT timeBoxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05}', '3 days');
+/* {"TBOXINT XT([1, 3),[2001-01-01, 2001-01-03])","TBOXINT XT([1, 5),[2001-01-04,
+   2001-01-05])"} */
+SELECT valueTimeBoxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05}', 3, '3 days');
+/* {"TBOXINT XT([1, 3),[2001-01-01, 2001-01-03])","TBOXINT XT([1, 2),[2001-01-05,
+   2001-01-05])","TBOXINT XT([4, 5),[2001-01-04, 2001-01-04])"} */
+SELECT valueTimeBoxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
+  1@2001-01-05]', 3, '3 days', 1, '2001-01-01');
+/* {"TBOXFLOAT XT([1, 4),[2001-01-01, 2001-01-04))","TBOXFLOAT XT([1, 4),(2001-01-04,
+   2001-01-05])","TBOXFLOAT XT([4, 4],[2001-01-04, 2001-01-04])"} */
 </pre></li><li class="listitem"><a name="tspatial_spaceTimeBoxes"></a><a class="indexterm" name="id6911"></a><a class="indexterm" name="id6914"></a><a class="indexterm" name="id6917"></a><p>Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
 </p><pre class="programlisting">
@@ -211,27 +211,27 @@ spaceTimeBoxes({tgeompoint,tgeometry,tpose,tpcpoint,trgeometry},xsize float,
   sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03',
   borderInc boolean=true) → stbox[]
 </pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The arguments <code class="varname">ysize</code> and <code class="varname">zsize</code> are optional, the size for the missing dimensions is assumed to be equal to <code class="varname">xsize</code>. The SRID of the tile coordinates is determined by the temporal point and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of temporal point, otherwise an error is raised. If the origin of space and/or time dimension is not specified, it is set by default to <code class="varname">'Point(0 0 0)'</code> and to Monday, January 3, 2000, respectively. The optional argument <code class="varname">borderInc</code> states whether the upper border of the extent is included and thus, extra tiles containing the border are generated. A temporal pose and a temporal point cloud point answer these at the temporal geometry point their position resolves to, so a value carrying linear interpolation is tiled along its trajectory rather than at its instants alone.</p><pre class="programlisting">
-SELECT spaceBoxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
-  Point(1 1)@2000-01-03, Point(4 4)@2000-01-04, Point(1 1)@2000-01-05}', 3);
-/* {"STBOX XT(((1,1),(2,2)),[2000-01-01, 2000-01-05])","STBOX
-   XT(((4,4),(4,4)),[2000-01-04, 2000-01-04])"} */
-SELECT timeBoxes(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
-  Point(1 1 1)@2000-01-03, Point(4 4 4)@2000-01-04, Point(1 1 1)@2000-01-05}',
-  interval '2 days', '2000-01-01');
-/* {"STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01, 2000-01-02])","STBOX
-   ZT(((1,1,1),(4,4,4)),[2000-01-03, 2000-01-04])","STBOX
-   ZT(((1,1,1),(1,1,1)),[2000-01-05, 2000-01-05])"} */
-SELECT spaceTimeBoxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
-  Point(1 1)@2000-01-03, Point(4 4)@2000-01-04, Point(1 1)@2000-01-05}', 3, '3 days');
-/* {"STBOX XT(((1,1),(2,2)),[2000-01-01, 2000-01-03])","STBOX
-   XT(((1,1),(1,1)),[2000-01-05, 2000-01-05])","STBOX XT(((4,4),(4,4)),[2000-01-04,
-   2000-01-04])"} */
-SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
-  Point(1 1 1)@2000-01-03, Point(4 4 4)@2000-01-04, Point(1 1 1)@2000-01-05]', 3,
-  interval '3 days', 'Point(1 1 1)', '2000-01-01');
-/* {"STBOX ZT(((1,1,1),(4,4,4)),[2000-01-01, 2000-01-04))","STBOX
-   ZT(((1,1,1),(4,4,4)),(2000-01-04, 2000-01-05])","STBOX
-   ZT(((4,4,4),(4,4,4)),[2000-01-04, 2000-01-04])"} */
+SELECT spaceBoxes(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03, Point(4 4)@2001-01-04, Point(1 1)@2001-01-05}', 3);
+/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-05])","STBOX
+   XT(((4,4),(4,4)),[2001-01-04, 2001-01-04])"} */
+SELECT timeBoxes(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02,
+  Point(1 1 1)@2001-01-03, Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-05}',
+  interval '2 days', '2001-01-01');
+/* {"STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01, 2001-01-02])","STBOX
+   ZT(((1,1,1),(4,4,4)),[2001-01-03, 2001-01-04])","STBOX
+   ZT(((1,1,1),(1,1,1)),[2001-01-05, 2001-01-05])"} */
+SELECT spaceTimeBoxes(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03, Point(4 4)@2001-01-04, Point(1 1)@2001-01-05}', 3, '3 days');
+/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-03])","STBOX
+   XT(((1,1),(1,1)),[2001-01-05, 2001-01-05])","STBOX XT(((4,4),(4,4)),[2001-01-04,
+   2001-01-04])"} */
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02,
+  Point(1 1 1)@2001-01-03, Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-05]', 3,
+  interval '3 days', 'Point(1 1 1)', '2001-01-01');
+/* {"STBOX ZT(((1,1,1),(4,4,4)),[2001-01-01, 2001-01-04))","STBOX
+   ZT(((1,1,1),(4,4,4)),(2001-01-04, 2001-01-05])","STBOX
+   ZT(((4,4,4),(4,4,4)),[2001-01-04, 2001-01-04])"} */
 SELECT spaceBoxes(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', 2.0);
 /* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02))","STBOX

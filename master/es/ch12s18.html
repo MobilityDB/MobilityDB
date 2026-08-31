@@ -17,8 +17,8 @@ SELECT asText(minTimeDeltaSimplify(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01,
 maxDistSimplify(tcbuffer,maxdist float,syncdist bool=true) → tcbuffer
 douglasPeuckerSimplify(tcbuffer,maxdist float,syncdist bool=true) → tcbuffer
 </pre><p>La diferencia entre las dos funciones es que <code class="varname">maxDistSimplify</code> utiliza una versión de un solo paso del algoritmo mientras que <code class="varname">douglasPeuckerSimplify</code> utiliza el algoritmo recursivo estándar. Al igual que las funciones anteriores, la simplificación opera sobre la trayectoria de los centros y conserva el radio en cada instante que sobrevive.</p><pre class="programlisting">
-SELECT asText(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01,
-  Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03,
-  Cbuffer(Point(4 4),0.5)@2000-01-04]', 2.0));
--- {Cbuffer(POINT(1 1),0.5)@2000-01-01, Cbuffer(POINT(4 4),0.5)@2000-01-04}
+SELECT asText(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
+  Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(3 1),0.5)@2001-01-03,
+  Cbuffer(Point(4 4),0.5)@2001-01-04]', 2.0));
+-- {Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(4 4),0.5)@2001-01-04}
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s17.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s19.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Agregaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Indexación</td></tr></table></div></body></html>

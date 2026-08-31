@@ -64,7 +64,7 @@ SELECT shiftScale(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day','2 day
 SELECT shiftScale(intspan '[1, 4)', -1, 4);
 -- [0, 5)
 SELECT shiftScale(datespan '[2001-01-01, 2001-01-04)', -1, 4);
--- [2001-12-31, 2001-01-05)
+-- [2000-12-31, 2001-01-05)
 SELECT shiftScale(tstzspan '[2001-01-01, 2001-01-03]', '1 day', '1 day');
 -- [2001-01-02, 2001-01-03]
 SELECT shiftScale(floatspanset '{[1, 2], [3, 4]}', -1, 6);

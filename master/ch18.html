@@ -14,9 +14,9 @@ WITH rast AS (
     ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
     [40.0::float4, 50.0::float4, 60.0::float4],
     [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
-SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-  POINT(2.5 2.5)@2000-01-02, POINT(0.5 0.5)@2000-01-03]', r)::text FROM rast;
--- {10@2000-01-01, 30@2000-01-02, 70@2000-01-03}
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r)::text FROM rast;
+-- {10@2001-01-01, 30@2001-01-02, 70@2001-01-03}
 </pre><p>Applied to a trajectory dataset with a terrain elevation raster:</p><pre class="programlisting">
 -- Elevation profile per trip (requires a loaded elevation raster)
 SELECT tripid, rasterValue(trip, elev) AS elevation FROM trips, elevation_raster;

@@ -8,9 +8,9 @@ WITH rast AS (
     [40.0::float4, 50.0::float4, 60.0::float4],
     [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
 SELECT asText(atRasterValue(tgeompoint 'SRID=4326;
-  [POINT(0.5 2.5)@2000-01-01, POINT(1.5 1.5)@2000-01-02, POINT(0.5 0.5)@2000-01-03]', r,
+  [POINT(0.5 2.5)@2001-01-01, POINT(1.5 1.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r,
   floatspan '[40, 90]')) FROM rast;
--- {[POINT(1.5 1.5)@2000-01-02], [POINT(0.5 0.5)@2000-01-03]}
+-- {[POINT(1.5 1.5)@2001-01-02], [POINT(0.5 0.5)@2001-01-03]}
 </pre></li><li class="listitem"><a name="raster_minusRasterValue"></a><a class="indexterm" name="id14475"></a><p>Devuelve los instantes de una trayectoria donde el valor ráster muestreado cae fuera de un rango de flotante</p><pre class="programlisting">
 minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
 </pre><p>El complemento de <code class="varname">atRasterValue</code>: devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está fuera de <code class="varname">vspan</code>. Devuelve <code class="varname">NULL</code> cuando todos los instantes satisfacen la condición.</p><pre class="programlisting">

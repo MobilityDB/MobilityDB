@@ -16,11 +16,11 @@ SELECT asEWKT(points(tpose 'SRID=5676;
 </pre></li><li class="listitem"><a name="tpose_trajectory"></a><a class="indexterm" name="id9064"></a><p>Devuelve la trayectoria</p><pre class="programlisting">
 trajectory(tpose) → geometry
 </pre><p>Una pose tiene una posición y una orientación, pero no una extensión, por lo que la geometría que cubre a lo largo del tiempo es la trayectoria de su posición, como para un punto temporal. Una pose que interpola se desplaza por la línea entre dos posiciones consecutivas; una que no interpola permanece en cada una de ellas y no cubre nada entre ellas.</p><pre class="programlisting">
-SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1),0.5)@2000-01-01,
-  Pose(Point(3 3),0.5)@2000-01-02]'));
+SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1),0.5)@2001-01-01,
+  Pose(Point(3 3),0.5)@2001-01-02]'));
 -- LINESTRING(1 1,3 3)
 SELECT ST_AsText(trajectory(tpose 'Interp=Step;
-  [Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(3 3),0.5)@2000-01-02]'));
+  [Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(3 3),0.5)@2001-01-02]'));
 -- MULTIPOINT((1 1),(3 3))
 </pre></li><li class="listitem"><a name="tpose_valueAtTimestamp"></a><a class="indexterm" name="id9072"></a><p>Devuelve el valor en una marca de tiempo</p><pre class="programlisting">
 valueAtTimestamp(tpose,timestamptz) → pose
@@ -35,16 +35,16 @@ SELECT asText(valueAtTimestamp(tpose
 </pre></li><li class="listitem"><a name="tpose_speed"></a><a class="indexterm" name="id9079"></a><p>Devuelve la velocidad de una pose temporal como un flotante temporal: la magnitud de la velocidad de la componente de posición (distancia recorrida por unidad de tiempo)</p><pre class="programlisting">
 speed(tpose) → tfloat
 </pre><p>La orientación no es considerada; para la velocidad angular véase <code class="varname">angularSpeed</code>.</p><p>La respuesta se da en las unidades del CRS del SRID, que multiplicadas por 3600 en este caso corresponden a metros por hora.</p><pre class="programlisting">
-SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01 08:00,
-  Pose(Point(1 1), 0.5)@2000-01-02 08:00]') * 3600);
--- Interp=Step;[1.414213562373095@2000-01-01, 1.414213562373095@2000-01-02]
+SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2001-01-01 08:00,
+  Pose(Point(1 1), 0.5)@2001-01-02 08:00]') * 3600);
+-- Interp=Step;[1.414213562373095@2001-01-01, 1.414213562373095@2001-01-02]
 </pre></li><li class="listitem"><a name="tpose_angular_speed"></a><a class="indexterm" name="id9089"></a><p>Devuelve la velocidad angular de una pose temporal como un flotante temporal con interpolación por pasos (radianes por unidad de tiempo)</p><pre class="programlisting">
 angularSpeed(tpose) → tfloat
 </pre><p>Para las poses 2D es el delta theta del arco más corto por segmento dividido por la duración del segmento; para las poses 3D es el ángulo de arco de SLERP <code class="varname">2 · acos(|q1 · q2|)</code> dividido por la duración del segmento. SLERP tiene por construcción velocidad angular constante a lo largo de un segmento, por lo que el resultado es constante a trozos.</p><pre class="programlisting">
 -- 90-degree yaw rotation over one day -&gt; pi/2 rad / 86400 s
-SELECT asText(angularSpeed(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01,
-  Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
--- Interp=Step;[1.8181e-5@2000-01-01, 1.8181e-5@2000-01-02]
+SELECT asText(angularSpeed(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01,
+  Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2001-01-02]'));
+-- Interp=Step;[1.8181e-5@2001-01-01, 1.8181e-5@2001-01-02]
 </pre></li><li class="listitem"><a name="tposechain_getValue"></a><a class="indexterm" name="id9098"></a><a class="indexterm" name="id9101"></a><a class="indexterm" name="id9104"></a><p>Devuelve el valor de un instante temporal, el conjunto de valores o el lapso de tiempo</p><pre class="programlisting">
 getValue({tpose,tposechain}) → {pose,posechain}
 timeSpan({tpose,tposechain}) → tstzspan

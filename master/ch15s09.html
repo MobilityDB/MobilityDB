@@ -232,9 +232,9 @@ SELECT tjsonbPathExists(tjsonb '{{"road": "Bvd Gén. Jacques",
   '$.category ? (@ == "residential")');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
 SELECT tjsonbPathExistsTz(tjsonb '[{"speed":10, "cameraId": "25",
-  "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
-  {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
-  '$.lastInspection ? (@.datetime() &gt; "2000-06-01".datetime() )');
+  "lastInspection": "2001-08-01 12:00:00"}@2001-01-01,
+  {"speed":20, "cameraId": "35", "lastInspection": "2001-03-01 12:00:00"}@2001-01-02]',
+  '$.lastInspection ? (@.datetime() &gt; "2001-06-01".datetime() )');
 -- [t@2001-01-01, f@2001-01-02]
 </pre></li><li class="listitem"><a name="tjsonb_path_match"></a><a class="indexterm" name="id11794"></a><a class="indexterm" name="id11797"></a><a class="indexterm" name="id11800"></a><p>Return the result of a JSON path predicate check for a temporal JSONB value</p><pre class="programlisting">
 tjsonb @@ jsonpath → tbool
@@ -251,9 +251,9 @@ SELECT tjsonbPathMatch(tjsonb '{{"road": "Bvd Gén. Jacques",
   '$.category == "residential"');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
 SELECT tjsonbPathMatchTz(tjsonb '[{"speed":10, "cameraId": "25",
-  "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
-  {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
-  '$.lastInspection.datetime() &gt; "2000-06-01".datetime()');
+  "lastInspection": "2001-08-01 12:00:00"}@2001-01-01,
+  {"speed":20, "cameraId": "35", "lastInspection": "2001-03-01 12:00:00"}@2001-01-02]',
+  '$.lastInspection.datetime() &gt; "2001-06-01".datetime()');
 -- [t@2001-01-01, f@2001-01-02]
 </pre></li><li class="listitem"><a name="tjsonb_path_query_array"></a><a class="indexterm" name="id11809"></a><a class="indexterm" name="id11812"></a><p>Return all items returned by a JSON path from a temporal JSONB value, as a JSON array</p><pre class="programlisting">
 tjsonbPathQueryArray(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
@@ -264,11 +264,11 @@ SELECT tjsonbPathQueryArray(tjsonb '[{"speed":10}@2001-01-01,
   '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
 -- {["[{\"speed\": 10}]"@2001-01-01, "[{\"speed\": 20, \"units\": \"km/h\"}]"@2001-01-02]}
 SELECT tjsonbPathQueryArrayTz(tjsonb '[{"cameraId":25,
-  "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
-  {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
+  "inspections":["2001-01-03", "2001-01-06", "2001-01-09"]}@2001-01-01,
+  {"cameraId":35, "inspections":["2001-01-04", "2001-01-07", "2001-01-10"]}@2001-01-02]',
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
-   @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
--- {["[\"2000-01-06\", \"2000-01-09\"]"@2001-01-01, "[\"2000-01-07\"]"@2001-01-02]}
+   @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2001-01-05", "max":"2001-01-09"}');
+-- {["[\"2001-01-06\", \"2001-01-09\"]"@2001-01-01, "[\"2001-01-07\"]"@2001-01-02]}
 </pre></li><li class="listitem"><a name="tjsonb_path_query_first"></a><a class="indexterm" name="id11820"></a><a class="indexterm" name="id11823"></a><p>Return the fist item returned by a JSON path from a temporal JSONB value</p><pre class="programlisting">
 tjsonbPathQueryFirst(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
 tjsonbPathQueryFirstTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb
@@ -278,9 +278,9 @@ SELECT tjsonbPathQueryFirst(tjsonb '[{"speed":10}@2001-01-01,
   '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max)', '{"min":10, "max":30}');
 -- {["10"@2001-01-01, "20"@2001-01-02]}
 SELECT tjsonbPathQueryArrayTz(tjsonb
-  '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
-   {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
+  '[{"cameraId":25, "inspections":["2001-01-03", "2001-01-06", "2001-01-09"]}@2001-01-01,
+   {"cameraId":35, "inspections":["2001-01-04", "2001-01-07", "2001-01-10"]}@2001-01-02]',
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
-  '{"min":"2000-01-05", "max":"2000-01-09"}');
--- {["[\"2000-01-06\", \"2000-01-09\"]"@2001-01-01, "[\"2000-01-07\"]"@2001-01-02]}
+  '{"min":"2001-01-05", "max":"2001-01-09"}');
+-- {["[\"2001-01-06\", \"2001-01-09\"]"@2001-01-01, "[\"2001-01-07\"]"@2001-01-02]}
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s08.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s10.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Transformations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Restrictions</td></tr></table></div></body></html>

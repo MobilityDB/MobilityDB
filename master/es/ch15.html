@@ -216,11 +216,11 @@ SELECT jsonbsetPathQueryArray(set(ARRAY[jsonb '{"speed":10}',
   '{"min":10, "max":30}');
 -- {"[{\"speed\": 10}]", "[{\"speed\": 20, \"units\": \"km/h\"}]"}
 SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
-  '{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}',
-  '{"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}']),
+  '{"cameraId":25, "inspections":["2001-01-03", "2001-01-06", "2001-01-09"]}',
+  '{"cameraId":35, "inspections":["2001-01-04", "2001-01-07", "2001-01-10"]}']),
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
-   @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
--- {"[\"2000-01-07\"]", "[\"2000-01-06\", \"2000-01-09\"]"}
+   @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2001-01-05", "max":"2001-01-09"}');
+-- {"[\"2001-01-07\"]", "[\"2001-01-06\", \"2001-01-09\"]"}
 </pre></li><li class="listitem"><a name="jsonbset_path_query_first"></a><a class="indexterm" name="id10832"></a><a class="indexterm" name="id10835"></a><p>Devuelve el primer elemento devuelto por una ruta JSON de un conjunto JSONB</p><pre class="programlisting">
 jsonbsetPathQueryFirst(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 jsonbsetPathQueryFirstTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
@@ -230,9 +230,9 @@ SELECT jsonbsetPathQueryFirst(set(ARRAY[jsonb '{"speed":10}',
   '{"min":10, "max":30}');
 -- {10, 20}
 SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
-  '{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}',
-  '{"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}']),
+  '{"cameraId":25, "inspections":["2001-01-03", "2001-01-06", "2001-01-09"]}',
+  '{"cameraId":35, "inspections":["2001-01-04", "2001-01-07", "2001-01-10"]}']),
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
-  '{"min":"2000-01-05", "max":"2000-01-09"}');
--- {"[\"2000-01-07\"]", "[\"2000-01-06\", \"2000-01-09\"]"}
+  '{"min":"2001-01-05", "max":"2001-01-09"}');
+-- {"[\"2001-01-07\"]", "[\"2001-01-06\", \"2001-01-09\"]"}
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s20.html">Anterior</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch15s02.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Indexación </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Valores JSONB temporales</td></tr></table></div></body></html>

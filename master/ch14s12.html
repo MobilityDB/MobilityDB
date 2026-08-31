@@ -4,14 +4,14 @@ frechetDistance(trgeometry,trgeometry) → float
 dynTimeWarpDistance(trgeometry,trgeometry) → float
 </pre><pre class="programlisting">
 SELECT round(frechetDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-03]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 2),0)@2001-01-03]'), 6);
 -- 2.828427
 SELECT round(hausdorffDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-03]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 2),0)@2001-01-03]'), 6);
 -- 2
 </pre></li><li class="listitem"><a name="trgeometry_similarityPath"></a><a class="indexterm" name="id10877"></a><a class="indexterm" name="id10880"></a><p>Return the correspondence pairs between two temporal rigid geometries with respect to the discrete Fréchet distance or the Dynamic Time Warp distance, as a set of <code class="varname">(i,j)</code> instant-index pairs</p><pre class="programlisting">
 frechetDistancePath(trgeometry,trgeometry) → {(i,j)}

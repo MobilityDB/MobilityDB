@@ -121,8 +121,8 @@ SELECT splitNSpans(intspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}');
 -- {"[1, 2)","[3, 4)","[5, 6)","[7, 8)","[9, 10)"}
 SELECT splitNSpans(floatspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}', 3);
 -- {"[1, 4)","[5, 8)","[9, 10)"}
-SELECT splitNSpans(datespanset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-10)}', 3);
--- {"[2000-01-01, 2000-01-04)","[2000-01-05, 2000-01-10)"}
+SELECT splitNSpans(datespanset '{[2001-01-01, 2001-01-04), [2001-01-05, 2001-01-10)}', 3);
+-- {"[2001-01-01, 2001-01-04)","[2001-01-05, 2001-01-10)"}
 </pre></li><li class="listitem"><a name="setspan_splitEachNSpans"></a><a class="indexterm" name="id2286"></a><p>Devuelve una matriz de rangos obtenida fusionando N elementos consecutivos de un conjunto o N rangos consecutivos de un conjunto de rangos</p><pre class="programlisting">
 splitEachNSpans({set,spanset},integer) → span[]
 </pre><p>El último argumento especifica el número de elementos de entrada que se fusionan para producir un rango de salida. Si la cantidad de elementos de entrada es menor que el número especificado, la matriz resultante tendrá un rango de salida por elemento. De lo contrario, la cantidad especificada de elementos de entrada consecutivos se fusionará en un único rango de salida en la respuesta. Observe que, a diferencia de la función <a class="link" href="ch02s08.html#setspan_splitNSpans"><code class="varname">splitNSpans</code></a>, el número de rangos en el resultado depende del número de elementos o de rangos de entrada.</p><pre class="programlisting">

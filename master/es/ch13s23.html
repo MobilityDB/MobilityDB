@@ -43,9 +43,9 @@ SELECT roll(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.707106781186547
 SELECT yaw(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)');
 -- 1.5707963267948966
 </pre><pre class="programlisting">
-SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
-  Pose(Point(1 1), 0.5)@2000-01-02]'));
--- [0@2000-01-01, 0.5@2000-01-02]
+SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2001-01-01,
+  Pose(Point(1 1), 0.5)@2001-01-02]'));
+-- [0@2001-01-01, 0.5@2001-01-02]
 </pre></li><li class="listitem"><a name="pose_ypr"></a><a class="indexterm" name="id9664"></a><p>Devuelve la orientación de una pose como una terna yaw / pitch / roll, en radianes</p><pre class="programlisting">
 ypr(pose) → ypr
 </pre><p>Esta es la codificación Basic-YPR de la orientación en OGC GeoPose, la contraparte de <a class="link" href="ch13s02.html#pose_quaternion"><code class="varname">quaternion</code></a>, y devuelve los tres ángulos que <a class="link" href="ch13s23.html#pose_yaw_pitch_roll"><code class="varname">yaw</code></a>, <code class="varname">pitch</code> y <code class="varname">roll</code> responden de uno en uno. Al igual que <code class="varname">quaternion</code>, está definida para ambas dimensiones: una pose 2D gira por su ángulo almacenado y no cabecea ni alabea. Los ángulos están en radianes, mientras que la codificación JSON de GeoPose los escribe en grados.</p><pre class="programlisting">
