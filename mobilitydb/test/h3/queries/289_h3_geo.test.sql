@@ -55,7 +55,7 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 7);
 SELECT numvalues(geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 7));
 
 -------------------------------------------------------------------------------
--- LINESTRING → cells along the path (Nyquist segment sampling)
+-- LINESTRING → cells along the path (sampling, each sample ringed)
 -------------------------------------------------------------------------------
 
 -- ~10 km segment across Brussels at resolution 7 (cell edge ~ 1.2 km).
@@ -68,6 +68,19 @@ SELECT numvalues(
 SELECT numvalues(
   geoToH3IndexSet(
     geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)', 5)) >= 1;
+
+-- THE COVER HOLDS THE CELL OF EVERY POINT ON THE LINE, and sampling alone
+-- does not give that: a cell the line enters and leaves between two
+-- consecutive samples is named by neither of them. Each sample therefore
+-- contributes the ring of its own neighbours, which is what makes the cover
+-- conservative. Read at a resolution fine enough for the gap to open.
+WITH line(g) AS (
+  VALUES (geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)')),
+samples AS (
+  SELECT geoToH3Cell(ST_LineInterpolatePoint(g, i / 500.0), 11) AS cell,
+    geoToH3IndexSet(g, 11) AS cover
+  FROM line, generate_series(0, 500) AS i)
+SELECT bool_and(cell <@ cover) FROM samples;
 
 -------------------------------------------------------------------------------
 -- POLYGON → cells covering the area
