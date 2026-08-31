@@ -364,11 +364,11 @@ SELECT jsonbsetPathQueryArray(set(ARRAY[jsonb '{"speed":10}',
   '{"min":10, "max":30}');
 -- {"[{\"speed\": 10}]", "[{\"speed\": 20, \"units\": \"km/h\"}]"}
 SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
-  '{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}',
-  '{"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}']),
+  '{"cameraId":25, "inspections":["2001-01-03", "2001-01-06", "2001-01-09"]}',
+  '{"cameraId":35, "inspections":["2001-01-04", "2001-01-07", "2001-01-10"]}']),
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
-   @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
--- {"[\"2000-01-07\"]", "[\"2000-01-06\", \"2000-01-09\"]"}
+   @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2001-01-05", "max":"2001-01-09"}');
+-- {"[\"2001-01-07\"]", "[\"2001-01-06\", \"2001-01-09\"]"}
 </programlisting>
 			</listitem>
 
@@ -387,11 +387,11 @@ SELECT jsonbsetPathQueryFirst(set(ARRAY[jsonb '{"speed":10}',
   '{"min":10, "max":30}');
 -- {10, 20}
 SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
-  '{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}',
-  '{"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}']),
+  '{"cameraId":25, "inspections":["2001-01-03", "2001-01-06", "2001-01-09"]}',
+  '{"cameraId":35, "inspections":["2001-01-04", "2001-01-07", "2001-01-10"]}']),
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
-  '{"min":"2000-01-05", "max":"2000-01-09"}');
--- {"[\"2000-01-07\"]", "[\"2000-01-06\", \"2000-01-09\"]"}
+  '{"min":"2001-01-05", "max":"2001-01-09"}');
+-- {"[\"2001-01-07\"]", "[\"2001-01-06\", \"2001-01-09\"]"}
 </programlisting>
 			</listitem>
 
@@ -1134,9 +1134,9 @@ SELECT tjsonbPathExists(tjsonb '{{"road": "Bvd Gén. Jacques",
   '$.category ? (@ == "residential")');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
 SELECT tjsonbPathExistsTz(tjsonb '[{"speed":10, "cameraId": "25",
-  "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
-  {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
-  '$.lastInspection ? (@.datetime() > "2000-06-01".datetime() )');
+  "lastInspection": "2001-08-01 12:00:00"}@2001-01-01,
+  {"speed":20, "cameraId": "35", "lastInspection": "2001-03-01 12:00:00"}@2001-01-02]',
+  '$.lastInspection ? (@.datetime() > "2001-06-01".datetime() )');
 -- [t@2001-01-01, f@2001-01-02]
 </programlisting>
 			</listitem>
@@ -1163,9 +1163,9 @@ SELECT tjsonbPathMatch(tjsonb '{{"road": "Bvd Gén. Jacques",
   '$.category == "residential"');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
 SELECT tjsonbPathMatchTz(tjsonb '[{"speed":10, "cameraId": "25",
-  "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
-  {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
-  '$.lastInspection.datetime() > "2000-06-01".datetime()');
+  "lastInspection": "2001-08-01 12:00:00"}@2001-01-01,
+  {"speed":20, "cameraId": "35", "lastInspection": "2001-03-01 12:00:00"}@2001-01-02]',
+  '$.lastInspection.datetime() > "2001-06-01".datetime()');
 -- [t@2001-01-01, f@2001-01-02]
 </programlisting>
 			</listitem>
@@ -1185,11 +1185,11 @@ SELECT tjsonbPathQueryArray(tjsonb '[{"speed":10}@2001-01-01,
   '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
 -- {["[{\"speed\": 10}]"@2001-01-01, "[{\"speed\": 20, \"units\": \"km/h\"}]"@2001-01-02]}
 SELECT tjsonbPathQueryArrayTz(tjsonb '[{"cameraId":25,
-  "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
-  {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
+  "inspections":["2001-01-03", "2001-01-06", "2001-01-09"]}@2001-01-01,
+  {"cameraId":35, "inspections":["2001-01-04", "2001-01-07", "2001-01-10"]}@2001-01-02]',
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
-   @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
--- {["[\"2000-01-06\", \"2000-01-09\"]"@2001-01-01, "[\"2000-01-07\"]"@2001-01-02]}
+   @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2001-01-05", "max":"2001-01-09"}');
+-- {["[\"2001-01-06\", \"2001-01-09\"]"@2001-01-01, "[\"2001-01-07\"]"@2001-01-02]}
 </programlisting>
 			</listitem>
 
@@ -1208,11 +1208,11 @@ SELECT tjsonbPathQueryFirst(tjsonb '[{"speed":10}@2001-01-01,
   '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max)', '{"min":10, "max":30}');
 -- {["10"@2001-01-01, "20"@2001-01-02]}
 SELECT tjsonbPathQueryArrayTz(tjsonb
-  '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
-   {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
+  '[{"cameraId":25, "inspections":["2001-01-03", "2001-01-06", "2001-01-09"]}@2001-01-01,
+   {"cameraId":35, "inspections":["2001-01-04", "2001-01-07", "2001-01-10"]}@2001-01-02]',
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
-  '{"min":"2000-01-05", "max":"2000-01-09"}');
--- {["[\"2000-01-06\", \"2000-01-09\"]"@2001-01-01, "[\"2000-01-07\"]"@2001-01-02]}
+  '{"min":"2001-01-05", "max":"2001-01-09"}');
+-- {["[\"2001-01-06\", \"2001-01-09\"]"@2001-01-01, "[\"2001-01-07\"]"@2001-01-02]}
 </programlisting>
 			</listitem>
 

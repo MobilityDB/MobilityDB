@@ -7,26 +7,22 @@
 # The four meos/test entries are the bin origin 2000-01-03, the first Monday of
 # 2000 and the default every tprecision and tsample signature declares, so they
 # name a reference point rather than a fixture instant and stay as they are.
+#
+# What the manual keeps is not fixture data either. 2000-01-03 is that same bin
+# origin, standing in the role="syntax" listings that state those signatures.
+# 2000-12-30 and 2000-12-31 are ANSWERS: a bin or an expanded span reaching one
+# step back from a 2001 instant lands in the December before it, and the server
+# is what says so.
 doc/box_types.xml 2
 doc/es/box_types.xml 2
-doc/es/set_span_types.xml 10
-doc/es/temporal_circular_buffers.xml 10
-doc/es/temporal_jsonb.xml 50
+doc/es/set_span_types.xml 3
 doc/es/temporal_pointcloud.xml 2
-doc/es/temporal_pose_types.xml 16
-doc/es/temporal_raster.xml 11
-doc/es/temporal_rigid_geometries.xml 22
-doc/es/temporal_spatial_p1.xml 10
-doc/es/temporal_types_analytics.xml 454
-doc/set_span_types.xml 10
-doc/temporal_circular_buffers.xml 10
-doc/temporal_jsonb.xml 50
+doc/es/temporal_rigid_geometries.xml 2
+doc/es/temporal_types_analytics.xml 27
+doc/set_span_types.xml 3
 doc/temporal_pointcloud.xml 2
-doc/temporal_pose_types.xml 16
-doc/temporal_raster.xml 11
-doc/temporal_rigid_geometries.xml 22
-doc/temporal_spatial_p1.xml 10
-doc/temporal_types_analytics.xml 454
+doc/temporal_rigid_geometries.xml 2
+doc/temporal_types_analytics.xml 27
 meos/test/tbl_temporal.c 1
 meos/test/tbl_temporal_value.c 1
 meos/test/tbl_value_value.c 1

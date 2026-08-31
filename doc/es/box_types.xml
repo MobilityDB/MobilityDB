@@ -513,7 +513,7 @@ SELECT shiftTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
   interval '1 day');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-02, 2001-01-03])
 SELECT shiftTime(stbox 'STBOX T([2001-01-01,2001-01-02])', interval '-1 day');
--- STBOX T([2001-12-31, 2001-01-01])
+-- STBOX T([2000-12-31, 2001-01-01])
 SELECT shiftTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
   interval '1 day');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-02, 2001-01-03])
@@ -601,7 +601,7 @@ SELECT round(tbox 'TBOXFLOAT XT((1.12345,2.12345),[2001-01-01,2001-01-02])', 2);
 SELECT round(stbox 'STBOX XT(((1.12345, 1.12345),(2.12345, 2.12345)),
   [2001-01-01,2001-01-02])', 2);
 -- STBOX XT(((1.12,1.12),(2.12,2.12)),[2001-01-01, 2001-01-02])
-SELECT round(tstzspan '[2000-01-01, 2001-01-02]'::tbox);
+SELECT round(tstzspan '[2001-01-01, 2001-01-02]'::tbox);
 -- The tbox must have X dimension
 </programlisting>
 				</listitem>

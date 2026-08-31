@@ -900,9 +900,9 @@ atStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer
 minusStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2000-01-01,
-  Cbuffer(Point(3 3), 0.5)@2000-01-03]', stbox 'STBOX X((0,0),(2,2))'));
--- {[Cbuffer(POINT(1 1),0.5)@2000-01-01, Cbuffer(POINT(2 2),0.5)@2000-01-02)}
+SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(3 3), 0.5)@2001-01-03]', stbox 'STBOX X((0,0),(2,2))'));
+-- {[Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(2 2),0.5)@2001-01-02)}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1425,10 +1425,10 @@ douglasPeuckerSimplify(tcbuffer,maxdist float,syncdist bool=true) → tcbuffer
 </programlisting>
 				<para>La diferencia entre las dos funciones es que <varname>maxDistSimplify</varname> utiliza una versión de un solo paso del algoritmo mientras que <varname>douglasPeuckerSimplify</varname> utiliza el algoritmo recursivo estándar. Al igual que las funciones anteriores, la simplificación opera sobre la trayectoria de los centros y conserva el radio en cada instante que sobrevive.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01,
-  Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03,
-  Cbuffer(Point(4 4),0.5)@2000-01-04]', 2.0));
--- {Cbuffer(POINT(1 1),0.5)@2000-01-01, Cbuffer(POINT(4 4),0.5)@2000-01-04}
+SELECT asText(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
+  Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(3 1),0.5)@2001-01-03,
+  Cbuffer(Point(4 4),0.5)@2001-01-04]', 2.0));
+-- {Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(4 4),0.5)@2001-01-04}
 </programlisting>
 			</listitem>
 		</itemizedlist>
