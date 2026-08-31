@@ -89,7 +89,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__bbox__topo_gaf1af1558bcedace6a739d82b82ba8517.html#gaf1af1558bcedace6a739d82b82ba8517">contained_tbox_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__bbox__topo_ga0935cca53cbdfec9599ef25945658666.html#ga0935cca53cbdfec9599ef25945658666">contains_tbox_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2tbox_8c_a3c9e972a7dbdef0ce75ff873c33fa0bb.html#a3c9e972a7dbdef0ce75ff873c33fa0bb">ensure_same_dimensionality_tbox</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2tbox_8c_a8368b5648a9086c722ece63adde155a2.html#a8368b5648a9086c722ece63adde155a2">ensure_valid_tbox_tbox</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2tbox_8c_af7570bc866a2e2445915eabb7558e575.html#af7570bc866a2e2445915eabb7558e575">ensure_valid_tbox_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gae627af962a7138be685ce939a97eee9c.html#gae627af962a7138be685ce939a97eee9c">float_set_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__constructor_gab4f0d52cd19629c94ca6443f5988ddd6.html#gab4f0d52cd19629c94ca6443f5988ddd6">float_timestamptz_to_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__conversion_ga83442746e42f8d709e61b8aead1011c7.html#ga83442746e42f8d709e61b8aead1011c7">float_to_tbox</a></td></tr>
@@ -197,8 +197,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8368b5648a9086c722ece63adde155a2" name="a8368b5648a9086c722ece63adde155a2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8368b5648a9086c722ece63adde155a2">&#9670;&#160;</a></span>ensure_valid_tbox_tbox()</h2>
+<a id="af7570bc866a2e2445915eabb7558e575" name="af7570bc866a2e2445915eabb7558e575"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7570bc866a2e2445915eabb7558e575">&#9670;&#160;</a></span>ensure_valid_tbox_tbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -216,19 +216,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structTBox.html">TBox</a> *&#160;</td>
-          <td class="paramname"><em>box2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>hasx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>hast</em>&#160;</td>
+          <td class="paramname"><em>box2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -243,11 +231,10 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the ouput variables initialized with the flag values of the boxes. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if two temporal boxes are valid for operations. </p>
+<p >The boxes are comparable when their value spans measure the same quantity, which the span type states. A box carrying no value span states none, so the pair is comparable whatever the other box holds. Which dimensions an operation needs is the operation's own question, asked after this one </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td>Input boxes </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">hasx,hast</td><td>Boolean variables </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> boxes </td></tr>
   </table>
   </dd>
 </dl>
