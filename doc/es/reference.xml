@@ -440,7 +440,7 @@
 					<para><link linkend="tbox"><varname>tbox</varname></link>: Constructor para <varname>tbox</varname></para>
 				</listitem>
 				<listitem>
-					<para><link linkend="stbox"><varname>stboxX</varname>, <varname>stboxZ</varname>, <varname>stboxT</varname>, <varname>stboxXT</varname>, <varname>stboxZT</varname>, <varname>geodstboxZ</varname>, <varname>geodstboxT</varname>, <varname>geodstboxZT</varname>, <varname>stbox</varname></link>: Constructor para <varname>stbox</varname></para>
+					<para><link linkend="stbox"><varname>stboxX</varname>, <varname>stboxZ</varname>, <varname>stboxT</varname>, <varname>stboxXT</varname>, <varname>stboxZT</varname>, <varname>geodstboxZ</varname>, <varname>geodstboxZT</varname>, <varname>stbox</varname></link>: Constructor para <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

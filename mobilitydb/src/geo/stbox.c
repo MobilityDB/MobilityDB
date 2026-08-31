@@ -366,19 +366,6 @@ Geodstbox_constructor_z(PG_FUNCTION_ARGS)
   return Stbox_constructor(fcinfo, true, true, false, true);
 }
 
-PGDLLEXPORT Datum Geodstbox_constructor_t(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
-/**
- * @ingroup mobilitydb_geo_box_constructor
- * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn geodstboxT()
- */
-inline Datum
-Geodstbox_constructor_t(PG_FUNCTION_ARGS)
-{
-  return Stbox_constructor(fcinfo, false, false, true, true);
-}
-
 PGDLLEXPORT Datum Geodstbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_zt);
 /**

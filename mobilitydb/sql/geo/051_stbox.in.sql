@@ -140,16 +140,6 @@ CREATE FUNCTION stboxZT(float, float, float, float, float, float,
   AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstboxT(timestamptz)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geodstbox_constructor_t'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION geodstboxT(tstzspan)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geodstbox_constructor_t'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION geodstboxZ(float, float, float, float, float, float,
     srid integer DEFAULT 4326)
   RETURNS stbox
