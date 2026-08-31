@@ -87,10 +87,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_adb9d27f24894ed2c9193f79fc2cc4304.html#adb9d27f24894ed2c9193f79fc2cc4304">buffer_add_round_cap</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9e63e71fc700b7d70f43be637966901b.html#a9e63e71fc700b7d70f43be637966901b">buffer_add_round_join</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a453b2cdec0ade699629309797172ccca.html#a453b2cdec0ade699629309797172ccca">buffer_add_segment</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac35d544f99aa7a4456faf025409783e9.html#ac35d544f99aa7a4456faf025409783e9">buffer_angle_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7d8f05fffcfbed963c07d70582f303ce.html#a7d8f05fffcfbed963c07d70582f303ce">buffer_append_piece_to_curve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a849f1de6185ba1ddad1a932f844ee38b.html#a849f1de6185ba1ddad1a932f844ee38b">buffer_append_point</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a05a820601bb009392eb3b76c5793db24.html#a05a820601bb009392eb3b76c5793db24">buffer_arc_contains_angle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a920ab0d54fa9324951fe8dda02ee5115.html#a920ab0d54fa9324951fe8dda02ee5115">buffer_arc_parameter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac3a22e2f9808a6c10fdfeb3f6117afd9.html#ac3a22e2f9808a6c10fdfeb3f6117afd9">buffer_arc_signed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a0da95760ea4c55f25f0f33a5cdc376e7.html#a0da95760ea4c55f25f0f33a5cdc376e7">buffer_arc_sweep</a></td></tr>
@@ -146,7 +144,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac45c0e1ea2117e802572ac52344abd74.html#ac45c0e1ea2117e802572ac52344abd74">BUFFER_MITRE_ON_SEGMENTS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af8ddb015bb92bc1f954e5702339da187.html#af8ddb015bb92bc1f954e5702339da187">buffer_node_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a76baf8b53fb554306c75049414485c5f.html#a76baf8b53fb554306c75049414485c5f">buffer_nodes_equal</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a693f6646c059be101110e4caa437178c.html#a693f6646c059be101110e4caa437178c">buffer_normalize_angle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a615346b614e55995fdc0c03734a1f989.html#a615346b614e55995fdc0c03734a1f989">buffer_normalize_ring_orientation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6449c63b695768b177f93c57bc08b1f8.html#a6449c63b695768b177f93c57bc08b1f8">buffer_normalize_ring_orientations</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a92eea9e5802f6ac9d58f465a7971cf56.html#a92eea9e5802f6ac9d58f465a7971cf56">buffer_offset_edge</a></td></tr>
@@ -270,6 +267,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Test whether a point lies on a circular buffer arc. </p>
+<p >The radial distance is the caller's question, since what it is read against depends on the coordinates the point is built from; this answers the angular half through <a class="el" href="geo__funcs_8h_a7ca8ba5b225bbc0fff9462a766944856.html#a7ca8ba5b225bbc0fff9462a766944856" title="Return true if an angle lies within an angular span.">arc_span_contains()</a>, the one statement of it </p>
 
 </div>
 </div>
