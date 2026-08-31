@@ -83,48 +83,58 @@ $(function() {
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment"> * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"> * contributors</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment"> * Permission to use, copy, modify, and distribute this software and its</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment"> * documentation for any purpose, without fee, and without a written</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> * agreement is hereby granted, provided that the above copyright notice and</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment"> * this paragraph and the following two paragraphs appear in all copies.</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment"> * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment"> * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment"> * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment"> * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment"> * OF SUCH DAMAGE.</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment"> *****************************************************************************/</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#ifndef __CLIP_CLIPPER2_H__</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#define __CLIP_CLIPPER2_H__</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#include &lt;postgres.h&gt;</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &lt;liblwgeom.h&gt;</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#include &lt;<a class="code" href="meos_8h.html">meos.h</a>&gt;</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a0bd6481f39344cbbb6301c9908132ae6.html#a0bd6481f39344cbbb6301c9908132ae6">   49</a></span><span class="preprocessor">#define MEOS_CLIP_INTERSECTION 0</span></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a94f49a9b363fb6e0e5f9143a2355ad71.html#a94f49a9b363fb6e0e5f9143a2355ad71">   50</a></span><span class="preprocessor">#define MEOS_CLIP_UNION        1</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a02b304b9b9e97850a0453625d8f740e7.html#a02b304b9b9e97850a0453625d8f740e7">   51</a></span><span class="preprocessor">#define MEOS_CLIP_DIFFERENCE   2</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_ae377de65f46a0154bc97a7e7cf707727.html#ae377de65f46a0154bc97a7e7cf707727">   52</a></span><span class="preprocessor">#define MEOS_CLIP_XOR          3</span></div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="keyword">extern</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *<a class="code hl_function" href="clip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d.html#a4672aa8de6f59e88dfc0abca023f7f4d">clipper2_clip_poly_poly</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *subj,</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *clip, <span class="keywordtype">int</span> op);</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="keyword">extern</span> <a class="code hl_struct" href="structSpan.html">Span</a> *<a class="code hl_function" href="clip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1.html#aa6d59bd316d790fecbbee91f1e297ca1">clipper2_traj_poly_periods</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structTSequence.html">TSequence</a> *seq,</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>  <span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, <span class="keywordtype">int</span> *out_count);</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>}</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="preprocessor">#endif </span><span class="comment">/* __CLIP_CLIPPER2_H__ */</span><span class="preprocessor"></span></div>
-<div class="ttc" id="aclip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d_html_a4672aa8de6f59e88dfc0abca023f7f4d"><div class="ttname"><a href="clip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d.html#a4672aa8de6f59e88dfc0abca023f7f4d">clipper2_clip_poly_poly</a></div><div class="ttdeci">GSERIALIZED * clipper2_clip_poly_poly(const GSERIALIZED *subj, const GSERIALIZED *clip, int op)</div><div class="ttdoc">Clip two polygonal geometries via Clipper2.</div><div class="ttdef"><b>Definition:</b> clip_clipper2.cpp:298</div></div>
-<div class="ttc" id="aclip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1_html_aa6d59bd316d790fecbbee91f1e297ca1"><div class="ttname"><a href="clip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1.html#aa6d59bd316d790fecbbee91f1e297ca1">clipper2_traj_poly_periods</a></div><div class="ttdeci">Span * clipper2_traj_poly_periods(const TSequence *seq, const GSERIALIZED *gs, int *out_count)</div><div class="ttdoc">Compute the time spans during which a temporal-point trajectory is inside a polygon,...</div><div class="ttdef"><b>Definition:</b> clip_clipper2.cpp:551</div></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment"> * MobilityDB includes portions of PostGIS version 3 source code released</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment"> * under the GNU General Public License (GPLv2 or later).</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> * Copyright (c) 2001-2025, PostGIS contributors</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment"> * Permission to use, copy, modify, and distribute this software and its</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment"> * documentation for any purpose, without fee, and without a written</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment"> * agreement is hereby granted, provided that the above copyright notice and</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment"> * this paragraph and the following two paragraphs appear in all copies.</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment"> * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment"> * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment"> * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="comment"> * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY</span></div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="comment"> * OF SUCH DAMAGE.</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="comment"> * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="comment"> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment"> * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="comment"> * AN &quot;AS IS&quot; BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="comment"> * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="comment"> *****************************************************************************/</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#ifndef __CLIP_CLIPPER2_H__</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#define __CLIP_CLIPPER2_H__</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#include &lt;postgres.h&gt;</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#include &lt;liblwgeom.h&gt;</span></div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="preprocessor">#include &lt;<a class="code" href="meos_8h.html">meos.h</a>&gt;</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a0bd6481f39344cbbb6301c9908132ae6.html#a0bd6481f39344cbbb6301c9908132ae6">   59</a></span><span class="preprocessor">#define MEOS_CLIP_INTERSECTION 0</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a94f49a9b363fb6e0e5f9143a2355ad71.html#a94f49a9b363fb6e0e5f9143a2355ad71">   60</a></span><span class="preprocessor">#define MEOS_CLIP_UNION        1</span></div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_a02b304b9b9e97850a0453625d8f740e7.html#a02b304b9b9e97850a0453625d8f740e7">   61</a></span><span class="preprocessor">#define MEOS_CLIP_DIFFERENCE   2</span></div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="clip__clipper2_8h_ae377de65f46a0154bc97a7e7cf707727.html#ae377de65f46a0154bc97a7e7cf707727">   62</a></span><span class="preprocessor">#define MEOS_CLIP_XOR          3</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="keyword">extern</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *<a class="code hl_function" href="clip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d.html#a4672aa8de6f59e88dfc0abca023f7f4d">clipper2_clip_poly_poly</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *subj,</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  <span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *clip, <span class="keywordtype">int</span> op);</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><span class="keyword">extern</span> <a class="code hl_struct" href="structSpan.html">Span</a> *<a class="code hl_function" href="clip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1.html#aa6d59bd316d790fecbbee91f1e297ca1">clipper2_traj_poly_periods</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structTSequence.html">TSequence</a> *seq,</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>  <span class="keyword">const</span> <a class="code hl_struct" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, <span class="keywordtype">int</span> *out_count);</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>}</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span> </div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span><span class="preprocessor">#endif </span><span class="comment">/* __CLIP_CLIPPER2_H__ */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="aclip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d_html_a4672aa8de6f59e88dfc0abca023f7f4d"><div class="ttname"><a href="clip__clipper2_8h_a4672aa8de6f59e88dfc0abca023f7f4d.html#a4672aa8de6f59e88dfc0abca023f7f4d">clipper2_clip_poly_poly</a></div><div class="ttdeci">GSERIALIZED * clipper2_clip_poly_poly(const GSERIALIZED *subj, const GSERIALIZED *clip, int op)</div><div class="ttdoc">Clip two polygonal geometries via Clipper2.</div><div class="ttdef"><b>Definition:</b> clip_clipper2.cpp:308</div></div>
+<div class="ttc" id="aclip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1_html_aa6d59bd316d790fecbbee91f1e297ca1"><div class="ttname"><a href="clip__clipper2_8h_aa6d59bd316d790fecbbee91f1e297ca1.html#aa6d59bd316d790fecbbee91f1e297ca1">clipper2_traj_poly_periods</a></div><div class="ttdeci">Span * clipper2_traj_poly_periods(const TSequence *seq, const GSERIALIZED *gs, int *out_count)</div><div class="ttdoc">Compute the time spans during which a temporal-point trajectory is inside a polygon,...</div><div class="ttdef"><b>Definition:</b> clip_clipper2.cpp:561</div></div>
 <div class="ttc" id="ameos_8h_html"><div class="ttname"><a href="meos_8h.html">meos.h</a></div><div class="ttdoc">External API of the Mobility Engine Open Source (MEOS) library.</div></div>
 <div class="ttc" id="astructGSERIALIZED_html"><div class="ttname"><a href="structGSERIALIZED.html">GSERIALIZED</a></div><div class="ttdef"><b>Definition:</b> postgis_ext_defs.in.h:170</div></div>
 <div class="ttc" id="astructSpan_html"><div class="ttname"><a href="structSpan.html">Span</a></div><div class="ttdoc">Structure to represent spans (a.k.a.</div><div class="ttdef"><b>Definition:</b> meos.h:157</div></div>
