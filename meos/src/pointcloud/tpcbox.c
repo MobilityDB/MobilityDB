@@ -88,7 +88,7 @@ bool
 ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  if (box1->pcid != 0 && box2->pcid != 0 && box1->pcid != box2->pcid)
+  if (box1->pcid != box2->pcid)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on TPCBox values with different schemas: %u vs %u",
@@ -106,7 +106,7 @@ static bool
 ensure_same_srid_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  if (box1->srid != 0 && box2->srid != 0 && box1->srid != box2->srid)
+  if (box1->srid != box2->srid)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on TPCBox values with different SRIDs: %d vs %d",
@@ -118,15 +118,23 @@ ensure_same_srid_tpcbox(const TPCBox *box1, const TPCBox *box2)
 
 /**
  * @brief Return true if two temporal pointcloud boxes are valid for operations
- * @param[in] temp1,temp2 Temporal value
+ * @details The boxes are comparable when they name the same schema, which is
+ * what gives their coordinates a meaning: a schema states the dimensions a
+ * value holds and what a stored number reads as, and it states the SRID every
+ * value carrying that pcid inherits
+ * @param[in] box1,box2 Temporal pointcloud boxes
  */
 bool
 ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2) ||
-      ! ensure_same_srid_tpcbox(box1, box2))
+  /* Both boxes carry coordinates here, so both name the schema those
+   * coordinates are read in. A box carrying none has nothing to interpret,
+   * so it meets a box of any schema */
+  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
+      (! ensure_same_pcid_tpcbox(box1, box2) ||
+       ! ensure_same_srid_tpcbox(box1, box2)))
     return false;
   return true;
 }

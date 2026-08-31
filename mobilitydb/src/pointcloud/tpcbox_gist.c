@@ -277,7 +277,9 @@ PG_FUNCTION_INFO_V1(Tpcbox_gist_same);
 /**
  * @ingroup mobilitydb_pointcloud_index
  * @brief GiST same method — exact equality, not the user-facing
- *   @c same_tpcbox_tpcbox (which is fuzzy on the same-pcid front)
+ *   @c same_tpcbox_tpcbox, which refuses two boxes naming different schemas
+ *   rather than answering false. An index method has to answer, so this one
+ *   reads a differing schema as one more way for two keys to differ
  * @sqlfn tpcbox_gist_same()
  */
 Datum

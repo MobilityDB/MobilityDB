@@ -101,6 +101,11 @@ SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
 SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
 SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(50, 50, 60, 60, 1, 0);  -- NULL (disjoint)
 
+-- A box carrying coordinates states the schema they are read in, so a box
+-- naming schema 0 and one naming schema 1 have no common extent to combine
+SELECT tpcbox(0, 0, 5, 5, 0, 0) + tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcbox(0, 0, 5, 5, 0, 0) * tpcbox(3, 3, 10, 10, 1, 0);
+
 -------------------------------------------------------------------------------
 -- Topological predicates — same pcid
 -------------------------------------------------------------------------------
@@ -121,12 +126,46 @@ SELECT tpcbox(0, 0, 5, 5, 1, 0)  -|- tpcbox(5, 0, 10, 5, 1, 0);
 SELECT adjacent(tpcbox(0, 0, 5, 5, 1, 0), tpcbox(5, 0, 10, 5, 1, 0));
 
 -------------------------------------------------------------------------------
--- Topological predicates — pcid mismatch always returns false
+-- Topological predicates — the schema decides what a coordinate means
 -------------------------------------------------------------------------------
 
+-- Two schemas give the same number two meanings, so the boxes are not
+-- comparable and the predicate has no answer to give
 SELECT tpcbox(0, 0, 10, 10, 1, 0) @> tpcbox(2, 2, 8, 8, 2, 0);
 SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(0, 0, 5, 5, 2, 0);
 SELECT tpcbox(0, 0, 5, 5, 1, 0)   ~= tpcbox(0, 0, 5, 5, 2, 0);
+
+-- Schema 0 is a schema like any other once a box carries coordinates
+SELECT tpcbox(0, 0, 5, 5, 0, 0) && tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcbox(0, 0, 5, 5, 0, 0) @> tpcbox(1, 1, 4, 4, 1, 0);
+
+-- The SRID is read on the same terms: one schema, two reference systems, so
+-- the same pair of numbers denotes two different places
+SELECT tpcbox(0, 0, 5, 5, 1, 4326) && tpcbox(3, 3, 10, 10, 1, 3857);
+SELECT tpcbox(0, 0, 5, 5, 1, 4326) + tpcbox(3, 3, 10, 10, 1, 3857);
+
+-- A box carrying no coordinates names no schema, so it meets a box of any
+-- schema: this is the shape a time-only query box takes against an index
+SELECT tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 0) &&
+  tpcbox_t(tstzspan '[2024-01-02, 2024-01-03]', 1);
+SELECT tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 0) +
+  tpcbox_t(tstzspan '[2024-01-02, 2024-01-03]', 1);
+
+-------------------------------------------------------------------------------
+-- Extent aggregation
+-------------------------------------------------------------------------------
+
+-- The aggregate answers the extent of the boxes it folds, so it is bounded by
+-- the same comparability the operators are: an extent spanning two schemas, or
+-- two reference systems, states a region no schema can read
+SELECT extent(b) FROM (VALUES (tpcbox(0, 0, 5, 5, 1, 0)),
+  (tpcbox(3, 3, 10, 10, 1, 0))) t(b);
+SELECT extent(b) FROM (VALUES (tpcbox(0, 0, 5, 5, 1, 0)),
+  (tpcbox(3, 3, 10, 10, 2, 0))) t(b);
+SELECT extent(b) FROM (VALUES (tpcbox(0, 0, 5, 5, 0, 0)),
+  (tpcbox(3, 3, 10, 10, 1, 0))) t(b);
+SELECT extent(b) FROM (VALUES (tpcbox(0, 0, 5, 5, 1, 4326)),
+  (tpcbox(3, 3, 10, 10, 1, 3857))) t(b);
 
 -------------------------------------------------------------------------------
 -- Comparison operators

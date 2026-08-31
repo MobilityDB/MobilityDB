@@ -45,6 +45,7 @@
 #include "pointcloud/tpc_boxops.h"
 #include "pointcloud/tpcbox.h"          /* PG_GETARG_TPCBOX_P, etc. */
 #include "pointcloud/pcpatch.h"
+#include "geo/geo_funcs.h"          /* ensure_same_dimensionality */
 #include "temporal/temporal.h"
 #include "temporal/skiplist.h"          /* PG_RETURN_SKIPLIST_P macro */
 #include "pg_temporal/skiplist.h"       /* INPUT_AGG_TRANS_STATE etc. */
@@ -99,10 +100,11 @@ Tpcbox_extent_transfn(PG_FUNCTION_ARGS)
   if (! box1 && ! box2) PG_RETURN_NULL();
   if (! box1) PG_RETURN_TPCBOX_P(tpcbox_copy(box2));
   if (! box2) PG_RETURN_TPCBOX_P(tpcbox_copy(box1));
-  if (box1->pcid != box2->pcid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Extent aggregation across distinct pcids: %u vs %u",
-        box1->pcid, box2->pcid)));
+  /* Both boxes are not null */
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_same_dimensionality(box1->flags, box2->flags))
+    PG_RETURN_NULL();
   TPCBox *result = tpcbox_copy(box1);
   tpcbox_expand(box2, result);
   PG_RETURN_TPCBOX_P(result);

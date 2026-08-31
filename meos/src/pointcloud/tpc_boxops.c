@@ -60,6 +60,7 @@
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/pcpatch.h"
 #include "pointcloud/tpcbox.h"
+#include "geo/geo_funcs.h"    /* ensure_same_dimensionality */
 
 /*****************************************************************************
  * Single-instant → TPCBox
@@ -141,8 +142,9 @@ pcpatch_fill_tpcbox_spatial(const Pcpatch *pa, TPCBox *box)
  * @param[in] s Timestamptz span
  * @param[out] box Bounding box carrying the span and no spatial dimension
  * @note Mirrors @p tstzspan_set_stbox. The span names no schema, so @p pcid
- *   stays 0 — the "unknown" value @p ensure_same_pcid_tpcbox accepts against
- *   any schema, which is what lets a time-only query meet an indexed box.
+ *   stays 0. A box carrying no coordinates has nothing for a schema to give a
+ *   meaning to, so @p ensure_valid_tpcbox_tpcbox leaves its schema unread,
+ *   which is what lets a time-only query meet an indexed box.
  */
 void
 tstzspan_set_tpcbox(const Span *s, TPCBox *box)
@@ -271,10 +273,10 @@ tpointcloudseqarr_set_tpcbox(TSequence **sequences, int count, TPCBox *box)
  * @ingroup meos_pointcloud_box_constructor
  * @brief Transition function for the extent aggregate over tpcpoint /
  *   tpcpatch values. Folds @p temp's bounding box into @p state.
- * @return @p state (mutated) when both inputs are non-NULL with
- *   matching pcid; a freshly-palloc'd TPCBox when @p state is NULL
- *   and @p temp is non-NULL; @p NULL when both are NULL or on pcid
- *   mismatch (which raises an error).
+ * @return @p state (mutated) when both inputs are non-NULL and comparable;
+ *   a freshly-palloc'd TPCBox when @p state is NULL and @p temp is non-NULL;
+ *   @p NULL when both are NULL, or when the two boxes name different schemas
+ *   or hold different dimensions (which raises an error).
  * @csqlfn #Tpc_extent_transfn()
  */
 TPCBox *
@@ -290,17 +292,12 @@ tpcbox_extent_transfn(TPCBox *state, const Temporal *temp)
     temporal_set_bbox(temp, result);
     return result;
   }
-  /* Pcid mismatch is rejected — aggregating across schemas would
-   * produce a bbox whose dimensions are uninterpretable. */
   TPCBox tmp;
   temporal_set_bbox(temp, &tmp);
-  if (state->pcid != tmp.pcid)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Extent aggregation across distinct pcids: state.pcid=%u vs "
-      "input.pcid=%u", state->pcid, tmp.pcid);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(state, &tmp) ||
+      ! ensure_same_dimensionality(state->flags, tmp.flags))
     return NULL;
-  }
   tpcbox_expand(&tmp, state);
   return state;
 }
