@@ -77,31 +77,31 @@ CREATE TYPE tpcbox (
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION tpcbox(xmin float8, ymin float8, xmax float8, ymax float8,
+CREATE FUNCTION tpcboxX(xmin float8, ymin float8, xmax float8, ymax float8,
     pcid integer DEFAULT 0, srid integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_constructor_2d'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcbox_z(xmin float8, ymin float8, zmin float8,
+CREATE FUNCTION tpcboxZ(xmin float8, ymin float8, zmin float8,
     xmax float8, ymax float8, zmax float8,
     pcid integer DEFAULT 0, srid integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_constructor_3d'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcbox_t(period tstzspan, pcid integer DEFAULT 0)
+CREATE FUNCTION tpcboxT(period tstzspan, pcid integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcbox_xt(xmin float8, ymin float8, xmax float8, ymax float8,
+CREATE FUNCTION tpcboxXT(xmin float8, ymin float8, xmax float8, ymax float8,
     period tstzspan, pcid integer DEFAULT 0, srid integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_constructor_xt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcbox_zt(xmin float8, ymin float8, zmin float8,
+CREATE FUNCTION tpcboxZT(xmin float8, ymin float8, zmin float8,
     xmax float8, ymax float8, zmax float8, period tstzspan,
     pcid integer DEFAULT 0, srid integer DEFAULT 0)
   RETURNS tpcbox

@@ -57,11 +57,11 @@ SELECT bool_and(NOT (temp #>> temp)) FROM tbl_tpcpatch;
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tpcpoint
-WHERE temp << tpcbox_zt(-200, -200, -200, 200, 200, 200,
+WHERE temp << tpcboxZT(-200, -200, -200, 200, 200, 200,
   tstzspan '[2001-01-01, 2030-01-01]', 1, 0);
 
 SELECT COUNT(*) FROM tbl_tpcpoint
-WHERE tpcbox_zt(-200, -200, -200, 200, 200, 200,
+WHERE tpcboxZT(-200, -200, -200, 200, 200, 200,
   tstzspan '[2001-01-01, 2030-01-01]', 1, 0) >> temp;
 
 -- Reverse: every row is "before" a span that starts well after

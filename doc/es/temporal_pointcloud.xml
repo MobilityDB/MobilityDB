@@ -261,16 +261,16 @@ SELECT numValues(set(ARRAY[pcpoint(1, 10.0, 20.0, 30.0),
 					<indexterm significance="normal"><primary><varname>tpcbox_zt</varname></primary></indexterm>
 					<para>Construye un tpcbox a partir de límites X/Y/Z/T explícitos y un pcid</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpcbox(xmin,ymin,xmax,ymax,pcid,srid integer=0) → tpcbox
-tpcbox_z(xmin,ymin,zmin,xmax,ymax,zmax,pcid,srid integer=0) → tpcbox
-tpcbox_t(period,pcid) → tpcbox
-tpcbox_xt(xmin,ymin,xmax,ymax,period,pcid,srid integer=0) → tpcbox
-tpcbox_zt(xmin,ymin,zmin,xmax,ymax,zmax,period,pcid,srid integer=0) → tpcbox
+tpcboxX(xmin,ymin,xmax,ymax,pcid,srid integer=0) → tpcbox
+tpcboxZ(xmin,ymin,zmin,xmax,ymax,zmax,pcid,srid integer=0) → tpcbox
+tpcboxT(period,pcid) → tpcbox
+tpcboxXT(xmin,ymin,xmax,ymax,period,pcid,srid integer=0) → tpcbox
+tpcboxZT(xmin,ymin,zmin,xmax,ymax,zmax,period,pcid,srid integer=0) → tpcbox
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcbox(0, 0, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1, 0);
 -- TPCBOX(X((0,0),(10,10)), 1)
-SELECT tpcbox_zt(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+SELECT tpcboxZT(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
 -- TPCBOX(ZT(((0,0,0),(10,10,10)),[2024-01-01, 2024-01-02]), 1)
 </programlisting>
 				</listitem>
@@ -322,7 +322,7 @@ hasZ(tpcbox) → boolean
 hasT(tpcbox) → boolean
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
+WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 1, 0) AS b)
   SELECT hasX(b), hasZ(b) FROM b;
 -- t | f
 </programlisting>
@@ -345,7 +345,7 @@ zmin(tpcbox) → float
 zmax(tpcbox) → float
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
+WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 1, 0) AS b)
   SELECT xmin(b), xmax(b) FROM b;
 -- 0 | 10
 </programlisting>
@@ -360,7 +360,7 @@ tmin(tpcbox) → timestamptz
 tmax(tpcbox) → timestamptz
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tmin(tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1));
+SELECT tmin(tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 1));
 -- 2024-01-01
 </programlisting>
 				</listitem>
@@ -374,7 +374,7 @@ pcid(tpcbox) → integer
 SRID(tpcbox) → integer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH b AS (SELECT tpcbox(0, 0, 10, 10, 7, 4326) AS b)
+WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 7, 4326) AS b)
   SELECT pcid(b), SRID(b) FROM b;
 -- 7 | 4326
 </programlisting>
@@ -392,7 +392,7 @@ WITH b AS (SELECT tpcbox(0, 0, 10, 10, 7, 4326) AS b)
 round(tpcbox,integer=0) → tpcbox
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(tpcbox(0.123456, 1.234567, 2.345678, 3.456789, 1, 0), 2);
+SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1, 0), 2);
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
 </programlisting>
 				</listitem>
@@ -405,7 +405,7 @@ setSRID(tpcbox,integer) → tpcbox
 </programlisting>
 					<para>No reproyecta las coordenadas, para ello, proyecte primero el tpcpoint subyacente y tome la caja delimitadora del resultado</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10, 1, 0), 4326));
 -- 4326
 </programlisting>
 				</listitem>
@@ -423,9 +423,9 @@ tpcbox {+, *} tpcbox → tpcbox
 </programlisting>
 					<para>Ambos operandos deben compartir el mismo <varname>pcid</varname>, y la intersección es NULL cuando las dos cajas son disjuntas.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) + tpcboxX(3, 3, 10, 10, 1, 0);
 -- TPCBOX(X((0,0),(10,10)), 1)
-SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) * tpcboxX(3, 3, 10, 10, 1, 0);
 -- TPCBOX(X((3,3),(5,5)), 1)
 </programlisting>
 				</listitem>
@@ -448,17 +448,17 @@ SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
 tpcbox {&amp;&amp;, @&gt;, &lt;@, ~=, -|-} tpcbox → boolean
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcbox(0, 0, 10, 10, 1, 0) @&gt; tpcbox(2, 2, 8, 8, 1, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1, 0) @&gt; tpcboxX(2, 2, 8, 8, 1, 0);
 -- t
-SELECT tpcbox(2, 2, 8, 8, 1, 0) &lt;@ tpcbox(0, 0, 10, 10, 1, 0);
+SELECT tpcboxX(2, 2, 8, 8, 1, 0) &lt;@ tpcboxX(0, 0, 10, 10, 1, 0);
 -- t
-SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) &amp;&amp; tpcboxX(3, 3, 10, 10, 1, 0);
 -- t
-SELECT tpcbox(0, 0, 2, 2) ~= tpcbox(0, 0, 2, 2);
+SELECT tpcboxX(0, 0, 2, 2) ~= tpcboxX(0, 0, 2, 2);
 -- t
-SELECT tpcbox(0, 0, 2, 2) -|- tpcbox(5, 5, 7, 7);
+SELECT tpcboxX(0, 0, 2, 2) -|- tpcboxX(5, 5, 7, 7);
 -- f
-SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) &amp;&amp; tpcboxX(0, 0, 5, 5, 2, 0);
 -- ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
 </programlisting>
 				</listitem>
@@ -495,14 +495,14 @@ tpcbox {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} tpcbox → boolean
 </programlisting>
 					<para>Los cuatro grupos prueban el eje X, el eje Y, el eje Z y el eje temporal, y cada uno indica, en orden, estrictamente antes, no se extiende después, estrictamente después y no se extiende antes a lo largo de su eje.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcbox(0, 0, 2, 2) &lt;&lt; tpcbox(5, 5, 7, 7);
+SELECT tpcboxX(0, 0, 2, 2) &lt;&lt; tpcboxX(5, 5, 7, 7);
 -- t
-SELECT tpcbox(0, 0, 2, 2) &lt;&lt;| tpcbox(5, 5, 7, 7);
+SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;| tpcboxX(5, 5, 7, 7);
 -- t
 -- Neither box carries a z dimension or a time span, so those tests are false.
-SELECT tpcbox(0, 0, 2, 2) &lt;&lt;/ tpcbox(5, 5, 7, 7);
+SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;/ tpcboxX(5, 5, 7, 7);
 -- f
-SELECT tpcbox(0, 0, 2, 2) &lt;&lt;# tpcbox(5, 5, 7, 7);
+SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;# tpcboxX(5, 5, 7, 7);
 -- f
 </programlisting>
 				</listitem>
@@ -525,11 +525,11 @@ tpcbox {=, &lt;&gt;, &lt;, &lt;=, &gt;, &gt;=} tpcbox → boolean
 </programlisting>
 					<para>La función compara en el orden siguiente: pcid, srid, flags, período y a continuación límites espaciales en orden XYZ-min/max)</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcbox(0, 0, 2, 2) = tpcbox(0, 0, 2, 2);
+SELECT tpcboxX(0, 0, 2, 2) = tpcboxX(0, 0, 2, 2);
 -- t
-SELECT tpcbox(0, 0, 2, 2) &lt;&gt; tpcbox(5, 5, 7, 7);
+SELECT tpcboxX(0, 0, 2, 2) &lt;&gt; tpcboxX(5, 5, 7, 7);
 -- t
-SELECT tpcbox(0, 0, 2, 2) &lt; tpcbox(5, 5, 7, 7);
+SELECT tpcboxX(0, 0, 2, 2) &lt; tpcboxX(5, 5, 7, 7);
 -- t
 </programlisting>
 				</listitem>
@@ -890,13 +890,13 @@ minusTpcbox(tpcpoint,tpcbox,border_inc boolean=true) → tpcpoint
 SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]),
-  tpcbox_zt(0, 0, 0, 2, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
+  tpcboxZT(0, 0, 0, 2, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 2
 -- The box does not intersect the tpcpoint, so nothing is removed.
 SELECT numInstants(minusTpcbox(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]),
-  tpcbox_zt(10, 10, 10, 12, 12, 12, tstzspan '[2001-01-01, 2001-01-03]', 1)));
+  tpcboxZT(10, 10, 10, 12, 12, 12, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 3
 </programlisting>
 				</listitem>
@@ -1015,7 +1015,7 @@ SELECT tpcpointSeq(ARRAY[
 SELECT tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]) @&gt;
-  tpcbox_z(1, 1, 1, 2, 2, 2, 1);
+  tpcboxZ(1, 1, 1, 2, 2, 2, 1);
 -- true
 </programlisting>
 				</listitem>
@@ -1037,7 +1037,7 @@ SELECT tpcpointSeq(ARRAY[
 SELECT tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]) &lt;&lt;
-  tpcbox_z(10, 10, 10, 12, 12, 12, 1);
+  tpcboxZ(10, 10, 10, 12, 12, 12, 1);
 -- true
 SELECT tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1069,7 +1069,7 @@ SELECT round(nearestApproachDistance( tpcpoint(pcpoint(1, 1, 1, 1),
 SELECT round(nearestApproachDistance(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz), tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz),
   tpcpoint(pcpoint(1, 3, 3, 3), '2001-01-03'::timestamptz)]),
-  tpcbox_z(10, 10, 10, 12, 12, 12, 1))::numeric, 4);
+  tpcboxZ(10, 10, 10, 12, 12, 12, 1))::numeric, 4);
 -- 12.1244
 SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
   tpcpoint(pcpoint(1, 10, 10, 10), '2001-01-01'::timestamptz))::numeric, 4);
@@ -1621,7 +1621,7 @@ SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1,
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]),
-  tpcbox_xt(0, 0, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
+  tpcboxXT(0, 0, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 1
 -- The dropped patch stays present on the open interval before its instant,
 -- so the complement keeps two instants.
@@ -1629,7 +1629,7 @@ SELECT numInstants(minusTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1,
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]),
-  tpcbox_xt(0, 0, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
+  tpcboxXT(0, 0, 2, 2, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 2
 </programlisting>
 				</listitem>
@@ -1647,7 +1647,7 @@ SELECT numInstants(atTpcboxFine(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]),
-  tpcbox_xt(0, 0, 1, 1, tstzspan '[2001-01-01, 2001-01-03]', 1)));
+  tpcboxXT(0, 0, 1, 1, tstzspan '[2001-01-01, 2001-01-03]', 1)));
 -- 1
 </programlisting>
 				</listitem>
