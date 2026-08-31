@@ -1505,7 +1505,7 @@ SELECT stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))' && tgeography '{[Point(1
 
 /* Errors */
 SELECT stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))' && tgeometry 'Point(1 1 1)@2001-01-01';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX Z((1.0,2.0,2.0),(1.0,2.0,2.0))' && tgeometry 'Point(1 1 1)@2001-01-01';
  ?column? 
 ----------
@@ -1950,7 +1950,7 @@ ERROR:  Operation on mixed SRID
 SELECT stbox 'SRID=5676;STBOX XT(((1,1),(2,2)),[2002-01-01,2002-01-02])' && stbox 'STBOX XT(((1,1),(2,2)),[2002-01-01,2002-01-02])';
 ERROR:  Operation on mixed SRID
 SELECT stbox 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2002-01-01,2002-01-02])' && stbox 'STBOX XT(((1,1),(2,2)),[2002-01-01,2002-01-02])';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT tgeometry 'SRID=5676;Point(1 1)@2001-01-01' && stbox 'STBOX XT(((1,1),(2,2)),[2002-01-01,2002-01-02])';
 ERROR:  Operation on mixed SRID
 SELECT tstzspan '[2001-01-01,2001-01-02]' @> tgeometry 'Point(1 1)@2001-01-01';

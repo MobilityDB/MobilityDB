@@ -52,6 +52,12 @@
 
 /*****************************************************************************/
 
+/* Validity of a pair of spatiotemporal boxes */
+
+extern bool ensure_valid_stbox_stbox(const STBox *box1, const STBox *box2);
+
+/*****************************************************************************/
+
 /* Set an STBox from a <Type> */
 
 extern void point_get_coords(const GSERIALIZED *point, bool hasz,

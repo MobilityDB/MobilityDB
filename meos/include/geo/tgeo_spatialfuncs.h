@@ -104,8 +104,6 @@ extern bool ensure_valid_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern bool ensure_valid_tspatial_tspatial(const Temporal *temp1,
   const Temporal *temp2);
-extern bool ensure_valid_spatial_stbox_stbox(const STBox *box1,
-  const STBox *box2);
 extern bool ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box);
 extern bool ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern bool ensure_valid_tgeo_tgeo(const Temporal *temp1,
