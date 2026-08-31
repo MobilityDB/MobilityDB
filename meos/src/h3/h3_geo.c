@@ -120,6 +120,35 @@ h3_buf_push(h3_buf *buf, H3Index cell)
 }
 
 /**
+ * @brief Push the ring of radius one around a cell, that is the cell and the
+ * six neighbours `gridDisk(c, 1)` returns
+ * @details The ring is the unit by which both covers widen to stay
+ * conservative: #polygon_to_cells_into applies it to the cells
+ * #polygonToCells returns, which are those whose centre falls inside the
+ * polygon, and #linestring_to_cells_into applies it to the cell holding each
+ * sample of a segment. In both the omitted cell is one the geometry meets
+ * while the test that selected the cells does not see it, and in both such a
+ * cell neighbours one that was selected.
+ */
+static void
+h3_buf_push_ring1(h3_buf *out, H3Index c)
+{
+  if (c == (H3Index) 0)
+    return;
+  H3Index neighbors[7];   /* gridDisk(_, 1) returns exactly 7 cells */
+  memset(neighbors, 0, sizeof(neighbors));
+  if (gridDisk(c, 1, neighbors) != E_SUCCESS)
+  {
+    /* gridDisk failure: fall back to the centre cell */
+    h3_buf_push(out, c);
+    return;
+  }
+  for (int i = 0; i < 7; i++)
+    if (neighbors[i] != (H3Index) 0)
+      h3_buf_push(out, neighbors[i]);
+}
+
+/**
  * @brief 
  */
 static void
@@ -230,14 +259,27 @@ point_to_cells_into(const LWPOINT *lwp, int32 resolution, h3_buf *out)
 }
 
 /*****************************************************************************
- * LINESTRING — Nyquist segment sampling.
+ * LINESTRING — segment sampling, each sample expanded by one ring.
  *
- * For each adjacent pair of vertices, compute segment length in degrees
- * and sample at edge/2 spacing.  Includes endpoints.
+ * For each adjacent pair of vertices, sample the segment at half a cell edge
+ * and emit the ring around the cell holding each sample.
+ *
+ * THE RING IS WHAT MAKES THE COVER CONSERVATIVE, AND SAMPLING ALONE IS NOT.
+ * A cover is read to prune, so it holds every cell the line meets: a cell it
+ * omits is a row a caller filtering on the cover never sees. Sampling bounds
+ * the distance between consecutive samples, which is a weaker statement than
+ * "every cell the segment crosses holds a sample" — a segment clipping the
+ * corner of a cell between two samples leaves that cell unsampled, and the
+ * finer the resolution the smaller such a corner needs to be.
+ *
+ * A cell crossed between two consecutive samples lies within half an edge of
+ * one of them, so it is that sample's own cell or a neighbour of it, and the
+ * ring of radius one around each sample holds it. This is the rule
+ * #polygon_to_cells_into already applies to the cells #polygonToCells returns.
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Emit the cells a linestring meets, each sample's ring included
  */
 static void
 linestring_to_cells_into(const LWLINE *line, int32 resolution, h3_buf *out)
@@ -265,7 +307,7 @@ linestring_to_cells_into(const LWLINE *line, int32 resolution, h3_buf *out)
       double t = (double) s / (double) nsamples;
       double lat = p0.y + t * dy;
       double lng = p0.x + t * dx;
-      h3_buf_push(out, h3_latlng_deg_to_cell(lat, lng, resolution));
+      h3_buf_push_ring1(out, h3_latlng_deg_to_cell(lat, lng, resolution));
     }
   }
 }
@@ -312,31 +354,6 @@ geoloop_free(GeoLoop *loop)
     pfree(loop->verts);
   loop->verts    = NULL;
   loop->numVerts = 0;
-}
-
-/**
- * @brief Push the 7 cells of `gridDisk(c, 1)` (the cell + its 6 neighbors)
- * @details The 1-ring is the unit of coverage expansion used by
- * `polygon_to_cells_into` to ensure that any cell the polygon overlaps
- * appears in the output set, including cells whose centroid lies
- * outside the polygon.
- */
-static void
-h3_buf_push_ring1(h3_buf *out, H3Index c)
-{
-  if (c == (H3Index) 0)
-    return;
-  H3Index neighbors[7];   /* gridDisk(_, 1) returns exactly 7 cells */
-  memset(neighbors, 0, sizeof(neighbors));
-  if (gridDisk(c, 1, neighbors) != E_SUCCESS)
-  {
-    /* gridDisk failure: fall back to the centre cell */
-    h3_buf_push(out, c);
-    return;
-  }
-  for (int i = 0; i < 7; i++)
-    if (neighbors[i] != (H3Index) 0)
-      h3_buf_push(out, neighbors[i]);
 }
 
 /**

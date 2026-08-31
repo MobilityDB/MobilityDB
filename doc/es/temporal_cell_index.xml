@@ -513,7 +513,7 @@ SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoToH3IndexSet(geometry,integer) → h3indexset
 </programlisting>
-				<para>Se admite todo tipo de geometría: un <varname>POINT</varname> produce una única celda, una <varname>LINESTRING</varname> muestrea sus segmentos, un <varname>POLYGON</varname> rellena su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes. La cobertura se presenta solo para H3: es la única cuadrícula para la que MobilityDB lleva un núcleo de cobertura de regiones, y las formas para QUADBIN y S2 aún no están implementadas.</para>
+				<para>Se admite todo tipo de geometría: un <varname>POINT</varname> produce una única celda, una <varname>LINESTRING</varname> muestrea sus segmentos y toma los vecinos de cada muestra, de modo que el conjunto contiene todas las celdas que la línea toca, un <varname>POLYGON</varname> rellena su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes. La cobertura se presenta solo para H3: es la única cuadrícula para la que MobilityDB lleva un núcleo de cobertura de regiones, y las formas para QUADBIN y S2 aún no están implementadas.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- {"871fa4418ffffff"}

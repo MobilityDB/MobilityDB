@@ -44,6 +44,18 @@ SELECT numvalues(
  t
 (1 row)
 
+WITH line(g) AS (
+  VALUES (geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)')),
+samples AS (
+  SELECT geoToH3Cell(ST_LineInterpolatePoint(g, i / 500.0), 11) AS cell,
+    geoToH3IndexSet(g, 11) AS cover
+  FROM line, generate_series(0, 500) AS i)
+SELECT bool_and(cell <@ cover) FROM samples;
+ bool_and 
+----------
+ t
+(1 row)
+
 SELECT numvalues(
   geoToH3IndexSet(
     geometry 'SRID=4326;POLYGON((4.34 50.84, 4.36 50.84,
