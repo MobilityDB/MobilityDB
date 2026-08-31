@@ -1,0 +1,16 @@
+# Source files under the first-party trees that state another project's licence,
+# so test_license.sh does not ask them for MobilityDB's banner. Each line is a
+# path git lists, matched whole.
+#
+# The three *_ext_defs.in.h are read by meos/CMakeLists.txt into a generated
+# header and hold the declarations of the projects they name; postgres_int_defs.h
+# includes four of the vendored pgtypes headers; and pc_stringbuffer_shim.c holds
+# the pgPointCloud utilities PostGIS does not export.
+#
+# A file leaves this list by moving to the top-level directory of the project it
+# comes from, which is where the tree keeps vendored code.
+meos/include/h3_ext_defs.in.h
+meos/include/postgis_ext_defs.in.h
+meos/include/postgres_ext_defs.in.h
+meos/include/postgres_int_defs.h
+meos/src/pointcloud/pc_stringbuffer_shim.c
