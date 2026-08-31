@@ -133,7 +133,7 @@ ensure_valid_th3index_tgeogpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return true if two H3 cells are equal
  */
 Datum
 datum2_h3index_eq(Datum d1, Datum d2, MeosType type)
@@ -143,7 +143,7 @@ datum2_h3index_eq(Datum d1, Datum d2, MeosType type)
 }
 
 /**
- * @brief 
+ * @brief Return true if two H3 cells are different
  */
 Datum
 datum2_h3index_ne(Datum d1, Datum d2, MeosType type)
@@ -429,7 +429,8 @@ th3index_value_at_timestamptz(const Temporal *temp, TimestampTz t,
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return a value unchanged, the value function of the casts between
+ * tbigint and th3index, which share the same representation
  */
 static Datum
 datum_h3index_identity(Datum d)

@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return the boundary of an H3 directed edge as a geometry
  */
 GSERIALIZED *
 h3_directed_edge_to_gs_boundary(H3Index edge)

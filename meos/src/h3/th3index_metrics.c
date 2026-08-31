@@ -63,7 +63,7 @@
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return the area of an H3 cell in a given unit
  */
 double
 h3_cell_area_meos(H3Index cell, H3Unit unit)
@@ -89,7 +89,7 @@ h3_cell_area_meos(H3Index cell, H3Unit unit)
 }
 
 /**
- * @brief 
+ * @brief Return the length of an H3 directed edge in a given unit
  */
 double
 h3_edge_length_meos(H3Index edge, H3Unit unit)
@@ -115,7 +115,7 @@ h3_edge_length_meos(H3Index edge, H3Unit unit)
 }
 
 /**
- * @brief 
+ * @brief Return the great circle distance between two points in a given unit
  */
 double
 h3_gs_great_circle_distance_meos(const GSERIALIZED *a, const GSERIALIZED *b,

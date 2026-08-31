@@ -59,7 +59,7 @@
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return the parent of an H3 cell at the next coarser resolution
  */
 H3Index
 h3_cell_to_parent_next_meos(H3Index cell)
@@ -75,7 +75,7 @@ h3_cell_to_parent_next_meos(H3Index cell)
 }
 
 /**
- * @brief 
+ * @brief Return the center child of an H3 cell at the next finer resolution
  */
 H3Index
 h3_cell_to_center_child_next_meos(H3Index cell)
