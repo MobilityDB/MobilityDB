@@ -4337,7 +4337,7 @@ relate_arcs_overlap(const Edge *a, const Edge *b)
  * If the arcs overlap over a non-zero-length portion, overlap is set
  * to true and no point is required for the one-dimensional component.
  */
-static int
+int
 relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
   bool *overlap)
 {

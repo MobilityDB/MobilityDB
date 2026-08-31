@@ -208,6 +208,12 @@ geom_ring_is_convex(const POINTARRAY *pa)
 extern bool relate_point_on_boundary(double x, double y, Edge **edges,
   int nedges);
 extern int relate_point_in_area(double x, double y, Edge **edges, int nedges);
+/* Where two arcs meet, which the buffer overlay asks as well: solving the two
+ * circles and keeping the solutions both angular spans hold is one
+ * computation, and an intersection the two engines place differently is a
+ * defect neither of them can see from its own file */
+extern int relate_arc_arc_points(const Edge *a, const Edge *b, double x[2],
+  double y[2], bool *overlap);
 
 extern bool ensure_srid_is_latlong(int32_t srid);
 extern bool ensure_geodetic_geo(const GSERIALIZED *gs);

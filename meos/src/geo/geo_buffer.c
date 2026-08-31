@@ -1549,38 +1549,17 @@ buffer_collect_arc_arc_intersections(const Edge *e1, const Edge *e2,
     return;
   }
 
-  /* Circles that cannot intersect */
-  if (d > r1 + r2 + MEOS_GEOM_TOLERANCE || d < fabs(r1 - r2) - MEOS_GEOM_TOLERANCE)
-    return;
-
-  /* Distance from the first centre to the radical-line foot */
-  double a = (d * d + r1 * r1 - r2 * r2) / (2.0 * d);
-  double h2 = r1 * r1 - a * a;
-  if (h2 < 0.0)
-    h2 = 0.0;
-  double h = sqrt(h2);
-  /* Unit vector from centre 1 to centre 2 */
-  double ux = dx / d;
-  double uy = dy / d;
-
-  /* Foot of the perpendicular on the radical line */
-  double mx = e1->cx + a * ux;
-  double my = e1->cy + a * uy;
-
-  /* At most two circle intersection points */
-  for (int k = 0; k < 2; k++)
-  {
-    double sign = k == 0 ? -1.0 : 1.0;
-    double x = mx + sign * h * (-uy);
-    double y = my + sign * h * ux;
-    double phi1 = atan2(y - e1->cy, x - e1->cx);
-    double phi2 = atan2(y - e2->cy, x - e2->cx);
-    if (arc_contains_angle(e1, phi1) && arc_contains_angle(e2, phi2))
-      buffer_add_intersection_point(points, x, y);
-    /* Tangency gives only one point */
-    if (h <= MEOS_GEOM_TOLERANCE)
-      break;
-  }
+  /* Two circles that are not the same circle meet where
+   * #relate_arc_arc_points() places them: the arithmetic that solves them and
+   * keeps the solutions both angular spans hold is one computation, and the
+   * overlay reads the points it answers. The coincident case above stays here,
+   * since what the two engines want of it differs -- the overlay splits at the
+   * ends of the shared stretch, the relate engine reads the stretch itself */
+  double x[2], y[2];
+  bool overlap = false;
+  int n = relate_arc_arc_points(e1, e2, x, y, &overlap);
+  for (int i = 0; i < n; i++)
+    buffer_add_intersection_point(points, x[i], y[i]);
 }
 
 /**
