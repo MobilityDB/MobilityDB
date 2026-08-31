@@ -135,8 +135,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Push the 7 cells of <code>gridDisk(c, 1)</code> (the cell + its 6 neighbors) </p>
-<p >The 1-ring is the unit of coverage expansion used by <code>polygon_to_cells_into</code> to ensure that any cell the polygon overlaps appears in the output set, including cells whose centroid lies outside the polygon. </p>
+<p>Push the ring of radius one around a cell, that is the cell and the six neighbours <code>gridDisk(c, 1)</code> returns. </p>
+<p >The ring is the unit by which both covers widen to stay conservative: <a class="el" href="meos_2src_2h3_2h3__geo_8c_ac0742017b83d08d588cbc4e2e038378a.html#ac0742017b83d08d588cbc4e2e038378a" title="Push the cells covering an LWPOLY into the accumulator.">polygon_to_cells_into</a> applies it to the cells #polygonToCells returns, which are those whose centre falls inside the polygon, and <a class="el" href="meos_2src_2h3_2h3__geo_8c_a929aac2f95f39dca5172d9c0620c0c69.html#a929aac2f95f39dca5172d9c0620c0c69" title="Emit the cells a linestring meets, each sample&#39;s ring included.">linestring_to_cells_into</a> applies it to the cell holding each sample of a segment. In both the omitted cell is one the geometry meets while the test that selected the cells does not see it, and in both such a cell neighbours one that was selected. </p>
 
 </div>
 </div>
