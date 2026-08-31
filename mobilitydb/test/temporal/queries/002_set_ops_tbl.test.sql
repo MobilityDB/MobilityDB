@@ -37,6 +37,15 @@ SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t @> t2.t;
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t @> t2.t;
 SELECT COUNT(*) FROM tbl_text t1, tbl_textset t2 WHERE t1.t <@ t2.t;
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t <@ t2.t;
+
+-- A RESTRICTION reduces the constant it compares against to a span, which the
+-- forms above never reach: a clause between two columns is estimated by the
+-- join estimator instead. A set whose bounding box is not a span -- a text set
+-- here, and equally a geometry, cell or pose set -- has no span to be reduced
+-- to, and the estimate falls back to the default. The ordering operators are
+-- the ones a text set declares this estimator for.
+SELECT COUNT(*) FROM tbl_textset WHERE t < textset '{"AAA", "BBB", "CCC"}';
+SELECT COUNT(*) FROM tbl_textset WHERE t >= textset '{"AAA", "BBB", "CCC"}';
 SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t << t2.t;
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t << t2.t;
 SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t &< t2.t;

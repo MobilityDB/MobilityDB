@@ -46,6 +46,7 @@
 extern float8 span_sel_default(MeosOper oper);
 extern float8 span_joinsel_default(MeosOper oper);
 
+extern bool span_const_convertible(const Node *other);
 extern void span_const_to_span(const Node *other, Span *span);
 
 extern double span_sel_hist(VariableStatData *vardata, const Span *constval,

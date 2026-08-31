@@ -28,6 +28,18 @@ SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t <@ t2.t;
     99
 (1 row)
 
+SELECT COUNT(*) FROM tbl_textset WHERE t < textset '{"AAA", "BBB", "CCC"}';
+ count 
+-------
+     3
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset WHERE t >= textset '{"AAA", "BBB", "CCC"}';
+ count 
+-------
+    96
+(1 row)
+
 SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t << t2.t;
  count 
 -------
