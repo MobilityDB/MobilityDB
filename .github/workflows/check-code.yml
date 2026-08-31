@@ -115,6 +115,14 @@ jobs:
       - name: Check that no new call reaches GEOS through the vendored library
         run: python3 tools/scripts/check_liblwgeom_geos.py
 
+  dispatch_default_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check that a dispatch on a type rejects a type it does not handle
+        run: python3 tools/scripts/check_dispatch_default.py
+
   binding_io_ownership_check:
     runs-on: ubuntu-latest
     steps:
