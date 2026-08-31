@@ -62,22 +62,55 @@
 /**
  * @brief Return a default selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason
+ * @details The estimate an operator receives is the one its shape justifies,
+ * as PostgreSQL's @p default_range_selectivity gives the range operators it
+ * is the counterpart of. An inequality admits about a third of a column and
+ * a containment far less, so answering one constant for every operator
+ * misprices whichever of them it was not chosen for.
  */
 float8
-span_sel_default(MeosOper oper UNUSED)
+span_sel_default(MeosOper oper)
 {
-  // TODO take care of the operator
-  return DEFAULT_TEMP_SEL;
+  switch (oper)
+  {
+    case OVERLAPS_OP:
+      return 0.01;
+
+    case CONTAINS_OP:
+    case CONTAINED_OP:
+      return DEFAULT_RANGE_INEQ_SEL;
+
+    case LT_OP:
+    case LE_OP:
+    case GT_OP:
+    case GE_OP:
+    case LEFT_OP:
+    case OVERLEFT_OP:
+    case RIGHT_OP:
+    case OVERRIGHT_OP:
+    case BEFORE_OP:
+    case OVERBEFORE_OP:
+    case AFTER_OP:
+    case OVERAFTER_OP:
+      /* These are similar to regular scalar inequalities */
+      return DEFAULT_INEQ_SEL;
+
+    default:
+      /* All span operators are handled above, but just in case */
+      return DEFAULT_TEMP_SEL;
+  }
 }
 
 /**
  * @brief Return a default join selectivity estimate for given operator, when
  * we don't have statistics or cannot use them for some reason
+ * @details One estimate answers every operator here, which is what PostgreSQL
+ * does on the join side as well: @p areajoinsel and @p contjoinsel each answer
+ * a constant of their own and read neither the operator nor the operands.
  */
 float8
 span_joinsel_default(MeosOper oper UNUSED)
 {
-  // TODO take care of the operator
   return DEFAULT_TEMP_JOINSEL;
 }
 
@@ -687,13 +720,13 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
     // TODO Analyze whether a similar approach as PostgreSQL selectivity
     // estimation for equality can be used. There, they estimate 1/n if
     // the value is not in the MCV
-    selec = span_sel_default(InvalidOid);
+    selec = span_sel_default(oper);
   else
   {
 #if DEBUG_SELECTIVITY
     elog(WARNING, "Using default selectivity for operator: %d", oper);
 #endif
-    selec = span_sel_default(InvalidOid);
+    selec = span_sel_default(oper);
   }
 
   pfree(hist_lower); pfree(hist_upper);
@@ -763,6 +796,21 @@ span_sel_hist(VariableStatData *vardata, const Span *constval, MeosOper oper,
 /*****************************************************************************/
 
 /**
+ * @brief Return true if the constant has a span to be reduced to
+ * @details These are the types #span_const_to_span converts. A set whose
+ * bounding box is not a span -- a geometry, cell, pose or text set -- has no
+ * span for an estimate to be read from, and its operators reach the span
+ * estimator through the @p span_sel they declare.
+ */
+bool
+span_const_convertible(const Node *other)
+{
+  MeosType type = oid_meostype(((const Const *) other)->consttype);
+  return span_basetype(type) || set_spantype(type) || span_type(type) ||
+    spanset_type(type) || talpha_type(type);
+}
+
+/**
  * @brief Transform the constant into a span
  */
 void
@@ -770,8 +818,7 @@ span_const_to_span(const Node *other, Span *span)
 {
   Oid consttype = ((const Const *) other)->consttype;
   MeosType type = oid_meostype(consttype);
-  assert(span_basetype(type) || set_spantype(type) || span_type(type) ||
-    spanset_type(type) || talpha_type(type));
+  assert(span_const_convertible(other));
   if (span_basetype(type))
   {
     /* The right argument is a set or span base constant. We convert it into
@@ -815,6 +862,11 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   bool varonleft;
   Selectivity selec;
   Span span;
+  MeosType ltype, rtype;
+
+  /* The operator every default estimate below is keyed on. A commutation
+   * replaces the operator with its mirror, and it is read again there. */
+  MeosOper oper = oid_meosoper(operid, &ltype, &rtype);
 
   /*
    * If expression is not (variable op something) or (something op
@@ -822,7 +874,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
    */
   if (! get_restriction_variable(root, args, varRelid, &vardata, &other,
       &varonleft))
-    return span_sel_default(operid);
+    return span_sel_default(oper);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -830,7 +882,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   if (! IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return span_sel_default(operid);
+    return span_sel_default(oper);
   }
 
   /*
@@ -856,18 +908,28 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
       /* TODO: check whether there might still be a way to estimate.
        * Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return span_sel_default(operid);
+      return span_sel_default(UNKNOWN_OP);
     }
+    oper = oid_meosoper(operid, &ltype, &rtype);
   }
 
   /*
    * OK, there's a Var and a Const we're dealing with here. If the constant
    * is not of the span type, it should be converted to a span.
+   *
+   * A set whose bounding box is not a span reaches here: every set type
+   * declares this estimator for its ordering, containment and overlap
+   * operators, while only a number or timestamp set has a span for an
+   * estimate to be read from. There is nothing to estimate from for the
+   * others, which is what the default answers.
    */
+  if (! span_const_convertible(other))
+  {
+    ReleaseVariableStats(vardata);
+    return span_sel_default(oper);
+  }
   span_const_to_span(other, &span);
   /* Determine whether we can estimate selectivity for the operator */
-  MeosType ltype, rtype;
-  MeosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {
@@ -876,7 +938,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
     {
       /* Unknown operator */
       ReleaseVariableStats(vardata);
-      return span_sel_default(operid);
+      return span_sel_default(oper);
     }
   }
 
@@ -912,7 +974,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
    */
   float8 hist_selec = span_sel_hist(&vardata, &span, oper, value);
   if (hist_selec < 0.0)
-    hist_selec = span_sel_default(operid);
+    hist_selec = span_sel_default(oper);
 
   selec = hist_selec;
 
@@ -1274,13 +1336,13 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
       lslot->values, lslot->nvalues, oper);
   else if (oper == ADJACENT_OP)
     // TO DO
-    selec = span_joinsel_default(InvalidOid);
+    selec = span_joinsel_default(oper);
   else
   {
 #if DEBUG_SELECTIVITY
     elog(WARNING, "Using default join selectivity for operator: %d", oper);
 #endif
-    selec = span_sel_default(InvalidOid);
+    selec = span_sel_default(oper);
   }
 
   pfree(lower1); pfree(upper1); pfree(lower2); pfree(upper2);
@@ -1451,13 +1513,17 @@ Span_joinsel(PG_FUNCTION_ARGS)
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
   SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
 
+  /* Determine the operator the default estimates are keyed on */
+  MeosType ltype, rtype;
+  MeosOper oper = oid_meosoper(operid, &ltype, &rtype);
+
   /* Check length of args and punt on > 2 */
   if (list_length(args) != 2)
-    PG_RETURN_FLOAT8(span_joinsel_default(operid));
+    PG_RETURN_FLOAT8(span_joinsel_default(oper));
 
   /* Only respond to an inner join/unknown context join */
   if (jointype != JOIN_INNER)
-    PG_RETURN_FLOAT8(span_joinsel_default(operid));
+    PG_RETURN_FLOAT8(span_joinsel_default(oper));
 
   Node *arg1 = (Node *) linitial(args);
   Node *arg2 = (Node *) lsecond(args);
@@ -1465,18 +1531,16 @@ Span_joinsel(PG_FUNCTION_ARGS)
   /* We only do column joins right now, no functional joins */
   /* TODO: handle t1 <op> expandX(t2) */
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
-    PG_RETURN_FLOAT8(span_joinsel_default(operid));
+    PG_RETURN_FLOAT8(span_joinsel_default(oper));
 
   /* Determine whether we can estimate selectivity for the operator */
-  MeosType ltype, rtype;
-  MeosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {
     bool time = time_oper_sel(oper, ltype, rtype);
     if (! time)
       /* Return default selectivity */
-      PG_RETURN_FLOAT8(span_joinsel_default(operid));
+      PG_RETURN_FLOAT8(span_joinsel_default(oper));
   }
 
   Selectivity selec = span_joinsel(root, value, oper, args, jointype, sjinfo);
