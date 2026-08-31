@@ -3829,21 +3829,51 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
 }
 
 /**
+ * @brief Return the direction an edge runs in at one of its ends
+ * @details A direction, so of unit length at both ends of both kinds of edge.
+ * The tangent of an arc is a sine and a cosine and is already of unit length;
+ * the chord of a straight edge is as long as the edge, and the turn between
+ * two directions is read as a cross product, so leaving it unnormalized makes
+ * that turn an area where two straight edges meet, a length where a straight
+ * edge meets an arc, and a sine where two arcs do. Only the last is what the
+ * one tolerance the turn is judged against can bound, so the other two shrink
+ * with the geometry and a genuine turn between small edges reads as tangent.
+ * @param[in] edge Edge
+ * @param[in] at_start True for the direction it leaves its start point in,
+ * false for the direction it arrives at its end point in
+ * @param[out] dx,dy Direction, of unit length, or zero for an edge of no
+ * length, which runs in no direction
+ */
+static void
+buffer_edge_tangent(const Edge *edge, bool at_start, double *dx, double *dy)
+{
+  assert(edge); assert(dx); assert(dy);
+  if (edge->etype == EDGE_POLYARC || edge->etype == EDGE_LINEARC)
+  {
+    double theta = at_start ? edge->theta0 : edge->theta1;
+    double s = sin(theta), c = cos(theta);
+    *dx = edge->ccw ? -s : s;
+    *dy = edge->ccw ? c : -c;
+    return;
+  }
+  double ex = edge->x2 - edge->x1, ey = edge->y2 - edge->y1;
+  double len = hypot(ex, ey);
+  if (len <= 0.0)
+  {
+    *dx = *dy = 0.0;
+    return;
+  }
+  *dx = ex / len;
+  *dy = ey / len;
+}
+
+/**
  * @brief Return the direction an edge leaves its start point in
  */
 static void
 buffer_edge_start_tangent(const Edge *edge, double *dx, double *dy)
 {
-  assert(edge); assert(dx); assert(dy);
-  if (edge->etype == EDGE_POLYARC || edge->etype == EDGE_LINEARC)
-  {
-    double s = sin(edge->theta0), c = cos(edge->theta0);
-    *dx = edge->ccw ? -s : s;
-    *dy = edge->ccw ? c : -c;
-    return;
-  }
-  *dx = edge->x2 - edge->x1;
-  *dy = edge->y2 - edge->y1;
+  buffer_edge_tangent(edge, true, dx, dy);
 }
 
 /**
@@ -3852,16 +3882,7 @@ buffer_edge_start_tangent(const Edge *edge, double *dx, double *dy)
 static void
 buffer_edge_end_tangent(const Edge *edge, double *dx, double *dy)
 {
-  assert(edge); assert(dx); assert(dy);
-  if (edge->etype == EDGE_POLYARC || edge->etype == EDGE_LINEARC)
-  {
-    double s = sin(edge->theta1), c = cos(edge->theta1);
-    *dx = edge->ccw ? -s : s;
-    *dy = edge->ccw ? c : -c;
-    return;
-  }
-  *dx = edge->x2 - edge->x1;
-  *dy = edge->y2 - edge->y1;
+  buffer_edge_tangent(edge, false, dx, dy);
 }
 
 /**
