@@ -138,13 +138,7 @@ temporal_bbox_eq(const void *box1, const void *box2, MeosType temptype)
     return tpcbox_eq((TPCBox *) box1, (TPCBox *) box2);
 #endif
   else if (bboxtype == T_STBOX)
-    // TODO Due to floating point precision the current statement
-    // is not equal to the next one.
-    // return stbox_eq((STBox *) box1, (STBox *) box2);
-    // Problem raised in the test file 51_tpoint_tbl.test.out
-    // Look for temp != merge in that file for 2 other cases where
-    // a problem still remains (result != 0) even with the _cmp function
-    return stbox_cmp((STBox *) box1, (STBox *) box2) == 0;
+    return stbox_eq((STBox *) box1, (STBox *) box2);
   else
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
