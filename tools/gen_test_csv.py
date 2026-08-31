@@ -1,34 +1,31 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: PostgreSQL
 #
-# Export the pg_regress table fixtures to the CSV form the MEOS test
-# programs read.
+# This MobilityDB code is provided under The PostgreSQL License.
+# Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+# contributors
 #
-# `mobilitydb/test/<family>/data/load_*.sql.xz` carries every `tbl_*` table
-# the PostgreSQL suite loads, as a PostgreSQL `COPY ... FROM stdin` block.
-# The programs under `meos/test` answer, outside PostgreSQL, the same query
-# over the same table, and read it from `meos/test/csv/<table>.csv`.
+# MobilityDB includes portions of PostGIS version 3 source code released
+# under the GNU General Public License (GPLv2 or later).
+# Copyright (c) 2001-2025, PostGIS contributors
 #
-# One table is one file, so the two forms are the same data and neither can
-# drift from the other unnoticed: this script rewrites the CSV set from the
-# archives, and a fixture that changes is re-exported rather than re-typed.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for any purpose, without fee, and without a written
+# agreement is hereby granted, provided that the above copyright notice and
+# this paragraph and the following two paragraphs appear in all copies.
 #
-# The CSV form of a `COPY` block is:
-#   * the column names of the block, comma-separated, as the first line;
-#   * one line per row, the tab separator written as a comma;
-#   * rows in ascending order of the key column, so a file has one order
-#     rather than the order the dump happened to carry;
-#   * a NULL written as an empty field, which is what a reader that scans
-#     the rest of the line after the key already reads it as.
-# A value carrying a comma needs no quoting because every table is keyed by
-# `k` and holds one value column: everything after the first comma is the
-# value.
+# IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+# LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+# EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+# OF SUCH DAMAGE.
 #
-# Usage:
-#   python3 tools/gen_test_csv.py            # rewrite meos/test/csv
-#   python3 tools/gen_test_csv.py --check    # exit 1 if a file would change
+# UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+# AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+# PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# Run from the repo root.
+
 """Export the pg_regress table fixtures to meos/test/csv."""
 
 from __future__ import annotations

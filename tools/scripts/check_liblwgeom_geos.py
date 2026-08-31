@@ -1,35 +1,30 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: PostgreSQL
 #
-# BINDING-HEADER-PARSE-OK: CI source guard under tools/scripts/, in the
-# shape of check_error_sentinels.py. It reads postgis/liblwgeom/lwgeom_geos*.c
-# for the entry points the vendored library answers with GEOS and meos/src/**.c
-# for the ones MobilityDB calls; it extracts no API surface and generates
-# nothing.
+# This MobilityDB code is provided under The PostgreSQL License.
+# Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+# contributors
 #
-# Check that MobilityDB reaches GEOS through no entry point of the vendored
-# geometry library beyond the ones already accepted.
+# MobilityDB includes portions of PostGIS version 3 source code released
+# under the GNU General Public License (GPLv2 or later).
+# Copyright (c) 2001-2025, PostGIS contributors
 #
-# Why
-# ---
-# A build configured with -DGEOS=OFF compiles the MEOS sources free of GEOS,
-# and what the resulting library still asks of it comes from the vendored
-# PostGIS geometry library, whose GEOS files it compiles whatever the
-# configuration says. Those files answer several dozen entry points and
-# MobilityDB calls a handful of them. Each call is a place a native answer has
-# to reach before a build can leave the library out, so the set shrinks rather
-# than grows.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for any purpose, without fee, and without a written
+# agreement is hereby granted, provided that the above copyright notice and
+# this paragraph and the following two paragraphs appear in all copies.
 #
-# The set is easy to grow without noticing. A function written for one caller
-# reaches for the nearest liblwgeom entry that does the job, and whether that
-# entry answers with GEOS is invisible at the call site: it reads like any
-# other lwgeom_* call. This check names such a call.
+# IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+# LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+# EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+# OF SUCH DAMAGE.
 #
-# Usage:
-#   check_liblwgeom_geos.py                list the calls the baseline lacks
-#   check_liblwgeom_geos.py --rebaseline   record the calls as they stand
+# UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+# AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+# PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# Exit status is non-zero on a call the baseline does not carry (CI guard).
 
 import os
 import re
