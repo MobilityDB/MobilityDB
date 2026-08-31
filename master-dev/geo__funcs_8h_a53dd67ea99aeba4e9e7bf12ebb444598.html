@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: point_on_segment_within</title>
+<title>MobilityDB: relate_arc_arc_points</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -145,9 +145,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80">point_in_polygon_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ab6bad4700989bcefb8a992dcbb387fb2.html#ab6bad4700989bcefb8a992dcbb387fb2">point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa2f4628979203441083bd84d2c0994b0.html#aa2f4628979203441083bd84d2c0994b0">point_on_segment</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a8639632d586c3c1cb6acf37a16ed47d8.html#a8639632d586c3c1cb6acf37a16ed47d8">point_on_segment_within</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8639632d586c3c1cb6acf37a16ed47d8.html#a8639632d586c3c1cb6acf37a16ed47d8">point_on_segment_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aecc42cfe8cf4803e172f193076c67860.html#aecc42cfe8cf4803e172f193076c67860">pointarr_find_splits</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a53dd67ea99aeba4e9e7bf12ebb444598.html#a53dd67ea99aeba4e9e7bf12ebb444598">relate_arc_arc_points</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a53dd67ea99aeba4e9e7bf12ebb444598.html#a53dd67ea99aeba4e9e7bf12ebb444598">relate_arc_arc_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a1735a0debf7487b606e964192e1ba587.html#a1735a0debf7487b606e964192e1ba587">relate_ctx_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a233a6be8421102c31ba191861b90209f.html#a233a6be8421102c31ba191861b90209f">relate_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a28063f84c2d50ea74504c89af1ab3ffe.html#a28063f84c2d50ea74504c89af1ab3ffe">relate_is_areal</a></td></tr>
@@ -158,56 +158,41 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8639632d586c3c1cb6acf37a16ed47d8" name="a8639632d586c3c1cb6acf37a16ed47d8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8639632d586c3c1cb6acf37a16ed47d8">&#9670;&#160;</a></span>point_on_segment_within()</h2>
+<a id="a53dd67ea99aeba4e9e7bf12ebb444598" name="a53dd67ea99aeba4e9e7bf12ebb444598"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a53dd67ea99aeba4e9e7bf12ebb444598">&#9670;&#160;</a></span>relate_arc_arc_points()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool point_on_segment_within </td>
+          <td class="memname">int relate_arc_arc_points </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>px</em>, </td>
+          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>py</em>, </td>
+          <td class="paramname"><em>x</em>[2], </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x1</em>, </td>
+          <td class="paramname"><em>y</em>[2], </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>tol</em>&#160;</td>
+          <td class="paramtype">bool *&#160;</td>
+          <td class="paramname"><em>overlap</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -215,24 +200,10 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Return true if a point lies within a given distance of a segment. </p>
-<p >The tolerance is a DISTANCE. The cross and dot products below are areas, so each is compared against that distance multiplied by the size of the segment, which is what makes the test read as "the point lies within the
-tolerance of the segment" at every scale. </p><dl class="section note"><dt>Note</dt><dd>Comparing an area against a distance is what this replaces, and it fails in both directions: dividing through, the effective perpendicular band was the tolerance divided by the length of the segment, so it closed below the representable distance where coordinates are large and opened to swallow the whole figure where the segment is short. A polygon then failed to cover itself &ndash; 360 of the 931 h3 cells of the tbl_th3index fixture, and every one of them at a resolution finer than about 0.03 degrees. </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">px,py</td><td>Point </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">x1,y1,x2,y2</td><td>Endpoints of the segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">tol</td><td>Distance within which the point counts as lying on it, which an <a class="el" href="structEdge.html" title="Structure keeping a geometry edge.">Edge</a> carries precomputed in its <code>tol</code> member </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Add the intersection points of two circular arcs. </p>
+<p >Returns the number of point intersections added to x/y. If the arcs overlap over a non-zero-length portion, overlap is set to true and no point is required for the one-dimensional component. </p>
 
 </div>
 </div>
