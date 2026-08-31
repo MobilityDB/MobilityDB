@@ -61,10 +61,49 @@
 
 /* V-clip functions */
 
+/*****************************************************************************
+ * Inline helpers shared by the v-clip walk and the temporal distance
+ *****************************************************************************/
+
+/**
+ * @brief Return the sum of two vertex numbers modulo the vertex count
+ */
+static inline uint32_t
+uint_mod_add(uint32_t i, uint32_t j, uint32_t n)
+{
+  return (i + j) % n;
+}
+
+/**
+ * @brief Return the difference of two vertex numbers modulo the vertex count
+ * @pre j < n, so that adding @p n keeps the difference positive
+ */
+static inline uint32_t
+uint_mod_sub(uint32_t i, uint32_t j, uint32_t n)
+{
+  return (i + n - j) % n;
+}
+
+/**
+ * @brief Return the relative position of a point on a segment
+ * @details
+ * s < 0      -> p before point vs
+ * s = 0      -> p = vs
+ * 0 < s < 1  -> p = vs * (1 - s)  + ve * s
+ * s = 1      -> p = ve
+ * 1 < s      -> p after point ve
+ */
+static inline double
+compute_s(POINT4D p, POINT4D vs, POINT4D ve)
+{
+  return ((p.x - vs.x) * (ve.x - vs.x) + (p.y - vs.y) * (ve.y - vs.y)) /
+    ((ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y));
+}
+
 extern int v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
   const Pose *pose, uint32_t *poly_feature, double *dist);
 extern int v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
-  const Pose *pose1, const Pose *pose2, uint32_t *poly1_feature, 
+  const Pose *pose1, const Pose *pose2, uint32_t *poly1_feature,
   uint32_t *poly2_feature, double *dist);
 
 extern void apply_pose_point4d(POINT4D *p, const Pose *pose);

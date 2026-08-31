@@ -62,7 +62,7 @@ const GSERIALIZED *
 trgeoseqset_geom_p(const TSequenceSet *ss)
 {
   assert(ss); assert(ss->temptype == T_TRGEOMETRY);
-  assert(ensure_has_geom(ss->flags)); 
+  assert(ensure_has_geom(ss->flags));
   return (GSERIALIZED *) (
     /* start of data */
     ((char *) ss) + DOUBLE_PAD(sizeof(TSequenceSet)) +
@@ -73,7 +73,7 @@ trgeoseqset_geom_p(const TSequenceSet *ss)
 }
 
 /**
- * @brief Return a new temporal pose sequence obtained by removing the 
+ * @brief Return a new temporal pose sequence obtained by removing the
  * reference geometry of a temporal rigid geometry
  */
 TSequenceSet *

@@ -89,7 +89,7 @@ typedef struct {
 /* Closest features pair */
 
 typedef struct {
-  double dist;;
+  double dist;
   TimestampTz t;
 } tdist_elem;
 

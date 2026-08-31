@@ -1057,7 +1057,7 @@ trgeometry_frechet_path(const Temporal *temp1, const Temporal *temp2,
   int *count)
 {
   /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
@@ -1082,7 +1082,7 @@ trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
   int *count)
 {
   /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))

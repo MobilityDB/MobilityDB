@@ -56,7 +56,7 @@
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
  * @param[in] geom Reference geometry
  */
-TInstant * 
+TInstant *
 trgeoinst_parse(const char **str, MeosType temptype, bool end,
   int *temp_srid, const GSERIALIZED *geom)
 {
@@ -176,7 +176,7 @@ trgeoseq_cont_parse(const char **str, MeosType temptype, interpType interp,
   else
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse %s value: Missing closing bracket/parenthesis", 
+      "Could not parse %s value: Missing closing bracket/parenthesis",
       type_str);
     goto error;
   }

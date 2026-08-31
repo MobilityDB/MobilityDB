@@ -63,27 +63,7 @@
  *****************************************************************************/
 
 /**
- * @brief 
- */
-static inline uint32_t
-uint_mod_add(uint32_t i, uint32_t j, uint32_t n)
-{
-  return (i + j) % n;
-}
-
-/**
- * @brief 
- */
-// Handle negative values correctly
-// Requirement: j < n
-static inline uint32_t
-uint_mod_sub(uint32_t i, uint32_t j, uint32_t n)
-{
-  return (i + n - j) % n;
-}
-
-/**
- * @brief 
+ * @brief Apply a pose to a point, that is rotate it and then translate it
  */
 void
 apply_pose_point4d(POINT4D *p, const Pose *pose)
@@ -97,22 +77,7 @@ apply_pose_point4d(POINT4D *p, const Pose *pose)
 }
 
 /**
- * @brief Computes the relative position of point on segment v(vs, ve)
- * s < 0      -> p before point vs
- * s = 0      -> p = vs
- * 0 < s < 1  -> p = vs * (1 - s)  + ve * s
- * s = 1      -> p = ve
- * 1 < s      -> p after point ve
- */
-static inline double
-compute_s(POINT4D p, POINT4D vs, POINT4D ve)
-{
-  return ((p.x - vs.x) * (ve.x - vs.x) + (p.y - vs.y) * (ve.y - vs.y)) /
-    ((ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y));
-}
-
-/**
- * @brief Computes the signed length of the cross product of the vectors
+ * @brief Return the signed length of the cross product of the vectors
  * (vs, p) and (vs, ve)
  * @details The sign of this value determines the relative position between p
  * and the line l going though segment (vs, ve) (oriented towards ve)
@@ -127,7 +92,7 @@ compute_angle(POINT4D p, POINT4D vs, POINT4D ve)
 }
 
 /**
- * @brief Computes the distance between point p and segment v(vs, ve)
+ * @brief Return the distance between a point and a segment
  *
  * Note: this assumes that the projection of p
  * on the line l going through (vs, ve) is
@@ -142,7 +107,8 @@ compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
 }
 
 /**
- * @brief Computes the distance between point p and segment v(vs, ve)
+ * @brief Return the distance between a point and a segment, admitting a
+ * projection that falls outside it
  */
 static inline double
 compute_dist2_safe(POINT4D p, POINT4D vs, POINT4D ve)
@@ -153,14 +119,13 @@ compute_dist2_safe(POINT4D p, POINT4D vs, POINT4D ve)
   else if (s >= 1)
     return (p.x - ve.x) * (p.x - ve.x) + (p.y - ve.y) * (p.y - ve.y);
   else
-    return 
-      (p.x - vs.x - (ve.x - vs.x) * s) * (p.x - vs.x - (ve.x - vs.x) * s) + 
+    return
+      (p.x - vs.x - (ve.x - vs.x) * s) * (p.x - vs.x - (ve.x - vs.x) * s) +
       (p.y - vs.y - (ve.y - vs.y) * s) * (p.y - vs.y - (ve.y - vs.y) * s);
 }
 
 /**
- * @brief Tests if a polygon is defined in counter-clockwise order (ccw)
- * @return Returns True if it is the case
+ * @brief Return true if a polygon is defined in counter-clockwise order
  * @note The polygon must be convex
  */
 static bool
@@ -174,7 +139,8 @@ poly_is_ccw(const LWPOLY *poly)
 }
 
 /**
- * @brief 
+ * @brief Return the vertex of a polygon closest to a point, walking to a
+ * neighbouring vertex while one stands closer
  */
 static int
 vertex_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
@@ -220,7 +186,8 @@ vertex_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
 }
 
 /**
- * @brief 
+ * @brief Return the edge of a polygon closest to a point, walking to a
+ * neighbouring feature while one stands closer
  */
 static int
 edge_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
@@ -298,7 +265,8 @@ edge_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
 }
 
 /**
- * @brief 
+ * @brief Return the closest feature of a polygon under a pose to a point, and the
+ * distance between them
  */
 int
 v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
@@ -364,7 +332,8 @@ v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
 }
 
 /**
- * @brief 
+ * @brief Return the closest vertices of two polygons, walking to a neighbouring
+ * vertex of either while one stands closer
  */
 static int
 vertex_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
@@ -440,7 +409,8 @@ vertex_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
 }
 
 /**
- * @brief 
+ * @brief Return the closest edge and vertex of two polygons, walking to a
+ * neighbouring feature of either while one stands closer
  */
 static int
 edge_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
@@ -547,7 +517,8 @@ edge_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
 }
 
 /**
- * @brief 
+ * @brief Return the closest edges of two polygons, walking to a neighbouring
+ * feature of either while one stands closer
  */
 static int
 edge_edge_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
@@ -579,9 +550,9 @@ edge_edge_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   }
 
   /* Check if the edges intersect */
-  if (compute_angle(v1_start, v2_start, v2_end) * 
-        compute_angle(v1_end, v2_start, v2_end) < 0 && 
-      compute_angle(v2_start, v1_start, v1_end) * 
+  if (compute_angle(v1_start, v2_start, v2_end) *
+        compute_angle(v1_end, v2_start, v2_end) < 0 &&
+      compute_angle(v2_start, v1_start, v1_end) *
         compute_angle(v2_end, v1_start, v1_end) < 0)
     return MEOS_INTERSECT;
 
@@ -605,7 +576,8 @@ edge_edge_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
 }
 
 /**
- * @brief 
+ * @brief Return the closest features of two polygons under their poses, and the
+ * distance between them
  */
 int
 v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
@@ -661,7 +633,7 @@ v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
       getPoint4d_p(poly2->rings[0], i2, &v2);
       if (pose2)
         apply_pose_point4d(&v2, pose2);
-      *dist = sqrt((v1.x - v2.x) * (v1.x - v2.x) + 
+      *dist = sqrt((v1.x - v2.x) * (v1.x - v2.x) +
         (v1.y - v2.y) * (v1.y - v2.y));
     }
     else if (*poly1_feature % 2 == 0) /* vertex <-> edge */

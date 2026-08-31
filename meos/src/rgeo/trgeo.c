@@ -515,7 +515,7 @@ trgeometry_end_value(const Temporal *temp)
 /**
  * @ingroup meos_rgeo_accessor
  * @brief Return in the last argument a copy of the n-th value of a temporal
- * value 
+ * value
  * @param[in] temp Temporal rigid geometry
  * @param[in] n Number (1-based)
  * @param[out] result Resulting timestamp
@@ -767,7 +767,7 @@ trgeometry_sequence_n(const Temporal *temp, int n)
   else /* temp->subtype == TSEQUENCESET */
   {
     const TSequenceSet *ss = (const TSequenceSet *) temp;
-    res_pose = (n >= 1 && n <= ss->count) ? TSEQUENCESET_SEQ_N(ss, n - 1) : 
+    res_pose = (n >= 1 && n <= ss->count) ? TSEQUENCESET_SEQ_N(ss, n - 1) :
       NULL;
   }
   if (! res_pose)
@@ -791,7 +791,7 @@ TSequence **
 trgeometry_sequences(const Temporal *temp, int *count)
 {
   /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -909,7 +909,7 @@ TSequence **
 trgeometry_segments(const Temporal *temp, int *count)
 {
   /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -1331,7 +1331,7 @@ trgeometry_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc
 
   Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_restrict_timestamptz(tpose, t, atfunc);
-  pfree(tpose); 
+  pfree(tpose);
   if (! res)
     return NULL;
   Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
@@ -1546,7 +1546,7 @@ trgeometry_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 
   Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_before_timestamptz(tpose, t, atfunc);
-  pfree(tpose); 
+  pfree(tpose);
   if (! res)
     return NULL;
   Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
@@ -1572,7 +1572,7 @@ trgeometry_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 
   Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_after_timestamptz(tpose, t, atfunc);
-  pfree(tpose); 
+  pfree(tpose);
   if (! res)
     return NULL;
   Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
@@ -1650,7 +1650,7 @@ trgeometry_append_tsequence(Temporal *temp, const TSequence *seq,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(seq, NULL);
-  if ((temp->subtype != TINSTANT && 
+  if ((temp->subtype != TINSTANT &&
       ! ensure_same_interp(temp, (Temporal *) seq)) ||
       ! ensure_spatial_validity(temp, (Temporal *) seq) ||
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE))
