@@ -14,7 +14,7 @@ SELECT tbox(floatspan '[1.0,2.0)');
 SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 </pre></li></ul></div><p>
 			Type <code class="varname">stbox</code> has several constructor functions depending on whether the space and/or the time extent are given. The coordinates for the spatial extent can be 2D or 3D and can be either Cartesian or geodetic. The spatial extent can be specified by the minimum and maximum coordinate values. The SRID can be specified in an optional last argument. If not given, a value 0 (respectively 4326) is assumed by default for planar (respectively geodetic) boxes. The spatial extent can also be specified by a geometry or a geography. The temporal extent can be specified by a time type.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="stbox"></a><a class="indexterm" name="id3031"></a><a class="indexterm" name="id3034"></a><a class="indexterm" name="id3037"></a><a class="indexterm" name="id3040"></a><a class="indexterm" name="id3043"></a><a class="indexterm" name="id3046"></a><a class="indexterm" name="id3049"></a><a class="indexterm" name="id3052"></a><a class="indexterm" name="id3055"></a><p>Constructor for <code class="varname">stbox</code></p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="stbox"></a><a class="indexterm" name="id3031"></a><a class="indexterm" name="id3034"></a><a class="indexterm" name="id3037"></a><a class="indexterm" name="id3040"></a><a class="indexterm" name="id3043"></a><a class="indexterm" name="id3046"></a><a class="indexterm" name="id3049"></a><a class="indexterm" name="id3052"></a><p>Constructor for <code class="varname">stbox</code></p><pre class="programlisting">
 stboxX(float,float,float,float,srid integer=0) → stbox
 stboxZ(float,float,float,float,float,float,srid integer=0) → stbox
 stboxT({timestamptz,tstzspan}) → stbox
@@ -22,7 +22,6 @@ stboxXT(float,float,float,float,{timestamptz,tstzspan},srid integer=0) → stbox
 stboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},
   srid integer=0) → stbox
 geodstboxZ(float,float,float,float,float,float,srid integer=4326) → stbox
-geodstboxT({timestamptz,tstzspan}) → stbox
 geodstboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},
   srid integer=4326) → stbox
 stbox(geo) → stbox
@@ -42,8 +41,6 @@ SELECT stboxXT(1.0,2.0, 1.0,2.0, tstzspan '[2001-01-03,2001-01-03]');
 SELECT stboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-03]');
 -- Only value dimension with X, Y, and Z geodetic coordinates
 SELECT geodstboxZ(1.0,2.0,3.0,1.0,2.0,3.0);
--- Only time dimension for geodetic box
-SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-03]');
 -- Both value (with X, Y, and Z geodetic coordinates) and time dimensions
 SELECT geodstboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-04]');
 -- Geometry and time dimension
