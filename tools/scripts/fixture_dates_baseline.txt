@@ -27,4 +27,3 @@ meos/test/tbl_temporal.c 1
 meos/test/tbl_temporal_value.c 1
 meos/test/tbl_value_value.c 1
 meos/test/timestamp_test.c 4
-mobilitydb/test/temporal/data/load.sql.xz 1000
