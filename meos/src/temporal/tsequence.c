@@ -959,8 +959,14 @@ bbox_expand(const void *box1, void *box2, MeosType temptype)
   else if (bboxtype == T_TPCBOX)
     tpcbox_expand((TPCBox *) box1, (TPCBox *) box2);
 #endif
-  else /* T_STBOX */
+  else if (bboxtype == T_STBOX)
     stbox_expand((STBox *) box1, (STBox *) box2);
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Unknown bounding box type: %s", meostype_name(bboxtype));
+    return;
+  }
   return;
 }
 
