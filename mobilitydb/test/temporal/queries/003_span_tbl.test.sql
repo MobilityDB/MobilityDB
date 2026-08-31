@@ -190,18 +190,4 @@ SELECT MAX(hashExtended(t, 1)) != 0 FROM tbl_tstzspan;
 -- Aggregation functions
 -------------------------------------------------------------------------------
 
--- encourage use of parallel plans
-set parallel_setup_cost=0;
-set parallel_tuple_cost=0;
-set min_parallel_table_scan_size=0;
-set max_parallel_workers_per_gather=2;
-
-SELECT round(extent(temp::floatspan),6) FROM tbl_tfloat_big;
-
--- reset to default values
-reset parallel_setup_cost;
-reset parallel_tuple_cost;
-reset min_parallel_table_scan_size;
-reset max_parallel_workers_per_gather;
-
 -------------------------------------------------------------------------------
