@@ -4,18 +4,26 @@
 -- Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
--- Regression tests for the th3index spatial-rel surface
--- (290_th3index_spatialrels.in.sql).
+-- MobilityDB includes portions of PostGIS version 3 source code released
+-- under the GNU General Public License (GPLv2 or later).
+-- Copyright (c) 2001-2025, PostGIS contributors
 --
--- Each block exercises one relation in all three argument shapes
--- (geometry/th3index, th3index/geometry, th3index/th3index) for both
--- the ever variant (returns bool) and the temporal variant (returns
--- tbool). Cell semantics are CELL-BOUNDARY (the cell's hexagonal
--- footprint), not cell-centre, so a query polygon that touches the
--- cell anywhere intersects it.
+-- Permission to use, copy, modify, and distribute this software and its
+-- documentation for any purpose, without fee, and without a written
+-- agreement is hereby granted, provided that the above copyright notice and
+-- this paragraph and the following two paragraphs appear in all copies.
 --
--- The cells used below are real Brussels-area H3 res-7 cells so any
--- geographer can verify the results from coordinates alone.
+-- IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+-- DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+-- LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+-- EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+-- OF SUCH DAMAGE.
+--
+-- UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+-- INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+-- AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+-- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+-- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 --
 -------------------------------------------------------------------------------
 

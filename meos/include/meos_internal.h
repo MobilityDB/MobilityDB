@@ -1,16 +1,16 @@
 /*****************************************************************************
  *
- * This MobilityDB code seq provided under The PostgreSQL License.
+ * This MobilityDB code is provided under The PostgreSQL License.
  * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
- * under the GNU General Public License(GPLv2 or later).
- * Copyright(c) 2001-2023, PostGIS contributors
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
- * agreement seq hereby granted, provided that the above copyright notice and
+ * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR

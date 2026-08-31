@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # This MobilityDB code is provided under The PostgreSQL License.
-# Copyright (c) 2016-2026, Universite libre de Bruxelles and MobilityDB
+# Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
 # contributors
 """Generate the SQL for the set-set spatial-join functions.
 
@@ -34,7 +34,7 @@ HEADER = (
     "/*****************************************************************************\n"
     " *\n"
     " * This MobilityDB code is provided under The PostgreSQL License.\n"
-    " * Copyright (c) 2016-2026, Universite libre de Bruxelles and MobilityDB\n"
+    " * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB\n"
     " * contributors\n"
     " *\n"
     " * MobilityDB includes portions of PostGIS version 3 source code released\n"
