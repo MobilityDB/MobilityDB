@@ -1618,9 +1618,13 @@ point_edge_dist2(double px, double py, const Edge *e)
     case EDGE_LINESEG:
     case EDGE_POLYSEG:
       return point_seg_dist2(px, py, e->x1, e->y1, e->x2, e->y2);
-    default: /* EDGE_LINEARC / EDGE_POLYARC */
+    case EDGE_LINEARC:
+    case EDGE_POLYARC:
       return point_arc_dist2(px, py, e);
   }
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown edge type: %d", e->etype);
+  return DBL_MAX;
 }
 
 /**
@@ -1749,7 +1753,8 @@ within_roots_from_edge(double ax, double ay, double rx, double ry,
       }
       return;
     }
-    default: /* EDGE_LINEARC / EDGE_POLYARC */
+    case EDGE_LINEARC:
+    case EDGE_POLYARC:
     {
       const double wx = ax - e->cx, wy = ay - e->cy;
       const double B = 2.0 * (wx * rx + wy * ry);
@@ -2254,7 +2259,8 @@ distance_cands_from_edge(double ax, double ay, double rx, double ry,
       }
       return;
     }
-    default: /* EDGE_LINEARC / EDGE_POLYARC */
+    case EDGE_LINEARC:
+    case EDGE_POLYARC:
     {
       const double wx = ax - e->cx, wy = ay - e->cy;
       /* Radial extremum: the time at which || P(t) - center || is stationary

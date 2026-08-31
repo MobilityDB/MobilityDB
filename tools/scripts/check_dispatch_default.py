@@ -32,8 +32,16 @@
 A dispatch whose last arm assumes whatever is left over does not refuse an
 unhandled type, it reinterprets the value as the assumed type and reads its
 bytes at that type's offsets.  The arm is written either as a bare else
-naming the assumed type in a comment, or as a switch default: that answers
-instead of raising.  Both are read here.
+naming the assumed type in a comment, or as a switch default: that computes
+as though the value were one particular type.  Both are read here.
+
+Two shapes are clean and are not reported.  A switch naming every enumerator
+carries no default: label at all, which is what lets -Wswitch report the next
+member added to the enumeration, so it is the form this check asks for rather
+than one to flag.  And a default: answering totally -- a constant, or nothing
+at all -- classifies the residue instead of assuming it: `return false` for
+"not areal" holds for a type the switch never names, and reading it as a
+defect would ask an answer to raise.
 
 The closed sets are exempt.  TINSTANT/TSEQUENCE/TSEQUENCESET is fixed by the
 data model and every dispatch on it is preceded by an assert, so its residual
@@ -58,6 +66,10 @@ SWITCH = re.compile(r"\bswitch\s*\(([^)]*)\)\s*\{")
 # A subject that names a type.  `subtype` is the closed set and is exempt.
 TYPE_SUBJECT = re.compile(r"type\b")
 CLOSED_SUBJECT = re.compile(r"subtype\b")
+# An arm answering totally: a constant, or nothing.  It classifies the residue
+# rather than assuming it, so it holds for a type the switch never names.
+TOTAL_ARM = re.compile(
+    r"^\s*(?:return\s*(?:false|true|0|0\.0|NULL|DBL_MAX|INT_MAX)?\s*;|break\s*;|\{?\s*)$")
 # The definition of the enclosing function, as check_error_sentinels.py reads it
 FUNC_DEF = re.compile(r"^([a-z_][a-z0-9_]*)\s*\(")
 RAISES = ("meos_error", "elog(ERROR")
@@ -113,11 +125,17 @@ def findings():
                     if CLOSED_SUBJECT.search(subject):
                         continue
                     body = switch_body(text, m.start())
+                    # A switch naming every enumerator carries no default:, so
+                    # the compiler reports the next member added to the
+                    # enumeration.  That is the form this check asks for.
                     if "default:" not in body:
-                        where = body
-                    else:
-                        where = body[body.index("default:"):]
-                    if any(r in where for r in RAISES):
+                        continue
+                    arm = body[body.index("default:") + len("default:"):]
+                    if any(r in arm for r in RAISES):
+                        continue
+                    # A default: answering totally classifies the residue
+                    arm_lines = [l for l in arm.split("\n")[:4] if l.strip()]
+                    if arm_lines and TOTAL_ARM.match(arm_lines[0]):
                         continue
                     index = text[:m.start()].count("\n")
                     found.add(f"{relative}\t{enclosing(lines, index)}\t"
