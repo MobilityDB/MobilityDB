@@ -77,7 +77,7 @@ h3_cell_to_local_ij_meos(H3Index origin, H3Index cell)
 }
 
 /**
- * @brief 
+ * @brief Return the H3 cell at local IJ coordinates relative to an origin cell
  */
 H3Index
 h3_local_ij_to_cell_meos(H3Index origin, const GSERIALIZED *coord)

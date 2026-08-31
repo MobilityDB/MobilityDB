@@ -269,7 +269,7 @@ tcomp_th3index_h3index(const Temporal *temp, H3Index cell,
 }
 
 /**
- * @brief
+ * @brief Return the temporal comparison of an H3 cell and a temporal H3 cell
  */
 static Temporal *
 tcomp_h3index_th3index(H3Index cell, const Temporal *temp,

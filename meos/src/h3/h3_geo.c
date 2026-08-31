@@ -72,7 +72,7 @@
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Growable accumulator of H3 cells filled by the geometry walker
  */
 typedef struct h3_buf
 {
@@ -82,7 +82,7 @@ typedef struct h3_buf
 } h3_buf;
 
 /**
- * @brief 
+ * @brief Initialize an accumulator with a starting capacity
  */
 static void
 h3_buf_init(h3_buf *buf, int initial_capacity)
@@ -93,7 +93,7 @@ h3_buf_init(h3_buf *buf, int initial_capacity)
 }
 
 /**
- * @brief 
+ * @brief Ensure that an accumulator can hold @p additional further cells
  */
 static void
 h3_buf_grow(h3_buf *buf, int additional)
@@ -108,7 +108,7 @@ h3_buf_grow(h3_buf *buf, int additional)
 }
 
 /**
- * @brief 
+ * @brief Append a cell to an accumulator, ignoring the null cell
  */
 static inline void
 h3_buf_push(h3_buf *buf, H3Index cell)
@@ -149,7 +149,7 @@ h3_buf_push_ring1(h3_buf *out, H3Index c)
 }
 
 /**
- * @brief 
+ * @brief Free the cells held by an accumulator and reset it to empty
  */
 static void
 h3_buf_free(h3_buf *buf)
@@ -169,7 +169,8 @@ h3_buf_free(h3_buf *buf)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Compare two H3 cells by index value, the ordering used to sort an
+ * accumulator
  */
 static int
 h3index_compare(const void *a, const void *b)
@@ -182,7 +183,7 @@ h3index_compare(const void *a, const void *b)
 }
 
 /**
- * @brief 
+ * @brief Return the set of the distinct cells of an accumulator, which is freed
  */
 static Set *
 h3_buf_to_set(h3_buf *buf)
@@ -215,7 +216,8 @@ h3_buf_to_set(h3_buf *buf)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return the spacing in degrees at which a segment is sampled for a given
+ * resolution
  */
 double
 h3_sample_step_deg(int32 resolution)
@@ -228,7 +230,7 @@ h3_sample_step_deg(int32 resolution)
 }
 
 /**
- * @brief 
+ * @brief Return the cell of a given resolution containing a lat/lng in degrees
  */
 H3Index
 h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
@@ -246,7 +248,7 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Push the cell containing a point into the accumulator
  */
 static void
 point_to_cells_into(const LWPOINT *lwp, int32 resolution, h3_buf *out)
@@ -317,7 +319,8 @@ linestring_to_cells_into(const LWLINE *line, int32 resolution, h3_buf *out)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Convert a point array into an H3 geoloop in radians, dropping the
+ * repeated closing vertex
  */
 static void
 pointarray_to_geoloop(const POINTARRAY *pa, GeoLoop *loop)
@@ -345,7 +348,7 @@ pointarray_to_geoloop(const POINTARRAY *pa, GeoLoop *loop)
 }
 
 /**
- * @brief 
+ * @brief Free the vertices of a geoloop and reset it to empty
  */
 static void
 geoloop_free(GeoLoop *loop)
@@ -427,7 +430,8 @@ polygon_to_cells_into(const LWPOLY *poly, int32 resolution, h3_buf *out)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Push the cells a geometry meets into the accumulator, recursing into
+ * its components
  */
 static void
 lwgeom_to_cells_into(const LWGEOM *geom, int32 resolution, h3_buf *out)
@@ -513,11 +517,13 @@ geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
 
 /**
  * @ingroup meos_h3_comp
- * @brief Returns 1 if any cell in @p cells ever appears in the value
- * sequence of @p th3idx, 0 if none, -1 on error.
- * @brief The cross-platform spatial prefilter consumed by `eIntersects`
- * SQL wrappers / Spark UDFs. Iterates the th3index value sequence (one entry
- * per distinct instant) and tests Set membership.
+ * @brief Return true if a temporal H3 cell is ever equal to a cell of an H3
+ * cell set
+ * @details Returns 1 if any cell of @p cells appears in the value sequence of
+ * @p th3idx, 0 if none does, and -1 on error. This is the cross-platform
+ * spatial prefilter the `eIntersects` SQL wrappers and Spark UDFs consume: it
+ * walks the value sequence of the temporal H3 cell, one entry per distinct
+ * instant, and tests membership of the set.
  * @param[in] cells The candidate H3 cell set (T_H3INDEX).
  * @param[in] th3idx The th3index temporal value.
  * @csqlfn #Ever_eq_h3indexset_th3index()

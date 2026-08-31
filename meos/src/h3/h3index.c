@@ -241,7 +241,7 @@ h3index_cell_area(H3Index cell)
  *****************************************************************************/
 
 /**
- * @brief
+ * @brief Return the resolution of an H3 cell
  */
 Datum
 datum_h3_get_resolution(Datum d)
@@ -250,7 +250,7 @@ datum_h3_get_resolution(Datum d)
 }
 
 /**
- * @brief 
+ * @brief Return the base cell number of an H3 cell
  */
 Datum
 datum_h3_get_base_cell_number(Datum d)
@@ -259,7 +259,7 @@ datum_h3_get_base_cell_number(Datum d)
 }
 
 /**
- * @brief 
+ * @brief Return true if a value is a valid H3 cell
  */
 Datum
 datum_h3_is_valid_cell(Datum d)
@@ -268,7 +268,7 @@ datum_h3_is_valid_cell(Datum d)
 }
 
 /**
- * @brief 
+ * @brief Return true if an H3 cell has a Class III resolution
  */
 Datum
 datum_h3_is_res_class_iii(Datum d)
@@ -279,7 +279,7 @@ datum_h3_is_res_class_iii(Datum d)
 }
 
 /**
- * @brief 
+ * @brief Return true if an H3 cell is a pentagon
  */
 Datum
 datum_h3_is_pentagon(Datum d)
@@ -297,7 +297,7 @@ datum_h3_is_pentagon(Datum d)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return the parent of an H3 cell at a given resolution
  */
 Datum
 datum_h3_cell_to_parent(Datum cell_d, Datum res_d)
@@ -309,7 +309,7 @@ datum_h3_cell_to_parent(Datum cell_d, Datum res_d)
 }
 
 /**
- * @brief 
+ * @brief Return the parent of an H3 cell at the next coarser resolution
  */
 Datum
 datum_h3_cell_to_parent_next(Datum cell_d)
@@ -320,7 +320,7 @@ datum_h3_cell_to_parent_next(Datum cell_d)
 }
 
 /**
- * @brief 
+ * @brief Return the center child of an H3 cell at a given resolution
  */
 Datum
 datum_h3_cell_to_center_child(Datum cell_d, Datum res_d)
@@ -332,7 +332,7 @@ datum_h3_cell_to_center_child(Datum cell_d, Datum res_d)
 }
 
 /**
- * @brief 
+ * @brief Return the center child of an H3 cell at the next finer resolution
  */
 Datum
 datum_h3_cell_to_center_child_next(Datum cell_d)
@@ -344,7 +344,8 @@ datum_h3_cell_to_center_child_next(Datum cell_d)
 }
 
 /**
- * @brief 
+ * @brief Return the position of an H3 cell among the children of its ancestor at
+ * a given resolution
  */
 Datum
 datum_h3_cell_to_child_pos(Datum cell_d, Datum parent_res_d)
@@ -358,7 +359,7 @@ datum_h3_cell_to_child_pos(Datum cell_d, Datum parent_res_d)
 }
 
 /**
- * @brief 
+ * @brief Return the child at a given position and resolution of an H3 cell
  */
 Datum
 datum_h3_child_pos_to_cell(Datum pos_d, Datum parent_d, Datum child_res_d)
@@ -375,7 +376,7 @@ datum_h3_child_pos_to_cell(Datum pos_d, Datum parent_d, Datum child_res_d)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return true if two H3 cells are neighbors
  */
 Datum
 datum_h3_are_neighbor_cells(Datum origin_d, Datum dest_d)
@@ -388,7 +389,7 @@ datum_h3_are_neighbor_cells(Datum origin_d, Datum dest_d)
 }
 
 /**
- * @brief 
+ * @brief Return the directed edge from an origin H3 cell to a destination one
  */
 Datum
 datum_h3_cells_to_directed_edge(Datum origin_d, Datum dest_d)
@@ -401,7 +402,7 @@ datum_h3_cells_to_directed_edge(Datum origin_d, Datum dest_d)
 }
 
 /**
- * @brief 
+ * @brief Return true if a value is a valid H3 directed edge
  */
 Datum
 datum_h3_is_valid_directed_edge(Datum d)
@@ -410,7 +411,7 @@ datum_h3_is_valid_directed_edge(Datum d)
 }
 
 /**
- * @brief 
+ * @brief Return the origin cell of an H3 directed edge
  */
 Datum
 datum_h3_get_directed_edge_origin(Datum d)
@@ -421,7 +422,7 @@ datum_h3_get_directed_edge_origin(Datum d)
 }
 
 /**
- * @brief 
+ * @brief Return the destination cell of an H3 directed edge
  */
 Datum
 datum_h3_get_directed_edge_destination(Datum d)
@@ -433,7 +434,7 @@ datum_h3_get_directed_edge_destination(Datum d)
 }
 
 /**
- * @brief 
+ * @brief Return the boundary of an H3 directed edge as a geometry
  */
 Datum
 datum_h3_directed_edge_to_boundary(Datum d)
@@ -449,7 +450,7 @@ datum_h3_directed_edge_to_boundary(Datum d)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return a vertex of an H3 cell given its vertex number
  */
 Datum
 datum_h3_cell_to_vertex(Datum cell_d, Datum vnum_d)
@@ -461,7 +462,7 @@ datum_h3_cell_to_vertex(Datum cell_d, Datum vnum_d)
 }
 
 /**
- * @brief 
+ * @brief Return the point of an H3 vertex
  */
 Datum
 datum_h3_vertex_to_latlng(Datum d)
@@ -473,7 +474,7 @@ datum_h3_vertex_to_latlng(Datum d)
 }
 
 /**
- * @brief 
+ * @brief Return true if a value is a valid H3 vertex
  */
 Datum
 datum_h3_is_valid_vertex(Datum d)
@@ -486,7 +487,7 @@ datum_h3_is_valid_vertex(Datum d)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return the grid distance in hops between two H3 cells
  */
 Datum
 datum_h3_grid_distance(Datum origin_d, Datum dest_d)
@@ -500,7 +501,7 @@ datum_h3_grid_distance(Datum origin_d, Datum dest_d)
 }
 
 /**
- * @brief 
+ * @brief Return the local IJ coordinates of an H3 cell relative to an origin cell
  */
 Datum
 datum_h3_cell_to_local_ij(Datum origin_d, Datum cell_d)
@@ -514,7 +515,7 @@ datum_h3_cell_to_local_ij(Datum origin_d, Datum cell_d)
 }
 
 /**
- * @brief 
+ * @brief Return the H3 cell at local IJ coordinates relative to an origin cell
  */
 Datum
 datum_h3_local_ij_to_cell(Datum origin_d, Datum coord_d)
@@ -531,7 +532,7 @@ datum_h3_local_ij_to_cell(Datum origin_d, Datum coord_d)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return the H3 cell of a given resolution containing a point
  */
 Datum
 datum_h3_latlng_to_cell(Datum point_d, Datum res_d)
@@ -542,7 +543,7 @@ datum_h3_latlng_to_cell(Datum point_d, Datum res_d)
 }
 
 /**
- * @brief 
+ * @brief Return the center point of an H3 cell
  */
 Datum
 datum_h3_cell_to_latlng(Datum d)
@@ -554,7 +555,7 @@ datum_h3_cell_to_latlng(Datum d)
 }
 
 /**
- * @brief 
+ * @brief Return the boundary of an H3 cell as a geometry
  */
 Datum
 datum_h3_cell_to_boundary(Datum d)
@@ -573,7 +574,7 @@ datum_h3_cell_to_boundary(Datum d)
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return the area of an H3 cell in a given unit
  */
 Datum
 datum_h3_cell_area(Datum cell_d, Datum unit_d)
@@ -585,7 +586,7 @@ datum_h3_cell_area(Datum cell_d, Datum unit_d)
 }
 
 /**
- * @brief 
+ * @brief Return the length of an H3 directed edge in a given unit
  */
 Datum
 datum_h3_edge_length(Datum edge_d, Datum unit_d)
@@ -597,7 +598,7 @@ datum_h3_edge_length(Datum edge_d, Datum unit_d)
 }
 
 /**
- * @brief 
+ * @brief Return the great circle distance between two points in a given unit
  */
 Datum
 datum_h3_great_circle_distance(Datum a_d, Datum b_d, Datum unit_d)

@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Return the point of an H3 vertex
  */
 GSERIALIZED *
 h3_vertex_to_gs_point(H3Index vertex)
