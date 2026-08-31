@@ -1,0 +1,40 @@
+# Dispatches on a type whose last arm assumes whatever is left
+# over, as tools/scripts/check_dispatch_default.py reads them.
+# The list only shrinks: a dispatch it does not carry fails the
+# check. Name the last type like every other arm and reject what
+# remains, then regenerate with --rebaseline.
+meos/src/geo/geo_buffer.c	buffer_curve_points	switch geom->type
+meos/src/geo/geo_buffer.c	meos_buffer	switch geom->type
+meos/src/geo/geo_funcs.c	centroid_add_geo	switch geom->type
+meos/src/geo/geo_funcs.c	geom_meos_supported	switch geom->type
+meos/src/geo/geo_funcs.c	geom_ordinates_at	switch geom->type
+meos/src/geo/geo_funcs.c	geom_ptarrays	switch geom->type
+meos/src/geo/geo_funcs.c	meos_is_simple	switch geom->type
+meos/src/geo/geo_funcs.c	relate_area_comps_iter	switch geom->type
+meos/src/geo/geo_funcs.c	relate_dim_mask	switch geom->type
+meos/src/geo/geo_funcs.c	relate_extract_edges	switch geom->type
+meos/src/geo/geo_funcs.c	relate_is_areal	switch geom->type
+meos/src/geo/geo_funcs.c	relate_is_linear	switch geom->type
+meos/src/geo/geo_funcs.c	relate_point_on_boundary	switch e->etype
+meos/src/geo/geo_funcs.c	relate_point_on_edge	switch e->etype
+meos/src/geo/tgeo_distance.c	dist_geom_edges	switch lw->type
+meos/src/geo/tgeo_distance.c	dist_segs_add_curvepoly_ring	switch ring->type
+meos/src/geo/tpoint_geom_clip.c	distance_cands_from_edge	switch e->etype
+meos/src/geo/tpoint_geom_clip.c	point_edge_dist2	switch e->etype
+meos/src/geo/tpoint_geom_clip.c	within_roots_from_edge	switch e->etype
+meos/src/h3/h3_geo.c	lwgeom_to_cells_into	switch geom->type
+meos/src/pointcloud/pgsql_compat.c	meos_pc_patch_serialize	switch patch->type
+meos/src/pointcloud/pgsql_compat.c	meos_pc_patch_serialized_size	switch patch->type
+meos/src/pointcloud/tpc_boxops.c	tpointcloudinst_set_tpcbox	else T_TPCPATCH
+meos/src/rgeo/trgeo_geom_clip.c	clip_lwgeom_m1_accum	switch geom->type
+meos/src/rgeo/trgeo_geom_clip.c	clip_lwgeom_m2_accum	switch geom->type
+meos/src/rgeo/trgeo_spatialfuncs.c	collect_edge_events_m1	switch body0->type
+meos/src/rgeo/trgeo_spatialfuncs.c	lwgeom_has_interior_ring	switch geom->type
+meos/src/temporal/span.c	span_decr_bound	switch basetype
+meos/src/temporal/span.c	span_incr_bound	switch basetype
+meos/src/temporal/span_ops.c	distance_sentinel	switch type
+meos/src/temporal/temporal_analytics.c	innovation_distance	else T_TGEOMPOINT
+meos/src/temporal/type_in.c	span_basevalue_from_wkb_size	switch s->basetype
+mobilitydb/src/temporal/index_sortsupport.c	sortsupport_rank_bound	switch basetype
+mobilitydb/src/temporal/index_sortsupport.c	span_sort_hash	switch s->basetype
+mobilitydb/src/temporal/tnumber_gist.c	bbox_gist_picksplit	else T_STBOX
