@@ -41,14 +41,14 @@ SET enable_seqscan = on;
 SET enable_indexscan = off;
 SET enable_bitmapscan = off;
 SELECT COUNT(*) AS seq_count FROM tbl_tpcpoint
-WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
 
 SET enable_seqscan = off;
 SET enable_indexscan = on;
 SET enable_bitmapscan = on;
 SELECT COUNT(*) AS idx_count FROM tbl_tpcpoint
-WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
 
 DROP INDEX tbl_tpcpoint_quadtree_idx;
@@ -61,7 +61,7 @@ CREATE INDEX tbl_tpcpoint_kdtree_idx ON tbl_tpcpoint
   USING spgist(temp tpcpoint_kdtree_ops);
 
 SELECT COUNT(*) AS kdtree_count FROM tbl_tpcpoint
-WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
 
 DROP INDEX tbl_tpcpoint_kdtree_idx;
@@ -76,14 +76,14 @@ SET enable_seqscan = on;
 SET enable_indexscan = off;
 SET enable_bitmapscan = off;
 SELECT COUNT(*) AS seq_count FROM tbl_tpcpatch
-WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
 
 SET enable_seqscan = off;
 SET enable_indexscan = on;
 SET enable_bitmapscan = on;
 SELECT COUNT(*) AS idx_count FROM tbl_tpcpatch
-WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
 
 DROP INDEX tbl_tpcpatch_quadtree_idx;
@@ -92,7 +92,7 @@ CREATE INDEX tbl_tpcpatch_kdtree_idx ON tbl_tpcpatch
   USING spgist(temp tpcpatch_kdtree_ops);
 
 SELECT COUNT(*) AS kdtree_count FROM tbl_tpcpatch
-WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
 
 DROP INDEX tbl_tpcpatch_kdtree_idx;
@@ -107,7 +107,7 @@ RESET enable_bitmapscan;
 
 CREATE INDEX tbl_tpcpoint_knn_quadtree_idx ON tbl_tpcpoint USING spgist(temp);
 WITH test AS (
-  SELECT temp |=| tpcbox_zt(200, 200, 200, 210, 210, 210,
+  SELECT temp |=| tpcboxZT(200, 200, 200, 210, 210, 210,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
   FROM tbl_tpcpoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
@@ -116,7 +116,7 @@ DROP INDEX tbl_tpcpoint_knn_quadtree_idx;
 CREATE INDEX tbl_tpcpoint_knn_kdtree_idx ON tbl_tpcpoint
   USING spgist(temp tpcpoint_kdtree_ops);
 WITH test AS (
-  SELECT temp |=| tpcbox_zt(200, 200, 200, 210, 210, 210,
+  SELECT temp |=| tpcboxZT(200, 200, 200, 210, 210, 210,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
   FROM tbl_tpcpoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
@@ -124,7 +124,7 @@ DROP INDEX tbl_tpcpoint_knn_kdtree_idx;
 
 CREATE INDEX tbl_tpcpatch_knn_quadtree_idx ON tbl_tpcpatch USING spgist(temp);
 WITH test AS (
-  SELECT temp |=| tpcbox_xt(200, 200, 210, 210,
+  SELECT temp |=| tpcboxXT(200, 200, 210, 210,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
   FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
@@ -133,7 +133,7 @@ DROP INDEX tbl_tpcpatch_knn_quadtree_idx;
 CREATE INDEX tbl_tpcpatch_knn_kdtree_idx ON tbl_tpcpatch
   USING spgist(temp tpcpatch_kdtree_ops);
 WITH test AS (
-  SELECT temp |=| tpcbox_xt(200, 200, 210, 210,
+  SELECT temp |=| tpcboxXT(200, 200, 210, 210,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
   FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;

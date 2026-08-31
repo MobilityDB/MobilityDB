@@ -24,10 +24,10 @@ SET enable_indexscan = off;
 SET
 SET enable_bitmapscan = off;
 SET
-SELECT k, ((temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
+SELECT k, ((temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
   tstzspan '[2001-06-01, 2001-06-30]', 1, 0)) > 0)::text AS finite
 FROM tbl_tpcpoint
-ORDER BY temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
+ORDER BY temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
   tstzspan '[2001-06-01, 2001-06-30]', 1, 0)
 LIMIT 5;
  k  | finite 
@@ -45,10 +45,10 @@ SET enable_indexscan = on;
 SET
 SET enable_bitmapscan = on;
 SET
-SELECT k, ((temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
+SELECT k, ((temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
   tstzspan '[2001-06-01, 2001-06-30]', 1, 0)) > 0)::text AS finite
 FROM tbl_tpcpoint
-ORDER BY temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
+ORDER BY temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
   tstzspan '[2001-06-01, 2001-06-30]', 1, 0)
 LIMIT 5;
  k  | finite 

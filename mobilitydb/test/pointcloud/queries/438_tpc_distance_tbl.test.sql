@@ -48,20 +48,20 @@ CREATE INDEX tbl_tpcpoint_gist_dist_idx ON tbl_tpcpoint USING gist(temp);
 SET enable_seqscan = on;
 SET enable_indexscan = off;
 SET enable_bitmapscan = off;
-SELECT k, ((temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
+SELECT k, ((temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
   tstzspan '[2001-06-01, 2001-06-30]', 1, 0)) > 0)::text AS finite
 FROM tbl_tpcpoint
-ORDER BY temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
+ORDER BY temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
   tstzspan '[2001-06-01, 2001-06-30]', 1, 0)
 LIMIT 5;
 
 SET enable_seqscan = off;
 SET enable_indexscan = on;
 SET enable_bitmapscan = on;
-SELECT k, ((temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
+SELECT k, ((temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
   tstzspan '[2001-06-01, 2001-06-30]', 1, 0)) > 0)::text AS finite
 FROM tbl_tpcpoint
-ORDER BY temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
+ORDER BY temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
   tstzspan '[2001-06-01, 2001-06-30]', 1, 0)
 LIMIT 5;
 

@@ -220,7 +220,7 @@ DECLARE
   period tstzspan := random_tstzspan(lowtime, hightime, 30);
 BEGIN
   PERFORM ensure_random_pcid();
-  RETURN tpcbox_zt(xmin, ymin, zmin, xmax, ymax, zmax, period, 1, 0);
+  RETURN tpcboxZT(xmin, ymin, zmin, xmax, ymax, zmax, period, 1, 0);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 

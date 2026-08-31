@@ -31,8 +31,8 @@
 
 \set p1 'tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), ''2024-01-01''::timestamptz)'
 \set p2 'tpcpoint(PC_MakePoint(1, ARRAY[3.0, 4.0, 0.0]::float[]), ''2024-01-01''::timestamptz)'
-\set box_at_origin 'tpcbox_zt(0, 0, 0, 0, 0, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1, 0)'
-\set box_far       'tpcbox_zt(3, 4, 0, 3, 4, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1, 0)'
+\set box_at_origin 'tpcboxZT(0, 0, 0, 0, 0, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1, 0)'
+\set box_far       'tpcboxZT(3, 4, 0, 3, 4, 0, tstzspan ''[2024-01-01, 2024-01-02]'', 1, 0)'
 
 -- Self-distance is zero.
 SELECT (:p1) |=| (:p1);
@@ -50,11 +50,11 @@ SELECT (:p1) |=| (:box_at_origin);
 -- Disjoint time spans yield NULL, as the temporal geo nearest approach does.
 SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
                  '2024-01-01'::timestamptz)) |=|
-       (tpcbox_zt(0, 0, 0, 0, 0, 0,
+       (tpcboxZT(0, 0, 0, 0, 0, 0,
                   tstzspan '[2099-01-01, 2099-01-02]', 1, 0)) IS NULL;
 
 -- Pcid mismatch is an error: values of two schemas cannot be compared.
-SELECT (:p1) |=| (tpcbox_zt(0, 0, 0, 0, 0, 0,
+SELECT (:p1) |=| (tpcboxZT(0, 0, 0, 0, 0, 0,
   tstzspan '[2024-01-01, 2024-01-02]', 999, 0)) > 1e10;
 
 -- The same holds between two temporal pointcloud values. A second schema is

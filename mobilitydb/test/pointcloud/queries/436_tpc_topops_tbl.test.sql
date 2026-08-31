@@ -52,17 +52,17 @@ SELECT bool_and(NOT (temp -|- temp)) FROM tbl_tpcpatch;
 -- All-encompassing query box should contain every row.
 -------------------------------------------------------------------------------
 
-SELECT bool_and(tpcbox_zt(-200, -200, -200, 200, 200, 200,
+SELECT bool_and(tpcboxZT(-200, -200, -200, 200, 200, 200,
   tstzspan '[2001-01-01, 2030-01-01]', 1, 0) @> temp)
 FROM tbl_tpcpoint;
-SELECT bool_and(tpcbox_zt(-200, -200, -200, 200, 200, 200,
+SELECT bool_and(tpcboxZT(-200, -200, -200, 200, 200, 200,
   tstzspan '[2001-01-01, 2030-01-01]', 1, 0) @> temp)
 FROM tbl_tpcpatch;
 
 -- Reverse direction: every row is contained in that big box.
-SELECT bool_and(temp <@ tpcbox_zt(-200, -200, -200, 200, 200, 200,
+SELECT bool_and(temp <@ tpcboxZT(-200, -200, -200, 200, 200, 200,
   tstzspan '[2001-01-01, 2030-01-01]', 1, 0)) FROM tbl_tpcpoint;
-SELECT bool_and(temp <@ tpcbox_zt(-200, -200, -200, 200, 200, 200,
+SELECT bool_and(temp <@ tpcboxZT(-200, -200, -200, 200, 200, 200,
   tstzspan '[2001-01-01, 2030-01-01]', 1, 0)) FROM tbl_tpcpatch;
 
 -- Time-only: every row's tstzspan is contained in this wide span.

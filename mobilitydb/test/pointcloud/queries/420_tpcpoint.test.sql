@@ -188,24 +188,24 @@ SELECT atValue(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
 
 SELECT atTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
   tstzspan '[2024-01-02, 2024-01-03]') IS NOT NULL;
-SELECT atTpcbox(:inst2, tpcbox_zt(0, 0, 0, 10, 10, 10,
+SELECT atTpcbox(:inst2, tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-31]', 1, 0)) IS NOT NULL;
-SELECT minusTpcbox(:inst2, tpcbox_zt(0, 0, 0, 10, 10, 10,
+SELECT minusTpcbox(:inst2, tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-31]', 1, 0)) IS NULL;
 
 -- Pcid-mismatch identity: at → NULL, minus → unchanged.
-SELECT atTpcbox(:inst1, tpcbox_zt(0, 0, 0, 10, 10, 10,
+SELECT atTpcbox(:inst1, tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-31]', 999, 0)) IS NULL;
 
 -- Boxes without every dimension: a spatial-only box restricts spatially, a
 -- temporal-only box temporally. Minus of a box covering the whole value is
 -- empty.
 SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
-  tpcbox_z(0, 0, 0, 2, 2, 2, 1)));
+  tpcboxZ(0, 0, 0, 2, 2, 2, 1)));
 SELECT minusTpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
-  tpcbox_z(0, 0, 0, 10, 10, 10, 1)) IS NULL;
+  tpcboxZ(0, 0, 0, 10, 10, 10, 1)) IS NULL;
 SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
-  tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1)));
+  tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 1)));
 
 -- Restriction to the instants before / after a timestamp. The strict flag
 -- is true by default and excludes the instant at the timestamp itself, which
@@ -356,6 +356,6 @@ SELECT splitEachNSpans(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
 
 SELECT tpcpoint '2300000063000000000000000000F03F00000000000000400000000000000840000000@2024-01-01';
 SELECT tpcpoint '2300000063000000000000000000F03F00000000000000400000000000000840000000@2024-01-01' &&
-  tpcbox_xt(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 99, 0);
+  tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 99, 0);
 
 -------------------------------------------------------------------------------

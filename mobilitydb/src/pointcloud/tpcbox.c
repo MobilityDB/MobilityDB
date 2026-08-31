@@ -127,7 +127,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_constructor_2d);
 /**
  * @ingroup mobilitydb_pointcloud_box_constructor
  * @brief 2D constructor — tpcbox(xmin, ymin, xmax, ymax, pcid, srid)
- * @sqlfn tpcbox()
+ * @sqlfn tpcboxX()
  */
 Datum
 Tpcbox_constructor_2d(PG_FUNCTION_ARGS)
@@ -146,8 +146,8 @@ PGDLLEXPORT Datum Tpcbox_constructor_3d(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_3d);
 /**
  * @ingroup mobilitydb_pointcloud_box_constructor
- * @brief 3D constructor — tpcbox_z(xmin, ymin, zmin, xmax, ymax, zmax, pcid, srid)
- * @sqlfn tpcbox_z()
+ * @brief 3D constructor — tpcboxZ(xmin, ymin, zmin, xmax, ymax, zmax, pcid, srid)
+ * @sqlfn tpcboxZ()
  */
 Datum
 Tpcbox_constructor_3d(PG_FUNCTION_ARGS)
@@ -168,8 +168,8 @@ PGDLLEXPORT Datum Tpcbox_constructor_t(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_t);
 /**
  * @ingroup mobilitydb_pointcloud_box_constructor
- * @brief Time-only constructor — tpcbox_t(period, pcid)
- * @sqlfn tpcbox_t()
+ * @brief Time-only constructor — tpcboxT(period, pcid)
+ * @sqlfn tpcboxT()
  */
 Datum
 Tpcbox_constructor_t(PG_FUNCTION_ARGS)
@@ -184,8 +184,8 @@ PGDLLEXPORT Datum Tpcbox_constructor_xt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_xt);
 /**
  * @ingroup mobilitydb_pointcloud_box_constructor
- * @brief XY+T constructor — tpcbox_xt(xmin, ymin, xmax, ymax, period, pcid, srid)
- * @sqlfn tpcbox_xt()
+ * @brief XY+T constructor — tpcboxXT(xmin, ymin, xmax, ymax, period, pcid, srid)
+ * @sqlfn tpcboxXT()
  */
 Datum
 Tpcbox_constructor_xt(PG_FUNCTION_ARGS)
@@ -205,8 +205,8 @@ PGDLLEXPORT Datum Tpcbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_zt);
 /**
  * @ingroup mobilitydb_pointcloud_box_constructor
- * @brief XYZ+T constructor — tpcbox_zt(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid, srid)
- * @sqlfn tpcbox_zt()
+ * @brief XYZ+T constructor — tpcboxZT(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid, srid)
+ * @sqlfn tpcboxZT()
  */
 Datum
 Tpcbox_constructor_zt(PG_FUNCTION_ARGS)

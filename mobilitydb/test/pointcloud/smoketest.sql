@@ -68,10 +68,10 @@ SELECT numValues(set(ARRAY[
 
 \echo '=== pgpointcloud smoke: TPCBox bounding box ==='
 
-SELECT xmin(tpcbox(10, 20, 30, 40, 1, 0))         AS tpcbox_xmin_expect_10,
-       xmax(tpcbox(10, 20, 30, 40, 1, 0))         AS tpcbox_xmax_expect_30,
-       pcid(tpcbox(10, 20, 30, 40, 7, 0))         AS tpcbox_pcid_expect_7,
-       hasZ(tpcbox_z(1, 2, 3, 4, 5, 6, 1, 0))     AS tpcbox_hasz_expect_true;
+SELECT xmin(tpcboxX(10, 20, 30, 40, 1, 0))         AS tpcbox_xmin_expect_10,
+       xmax(tpcboxX(10, 20, 30, 40, 1, 0))         AS tpcbox_xmax_expect_30,
+       pcid(tpcboxX(10, 20, 30, 40, 7, 0))         AS tpcbox_pcid_expect_7,
+       hasZ(tpcboxZ(1, 2, 3, 4, 5, 6, 1, 0))     AS tpcbox_hasz_expect_true;
 
 SELECT xmin(tpcbox(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]))))
        AS patch_to_tpcbox_xmin_expect_10;
@@ -83,12 +83,12 @@ SELECT xmin(tpcbox(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])))
 
 \echo '=== pgpointcloud smoke: TPCBox set operations ==='
 
-SELECT xmin(tpcbox(0, 0, 5, 5, 1) + tpcbox(3, 3, 10, 10, 1)) AS union_xmin_0,
-       xmax(tpcbox(0, 0, 5, 5, 1) + tpcbox(3, 3, 10, 10, 1)) AS union_xmax_10,
-       xmin(tpcbox(0, 0, 5, 5, 1) * tpcbox(3, 3, 10, 10, 1)) AS inter_xmin_3;
+SELECT xmin(tpcboxX(0, 0, 5, 5, 1) + tpcboxX(3, 3, 10, 10, 1)) AS union_xmin_0,
+       xmax(tpcboxX(0, 0, 5, 5, 1) + tpcboxX(3, 3, 10, 10, 1)) AS union_xmax_10,
+       xmin(tpcboxX(0, 0, 5, 5, 1) * tpcboxX(3, 3, 10, 10, 1)) AS inter_xmin_3;
 
-SELECT tpcbox(0, 0, 10, 10, 1) @> tpcbox(2, 2, 8, 8, 1)   AS contains_true,
-       tpcbox(0, 0, 5, 5, 1)   && tpcbox(3, 3, 10, 10, 1) AS overlaps_true;
+SELECT tpcboxX(0, 0, 10, 10, 1) @> tpcboxX(2, 2, 8, 8, 1)   AS contains_true,
+       tpcboxX(0, 0, 5, 5, 1)   && tpcboxX(3, 3, 10, 10, 1) AS overlaps_true;
 
 \echo '=== pgpointcloud smoke: tpcpoint lifted temporal type ==='
 

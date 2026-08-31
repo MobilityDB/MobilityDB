@@ -1,116 +1,116 @@
-SELECT tpcbox(0, 0, 10, 10, 1, 0);
-           tpcbox            
+SELECT tpcboxX(0, 0, 10, 10, 1, 0);
+           tpcboxx           
 -----------------------------
  TPCBOX(X((0,0),(10,10)), 1)
 (1 row)
 
-SELECT tpcbox_z(0, 0, 0, 10, 10, 10, 1, 0);
-             tpcbox_z             
+SELECT tpcboxZ(0, 0, 0, 10, 10, 10, 1, 0);
+             tpcboxz              
 ----------------------------------
  TPCBOX(Z((0,0,0),(10,10,10)), 1)
 (1 row)
 
-SELECT tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1);
-                                  tpcbox_t                                  
+SELECT tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 1);
+                                  tpcboxt                                   
 ----------------------------------------------------------------------------
  TPCBOX(T([Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST]), 1)
 (1 row)
 
-SELECT tpcbox_xt(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
-                                          tpcbox_xt                                          
+SELECT tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+                                          tpcboxxt                                           
 ---------------------------------------------------------------------------------------------
  TPCBOX(XT(((0,0),(10,10)),[Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST]), 1)
 (1 row)
 
-SELECT tpcbox_zt(0, 0, 0, 10, 10, 10,
+SELECT tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
-                                            tpcbox_zt                                             
+                                             tpcboxzt                                             
 --------------------------------------------------------------------------------------------------
  TPCBOX(ZT(((0,0,0),(10,10,10)),[Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST]), 1)
 (1 row)
 
-SELECT hasX(tpcbox_zt(0, 0, 0, 10, 10, 10,
+SELECT hasX(tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
  hasx 
 ------
  t
 (1 row)
 
-SELECT hasZ(tpcbox_zt(0, 0, 0, 10, 10, 10,
+SELECT hasZ(tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
  hasz 
 ------
  t
 (1 row)
 
-SELECT hasT(tpcbox_zt(0, 0, 0, 10, 10, 10,
+SELECT hasT(tpcboxZT(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
  hast 
 ------
  t
 (1 row)
 
-SELECT hasZ(tpcbox(0, 0, 10, 10, 1, 0));
+SELECT hasZ(tpcboxX(0, 0, 10, 10, 1, 0));
  hasz 
 ------
  f
 (1 row)
 
-SELECT hasT(tpcbox(0, 0, 10, 10, 1, 0));
+SELECT hasT(tpcboxX(0, 0, 10, 10, 1, 0));
  hast 
 ------
  f
 (1 row)
 
-SELECT xmin(tpcbox(0, 0, 10, 10, 1, 0));
+SELECT xmin(tpcboxX(0, 0, 10, 10, 1, 0));
  xmin 
 ------
     0
 (1 row)
 
-SELECT xmax(tpcbox(0, 0, 10, 10, 1, 0));
+SELECT xmax(tpcboxX(0, 0, 10, 10, 1, 0));
  xmax 
 ------
    10
 (1 row)
 
-SELECT ymin(tpcbox(0, 0, 10, 10, 1, 0));
+SELECT ymin(tpcboxX(0, 0, 10, 10, 1, 0));
  ymin 
 ------
     0
 (1 row)
 
-SELECT ymax(tpcbox(0, 0, 10, 10, 1, 0));
+SELECT ymax(tpcboxX(0, 0, 10, 10, 1, 0));
  ymax 
 ------
    10
 (1 row)
 
-SELECT zmin(tpcbox_z(0, 0, 1, 10, 10, 9, 1, 0));
+SELECT zmin(tpcboxZ(0, 0, 1, 10, 10, 9, 1, 0));
  zmin 
 ------
     1
 (1 row)
 
-SELECT zmax(tpcbox_z(0, 0, 1, 10, 10, 9, 1, 0));
+SELECT zmax(tpcboxZ(0, 0, 1, 10, 10, 9, 1, 0));
  zmax 
 ------
     9
 (1 row)
 
-SELECT zmin(tpcbox(0, 0, 10, 10, 1, 0));
+SELECT zmin(tpcboxX(0, 0, 10, 10, 1, 0));
  zmin 
 ------
      
 (1 row)
 
-SELECT pcid(tpcbox(0, 0, 10, 10, 7, 0));
+SELECT pcid(tpcboxX(0, 0, 10, 10, 7, 0));
  pcid 
 ------
     7
 (1 row)
 
-SELECT SRID(tpcbox(0, 0, 10, 10, 1, 4326));
+SELECT SRID(tpcboxX(0, 0, 10, 10, 1, 4326));
  srid 
 ------
  4326
@@ -156,157 +156,157 @@ FROM (SELECT pcpatch(pcpoint(1, 1.0, 2.0, 3.0),
            3 |           6
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) + tpcboxX(3, 3, 10, 10, 1, 0);
           ?column?           
 -----------------------------
  TPCBOX(X((0,0),(10,10)), 1)
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) * tpcboxX(3, 3, 10, 10, 1, 0);
          ?column?          
 ---------------------------
  TPCBOX(X((3,3),(5,5)), 1)
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(50, 50, 60, 60, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) * tpcboxX(50, 50, 60, 60, 1, 0);
  ?column? 
 ----------
  
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 0, 0) + tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 0, 0) + tpcboxX(3, 3, 10, 10, 1, 0);
 ERROR:  Operation on TPCBox values with different schemas: 0 vs 1
-SELECT tpcbox(0, 0, 5, 5, 0, 0) * tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 0, 0) * tpcboxX(3, 3, 10, 10, 1, 0);
 ERROR:  Operation on TPCBox values with different schemas: 0 vs 1
-SELECT tpcbox(0, 0, 10, 10, 1, 0) @> tpcbox(2, 2, 8, 8, 1, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1, 0) @> tpcboxX(2, 2, 8, 8, 1, 0);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tpcbox(0, 0, 10, 10, 1, 0) @> tpcbox(2, 2, 20, 20, 1, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1, 0) @> tpcboxX(2, 2, 20, 20, 1, 0);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tpcbox(2, 2, 8, 8, 1, 0)   <@ tpcbox(0, 0, 10, 10, 1, 0);
+SELECT tpcboxX(2, 2, 8, 8, 1, 0)   <@ tpcboxX(0, 0, 10, 10, 1, 0);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0)   && tpcboxX(3, 3, 10, 10, 1, 0);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(50, 50, 60, 60, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0)   && tpcboxX(50, 50, 60, 60, 1, 0);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 1, 0)   ~= tpcbox(0, 0, 5, 5, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0)   ~= tpcboxX(0, 0, 5, 5, 1, 0);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT contains(tpcbox(0, 0, 10, 10, 1, 0), tpcbox(2, 2, 8, 8, 1, 0));
+SELECT contains(tpcboxX(0, 0, 10, 10, 1, 0), tpcboxX(2, 2, 8, 8, 1, 0));
  contains 
 ----------
  t
 (1 row)
 
-SELECT contained(tpcbox(2, 2, 8, 8, 1, 0), tpcbox(0, 0, 10, 10, 1, 0));
+SELECT contained(tpcboxX(2, 2, 8, 8, 1, 0), tpcboxX(0, 0, 10, 10, 1, 0));
  contained 
 -----------
  t
 (1 row)
 
-SELECT overlaps(tpcbox(0, 0, 5, 5, 1, 0), tpcbox(3, 3, 10, 10, 1, 0));
+SELECT overlaps(tpcboxX(0, 0, 5, 5, 1, 0), tpcboxX(3, 3, 10, 10, 1, 0));
  overlaps 
 ----------
  t
 (1 row)
 
-SELECT same(tpcbox(0, 0, 5, 5, 1, 0), tpcbox(0, 0, 5, 5, 1, 0));
+SELECT same(tpcboxX(0, 0, 5, 5, 1, 0), tpcboxX(0, 0, 5, 5, 1, 0));
  same 
 ------
  t
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 1, 0)  -|- tpcbox(5, 0, 10, 5, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0)  -|- tpcboxX(5, 0, 10, 5, 1, 0);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT adjacent(tpcbox(0, 0, 5, 5, 1, 0), tpcbox(5, 0, 10, 5, 1, 0));
+SELECT adjacent(tpcboxX(0, 0, 5, 5, 1, 0), tpcboxX(5, 0, 10, 5, 1, 0));
  adjacent 
 ----------
  t
 (1 row)
 
-SELECT tpcbox(0, 0, 10, 10, 1, 0) @> tpcbox(2, 2, 8, 8, 2, 0);
+SELECT tpcboxX(0, 0, 10, 10, 1, 0) @> tpcboxX(2, 2, 8, 8, 2, 0);
 ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
-SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(0, 0, 5, 5, 2, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0)   && tpcboxX(0, 0, 5, 5, 2, 0);
 ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
-SELECT tpcbox(0, 0, 5, 5, 1, 0)   ~= tpcbox(0, 0, 5, 5, 2, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0)   ~= tpcboxX(0, 0, 5, 5, 2, 0);
 ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
-SELECT tpcbox(0, 0, 5, 5, 0, 0) && tpcbox(3, 3, 10, 10, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 0, 0) && tpcboxX(3, 3, 10, 10, 1, 0);
 ERROR:  Operation on TPCBox values with different schemas: 0 vs 1
-SELECT tpcbox(0, 0, 5, 5, 0, 0) @> tpcbox(1, 1, 4, 4, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 0, 0) @> tpcboxX(1, 1, 4, 4, 1, 0);
 ERROR:  Operation on TPCBox values with different schemas: 0 vs 1
-SELECT tpcbox(0, 0, 5, 5, 1, 4326) && tpcbox(3, 3, 10, 10, 1, 3857);
+SELECT tpcboxX(0, 0, 5, 5, 1, 4326) && tpcboxX(3, 3, 10, 10, 1, 3857);
 ERROR:  Operation on TPCBox values with different SRIDs: 4326 vs 3857
-SELECT tpcbox(0, 0, 5, 5, 1, 4326) + tpcbox(3, 3, 10, 10, 1, 3857);
+SELECT tpcboxX(0, 0, 5, 5, 1, 4326) + tpcboxX(3, 3, 10, 10, 1, 3857);
 ERROR:  Operation on TPCBox values with different SRIDs: 4326 vs 3857
-SELECT tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 0) &&
-  tpcbox_t(tstzspan '[2024-01-02, 2024-01-03]', 1);
+SELECT tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0) &&
+  tpcboxT(tstzspan '[2024-01-02, 2024-01-03]', 1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 0) +
-  tpcbox_t(tstzspan '[2024-01-02, 2024-01-03]', 1);
+SELECT tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0) +
+  tpcboxT(tstzspan '[2024-01-02, 2024-01-03]', 1);
                                   ?column?                                  
 ----------------------------------------------------------------------------
  TPCBOX(T([Mon Jan 01 00:00:00 2024 PST, Wed Jan 03 00:00:00 2024 PST]), 1)
 (1 row)
 
-SELECT extent(b) FROM (VALUES (tpcbox(0, 0, 5, 5, 1, 0)),
-  (tpcbox(3, 3, 10, 10, 1, 0))) t(b);
+SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 1, 0)),
+  (tpcboxX(3, 3, 10, 10, 1, 0))) t(b);
            extent            
 -----------------------------
  TPCBOX(X((0,0),(10,10)), 1)
 (1 row)
 
-SELECT extent(b) FROM (VALUES (tpcbox(0, 0, 5, 5, 1, 0)),
-  (tpcbox(3, 3, 10, 10, 2, 0))) t(b);
+SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 1, 0)),
+  (tpcboxX(3, 3, 10, 10, 2, 0))) t(b);
 ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
-SELECT extent(b) FROM (VALUES (tpcbox(0, 0, 5, 5, 0, 0)),
-  (tpcbox(3, 3, 10, 10, 1, 0))) t(b);
+SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 0, 0)),
+  (tpcboxX(3, 3, 10, 10, 1, 0))) t(b);
 ERROR:  Operation on TPCBox values with different schemas: 0 vs 1
-SELECT extent(b) FROM (VALUES (tpcbox(0, 0, 5, 5, 1, 4326)),
-  (tpcbox(3, 3, 10, 10, 1, 3857))) t(b);
+SELECT extent(b) FROM (VALUES (tpcboxX(0, 0, 5, 5, 1, 4326)),
+  (tpcboxX(3, 3, 10, 10, 1, 3857))) t(b);
 ERROR:  Operation on TPCBox values with different SRIDs: 4326 vs 3857
-SELECT tpcbox(0, 0, 5, 5, 1, 0) =  tpcbox(0, 0, 5, 5, 1, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) =  tpcboxX(0, 0, 5, 5, 1, 0);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 1, 0) <> tpcbox(0, 0, 5, 5, 2, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) <> tpcboxX(0, 0, 5, 5, 2, 0);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tpcbox(0, 0, 5, 5, 1, 0) <  tpcbox(0, 0, 5, 5, 2, 0);
+SELECT tpcboxX(0, 0, 5, 5, 1, 0) <  tpcboxX(0, 0, 5, 5, 2, 0);
  ?column? 
 ----------
  t
