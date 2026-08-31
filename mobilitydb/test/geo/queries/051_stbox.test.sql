@@ -105,8 +105,6 @@ SELECT stboxXT(1,2,3,4,tstzspan '[2001-01-03,2001-01-06]');
 SELECT stboxZT(1,2,3,4,5,6,timestamptz '2001-01-04');
 SELECT stboxZT(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
 
-SELECT geodstboxT(timestamptz '2001-01-03');
-SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-06]');
 SELECT geodstboxZ(1,2,3,4,5,6);
 SELECT geodstboxZT(1,2,3,4,5,6,timestamptz '2001-01-04');
 SELECT geodstboxZT(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');

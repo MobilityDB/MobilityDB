@@ -176,7 +176,6 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 				<indexterm significance="normal"><primary><varname>stboxXT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>stboxZT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geodstboxZ</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>geodstboxT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geodstboxZT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
 				<para>Constructor para <varname>stbox</varname></para>
@@ -188,7 +187,6 @@ stboxXT(float,float,float,float,{timestamptz,tstzspan},srid integer=0) → stbox
 stboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},
   srid integer=0) → stbox
 geodstboxZ(float,float,float,float,float,float,srid integer=4326) → stbox
-geodstboxT({timestamptz,tstzspan}) → stbox
 geodstboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},
   srid integer=4326) → stbox
 stbox(geo) → stbox
@@ -209,8 +207,6 @@ SELECT stboxXT(1.0,2.0, 1.0,2.0, tstzspan '[2001-01-03,2001-01-03]');
 SELECT stboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-03]');
 -- Only value dimension with X, Y, and Z geodetic coordinates
 SELECT geodstboxZ(1.0,2.0,3.0,1.0,2.0,3.0);
--- Only time dimension for geodetic box
-SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-03]');
 -- Both value (with X, Y, and Z geodetic coordinates) and time dimensions
 SELECT geodstboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-04]');
 -- Geometry and time dimension
