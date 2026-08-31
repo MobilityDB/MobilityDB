@@ -1105,6 +1105,14 @@ SELECT tbox 'TBOXFLOAT X([1,2])' #>> tbox 'TBOX T([2001-01-01,2001-01-02])';
 ERROR:  The tbox must have T dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' #&> tbox 'TBOX T([2001-01-01,2001-01-02])';
 ERROR:  The tbox must have T dimension
+SELECT tbox 'TBOXINT X([1,2])' << tbox 'TBOXFLOAT X([1,2])';
+ERROR:  Operation on mixed span types: intspan and floatspan
+SELECT tbox 'TBOXINT X([1,2])' &< tbox 'TBOXFLOAT X([1,2])';
+ERROR:  Operation on mixed span types: intspan and floatspan
+SELECT tbox 'TBOXINT X([1,2])' >> tbox 'TBOXFLOAT X([1,2])';
+ERROR:  Operation on mixed span types: intspan and floatspan
+SELECT tbox 'TBOXINT X([1,2])' &> tbox 'TBOXFLOAT X([1,2])';
+ERROR:  Operation on mixed span types: intspan and floatspan
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b << t2.b;
  count 
 -------

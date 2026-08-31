@@ -1594,20 +1594,23 @@ tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 }
 
 /**
- * @brief Return the ouput variables initialized  with the flag values of the
- * boxes
- * @param[in] box1,box2 Input boxes
- * @param[out] hasx,hast Boolean variables
+ * @brief Return true if two temporal boxes are valid for operations
+ * @details The boxes are comparable when their value spans measure the same
+ * quantity, which the span type states. A box carrying no value span states
+ * none, so the pair is comparable whatever the other box holds. Which
+ * dimensions an operation needs is the operation's own question, asked after
+ * this one
+ * @param[in] box1,box2 Temporal boxes
  */
 static bool
-ensure_valid_tbox_tbox(const TBox *box1, const TBox *box2, bool *hasx,
-  bool *hast)
+ensure_valid_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  assert(box1); assert(box2); assert(hasx); assert(hast);
-  if (! ensure_common_dimension(box1->flags, box2->flags))
-    return false;
-  tbox_tbox_flags(box1, box2, hasx, hast);
-  if (*hasx && ! ensure_same_span_type(&box1->span, &box2->span))
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+  /* Both boxes carry a value span here, so reading its type is what states
+   * whether the two of them measure the same quantity */
+  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
+      ! ensure_same_span_type(&box1->span, &box2->span))
     return false;
   return true;
 }
@@ -1640,9 +1643,8 @@ bool
 contains_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  bool hasx, hast;
-  if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tbox_contains(box1, box2);
 }
@@ -1670,9 +1672,8 @@ bool
 contained_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  bool hasx, hast;
-  if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tbox_contained(box1, box2);
 }
@@ -1706,9 +1707,8 @@ bool
 overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  bool hasx, hast;
-  if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tbox_overlaps(box1, box2);
 }
@@ -1742,9 +1742,8 @@ bool
 same_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  bool hasx, hast;
-  if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tbox_same(box1, box2);
 }
@@ -1791,9 +1790,8 @@ bool
 adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  bool hasx, hast;
-  if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tbox_adjacent(box1, box2);
 }
@@ -1829,8 +1827,8 @@ bool
 left_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  if (! ensure_has_X(T_TBOX, box1->flags) ||
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_has_X(T_TBOX, box1->flags) ||
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
   return tbox_left(box1, box2);
@@ -1863,8 +1861,8 @@ bool
 overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  if (! ensure_has_X(T_TBOX, box1->flags) ||
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_has_X(T_TBOX, box1->flags) ||
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
   return tbox_overleft(box1, box2);
@@ -1897,8 +1895,8 @@ bool
 right_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  if (! ensure_has_X(T_TBOX, box1->flags) || 
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
   return tbox_right(box1, box2);
@@ -1931,8 +1929,8 @@ bool
 overright_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  if (! ensure_has_X(T_TBOX, box1->flags) || 
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
   return tbox_overright(box1, box2);
