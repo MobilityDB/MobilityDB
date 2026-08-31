@@ -50,6 +50,14 @@ SELECT tintFromMFJSON(asMFJSON(tint '{1@2001-01-01, 2@2001-01-02}', 1, 3));
 SELECT tintFromMFJSON(asMFJSON(tint '[1@2001-01-01, 2@2001-01-02]', 1, 3));
 SELECT tintFromMFJSON(asMFJSON(tint '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 3@2001-01-04]}', 1, 3));
 
+-- The bounding box is read RAW rather than round-tripped: a FromMFJSON round
+-- trip does not read the bbox back, so it cannot see a bbox printed from the
+-- wrong base type. Option 1 asks for the bbox, and a big integer box prints
+-- integer bounds
+SELECT asMFJSON(tint '[1@2001-01-01, 2@2001-01-02]', 1);
+SELECT asMFJSON(tbigint '[1@2001-01-01, 2@2001-01-02]', 1);
+SELECT asMFJSON(tfloat '[1@2001-01-01, 2@2001-01-02]', 1);
+
 SELECT tfloatFromMFJSON(asMFJSON(tfloat '1@2001-01-01', 1, 3, 15));
 SELECT tfloatFromMFJSON(asMFJSON(tfloat '{1@2001-01-01, 2@2001-01-02}', 1, 3, 15));
 SELECT tfloatFromMFJSON(asMFJSON(tfloat '[1@2001-01-01, 2@2001-01-02]', 1, 3, 15));

@@ -628,15 +628,30 @@ static void
 tbox_as_mfjson_sb(stringbuffer_t *sb, const TBox *box, int precision)
 {
   assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-  bool intbox = box->span.basetype == T_INT4;
+  /* A binary integer/float test reads a big integer box as a float one and hands
+   * its Datum to DatumGetFloat8, which reinterprets the bits rather than
+   * converting them, so T_INT8 is named on its own.
+   * ⛔ The remaining arm is a plain else rather than a named T_FLOAT8 arm with an
+   * error default, because T_TH3INDEX and T_TQUADBIN reach here from
+   * bbox_as_mfjson_sb while meos_catalog.c gives both type_bboxtype = T_STBOX:
+   * an STBox is read through this TBox printer, so box->span holds its coordinate
+   * doubles under whatever basetype byte sits at that offset, and an error
+   * default refuses two shipping families. That routing is its own defect, and
+   * the else is what keeps those families printing */
+  MeosType basetype = box->span.basetype;
   stringbuffer_append_len(sb, "\"bbox\":[", 8);
-  if (intbox)
+  if (basetype == T_INT4)
     stringbuffer_aprintf(sb, "%d", DatumGetInt32(box->span.lower));
+  else if (basetype == T_INT8)
+    stringbuffer_aprintf(sb, INT64_FORMAT, DatumGetInt64(box->span.lower));
   else
     stringbuffer_append_double(sb, DatumGetFloat8(box->span.lower), precision);
   stringbuffer_append_char(sb, ',');
-  if (intbox)
+  /* Integer spans are canonicalized, i.e., the upper bound is exclusive */
+  if (basetype == T_INT4)
     stringbuffer_aprintf(sb, "%d", DatumGetInt32(box->span.upper) - 1);
+  else if (basetype == T_INT8)
+    stringbuffer_aprintf(sb, INT64_FORMAT, DatumGetInt64(box->span.upper) - 1);
   else
     stringbuffer_append_double(sb, DatumGetFloat8(box->span.upper), precision);
   stringbuffer_append_len(sb, "],", 2);

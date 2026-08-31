@@ -238,6 +238,13 @@ SELECT shiftScaleValue(tbox 'TBOXBIGINT XT([1,3],[2001-01-01,2001-01-02])', 1::b
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])', 2);
 SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])', 2::bigint);
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 2.0);
+-- A float box takes an integer value of either width, converting it to the
+-- double the box stores. A binary integer/float dispatch reads the bigint Datum
+-- as a double instead, which reinterprets its bits
+SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 2::bigint);
+-- The two integer widths do not mix, and each message names the value it got
+SELECT expandValue(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])', 2::bigint);
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2001-01-01,2001-01-02])', 2);
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', interval '1 day');
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', interval '-12 hours');
 -- NULL
