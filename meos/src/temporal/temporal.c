@@ -3528,6 +3528,150 @@ tnumber_twavg(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @brief Return the value a temporal value holds once its one-element wrappers
+ * are read through, which is the same function of time
+ * @param[in] temp Temporal value
+ *
+ * A sequence set holding one sequence, and a sequence holding one instant,
+ * carry nothing the value inside them does not: there is no second element to
+ * order against and, for a lone instant, no segment over which an
+ * interpolation is observable. So `1\@t`, `[1\@t]`, `Interp=Step;[1\@t]`,
+ * `{1\@t}` and `{[1\@t]}` all denote the instant, and reading them through
+ * this function is what lets equality, the B-tree comparison and the hash
+ * answer about the function rather than about the spelling.
+ *
+ * The result points into @p temp, so it is valid as long as @p temp is, and
+ * the function allocates nothing.
+ */
+static const Temporal *
+temporal_unwrapped(const Temporal *temp)
+{
+  assert(temp);
+  while (true)
+  {
+    if (temp->subtype == TSEQUENCESET)
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      if (ss->count != 1)
+        return temp;
+      temp = (const Temporal *) TSEQUENCESET_SEQ_N(ss, 0);
+    }
+    else if (temp->subtype == TSEQUENCE)
+    {
+      const TSequence *seq = (const TSequence *) temp;
+      if (seq->count != 1)
+        return temp;
+      temp = (const Temporal *) TSEQUENCE_INST_N(seq, 0);
+    }
+    else
+      return temp;
+  }
+}
+
+/**
+ * @brief Return the number of runs of a temporal value, a run being a maximal
+ * stretch of instants the value joins
+ * @param[in] temp Temporal value, read through its one-element wrappers
+ *
+ * An instant and a continuous sequence are one run; a discrete sequence is one
+ * run per instant, since it joins none of them; a sequence set is one run per
+ * sequence.
+ */
+static int
+temporal_num_runs(const Temporal *temp)
+{
+  assert(temp); assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return 1;
+    case TSEQUENCE:
+      return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
+        ((const TSequence *) temp)->count : 1;
+    default: /* TSEQUENCESET */
+      return ((const TSequenceSet *) temp)->count;
+  }
+}
+
+/**
+ * @brief Return what the @p i-th run of a temporal value holds
+ * @param[in] temp Temporal value
+ * @param[in] i Index of the run, from 0
+ * @param[out] count Number of instants the run holds
+ * @param[out] lower_inc,upper_inc Whether the run holds its bounds
+ * @param[out] interp Interpolation the run reads between its instants, which
+ * is @p DISCRETE where the run holds one instant and so has no segment
+ */
+static void
+temporal_run(const Temporal *temp, int i, int *count, bool *lower_inc,
+  bool *upper_inc, interpType *interp)
+{
+  assert(temp); assert(temptype_subtype(temp->subtype));
+  const TSequence *seq;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1; *lower_inc = *upper_inc = true; *interp = DISCRETE;
+      return;
+    case TSEQUENCE:
+      seq = (const TSequence *) temp;
+      if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+      {
+        *count = 1; *lower_inc = *upper_inc = true; *interp = DISCRETE;
+        return;
+      }
+      break;
+    default: /* TSEQUENCESET */
+      seq = TSEQUENCESET_SEQ_N((const TSequenceSet *) temp, i);
+      break;
+  }
+  *count = seq->count;
+  *lower_inc = seq->period.lower_inc;
+  *upper_inc = seq->period.upper_inc;
+  /* A run of one instant holds no segment, so no interpolation shows in it */
+  *interp = (seq->count > 1) ? MEOS_FLAGS_GET_INTERP(seq->flags) : DISCRETE;
+  return;
+}
+
+/**
+ * @brief Return -1, 0, or 1 depending on whether the runs of the first
+ * temporal value are less than, equal to, or greater than those of the second
+ * @param[in] temp1,temp2 Temporal values holding the same instants
+ *
+ * ⛔ THE TIE AFTER THE INSTANTS MUST BE A PROPERTY OF THE FUNCTION, NEVER OF
+ * THE SPELLING, or the order contradicts itself. A discrete sequence and a
+ * sequence set of one-instant sequences are equal and join nothing, so both
+ * must sit on the same side of a sequence that joins the same instants;
+ * breaking the tie on the subtype puts one on each side, and a value then lies
+ * both below and above one it equals.
+ */
+static int
+temporal_run_cmp(const Temporal *temp1, const Temporal *temp2)
+{
+  int nruns1 = temporal_num_runs(temp1), nruns2 = temporal_num_runs(temp2);
+  int nruns = Min(nruns1, nruns2);
+  for (int i = 0; i < nruns; i++)
+  {
+    int count1, count2;
+    bool lower1, upper1, lower2, upper2;
+    interpType interp1, interp2;
+    temporal_run(temp1, i, &count1, &lower1, &upper1, &interp1);
+    temporal_run(temp2, i, &count2, &lower2, &upper2, &interp2);
+    if (count1 != count2)
+      return (count1 < count2) ? -1 : 1;
+    if (lower1 != lower2)
+      return lower1 ? -1 : 1;
+    if (upper1 != upper2)
+      return upper1 ? -1 : 1;
+    if (interp1 != interp2)
+      return (interp1 < interp2) ? -1 : 1;
+  }
+  if (nruns1 != nruns2)
+    return (nruns1 < nruns2) ? -1 : 1;
+  return 0;
+}
+
+/**
  * @ingroup meos_temporal_comp_trad
  * @brief Return true if two temporal values are equal
  * @param[in] temp1,temp2 Temporal values
@@ -3547,6 +3691,11 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
         ! ensure_same_spatial_dimensionality(temp1->flags, temp2->flags))
     return false;
   }
+
+  /* Read each value through its one-element wrappers, so that the spelling
+   * does not decide the answer */
+  temp1 = temporal_unwrapped(temp1);
+  temp2 = temporal_unwrapped(temp2);
 
   assert(temptype_subtype(temp1->subtype));
   assert(temptype_subtype(temp2->subtype));
@@ -3674,50 +3823,28 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
   if (result)
     return result;
 
-  /* If both are of the same temporal type use the specific comparison */
-  if (temp1->subtype == temp2->subtype)
+  /* Read each value through its one-element wrappers, so that the spelling
+   * does not decide the order */
+  temp1 = temporal_unwrapped(temp1);
+  temp2 = temporal_unwrapped(temp2);
+
+  /* ONE RULE FOR EVERY PAIR, WHATEVER THEY ARE SPELLED AS: the instants the
+   * two values hold, and then what their runs add. Reaching for a per-subtype
+   * comparison where the subtypes happen to match answers a second way, and
+   * the two ways disagree on a pair one of them calls equal. */
+  int count1 = temporal_num_instants(temp1);
+  int count2 = temporal_num_instants(temp2);
+  int count = Min(count1, count2);
+  for (int i = 1; i <= count; i++)
   {
-    assert(temptype_subtype(temp1->subtype));
-    switch (temp1->subtype)
-    {
-      case TINSTANT:
-        return tinstant_cmp((TInstant *) temp1, (TInstant *) temp2);
-      case TSEQUENCE:
-        return tsequence_cmp((TSequence *) temp1, (TSequence *) temp2);
-      default: /* TSEQUENCESET */
-        return tsequenceset_cmp((TSequenceSet *) temp1, (TSequenceSet *) temp2);
-    }
+    result = tinstant_cmp(temporal_inst_n(temp1, i),
+      temporal_inst_n(temp2, i));
+    if (result)
+      return result;
   }
-
-  /* Use the hash comparison */
-  uint32 hash1 = temporal_hash(temp1);
-  uint32 hash2 = temporal_hash(temp2);
-  if (hash1 < hash2)
-    return -1;
-  else if (hash1 > hash2)
-    return 1;
-
-  /* Compare memory size */
-  size_t size1 = VARSIZE(temp1);
-  size_t size2 = VARSIZE(temp2);
-  if (size1 < size2)
-    return -1;
-  else if (size1 > size2)
-    return 1;
-
-  /* Compare flags */
-  if (temp1->flags < temp2->flags)
-    return -1;
-  if (temp1->flags > temp2->flags)
-    return 1;
-
-  /* Finally compare temporal subtype */
-  if (temp1->subtype < temp2->subtype)
-    return -1;
-  else if (temp1->subtype > temp2->subtype)
-    return 1;
-  else
-    return 0;
+  if (count1 != count2)
+    return (count1 < count2) ? -1 : 1;
+  return temporal_run_cmp(temp1, temp2);
 }
 
 /**
@@ -3775,11 +3902,85 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @brief Apply a function to every instant of a temporal value, in time order
+ * @param[in] temp Temporal value
+ * @param[in] func Function applied to each instant, folding into @p state
+ * @param[in,out] state Value the fold carries
+ *
+ * The walk descends the subtype rather than asking for an n-th instant, so it
+ * costs one pass over whatever the value holds; addressing a sequence set by
+ * index searches for the sequence owning each index in turn.
+ */
+static void
+temporal_instant_fold(const Temporal *temp,
+  void (*func)(const TInstant *, void *), void *state)
+{
+  assert(temp); assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      func((const TInstant *) temp, state);
+      return;
+    case TSEQUENCE:
+    {
+      const TSequence *seq = (const TSequence *) temp;
+      for (int i = 0; i < seq->count; i++)
+        func(TSEQUENCE_INST_N(seq, i), state);
+      return;
+    }
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      for (int i = 0; i < ss->count; i++)
+      {
+        const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+        for (int j = 0; j < seq->count; j++)
+          func(TSEQUENCE_INST_N(seq, j), state);
+      }
+      return;
+    }
+  }
+}
+
+/**
+ * @brief Fold one instant's 32-bit hash into the state
+ */
+static void
+tinstant_hash_fold(const TInstant *inst, void *state)
+{
+  uint32 *result = (uint32 *) state;
+  *result = (*result << 5) - *result + tinstant_hash(inst);
+}
+
+/**
+ * @brief Fold one instant's 64-bit hash into the state
+ */
+static void
+tinstant_hash_extended_fold(const TInstant *inst, void *state)
+{
+  uint64 *acc = (uint64 *) state;
+  acc[0] = (acc[0] << 5) - acc[0] + tinstant_hash_extended(inst, acc[1]);
+}
+
+/**
  * @ingroup meos_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal value
  * @param[in] temp Temporal value
  * @return On error return @p UINT32_MAX
  * @csqlfn #Temporal_hash()
+ *
+ * The hash reads the instants the value holds, in time order, and nothing
+ * else. A hash opclass requires equal values to hash equally, and two equal
+ * temporal values hold the same instants: the subtype is a spelling, so an
+ * instant, the sequence holding only that instant, and the sequence set
+ * holding only that sequence denote one function of time and belong in one
+ * bucket. A hash that reads the subtype separates them, each wrapper folding
+ * another constant in.
+ *
+ * Two values differing only in interpolation or in a bound therefore share a
+ * hash. That is a collision, which a hash index resolves by comparing, and not
+ * a wrong answer: the contract runs one way, from equality to sameness of
+ * hash.
  */
 uint32
 temporal_hash(const Temporal *temp)
@@ -3787,16 +3988,9 @@ temporal_hash(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, UINT32_MAX);
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return tinstant_hash((TInstant *) temp);
-    case TSEQUENCE:
-      return tsequence_hash((TSequence *) temp);
-    default: /* TSEQUENCESET */
-      return tsequenceset_hash((TSequenceSet *) temp);
-  }
+  uint32 result = 1;
+  temporal_instant_fold(temp, &tinstant_hash_fold, &result);
+  return result;
 }
 
 /**
@@ -3813,16 +4007,10 @@ temporal_hash_extended(const Temporal *temp, uint64 seed)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, UINT64_MAX);
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return tinstant_hash_extended((TInstant *) temp, seed);
-    case TSEQUENCE:
-      return tsequence_hash_extended((TSequence *) temp, seed);
-    default: /* TSEQUENCESET */
-      return tsequenceset_hash_extended((TSequenceSet *) temp, seed);
-  }
+  /* The accumulator carries the seed beside it, so that the fold reads both */
+  uint64 acc[2] = {1, seed};
+  temporal_instant_fold(temp, &tinstant_hash_extended_fold, acc);
+  return acc[0];
 }
 
 /*****************************************************************************/

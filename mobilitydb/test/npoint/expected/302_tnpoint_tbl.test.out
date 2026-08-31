@@ -601,7 +601,7 @@ WHERE t1.temp >= t2.temp;
 SELECT MAX(hash(temp)) FROM tbl_tnpoint;
     max     
 ------------
- 2137747695
+ 2126925614
 (1 row)
 
 CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
