@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: TPCBOX_PRED_2_DEFN</title>
+<title>MobilityDB: tpcbox_srid_of_pcid</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -123,13 +123,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__inout_ga538572587616ecfae5eef7cfd6869bad.html#ga538572587616ecfae5eef7cfd6869bad">Tpcbox_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__accessor_gafa1be0e2de87181130a1b391749f94f0.html#gafa1be0e2de87181130a1b391749f94f0">Tpcbox_pcid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2pointcloud_2tpcbox_8c_a578b29c0eebad0c07a78b85fd6800517.html#a578b29c0eebad0c07a78b85fd6800517">TPCBOX_PRED_2_BODY</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2pointcloud_2tpcbox_8c_a016cb769a0bcc3a479d63e506ca373a5.html#a016cb769a0bcc3a479d63e506ca373a5">TPCBOX_PRED_2_DEFN</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2pointcloud_2tpcbox_8c_a016cb769a0bcc3a479d63e506ca373a5.html#a016cb769a0bcc3a479d63e506ca373a5">TPCBOX_PRED_2_DEFN</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__inout_ga866365f4f56919089858e20a92d6baad.html#ga866365f4f56919089858e20a92d6baad">Tpcbox_recv</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box_ga5f75972ed2242bc3fbe293e2d9b8aeb6.html#ga5f75972ed2242bc3fbe293e2d9b8aeb6">Tpcbox_round</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__inout_ga2968ccb91bd9e2a1f04fbe0f992b17b9.html#ga2968ccb91bd9e2a1f04fbe0f992b17b9">Tpcbox_send</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box_ga665c9d0dd249c0d08b963bb0243aab20.html#ga665c9d0dd249c0d08b963bb0243aab20">Tpcbox_set_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__accessor_ga7413a01c43ff7eeed4babbefd9054851.html#ga7413a01c43ff7eeed4babbefd9054851">Tpcbox_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2pointcloud_2tpcbox_8c_a63c8f4f406c11320aecc4b3df6908159.html#a63c8f4f406c11320aecc4b3df6908159">tpcbox_srid_of_pcid</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2pointcloud_2tpcbox_8c_a63c8f4f406c11320aecc4b3df6908159.html#a63c8f4f406c11320aecc4b3df6908159">tpcbox_srid_of_pcid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__accessor_ga514370482dcf53fd38058471feeca205.html#ga514370482dcf53fd38058471feeca205">Tpcbox_tmax</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__accessor_gad7a57ca2f1be80a7348da4adabd71c18.html#gad7a57ca2f1be80a7348da4adabd71c18">Tpcbox_tmax_inc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__accessor_ga76eb1c1e54d1522e9067f61ffd871dfd.html#ga76eb1c1e54d1522e9067f61ffd871dfd">Tpcbox_tmin</a></td></tr>
@@ -146,55 +146,33 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a016cb769a0bcc3a479d63e506ca373a5" name="a016cb769a0bcc3a479d63e506ca373a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a016cb769a0bcc3a479d63e506ca373a5">&#9670;&#160;</a></span>TPCBOX_PRED_2_DEFN</h2>
+<a id="a63c8f4f406c11320aecc4b3df6908159" name="a63c8f4f406c11320aecc4b3df6908159"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63c8f4f406c11320aecc4b3df6908159">&#9670;&#160;</a></span>tpcbox_srid_of_pcid()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">#define TPCBOX_PRED_2_DEFN</td>
+          <td class="memname">static int32_t tpcbox_srid_of_pcid </td>
           <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">fn_name, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">int32&#160;</td>
+          <td class="paramname"><em>pcid</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">meos_fn, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">group, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">sql_name, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">sql_op&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  PGDLLEXPORT <a class="code hl_typedef" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> fn_name(PG_FUNCTION_ARGS); \</div>
-<div class="line">  PG_FUNCTION_INFO_V1(fn_name); \ \</div>
-<div class="line">  <a class="code hl_typedef" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> fn_name(PG_FUNCTION_ARGS) { <a class="code hl_define" href="mobilitydb_2src_2pointcloud_2tpcbox_8c_a578b29c0eebad0c07a78b85fd6800517.html#a578b29c0eebad0c07a78b85fd6800517">TPCBOX_PRED_2_BODY</a>(meos_fn) }</div>
-<div class="ttc" id="amobilitydb_2src_2pointcloud_2tpcbox_8c_a578b29c0eebad0c07a78b85fd6800517_html_a578b29c0eebad0c07a78b85fd6800517"><div class="ttname"><a href="mobilitydb_2src_2pointcloud_2tpcbox_8c_a578b29c0eebad0c07a78b85fd6800517.html#a578b29c0eebad0c07a78b85fd6800517">TPCBOX_PRED_2_BODY</a></div><div class="ttdeci">#define TPCBOX_PRED_2_BODY(meos_fn)</div><div class="ttdef"><b>Definition:</b> tpcbox.c:591</div></div>
-<div class="ttc" id="apostgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6_html_a43879eb52e27b2413d7a05056a173ca6"><div class="ttname"><a href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a></div><div class="ttdeci">uintptr_t Datum</div><div class="ttdef"><b>Definition:</b> postgres_ext_defs.in.h:15</div></div>
-</div><!-- fragment -->
+
+<p>Return the SRID stated by the schema a pcid names, 0 when it names none. </p>
+<p >The schema is what holds the SRID, so a box reads it from there rather than being told: pgpointcloud registers one SRID per pcid and derives every value's SRID from it. A pcid of 0 is pgpointcloud's "unknown" value and names no schema to read </p><dl class="section note"><dt>Note</dt><dd>A pcid naming no registered schema is an error rather than a box with an assumed SRID, which is how PC_MakePoint answers the same input. <code>mobilitydb_pc_schema</code> states a miss by returning NULL, so the test is what keeps a hand-written pcid from reaching a null dereference </dd></dl>
+
 </div>
 </div>
     </td>
