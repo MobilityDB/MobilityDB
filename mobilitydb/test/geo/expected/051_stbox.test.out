@@ -1107,15 +1107,15 @@ SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((5,5),(9,9))';
 
 /* Errors */
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <@ stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' -|- stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' ~= stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'STBOX T([2001-01-01, 2001-01-02])';
 ERROR:  The temporal values must have at least one common dimension
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'STBOX T([2001-01-01, 2001-01-02])';
@@ -1542,7 +1542,7 @@ ERROR:  The arguments must be of the same dimensionality
 SELECT stbox 'GEODSTBOX T([2001-01-03,2001-01-03])' + stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2001-01-03,2001-01-04])';
 ERROR:  The arguments must be of the same dimensionality
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' + stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' * stbox 'STBOX X((1.0,2.0),(3.0,4.0))';
        ?column?       
 ----------------------
@@ -1773,7 +1773,7 @@ SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])' *
 
 /* Errors */
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' * stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b;
     max     
 ------------

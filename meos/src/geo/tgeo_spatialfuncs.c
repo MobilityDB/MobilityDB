@@ -692,20 +692,6 @@ ensure_valid_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
   return true;
 }
 
-/**
- * @brief Ensure the validity of a spatiotemporal boxes
- */
-bool
-ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
-{
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  if (! ensure_has_X(T_STBOX, box1->flags) ||
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)) ||
-      ! ensure_same_geodetic(box1->flags, box2->flags))
-    return false;
-  return true;
-}
 
 /**
  * @brief Ensure the validity of a temporal geo and a spatiotemporal box

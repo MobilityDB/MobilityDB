@@ -1859,14 +1859,8 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
   bool *hasz, bool *hast, bool *geodetic)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  if (! ensure_common_dimension(box1->flags, box2->flags))
-    return false;
-  /* Both boxes carry X here, so reading the SRID through the validating
-   * accessor would only repeat the test the condition has just made */
-  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
-     (! ensure_same_geodetic(box1->flags, box2->flags) ||
-      ! ensure_same_srid(box1->srid, box2->srid)))
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
   return true;
@@ -2100,14 +2094,19 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
  *****************************************************************************/
 
 /**
- * @brief Verify the conditions for a position operator
+ * @brief Return true if two spatiotemporal boxes are valid for operations
+ * @details The boxes are comparable when they state the same spatial
+ * reference system, which for a spatiotemporal box is its SRID together with
+ * whether its coordinates are geodetic. A box carrying no X states neither,
+ * so the pair is comparable whatever the other box holds. Which dimensions an
+ * operation needs is the operation's own question, asked after this one
  * @param[in] box1,box2 Spatiotemporal boxes
  */
-static bool
-ensure_valid_pos_stbox_stbox_x(const STBox *box1, const STBox *box2)
+bool
+ensure_valid_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   /* Both boxes carry X here, so reading the SRID through the validating
    * accessor would only repeat the test the condition has just made */
   if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) && (
@@ -2143,7 +2142,7 @@ bool
 left_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2177,7 +2176,7 @@ bool
 overleft_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2211,7 +2210,7 @@ bool
 right_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2245,7 +2244,7 @@ bool
 overright_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2277,7 +2276,7 @@ bool
 below_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2311,7 +2310,7 @@ bool
 overbelow_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2343,7 +2342,7 @@ bool
 above_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2377,7 +2376,7 @@ bool
 overabove_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2411,7 +2410,7 @@ bool
 front_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
@@ -2445,7 +2444,7 @@ bool
 overfront_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
@@ -2479,7 +2478,7 @@ bool
 back_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
@@ -2513,7 +2512,7 @@ bool
 overback_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
@@ -2670,10 +2669,8 @@ STBox *
 union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
-  if (! ensure_same_geodetic(box1->flags, box2->flags) ||
-      ! ensure_same_dimensionality(box1->flags, box2->flags) ||
-      ! ensure_same_srid(box1->srid, box2->srid))
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
+      ! ensure_same_dimensionality(box1->flags, box2->flags))
     return NULL;
   /* If the strict parameter is true, we need to ensure that the boxes
    * intersect, otherwise their union cannot be represented by a box */
@@ -2754,10 +2751,8 @@ STBox *
 intersection_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
-  if (! ensure_same_geodetic(box1->flags, box2->flags) ||
-      // ! ensure_same_dimensionality(box1->flags, box2->flags) ||
-      ! ensure_same_srid(box1->srid, box2->srid))
+  // ! ensure_same_dimensionality(box1->flags, box2->flags) is not asked here
+  if (! ensure_valid_stbox_stbox(box1, box2))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));

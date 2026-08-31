@@ -2745,8 +2745,9 @@ double
 nad_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, DBL_MAX); VALIDATE_NOT_NULL(box2, DBL_MAX);
-  if (! ensure_valid_spatial_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags) ||
       ! ensure_same_spatial_dimensionality(box1->flags, box2->flags))
     return DBL_MAX;
 
