@@ -2112,6 +2112,7 @@ union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
  * @param[out] result Resulting box
  * @note This function is equivalent to @ref intersection_tbox_tbox without
  * memory allocation
+ * @csqlfn #Intersection_tbox_tbox()
  */
 bool
 inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)

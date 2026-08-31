@@ -3255,7 +3255,7 @@
 				<title>Operaciones de conjuntos</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_union"><varname>+</varname>, <varname>*</varname></link>: Unión e intersección de dos tpcboxes</para>
+						<para><link linkend="tpcboxUnion"><varname>+</varname>, <varname>*</varname></link>: Unión e intersección de dos tpcboxes</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

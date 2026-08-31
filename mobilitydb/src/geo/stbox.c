@@ -1525,7 +1525,7 @@ PG_FUNCTION_INFO_V1(Union_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_set
  * @brief Return the union of two spatiotemporal boxes
- * @sqlfn stbox_union()
+ * @sqlfn stboxUnion()
  * @sqlop @p +
  */
 Datum
@@ -1541,7 +1541,7 @@ PG_FUNCTION_INFO_V1(Intersection_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_set
  * @brief Return the intersection of two spatiotemporal boxes
- * @sqlfn stbox_intersection()
+ * @sqlfn stboxIntersection()
  * @sqlop @p *
  */
 Datum

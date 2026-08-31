@@ -634,22 +634,22 @@ CREATE OPERATOR #&> (
  * Set operators
  *****************************************************************************/
 
-CREATE FUNCTION stbox_union(stbox, stbox)
+CREATE FUNCTION stboxUnion(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Union_stbox_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_intersection(stbox, stbox)
+CREATE FUNCTION stboxIntersection(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Intersection_stbox_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
-  PROCEDURE = stbox_union,
+  PROCEDURE = stboxUnion,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = +
 );
 CREATE OPERATOR * (
-  PROCEDURE = stbox_intersection,
+  PROCEDURE = stboxIntersection,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = *
 );

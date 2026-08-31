@@ -3264,7 +3264,7 @@
 				<title>Set Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_union"><varname>+</varname>, <varname>*</varname></link>: Union and intersection of two tpcboxes</para>
+						<para><link linkend="tpcboxUnion"><varname>+</varname>, <varname>*</varname></link>: Union and intersection of two tpcboxes</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

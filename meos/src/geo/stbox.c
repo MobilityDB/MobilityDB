@@ -2694,6 +2694,7 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
  * @param[out] result Result
  * @note This function is equivalent to @ref intersection_stbox_stbox without
  * memory allocation
+ * @csqlfn #Intersection_stbox_stbox()
  */
 bool
 inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)

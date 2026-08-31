@@ -416,7 +416,7 @@ SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
 		<sect2 xml:id="tpcbox_setops">
 			<title>Set Operations</title>
 			<itemizedlist>
-				<listitem xml:id="tpcbox_union">
+				<listitem xml:id="tpcboxUnion">
 					<indexterm significance="normal"><primary><varname>+</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>*</varname></primary></indexterm>
 					<para>Union and intersection of two tpcboxes</para>

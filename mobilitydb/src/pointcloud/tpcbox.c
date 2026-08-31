@@ -545,7 +545,7 @@ PG_FUNCTION_INFO_V1(Union_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_box_setops
  * @brief Return the union of two TPCBox values (must share pcid)
- * @sqlfn union()
+ * @sqlfn tpcboxUnion()
  * @sqlop @p +
  */
 Datum
@@ -564,7 +564,7 @@ PG_FUNCTION_INFO_V1(Intersection_tpcbox_tpcbox);
  * @ingroup mobilitydb_pointcloud_box_setops
  * @brief Return the intersection of two TPCBox values; NULL if disjoint
  *   or pcid mismatch
- * @sqlfn intersection()
+ * @sqlfn tpcboxIntersection()
  * @sqlop @p *
  */
 Datum
