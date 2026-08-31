@@ -45,6 +45,7 @@ Usage: check_fixture_dates.py [--list]
 import lzma
 import os
 import re
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -70,6 +71,29 @@ AREAS = (
 )
 
 
+def tracked_files(area):
+    """The repo-relative paths git tracks under `area`.
+
+    THE SUBJECT IS WHAT THE REPOSITORY CARRIES, so the list comes from git and
+    not from the directory.  Reading the directory reads whatever a BUILD has
+    left in it, and both test trees are written into: `meos/test/.gitignore`
+    ignores `csv/`, the table fixtures tools/gen_test_csv.py exports from the
+    same pg_dumps, and the smoke-test sources gen_smoketest.py writes from the
+    installed headers.  Those carry the archives' own dates, so a directory walk
+    reports a file that is not in the repository, cannot be migrated, and cannot
+    be baselined either -- the check passes on a clean checkout and fails on the
+    same commit once its tests have run.
+    """
+    out = subprocess.run(["git", "-C", ROOT, "ls-files", "-z", "--", area],
+                         capture_output=True, text=True)
+    if out.returncode:
+        print("check_fixture_dates: git does not list " + area + "; the check "
+              "reads tracked files and cannot run outside a checkout",
+              file=sys.stderr)
+        sys.exit(2)
+    return [p for p in out.stdout.split("\0") if p]
+
+
 def read_text(path):
     """The file's text, decompressing an archive; None when it cannot be read."""
     try:
@@ -84,17 +108,15 @@ def offending_files():
     """{repo-relative path: count} for every file carrying an epoch-year date."""
     found = {}
     for area, exts in AREAS:
-        for dirpath, _, names in os.walk(os.path.join(ROOT, area)):
-            for name in names:
-                if exts is not None and not name.endswith(exts):
-                    continue
-                path = os.path.join(dirpath, name)
-                text = read_text(path)
-                if text is None:
-                    continue
-                n = len(EPOCH_DATE.findall(text))
-                if n:
-                    found[os.path.relpath(path, ROOT)] = n
+        for rel in tracked_files(area):
+            if exts is not None and not rel.endswith(exts):
+                continue
+            text = read_text(os.path.join(ROOT, rel))
+            if text is None:
+                continue
+            n = len(EPOCH_DATE.findall(text))
+            if n:
+                found[rel] = n
     return found
 
 
