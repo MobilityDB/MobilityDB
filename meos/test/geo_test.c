@@ -357,6 +357,44 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* The junction between two offsets is settled from the cross product of the
+   * directions the two edges meeting there run in, and that product is a sine
+   * only where both directions are of unit length. An arc answers a sine and
+   * a cosine and is; a straight edge answered its whole chord and was not, so
+   * the product was a length where a straight edge met an arc and an area
+   * where two straight edges met, and both shrink with the geometry until a
+   * genuine turn falls under the tolerance and reads as one edge continuing
+   * into the next. The witness is a compound curve of a straight run closing
+   * through an arc, whose junctions are exactly those two kinds. A buffer is
+   * the same shape wherever the geometry sits and whatever its size, so the
+   * two copies below answer the same surface scaled: the copy at unit size,
+   * where every tolerance is far from its limits, is what the small one is
+   * read against. Before the directions were normalized the small copy lost
+   * both junctions and its buffer read zero wide */
+  const char *turning[] = {
+    "CompoundCurve((0 0,10 0),CircularString(10 0,5 2,0 0))",
+    "CompoundCurve((0 0,1e-06 0),CircularString(1e-06 0,5e-07 2e-07,0 0))"
+  };
+  const double turning_radius[] = {1.0, 1e-07};
+  char turning_patt[10] = "T*****FF*";
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *g = geom_in(turning[i], -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    GSERIALIZED *b = geom_buffer(g, turning_radius[i], "");
+    printf("geom_buffer(a curve turning twice, %s): answered %d, errno %d\n",
+      i ? "a millionth the size" : "at unit size", b != NULL, meos_errno());
+    assert(b != NULL);
+    assert(meos_errno() == 0);
+    bool covers = geom_relate_pattern(b, g, turning_patt);
+    printf("  it covers the geometry it is taken of: %d\n", covers);
+    assert(covers == true);
+    assert(meos_errno() == 0);
+    free(b); free(g);
+    meos_errno_reset();
+  }
+
   /* A boundary piece kept by the resolve lies AT the buffer distance, and the
    * distance deciding that is read from the coordinates, so what it is rounded
    * to is the size of THEIR last bits and not of the radius. At a projected
