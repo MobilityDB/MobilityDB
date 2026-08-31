@@ -517,6 +517,26 @@ WITH test(box) AS (
   SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX XT(((1,1),(3,3))[2001-01-01,2001-01-03])' )
 SELECT extent(box) FROM test;
 
+-- The combine function is what a parallel plan reaches, and worker
+-- partitioning cannot be steered from a query, so it is called directly
+
+SELECT stbox_extent_combinefn(stbox 'SRID=5676;STBOX X((1,1),(2,2))',
+  stbox 'SRID=5676;STBOX X((3,3),(4,4))');
+SELECT stbox_extent_combinefn(stbox 'SRID=4326;GEODSTBOX X((1,1),(2,2))',
+  stbox 'SRID=4326;GEODSTBOX X((3,3),(4,4))');
+SELECT stbox_extent_combinefn(stbox 'STBOX T([2001-01-01,2001-01-02])',
+  stbox 'STBOX T([2001-01-03,2001-01-04])');
+
+-- Errors
+SELECT stbox_extent_combinefn(stbox 'SRID=5676;STBOX X((1,1),(2,2))',
+  stbox 'SRID=4326;STBOX X((3,3),(4,4))');
+SELECT stbox_extent_combinefn(stbox 'SRID=4326;STBOX X((1,1),(2,2))',
+  stbox 'SRID=4326;GEODSTBOX X((3,3),(4,4))');
+SELECT stbox_extent_combinefn(stbox 'SRID=5676;STBOX X((1,1),(2,2))',
+  stbox 'SRID=5676;STBOX Z((3,3,3),(4,4,4))');
+SELECT stbox_extent_combinefn(stbox 'SRID=5676;STBOX X((1,1),(2,2))',
+  stbox 'STBOX T([2001-01-01,2001-01-02])');
+
 -- encourage use of parallel plans
 set parallel_setup_cost=0;
 set parallel_tuple_cost=0;
