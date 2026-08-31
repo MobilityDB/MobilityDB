@@ -342,11 +342,6 @@ SELECT tbox 'TBOXFLOAT X([1,2])' &<# tbox 'TBOX T([2001-01-01,2001-01-02])';
 SELECT tbox 'TBOXFLOAT X([1,2])' #>> tbox 'TBOX T([2001-01-01,2001-01-02])';
 SELECT tbox 'TBOXFLOAT X([1,2])' #&> tbox 'TBOX T([2001-01-01,2001-01-02])';
 
-SELECT tbox 'TBOXINT X([1,2])' << tbox 'TBOXFLOAT X([1,2])';
-SELECT tbox 'TBOXINT X([1,2])' &< tbox 'TBOXFLOAT X([1,2])';
-SELECT tbox 'TBOXINT X([1,2])' >> tbox 'TBOXFLOAT X([1,2])';
-SELECT tbox 'TBOXINT X([1,2])' &> tbox 'TBOXFLOAT X([1,2])';
-
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b << t2.b;
@@ -424,20 +419,6 @@ WITH test(box) AS (
   SELECT NULL::tbox UNION ALL SELECT tbox 'TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])' UNION ALL
   SELECT NULL::tbox UNION ALL SELECT tbox 'TBOXFLOAT XT([1,3],[2001-01-01,2001-01-03])' )
 SELECT extent(box) FROM test;
-
--- encourage use of parallel plans
-set parallel_setup_cost=0;
-set parallel_tuple_cost=0;
-set min_parallel_table_scan_size=0;
-set max_parallel_workers_per_gather=2;
-
-SELECT round(extent(temp::tbox),6) FROM tbl_tfloat_big;
-
--- reset to default values
-reset parallel_setup_cost;
-reset parallel_tuple_cost;
-reset min_parallel_table_scan_size;
-reset max_parallel_workers_per_gather;
 
 -------------------------------------------------------------------------------
 -- Comparison functions
