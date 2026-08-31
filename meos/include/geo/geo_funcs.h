@@ -390,20 +390,31 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
  *****************************************************************************/
 
 /**
+ * @brief Return true if an angle lies within an angular span
+ * @details The span is traversed from @p theta0 to @p theta1, counterclockwise
+ * when @p ccw is true and clockwise otherwise. Every arc question either
+ * overlay asks reduces to this one, and an arc the two answer differently is a
+ * defect neither of them can see from its own file
+ */
+static inline bool
+arc_span_contains(double theta0, double theta1, bool ccw, double phi)
+{
+  double sweep = ccw ?
+    angle_normalize(theta1 - theta0) :
+    angle_normalize(theta0 - theta1);
+  double off = ccw ?
+    angle_normalize(phi - theta0) :
+    angle_normalize(theta0 - phi);
+  return off <= sweep + MEOS_GEOM_TOLERANCE;
+}
+
+/**
  * @brief Return true if an angle lies within the angular span of an arc edge
- * @details The span is traversed from #theta0 to #theta1, counterclockwise
- * when #ccw is true and clockwise otherwise
  */
 static inline bool
 arc_contains_angle(const Edge *e, double phi)
 {
-  double sweep = e->ccw ?
-    angle_normalize(e->theta1 - e->theta0) :
-    angle_normalize(e->theta0 - e->theta1);
-  double off = e->ccw ?
-    angle_normalize(phi - e->theta0) :
-    angle_normalize(e->theta0 - phi);
-  return off <= sweep + MEOS_GEOM_TOLERANCE;
+  return arc_span_contains(e->theta0, e->theta1, e->ccw, phi);
 }
 
 /**

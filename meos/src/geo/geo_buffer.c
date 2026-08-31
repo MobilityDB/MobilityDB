@@ -1584,35 +1584,17 @@ buffer_collect_arc_arc_intersections(const Edge *e1, const Edge *e2,
 }
 
 /**
- * @brief Test whether an angle lies on a circular arc.
- * @details The arc is directed from theta0 to theta1 according to ccw.
- */
-static bool
-buffer_angle_on_arc(double theta, double theta0, double theta1, bool ccw)
-{
-  double sweep, delta;
-  if (ccw)
-  {
-    sweep = angle_normalize(theta1 - theta0);
-    delta = angle_normalize(theta - theta0);
-  }
-  else
-  {
-    sweep = angle_normalize(theta0 - theta1);
-    delta = angle_normalize(theta0 - theta);
-  }
-  return delta <= sweep + MEOS_GEOM_TOLERANCE;
-}
-
-/**
  * @brief Test whether a point lies on a circular buffer arc.
+ * @details The radial distance is the caller's question, since what it is read
+ * against depends on the coordinates the point is built from; this answers the
+ * angular half through #arc_span_contains(), the one statement of it
  */
 static bool
 buffer_point_on_arc(const BufferPiece *arc, double x, double y)
 {
   assert(arc); assert(arc->type == BUFFER_ARC);
-  double theta = atan2(y - arc->cy, x - arc->cx);
-  return buffer_angle_on_arc(theta, arc->theta1, arc->theta2, arc->ccw);
+  return arc_span_contains(arc->theta1, arc->theta2, arc->ccw,
+    atan2(y - arc->cy, x - arc->cx));
 }
 
 /*****************************************************************************
@@ -1636,18 +1618,6 @@ static bool
 buffer_piece_points_equal(double x1, double y1, double x2, double y2)
 {
   return buffer_values_equal(x1, x2) && buffer_values_equal(y1, y2);
-}
-
-/**
- * @brief Normalize an angle to [0, 2*pi).
- */
-static double
-buffer_normalize_angle(double theta)
-{
-  theta = fmod(theta, 2.0 * M_PI);
-  if (theta < 0.0)
-    theta += 2.0 * M_PI;
-  return theta;
 }
 
 /**
@@ -1684,31 +1654,6 @@ buffer_arcs_same_circle(const BufferPiece *a, const BufferPiece *b)
 }
 
 /**
- * @brief Return true if a circular arc contains an angular position.
- * @details The test is orientation independent: it only tests whether theta
- * lies on the geometric arc.
- */
-static bool
-buffer_arc_contains_angle(const BufferPiece *arc, double theta)
-{
-  assert(arc); assert(arc->type == BUFFER_ARC);
-  double start = buffer_normalize_angle(arc->theta1);
-  double end = buffer_normalize_angle(arc->theta2);
-  theta = buffer_normalize_angle(theta);
-  double sweep;
-  if (arc->ccw)
-    sweep = buffer_normalize_angle(end - start);
-  else
-    sweep = buffer_normalize_angle(start - end);
-  double position;
-  if (arc->ccw)
-    position = buffer_normalize_angle(theta - start);
-  else
-    position = buffer_normalize_angle(start - theta);
-  return position <= sweep + MEOS_GEOM_TOLERANCE;
-}
-
-/**
  * @brief Return true if two circular arcs represent the same geometric
  * arc, independently of traversal direction.
  */
@@ -1733,17 +1678,13 @@ buffer_arcs_equal(const BufferPiece *a, const BufferPiece *b)
   /* Equal endpoints alone are not enough for circles because there are two
    * possible arcs between two points. Check the midpoint of A  and verify
    * that it lies on B. */
-  double sweep;
-  if (a->ccw)
-    sweep = buffer_normalize_angle(a->theta2 - a->theta1);
-  else
-    sweep = buffer_normalize_angle(a->theta1 - a->theta2);
-  double mid;
-  if (a->ccw)
-    mid = a->theta1 + sweep * 0.5;
-  else
-    mid = a->theta1 - sweep * 0.5;
-  return buffer_arc_contains_angle(b, mid);
+  double sweep = a->ccw ?
+    angle_normalize(a->theta2 - a->theta1) :
+    angle_normalize(a->theta1 - a->theta2);
+  double mid = a->ccw ?
+    a->theta1 + sweep * 0.5 :
+    a->theta1 - sweep * 0.5;
+  return arc_span_contains(b->theta1, b->theta2, b->ccw, mid);
 }
 
 /**
@@ -4073,7 +4014,7 @@ buffer_piece_holds(const BufferPiece *piece, double x, double y)
 {
   assert(piece);
   if (piece->type == BUFFER_ARC)
-    return buffer_arc_contains_angle(piece,
+    return arc_span_contains(piece->theta1, piece->theta2, piece->ccw,
       atan2(y - piece->cy, x - piece->cx));
   double dx = piece->x2 - piece->x1, dy = piece->y2 - piece->y1;
   double length2 = dx * dx + dy * dy;
