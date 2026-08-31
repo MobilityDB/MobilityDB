@@ -1604,12 +1604,10 @@ Stbox_extent_transfn(PG_FUNCTION_ARGS)
     PG_RETURN_STBOX_P(stbox_copy(box1));
 
   /* Both boxes are not null */
-  ensure_same_dimensionality(box1->flags, box2->flags);
-  if (MEOS_FLAGS_GET_X(box1->flags))
-  {
-    ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
-    ensure_same_geodetic(box1->flags, box2->flags);
-  }
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
+      ! ensure_same_dimensionality(box1->flags, box2->flags))
+    PG_RETURN_NULL();
   STBox *result = palloc(sizeof(STBox));
   memcpy(result, box1, sizeof(STBox));
   stbox_expand(box2, result);
@@ -1634,7 +1632,10 @@ Stbox_extent_combinefn(PG_FUNCTION_ARGS)
   if (!box1 && box2)
     PG_RETURN_STBOX_P(box2);
   /* Both boxes are not null */
-  ensure_same_dimensionality(box1->flags, box2->flags);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
+      ! ensure_same_dimensionality(box1->flags, box2->flags))
+    PG_RETURN_NULL();
   STBox *result = stbox_copy(box1);
   stbox_expand(box2, result);
   PG_RETURN_STBOX_P(result);

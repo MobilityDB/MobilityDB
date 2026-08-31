@@ -1795,6 +1795,39 @@ SELECT extent(box) FROM test;
  STBOX XT(((1,1),(3,3)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
+SELECT stbox_extent_combinefn(stbox 'SRID=5676;STBOX X((1,1),(2,2))',
+  stbox 'SRID=5676;STBOX X((3,3),(4,4))');
+     stbox_extent_combinefn     
+--------------------------------
+ SRID=5676;STBOX X((1,1),(4,4))
+(1 row)
+
+SELECT stbox_extent_combinefn(stbox 'SRID=4326;GEODSTBOX X((1,1),(2,2))',
+  stbox 'SRID=4326;GEODSTBOX X((3,3),(4,4))');
+       stbox_extent_combinefn       
+------------------------------------
+ SRID=4326;GEODSTBOX X((1,1),(4,4))
+(1 row)
+
+SELECT stbox_extent_combinefn(stbox 'STBOX T([2001-01-01,2001-01-02])',
+  stbox 'STBOX T([2001-01-03,2001-01-04])');
+                        stbox_extent_combinefn                         
+-----------------------------------------------------------------------
+ STBOX T([Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
+(1 row)
+
+SELECT stbox_extent_combinefn(stbox 'SRID=5676;STBOX X((1,1),(2,2))',
+  stbox 'SRID=4326;STBOX X((3,3),(4,4))');
+ERROR:  Operation on mixed SRID
+SELECT stbox_extent_combinefn(stbox 'SRID=4326;STBOX X((1,1),(2,2))',
+  stbox 'SRID=4326;GEODSTBOX X((3,3),(4,4))');
+ERROR:  Operation on mixed planar and geodetic coordinates
+SELECT stbox_extent_combinefn(stbox 'SRID=5676;STBOX X((1,1),(2,2))',
+  stbox 'SRID=5676;STBOX Z((3,3,3),(4,4,4))');
+ERROR:  The arguments must be of the same dimensionality
+SELECT stbox_extent_combinefn(stbox 'SRID=5676;STBOX X((1,1),(2,2))',
+  stbox 'STBOX T([2001-01-01,2001-01-02])');
+ERROR:  The arguments must be of the same dimensionality
 set parallel_setup_cost=0;
 SET
 set parallel_tuple_cost=0;
