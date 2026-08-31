@@ -34,7 +34,7 @@ SELECT zMin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 3
 SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
-</pre><p>Notice that for <code class="varname">tbox</code> the result value for <code class="varname">xMin</code> and <code class="varname">xMin</code> is converted to a <code class="varname">float</code> for the temporal boxes with an integer span.</p></li><li class="listitem"><a name="box_xMax"></a><a class="indexterm" name="id3172"></a><a class="indexterm" name="id3175"></a><a class="indexterm" name="id3178"></a><a class="indexterm" name="id3181"></a><p>Return the maximum X/Y/Z/T value</p><pre class="programlisting">
+</pre><p>Notice that for <code class="varname">tbox</code> the result value for <code class="varname">xMin</code> and <code class="varname">xMax</code> is converted to a <code class="varname">float</code> for the temporal boxes with an integer span. A big integer bound that no <code class="varname">float</code> represents exactly is refused rather than rounded; read such a bound from <code class="varname">bigintspan(box)</code>.</p></li><li class="listitem"><a name="box_xMax"></a><a class="indexterm" name="id3174"></a><a class="indexterm" name="id3177"></a><a class="indexterm" name="id3180"></a><a class="indexterm" name="id3183"></a><p>Return the maximum X/Y/Z/T value</p><pre class="programlisting">
 xMax(box) → float
 yMax(stbox) → float
 zMax(stbox) → float
@@ -48,7 +48,7 @@ SELECT zMax(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 6
 SELECT tMax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
-</pre><p>Notice that for <code class="varname">tbox</code> the result value for <code class="varname">xMin</code> and <code class="varname">xMin</code> is converted to a <code class="varname">float</code> for the temporal boxes with an integer span.</p></li><li class="listitem"><a name="tbox_xMinInc"></a><a class="indexterm" name="id3193"></a><a class="indexterm" name="id3196"></a><p>Is the minimum X/T value inclusive?</p><pre class="programlisting">
+</pre><p>Notice that for <code class="varname">tbox</code> the result value for <code class="varname">xMin</code> and <code class="varname">xMax</code> is converted to a <code class="varname">float</code> for the temporal boxes with an integer span. A big integer bound that no <code class="varname">float</code> represents exactly is refused rather than rounded; read such a bound from <code class="varname">bigintspan(box)</code>.</p></li><li class="listitem"><a name="tbox_xMinInc"></a><a class="indexterm" name="id3197"></a><a class="indexterm" name="id3200"></a><p>Is the minimum X/T value inclusive?</p><pre class="programlisting">
 xMinInc(tbox) → boolean
 tMinInc(box) → boolean
 </pre><pre class="programlisting">
@@ -56,7 +56,7 @@ SELECT xMinInc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
 SELECT tMinInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- true
-</pre></li><li class="listitem"><a name="tbox_xMaxInc"></a><a class="indexterm" name="id3203"></a><a class="indexterm" name="id3206"></a><p>Is the maximum X/T value inclusive?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tbox_xMaxInc"></a><a class="indexterm" name="id3207"></a><a class="indexterm" name="id3210"></a><p>Is the maximum X/T value inclusive?</p><pre class="programlisting">
 xMaxInc(tbox) → boolean
 tMaxInc(box) → boolean
 </pre><pre class="programlisting">
@@ -64,7 +64,7 @@ SELECT xMaxInc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
 SELECT tMaxInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- true
-</pre></li><li class="listitem"><a name="stbox_area"></a><a class="indexterm" name="id3213"></a><a class="indexterm" name="id3216"></a><a class="indexterm" name="id3219"></a><p>Area, volume, perimeter</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="stbox_area"></a><a class="indexterm" name="id3217"></a><a class="indexterm" name="id3220"></a><a class="indexterm" name="id3223"></a><p>Area, volume, perimeter</p><pre class="programlisting">
 area(stbox,spheroid boolean=true) → float
 volume(stbox) → float
 perimeter(stbox,spheroid boolean=true) → float

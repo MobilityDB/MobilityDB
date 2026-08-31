@@ -1,14 +1,14 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Pose Chain Composition</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Poses and Pose Chains"><link rel="prev" href="ch13s02.html" title="Static Poses and Pose Chains"><link rel="next" href="ch13s04.html" title="Temporal Poses and Pose Chains"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Pose Chain Composition</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s02.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Poses and Pose Chains</th><td width="20%" align="right"> <a accesskey="n" href="ch13s04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="posechain_composition"></a>Pose Chain Composition</h2></div></div></div><p>A pose chain states its links, and this section holds what only a chain answers: how it is built from poses, how many links it holds, which pose a link is, and how the whole chain composes back into the single pose it denotes.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="posechain_constructor"></a><a class="indexterm" name="id9387"></a><p>Construct a pose chain from an array of poses ordered from the outermost frame inwards</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Pose Chain Composition</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Poses and Pose Chains"><link rel="prev" href="ch13s02.html" title="Static Poses and Pose Chains"><link rel="next" href="ch13s04.html" title="Temporal Poses and Pose Chains"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Pose Chain Composition</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s02.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Poses and Pose Chains</th><td width="20%" align="right"> <a accesskey="n" href="ch13s04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="posechain_composition"></a>Pose Chain Composition</h2></div></div></div><p>A pose chain states its links, and this section holds what only a chain answers: how it is built from poses, how many links it holds, which pose a link is, and how the whole chain composes back into the single pose it denotes.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="posechain_constructor"></a><a class="indexterm" name="id9391"></a><p>Construct a pose chain from an array of poses ordered from the outermost frame inwards</p><pre class="programlisting">
 posechain(pose[]) → posechain
 </pre><pre class="programlisting">
 SELECT asEWKT(posechain(ARRAY[pose 'Pose(Point(0 0),0)', pose 'Pose(Point(1 0),0)']));
 -- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))
-</pre></li><li class="listitem"><a name="pose_to_posechain"></a><a class="indexterm" name="id9394"></a><p>Convert a pose into a pose chain of a single link</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pose_to_posechain"></a><a class="indexterm" name="id9398"></a><p>Convert a pose into a pose chain of a single link</p><pre class="programlisting">
 posechain(pose) → posechain
 </pre><pre class="programlisting">
 SELECT asEWKT(posechain(pose 'SRID=3812;Pose(Point(1 2),0.5)'));
 -- SRID=3812;PoseChain(Pose(POINT(1 2),0.5))
-</pre></li><li class="listitem"><a name="posechain_to_pose"></a><a class="indexterm" name="id9401"></a><p>Return the pose of a frame the chain defines, read in the outer frame of the chain</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="posechain_to_pose"></a><a class="indexterm" name="id9405"></a><p>Return the pose of a frame the chain defines, read in the outer frame of the chain</p><pre class="programlisting">
 pose(posechain) → pose
 pose(posechain,integer) → pose
 </pre><p>Every instant holds the pose the whole chain composes to, which is where its innermost frame sits in the frame of the chain. The result is a step function: composing a chain multiplies the rotations of its links, so the pose of the chain interpolated between two instants is not the pose interpolated between the two composed poses, and a linear result would answer a pose the chain never holds. A chain of one link composes to itself, and there the interpolation of the argument carries over unchanged.</p><p>With one argument the whole chain is composed, giving the pose of its innermost frame. With two the first <code class="varname">n</code> links are composed, giving the pose of the frame the n-th link defines, that is, where that joint of the chain sits.</p><pre class="programlisting">
@@ -18,19 +18,19 @@ SELECT asEWKT(pose(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),
 SELECT asEWKT(pose(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),
   Pose(Point(1 0),0))', 2));
 -- Pose(POINT(1 0),0)
-</pre></li><li class="listitem"><a name="posechain_appendPose"></a><a class="indexterm" name="id9411"></a><p>Return a pose chain with a pose appended as its innermost link</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="posechain_appendPose"></a><a class="indexterm" name="id9415"></a><p>Return a pose chain with a pose appended as its innermost link</p><pre class="programlisting">
 appendPose(posechain,pose) → posechain
 </pre><p>The pose is read in the frame the last link of the chain defines, so it carries neither an SRID nor the geodetic marker.</p><pre class="programlisting">
 SELECT asEWKT(appendPose(posechain 'PoseChain(Pose(Point(0 0),0))',
   pose 'Pose(Point(1 0),0)'));
 -- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))
-</pre></li><li class="listitem"><a name="posechain_numPoses"></a><a class="indexterm" name="id9419"></a><p>Return the number of links of a pose chain</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="posechain_numPoses"></a><a class="indexterm" name="id9423"></a><p>Return the number of links of a pose chain</p><pre class="programlisting">
 numPoses(posechain) → integer
 </pre><pre class="programlisting">
 SELECT numPoses(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),
   Pose(Point(2 0),0))');
 -- 3
-</pre></li><li class="listitem"><a name="posechain_poseN"></a><a class="indexterm" name="id9426"></a><a class="indexterm" name="id9429"></a><a class="indexterm" name="id9432"></a><a class="indexterm" name="id9435"></a><p>Return the links of a pose chain</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="posechain_poseN"></a><a class="indexterm" name="id9430"></a><a class="indexterm" name="id9433"></a><a class="indexterm" name="id9436"></a><a class="indexterm" name="id9439"></a><p>Return the links of a pose chain</p><pre class="programlisting">
 startPose(posechain) → pose
 endPose(posechain) → pose
 poseN(posechain,integer) → pose
@@ -45,7 +45,7 @@ SELECT asEWKT(poseN(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'
 -- Pose(POINT(1 0),0)
 SELECT asEWKT(poses(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'));
 -- {"Pose(POINT(0 0),0)","Pose(POINT(1 0),0)"}
-</pre></li><li class="listitem"><a name="tposechain_numPoses"></a><a class="indexterm" name="id9446"></a><p>Return the number of links every value of a temporal pose chain holds</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposechain_numPoses"></a><a class="indexterm" name="id9450"></a><p>Return the number of links every value of a temporal pose chain holds</p><pre class="programlisting">
 numPoses(tposechain) → integer
 </pre><p>The number is the same at every instant, so one instant answers for the whole value.</p><pre class="programlisting">
 SELECT numPoses(tposechain 'PoseChain(Pose(Point(0 0), 0),

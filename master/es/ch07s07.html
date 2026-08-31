@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch07.html" title="Capítulo 7. Tipos temporales geométricos (Parte 1)"><link rel="prev" href="ch07s06.html" title="Accessores"><link rel="next" href="ch08.html" title="Capítulo 8. Tipos temporales geométricos (Parte 2)"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 7. Tipos temporales geométricos (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tspatial_round"></a><a class="indexterm" name="id5169"></a><p>Redondea los valores de las coordenadas a un número de decimales <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch07.html" title="Capítulo 7. Tipos temporales geométricos (Parte 1)"><link rel="prev" href="ch07s06.html" title="Accessores"><link rel="next" href="ch08.html" title="Capítulo 8. Tipos temporales geométricos (Parte 2)"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 7. Tipos temporales geométricos (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tspatial_round"></a><a class="indexterm" name="id5183"></a><p>Redondea los valores de las coordenadas a un número de decimales <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 round(tspatial,integer=0) → tspatial
@@ -10,7 +10,7 @@ SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01,
 SELECT asText(round(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001-01-01',
   2));
 -- LINESTRING(1.12 1.12,2.12 2.12)@2001-01-01
-</pre></li><li class="listitem"><a name="tpoint_makeSimple"></a><a class="indexterm" name="id5190"></a><p>Devuelve una matriz de fragmentos del punto temporal que son simples <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tpoint_makeSimple"></a><a class="indexterm" name="id5204"></a><p>Devuelve una matriz de fragmentos del punto temporal que son simples <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 makeSimple(tpoint) → tgeompoint[]
 </pre><pre class="programlisting">
@@ -30,7 +30,7 @@ SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@200
   [Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04]}'));
 /* {"{[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02],
    [POINT Z (1 1 1)@2001-01-03, POINT Z (0 0 0)@2001-01-04]}"} */
-</pre></li><li class="listitem"><a name="tgeo_geoMeasure"></a><a class="indexterm" name="id5204"></a><p>Construye una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_geoMeasure"></a><a class="indexterm" name="id5218"></a><p>Construye una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 geoMeasure(tpoint,tfloat,segmentize boolean=false) → geo
@@ -55,7 +55,7 @@ SELECT ST_AsText(geoMeasure(t, round(speed(t) * 3600 * 24, 2), true)) FROM Temp;
 </pre><p>La siguiente expresión se usa en QGIS para lograr esto. La función <code class="varname">scale_linear</code> transforma el valor M de cada segmento componente al rango [0, 1]. Este valor luego se pasa a la función <code class="varname">ramp_color</code>.</p><pre class="programlisting">
 ramp_color('RdYlBu', scale_linear(
     m(start_point(geometry_n($geometry,@geometry_part_num))), 0, 2, 0, 1) )
-</pre><div class="figure-float"><div class="figure"><a name="figspeed"></a><p class="title"><b>Figura 7.3. Visualización de la velocidad de un objeto móvil usando una rampa de color en QGIS.</b></p><div class="figure-contents"><div class="mediaobject"><img src="../images/speed.png" width="162" alt="Visualización de la velocidad de un objeto móvil usando una rampa de color en QGIS."></div></div></div><br class="figure-break"></div></li><li class="listitem"><a name="tgeo_affine"></a><a class="indexterm" name="id5241"></a><p>Devuelve la transformación afín 3D de una geometría temporal para traducirla, rotarla y/o escalarla en un solo paso <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre><div class="figure-float"><div class="figure"><a name="figspeed"></a><p class="title"><b>Figura 7.3. Visualización de la velocidad de un objeto móvil usando una rampa de color en QGIS.</b></p><div class="figure-contents"><div class="mediaobject"><img src="../images/speed.png" width="162" alt="Visualización de la velocidad de un objeto móvil usando una rampa de color en QGIS."></div></div></div><br class="figure-break"></div></li><li class="listitem"><a name="tgeo_affine"></a><a class="indexterm" name="id5255"></a><p>Devuelve la transformación afín 3D de una geometría temporal para traducirla, rotarla y/o escalarla en un solo paso <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 affine(tgeo,a float,b float,c float,d float,e float,f float,g float,
   h float,i float,xoff float,yoff float,zoff float) → tgeo
@@ -74,7 +74,7 @@ SELECT asEWKT(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(
    0, sin(pi()), cos(pi()), 0, 0, 0)) FROM (SELECT tgeometry '[Point(1 1)@2001-01-01,
   Linestring(1 1,2 2)@2001-01-02]' AS temp) t;
 -- [POINT(-1 -1)@2001-01-01, LINESTRING(-1 -1,-2 -2)@2001-01-02]
-</pre></li><li class="listitem"><a name="tgeo_rotate"></a><a class="indexterm" name="id5255"></a><p>Devuelve el punto temporal rotado en sentido antihorario sobre el punto de origen</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_rotate"></a><a class="indexterm" name="id5269"></a><p>Devuelve el punto temporal rotado en sentido antihorario sobre el punto de origen</p><pre class="programlisting">
 rotate(tgeo,radians float) → tgeo
 rotate(tgeo,radians float,x0 float,y0 float) → tgeo
 rotate(tgeo,radians float,origin geometry) → tgeo
@@ -93,7 +93,7 @@ SELECT asEWKT(rotate(temp, -pi()/3, ST_Centroid(traversedArea(temp))),
   Linestring(5 5,10 5)@2001-01-03]' AS temp) AS t;
 /* [POINT(10.58 9.67)@2001-01-01, POINT(6.25 7.17)@2001-01-02, 
    LINESTRING(6.25 7.17,8.75 2.83)@2001-01-03] */
-</pre></li><li class="listitem"><a name="tgeo_scale"></a><a class="indexterm" name="id5262"></a><p>Devuelve un punto temporal escalado por factores dados <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_scale"></a><a class="indexterm" name="id5276"></a><p>Devuelve un punto temporal escalado por factores dados <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 scale(tgeo,xfactor float,yfactor float,zfactor float) → tgeo
 scale(tgeo,xfactor float,yfactor float) → tgeo
@@ -112,7 +112,7 @@ SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-0
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-02]',
   geometry 'Point(2 2)', geometry 'Point(1 1)'));
 -- [POINT(1 1)@2001-01-01, LINESTRING(1 1,3 3)@2001-01-02]
-</pre></li><li class="listitem"><a name="tpoint_asMVTGeom"></a><a class="indexterm" name="id5276"></a><p>Transforma un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tpoint_asMVTGeom"></a><a class="indexterm" name="id5290"></a><p>Transforma un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><pre class="programlisting">
 asMVTGeom(tpoint,bounds,extent integer=4096,buffer integer=256,
   clip boolean=true) → (geom,times)
@@ -125,7 +125,7 @@ SELECT ST_AsText((mvt).geom), (mvt).times
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-01-02]',
   stbox 'STBOX X((40,40),(60,60))', clip:=false) AS mvt ) AS t;
 -- LINESTRING(-8192 12288,12288 -8192) | {946681200,946767600}
-</pre></li><li class="listitem"><a name="tgeo_stops"></a><a class="indexterm" name="id5309"></a><p>Extrae de un punto temporal con interpolación lineal las subsecuencias donde el punto permanece dentro de un área con un tamaño máximo especificado durante al menos la duración dada <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_stops"></a><a class="indexterm" name="id5323"></a><p>Extrae de un punto temporal con interpolación lineal las subsecuencias donde el punto permanece dentro de un área con un tamaño máximo especificado durante al menos la duración dada <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 stops(tpoint,maxdist float=0.0,minduration interval='0 minutes') → tpoint
