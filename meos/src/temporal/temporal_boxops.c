@@ -137,7 +137,7 @@ temporal_bbox_eq(const void *box1, const void *box2, MeosType temptype)
   else if (bboxtype == T_TPCBOX)
     return tpcbox_eq((TPCBox *) box1, (TPCBox *) box2);
 #endif
-  else /* T_STBOX */
+  else if (bboxtype == T_STBOX)
     // TODO Due to floating point precision the current statement
     // is not equal to the next one.
     // return stbox_eq((STBox *) box1, (STBox *) box2);
@@ -145,6 +145,12 @@ temporal_bbox_eq(const void *box1, const void *box2, MeosType temptype)
     // Look for temp != merge in that file for 2 other cases where
     // a problem still remains (result != 0) even with the _cmp function
     return stbox_cmp((STBox *) box1, (STBox *) box2) == 0;
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Unknown bounding box type: %s", meostype_name(bboxtype));
+    return false;
+  }
 }
 
 /**
@@ -168,8 +174,14 @@ temporal_bbox_cmp(const void *box1, const void *box2, MeosType temptype)
   else if (bboxtype == T_TPCBOX)
     return tpcbox_cmp((TPCBox *) box1, (TPCBox *) box2);
 #endif
-  else /* T_STBOX */
+  else if (bboxtype == T_STBOX)
     return stbox_cmp((STBox *) box1, (STBox *) box2);
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Unknown bounding box type: %s", meostype_name(bboxtype));
+    return INT_MAX;
+  }
 }
 
 /**
@@ -365,8 +377,14 @@ tinstant_set_bbox(const TInstant *inst, void *box)
   else if (bboxtype == T_TPCBOX)
     tpointcloudinst_set_tpcbox(inst, (TPCBox *) box);
 #endif
-  else /* T_STBOX */
+  else if (bboxtype == T_STBOX)
     tspatialinst_set_stbox(inst, (STBox *) box);
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Unknown bounding box type: %s", meostype_name(bboxtype));
+    return;
+  }
   return;
 }
 
@@ -551,9 +569,15 @@ tinstarr_set_bbox(TInstant **instants, int count, bool lower_inc,
     tpointcloudinstarr_set_tpcbox(instants, count, lower_inc, upper_inc,
       interp, (TPCBox *) box);
 #endif
-  else /* T_STBOX */
+  else if (bboxtype == T_STBOX)
     tspatialinstarr_set_stbox(instants, count, lower_inc, upper_inc,
       interp, (STBox *) box);
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Unknown bounding box type: %s", meostype_name(bboxtype));
+    return;
+  }
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
    * of the bounding box */
   Span *s = (Span *) box;
@@ -630,8 +654,14 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   else if (bboxtype == T_TPCBOX)
     tpointcloudseq_expand_tpcbox(seq, inst);
 #endif
-  else /* T_STBOX */
+  else if (bboxtype == T_STBOX)
     tspatialseq_expand_stbox(seq, inst);
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Unknown bounding box type: %s", meostype_name(bboxtype));
+    return;
+  }
   return;
 }
 
@@ -661,9 +691,15 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
       (TPCBox *) TSEQUENCESET_BBOX_PTR(ss));
 #endif
   // TODO Generalize as for tgeogpointseq_expand_stbox
-  else /* T_STBOX */
+  else if (bboxtype == T_STBOX)
     stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
       (STBox *) TSEQUENCE_BBOX_PTR(ss));
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Unknown bounding box type: %s", meostype_name(bboxtype));
+    return;
+  }
   return;
 }
 
@@ -722,8 +758,14 @@ tseqarr_compute_bbox(TSequence **sequences, int count, void *box)
   else if (bboxtype == T_TPCBOX)
     tpointcloudseqarr_set_tpcbox(sequences, count, (TPCBox *) box);
 #endif
-  else /* T_STBOX */
+  else if (bboxtype == T_STBOX)
     tspatialseqarr_set_stbox(sequences, count, (STBox *) box);
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Unknown bounding box type: %s", meostype_name(bboxtype));
+    return;
+  }
   return;
 }
 
