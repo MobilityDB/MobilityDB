@@ -142,42 +142,42 @@ SET
 SET enable_bitmapscan = off;
 SET
 SELECT COUNT(*) AS seq_count FROM tbl_tpcbox WHERE b @> tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  seq_count 
 -----------
          0
 (1 row)
 
 SELECT COUNT(*) AS seq_left FROM tbl_tpcbox WHERE b << tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  seq_left 
 ----------
        11
 (1 row)
 
 SELECT COUNT(*) AS seq_overleft FROM tbl_tpcbox WHERE b &< tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  seq_overleft 
 --------------
            16
 (1 row)
 
 SELECT COUNT(*) AS seq_above FROM tbl_tpcbox WHERE b |>> tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  seq_above 
 -----------
         46
 (1 row)
 
 SELECT COUNT(*) AS seq_front FROM tbl_tpcbox WHERE b <</ tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  seq_front 
 -----------
          0
 (1 row)
 
 SELECT COUNT(*) AS seq_before FROM tbl_tpcbox WHERE b <<# tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  seq_before 
 ------------
           0
@@ -190,42 +190,42 @@ SET
 SET enable_bitmapscan = on;
 SET
 SELECT COUNT(*) AS quadtree_count FROM tbl_tpcbox WHERE b @> tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  quadtree_count 
 ----------------
               0
 (1 row)
 
 SELECT COUNT(*) AS quadtree_left FROM tbl_tpcbox WHERE b << tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  quadtree_left 
 ---------------
             11
 (1 row)
 
 SELECT COUNT(*) AS quadtree_overleft FROM tbl_tpcbox WHERE b &< tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  quadtree_overleft 
 -------------------
                 16
 (1 row)
 
 SELECT COUNT(*) AS quadtree_above FROM tbl_tpcbox WHERE b |>> tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  quadtree_above 
 ----------------
              46
 (1 row)
 
 SELECT COUNT(*) AS quadtree_front FROM tbl_tpcbox WHERE b <</ tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  quadtree_front 
 ----------------
               0
 (1 row)
 
 SELECT COUNT(*) AS quadtree_before FROM tbl_tpcbox WHERE b <<# tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  quadtree_before 
 -----------------
                0
@@ -236,42 +236,42 @@ DROP INDEX
 CREATE INDEX tbl_tpcbox_kdtree_idx ON tbl_tpcbox USING spgist(b tpcbox_kdtree_ops);
 CREATE INDEX
 SELECT COUNT(*) AS kdtree_count FROM tbl_tpcbox WHERE b @> tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  kdtree_count 
 --------------
             0
 (1 row)
 
 SELECT COUNT(*) AS kdtree_left FROM tbl_tpcbox WHERE b << tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  kdtree_left 
 -------------
           11
 (1 row)
 
 SELECT COUNT(*) AS kdtree_overleft FROM tbl_tpcbox WHERE b &< tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  kdtree_overleft 
 -----------------
               16
 (1 row)
 
 SELECT COUNT(*) AS kdtree_above FROM tbl_tpcbox WHERE b |>> tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  kdtree_above 
 --------------
            46
 (1 row)
 
 SELECT COUNT(*) AS kdtree_front FROM tbl_tpcbox WHERE b <</ tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  kdtree_front 
 --------------
             0
 (1 row)
 
 SELECT COUNT(*) AS kdtree_before FROM tbl_tpcbox WHERE b <<# tpcboxZT(0, 0, 0,
-  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1);
  kdtree_before 
 ---------------
              0
@@ -279,7 +279,7 @@ SELECT COUNT(*) AS kdtree_before FROM tbl_tpcbox WHERE b <<# tpcboxZT(0, 0, 0,
 
 WITH test AS (
   SELECT b |=| tpcboxZT(200, 200, 200, 210, 210, 210,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
   FROM tbl_tpcbox ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
    round    
@@ -297,18 +297,23 @@ RESET enable_indexscan;
 RESET
 RESET enable_bitmapscan;
 RESET
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
+INSERT 0 1
 CREATE TABLE tbl_tpcbox_pcid AS
   SELECT 1 AS k, tpcboxZT(20, 0, 0, 30, 10, 10,
-    tstzspan '[2001-01-01, 2001-12-31]', 2, 0) AS b;
+    tstzspan '[2001-01-01, 2001-12-31]', 2) AS b;
 SELECT 1
 CREATE INDEX tbl_tpcbox_pcid_quadtree_idx ON tbl_tpcbox_pcid USING spgist(b);
 CREATE INDEX
 SET enable_seqscan = off;
 SET
 SELECT COUNT(*) FROM tbl_tpcbox_pcid WHERE b >> tpcboxZT(0, 0, 0, 10, 10, 10,
-  tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-01-01, 2001-12-31]', 1);
 ERROR:  Operation on TPCBox values with different schemas: 2 vs 1
 RESET enable_seqscan;
 RESET
 DROP TABLE tbl_tpcbox_pcid;
 DROP TABLE
+DELETE FROM pointcloud_formats WHERE pcid = 2;
+DELETE 1

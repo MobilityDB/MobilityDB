@@ -8,7 +8,7 @@ SET enable_bitmapscan = off;
 SET
 SELECT COUNT(*) AS seq_count FROM tbl_tpcpoint
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  seq_count 
 -----------
         26
@@ -22,7 +22,7 @@ SET enable_bitmapscan = on;
 SET
 SELECT COUNT(*) AS idx_count FROM tbl_tpcpoint
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  idx_count 
 -----------
         26
@@ -35,7 +35,7 @@ CREATE INDEX tbl_tpcpoint_kdtree_idx ON tbl_tpcpoint
 CREATE INDEX
 SELECT COUNT(*) AS kdtree_count FROM tbl_tpcpoint
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  kdtree_count 
 --------------
            26
@@ -53,7 +53,7 @@ SET enable_bitmapscan = off;
 SET
 SELECT COUNT(*) AS seq_count FROM tbl_tpcpatch
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  seq_count 
 -----------
         45
@@ -67,7 +67,7 @@ SET enable_bitmapscan = on;
 SET
 SELECT COUNT(*) AS idx_count FROM tbl_tpcpatch
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  idx_count 
 -----------
         45
@@ -80,7 +80,7 @@ CREATE INDEX tbl_tpcpatch_kdtree_idx ON tbl_tpcpatch
 CREATE INDEX
 SELECT COUNT(*) AS kdtree_count FROM tbl_tpcpatch
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  kdtree_count 
 --------------
            45
@@ -98,7 +98,7 @@ CREATE INDEX tbl_tpcpoint_knn_quadtree_idx ON tbl_tpcpoint USING spgist(temp);
 CREATE INDEX
 WITH test AS (
   SELECT temp |=| tpcboxZT(200, 200, 200, 210, 210, 210,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
   FROM tbl_tpcpoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
    round    
@@ -115,7 +115,7 @@ CREATE INDEX tbl_tpcpoint_knn_kdtree_idx ON tbl_tpcpoint
 CREATE INDEX
 WITH test AS (
   SELECT temp |=| tpcboxZT(200, 200, 200, 210, 210, 210,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
   FROM tbl_tpcpoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
    round    
@@ -131,7 +131,7 @@ CREATE INDEX tbl_tpcpatch_knn_quadtree_idx ON tbl_tpcpatch USING spgist(temp);
 CREATE INDEX
 WITH test AS (
   SELECT temp |=| tpcboxXT(200, 200, 210, 210,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
   FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
 ERROR:  Operation on mixed 2D/3D dimensions
@@ -142,7 +142,7 @@ CREATE INDEX tbl_tpcpatch_knn_kdtree_idx ON tbl_tpcpatch
 CREATE INDEX
 WITH test AS (
   SELECT temp |=| tpcboxXT(200, 200, 210, 210,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
   FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
 ERROR:  Operation on mixed 2D/3D dimensions

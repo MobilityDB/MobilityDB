@@ -32,8 +32,8 @@
 
 \set p_low  'tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), ''2024-01-01''::timestamptz)'
 \set p_high 'tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), ''2024-01-15''::timestamptz)'
-\set box_left  'tpcboxZT(0, 0, 0, 5, 5, 5,    tstzspan ''[2024-01-01, 2024-01-15]'', 1, 0)'
-\set box_right 'tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan ''[2025-01-01, 2025-01-15]'', 1, 0)'
+\set box_left  'tpcboxZT(0, 0, 0, 5, 5, 5,    tstzspan ''[2024-01-01, 2024-01-15]'', 1)'
+\set box_right 'tpcboxZT(20, 20, 20, 30, 30, 30, tstzspan ''[2025-01-01, 2025-01-15]'', 1)'
 
 -------------------------------------------------------------------------------
 -- X axis: <<, >>, &<, &>

@@ -8,7 +8,7 @@ SET enable_bitmapscan = off;
 SET
 SELECT COUNT(*) AS seq_count FROM tbl_tpcpoint
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  seq_count 
 -----------
         26
@@ -22,7 +22,7 @@ SET enable_bitmapscan = on;
 SET
 SELECT COUNT(*) AS idx_count FROM tbl_tpcpoint
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  idx_count 
 -----------
         26
@@ -46,7 +46,7 @@ SET enable_bitmapscan = off;
 SET
 SELECT COUNT(*) AS seq_count FROM tbl_tpcpatch
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  seq_count 
 -----------
         45
@@ -60,7 +60,7 @@ SET enable_bitmapscan = on;
 SET
 SELECT COUNT(*) AS idx_count FROM tbl_tpcpatch
 WHERE temp && tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+  tstzspan '[2001-06-01, 2001-12-31]', 1);
  idx_count 
 -----------
         45
@@ -84,7 +84,7 @@ SET enable_bitmapscan = off;
 SET
 SELECT COUNT(*) AS seq_contained FROM tbl_tpcpatch
 WHERE temp <@ tpcboxZT(-1000, -1000, -1000, 1000, 1000, 1000,
-  tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
+  tstzspan '[2001-01-01, 2002-01-01]', 1);
  seq_contained 
 ---------------
            100
@@ -98,7 +98,7 @@ SET enable_bitmapscan = on;
 SET
 SELECT COUNT(*) AS idx_contained FROM tbl_tpcpatch
 WHERE temp <@ tpcboxZT(-1000, -1000, -1000, 1000, 1000, 1000,
-  tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
+  tstzspan '[2001-01-01, 2002-01-01]', 1);
  idx_contained 
 ---------------
            100
@@ -112,7 +112,7 @@ SET enable_bitmapscan = off;
 SET
 SELECT COUNT(*) AS seq_before FROM tbl_tpcpatch
 WHERE temp <<# tpcboxZT(0, 0, 0, 100, 100, 100,
-  tstzspan '[2001-12-15, 2002-01-01]', 1, 0);
+  tstzspan '[2001-12-15, 2002-01-01]', 1);
  seq_before 
 ------------
          95
@@ -126,7 +126,7 @@ SET enable_bitmapscan = on;
 SET
 SELECT COUNT(*) AS idx_before FROM tbl_tpcpatch
 WHERE temp <<# tpcboxZT(0, 0, 0, 100, 100, 100,
-  tstzspan '[2001-12-15, 2002-01-01]', 1, 0);
+  tstzspan '[2001-12-15, 2002-01-01]', 1);
  idx_before 
 ------------
          95
@@ -140,7 +140,7 @@ SET enable_bitmapscan = off;
 SET
 SELECT COUNT(*) AS seq_left FROM tbl_tpcpatch
 WHERE temp << tpcboxZT(50, -1000, -1000, 1000, 1000, 1000,
-  tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
+  tstzspan '[2001-01-01, 2002-01-01]', 1);
  seq_left 
 ----------
         9
@@ -154,7 +154,7 @@ SET enable_bitmapscan = on;
 SET
 SELECT COUNT(*) AS idx_left FROM tbl_tpcpatch
 WHERE temp << tpcboxZT(50, -1000, -1000, 1000, 1000, 1000,
-  tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
+  tstzspan '[2001-01-01, 2002-01-01]', 1);
  idx_left 
 ----------
         9
@@ -262,7 +262,7 @@ SET enable_bitmapscan = off;
 SET
 SELECT COUNT(*) AS seq_fn_box FROM tbl_tpcpoint
 WHERE overlaps(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
  seq_fn_box 
 ------------
          26
@@ -277,7 +277,7 @@ WHERE overlaps(temp, tstzspan '[2001-06-01, 2001-12-31]');
 
 SELECT COUNT(*) AS seq_fn_patch FROM tbl_tpcpatch
 WHERE overlaps(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
  seq_fn_patch 
 --------------
            45
@@ -291,7 +291,7 @@ SET enable_bitmapscan = on;
 SET
 SELECT COUNT(*) AS idx_fn_box FROM tbl_tpcpoint
 WHERE overlaps(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
  idx_fn_box 
 ------------
          26
@@ -306,7 +306,7 @@ WHERE overlaps(temp, tstzspan '[2001-06-01, 2001-12-31]');
 
 SELECT COUNT(*) AS idx_fn_patch FROM tbl_tpcpatch
 WHERE overlaps(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
-  tstzspan '[2001-06-01, 2001-12-31]', 1, 0));
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
  idx_fn_patch 
 --------------
            45

@@ -3208,7 +3208,7 @@
 				<title>Constructores</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_tpcbox"><varname>tpcbox</varname>, <varname>tpcbox_z</varname>, <varname>tpcbox_t</varname>, <varname>tpcbox_xt</varname>, <varname>tpcbox_zt</varname></link>: Construye un tpcbox a partir de límites X/Y/Z/T explícitos y un pcid</para>
+						<para><link linkend="tpcbox_tpcbox"><varname>tpcbox</varname>, <varname>tpcbox_z</varname>, <varname>tpcbox_t</varname>, <varname>tpcbox_xt</varname>, <varname>tpcbox_zt</varname></link>: Construye un tpcbox a partir de límites X/Y/Z/T explícitos y un pcid, cuyo esquema declara el SRID</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3236,7 +3236,7 @@
 						<para><link linkend="tpcbox_tmin"><varname>tmin</varname>, <varname>tmax</varname></link>: Devuelve un límite temporal, NULL si la caja no tiene dimensión T</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_pcid"><varname>pcid</varname>, <varname>SRID</varname></link>: Devuelve el identificador de esquema y el SRID</para>
+						<para><link linkend="tpcbox_pcid"><varname>pcid</varname>, <varname>SRID</varname></link>: Devuelve el identificador de esquema y el SRID que declara dicho esquema</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

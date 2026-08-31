@@ -117,18 +117,20 @@ WHERE atTime(temp, tstzspan '[2001-01-01, 2002-01-01]') IS NOT NULL;
 -- atTpcbox over the full datagen extent leaves every row populated.
 SELECT COUNT(*) FROM tbl_tpcpatch WHERE atTpcbox(temp,
   tpcboxZT(-100, -100, 0, 100, 100, 100,
-    tstzspan '[2001-01-01, 2001-12-31]', 1, 0)) IS NOT NULL;
+    tstzspan '[2001-01-01, 2001-12-31]', 1)) IS NOT NULL;
 
 -- atTpcbox with a pcid mismatch yields NULL (empty) for every row.
 SELECT bool_and(atTpcbox(temp,
-  tpcboxZT(-100, -100, 0, 100, 100, 100,
-    tstzspan '[2001-01-01, 2001-12-31]', 999, 0)) IS NULL)
+  tpcbox
+    'TPCBOX(ZT(((-100,-100,0),(100,100,100)),[2001-01-01, 2001-12-31]), 999)')
+  IS NULL)
 FROM tbl_tpcpatch;
 
 -- minusTpcbox is the complement.
 SELECT bool_and(minusTpcbox(temp,
-  tpcboxZT(-100, -100, 0, 100, 100, 100,
-    tstzspan '[2001-01-01, 2001-12-31]', 999, 0)) IS NOT NULL)
+  tpcbox
+    'TPCBOX(ZT(((-100,-100,0),(100,100,100)),[2001-01-01, 2001-12-31]), 999)')
+  IS NOT NULL)
 FROM tbl_tpcpatch;
 
 -------------------------------------------------------------------------------
@@ -143,17 +145,17 @@ FROM tbl_tpcpatch;
 SELECT COUNT(*) FROM tbl_tpcpatch
 WHERE atTpcboxFine(temp,
   tpcboxZT(-1000, -1000, -1000, 1000, 1000, 1000,
-    tstzspan '[2001-01-01, 2002-01-01]', 1, 0)) IS NOT NULL;
+    tstzspan '[2001-01-01, 2002-01-01]', 1)) IS NOT NULL;
 
 -- For every row, fine-restrict point counts at most equal the un-restricted
 -- count.
 SELECT bool_and(numPoints(atTpcboxFine(temp,
   tpcboxZT(-1000, -1000, -1000, 1000, 1000, 1000,
-    tstzspan '[2001-01-01, 2002-01-01]', 1, 0))) <= numPoints(temp))
+    tstzspan '[2001-01-01, 2002-01-01]', 1))) <= numPoints(temp))
 FROM tbl_tpcpatch
 WHERE atTpcboxFine(temp,
   tpcboxZT(-1000, -1000, -1000, 1000, 1000, 1000,
-    tstzspan '[2001-01-01, 2002-01-01]', 1, 0)) IS NOT NULL;
+    tstzspan '[2001-01-01, 2002-01-01]', 1)) IS NOT NULL;
 
 -- atGeometry over a generously-sized polygon keeps every row.
 SELECT COUNT(*) FROM tbl_tpcpatch

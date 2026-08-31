@@ -68,10 +68,10 @@ SELECT numValues(set(ARRAY[
 
 \echo '=== pgpointcloud smoke: TPCBox bounding box ==='
 
-SELECT xmin(tpcboxX(10, 20, 30, 40, 1, 0))         AS tpcbox_xmin_expect_10,
-       xmax(tpcboxX(10, 20, 30, 40, 1, 0))         AS tpcbox_xmax_expect_30,
-       pcid(tpcboxX(10, 20, 30, 40, 7, 0))         AS tpcbox_pcid_expect_7,
-       hasZ(tpcboxZ(1, 2, 3, 4, 5, 6, 1, 0))     AS tpcbox_hasz_expect_true;
+SELECT xmin(tpcboxX(10, 20, 30, 40, 1))         AS tpcbox_xmin_expect_10,
+       xmax(tpcboxX(10, 20, 30, 40, 1))         AS tpcbox_xmax_expect_30,
+       pcid(tpcboxX(10, 20, 30, 40, 1))         AS tpcbox_pcid_expect_1,
+       hasZ(tpcboxZ(1, 2, 3, 4, 5, 6, 1))     AS tpcbox_hasz_expect_true;
 
 SELECT xmin(tpcbox(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]))))
        AS patch_to_tpcbox_xmin_expect_10;

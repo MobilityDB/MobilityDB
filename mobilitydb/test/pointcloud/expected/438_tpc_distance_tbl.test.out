@@ -25,10 +25,10 @@ SET
 SET enable_bitmapscan = off;
 SET
 SELECT k, ((temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2001-06-01, 2001-06-30]', 1, 0)) > 0)::text AS finite
+  tstzspan '[2001-06-01, 2001-06-30]', 1)) > 0)::text AS finite
 FROM tbl_tpcpoint
 ORDER BY temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2001-06-01, 2001-06-30]', 1, 0)
+  tstzspan '[2001-06-01, 2001-06-30]', 1)
 LIMIT 5;
  k  | finite 
 ----+--------
@@ -46,10 +46,10 @@ SET
 SET enable_bitmapscan = on;
 SET
 SELECT k, ((temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2001-06-01, 2001-06-30]', 1, 0)) > 0)::text AS finite
+  tstzspan '[2001-06-01, 2001-06-30]', 1)) > 0)::text AS finite
 FROM tbl_tpcpoint
 ORDER BY temp |=| tpcboxZT(0, 0, 0, 0, 0, 0,
-  tstzspan '[2001-06-01, 2001-06-30]', 1, 0)
+  tstzspan '[2001-06-01, 2001-06-30]', 1)
 LIMIT 5;
  k  | finite 
 ----+--------
