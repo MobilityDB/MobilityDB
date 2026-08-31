@@ -54,7 +54,6 @@
 #include <meos_internal.h>
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
-#include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/temporal_aggfuncs.h"
 #include "temporal/tsequence.h"
@@ -72,7 +71,8 @@
  *****************************************************************************/
 
 /**
- * @brief
+ * @brief Return a closest-feature pair for two geometries under their poses at
+ * an instant
  */
 static cfp_elem
 cfp_make(LWGEOM *geom_1, LWGEOM *geom_2, Pose *pose_1, Pose *pose_2,
@@ -93,7 +93,8 @@ cfp_make(LWGEOM *geom_1, LWGEOM *geom_2, Pose *pose_1, Pose *pose_2,
 }
 
 /**
- * @brief
+ * @brief Return a closest-feature pair whose two features are the first of each
+ * geometry
  */
 static inline cfp_elem
 cfp_make_zero(LWGEOM *geom_1, LWGEOM *geom_2, Pose *pose_1, Pose *pose_2,
@@ -103,7 +104,7 @@ cfp_make_zero(LWGEOM *geom_1, LWGEOM *geom_2, Pose *pose_1, Pose *pose_2,
 }
 
 /**
- * @brief
+ * @brief Initialize an array of closest-feature pairs with a starting capacity
  */
 static void
 init_cfp_array(cfp_array *cfpa, size_t n)
@@ -114,7 +115,7 @@ init_cfp_array(cfp_array *cfpa, size_t n)
 }
 
 /**
- * @brief
+ * @brief Free an array of closest-feature pairs and the poses it owns
  */
 static void
 free_cfp_array(cfp_array *cfpa)
@@ -130,7 +131,7 @@ free_cfp_array(cfp_array *cfpa)
 }
 
 /**
- * @brief
+ * @brief Append a closest-feature pair to its array, growing the array as needed
  */
 static void
 append_cfp_elem(cfp_array *cfpa, cfp_elem cfp)
@@ -156,7 +157,7 @@ append_cfp_elem(cfp_array *cfpa, cfp_elem cfp)
 }
 
 /**
- * @brief
+ * @brief Return a distance point, that is a distance and the time it holds at
  */
 static tdist_elem
 tdist_make(double dist, TimestampTz t)
@@ -168,7 +169,7 @@ tdist_make(double dist, TimestampTz t)
 }
 
 /**
- * @brief
+ * @brief Initialize an array of distance points with a starting capacity
  */
 static void
 init_tdist_array(tdist_array *tda, size_t n)
@@ -179,7 +180,7 @@ init_tdist_array(tdist_array *tda, size_t n)
 }
 
 /**
- * @brief
+ * @brief Free the distance points held by an array
  */
 static inline void
 free_tdist_array(tdist_array *tda)
@@ -188,7 +189,7 @@ free_tdist_array(tdist_array *tda)
 }
 
 /**
- * @brief
+ * @brief Append a distance point to its array, growing the array as needed
  */
 static void
 append_tdist_elem(tdist_array *tda, tdist_elem td)
@@ -252,92 +253,13 @@ tdist_array_sort(tdist_array *tda)
  * V-clip
  *****************************************************************************/
 
-/**
- * @brief
- */
-static inline uint32_t
-uint_mod_add(uint32_t i, uint32_t j, uint32_t n)
-{
-  return (i + j) % n;
-}
-
-/**
- * @brief
- * @pre j < n
- */
-// Handle negative values correctly
-static inline uint32_t
-uint_mod_sub(uint32_t i, uint32_t j, uint32_t n)
-{
-  assert(j < n);
-  return (i + n - j) % n;
-}
-
-/**
- * @brief Computes the relative position of point on segment v(vs, ve)
- * @details
- * s < 0      -> p before point vs
- * s = 0      -> p = vs
- * 0 < s < 1  -> p = vs * (1 - s)  + ve * s
- * s = 1      -> p = ve
- * 1 < s      -> p after point ve
- */
-static inline double
-compute_s(POINT4D p, POINT4D vs, POINT4D ve)
-{
-  return ((p.x - vs.x) * (ve.x - vs.x) + (p.y - vs.y) * (ve.y - vs.y)) /
-    ((ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y));
-}
-
-/**
- * @brief Computes the signed length of the cross product of the vectors
- * (vs, p) and (vs, ve)
- * @details The sign of this value determines the relative position between
- * p and the line l going through segment (vs, ve) (oriented towards ve).
- * angle > 0: p is on the right of l
- * angle = 0: P is on l
- * angle < 0: P is on the left of l
- */
-static inline double
-compute_angle(POINT4D p, POINT4D vs, POINT4D ve)
-{
-  return (p.x - vs.x) * (ve.y - vs.y) - (p.y - vs.y) * (ve.x - vs.x);
-}
-
-/**
- * @brief Computes the distance between point p and segment v(vs, ve)
- * @note This assumes that the projection of p on the line l going through 
- * (vs, ve) is between vs and ve. (0 <= compute_s(p, vs, ve) <= 1)
- */
-static inline double
-compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
-{
-  double s = compute_s(p, vs, ve);
-  return (p.x - vs.x - (ve.x - vs.x) * s) * (p.x - vs.x - (ve.x - vs.x) * s) + 
-    (p.y - vs.y - (ve.y - vs.y) * s) * (p.y - vs.y - (ve.y - vs.y) * s);
-}
-
-// /**
- // * @brief Tests if a polygon is defined in counter-clockwise order (ccw)
- // * @return Returns True if it is the case
- // * @note The polygon must be convex
- // */
-// static bool
-// poly_is_ccw(const LWPOLY *poly)
-// {
-  // POINT4D v1, v2, v3;
-  // getPoint4d_p(poly->rings[0], 0, &v1);
-  // getPoint4d_p(poly->rings[0], 1, &v2);
-  // getPoint4d_p(poly->rings[0], 2, &v3);
-  // return compute_angle(v1, v2, v3) < 0;
-// }
-
 /*****************************************************************************
  * Temporal distance
  *****************************************************************************/
 
 /**
- * @brief
+ * @brief Return the temporal distance between a temporal rigid geometry instant
+ * and a geometry
  */
 TInstant *
 dist2d_trgeoinst_geo(const TInstant *inst, const GSERIALIZED *gs)
@@ -352,7 +274,7 @@ dist2d_trgeoinst_geo(const TInstant *inst, const GSERIALIZED *gs)
 }
 
 /**
- * @brief
+ * @brief Interpolate the position and the rotation of a pose segment at a ratio
  */
 static void
 pose_interpolate_2d(Pose *pose1, Pose *pose2, double ratio, double *x,
@@ -435,7 +357,8 @@ rel_posesegm_interpolate(Pose *pose1_s, Pose *pose1_e, Pose *pose2_s,
 }
 
 /**
- * @brief
+ * @brief Return, at a ratio of a segment, the function whose root is a transition
+ * of the closest feature between a fixed point and a rotating polygon edge
  */
 static double
 f_tpoint_poly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
@@ -477,7 +400,8 @@ transition_ratio(double t, double prev_result)
 }
 
 /**
- * @brief
+ * @brief Return the ratio at which the closest feature between a fixed point and a
+ * rotating polygon transitions across an end of an edge
  */
 static double
 solve_s_tpoly_point(LWPOLY *poly, LWPOINT *point, Pose *poly_pose_s,
@@ -557,7 +481,8 @@ solve_s_tpoly_point(LWPOLY *poly, LWPOINT *point, Pose *poly_pose_s,
 }
 
 /**
- * @brief
+ * @brief Return the sentinel reporting no transition, the crossing of an edge line
+ * contributing none for a point target
  */
 static double
 solve_angle_0_tpoly_point(LWPOLY *poly UNUSED,
@@ -573,9 +498,6 @@ solve_angle_0_tpoly_point(LWPOLY *poly UNUSED,
 /* Forward declaration: defined with the sequence-set distance helpers below */
 static int trgeoseq_segment_index(const TSequence *seq, TimestampTz t);
 
-/**
- * @brief
- */
 /**
  * @brief Append the time at which a translating polygon reaches a point it
  * meets, where that time carries no point of its own
@@ -820,7 +742,8 @@ edge_vertex_tpoly_point(LWPOLY *poly, Pose *pose_start, Pose *pose_end,
 }
 
 /**
- * @brief
+ * @brief Return the temporal distance between a temporal rigid geometry sequence
+ * and a point
  */
 TSequence *
 dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs,
@@ -961,7 +884,8 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @brief
+ * @brief Return, at a ratio of a segment, the function whose root is a transition
+ * of the closest feature between a fixed polygon and a rotating one
  */
 static double
 f_tpoly_poly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
@@ -985,7 +909,8 @@ f_tpoly_poly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
 }
 
 /**
- * @brief
+ * @brief Return the ratio at which the closest feature between a fixed polygon and
+ * a rotating one transitions across an end of an edge of the rotating one
  */
 static double
 solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
@@ -1060,7 +985,8 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
 }
 
 /**
- * @brief
+ * @brief Return, at a ratio of a segment, the function whose root is a transition
+ * of the closest feature between a rotating polygon and a fixed one
  */
 static double
 f_poly_tpoly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
@@ -1082,7 +1008,8 @@ f_poly_tpoly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
 }
 
 /**
- * @brief
+ * @brief Return the ratio at which the closest feature between a rotating polygon
+ * and a fixed one transitions across an end of an edge of the fixed one
  */
 static double
 solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
@@ -1242,7 +1169,8 @@ vertex_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
 }
 
 /**
- * @brief
+ * @brief Return, at a ratio of a segment, the function whose root is the ratio at
+ * which two edges of the polygons become parallel
  */
 static double
 f_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
@@ -1270,7 +1198,8 @@ f_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
 }
 
 /**
- * @brief
+ * @brief Return the ratio at which an edge of each polygon becomes parallel to the
+ * other
  */
 static double
 solve_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s,
@@ -1328,14 +1257,15 @@ solve_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s,
 }
 
 /**
- * @brief
+ * @brief Return the sentinel reporting no transition, the crossing of an edge line
+ * contributing none between two polygons
  */
 static inline double
-solve_angle_0_poly_tpoly(LWPOLY *poly1 UNUSED, 
-  LWPOLY *poly2 UNUSED, 
+solve_angle_0_poly_tpoly(LWPOLY *poly1 UNUSED,
+  LWPOLY *poly2 UNUSED,
   Pose *poly_pose_s UNUSED,
-  Pose *poly_pose_e UNUSED, 
-  uint32_t poly1_v UNUSED, 
+  Pose *poly_pose_e UNUSED,
+  uint32_t poly1_v UNUSED,
   uint32_t poly2_v UNUSED,
   double ratio UNUSED)
 {
@@ -1675,7 +1605,7 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
 }
 
 /**
- * @brief
+ * @brief Append the distance the v-clip oracle answers for a closest-feature pair
  */
 static void
 compute_dist_tpoly_poly(cfp_elem *cfp, tdist_array *tda)
@@ -1869,7 +1799,8 @@ trgeoseq_segment_index(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @brief
+ * @brief Return the temporal distance between a temporal rigid geometry sequence
+ * and a polygon
  */
 TSequence *
 dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs,
@@ -1961,7 +1892,7 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs,
 
     if (loop > MEOS_MAX_ITERS)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Temporal distance: Cycle detected, current features: (%d, %d)",
         cfp.cf_1, cfp.cf_2);
       return NULL;
@@ -2227,7 +2158,8 @@ dist2d_trgeoseq_line(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @brief
+ * @brief Return the temporal distance between a temporal rigid geometry sequence
+ * and a geometry
  */
 TSequence *
 dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs,
@@ -2264,7 +2196,8 @@ dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @brief
+ * @brief Return the temporal distance between a temporal rigid geometry sequence
+ * set and a geometry
  */
 TSequenceSet *
 dist2d_trgeoseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs,
@@ -2722,7 +2655,7 @@ nai_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
       /* The closest point may be at an exclusive bound. */
       Datum value;
       temporal_value_at_timestamptz(temp, min->t, false, &value);
-      result = trgeometryinst_make(trgeo_geom_p(temp), DatumGetPoseP(value), 
+      result = trgeometryinst_make(trgeo_geom_p(temp), DatumGetPoseP(value),
         min->t);
       pfree(dist); pfree(DatumGetPointer(value));
     }
@@ -2936,7 +2869,7 @@ shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
-  
+
   Temporal *dist = tdistance_trgeometry_geo(temp, gs);
   if (dist == NULL)
     return NULL;

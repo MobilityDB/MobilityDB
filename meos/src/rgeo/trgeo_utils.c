@@ -54,7 +54,7 @@
 /*****************************************************************************/
 
 /**
- * @brief 
+ * @brief Ensure that two polygons have the same rings with the same vertex counts
  */
 static void
 ensure_same_rings_lwpoly(const LWPOLY *poly1, const LWPOLY *poly2)
@@ -67,7 +67,7 @@ ensure_same_rings_lwpoly(const LWPOLY *poly1, const LWPOLY *poly2)
 }
 
 /**
- * @brief 
+ * @brief Ensure that two polyhedral surfaces have the same component geometries
  */
 static void
 ensure_same_geoms_lwpsurface(const LWPSURFACE *psurface1,
@@ -81,7 +81,7 @@ ensure_same_geoms_lwpsurface(const LWPSURFACE *psurface1,
 }
 
 /**
- * @brief 
+ * @brief Return true if two geometries have the same points in the same order
  */
 static bool
 same_lwgeom(const LWGEOM *geom1, const LWGEOM *geom2)
@@ -97,12 +97,12 @@ same_lwgeom(const LWGEOM *geom1, const LWGEOM *geom2)
   {
     if (FLAGS_GET_Z(geom1->flags))
     {
-      result = fabs(p1.x - p2.x) < MEOS_EPSILON && 
+      result = fabs(p1.x - p2.x) < MEOS_EPSILON &&
         fabs(p1.y - p2.y) < MEOS_EPSILON && fabs(p1.z - p2.z) < MEOS_EPSILON;
     }
     else
     {
-      result = fabs(p1.x - p2.x) < MEOS_EPSILON && 
+      result = fabs(p1.x - p2.x) < MEOS_EPSILON &&
         fabs(p1.y - p2.y) < MEOS_EPSILON;
     }
   }
@@ -123,7 +123,7 @@ ensure_same_geom(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
   if (gserialized_get_type(gs1) != gserialized_get_type(gs2))
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on different reference geometries");
     return false;
   }
@@ -137,7 +137,7 @@ ensure_same_geom(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
   if (! same_lwgeom(geom1, geom2))
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on different reference geometries");
     return false;
   }
@@ -152,7 +152,8 @@ ensure_same_geom(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 /*****************************************************************************/
 
 /**
- * @brief
+ * @brief Return the radius of a geometry, that is the greatest distance from the
+ * origin to one of its points
  */
 double
 geom_radius(const GSERIALIZED *gs)

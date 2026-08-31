@@ -140,49 +140,12 @@ ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
 
 /*****************************************************************************/
 
-// /**
- // * @brief Generic spatial relationship for the traversed area of a temporal
- // * rigid geometry and a geometry
- // * @param[in] temp Temporal rigid geometry
- // * @param[in] gs Geometry
- // * @param[in] param Parameter
- // * @param[in] func PostGIS function to be called
- // * @param[in] numparam Number of parameters of the functions
- // * @param[in] invert True if the arguments should be inverted
- // * @return On error return -1
- // */
-// static int
-// spatialrel_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  // Datum param, varfunc func, int numparam, bool invert)
-// {
-  // /* Ensure the validity of the arguments */
-  // if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
-    // return -1;
-
-  // assert(numparam == 2 || numparam == 3);
-  // Datum dgeo = PointerGetDatum(gs);
-  // Datum dtrav = PointerGetDatum(trgeometry_traversed_area(temp, UNARY_UNION_NO));
-  // Datum result;
-  // if (numparam == 2)
-  // {
-    // datum_func2 func2 = (datum_func2) func;
-    // result = invert ? func2(dgeo, dtrav) : func2(dtrav, dtrav);
-  // }
-  // else /* numparam == 3 */
-  // {
-    // datum_func3 func3 = (datum_func3) func;
-    // result = invert ? func3(dgeo, dtrav, param) : func3(dtrav, dgeo, param);
-  // }
-  // pfree(DatumGetPointer(dtrav));
-  // return result ? 1 : 0;
-// }
-
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
 
 /**
- * @brief Return 1 if a geometry ever contains a temporal rigid geometry, 0 if 
+ * @brief Return 1 if a geometry ever contains a temporal rigid geometry, 0 if
  * not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
@@ -212,7 +175,7 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
- * @note The function tests whether the placements are contained in the 
+ * @note The function tests whether the placements are contained in the
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
@@ -230,7 +193,7 @@ econtains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
- * @note The function tests whether the placements are contained in the 
+ * @note The function tests whether the placements are contained in the
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
@@ -316,7 +279,7 @@ ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
- * @note The function tests whether the placements are covered in the 
+ * @note The function tests whether the placements are covered in the
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
@@ -334,7 +297,7 @@ ecovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
- * @note The function tests whether the placements are covered in the 
+ * @note The function tests whether the placements are covered in the
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
@@ -444,7 +407,7 @@ ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 }
 /**
  * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if a temporal rigid geometry and a geometry are ever 
+ * @brief Return 1 if a temporal rigid geometry and a geometry are ever
  * disjoint, 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
@@ -458,7 +421,7 @@ edisjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if a temporal rigid geometry and a geometry are always 
+ * @brief Return 1 if a temporal rigid geometry and a geometry are always
  * disjoint,0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
@@ -633,7 +596,7 @@ aintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if a temporal rigid geometry and a geometry ever touch, 0 
+ * @brief Return 1 if a temporal rigid geometry and a geometry ever touch, 0
  * if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
@@ -647,7 +610,7 @@ etouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if a temporal rigid geometry and a geometry always touch, 
+ * @brief Return 1 if a temporal rigid geometry and a geometry always touch,
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
@@ -730,7 +693,7 @@ edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist
 
 /**
  * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if a geometry and a temporal rigid geometry are always 
+ * @brief Return 1 if a geometry and a temporal rigid geometry are always
  * within a distance, 0 if not, -1 on error or if the geometry is empty
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
@@ -825,8 +788,8 @@ ea_dwithin_trgeoseq_trgeoseq_discstep(const TSequence *seq1,
  */
 int
 tdwithin_trgeosegm_trgeosegm(Datum sv1 UNUSED, Datum ev1 UNUSED,
-  Datum sv2 UNUSED, Datum ev2 UNUSED, TimestampTz lower UNUSED, 
-  TimestampTz upper UNUSED, double dist UNUSED, TimestampTz *t1 UNUSED, 
+  Datum sv2 UNUSED, Datum ev2 UNUSED, TimestampTz lower UNUSED,
+  TimestampTz upper UNUSED, double dist UNUSED, TimestampTz *t1 UNUSED,
   TimestampTz *t2 UNUSED)
 {
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -878,7 +841,7 @@ ea_dwithin_trgeoseq_trgeoseq_cont(const TSequence *seq1, const TSequence *seq2,
     /* Both segments are constant */
     if (datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2))
     {
-      bool res = DatumGetBool(datum_geom_dwithin2d(sv1, sv2, 
+      bool res = DatumGetBool(datum_geom_dwithin2d(sv1, sv2,
         Float8GetDatum(dist)));
       if ((ever && res) || (! ever && ! res))
         return ret_loop;
@@ -1031,7 +994,7 @@ edwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, dou
 
 /**
  * @ingroup meos_rgeo_rel_ever
- * @brief Return 1 if two temporal rigid geometries are always within a 
+ * @brief Return 1 if two temporal rigid geometries are always within a
  * distance, 0 if not, -1 on error or if the temporal rigid geometries do not
  * intersect on time
  * @param[in] temp1,temp2 Temporal rigid geometries

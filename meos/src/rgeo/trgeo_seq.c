@@ -94,7 +94,7 @@ trgeoseq_set_pose(TSequence *seq)
 }
 
 /**
- * @brief Return a new temporal pose sequence obtained by removing the 
+ * @brief Return a new temporal pose sequence obtained by removing the
  * reference geometry of a temporal rigid geometry
  */
 TSequence *

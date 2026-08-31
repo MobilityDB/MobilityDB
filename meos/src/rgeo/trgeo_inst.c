@@ -89,7 +89,7 @@ trgeoinst_set_pose(TInstant *inst)
 }
 
 /**
- * @brief Return a new temporal pose instant obtained by removing the 
+ * @brief Return a new temporal pose instant obtained by removing the
  * reference geometry of a temporal rigid geometry instant
  */
 TInstant *

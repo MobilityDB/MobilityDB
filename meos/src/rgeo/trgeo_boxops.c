@@ -364,7 +364,7 @@ STBox *
 trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
 {
   /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -517,7 +517,7 @@ trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
   int *count)
 {
   /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL); 
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
