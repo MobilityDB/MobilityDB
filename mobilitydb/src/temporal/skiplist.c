@@ -154,6 +154,13 @@ Taggstate_deserialize(PG_FUNCTION_ARGS)
     .len = VARSIZE(data),
     .maxlen = VARSIZE(data)
   };
+  /* The skiplist this reads is built by #temporal_skiplist_make and
+   * #temporal_skiplist_splice, which take the aggregation context from
+   * #fetch_fcinfo. Every other entry point of the aggregate stores its own
+   * fcinfo for them to find; without it they read the one a previous call
+   * left and build the state in a context that is reset before the final
+   * function runs. */
+  store_fcinfo(fcinfo);
   SkipList *result = aggstate_read(&buf);
   PG_RETURN_SKIPLIST_P(result);
 }
