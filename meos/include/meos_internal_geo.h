@@ -115,12 +115,6 @@ extern Datum datum_geo_round(Datum value, Datum size);
 extern GSERIALIZED *point_round(const GSERIALIZED *gs, int maxdd);
 
 /******************************************************************************
- * Functions for base types
- *****************************************************************************/
-
-extern void geo_set_srid_int(const GSERIALIZED *gs, int32_t srid);
-
-/******************************************************************************
  * Functions for box types
  *****************************************************************************/
 
