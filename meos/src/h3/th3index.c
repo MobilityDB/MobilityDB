@@ -124,35 +124,6 @@ ensure_valid_th3index_tgeogpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
- * Comparison-primitive wrappers used by th3index_compops.c
- *
- * Equality / inequality for h3 cells is bit equality at the int64
- * level — the `datum2_eq` / `datum2_ne` used by the generic tbigint
- * machinery already covers that. We only need thin type-correct
- * symbols so the compops dispatcher can pass them through.
- *****************************************************************************/
-
-/**
- * @brief Return true if two H3 cells are equal
- */
-Datum
-datum2_h3index_eq(Datum d1, Datum d2, MeosType type)
-{
-  (void) type;
-  return BoolGetDatum(DatumGetH3Index(d1) == DatumGetH3Index(d2));
-}
-
-/**
- * @brief Return true if two H3 cells are different
- */
-Datum
-datum2_h3index_ne(Datum d1, Datum d2, MeosType type)
-{
-  (void) type;
-  return BoolGetDatum(DatumGetH3Index(d1) != DatumGetH3Index(d2));
-}
-
-/*****************************************************************************
  * Input / output
  *
  * th3index's on-disk representation is identical to tbigint's — the

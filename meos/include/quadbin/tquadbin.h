@@ -80,17 +80,4 @@ extern bool ensure_valid_tquadbin_quadbin(const Temporal *temp, Quadbin cell);
 extern bool ensure_valid_tquadbin_tgeompoint(const Temporal *temp1,
   const Temporal *temp2);
 
-/*****************************************************************************
- * Low-level Datum-returning comparison primitives (used by tquadbin
- * comparison-operator wrappers)
- *****************************************************************************/
-
-/**
- * @brief Compare two quadbin cell Datums for equality; used as the
- * per-instant comparison function by the ever/always dispatchers.
- * Delegates to bit equality at the int64 level.
- */
-extern Datum datum2_quadbin_eq(Datum d1, Datum d2, MeosType type);
-extern Datum datum2_quadbin_ne(Datum d1, Datum d2, MeosType type);
-
 #endif /* __TQUADBIN_H__ */

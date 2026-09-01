@@ -439,33 +439,4 @@ tquadbin_to_tbigint(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
-/*****************************************************************************
- * Comparison-primitive wrappers
- *
- * Equality / inequality for quadbin cells is bit equality at the int64
- * level — the `datum2_eq` / `datum2_ne` used by the generic tbigint
- * machinery already covers that. We only need thin type-correct
- * symbols so the compops dispatcher can pass them through.
- *****************************************************************************/
-
-/**
- * @brief Return true if two quadbin cells are equal
- */
-Datum
-datum2_quadbin_eq(Datum d1, Datum d2, MeosType type)
-{
-  (void) type;
-  return BoolGetDatum(DatumGetQuadbin(d1) == DatumGetQuadbin(d2));
-}
-
-/**
- * @brief Return true if two quadbin cells are different
- */
-Datum
-datum2_quadbin_ne(Datum d1, Datum d2, MeosType type)
-{
-  (void) type;
-  return BoolGetDatum(DatumGetQuadbin(d1) != DatumGetQuadbin(d2));
-}
-
 /*****************************************************************************/

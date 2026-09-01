@@ -76,17 +76,4 @@ extern bool ensure_valid_ts2cell_s2cell(const Temporal *temp, S2CellId cell);
 extern bool ensure_valid_ts2cell_tgeogpoint(const Temporal *temp1,
   const Temporal *temp2);
 
-/*****************************************************************************
- * Low-level Datum-returning comparison primitives, used by the ts2cell
- * comparison-operator wrappers
- *****************************************************************************/
-
-/**
- * @brief Compare two S2 cell Datums for equality, the per-instant comparison
- * the ever/always dispatchers apply. Delegates to bit equality at the int64
- * level.
- */
-extern Datum datum2_s2cell_eq(Datum d1, Datum d2, MeosType type);
-extern Datum datum2_s2cell_ne(Datum d1, Datum d2, MeosType type);
-
 #endif /* __TS2CELL_H__ */
