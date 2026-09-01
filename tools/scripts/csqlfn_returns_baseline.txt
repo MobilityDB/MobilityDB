@@ -1,0 +1,13 @@
+# Wrappers whose @csqlfn-claiming MEOS functions answer more distinct
+# return types than their SQL declarations state, as
+# tools/scripts/check_csqlfn.py --returns reads them. A host resolves an
+# overload on the arguments, so this is a surface a binding cannot
+# express. Grandfathered in, keyed by wrapper. The list only shrinks: a
+# new one fails the check. Regenerate with --returns-rebaseline after a
+# fix.
+Distance_set_set
+NAD_number_tnumber
+NAD_tbox_tbox
+NAD_tnumber_number
+NAD_tnumber_tbox
+NAD_tnumber_tnumber

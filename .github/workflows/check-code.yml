@@ -67,6 +67,8 @@ jobs:
         run: python3 tools/scripts/check_csqlfn.py --complete
       - name: Check every wrapper a @csqlfn tag names is one the SQL reaches
         run: python3 tools/scripts/check_csqlfn.py --targets
+      - name: Check a SQL signature is answered by one return type
+        run: python3 tools/scripts/check_csqlfn.py --returns
 
   spatialrel_orthogonality_check:
     runs-on: ubuntu-latest
