@@ -76,16 +76,4 @@ extern bool ensure_valid_th3index_h3index(const Temporal *temp, H3Index cell);
 extern bool ensure_valid_th3index_tgeogpoint(const Temporal *temp1,
   const Temporal *temp2);
 
-/*****************************************************************************
- * Low-level Datum-returning accessors (used by th3index_compops.c)
- *****************************************************************************/
-
-/**
- * @brief Compare two H3 cell Datums for equality; used as the per-instant
- * comparison function by the ever/always dispatchers. Delegates to
- * `datum2_eq` since h3 cell equality is bit equality at the int64 level.
- */
-extern Datum datum2_h3index_eq(Datum d1, Datum d2, MeosType type);
-extern Datum datum2_h3index_ne(Datum d1, Datum d2, MeosType type);
-
 #endif /* __TH3INDEX_H__ */

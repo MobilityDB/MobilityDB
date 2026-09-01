@@ -429,33 +429,4 @@ ts2cell_to_tbigint(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
-/*****************************************************************************
- * Comparison-primitive wrappers
- *
- * Equality and inequality for S2 cells are bit equality at the int64 level,
- * which the `datum2_eq` / `datum2_ne` the generic tbigint machinery uses
- * already covers. These are the thin type-correct symbols the compops
- * dispatcher passes through.
- *****************************************************************************/
-
-/**
- * @brief Return true if two S2 cell Datums are equal
- */
-Datum
-datum2_s2cell_eq(Datum d1, Datum d2, MeosType type)
-{
-  (void) type;
-  return BoolGetDatum(DatumGetS2Cell(d1) == DatumGetS2Cell(d2));
-}
-
-/**
- * @brief Return true if two S2 cell Datums are different
- */
-Datum
-datum2_s2cell_ne(Datum d1, Datum d2, MeosType type)
-{
-  (void) type;
-  return BoolGetDatum(DatumGetS2Cell(d1) != DatumGetS2Cell(d2));
-}
-
 /*****************************************************************************/
