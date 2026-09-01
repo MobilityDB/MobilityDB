@@ -39,14 +39,14 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_posechain.h>
+#include <meos_pose.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <string.h>
 #include "temporal/span.h"
 #include "temporal/temporal.h"
-#include "posechain/posechain.h"
-#include "posechain/tposechain_boxops.h"
+#include "pose/posechain.h"
+#include "pose/tposechain_boxops.h"
 
 /*****************************************************************************
  * Boxes constructed from a pose chain and a time

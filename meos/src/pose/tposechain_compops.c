@@ -43,9 +43,9 @@
 #include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "posechain/posechain.h"
-#include "posechain/tposechain.h"
-#include "posechain/tposechain.h"
+#include "pose/posechain.h"
+#include "pose/tposechain.h"
+#include "pose/tposechain.h"
 
 /*****************************************************************************
  * Ever/always comparisons

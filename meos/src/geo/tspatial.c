@@ -60,11 +60,9 @@
 #endif 
 #if POSE
   #include "pose/pose.h"
+  #include "pose/posechain.h"
   #include "pose/tpose_boxops.h"
-#endif 
-#if POSECHAIN
-  #include "posechain/posechain.h"
-  #include "posechain/tposechain_boxops.h"
+  #include "pose/tposechain_boxops.h"
 #endif
 #if RGEO
   #include "pose/pose.h"
@@ -133,8 +131,6 @@ spatialbase_as_text(Datum value, MeosType type, int maxdd)
 #if POSE
     case T_POSE:
       return pose_as_text(DatumGetPoseP(value), maxdd);
-#endif
-#if POSECHAIN
     case T_POSECHAIN:
       return posechain_as_text(DatumGetPoseChainP(value), maxdd);
 #endif
@@ -535,8 +531,6 @@ tspatial_set_stbox(const Temporal *temp, STBox *result)
 #if POSE
       else if (temp->temptype == T_TPOSE)
         tposeinst_set_stbox((TInstant *) temp, result);
-#endif
-#if POSECHAIN
       else if (temp->temptype == T_TPOSECHAIN)
         tposechaininst_set_stbox((TInstant *) temp, result);
 #endif

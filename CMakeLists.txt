@@ -131,9 +131,6 @@ option(NPOINT "Set ON|OFF (default=ON) to include network points" ON)
 option(POINTCLOUD "Set ON|OFF (default=OFF) to include pgpointcloud temporal types" OFF)
 option(POSE "Set ON|OFF (default=OFF) to include geoposes" OFF)
 CMAKE_DEPENDENT_OPTION(RGEO "Set ON|OFF (default=OFF) to include rigid geometries" ON "POSE" OFF)
-# A pose chain nests reference frames, each pose expressed in the frame of the
-# one before it, so the type is built on poses exactly as rigid geometries are.
-CMAKE_DEPENDENT_OPTION(POSECHAIN "Set ON|OFF (default=OFF) to include pose chains" ON "POSE" OFF)
 # Option for including the temporal CARTO QUADBIN index type (`tquadbin`).
 # quadbin has no external dependency: its cell algebra is implemented
 # first-party in meos/src/quadbin/ (libm only), so no find_library /
@@ -161,14 +158,14 @@ option(GEOS "Set ON|OFF (default=ON) to answer with the GEOS library the geometr
 # SIBLING-FROM doc/CMakeLists.txt (LANG_ALL): enable every optional family when
 # ALL is set. A new family must be added to this list, the same maintenance model
 # as adding a language to the documentation build's PROJECT_SUPPORTED_LANGUAGES.
-# POSE precedes RGEO and POSECHAIN because both depend on it.
+# POSE precedes RGEO because it depends on it.
 #
 # The literal names stay on the `foreach` line: this block is what the ecosystem
 # reads for the family set — MEOS-API's parser/families.py, from which every
 # binding projects, and the strict build's own family flags — so a variable in
 # their place answers them with its own name instead of the families.
 if(ALL)
-  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE RGEO POSECHAIN QUADBIN RASTER S2CELL)
+  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE RGEO QUADBIN RASTER S2CELL)
     set(${_family} ON CACHE BOOL "Enabled by ALL=ON" FORCE)
   endforeach()
 endif()
@@ -242,13 +239,6 @@ if(RASTER)
 else()
   message(STATUS "Excluding PostGIS raster sampling operators")
   add_definitions(-DRASTER=0)
-endif()
-if(POSECHAIN)
-  message(STATUS "Including pose chains")
-  add_definitions(-DPOSECHAIN=1)
-else()
-  message(STATUS "Excluding pose chains")
-  add_definitions(-DPOSECHAIN=0)
 endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")

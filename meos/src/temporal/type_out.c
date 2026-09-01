@@ -79,9 +79,7 @@
 #endif
 #if POSE
   #include "pose/pose.h"
-#endif
-#if POSECHAIN
-  #include "posechain/posechain.h"
+  #include "pose/posechain.h"
 #endif
 #if QUADBIN
   #include <meos_quadbin.h>
@@ -197,7 +195,7 @@ basetype_out(Datum value, MeosType type, int maxdd)
     case T_POSE:
       return pose_out(DatumGetPoseP(value), maxdd);
 #endif
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       return posechain_out(DatumGetPoseChainP(value), maxdd);
 #endif
@@ -475,7 +473,7 @@ stringbuffer_append_char(sb, '}');
 }
 #endif /* POSE */
 
-#if POSECHAIN
+#if POSE
 /**
  * @brief Write into the buffer a pose chain in the MF-JSON representation
  * @details A chain writes the array of its links, each of them as a pose
@@ -499,7 +497,7 @@ posechain_as_json_sb(stringbuffer_t *sb, const PoseChain *pc, int precision)
   stringbuffer_append_char(sb, ']');
   return;
 }
-#endif /* POSECHAIN */
+#endif /* POSE */
 
 /**
  * @brief Write into the buffer a base value in the MF-JSON representation
@@ -545,7 +543,7 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
       jsonb_as_mfjson_sb(sb, DatumGetJsonbP(value));
       break;
 #endif
-#if POSECHAIN
+#if POSE
     case T_TPOSECHAIN:
       posechain_as_json_sb(sb, DatumGetPoseChainP(value), precision);
       break;
@@ -763,8 +761,6 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
 #endif
 #if POSE
     case T_TPOSE:
-#endif
-#if POSECHAIN
     case T_TPOSECHAIN:
 #endif
 #if RGEO
@@ -851,8 +847,6 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
     case T_TPOSE:
       stringbuffer_append_len(sb, "{\"type\":\"MovingPose\",", 21);
       break;
-#endif
-#if POSECHAIN
     case T_TPOSECHAIN:
       stringbuffer_append_len(sb, "{\"type\":\"MovingPoseChain\",", 26);
       break;
@@ -1461,7 +1455,7 @@ pose_to_wkb_size(const Pose *pose, uint8_t variant, bool component)
 }
 #endif /* POSE */
 
-#if POSECHAIN
+#if POSE
 /**
  * @brief Return the size in bytes of a pose chain in the Well-Known Binary
  * (WKB) representation
@@ -1483,7 +1477,7 @@ posechain_to_wkb_size(const PoseChain *pc, uint8_t variant, bool component)
     (MEOS_FLAGS_GET_Z(pc->flags) ? 7 : 3);
   return size;
 }
-#endif /* POSECHAIN */
+#endif /* POSE */
 
 #if H3
 /**
@@ -1562,10 +1556,10 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
     case T_POSE:
       return pose_to_wkb_size(DatumGetPoseP(value), variant, true);
 #endif /* POSE || RGEO */
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       return posechain_to_wkb_size(DatumGetPoseChainP(value), variant, true);
-#endif /* POSECHAIN */
+#endif /* POSE */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
@@ -1849,10 +1843,10 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
   if (type == T_POSE)
     return pose_to_wkb_size(DatumGetPoseP(value), variant, false);
 #endif /* POSE || RGEO */
-#if POSECHAIN
+#if POSE
   if (type == T_POSECHAIN)
     return posechain_to_wkb_size(DatumGetPoseChainP(value), variant, false);
-#endif /* POSECHAIN */
+#endif /* POSE */
 #if RASTER
   if (type == T_RAQUET)
     return raquet_to_wkb_size(DatumGetRaquetP(value), false);
@@ -2302,7 +2296,7 @@ pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
 }
 #endif /* POSE */
 
-#if POSECHAIN
+#if POSE
 /**
  * @brief Write into the buffer the flags of a pose chain in the Well-Known
  * Binary (WKB) representation
@@ -2345,7 +2339,7 @@ posechain_to_wkb_buf(const PoseChain *pc, uint8_t *buf, uint8_t variant,
     buf = double_to_wkb_buf(pc->data[i], buf, variant);
   return buf;
 }
-#endif /* POSECHAIN */
+#endif /* POSE */
 
 #if POINTCLOUD
 /**
@@ -2513,12 +2507,12 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
       buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, true);
       break;
 #endif /* POSE || RGEO */
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       buf = posechain_to_wkb_buf(DatumGetPoseChainP(value), buf, variant,
         true);
       break;
-#endif /* POSECHAIN */
+#endif /* POSE */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id; wire it as int8. */
@@ -3183,10 +3177,10 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
   else if (type == T_POSE)
     buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, false);
 #endif /* POSE || RGEO */
-#if POSECHAIN
+#if POSE
   else if (type == T_POSECHAIN)
     buf = posechain_to_wkb_buf(DatumGetPoseChainP(value), buf, variant, false);
-#endif /* POSECHAIN */
+#endif /* POSE */
 #if RASTER
   else if (type == T_RAQUET)
     buf = raquet_to_wkb_buf(DatumGetRaquetP(value), buf, variant, false);

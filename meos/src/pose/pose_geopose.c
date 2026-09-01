@@ -106,9 +106,8 @@
 #include "temporal/type_util.h"     /* pfree_array */
 #include "pose/pose.h"
 #include "pose/pose_geopose.h"
-#if POSECHAIN
-  #include <meos_posechain.h>
-  #include "posechain/posechain.h"
+#if POSE
+  #include "pose/posechain.h"
 #endif
 
 /*****************************************************************************
@@ -2093,7 +2092,7 @@ tpose_from_geopose(const char *json)
   return result;
 }
 
-#if POSECHAIN
+#if POSE
 /*****************************************************************************
  * OGC GeoPose Composite Chain class
  *
@@ -2433,6 +2432,6 @@ tposechain_from_geopose(const char *json)
   json_object_put(root);
   return result;
 }
-#endif /* POSECHAIN */
+#endif /* POSE */
 
 /*****************************************************************************/

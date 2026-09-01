@@ -40,7 +40,7 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_posechain.h>
+#include <meos_pose.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/lifting.h"
@@ -50,8 +50,8 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
-#include "posechain/posechain.h"
-#include "posechain/tposechain.h"
+#include "pose/posechain.h"
+#include "pose/tposechain.h"
 
 /*****************************************************************************
  * Validity functions

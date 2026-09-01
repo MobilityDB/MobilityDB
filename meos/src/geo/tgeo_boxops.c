@@ -70,14 +70,9 @@
 #endif
 #if POSE
   #include "pose/pose.h"
+  #include "pose/posechain.h"
   #include "pose/tpose_boxops.h"
-#endif
-#if POSECHAIN
-  #include "posechain/posechain.h"
-  #include "posechain/tposechain_boxops.h"
-#endif
-#if POSECHAIN
-  #include "posechain/posechain.h"
+  #include "pose/tposechain_boxops.h"
 #endif
 #if QUADBIN
   #include "quadbin/tquadbin_boxops.h"
@@ -145,8 +140,6 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
 #if POSE
   else if (inst->temptype == T_TPOSE)
     tposeinst_set_stbox(inst, (STBox *) box);
-#endif
-#if POSECHAIN
   else if (inst->temptype == T_TPOSECHAIN)
     tposechaininst_set_stbox(inst, (STBox *) box);
 #endif
@@ -278,8 +271,6 @@ tspatialinstarr_set_stbox(TInstant **instants, int count, bool lower_inc,
 #if POSE
   else if (temptype == T_TPOSE)
     tposeinstarr_set_stbox(instants, count, (STBox *) box);
-#endif
-#if POSECHAIN
   else if (temptype == T_TPOSECHAIN)
     tposechaininstarr_set_stbox(instants, count, (STBox *) box);
 #endif
@@ -353,8 +344,6 @@ tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst)
 #if POSE
   else if (seq->temptype == T_TPOSE)
     tposeseq_expand_stbox(seq, inst);
-#endif
-#if POSECHAIN
   else if (seq->temptype == T_TPOSECHAIN)
     tposechainseq_expand_stbox(seq, inst);
 #endif
@@ -429,7 +418,7 @@ spatialarr_set_bbox(const Datum *values, MeosType basetype, int count,
   else if (basetype == T_POSE)
     posearr_set_stbox(values, count, (STBox *) box);
 #endif
-#if POSECHAIN
+#if POSE
   else if (basetype == T_POSECHAIN)
     posechainarr_set_stbox(values, count, (STBox *) box);
 #endif

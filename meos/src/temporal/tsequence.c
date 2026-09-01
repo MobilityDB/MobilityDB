@@ -74,13 +74,10 @@
 #if POSE
   #include <meos_pose.h>
   #include "pose/pose.h"
+  #include "pose/posechain.h"
   #include "pose/tpose.h"
   #include "pose/tpose_spatialfuncs.h"
-#endif
-#if POSECHAIN
-  #include <meos_posechain.h>
-  #include "posechain/posechain.h"
-  #include "posechain/tposechain.h"
+  #include "pose/tposechain.h"
 #endif
 #if RGEO
   #include "rgeo/trgeo.h"
@@ -158,8 +155,6 @@ datum_collinear(Datum value1, Datum value2, Datum value3, MeosType basetype,
   if (basetype == T_POSE)
     return pose_collinear(DatumGetPoseP(value1), DatumGetPoseP(value2),
       DatumGetPoseP(value3), ratio);
-#endif
-#if POSECHAIN
   if (basetype == T_POSECHAIN)
     return posechain_collinear(DatumGetPoseChainP(value1),
       DatumGetPoseChainP(value2), DatumGetPoseChainP(value3), ratio);
@@ -235,8 +230,6 @@ datumsegm_locate(Datum value1, Datum value2, Datum value, MeosType basetype)
   if (basetype == T_POSE)
     return posesegm_locate(DatumGetPoseP(value1), DatumGetPoseP(value2),
       DatumGetPoseP(value));
-#endif
-#if POSECHAIN
   if (basetype == T_POSECHAIN)
     return posechainsegm_locate(DatumGetPoseChainP(value1),
       DatumGetPoseChainP(value2), DatumGetPoseChainP(value));
@@ -306,12 +299,10 @@ datumsegm_interpolate(Datum start, Datum end, MeosType temptype,
     return PointerGetDatum(npointsegm_interpolate(DatumGetNpointP(start),
       DatumGetNpointP(end), ratio));
 #endif
-#if POSECHAIN
+#if POSE
   else if (temptype == T_TPOSECHAIN)
     return PointerGetDatum(posechainsegm_interpolate(
       DatumGetPoseChainP(start), DatumGetPoseChainP(end), ratio));
-#endif
-#if POSE
   /* Interpolating a segment is an operation of the base type, so every
    * temporal type over the pose reaches it, the rigid geometry among them */
   else if (temptype_basetype(temptype) == T_POSE)
@@ -1045,11 +1036,11 @@ ensure_valid_tinstarr(TInstant **instants, int count, bool merge,
           ! ensure_same_rid_tnpointinst(instants[i - 1], instants[i]))
         return false;
 #endif /* NPOINT */
-#if POSECHAIN
+#if POSE
       if (instants[i]->temptype == T_TPOSECHAIN &&
           ! ensure_same_count_tposechaininst(instants[i - 1], instants[i]))
         return false;
-#endif /* POSECHAIN */
+#endif /* POSE */
     }
   }
   return true;

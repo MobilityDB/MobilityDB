@@ -59,12 +59,6 @@
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
-#if POINTCLOUD
-  #include "pointcloud/pcpoint.h"
-  #include "pointcloud/pcpatch.h"
-  #include "pointcloud/meos_schema_hook.h"
-  #include "pointcloud/tpc_boxops.h"
-#endif
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
   #include "cbuffer/tcbuffer_boxops.h"
@@ -75,23 +69,27 @@
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"
 #endif
+#if POINTCLOUD
+  #include "pointcloud/meos_schema_hook.h"
+  #include "pointcloud/pcpatch.h"
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/tpc_boxops.h"
+#endif
 #if POSE
   #include "pose/pose.h"
+  #include "pose/posechain.h"
   #include "pose/tpose_boxops.h"
-#endif
-#if POSECHAIN
-  #include "posechain/posechain.h"
 #endif
 #if QUADBIN
   #include "quadbin/quadbin.h"
   #include "quadbin/tquadbin_boxops.h"
 #endif
+#if RGEO
+  #include "rgeo/trgeo_boxops.h"
+#endif
 #if S2CELL
   #include "s2cell/s2cell.h"
   #include "s2cell/ts2cell_boxops.h"
-#endif
-#if RGEO
-  #include "rgeo/trgeo_boxops.h"
 #endif
 
 #include <utils/jsonb.h>
@@ -1087,22 +1085,6 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
     case T_NPOINT:
       return npoint_set_stbox(DatumGetNpointP(d), result);
 #endif
-#if POSE || RGEO
-    case T_POSE:
-      return pose_set_stbox(DatumGetPoseP(d), result);
-#endif
-#if POSECHAIN
-    case T_POSECHAIN:
-      return posechain_set_stbox(DatumGetPoseChainP(d), result);
-#endif
-#if QUADBIN
-    case T_QUADBIN:
-      return quadbin_set_stbox(DatumGetQuadbin(d), result);
-#endif
-#if S2CELL
-    case T_S2CELL:
-      return s2cell_set_stbox(DatumGetS2Cell(d), result);
-#endif
 #if POINTCLOUD
     case T_PCPOINT:
     {
@@ -1128,6 +1110,22 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
       pfree(box);
       return true;
     }
+#endif
+#if POSE || RGEO
+    case T_POSE:
+      return pose_set_stbox(DatumGetPoseP(d), result);
+#endif
+#if POSE
+    case T_POSECHAIN:
+      return posechain_set_stbox(DatumGetPoseChainP(d), result);
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+      return quadbin_set_stbox(DatumGetQuadbin(d), result);
+#endif
+#if S2CELL
+    case T_S2CELL:
+      return s2cell_set_stbox(DatumGetS2Cell(d), result);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

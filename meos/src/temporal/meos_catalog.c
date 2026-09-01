@@ -737,7 +737,7 @@ meostype_length(MeosType type)
   if (type == T_POSE)
     return -1;
 #endif
-#if POSECHAIN
+#if POSE
   if (type == T_POSECHAIN)
     return -1;
 #endif

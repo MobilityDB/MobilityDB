@@ -43,8 +43,8 @@
 #include <meos.h>
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
-#include "posechain/posechain.h"
-#include "posechain/tposechain.h"
+#include "pose/posechain.h"
+#include "pose/tposechain.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 

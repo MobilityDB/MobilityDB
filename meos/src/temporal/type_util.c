@@ -64,9 +64,7 @@
 #endif
 #if POSE
   #include "pose/pose.h"
-#endif
-#if POSECHAIN
-  #include "posechain/posechain.h"
+  #include "pose/posechain.h"
 #endif
 #if RGEO
   #include "rgeo/trgeo.h"
@@ -193,7 +191,7 @@ datum_cmp(Datum l, Datum r, MeosType type)
     case T_POSE:
       return pose_cmp(DatumGetPoseP(l), DatumGetPoseP(r));
 #endif
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       return posechain_cmp(DatumGetPoseChainP(l), DatumGetPoseChainP(r));
 #endif
@@ -328,7 +326,7 @@ datum_eq(Datum l, Datum r, MeosType type)
     case T_POSE:
       return pose_eq(DatumGetPoseP(l), DatumGetPoseP(r));
 #endif
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       return posechain_eq(DatumGetPoseChainP(l), DatumGetPoseChainP(r));
 #endif
@@ -605,7 +603,7 @@ datum_hash(Datum d, MeosType type)
     case T_POSE:
       return pose_hash(DatumGetPoseP(d));
 #endif
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       return posechain_hash(DatumGetPoseChainP(d));
 #endif
@@ -678,7 +676,7 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
     case T_POSE:
       return pose_hash_extended(DatumGetPoseP(d), seed);
 #endif
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       return posechain_hash_extended(DatumGetPoseChainP(d), seed);
 #endif

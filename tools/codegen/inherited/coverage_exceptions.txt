@@ -78,7 +78,7 @@ mobilitydb/sql/pose/110_tpose_distance.in.sql
 mobilitydb/sql/pose/112_tpose_spatialrels.in.sql
 mobilitydb/sql/pose/117_tpose_analytics.in.sql
 mobilitydb/sql/pose/120_geopose_frames.in.sql
-mobilitydb/sql/posechain/553_tposechain_spatialfuncs.in.sql
+mobilitydb/sql/posechain/555_tposechain_spatialfuncs.in.sql
 mobilitydb/sql/quadbin/350_quadbin.in.sql
 mobilitydb/sql/quadbin/352_quadbin_ops.in.sql
 mobilitydb/sql/quadbin/355_tquadbin_spatialfuncs.in.sql
