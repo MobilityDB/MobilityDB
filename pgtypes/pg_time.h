@@ -41,11 +41,11 @@
 typedef int32 DateADT;
 typedef int64 TimeADT;
 
-// typedef struct
-// {
-  // TimeADT time;    /* all time units other than months and years */
-  // int32 zone;      /* numeric time zone, in seconds */
-// } TimeTzADT;
+typedef struct
+{
+  TimeADT time;    /* all time units other than months and years */
+  int32 zone;      /* numeric time zone, in seconds */
+} TimeTzADT;
 
 struct NumericData;
 typedef struct NumericData *Numeric;
@@ -54,13 +54,13 @@ typedef struct NumericData *Numeric;
 
 /* Functions for time */
 
-// extern TimestampTz date_timetz_to_timestamptz(DateADT date, const TimeTzADT *timetz);
+extern TimestampTz date_timetz_to_timestamptz(DateADT date, const TimeTzADT *timetz);
 extern TimeADT interval_to_time(const Interval *interv);
 extern TimeADT minus_time_interval(TimeADT time, const Interval *interv);
 extern Interval *minus_time_time(TimeADT time1, TimeADT time2);
-// extern TimeTzADT *minus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
+extern TimeTzADT *minus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
 extern TimeADT plus_time_interval(TimeADT time, Interval *interv);
-// extern TimeTzADT *plus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
+extern TimeTzADT *plus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
 extern int time_cmp(TimeADT time1, TimeADT time2);
 extern bool time_eq(TimeADT time1, TimeADT time2);
 extern Numeric time_extract(TimeADT time, const text *units);
@@ -80,32 +80,32 @@ extern float8 time_part(TimeADT time, const text *units);
 extern TimeADT time_scale(TimeADT date, int32 typmod);
 extern TimeADT time_smaller(TimeADT time1, TimeADT time2);
 extern Interval *time_to_interval(TimeADT time);
-// extern TimeTzADT *time_to_timetz(TimeADT time);
+extern TimeTzADT *time_to_timetz(TimeADT time);
 extern TimeADT timestamp_to_time(Timestamp ts);
 extern TimeADT timestamptz_to_time(TimestampTz tztz);
-// extern TimeTzADT *timestamptz_to_timetz(TimestampTz tztz);
-// extern TimeTzADT *timetz_at_local(const TimeTzADT *timetz);
-// extern int32 timetz_cmp(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
-// extern bool timetz_eq(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
-// extern Numeric timetz_extract(const TimeTzADT *timetz, const text *units);
-// extern bool timetz_ge(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
-// extern bool timetz_gt(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
-// extern uint32 timetz_hash(const TimeTzADT *timetz);
-// extern uint64 timetz_hash_extended(const TimeTzADT *timetz, int64 seed);
-// extern TimeTzADT *timetz_in(const char *str, int32 typmod);
-// extern TimeTzADT *timetz_izone(const TimeTzADT *timetz, const Interval *zone);
-// extern TimeTzADT *timetz_larger(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
-// extern bool timetz_le(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
-// extern bool timetz_lt(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
-// extern bool timetz_ne(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
-// extern TimeTzADT *timetz_copy(const TimeTzADT *timetz);
-// extern char *timetz_out(const TimeTzADT *timetz);
-// extern bool timetz_overlaps(const TimeTzADT *ts1, const TimeTzADT *te1, const TimeTzADT *ts2, const TimeTzADT *te2);
-// extern float8 timetz_part(const TimeTzADT *timetz, const text *units);
-// extern TimeTzADT *timetz_scale(const TimeTzADT *timetz, int32 typmod);
-// extern TimeTzADT *timetz_smaller(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
-// extern TimeADT timetz_to_time(const TimeTzADT *timetz);
-// extern TimeTzADT *timetz_zone(const TimeTzADT *timetz, const text *zone);
+extern TimeTzADT *timestamptz_to_timetz(TimestampTz tztz);
+extern TimeTzADT *timetz_at_local(const TimeTzADT *timetz);
+extern int32 timetz_cmp(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern bool timetz_eq(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern Numeric timetz_extract(const TimeTzADT *timetz, const text *units);
+extern bool timetz_ge(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern bool timetz_gt(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern uint32 timetz_hash(const TimeTzADT *timetz);
+extern uint64 timetz_hash_extended(const TimeTzADT *timetz, int64 seed);
+extern TimeTzADT *timetz_in(const char *str, int32 typmod);
+extern TimeTzADT *timetz_izone(const TimeTzADT *timetz, const Interval *zone);
+extern TimeTzADT *timetz_larger(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern bool timetz_le(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern bool timetz_lt(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern bool timetz_ne(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern TimeTzADT *timetz_copy(const TimeTzADT *timetz);
+extern char *timetz_out(const TimeTzADT *timetz);
+extern bool timetz_overlaps(const TimeTzADT *ts1, const TimeTzADT *te1, const TimeTzADT *ts2, const TimeTzADT *te2);
+extern float8 timetz_part(const TimeTzADT *timetz, const text *units);
+extern TimeTzADT *timetz_scale(const TimeTzADT *timetz, int32 typmod);
+extern TimeTzADT *timetz_smaller(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
+extern TimeADT timetz_to_time(const TimeTzADT *timetz);
+extern TimeTzADT *timetz_zone(const TimeTzADT *timetz, const text *zone);
 
 /*****************************************************************************/
 
