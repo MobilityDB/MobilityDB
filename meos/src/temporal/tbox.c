@@ -1602,7 +1602,7 @@ tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
  * this one
  * @param[in] box1,box2 Temporal boxes
  */
-static bool
+bool
 ensure_valid_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */

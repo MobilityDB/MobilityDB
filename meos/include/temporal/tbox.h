@@ -54,6 +54,10 @@
 
 extern bool ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2);
 
+/* Validity of a pair of temporal boxes */
+
+extern bool ensure_valid_tbox_tbox(const TBox *box1, const TBox *box2);
+
 /* Conversion */
 
 extern TBox *set_tbox(const Set *s);
