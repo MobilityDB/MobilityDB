@@ -331,11 +331,12 @@ SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 			<para>Two <varname>npoint</varname> values may be have different route identifiers but may represent the same spatial point at the intersection of the two routes. Function <varname>same</varname> is used for testing spatial simalarity of network points.</para>
 			<itemizedlist>
 				<listitem xml:id="npoint_same">
-					<indexterm significance="normal"><primary><varname>equals</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-					<para>Spatial similarity</para>
+					<indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+					<para>Are the two values approximately equal with respect to an epsilon value?</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-equals(npoint,npoint)::Boolean
+same(npoint,npoint) &#8594; boolean
+npoint ~= npoint &#8594; boolean
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH inter(geom) AS (
@@ -343,7 +344,7 @@ WITH inter(geom) AS (
   FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2), fractions(f1, f2) AS (
   SELECT ST_LineLocatePoint(t1.the_geom, i.geom), ST_LineLocatePoint(t2.the_geom, i.geom)
   FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)
-SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
+SELECT same(npoint(1, f1), npoint(2, f2)) FROM fractions;
 -- true
 </programlisting>
 				</listitem>

@@ -137,6 +137,8 @@ SELECT cbuffer 'Cbuffer(Point(1 1),0.5000001)' ~= cbuffer 'Cbuffer(Point(1 1),0.
 SELECT cbuffer 'Cbuffer(Point(1.00001 1),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
 SELECT cbuffer 'Cbuffer(Point(1 1.00001),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
 SELECT cbuffer 'Cbuffer(Point(1 1),0.500001)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
+SELECT same(cbuffer 'Cbuffer(Point(1.000001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
+SELECT same(cbuffer 'Cbuffer(Point(1.00001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
 
 -------------------------------------------------------------------------------
 

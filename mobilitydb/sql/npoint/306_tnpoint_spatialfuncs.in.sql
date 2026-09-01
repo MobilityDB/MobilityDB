@@ -84,6 +84,13 @@ CREATE FUNCTION same(npoint, npoint)
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = npoint, RIGHTARG = npoint,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
 /*****************************************************************************
  * Length
  *****************************************************************************/

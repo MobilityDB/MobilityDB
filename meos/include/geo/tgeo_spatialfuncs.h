@@ -66,8 +66,6 @@ extern bool datum_point_eq(Datum point1, Datum point2);
 extern bool datum_point_same(Datum point1, Datum point2);
 extern Datum datum2_point_eq(Datum point1, Datum point2);
 extern Datum datum2_point_ne(Datum point1, Datum point2);
-extern Datum datum2_point_same(Datum point1, Datum point2);
-extern Datum datum2_point_nsame(Datum point1, Datum point2);
 extern Datum datum2_geom_centroid(Datum geo);
 extern Datum datum2_geog_centroid(Datum geo);
 

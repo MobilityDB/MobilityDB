@@ -126,6 +126,8 @@ FROM temp;
 
 SELECT same(npoint(1, 0.5), npoint(1, 0.50000001));
 SELECT same(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
+SELECT npoint(1, 0.5) ~= npoint(1, 0.50000001);
+SELECT npoint 'Npoint(1, 1)' ~= npoint 'Npoint(2, 1)';
 -- TODO
 -- SELECT equals(npoint(1, 0.7744007411523213), npoint(2, 0.6952992297355585));
 

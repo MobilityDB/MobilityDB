@@ -1395,7 +1395,7 @@
 						<para><link linkend="pose_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_same"><varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
+						<para><link linkend="pose_same"><varname>same</varname>, <varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1819,7 +1819,7 @@
 						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="npoint_same"><varname>equals</varname>, <varname>::</varname></link>: Igualdad espacial para puntos de red</para>
+						<para><link linkend="npoint_same"><varname>same</varname>, <varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2100,6 +2100,9 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="cbuffer_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="cbuffer_same"><varname>same</varname>, <varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

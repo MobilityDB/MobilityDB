@@ -288,6 +288,18 @@ SELECT cbuffer 'Cbuffer(Point(1 1),0.500001)' ~= cbuffer 'Cbuffer(Point(1 1),0.5
  f
 (1 row)
 
+SELECT same(cbuffer 'Cbuffer(Point(1.000001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ same 
+------
+ t
+(1 row)
+
+SELECT same(cbuffer 'Cbuffer(Point(1.00001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ same 
+------
+ f
+(1 row)
+
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' = cbuffer 'Cbuffer(Point(1 1),0.5)';
  ?column? 
 ----------
