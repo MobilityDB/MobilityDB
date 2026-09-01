@@ -420,6 +420,31 @@ WITH test(box) AS (
   SELECT NULL::tbox UNION ALL SELECT tbox 'TBOXFLOAT XT([1,3],[2001-01-01,2001-01-03])' )
 SELECT extent(box) FROM test;
 
+-- The span type states what a box measures, so an extent spanning two of them
+-- states a quantity nothing reads, exactly as the + operator on the same pair
+-- already answers
+WITH test(box) AS (
+  SELECT tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])' UNION ALL
+  SELECT tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])' )
+SELECT extent(box) FROM test;
+
+-- Both machinery functions of the aggregate answer on the same terms as the
+-- operator. The combine is reached by a parallel plan alone, so it is called
+-- directly here
+SELECT tbox_extent_transfn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+SELECT tbox_extent_combinefn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+SELECT tbox_extent_transfn(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+-- A box carrying no value span states no span type, so it is comparable with
+-- any box, and a null side leaves the other untouched
+SELECT tbox_extent_combinefn(NULL, tbox 'TBOXFLOAT X([3,4])');
+SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])', NULL);
+-- Which dimensions a box holds is the second question, asked after the first
+SELECT tbox_extent_transfn(tbox 'TBOXFLOAT X([1,2])',
+  tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])');
+SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])',
+  tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])');
+
 -------------------------------------------------------------------------------
 -- Comparison functions
 -------------------------------------------------------------------------------

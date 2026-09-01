@@ -1080,6 +1080,10 @@ Tbox_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   /* Both boxes are not null */
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_same_dimensionality_tbox(box1, box2))
+    PG_RETURN_NULL();
   memcpy(result, box1, sizeof(TBox));
   tbox_expand(box2, result);
   PG_RETURN_TBOX_P(result);
@@ -1103,7 +1107,10 @@ Tbox_extent_combinefn(PG_FUNCTION_ARGS)
   if (!box1 && box2)
     PG_RETURN_TBOX_P(box2);
   /* Both boxes are not null */
-  ensure_same_dimensionality_tbox(box1, box2);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tbox_tbox(box1, box2) ||
+      ! ensure_same_dimensionality_tbox(box1, box2))
+    PG_RETURN_NULL();
   TBox *result = tbox_copy(box1);
   tbox_expand(box2, result);
   PG_RETURN_TBOX_P(result);

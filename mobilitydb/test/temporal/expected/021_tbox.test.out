@@ -1341,6 +1341,45 @@ SELECT extent(box) FROM test;
  TBOXFLOAT XT([1, 3],[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
+WITH test(box) AS (
+  SELECT tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])' UNION ALL
+  SELECT tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])' )
+SELECT extent(box) FROM test;
+ERROR:  Operation on mixed span types: intspan and floatspan
+SELECT tbox_extent_transfn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+ERROR:  Operation on mixed span types: intspan and floatspan
+SELECT tbox_extent_combinefn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+ERROR:  Operation on mixed span types: intspan and floatspan
+SELECT tbox_extent_transfn(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+ tbox_extent_transfn 
+---------------------
+ TBOXFLOAT X([1, 4])
+(1 row)
+
+SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+ tbox_extent_combinefn 
+-----------------------
+ TBOXFLOAT X([1, 4])
+(1 row)
+
+SELECT tbox_extent_combinefn(NULL, tbox 'TBOXFLOAT X([3,4])');
+ tbox_extent_combinefn 
+-----------------------
+ TBOXFLOAT X([3, 4])
+(1 row)
+
+SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])', NULL);
+ tbox_extent_combinefn 
+-----------------------
+ TBOXFLOAT X([1, 2])
+(1 row)
+
+SELECT tbox_extent_transfn(tbox 'TBOXFLOAT X([1,2])',
+  tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])');
+ERROR:  The boxes must be of the same dimensionality
+SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])',
+  tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])');
+ERROR:  The boxes must be of the same dimensionality
 SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2001-01-02,2001-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-02, 2001-01-02])');
  cmp 
 -----
