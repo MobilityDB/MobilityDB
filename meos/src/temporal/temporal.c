@@ -1400,11 +1400,9 @@ round_fn(MeosType basetype)
     case T_NPOINT:
       return &datum_npoint_round;
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return &datum_pose_round;
-#endif
-#if POSE
     case T_POSECHAIN:
       return &datum_posechain_round;
 #endif

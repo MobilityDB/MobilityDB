@@ -95,7 +95,7 @@ extern Cbuffer **cbufferarr_extract(ArrayType *array, int *count);
 extern ArrayType *cbufferarr_to_array(Cbuffer **cbarr, int count,
   bool free_all);
 #endif
-#if POSE || RGEO
+#if POSE
 extern Pose **posearr_extract(ArrayType *array, int *count);
 extern ArrayType *posearr_to_array(Pose **posearr, int count, bool free_all);
 #endif

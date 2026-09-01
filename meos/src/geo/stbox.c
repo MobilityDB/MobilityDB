@@ -1111,11 +1111,9 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
       return true;
     }
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return pose_set_stbox(DatumGetPoseP(d), result);
-#endif
-#if POSE
     case T_POSECHAIN:
       return posechain_set_stbox(DatumGetPoseChainP(d), result);
 #endif

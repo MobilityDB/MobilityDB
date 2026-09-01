@@ -155,7 +155,6 @@ datum2_point_eq(Datum point1, Datum point2)
   return BoolGetDatum(datum_point_eq(point1, point2));
 }
 
-#if CBUFFER || RGEO
 /**
  * @brief Return true if the points are equal
  */
@@ -182,7 +181,6 @@ datum2_point_nsame(Datum point1, Datum point2)
 {
   return BoolGetDatum(! datum_point_same(point1, point2));
 }
-#endif /* CBUFFER || RGEO */
 
 /**
  * @brief Return the centroid of a geometry
@@ -327,7 +325,7 @@ npoint_flags(void)
 }
 #endif /* NPOINT */ 
 
-#if POSE || RGEO 
+#if POSE 
 /**
  * @brief Get the MEOS flags from a pose
  */
@@ -340,7 +338,7 @@ pose_flags(Pose *pose)
   MEOS_FLAGS_SET_GEODETIC(result, MEOS_FLAGS_GET_GEODETIC(pose->flags));
   return result;
 }
-#endif /* POSE || RGEO */
+#endif /* POSE */
 
 #if POSE
 /**
@@ -488,11 +486,9 @@ spatial_flags(Datum d, MeosType basetype)
     case T_NPOINT:
       return npoint_flags();
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return pose_flags(DatumGetPoseP(d));
-#endif
-#if POSE
     case T_POSECHAIN:
       return posechain_flags(DatumGetPoseChainP(d));
 #endif
