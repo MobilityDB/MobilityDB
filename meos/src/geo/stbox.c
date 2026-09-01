@@ -120,7 +120,17 @@ void
 stbox_expand(const STBox *box1, STBox *box2)
 {
   assert(box1); assert(box2);
-  
+  /* The reference system is not extent: a combine grows what the boxes measure
+   * and leaves what they are measured in alone, so establishing that the two
+   * state the same one belongs to the caller. #inter_stbox_stbox asserts the
+   * same of its own pair. A box carrying no coordinates states no reference
+   * system, so the pair carrying them is what is tested, and the field is read
+   * directly because the validating accessor reports an absent X itself */
+  assert(! (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags)) ||
+    (box1->srid == box2->srid &&
+     MEOS_FLAGS_GET_GEODETIC(box1->flags) ==
+     MEOS_FLAGS_GET_GEODETIC(box2->flags)));
+
   if (MEOS_FLAGS_GET_X(box2->flags))
   {
     box2->xmin = Min(box1->xmin, box2->xmin);
