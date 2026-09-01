@@ -609,7 +609,7 @@ if(MEOS)
   # add_definitions() pairs in the top-level CMakeLists, so that the installed
   # library describes its own feature set.
   set(_meos_pc_cflags -DMEOS=1)
-  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE QUADBIN RASTER RGEO)
+  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE QUADBIN RASTER RGEO S2CELL)
     if(${_family})
       list(APPEND _meos_pc_cflags -D${_family}=1)
     else()
