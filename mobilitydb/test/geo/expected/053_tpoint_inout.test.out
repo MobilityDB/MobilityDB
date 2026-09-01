@@ -124,6 +124,12 @@ SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Interp=Step;{[Point(1 2)
  Interp=Step;{[POINT(1 2)@Mon Jan 01 00:00:00 2001 PST, POINT(3 4)@Tue Jan 02 00:00:00 2001 PST], [POINT(1 2)@Wed Jan 03 00:00:00 2001 PST, POINT(3 4)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[{"coordinates":[],"datetimes":[],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}');
+ERROR:  Invalid value of 'coordinates' array in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[{"coordinates":[[1,1]],"datetimes":["2001-01-01T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[],"datetimes":[],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}');
+ERROR:  Invalid value of 'coordinates' array in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[],"datetimes":[],"lower_inc":true,"upper_inc":true}');
+ERROR:  Unable to find 'interpolation' in MFJSON string
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;Point(1 2 3)@2001-01-01',1,0,2)));
                          asewkt                         
 --------------------------------------------------------

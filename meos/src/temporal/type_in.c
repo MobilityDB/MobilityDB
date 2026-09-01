@@ -1207,6 +1207,10 @@ tsequence_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
   int count = 0;
   TInstant **instants = tinstarr_from_mfjson(mfjson, spatial, srid, temptype,
     &count);
+  /* The instants are what the sequence is made of, so a document the array
+   * reader refuses leaves nothing to construct */
+  if (! instants)
+    return NULL;
 
   /* Get lower bound flag, default to true if not specified */
   bool lower_inc = true;
@@ -1278,6 +1282,14 @@ tsequenceset_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     seqvalue = json_object_array_get_idx(seqs, i);
     sequences[i] = tsequence_from_mfjson(seqvalue, spatial, srid, temptype,
       interp);
+    /* A sequence set is every one of its sequences, so a member the sequence
+     * reader refuses leaves nothing to construct: release the ones already
+     * read and report the refusal the member reader states */
+    if (! sequences[i])
+    {
+      pfree_array((void **) sequences, i);
+      return NULL;
+    }
   }
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }

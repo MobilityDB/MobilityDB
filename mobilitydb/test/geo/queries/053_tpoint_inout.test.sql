@@ -59,6 +59,12 @@ SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '{[Point(1 2)@2001-01-01,
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Interp=Step;[Point(1 2)@2001-01-01, Point(3 4)@2001-01-02]')));
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Interp=Step;{[Point(1 2)@2001-01-01, Point(3 4)@2001-01-02],[Point(1 2)@2001-01-03, Point(3 4)@2001-01-04]}')));
 
+-- A member the sequence reader refuses is reported, whether it is the only
+-- member or one of several
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[{"coordinates":[],"datetimes":[],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}');
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[{"coordinates":[[1,1]],"datetimes":["2001-01-01T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[],"datetimes":[],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}');
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[],"datetimes":[],"lower_inc":true,"upper_inc":true}');
+
 -- Additional attributes
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;Point(1 2 3)@2001-01-01',1,0,2)));
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;{Point(1 2 3)@2001-01-01, Point(4 5 6)@2001-01-02}',1,0,2)));
