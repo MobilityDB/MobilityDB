@@ -46,11 +46,15 @@
 #   check_csqlfn.py --table   [dir...] print the (meos_fn, @csqlfn, @sqlfn, @sqlop) table
 #   check_csqlfn.py --gaps    [dir...] list MEOS API functions missing the @csqlfn link
 #   check_csqlfn.py --targets          list @csqlfn tags naming no reachable wrapper
+#   check_csqlfn.py --returns          list wrappers whose kernels answer more
+#                                     return types than the SQL declares
+#   check_csqlfn.py --returns-rebaseline  write those wrappers as the baseline
 #   check_csqlfn.py --fix     [dir...] insert the auto-resolvable @csqlfn tags
 #
-# Exit status is non-zero when --gaps finds an auto-resolvable gap, and when
+# Exit status is non-zero when --gaps finds an auto-resolvable gap, when
 # --targets finds a tag naming a wrapper the tree does not define or one the
-# SQL reaches from nothing that the baseline does not already carry (CI guard).
+# SQL reaches from nothing that the baseline does not already carry, and when
+# --returns finds a wrapper outside its baseline (CI guards).
 
 import collections
 import glob
@@ -383,6 +387,129 @@ def overtagged():
     return rows, sum(t - d for _, t, d in rows)
 
 
+# --overtagged counts tags, which names candidates rather than findings because
+# a subtype dispatcher legitimately reaches several MEOS functions through one
+# declaration. Counting RETURN TYPES instead separates the two, and it is the
+# multiplicity a binding cannot absorb: the host resolves an overload on the
+# ARGUMENTS, so several SQL functions of one name and one argument list, each
+# with its own return type, is a surface no host can express. A wrapper whose
+# claiming kernels carry more distinct return types than its declarations state
+# is exactly that shape.
+#
+# The float, int and bigint nearest-approach kernels tagging one
+# `nearestApproachDistance(tnumber, tnumber) RETURNS float` are the live
+# instance; the int, bigint and float box accessors that once tagged
+# `xMax(tbox) RETURNS float` were the same shape, and a binding registering one
+# function per tag answered
+# `Could not choose a best candidate function for the function call "Xmax(tbox)"`.
+#
+# A return type is read only where it is unambiguous -- a trailing non-const
+# pointer to a scalar, which is how MEOS delivers a bound, or a scalar C return.
+# A Datum, a pointer to a value and a void are type-generic or carry their type
+# elsewhere, so they state nothing here and are skipped rather than guessed.
+SCALAR_RETURNS = ('int', 'int64', 'double', 'bool', 'TimestampTz', 'DateADT')
+DOC_BLOCK = re.compile(
+    r'/\*\*(.*?)\*/\s*\n([^\n]*)\n([A-Za-z_]\w*)\s*\(([^;{]*?)\)\s*\{', re.S)
+
+
+def scalar_return(cret, args):
+    """The scalar type a kernel answers, or None where it states none here."""
+    argv = [a.strip() for a in args.split(',') if a.strip()]
+    if argv and 'const' not in argv[-1] and argv[-1].count('*') == 1:
+        base = re.sub(r'\s*\*\s*\w+$', '', argv[-1]).strip()
+        if base in SCALAR_RETURNS:
+            return base
+    return cret if cret in SCALAR_RETURNS else None
+
+
+def declared_returns():
+    """Map every wrapper to the set of SQL return types its declarations state."""
+    decl = collections.defaultdict(set)
+    for path in glob.glob(f'{ROOT}/mobilitydb/sql/**/*.in.sql', recursive=True):
+        for chunk in read_text(path).split('CREATE FUNCTION ')[1:]:
+            chunk = chunk.split(';')[0]
+            ret = re.search(r'\)\s*RETURNS\s+([A-Za-z][A-Za-z0-9_ ]*?)\s*'
+                            r'(?:AS|LANGUAGE|\n)', chunk)
+            sym = re.search(r"MODULE_PATHNAME'\s*,\s*'(\w+)'", chunk)
+            if ret and sym:
+                decl[sym.group(1)].add(ret.group(1).strip().lower())
+    return decl
+
+
+def returns():
+    """Return the wrappers whose kernels answer more return types than declared."""
+    decl = declared_returns()
+    claims = collections.defaultdict(list)
+    for path in glob.glob(f'{ROOT}/meos/src/**/*.c', recursive=True):
+        for m in DOC_BLOCK.finditer(read_text(path)):
+            doc, cret, fn, args = m.group(1), m.group(2).strip(), m.group(3), m.group(4)
+            sret = scalar_return(cret, args)
+            if sret is None:
+                continue
+            for line in re.findall(r'@csqlfn\s+([^\n*]*)', doc):
+                for w in re.findall(r'#(\w+)\(\)', line):
+                    claims[w].append((fn, sret))
+    rows = []
+    for w, kernels in claims.items():
+        kinds = {sret for _fn, sret in kernels}
+        stated = decl.get(w, set())
+        if stated and len(kinds) > len(stated):
+            rows.append((w, sorted(kinds), sorted(stated), sorted(kernels)))
+    rows.sort()
+    return rows
+
+
+RETURNS_BASELINE_PATH = os.path.join(ROOT, 'tools', 'scripts',
+                                     'csqlfn_returns_baseline.txt')
+RETURNS_BASELINE_HEADER = (
+    '# Wrappers whose @csqlfn-claiming MEOS functions answer more distinct\n'
+    '# return types than their SQL declarations state, as\n'
+    '# tools/scripts/check_csqlfn.py --returns reads them. A host resolves an\n'
+    '# overload on the arguments, so this is a surface a binding cannot\n'
+    '# express. Grandfathered in, keyed by wrapper. The list only shrinks: a\n'
+    '# new one fails the check. Regenerate with --returns-rebaseline after a\n'
+    '# fix.\n')
+
+
+def read_returns_baseline():
+    """The grandfathered wrappers, keyed by wrapper name."""
+    if not os.path.exists(RETURNS_BASELINE_PATH):
+        return set()
+    return {ln for ln in read_text(RETURNS_BASELINE_PATH).splitlines()
+            if ln and not ln.startswith('#')}
+
+
+def write_returns_baseline(rows):
+    """Write the wrappers reading as findings as the baseline."""
+    names = sorted(w for w, _k, _d, _ks in rows)
+    with open(RETURNS_BASELINE_PATH, 'w', encoding='utf-8') as fp:
+        fp.write(RETURNS_BASELINE_HEADER + '\n'.join(names) + '\n')
+    print('wrote %d wrapper(s) to %s'
+          % (len(names), os.path.relpath(RETURNS_BASELINE_PATH, ROOT)))
+
+
+def report_returns(rows):
+    """Print the wrappers outside the baseline; return their count."""
+    baseline = read_returns_baseline()
+    fresh = [r for r in rows if r[0] not in baseline]
+    print('wrappers whose @csqlfn kernels answer more return types than the SQL '
+          'declares: %d (%d outside the baseline)' % (len(rows), len(fresh)))
+    for w, kinds, stated, kernels in rows:
+        mark = '' if w in baseline else '  <- outside the baseline'
+        print(f'  {w:34s} answers={kinds} declared={stated}{mark}')
+        for fn, sret in kernels:
+            print(f'      {fn:40s} -> {sret}')
+    # A baseline naming a wrapper that no longer reads as a finding is out of
+    # date rather than a failure: the list only shrinks, and the shrink happens
+    # with the next --returns-rebaseline.
+    gone = sorted(baseline - {w for w, _k, _d, _ks in rows})
+    if gone:
+        print('\n%d baselined wrapper(s) no longer read as a finding. Run '
+              '--returns-rebaseline to shrink the list: %s'
+              % (len(gone), ', '.join(gone)))
+    return len(fresh)
+
+
 # A tag names a wrapper, so the wrapper is where the tag is answered. The
 # extension defines a wrapper with PG_FUNCTION_INFO_V1 and reaches it from a
 # CREATE FUNCTION, or from a CREATE OPERATOR, CREATE AGGREGATE, CREATE OPERATOR
@@ -484,6 +611,10 @@ def main():
         for w, t, d in rows:
             print(f'  {w:38s} tags={t:<3} declarations={d}')
         sys.exit(0)
+    elif mode == '--returns':
+        sys.exit(1 if report_returns(returns()) else 0)
+    elif mode == '--returns-rebaseline':
+        write_returns_baseline(returns())
     elif mode == '--fix':
         n = 0
         for fn, pg, f, _how in auto:
