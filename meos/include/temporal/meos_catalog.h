@@ -194,10 +194,8 @@ typedef enum
   ALWAYSLE_OP     = 40, /**< Alwaysle `%<=` operator */
   ALWAYSGT_OP     = 41, /**< Alwaysgt `%>` operator */
   ALWAYSGE_OP     = 42, /**< Alwaysge `%>=` operator */
-#if JSON
   TEMPCONTAINS_OP  = 43, /**< Contains `#@>` operator for JSON */
   TEMPCONTAINED_OP = 44, /**< Contained `<@#` operator for JSON */
-#endif /* JSON */
 } MeosOper;
 
 /**
@@ -262,12 +260,10 @@ extern bool geoset_type(MeosType type);
 extern bool ensure_geoset_type(MeosType type);
 extern bool spatialset_type(MeosType type);
 extern bool ensure_spatialset_type(MeosType type);
-#if POINTCLOUD
 extern bool pointcloud_basetype(MeosType type);
 extern bool pointcloudset_type(MeosType type);
 extern bool tpointcloud_temptype(MeosType type);
 extern bool ensure_tpointcloud_temptype(MeosType type);
-#endif /* POINTCLOUD */
 
 extern bool span_basetype(MeosType type);
 extern bool span_canon_basetype(MeosType type);
