@@ -193,12 +193,10 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
       cbuffer_set_srid_int(DatumGetCbufferP(d), srid);
       return true;
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       pose_set_srid_int(DatumGetPoseP(d), srid);
       return true;
-#endif
-#if POSE
     case T_POSECHAIN:
       posechain_set_srid_int(DatumGetPoseChainP(d), srid);
       return true;
@@ -605,13 +603,13 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
  * to another SRID
  */
 Datum
-#if CBUFFER || POSE || RGEO
+#if CBUFFER || POSE
   datum_transf_pj(Datum d, MeosType basetype, int32_t srid_to,
     const LWPROJ *pj)
 #else
   datum_transf_pj(Datum d, MeosType basetype, int32_t srid_to UNUSED,
     const LWPROJ *pj)
-#endif /* CBUFFER || POSE || RGEO */
+#endif /* CBUFFER || POSE */
 {
   assert(spatial_basetype(basetype));
   switch (basetype)
@@ -645,11 +643,9 @@ Datum
       return PointerGetDatum(cbuffer_transf_pj(DatumGetCbufferP(d), srid_to,
         pj));
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return PointerGetDatum(pose_transf_pj(DatumGetPoseP(d), srid_to, pj));
-#endif
-#if POSE
     case T_POSECHAIN:
       return PointerGetDatum(posechain_transf_pj(DatumGetPoseChainP(d),
         srid_to, pj));

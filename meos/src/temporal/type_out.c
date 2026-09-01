@@ -191,11 +191,9 @@ basetype_out(Datum value, MeosType type, int maxdd)
     case T_PCPATCH:
       return pcpatch_hex_out((const Pcpatch *) DatumGetPointer(value), maxdd);
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return pose_out(DatumGetPoseP(value), maxdd);
-#endif
-#if POSE
     case T_POSECHAIN:
       return posechain_out(DatumGetPoseChainP(value), maxdd);
 #endif
@@ -428,7 +426,7 @@ tpcpatch_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision)
 }
 #endif /* POINTCLOUD */
 
-#if POSE || RGEO
+#if POSE
 /**
  * @brief Write into the buffer a pose in the MF-JSON representation
  */
@@ -1433,7 +1431,7 @@ pcpatch_to_wkb_size(const Pcpatch *pa, uint8_t variant)
 }
 #endif /* POINTCLOUD */
 
-#if POSE || RGEO
+#if POSE
 /**
  * @brief Return the size in bytes of a pose in the Well-Known Binary (WKB)
  * representation
@@ -1552,11 +1550,9 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
       return pcpatch_to_wkb_size((const Pcpatch *) DatumGetPointer(value),
         variant);
 #endif /* POINTCLOUD */
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return pose_to_wkb_size(DatumGetPoseP(value), variant, true);
-#endif /* POSE || RGEO */
-#if POSE
     case T_POSECHAIN:
       return posechain_to_wkb_size(DatumGetPoseChainP(value), variant, true);
 #endif /* POSE */
@@ -1839,11 +1835,9 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
   if (type == T_NPOINT)
     return npoint_to_wkb_size(DatumGetNpointP(value), variant, false);
 #endif /* NPOINT */
-#if POSE || RGEO
+#if POSE
   if (type == T_POSE)
     return pose_to_wkb_size(DatumGetPoseP(value), variant, false);
-#endif /* POSE || RGEO */
-#if POSE
   if (type == T_POSECHAIN)
     return posechain_to_wkb_size(DatumGetPoseChainP(value), variant, false);
 #endif /* POSE */
@@ -2239,7 +2233,7 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant,
 }
 #endif /* NPOINT */
 
-#if POSE || RGEO
+#if POSE
 /**
  * @brief Write into the buffer the flag of a pose in the Well-Known Binary
  * (WKB) representation
@@ -2502,12 +2496,10 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
         buf, variant);
       break;
 #endif /* POINTCLOUD */
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, true);
       break;
-#endif /* POSE || RGEO */
-#if POSE
     case T_POSECHAIN:
       buf = posechain_to_wkb_buf(DatumGetPoseChainP(value), buf, variant,
         true);
@@ -3173,11 +3165,9 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
     buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant,
       false);
 #endif /* NPOINT */
-#if POSE || RGEO
+#if POSE
   else if (type == T_POSE)
     buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, false);
-#endif /* POSE || RGEO */
-#if POSE
   else if (type == T_POSECHAIN)
     buf = posechain_to_wkb_buf(DatumGetPoseChainP(value), buf, variant, false);
 #endif /* POSE */

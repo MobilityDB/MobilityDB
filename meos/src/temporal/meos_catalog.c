@@ -733,11 +733,9 @@ meostype_length(MeosType type)
   if (type == T_NPOINT)
     return sizeof(Npoint);
 #endif
-#if POSE || RGEO
+#if POSE
   if (type == T_POSE)
     return -1;
-#endif
-#if POSE
   if (type == T_POSECHAIN)
     return -1;
 #endif

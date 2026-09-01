@@ -414,11 +414,9 @@ spatialarr_set_bbox(const Datum *values, MeosType basetype, int count,
   else if (basetype == T_NPOINT)
     npointarr_set_stbox(values, count, (STBox *) box);
 #endif
-#if POSE || RGEO
+#if POSE
   else if (basetype == T_POSE)
     posearr_set_stbox(values, count, (STBox *) box);
-#endif
-#if POSE
   else if (basetype == T_POSECHAIN)
     posechainarr_set_stbox(values, count, (STBox *) box);
 #endif

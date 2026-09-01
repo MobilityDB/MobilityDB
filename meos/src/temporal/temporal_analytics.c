@@ -63,7 +63,7 @@
 #if CBUFFER
   #include <meos_cbuffer.h>
 #endif
-#if POSE || RGEO
+#if POSE
   #include <meos_pose.h>
   #include "pose/pose.h"
 #endif

@@ -140,7 +140,7 @@ extern LWGEOM *parse_geojson(json_object *geojson, int *hasz);
  * @return On error return @p false
  */
 bool
-#if CBUFFER || NPOINT || POSE || RGEO
+#if CBUFFER || NPOINT || POSE
 basetype_in(const char *str, MeosType type, bool end, Datum *result)
 #else
 basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
@@ -279,7 +279,7 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       return true;
     }
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
     {
       Pose *pose = pose_parse(&str, end);
@@ -288,8 +288,6 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       *result = PointerGetDatum(pose);
       return true;
     }
-#endif
-#if POSE
     case T_POSECHAIN:
     {
       PoseChain *pc = posechain_parse(&str, end);
@@ -797,7 +795,7 @@ parse_mfjson_npoints(json_object *mfjson, int32_t srid, int *count)
 
 /*****************************************************************************/
 
-#if POSE || RGEO
+#if POSE
 /**
  * @brief Return a pose from its GeoJSON representation
  */Pose *
@@ -1085,7 +1083,7 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     else if (temptype == T_TNPOINT)
       values = parse_mfjson_npoints(mfjson, srid, &nvalues);
 #endif /* NPOINT */
-#if POSE || RGEO
+#if POSE
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* POSE */
@@ -1154,7 +1152,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
     else if (temptype == T_TNPOINT)
       values = parse_mfjson_npoints(mfjson, srid, &nvalues);
 #endif /* NPOINT */
-#if POSE || RGEO
+#if POSE
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* RGEO */
@@ -1941,7 +1939,7 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
 }
 #endif /* NPOINT */
 
-#if POSE || RGEO
+#if POSE
 /**
  * @brief Return the state flags initialized with a byte flag read from the
  * buffer
@@ -2137,11 +2135,9 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_PCPATCH:
       return PointerGetDatum(pcvarlena_from_wkb_state(s));
 #endif /* POINTCLOUD */
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return PointerGetDatum(pose_from_wkb_state(s));
-#endif /* POSE */
-#if POSE
     case T_POSECHAIN:
       return PointerGetDatum(posechain_from_wkb_state(s));
 #endif /* POSE */
@@ -2782,11 +2778,9 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   if (type == T_NPOINT)
     return PointerGetDatum(npoint_from_wkb_state(&s));
 #endif /* NPOINT */
-#if POSE || RGEO
+#if POSE
   if (type == T_POSE)
     return PointerGetDatum(pose_from_wkb_state(&s));
-#endif /* POSE */
-#if POSE
   if (type == T_POSECHAIN)
     return PointerGetDatum(posechain_from_wkb_state(&s));
 #endif /* POSE */

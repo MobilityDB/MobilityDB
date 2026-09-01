@@ -100,15 +100,13 @@ set_expand_bbox(Datum value, MeosType basetype, void *box)
     stbox_expand(&box1, (STBox *) box);
   }
 #endif /* NPOINT */
-#if POSE || RGEO
+#if POSE
   else if (basetype == T_POSE)
   {
     STBox box1;
     pose_set_stbox(DatumGetPoseP(value), &box1);
     stbox_expand(&box1, (STBox *) box);
   }
-#endif /* POSE */
-#if POSE
   else if (basetype == T_POSECHAIN)
   {
     STBox box1;

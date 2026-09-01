@@ -187,11 +187,9 @@ datum_cmp(Datum l, Datum r, MeosType type)
       return pcpatch_cmp((const Pcpatch *) DatumGetPointer(l),
         (const Pcpatch *) DatumGetPointer(r));
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return pose_cmp(DatumGetPoseP(l), DatumGetPoseP(r));
-#endif
-#if POSE
     case T_POSECHAIN:
       return posechain_cmp(DatumGetPoseChainP(l), DatumGetPoseChainP(r));
 #endif
@@ -322,11 +320,9 @@ datum_eq(Datum l, Datum r, MeosType type)
       return pcpatch_eq((const Pcpatch *) DatumGetPointer(l),
         (const Pcpatch *) DatumGetPointer(r));
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return pose_eq(DatumGetPoseP(l), DatumGetPoseP(r));
-#endif
-#if POSE
     case T_POSECHAIN:
       return posechain_eq(DatumGetPoseChainP(l), DatumGetPoseChainP(r));
 #endif
@@ -599,11 +595,9 @@ datum_hash(Datum d, MeosType type)
     case T_PCPATCH:
       return pcpatch_hash((const Pcpatch *) DatumGetPointer(d));
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return pose_hash(DatumGetPoseP(d));
-#endif
-#if POSE
     case T_POSECHAIN:
       return posechain_hash(DatumGetPoseChainP(d));
 #endif
@@ -672,11 +666,9 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
     case T_PCPATCH:
       return pcpatch_hash_extended((const Pcpatch *) DatumGetPointer(d), seed);
 #endif
-#if POSE || RGEO
+#if POSE
     case T_POSE:
       return pose_hash_extended(DatumGetPoseP(d), seed);
-#endif
-#if POSE
     case T_POSECHAIN:
       return posechain_hash_extended(DatumGetPoseChainP(d), seed);
 #endif
