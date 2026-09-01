@@ -1156,7 +1156,6 @@ extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bo
 /* Conversion functions for temporal types */
 
 extern void temporal_set_tstzspan(const Temporal *temp, Span *s);
-extern bool temporal_time_overlaps(const Temporal *temp1, const Temporal *temp2);
 extern void tinstant_set_tstzspan(const TInstant *inst, Span *s);
 extern void tnumber_set_tbox(const Temporal *temp, TBox *box);
 extern void tnumberinst_set_tbox(const TInstant *inst, TBox *box);

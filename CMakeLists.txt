@@ -162,6 +162,11 @@ option(GEOS "Set ON|OFF (default=ON) to answer with the GEOS library the geometr
 # ALL is set. A new family must be added to this list, the same maintenance model
 # as adding a language to the documentation build's PROJECT_SUPPORTED_LANGUAGES.
 # POSE precedes RGEO and POSECHAIN because both depend on it.
+#
+# The literal names stay on the `foreach` line: this block is what the ecosystem
+# reads for the family set — MEOS-API's parser/families.py, from which every
+# binding projects, and the strict build's own family flags — so a variable in
+# their place answers them with its own name instead of the families.
 if(ALL)
   foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE RGEO POSECHAIN QUADBIN RASTER S2CELL)
     set(${_family} ON CACHE BOOL "Enabled by ALL=ON" FORCE)

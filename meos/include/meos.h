@@ -1803,6 +1803,7 @@ extern bool contains_tstzspan_temporal(const Span *s, const Temporal *temp);
 extern bool overlaps_numspan_tnumber(const Span *s, const Temporal *temp);
 extern bool overlaps_tbox_tnumber(const TBox *box, const Temporal *temp);
 extern bool overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_time_overlaps(const Temporal *temp1, const Temporal *temp2);
 extern bool overlaps_temporal_tstzspan(const Temporal *temp, const Span *s);
 extern bool overlaps_tnumber_numspan(const Temporal *temp, const Span *s);
 extern bool overlaps_tnumber_tbox(const Temporal *temp, const TBox *box);
