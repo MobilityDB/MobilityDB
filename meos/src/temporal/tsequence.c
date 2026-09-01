@@ -2747,6 +2747,10 @@ tsegment_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   else if (temptype_basetype(temptype) == T_POSE)
     result = tposesegm_intersection(start1, end1, start2, end2, lower,
       upper, t1, t2);
+  /* A pose chain is a base type of its own, so it reaches its own kernel */
+  else if (temptype_basetype(temptype) == T_POSECHAIN)
+    result = tposechainsegm_intersection(start1, end1, start2, end2, lower,
+      upper, t1, t2);
 #endif
   else
   {
