@@ -59,16 +59,22 @@ SELECT asEWKT(tposechainFromBinary(asBinary(tposechain
 SELECT asEWKT(tposechainFromHexEWKB(asHexEWKB(tposechain 'SRID=5676;
   PoseChain(Pose(Point(1 1), 0.5))@2001-01-01')));
 -- SRID=5676;PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
-</pre></li><li class="listitem"><a name="tposeFromMFJSON"></a><a class="indexterm" name="id9537"></a><p>Input from the Moving Features JSON (MF-JSON) representation</p><pre class="programlisting">
-tposeFromMFJSON(bytea) → tpose
-</pre><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposeFromMFJSON"></a><a class="indexterm" name="id9537"></a><a class="indexterm" name="id9540"></a><p>Input from the Moving Features JSON (MF-JSON) representation</p><pre class="programlisting">
+tposeFromMFJSON(text) → tpose
+tposechainFromMFJSON(text) → tposechain
+</pre><p>A pose chain is written as the array of its links, so a
+					<code class="varname">MovingPoseChain</code> document holds an array of pose objects
+					for every instant</p><pre class="programlisting">
 SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=3812;Pose(Point(1 2),0.5)@2001-01-01',
   3)));
 -- SRID=3812;Pose(POINT(1 2),0.5)@2001-01-01
 SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=5676;
   Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3)));
 -- SRID=5676;Pose(POINT Z(1 2 3),1,0,0,0)@2001-01-01
-</pre></li><li class="listitem"><a name="tposeFromBinary"></a><a class="indexterm" name="id9544"></a><a class="indexterm" name="id9547"></a><a class="indexterm" name="id9550"></a><p>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><pre class="programlisting">
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'SRID=3812;
+  PoseChain(Pose(Point(1 2),0.5),Pose(Point(3 4),0.25))@2001-01-01', 3)));
+-- SRID=3812;PoseChain(Pose(POINT(1 2),0.5),Pose(POINT(3 4),0.25))@2001-01-01
+</pre></li><li class="listitem"><a name="tposeFromBinary"></a><a class="indexterm" name="id9549"></a><a class="indexterm" name="id9552"></a><a class="indexterm" name="id9555"></a><p>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><pre class="programlisting">
 tposeFromBinary(bytea) → tpose
 tposeFromEWKB(bytea) → tpose
 tposeFromHexEWKB(text) → tpose

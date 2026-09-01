@@ -13,7 +13,7 @@ SELECT tjsonb '[{"unit": "km", "speed": 10}@2001-01-01,
 -- {["10"@2001-01-01, "20"@2001-01-02]}
 </pre><p>
 		which are obtained by applying the PostgreSQL operator <code class="varname">-&gt;</code> at every element of the JSONB set and to every instant of the temporal JSONB value.
-		</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="jsonbset_jsonb"></a>JSONB Set Operations</h2></div></div></div><p>When manipulating JSON collections of varying structure, it may be the case that an item is defined in some of the documents but not all. PostgreSQL provides the <span class="emphasis"><em>lax mode</em></span> for this purpose, where the argument <code class="varname">null_value_treatment</code> determines the behavior in the case a function returns a NULL value. The argument can take one of the following values: <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, <code class="varname">'return_target'</code>, where <code class="varname">'use_json_null'</code> is the default value. In PostgreSQL the lax mode is supported only for <span class="emphasis"><em>update</em></span> (not <span class="emphasis"><em>query</em></span>) operations with the function <code class="varname">jsonb_set_lax</code>. In MobilityDB, we kept the same semantics for the corresponding function <code class="varname">jsonbsetSetLax</code>, but we enabled similar behavior for <span class="emphasis"><em>all</em></span> JSON operations that may return a null value, except that we replaced the value <code class="varname">'return_target'</code> with <code class="varname">'return_null'</code>, since the former is not meaningful for set operations. For operators such as <code class="varname">-&gt;</code>, the default value <code class="varname">'use_json_null'</code> is used and cannot be changed, whereas for the corresponding functions <code class="varname">jsonbsetObjectField</code>, the last argument specifies the behavior in the case the function returns NULL. We illustrate this behavior for function <code class="varname">jsonbsetObjectField</code> below.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="jsonbset_object_field"></a><a class="indexterm" name="id11218"></a><a class="indexterm" name="id11221"></a><a class="indexterm" name="id11224"></a><a class="indexterm" name="id11227"></a><p>Extract a JSON object field specified by a key</p><pre class="programlisting">
+		</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="jsonbset_jsonb"></a>JSONB Set Operations</h2></div></div></div><p>When manipulating JSON collections of varying structure, it may be the case that an item is defined in some of the documents but not all. PostgreSQL provides the <span class="emphasis"><em>lax mode</em></span> for this purpose, where the argument <code class="varname">null_value_treatment</code> determines the behavior in the case a function returns a NULL value. The argument can take one of the following values: <code class="varname">'raise_exception'</code>, <code class="varname">'use_json_null'</code>, <code class="varname">'delete_key'</code>, <code class="varname">'return_target'</code>, where <code class="varname">'use_json_null'</code> is the default value. In PostgreSQL the lax mode is supported only for <span class="emphasis"><em>update</em></span> (not <span class="emphasis"><em>query</em></span>) operations with the function <code class="varname">jsonb_set_lax</code>. In MobilityDB, we kept the same semantics for the corresponding function <code class="varname">jsonbsetSetLax</code>, but we enabled similar behavior for <span class="emphasis"><em>all</em></span> JSON operations that may return a null value, except that we replaced the value <code class="varname">'return_target'</code> with <code class="varname">'return_null'</code>, since the former is not meaningful for set operations. For operators such as <code class="varname">-&gt;</code>, the default value <code class="varname">'use_json_null'</code> is used and cannot be changed, whereas for the corresponding functions <code class="varname">jsonbsetObjectField</code>, the last argument specifies the behavior in the case the function returns NULL. We illustrate this behavior for function <code class="varname">jsonbsetObjectField</code> below.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="jsonbset_object_field"></a><a class="indexterm" name="id11223"></a><a class="indexterm" name="id11226"></a><a class="indexterm" name="id11229"></a><a class="indexterm" name="id11232"></a><p>Extract a JSON object field specified by a key</p><pre class="programlisting">
 {textset,jsonbset} -&gt; text → {textset,jsonbset}
 jsonbset -&gt;&gt; text → textset
 jsonbsetObjectField(jsonbset,text,null_handle text='use_json_null') → jsonbset
@@ -41,7 +41,7 @@ SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
 SELECT jsonbsetObjectField(set(ARRAY[jsonb '{"unit": "km", "speed": 10}',
   '{"unit": "km"}', '{"unit": "km", "speed": 10}']), 'speed', 'return_null');
 -- NULL
-</pre></li><li class="listitem"><a name="jsonbset_extract_path"></a><a class="indexterm" name="id11238"></a><a class="indexterm" name="id11241"></a><a class="indexterm" name="id11244"></a><a class="indexterm" name="id11247"></a><p>Extract a JSON object field specified by a path</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_extract_path"></a><a class="indexterm" name="id11243"></a><a class="indexterm" name="id11246"></a><a class="indexterm" name="id11249"></a><a class="indexterm" name="id11252"></a><p>Extract a JSON object field specified by a path</p><pre class="programlisting">
 {textset,jsonbset} #&gt; text[] → {textset,jsonbset}
 jsonbsetExtractPath(jsonbset,path text[],null_handle text='use_json_null') → jsonbset
 jsonbsetExtractPathText(jsonbset,path text[],null_handle text='use_json_null') → textset
@@ -53,7 +53,7 @@ SELECT set(ARRAY[jsonb '{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bou
   '{"position":"Point(2 2)", "PoIs":["Palais Royal", "Manneken Pis"]}'])
   #&gt;&gt; ARRAY[text 'PoIs', '1'];
 -- {"La Bourse", "Manneken Pis"}
-</pre></li><li class="listitem"><a name="jsonbset_array_element"></a><a class="indexterm" name="id11254"></a><a class="indexterm" name="id11257"></a><p>Extract an element from a JSON array</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_array_element"></a><a class="indexterm" name="id11259"></a><a class="indexterm" name="id11262"></a><p>Extract an element from a JSON array</p><pre class="programlisting">
 jsonbsetArrayElement(jsonbset,integer,null_handle text='use_json_null') → jsonbset
 jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → jsonbset
 </pre><pre class="programlisting">
@@ -63,7 +63,7 @@ SELECT jsonbsetArrayElement(set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
 SELECT jsonbsetArrayElement(set(ARRAY[jsonb '["Grand Place", "La Bourse"]',
   '["Palais Royal", "Manneken Pis"]']), 1);
 -- {"\"La Bourse\"", "\"Manneken Pis\""}
-</pre></li><li class="listitem"><a name="jsonbset_alphanumset"></a><a class="indexterm" name="id11264"></a><a class="indexterm" name="id11267"></a><a class="indexterm" name="id11270"></a><p>Extract a alphanumeric value from a JSONB set given by a key</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_alphanumset"></a><a class="indexterm" name="id11269"></a><a class="indexterm" name="id11272"></a><a class="indexterm" name="id11275"></a><p>Extract a alphanumeric value from a JSONB set given by a key</p><pre class="programlisting">
 intset(jsonbset,text,null_handle text='raise_exception') → tint
 floatset(jsonbset,text,null_handle text='raise_exception') → tfloat
 textset(jsonbset,text,null_handle text='raise_exception') → textset
@@ -77,14 +77,14 @@ SELECT floatset(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}",
 SELECT textset(jsonbset '{"{\"road\": \"Bvd Gén. Jacques\", \"category\": \"primary\"}",
   "{\"road\": \"Bvd de la Cambre\", \"category\": \"residential\"}"}', 'category');
 -- {"primary", "residential"}
-</pre></li><li class="listitem"><a name="jsonbset_concat"></a><a class="indexterm" name="id11280"></a><p>JSONB set concatenation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_concat"></a><a class="indexterm" name="id11285"></a><p>JSONB set concatenation</p><pre class="programlisting">
 {jsonb,jsonbset} || {jsonbset,jsonb} → jsonbset
 </pre><p>The value is concatenated with every element of the set, and the operand order is free.</p><pre class="programlisting">
 SELECT set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']) || '{"unit":"km"}'::jsonb;
 -- {"{\"unit\": \"km\", \"speed\": 10}", "{\"unit\": \"km\", \"speed\": 20}"}
 SELECT jsonb '{"unit":"km"}' || set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']);
 -- {"{\"unit\": \"km\", \"speed\": 10}", "{\"unit\": \"km\", \"speed\": 20}"}
-</pre></li><li class="listitem"><a name="jsonbset_delete"></a><a class="indexterm" name="id11288"></a><p>JSONB set deletion</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_delete"></a><a class="indexterm" name="id11293"></a><p>JSONB set deletion</p><pre class="programlisting">
 jsonbset - {int,text,text[]} → jsonbset
 jsonbset #- text[] → jsonbset
 </pre><pre class="programlisting">
@@ -113,7 +113,7 @@ SELECT setMinus(set(ARRAY[jsonb '{"unit": "km", "speed": 10, "light": true}',
 SELECT setMinus(set(ARRAY[jsonb '["Grand Place", "La Bourse"]', '["Palais Royal"]']) - 0,
   set(ARRAY[jsonb '{}', '[]']));
 -- {"[\"La Bourse\"]"}
-</pre></li><li class="listitem"><a name="jsonbset_exists"></a><a class="indexterm" name="id11299"></a><p>JSONB set exists</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_exists"></a><a class="indexterm" name="id11304"></a><p>JSONB set exists</p><pre class="programlisting">
 jsonbset ? text → boolean[]
 jsonbset {?|, ?&amp;} text[] → boolean[]
 </pre><p>As in PostgreSQL, the operators <code class="varname">?|</code> and <code class="varname">?&amp;</code> test, respectively, whether <span class="emphasis"><em>any</em></span> or <span class="emphasis"><em>all</em></span> of the strings in the text array exist as top-level keys or array elements. The result is a Boolean for every value of the set, in the order of the values of the set.</p><pre class="programlisting">
@@ -128,7 +128,7 @@ SELECT jsonbset '{"{\"speed\": 10}",
 SELECT jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}' ?&amp; ARRAY[text 'speed', text 'units'];
 -- {f,t}
-</pre></li><li class="listitem"><a name="jsonbset_set"></a><a class="indexterm" name="id11311"></a><a class="indexterm" name="id11314"></a><p>JSONB set assignment</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_set"></a><a class="indexterm" name="id11316"></a><a class="indexterm" name="id11319"></a><p>JSONB set assignment</p><pre class="programlisting">
 jsonbsetSet(jsonbset,path text[],val jsonb,create_missing boolean=true) → jsonbset
 jsonbsetSetLax(jsonbset,path text[],val jsonb,create boolean=true,
   handle_null text) → jsonbset
@@ -145,7 +145,7 @@ SELECT jsonbsetSet(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}',
 SELECT jsonbsetSetLax(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}', '{"speed": 20}']),
   ARRAY['units'], 'null'::jsonb, true, 'delete_key');
 -- {"{\"speed\": 10}", "{\"speed\": 20}"}
-</pre></li><li class="listitem"><a name="jsonbset_insert"></a><a class="indexterm" name="id11335"></a><p>Return the <code class="varname">jsonbset</code> value with <code class="varname">jsonb</code> inserted</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_insert"></a><a class="indexterm" name="id11340"></a><p>Return the <code class="varname">jsonbset</code> value with <code class="varname">jsonb</code> inserted</p><pre class="programlisting">
 jsonbsetInsert(jsonbset,path text[],val jsonb,after boolean=false) → jsonbset
 </pre><p>If the item specified by the path is an array element, the new value will be inserted before that item if <code class="varname">after</code> is false, or after it otherwise. If the item specified by the path is an object field, the new value will be inserted only if the object does not already contain that key. All earlier steps in the path must exist, or the target is returned unchanged. As with the path oriented operators, negative integers that appear in the path count from the end of JSON arrays. If the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive.</p><pre class="programlisting">
 SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['units'],
@@ -157,7 +157,7 @@ SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed":10}', '{"speed":20}']), ARRAY['u
 SELECT jsonbsetInsert(set(ARRAY[jsonb '{"speed": 10, "units": "km/h"}',
   '{"speed": 20, "units": "km/h"}']), ARRAY['units'], '"mi/h"'::jsonb);
 -- {"{\"speed\": 10, \"units\": \"mi/h\"}", "{\"speed\": 20, \"units\": \"mi/h\"}"}
-</pre></li><li class="listitem"><a name="jsonbset_strip_nulls"></a><a class="indexterm" name="id11346"></a><p>Return a JSONB set without nulls</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_strip_nulls"></a><a class="indexterm" name="id11351"></a><p>Return a JSONB set without nulls</p><pre class="programlisting">
 jsonbsetStripNulls(jsonbset,strip_in_arrays boolean=false) → jsonbset
 </pre><p>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</p><pre class="programlisting">
 SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10, "lights": null}',
@@ -181,7 +181,7 @@ SELECT jsonbsetStripNulls(set(ARRAY[jsonb '{"speed": 10}', 'null',
 SELECT setMinus(set(ARRAY[jsonb '{"speed": 10}', 'null',
   '{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}']), set(ARRAY[jsonb 'null']));
 -- {"{\"speed\": 10}", "{\"PoIs\": [\"Grand Place\", \"La Bourse\"], \"speed\": 20}"}
-</pre></li><li class="listitem"><a name="jsonbset_path_exists"></a><a class="indexterm" name="id11357"></a><a class="indexterm" name="id11360"></a><a class="indexterm" name="id11363"></a><p>Does the JSON path return any item for the specified JSONB set?</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_path_exists"></a><a class="indexterm" name="id11362"></a><a class="indexterm" name="id11365"></a><a class="indexterm" name="id11368"></a><p>Does the JSON path return any item for the specified JSONB set?</p><pre class="programlisting">
 jsonbset @? jsonpath → boolean[]
 jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
@@ -194,7 +194,7 @@ SELECT jsonbset '{"{\"speed\": 10}",
 SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ &gt; $min)', '{"min": 15}');
 -- {f,t}
-</pre></li><li class="listitem"><a name="jsonbset_path_match"></a><a class="indexterm" name="id11372"></a><a class="indexterm" name="id11375"></a><a class="indexterm" name="id11378"></a><p>Return the result of a JSON path predicate check for a JSONB set</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_path_match"></a><a class="indexterm" name="id11377"></a><a class="indexterm" name="id11380"></a><a class="indexterm" name="id11383"></a><p>Return the result of a JSON path predicate check for a JSONB set</p><pre class="programlisting">
 jsonbset @@ jsonpath → boolean[]
 jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
 jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]
@@ -207,7 +207,7 @@ SELECT jsonbset '{"{\"speed\": 10}",
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}",
   "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed &gt; $min', '{"min": 15}');
 -- {f,t}
-</pre></li><li class="listitem"><a name="jsonbset_path_query_array"></a><a class="indexterm" name="id11387"></a><a class="indexterm" name="id11390"></a><p>Return all items returned by a JSON path from a JSONB set, as a JSON array</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_path_query_array"></a><a class="indexterm" name="id11392"></a><a class="indexterm" name="id11395"></a><p>Return all items returned by a JSON path from a JSONB set, as a JSON array</p><pre class="programlisting">
 jsonbsetPathQueryArray(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 jsonbsetPathQueryArrayTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 </pre><p>The above function can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">
@@ -221,7 +221,7 @@ SELECT jsonbsetPathQueryArrayTz(set(ARRAY[jsonb
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
    @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2001-01-05", "max":"2001-01-09"}');
 -- {"[\"2001-01-07\"]", "[\"2001-01-06\", \"2001-01-09\"]"}
-</pre></li><li class="listitem"><a name="jsonbset_path_query_first"></a><a class="indexterm" name="id11398"></a><a class="indexterm" name="id11401"></a><p>Return the fist item returned by a JSON path from a JSONB set</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_path_query_first"></a><a class="indexterm" name="id11403"></a><a class="indexterm" name="id11406"></a><p>Return the fist item returned by a JSON path from a JSONB set</p><pre class="programlisting">
 jsonbsetPathQueryFirst(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 jsonbsetPathQueryFirstTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset
 </pre><p>The above functions can suppress the following errors by setting the last argument to true: missing object field or array element, unexpected JSON item type, datetime and numeric errors. This behavior might be helpful when searching JSON document collections of varying structure.</p><pre class="programlisting">

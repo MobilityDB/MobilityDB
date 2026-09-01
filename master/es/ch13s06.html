@@ -59,16 +59,22 @@ SELECT asEWKT(tposechainFromBinary(asBinary(tposechain
 SELECT asEWKT(tposechainFromHexEWKB(asHexEWKB(tposechain 'SRID=5676;
   PoseChain(Pose(Point(1 1), 0.5))@2001-01-01')));
 -- SRID=5676;PoseChain(Pose(POINT(1 1),0.5))@2001-01-01
-</pre></li><li class="listitem"><a name="tposeFromMFJSON"></a><a class="indexterm" name="id8982"></a><p>Entrada desde la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
-tposeFromMFJSON(bytea) → tpose
-</pre><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposeFromMFJSON"></a><a class="indexterm" name="id8982"></a><a class="indexterm" name="id8985"></a><p>Entrada desde la representación JSON de características móviles (MF-JSON)</p><pre class="programlisting">
+tposeFromMFJSON(text) → tpose
+tposechainFromMFJSON(text) → tposechain
+</pre><p>Una cadena de poses se escribe como el arreglo de sus eslabones, de modo que
+					un documento <code class="varname">MovingPoseChain</code> contiene un arreglo de objetos
+					pose para cada instante</p><pre class="programlisting">
 SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=3812;Pose(Point(1 2),0.5)@2001-01-01',
   3)));
 -- SRID=3812;Pose(POINT(1 2),0.5)@2001-01-01
 SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=5676;
   Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3)));
 -- SRID=5676;Pose(POINT Z(1 2 3),1,0,0,0)@2001-01-01
-</pre></li><li class="listitem"><a name="tposeFromBinary"></a><a class="indexterm" name="id8989"></a><a class="indexterm" name="id8992"></a><a class="indexterm" name="id8995"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'SRID=3812;
+  PoseChain(Pose(Point(1 2),0.5),Pose(Point(3 4),0.25))@2001-01-01', 3)));
+-- SRID=3812;PoseChain(Pose(POINT(1 2),0.5),Pose(POINT(3 4),0.25))@2001-01-01
+</pre></li><li class="listitem"><a name="tposeFromBinary"></a><a class="indexterm" name="id8994"></a><a class="indexterm" name="id8997"></a><a class="indexterm" name="id9000"></a><p>Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</p><pre class="programlisting">
 tposeFromBinary(bytea) → tpose
 tposeFromEWKB(bytea) → tpose
 tposeFromHexEWKB(text) → tpose
