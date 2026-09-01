@@ -319,7 +319,6 @@ PG_FUNCTION_INFO_V1(Teq_pose_tpose);
  * @ingroup mobilitydb_pose_comp_temp
  * @brief Return a temporal Boolean that states whether a pose is equal to a
  * temporal pose
- * @brief Return true if a temporal pose is ever equal to a pose
  * @sqlfn tEq()
  * @sqlop @p #=
  */

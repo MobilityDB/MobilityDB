@@ -60,7 +60,7 @@
  *****************************************************************************/
 
 /**
- * @brief
+ * @brief Point cloud schema held in the cache, keyed by the pcid it belongs to
  */
 typedef struct schema_entry {
   uint32_t pcid;

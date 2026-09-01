@@ -1839,7 +1839,8 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief
+ * @brief Bounding box of one segment of a temporal circular buffer sequence,
+ * carrying the index of the segment it bounds
  */
 typedef struct
 {
@@ -1851,7 +1852,8 @@ typedef struct
 } TcbufferSegBox;
 
 /**
- * @brief
+ * @brief Compare two segment boxes by their minimum x, the order the sweep reads
+ * them in
  */
 static int
 tcbuffersegbox_cmp_minx(const void *a, const void *b)

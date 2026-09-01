@@ -95,7 +95,7 @@
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Serialized point cloud point, laid out as the upstream library writes it
  */
 typedef struct
 {

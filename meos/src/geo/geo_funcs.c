@@ -3225,7 +3225,7 @@ ensure_circle_type(const GSERIALIZED *gs)
 
 /**
  * @brief Return true if a point lies on the boundary of a geometry
- * @brief Uses the exact line/arc engine
+ * @details Uses the exact line/arc engine
  */
 bool
 relate_point_on_boundary(double x, double y, Edge **edges, int nedges)
@@ -4054,7 +4054,7 @@ relate_point_area(const LWGEOM *point_geom, const LWGEOM *area_geom,
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Set the DE-9IM matrix of a linear geometry and a point
  */
 static void
 relate_linear_point(const LWGEOM *line_geom, const LWGEOM *point_geom,
@@ -4132,7 +4132,7 @@ relate_linear_edges_overlap(const Edge *a, const Edge *b, double *t0,
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Set the DE-9IM matrix of an areal geometry and a point
  */
 static void
 relate_area_point(const LWGEOM *area_geom, const LWGEOM *point_geom,
@@ -5174,7 +5174,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Set the DE-9IM matrix of an areal geometry and a linear one
  */
 static void
 relate_area_linear(const LWGEOM *area_geom, const LWGEOM *line_geom,

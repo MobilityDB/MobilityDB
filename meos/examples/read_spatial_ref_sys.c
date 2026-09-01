@@ -68,7 +68,7 @@ typedef struct
 } PjStrs;
 
 /**
- * @brief 
+ * @brief Return the PROJ strings of an SRID, read from the spatial_ref_sys table
  */
 static PjStrs
 GetProjStringsSPI(int32_t srid)
