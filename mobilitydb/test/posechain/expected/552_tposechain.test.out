@@ -22,6 +22,46 @@ SELECT asEWKT(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain
  {[PoseChain(Pose(POINT(0 0),0))@Mon Jan 01 00:00:00 2001 PST, PoseChain(Pose(POINT(1 1),0))@Tue Jan 02 00:00:00 2001 PST], [PoseChain(Pose(POINT(2 2),0))@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asMFJSON(tposechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 4), 0.25))@2001-01-01');
+                                                                                          asmfjson                                                                                           
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPoseChain","values":[[{"position":{"lat":2,"lon":1},"yaw":0.5},{"position":{"lat":4,"lon":3},"yaw":0.25}]],"datetimes":["2001-01-01T00:00:00-08:00"],"interpolation":"None"}
+(1 row)
+
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 4), 0.25))@2001-01-01', 3)));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ PoseChain(Pose(POINT(1 2),0.5),Pose(POINT(3 4),0.25))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain '[PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0.5), Pose(Point(2 1), 0.5))@2001-01-02]', 3)));
+                                                                               asewkt                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))@Mon Jan 01 00:00:00 2001 PST, PoseChain(Pose(POINT(1 1),0.5),Pose(POINT(2 1),0.5))@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02], [PoseChain(Pose(Point(2 2), 0))@2001-01-03]}', 3)));
+                                                                                          asewkt                                                                                          
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[PoseChain(Pose(POINT(0 0),0))@Mon Jan 01 00:00:00 2001 PST, PoseChain(Pose(POINT(1 1),0))@Tue Jan 02 00:00:00 2001 PST], [PoseChain(Pose(POINT(2 2),0))@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'SRID=4326;PoseChain(Pose(Point(1 2), 0.5), Pose(Point(2 3), 0.25))@2001-01-01', 3)));
+                                            asewkt                                            
+----------------------------------------------------------------------------------------------
+ SRID=4326;PoseChain(Pose(POINT(1 2),0.5),Pose(POINT(2 3),0.25))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'PoseChain(Pose(Point Z(1 2 3), 1, 0, 0, 0), Pose(Point Z(1 0 0), 1, 0, 0, 0))@2001-01-01', 3)));
+                                               asewkt                                                
+-----------------------------------------------------------------------------------------------------
+ PoseChain(Pose(POINT Z (1 2 3),1,0,0,0),Pose(POINT Z (1 0 0),1,0,0,0))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tposechainFromMFJSON('{"type":"MovingPose","values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2001-01-01T00:00:00+00"],"interpolation":"None"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: tposechain, received: tpose
+SELECT tposechainFromMFJSON('{"type":"MovingPoseChain","values":[[]],"datetimes":["2001-01-01T00:00:00+00"],"interpolation":"None"}');
+ERROR:  A pose chain in the MFJSON string carries no link
 SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2001-01-02]';
 ERROR:  Operation on pose chains of 1 and 2 links
 LINE 1: SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-0...

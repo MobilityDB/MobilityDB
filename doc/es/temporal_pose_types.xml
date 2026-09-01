@@ -780,10 +780,15 @@ SELECT asEWKT(tposechainFromHexEWKB(asHexEWKB(tposechain 'SRID=5676;
 
 			<listitem xml:id="tposeFromMFJSON">
 				<indexterm significance="normal"><primary><varname>tposeFromMFJSON</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tposechainFromMFJSON</varname></primary></indexterm>
 				<para>Entrada desde la representación JSON de características móviles (MF-JSON)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tposeFromMFJSON(bytea) → tpose
+tposeFromMFJSON(text) &#8594; tpose
+tposechainFromMFJSON(text) &#8594; tposechain
 </programlisting>
+				<para>Una cadena de poses se escribe como el arreglo de sus eslabones, de modo que
+					un documento <varname>MovingPoseChain</varname> contiene un arreglo de objetos
+					pose para cada instante</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=3812;Pose(Point(1 2),0.5)@2001-01-01',
   3)));
@@ -791,6 +796,9 @@ SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=3812;Pose(Point(1 2),0.5)@200
 SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 'SRID=5676;
   Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3)));
 -- SRID=5676;Pose(POINT Z(1 2 3),1,0,0,0)@2001-01-01
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'SRID=3812;
+  PoseChain(Pose(Point(1 2),0.5),Pose(Point(3 4),0.25))@2001-01-01', 3)));
+-- SRID=3812;PoseChain(Pose(POINT(1 2),0.5),Pose(POINT(3 4),0.25))@2001-01-01
 </programlisting>
 			</listitem>
 

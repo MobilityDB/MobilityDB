@@ -1444,7 +1444,7 @@
 						<para><link linkend="tposeFromText"><varname>tposeFromText</varname>, <varname>tposeFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tposeFromMFJSON"><varname>tposeFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>
+						<para><link linkend="tposeFromMFJSON"><varname>tposeFromMFJSON</varname>, <varname>tposechainFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tposeFromBinary"><varname>tposeFromBinary</varname>, <varname>tposeFromEWKB</varname>, <varname>tposeFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>

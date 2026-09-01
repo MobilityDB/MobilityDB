@@ -1442,7 +1442,7 @@
 					<para><link linkend="tposeFromText"><varname>tposeFromText</varname>, <varname>tposeFromEWKT</varname></link>: Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tposeFromMFJSON"><varname>tposeFromMFJSON</varname></link>: Entrada desde la representación JSON de características móviles (MF-JSON)</para>
+					<para><link linkend="tposeFromMFJSON"><varname>tposeFromMFJSON</varname>, <varname>tposechainFromMFJSON</varname></link>: Entrada desde la representación JSON de características móviles (MF-JSON)</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tposeFromBinary"><varname>tposeFromBinary</varname>, <varname>tposeFromEWKB</varname>, <varname>tposeFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (WKB), desde la representación extendida binaria conocida (EWKB), o desde la representación hexadecimal extendida binaria conocida (HexEWKB)</para>

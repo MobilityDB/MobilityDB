@@ -39,6 +39,21 @@ SELECT asEWKT(tposechain '{PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(
 SELECT asEWKT(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02]');
 SELECT asEWKT(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02], [PoseChain(Pose(Point(2 2), 0))@2001-01-03]}');
 
+-- A chain is written as the array of its links, and reads back as itself
+SELECT asMFJSON(tposechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 4), 0.25))@2001-01-01');
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 4), 0.25))@2001-01-01', 3)));
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain '[PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0.5), Pose(Point(2 1), 0.5))@2001-01-02]', 3)));
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Point(1 1), 0))@2001-01-02], [PoseChain(Pose(Point(2 2), 0))@2001-01-03]}', 3)));
+-- The frame travels in the document's own crs member, which asMFJSON writes
+-- whenever the value carries an SRID
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'SRID=4326;PoseChain(Pose(Point(1 2), 0.5), Pose(Point(2 3), 0.25))@2001-01-01', 3)));
+-- A three-dimensional chain states each link as a quaternion
+SELECT asEWKT(tposechainFromMFJSON(asMFJSON(tposechain 'PoseChain(Pose(Point Z(1 2 3), 1, 0, 0, 0), Pose(Point Z(1 0 0), 1, 0, 0, 0))@2001-01-01', 3)));
+-- A document naming another type is refused
+SELECT tposechainFromMFJSON('{"type":"MovingPose","values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2001-01-01T00:00:00+00"],"interpolation":"None"}');
+-- A chain carrying no link is refused
+SELECT tposechainFromMFJSON('{"type":"MovingPoseChain","values":[[]],"datetimes":["2001-01-01T00:00:00+00"],"interpolation":"None"}');
+
 -------------------------------------------------------------------------------
 -- Errors
 -- Every value of a temporal pose chain holds the same number of links: a chain
