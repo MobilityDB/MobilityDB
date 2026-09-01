@@ -137,15 +137,16 @@ SELECT SRID(npoint 'Npoint(76, 0.3)');
 -- 5676
 SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 5676
-</pre></li></ul></div><p>Two <code class="varname">npoint</code> values may be have different route identifiers but may represent the same spatial point at the intersection of the two routes. Function <code class="varname">same</code> is used for testing spatial simalarity of network points.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7563"></a><a class="indexterm" name="id7566"></a><p>Spatial similarity</p><pre class="programlisting">
-equals(npoint,npoint)::Boolean
+</pre></li></ul></div><p>Two <code class="varname">npoint</code> values may be have different route identifiers but may represent the same spatial point at the intersection of the two routes. Function <code class="varname">same</code> is used for testing spatial simalarity of network points.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7563"></a><a class="indexterm" name="id7566"></a><p>Are the two values approximately equal with respect to an epsilon value?</p><pre class="programlisting">
+same(npoint,npoint) → boolean
+npoint ~= npoint → boolean
 </pre><pre class="programlisting">
 WITH inter(geom) AS (
   SELECT st_intersection(t1.the_geom, t2.the_geom)
   FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2), fractions(f1, f2) AS (
   SELECT ST_LineLocatePoint(t1.the_geom, i.geom), ST_LineLocatePoint(t2.the_geom, i.geom)
   FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)
-SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
+SELECT same(npoint(1, f1), npoint(2, f2)) FROM fractions;
 -- true
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_comparisons"></a>Comparisons</h3></div></div></div><p>The comparison operators (=, &lt;, and so on) for static network types require that the left and right arguments be of the same type. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on static network types.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_eq"></a><a class="indexterm" name="id7577"></a><a class="indexterm" name="id7580"></a><a class="indexterm" name="id7583"></a><a class="indexterm" name="id7586"></a><a class="indexterm" name="id7589"></a><a class="indexterm" name="id7592"></a><p>Traditional comparisons</p><pre class="programlisting">
 npoint {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} npoint

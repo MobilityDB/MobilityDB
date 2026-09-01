@@ -137,15 +137,16 @@ SELECT SRID(npoint 'Npoint(76, 0.3)');
 -- 5676
 SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 5676
-</pre></li></ul></div><p>Dos valores <code class="varname">npoint</code> pueden tener diferentes identificadores de ruta pero pueden representar el mismo punto espacial en la intersección de las dos rutas. La función <code class="varname">equals</code> se utiliza para verificar la igualdad espacial de los puntos de la red.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7008"></a><a class="indexterm" name="id7011"></a><p>Igualdad espacial para puntos de red</p><pre class="programlisting">
-equals(npoint,npoint)::Boolean
+</pre></li></ul></div><p>Dos valores <code class="varname">npoint</code> pueden tener diferentes identificadores de ruta pero pueden representar el mismo punto espacial en la intersección de las dos rutas. La función <code class="varname">same</code> se utiliza para verificar la similitud espacial de los puntos de la red.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7008"></a><a class="indexterm" name="id7011"></a><p>¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</p><pre class="programlisting">
+same(npoint,npoint) → boolean
+npoint ~= npoint → boolean
 </pre><pre class="programlisting">
 WITH inter(geom) AS (
   SELECT st_intersection(t1.the_geom, t2.the_geom)
   FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2), fractions(f1, f2) AS (
   SELECT ST_LineLocatePoint(t1.the_geom, i.geom), ST_LineLocatePoint(t2.the_geom, i.geom)
   FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)
-SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
+SELECT same(npoint(1, f1), npoint(2, f2)) FROM fractions;
 -- true
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_comparisons"></a>Comparaciones</h3></div></div></div><p>Los operadores de comparación (=, &lt; y así sucesivamente) para tipos de red estáticos requieren que los argumentos izquierdo y derecho sean del mismo tipo. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en tipos de red estáticos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_eq"></a><a class="indexterm" name="id7022"></a><a class="indexterm" name="id7025"></a><a class="indexterm" name="id7028"></a><a class="indexterm" name="id7031"></a><a class="indexterm" name="id7034"></a><a class="indexterm" name="id7037"></a><p>Comparaciones tradicionales</p><pre class="programlisting">
 npoint {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} npoint

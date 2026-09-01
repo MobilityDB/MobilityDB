@@ -152,4 +152,11 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)' &lt;= cbuffer 'Cbuffer(Point(2 2), 0.5
 -- true
 SELECT cbuffer 'Cbuffer(Point(1 1), 0.6)' &gt;= cbuffer 'Cbuffer(Point(1 1), 0.5)';
 -- true
+</pre></li><li class="listitem"><a name="cbuffer_same"></a><a class="indexterm" name="id8370"></a><a class="indexterm" name="id8373"></a><p>Are the two values approximately equal with respect to an epsilon value?</p><pre class="programlisting">
+same(cbuffer,cbuffer) → boolean
+cbuffer ~= cbuffer → boolean
+</pre><pre class="programlisting">
+SELECT cbuffer 'Cbuffer(Point(1 1), 0.3)' ~= cbuffer 'Cbuffer(Point(1 1.0000001),
+  0.30000001)';
+-- true
 </pre></li></ul></div></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s19.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch12s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Aggregation </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Temporal Circular Buffers</td></tr></table></div></body></html>
