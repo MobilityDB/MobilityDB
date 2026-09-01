@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: TboxPGetDatum</title>
+<title>MobilityDB: ensure_valid_tbox_tbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,7 +81,7 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="tbox_8h_a639824a79bf0711dacb7d5672368a308.html#a639824a79bf0711dacb7d5672368a308">DatumGetTboxP</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tbox_8h_a3c9e972a7dbdef0ce75ff873c33fa0bb.html#a3c9e972a7dbdef0ce75ff873c33fa0bb">ensure_same_dimensionality_tbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tbox_8h_aca2ddb3f4aa4295610ab78a9b4ae3cf0.html#aca2ddb3f4aa4295610ab78a9b4ae3cf0">ensure_valid_tbox_tbox</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tbox_8h_aca2ddb3f4aa4295610ab78a9b4ae3cf0.html#aca2ddb3f4aa4295610ab78a9b4ae3cf0">ensure_valid_tbox_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tbox_8h_a15435b42edc81629a63e6d4293d3de8e.html#a15435b42edc81629a63e6d4293d3de8e">PG_GETARG_TBOX_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tbox_8h_a42edaecc7f8abef1fa140abc696a9815.html#a42edaecc7f8abef1fa140abc696a9815">PG_RETURN_TBOX_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gaf4b942cf98a4b7cc512cc8c2e331ea3a.html#gaf4b942cf98a4b7cc512cc8c2e331ea3a">set_tbox</a></td></tr>
@@ -89,26 +89,44 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_ga0edb9730580d8e546f865f88c49b97d4.html#ga0edb9730580d8e546f865f88c49b97d4">tbox_floatspan</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_ga662ef480bfcd5ae0db14384618218178.html#ga662ef480bfcd5ae0db14384618218178">tbox_intspan</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gabda00c26727735d1e8c409bcbbf61d4c.html#gabda00c26727735d1e8c409bcbbf61d4c">tbox_tstzspan</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tbox_8h_a0f8caf1bc0bc4ce1fcb6b00bd9b2d692.html#a0f8caf1bc0bc4ce1fcb6b00bd9b2d692">TboxPGetDatum</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tbox_8h_a0f8caf1bc0bc4ce1fcb6b00bd9b2d692.html#a0f8caf1bc0bc4ce1fcb6b00bd9b2d692">TboxPGetDatum</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a0f8caf1bc0bc4ce1fcb6b00bd9b2d692" name="a0f8caf1bc0bc4ce1fcb6b00bd9b2d692"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f8caf1bc0bc4ce1fcb6b00bd9b2d692">&#9670;&#160;</a></span>TboxPGetDatum</h2>
+<a id="aca2ddb3f4aa4295610ab78a9b4ae3cf0" name="aca2ddb3f4aa4295610ab78a9b4ae3cf0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aca2ddb3f4aa4295610ab78a9b4ae3cf0">&#9670;&#160;</a></span>ensure_valid_tbox_tbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define TboxPGetDatum</td>
+          <td class="memname">bool ensure_valid_tbox_tbox </td>
           <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">X</td><td>)</td>
-          <td>&#160;&#160;&#160;PointerGetDatum(X)</td>
+          <td class="paramtype">const <a class="el" href="structTBox.html">TBox</a> *&#160;</td>
+          <td class="paramname"><em>box1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structTBox.html">TBox</a> *&#160;</td>
+          <td class="paramname"><em>box2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return true if two temporal boxes are valid for operations. </p>
+<p >The boxes are comparable when their value spans measure the same quantity, which the span type states. A box carrying no value span states none, so the pair is comparable whatever the other box holds. Which dimensions an operation needs is the operation's own question, asked after this one </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> boxes </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
