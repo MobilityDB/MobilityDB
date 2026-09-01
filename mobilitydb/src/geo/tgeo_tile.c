@@ -191,7 +191,7 @@ Stbox_space_time_tiles_common(FunctionCallInfo fcinfo, bool spacetiles,
 PGDLLEXPORT Datum Stbox_space_tiles(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_space_tiles);
 /**
- * @brief @ingroup mobilitydb_geo_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return the spatial grid of a spatiotemporal box
  * @sqlfn spaceTiles()
  */
@@ -204,7 +204,7 @@ Stbox_space_tiles(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_time_tiles(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_time_tiles);
 /**
- * @brief @ingroup mobilitydb_geo_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return the temporal grid of a spatiotemporal box
  * @sqlfn timeTiles()
  */
@@ -217,7 +217,7 @@ Stbox_time_tiles(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_space_time_tiles(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_space_time_tiles);
 /**
- * @brief @ingroup mobilitydb_geo_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return the spatiotemporal grid of a spatiotemporal box
  * @sqlfn spaceTimeTiles()
  */
@@ -296,7 +296,7 @@ Stbox_get_space_tile(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_get_time_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_get_time_tile);
 /**
- * @brief @ingroup mobilitydb_geo_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return a tile in the temporal grid of a spatiotemporal box
  * @sqlfn getStboxTimeTile()
  */

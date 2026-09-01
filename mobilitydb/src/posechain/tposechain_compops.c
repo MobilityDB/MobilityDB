@@ -320,7 +320,6 @@ PG_FUNCTION_INFO_V1(Teq_posechain_tposechain);
  * @ingroup mobilitydb_posechain_comp_temp
  * @brief Return a temporal Boolean that states whether a posechain is equal to a
  * temporal posechain
- * @brief Return true if a temporal posechain is ever equal to a posechain
  * @sqlfn tEq()
  * @sqlop @p #=
  */

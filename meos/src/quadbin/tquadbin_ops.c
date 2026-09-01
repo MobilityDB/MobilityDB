@@ -70,7 +70,7 @@
  *****************************************************************************/
 
 /**
- * @brief
+ * @brief Return the resolution of a quadbin cell
  */
 static Datum
 datum_quadbin_get_resolution(Datum d)
@@ -79,7 +79,7 @@ datum_quadbin_get_resolution(Datum d)
 }
 
 /**
- * @brief
+ * @brief Return true if a value is a valid quadbin cell
  */
 static Datum
 datum_quadbin_is_valid_cell(Datum d)
@@ -88,7 +88,7 @@ datum_quadbin_is_valid_cell(Datum d)
 }
 
 /**
- * @brief
+ * @brief Return the parent of a quadbin cell at a given resolution
  */
 static Datum
 datum_quadbin_cell_to_parent(Datum cell_d, Datum res_d)
@@ -99,7 +99,7 @@ datum_quadbin_cell_to_parent(Datum cell_d, Datum res_d)
 }
 
 /**
- * @brief
+ * @brief Return the center point of a quadbin cell
  */
 static Datum
 datum_quadbin_cell_to_point(Datum d)
@@ -114,7 +114,7 @@ datum_quadbin_cell_to_point(Datum d)
 }
 
 /**
- * @brief
+ * @brief Return the boundary of a quadbin cell as a geometry
  */
 static Datum
 datum_quadbin_cell_to_boundary(Datum d)
@@ -138,7 +138,7 @@ datum_quadbin_cell_to_boundary(Datum d)
 }
 
 /**
- * @brief
+ * @brief Return the quadkey of a quadbin cell
  */
 static Datum
 datum_quadbin_cell_to_quadkey(Datum d)
@@ -150,7 +150,7 @@ datum_quadbin_cell_to_quadkey(Datum d)
 }
 
 /**
- * @brief
+ * @brief Return the area in square meters of a quadbin cell
  */
 static Datum
 datum_quadbin_cell_area(Datum d)

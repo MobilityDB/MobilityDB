@@ -1850,7 +1850,7 @@ stbox_stbox_flags(const STBox *box1, const STBox *box2, bool *hasx,
 /**
  * @brief Verify the conditions and set the ouput variables with the values of
  * the flags of the boxes
- * @brief Mixing 2D/3D is enabled to compute, for example, 2.5D operations
+ * @details Mixing 2D/3D is enabled to compute, for example, 2.5D operations
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hasz,hast,geodetic Boolean variables
  */

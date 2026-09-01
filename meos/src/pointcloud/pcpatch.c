@@ -90,7 +90,7 @@
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief Serialized point cloud patch, laid out as the upstream library writes it
  */
 typedef struct
 {

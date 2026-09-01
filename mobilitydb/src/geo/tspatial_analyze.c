@@ -194,7 +194,7 @@ nd_box_merge(const ND_BOX *source, ND_BOX *target)
 
 /**
  * @brief What stats cells overlap with this ND_BOX?
- * @brief Put the lowest cell addresses in ND_IBOX->min and the highest in
+ * @details Put the lowest cell addresses in ND_IBOX->min and the highest in
  * ND_IBOX->max
  */
 int
