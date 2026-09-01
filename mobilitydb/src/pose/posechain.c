@@ -655,7 +655,7 @@ PG_FUNCTION_INFO_V1(Posechain_same);
  * @ingroup mobilitydb_posechain_base_comp
  * @brief Return true if two pose chains are equal up to the tolerance of the
  * comparison of floating-point values
- * @sqlfn posechain_same()
+ * @sqlfn same()
  * @sqlop @p ~=
  */
 Datum

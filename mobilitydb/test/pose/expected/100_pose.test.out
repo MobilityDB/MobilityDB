@@ -298,6 +298,18 @@ SELECT pose 'Pose(Point(1 1),0.500001)' ~= pose 'Pose(Point(1 1),0.5)';
  f
 (1 row)
 
+SELECT same(pose 'Pose(Point(1.000001 1),0.5)', pose 'Pose(Point(1 1),0.5)');
+ same 
+------
+ t
+(1 row)
+
+SELECT same(pose 'Pose(Point(1.00001 1),0.5)', pose 'Pose(Point(1 1),0.5)');
+ same 
+------
+ f
+(1 row)
+
 SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(1 1),0.5)';
  ?column? 
 ----------

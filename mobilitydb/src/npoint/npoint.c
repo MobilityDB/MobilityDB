@@ -809,6 +809,7 @@ PG_FUNCTION_INFO_V1(Npoint_same);
  * @ingroup mobilitydb_npoint_comp
  * @brief Return true if two network points are spatially equal
  * @sqlfn same()
+ * @sqlop @p ~=
  */
 Datum
 Npoint_same(PG_FUNCTION_ARGS)

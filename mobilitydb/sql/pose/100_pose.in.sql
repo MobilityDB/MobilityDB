@@ -312,13 +312,13 @@ CREATE FUNCTION transformPipeline(pose, text, srid integer DEFAULT 0,
  * Same
  *****************************************************************************/
 
-CREATE FUNCTION pose_same(pose, pose)
+CREATE FUNCTION same(pose, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Pose_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
-  PROCEDURE = pose_same,
+  PROCEDURE = same,
   LEFTARG = pose, RIGHTARG = pose,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel

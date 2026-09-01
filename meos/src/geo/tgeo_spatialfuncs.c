@@ -165,24 +165,6 @@ datum2_point_ne(Datum point1, Datum point2)
 }
 
 /**
- * @brief Return true if the points are equal
- */
-Datum
-datum2_point_same(Datum point1, Datum point2)
-{
-  return BoolGetDatum(datum_point_same(point1, point2));
-}
-
-/**
- * @brief Return true if the points are equal
- */
-Datum
-datum2_point_nsame(Datum point1, Datum point2)
-{
-  return BoolGetDatum(! datum_point_same(point1, point2));
-}
-
-/**
  * @brief Return the centroid of a geometry
  */
 Datum

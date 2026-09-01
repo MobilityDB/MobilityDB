@@ -169,6 +169,8 @@ SELECT pose 'Pose(Point(1 1),0.5000001)' ~= pose 'Pose(Point(1 1),0.5)';
 SELECT pose 'Pose(Point(1.00001 1),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
 SELECT pose 'Pose(Point(1 1.00001),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
 SELECT pose 'Pose(Point(1 1),0.500001)' ~= pose 'Pose(Point(1 1),0.5)';
+SELECT same(pose 'Pose(Point(1.000001 1),0.5)', pose 'Pose(Point(1 1),0.5)');
+SELECT same(pose 'Pose(Point(1.00001 1),0.5)', pose 'Pose(Point(1 1),0.5)');
 
 -------------------------------------------------------------------------------
 

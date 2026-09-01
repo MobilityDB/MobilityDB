@@ -362,6 +362,21 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.6)' &gt;= cbuffer 'Cbuffer(Point(1 1), 0.5
 -- true
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="cbuffer_same">
+					<indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+					<para>¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+same(cbuffer,cbuffer) &#8594; boolean
+cbuffer ~= cbuffer &#8594; boolean
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT cbuffer 'Cbuffer(Point(1 1), 0.3)' ~= cbuffer 'Cbuffer(Point(1 1.0000001),
+  0.30000001)';
+-- true
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 	</sect1>

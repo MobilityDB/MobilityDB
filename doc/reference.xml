@@ -1395,7 +1395,7 @@
 						<para><link linkend="pose_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_same"><varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
+						<para><link linkend="pose_same"><varname>same</varname>, <varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1822,7 +1822,7 @@
 						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="npoint_same"><varname>equals</varname>, <varname>::</varname></link>: Spatial similarity</para>
+						<para><link linkend="npoint_same"><varname>same</varname>, <varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2106,6 +2106,9 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="cbuffer_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="cbuffer_same"><varname>same</varname>, <varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

@@ -138,6 +138,8 @@ SELECT asEWKT(round(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(0 0 
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' = posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' < posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' ~= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT same(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))', posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))');
+SELECT same(posechain 'PoseChain(Pose(Point(0 0), 0))', posechain 'PoseChain(Pose(Point(0.0000001 0), 0))');
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' <> posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
 SELECT cmp(posechain 'PoseChain(Pose(Point(0 0), 0))', posechain 'PoseChain(Pose(Point(1 0), 0))');
 
