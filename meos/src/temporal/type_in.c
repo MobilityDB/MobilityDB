@@ -74,9 +74,7 @@
 #if POSE
   #include <meos_pose.h>
   #include "pose/pose.h"
-#endif
-#if POSECHAIN
-  #include "posechain/posechain.h"
+  #include "pose/posechain.h"
 #endif
 #if QUADBIN
   #include <meos_quadbin.h>
@@ -291,7 +289,7 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       return true;
     }
 #endif
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
     {
       PoseChain *pc = posechain_parse(&str, end);
@@ -2002,7 +2000,7 @@ pose_from_wkb_state(meos_wkb_parse_state *s)
 }
 #endif /* POSE */
 
-#if POSECHAIN
+#if POSE
 /**
  * @brief Read a pose chain and advance the parse state forward
  * @details The chain writes its flags and its one SRID once, then the number
@@ -2053,7 +2051,7 @@ posechain_from_wkb_state(meos_wkb_parse_state *s)
   pfree_array((void **) poses, count);
   return result;
 }
-#endif /* POSECHAIN */
+#endif /* POSE */
 
 #if RASTER
 /**
@@ -2143,10 +2141,10 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_POSE:
       return PointerGetDatum(pose_from_wkb_state(s));
 #endif /* POSE */
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       return PointerGetDatum(posechain_from_wkb_state(s));
-#endif /* POSECHAIN */
+#endif /* POSE */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
@@ -2788,10 +2786,10 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   if (type == T_POSE)
     return PointerGetDatum(pose_from_wkb_state(&s));
 #endif /* POSE */
-#if POSECHAIN
+#if POSE
   if (type == T_POSECHAIN)
     return PointerGetDatum(posechain_from_wkb_state(&s));
-#endif /* POSECHAIN */
+#endif /* POSE */
 #if RASTER
   if (type == T_RAQUET)
     return raquet_from_wkb_state(&s);

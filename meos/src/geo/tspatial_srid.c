@@ -67,9 +67,7 @@
 #if POSE
   #include <meos_pose.h>
   #include "pose/pose.h"
-#endif
-#if POSECHAIN
-  #include "posechain/posechain.h"
+  #include "pose/posechain.h"
 #endif
 #if RGEO
   #include "rgeo/trgeo.h"
@@ -128,8 +126,6 @@ spatial_srid(Datum d, MeosType basetype)
 #if POSE
     case T_POSE:
       return pose_srid(DatumGetPoseP(d));
-#endif
-#if POSECHAIN
     case T_POSECHAIN:
       return posechain_srid(DatumGetPoseChainP(d));
 #endif
@@ -202,7 +198,7 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
       pose_set_srid_int(DatumGetPoseP(d), srid);
       return true;
 #endif
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       posechain_set_srid_int(DatumGetPoseChainP(d), srid);
       return true;
@@ -653,7 +649,7 @@ Datum
     case T_POSE:
       return PointerGetDatum(pose_transf_pj(DatumGetPoseP(d), srid_to, pj));
 #endif
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       return PointerGetDatum(posechain_transf_pj(DatumGetPoseChainP(d),
         srid_to, pj));

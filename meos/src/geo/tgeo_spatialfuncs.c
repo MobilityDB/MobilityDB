@@ -65,9 +65,7 @@
 #endif
 #if POSE
   #include "pose/pose.h"
-#endif
-#if POSECHAIN
-  #include "posechain/posechain.h"
+  #include "pose/posechain.h"
 #endif
 #if RGEO
   #include "rgeo/trgeo.h"
@@ -344,7 +342,7 @@ pose_flags(Pose *pose)
 }
 #endif /* POSE || RGEO */
 
-#if POSECHAIN
+#if POSE
 /**
  * @brief Get the MEOS flags from a pose chain
  */
@@ -357,7 +355,7 @@ posechain_flags(const PoseChain *pc)
   MEOS_FLAGS_SET_GEODETIC(result, MEOS_FLAGS_GET_GEODETIC(pc->flags));
   return result;
 }
-#endif /* POSECHAIN */
+#endif /* POSE */
 
 #if H3
 /**
@@ -494,7 +492,7 @@ spatial_flags(Datum d, MeosType basetype)
     case T_POSE:
       return pose_flags(DatumGetPoseP(d));
 #endif
-#if POSECHAIN
+#if POSE
     case T_POSECHAIN:
       return posechain_flags(DatumGetPoseChainP(d));
 #endif

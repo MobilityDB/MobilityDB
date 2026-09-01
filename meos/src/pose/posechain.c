@@ -44,7 +44,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
-#include <meos_posechain.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
@@ -57,7 +56,7 @@
 #include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
-#include "posechain/posechain.h"
+#include "pose/posechain.h"
 
 /** Buffer size for the output of a single link of a pose chain */
 #define MAXPOSELEN    256

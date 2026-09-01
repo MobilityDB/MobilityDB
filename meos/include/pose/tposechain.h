@@ -38,7 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_posechain.h>
+#include <meos_pose.h>
 #include "temporal/temporal.h"
 
 /*****************************************************************************/

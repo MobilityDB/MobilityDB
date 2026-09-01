@@ -54,10 +54,8 @@
 #endif
 #if POSE
   #include "pose/pose.h"
+  #include "pose/posechain.h"
   #include "pose/tpose_boxops.h"
-#endif
-#if POSECHAIN
-  #include "posechain/posechain.h"
 #endif
 #if RGEO
   #include "rgeo/trgeo.h"
@@ -110,14 +108,14 @@ set_expand_bbox(Datum value, MeosType basetype, void *box)
     stbox_expand(&box1, (STBox *) box);
   }
 #endif /* POSE */
-#if POSECHAIN
+#if POSE
   else if (basetype == T_POSECHAIN)
   {
     STBox box1;
     posechain_set_stbox(DatumGetPoseChainP(value), &box1);
     stbox_expand(&box1, (STBox *) box);
   }
-#endif /* POSECHAIN */
+#endif /* POSE */
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

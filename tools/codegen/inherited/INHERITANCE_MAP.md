@@ -109,7 +109,7 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
   surface: `552_tposechain.in.sql` (the type file, I/O, constructors,
   conversions, accessors, transformations and restrictions),
   `554_tposechain_compops.in.sql`, `558_tposechain_topops.in.sql` and
-  `559_tposechain_posops.in.sql`. `553_tposechain_spatialfuncs.in.sql` is
+  `559_tposechain_posops.in.sql`. `555_tposechain_spatialfuncs.in.sql` is
   hand-written beside its nine siblings and carries the spatial reference
   system alone — `SRID`, `setSRID`, `transform` and `transformPipeline`, each
   reading the outer link, which is the only link that names a frame.

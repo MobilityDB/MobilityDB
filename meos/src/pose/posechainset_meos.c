@@ -40,11 +40,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include <meos_posechain.h>
+#include <meos_pose.h>
 #include "temporal/set.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
-#include "posechain/posechain.h"
+#include "pose/posechain.h"
 
 /*****************************************************************************
  * Input/output functions

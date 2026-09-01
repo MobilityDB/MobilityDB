@@ -46,13 +46,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
-#include <meos_posechain.h>
 #include "temporal/span.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
 #include "pose/pose.h"
-#include "posechain/posechain.h"
+#include "pose/posechain.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"
