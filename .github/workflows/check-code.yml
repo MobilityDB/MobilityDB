@@ -34,6 +34,15 @@ jobs:
       - name: Reject int64_t / uint64_t in MobilityDB public headers
         run: ./tools/scripts/check_int64_in_headers.sh
 
+  doxygen_briefs_check:
+    name: Every @brief states text, once
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Reject an empty or repeated @brief
+        run: python3 tools/scripts/check_doxygen_briefs.py
+
   license_check:
     runs-on: ubuntu-latest
     steps:
