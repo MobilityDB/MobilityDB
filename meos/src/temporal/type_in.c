@@ -949,6 +949,79 @@ parse_mfjson_poses(json_object *mfjson, int32_t srid, int *count)
   *count = nposes;
   return values;
 }
+
+/**
+ * @brief Return a pose chain from its GeoJSON representation
+ * @details A chain is written as the array of its links, each of them a pose
+ * object, which is what @p posechain_as_json_sb emits
+ */
+static PoseChain *
+parse_mfjson_posechain(json_object *mfjson, int32_t srid)
+{
+  if (json_object_get_type(mfjson) != json_type_array)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid pose chain in the 'values' array of the MFJSON string");
+    return NULL;
+  }
+  int nposes = (int) json_object_array_length(mfjson);
+  if (nposes < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "A pose chain in the MFJSON string carries no link");
+    return NULL;
+  }
+
+  const Pose **poses = palloc(sizeof(Pose *) * nposes);
+  for (int i = 0; i < nposes; i++)
+    poses[i] = parse_mfjson_pose(json_object_array_get_idx(mfjson, i), srid);
+  PoseChain *result = posechain_make(poses, nposes);
+  for (int i = 0; i < nposes; i++)
+    if (poses[i])
+      pfree((void *) poses[i]);
+  pfree(poses);
+  return result;
+}
+
+/**
+ * @brief Return an array of pose chains from its GeoJSON pose chain values
+ */
+static Datum *
+parse_mfjson_posechains(json_object *mfjson, int32_t srid, int *count)
+{
+  json_object *mfjsonTmp = mfjson;
+  json_object *values_json = NULL;
+  values_json = findMemberByName(mfjsonTmp, "values");
+  if (values_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'values' in MFJSON string");
+    return NULL;
+  }
+  if (json_object_get_type(values_json) != json_type_array)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid 'values' array in MFJSON string");
+    return NULL;
+  }
+
+  int nchains = (int) json_object_array_length(values_json);
+  if (nchains < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid value of 'values' array in MFJSON string");
+    return NULL;
+  }
+
+  Datum *values = palloc(sizeof(Datum) * nchains);
+  for (int i = 0; i < nchains; ++i)
+  {
+    json_object *chain = json_object_array_get_idx(values_json, i);
+    values[i] = PointerGetDatum(parse_mfjson_posechain(chain, srid));
+  }
+  *count = nchains;
+  return values;
+}
 #endif /* POSE */
 
 /*****************************************************************************/
@@ -1086,6 +1159,8 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
 #if POSE
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
+    else if (temptype == T_TPOSECHAIN)
+      values = parse_mfjson_posechains(mfjson, srid, &nvalues);
 #endif /* POSE */
 #if QUADBIN
     /* quadbin, like h3index, is a scalar cell id carried with a bbox: the
@@ -1155,7 +1230,9 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
 #if POSE
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
-#endif /* RGEO */
+    else if (temptype == T_TPOSECHAIN)
+      values = parse_mfjson_posechains(mfjson, srid, &nvalues);
+#endif /* POSE */
 #if QUADBIN
     /* quadbin, like h3index, is a scalar cell id carried with a bbox: the
      * 'values' array holds plain cell ids parsed as base values */
@@ -1317,6 +1394,7 @@ ensure_temptype_mfjson(const char *typestr)
 #endif /* POINTCLOUD */
 #if POSE
       && strcmp(typestr, "MovingPose") != 0
+      && strcmp(typestr, "MovingPoseChain") != 0
 #endif /* POSE */
 #if QUADBIN
       && strcmp(typestr, "MovingQuadbin") != 0
@@ -1432,6 +1510,8 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
 #if POSE
   else if (strcmp(typestr, "MovingPose") == 0)
     jtemptype = T_TPOSE;
+  else if (strcmp(typestr, "MovingPoseChain") == 0)
+    jtemptype = T_TPOSECHAIN;
 #endif /* POSE */
 #if QUADBIN
   else if (strcmp(typestr, "MovingQuadbin") == 0)
