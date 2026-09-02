@@ -2408,6 +2408,173 @@ lwpoly_is_simple(const LWPOLY *poly)
   return true;
 }
 
+static bool relate_edges_meet(const Edge *a, const Edge *b);
+static int relate_any_edge_intersection(const Edge *a, const Edge *b,
+  double ix[2], double iy[2]);
+static bool relate_same_point(double x1, double y1, double x2, double y2);
+
+/**
+ * @brief Return true if the edges one curve draws meet only where consecutive
+ * edges share their endpoint
+ * @details A curve is simple when it passes through no point twice, the two
+ * ends of a closed one excepted. Consecutive edges share a vertex by
+ * construction, so for them the question is whether they meet ANYWHERE ELSE:
+ * a second isolated point, or a span they run along together. Every other
+ * pair meets nowhere at all. #relate_edges_meet reads the intersection type
+ * rather than a count, so two arcs of one circle sharing a span answer here,
+ * which is what a segment intersection cannot see
+ */
+static bool
+meos_curve_edges_simple(Edge **edges, int nedges)
+{
+  bool closed = nedges > 1 &&
+    relate_same_point(edges[0]->x1, edges[0]->y1,
+      edges[nedges - 1]->x2, edges[nedges - 1]->y2);
+  for (int i = 0; i < nedges; i++)
+    for (int j = i + 1; j < nedges; j++)
+    {
+      /* The vertices the two legitimately share. Consecutive edges share the
+       * one between them, and the two ends of a closed curve share where it
+       * closes -- a closed curve of two edges is BOTH, and shares two */
+      double sx[2], sy[2];
+      int nshared = 0;
+      if (j == i + 1)
+      {
+        sx[nshared] = edges[i]->x2; sy[nshared++] = edges[i]->y2;
+      }
+      if (closed && i == 0 && j == nedges - 1)
+      {
+        sx[nshared] = edges[0]->x1; sy[nshared++] = edges[0]->y1;
+      }
+      if (nshared == 0)
+      {
+        if (relate_edges_meet(edges[i], edges[j]))
+          return false;
+        continue;
+      }
+      double ix[2], iy[2];
+      int n = relate_any_edge_intersection(edges[i], edges[j], ix, iy);
+      if (n == 0)
+      {
+        /* Running along one another leaves no isolated point to read, so a
+         * meeting the points do not account for is a span they share */
+        if (relate_edges_meet(edges[i], edges[j]))
+          return false;
+        continue;
+      }
+      for (int k = 0; k < n; k++)
+      {
+        bool shared = false;
+        for (int m = 0; m < nshared && ! shared; m++)
+          shared = relate_same_point(ix[k], iy[k], sx[m], sy[m]);
+        if (! shared)
+          return false;
+      }
+    }
+  return true;
+}
+
+/**
+ * @brief Return true if the curves two members draw meet only at points that
+ * end them both
+ * @details A multi-curve is simple when each member is and the members meet
+ * only on their boundaries, which is the rule #lwmline_is_simple applies to
+ * straight members through #pointarrs_meet_at_ends. Two members running along
+ * one another share a span rather than a point, and report no isolated point
+ * to read, so that case is asked of #relate_edges_meet
+ */
+static bool
+meos_curves_meet_at_ends(Edge **ea, int na, Edge **eb, int nb)
+{
+  if (na == 0 || nb == 0)
+    return true;
+  double ax0 = ea[0]->x1, ay0 = ea[0]->y1;
+  double ax1 = ea[na - 1]->x2, ay1 = ea[na - 1]->y2;
+  double bx0 = eb[0]->x1, by0 = eb[0]->y1;
+  double bx1 = eb[nb - 1]->x2, by1 = eb[nb - 1]->y2;
+  for (int i = 0; i < na; i++)
+    for (int j = 0; j < nb; j++)
+    {
+      double ix[2], iy[2];
+      int n = relate_any_edge_intersection(ea[i], eb[j], ix, iy);
+      if (n == 0)
+      {
+        if (relate_edges_meet(ea[i], eb[j]))
+          return false;
+        continue;
+      }
+      for (int k = 0; k < n; k++)
+      {
+        bool ends_a = relate_same_point(ix[k], iy[k], ax0, ay0) ||
+          relate_same_point(ix[k], iy[k], ax1, ay1);
+        bool ends_b = relate_same_point(ix[k], iy[k], bx0, by0) ||
+          relate_same_point(ix[k], iy[k], bx1, by1);
+        if (! ends_a || ! ends_b)
+          return false;
+      }
+    }
+  return true;
+}
+
+/**
+ * @brief Return true if the members of a multi-curve meet only at their ends
+ */
+static bool
+meos_multicurve_members_meet_at_ends(const LWCOLLECTION *coll, bool *result)
+{
+  MeosArray **arrs = palloc0(sizeof(MeosArray *) * Max(coll->ngeoms, 1));
+  Edge ***edges = palloc0(sizeof(Edge **) * Max(coll->ngeoms, 1));
+  int *nedges = palloc0(sizeof(int) * Max(coll->ngeoms, 1));
+  bool ok = true;
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
+  {
+    if (! coll->geoms[i] || lwgeom_is_empty(coll->geoms[i]))
+      continue;
+    arrs[i] = geom_extract_edges(coll->geoms[i]);
+    nedges[i] = (int) arrs[i]->count;
+    edges[i] = palloc(sizeof(Edge *) * Max(nedges[i], 1));
+    for (int k = 0; k < nedges[i]; k++)
+      edges[i][k] = (Edge *) meos_array_get(arrs[i], k);
+  }
+  for (uint32_t i = 0; i < coll->ngeoms && ok; i++)
+    for (uint32_t j = i + 1; j < coll->ngeoms && ok; j++)
+      if (edges[i] && edges[j])
+        ok = meos_curves_meet_at_ends(edges[i], nedges[i], edges[j],
+          nedges[j]);
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
+  {
+    if (edges[i])
+      pfree(edges[i]);
+    if (arrs[i])
+      meos_array_destroy(arrs[i]);
+  }
+  pfree(arrs); pfree(edges); pfree(nedges);
+  *result = ok;
+  return true;
+}
+
+/**
+ * @brief Return true if every curve a geometry carrying arcs draws is simple
+ * @details The components are walked rather than the edges of the whole,
+ * since a ring and a member each draw their own curve, and two of them
+ * meeting is a question about the geometry rather than about one curve
+ */
+static bool
+meos_curved_is_simple(const LWGEOM *geom, bool *result)
+{
+  MeosArray *arr = geom_extract_edges(geom);
+  if (! arr)
+    return false;
+  int n = (int) arr->count;
+  Edge **edges = palloc(sizeof(Edge *) * Max(n, 1));
+  for (int i = 0; i < n; i++)
+    edges[i] = (Edge *) meos_array_get(arr, i);
+  *result = meos_curve_edges_simple(edges, n);
+  pfree(edges);
+  meos_array_destroy(arr);
+  return true;
+}
+
 /**
  * @brief Return true if a geometry has no anomalous point
  * @details The result is reported in the last argument, the function itself
@@ -2479,9 +2646,60 @@ meos_is_simple(const LWGEOM *geom, bool *result)
       *result = true;
       return true;
     }
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+      /* One curve, whose arcs meet one another along arcs as well as at
+       * points, which is what #meos_curve_edges_simple reads */
+      return meos_curved_is_simple(geom, result);
+    case CURVEPOLYTYPE:
+    {
+      /* A surface is simple when each of its rings is, exactly as a polygon
+       * of straight rings is */
+      const LWCURVEPOLY *cpoly = (const LWCURVEPOLY *) geom;
+      for (uint32_t i = 0; i < cpoly->nrings; i++)
+      {
+        bool ring;
+        if (! cpoly->rings[i])
+          continue;
+        if (! meos_is_simple(cpoly->rings[i], &ring))
+          return false;
+        if (! ring)
+        {
+          *result = false;
+          return true;
+        }
+      }
+      *result = true;
+      return true;
+    }
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    {
+      /* Every member answers for itself, as the straight multi-geometries do */
+      const LWCOLLECTION *mcoll = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < mcoll->ngeoms; i++)
+      {
+        bool component;
+        if (! mcoll->geoms[i])
+          continue;
+        if (! meos_is_simple(mcoll->geoms[i], &component))
+          return false;
+        if (! component)
+        {
+          *result = false;
+          return true;
+        }
+      }
+      /* A multi-curve asks one thing more, which its straight twin asks
+       * through #pointarrs_meet_at_ends: the members meet only on their
+       * boundaries. A multi-surface asks nothing more, exactly as a
+       * multi-polygon of straight rings does not */
+      if (geom->type == MULTICURVETYPE)
+        return meos_multicurve_members_meet_at_ends(mcoll, result);
+      *result = true;
+      return true;
+    }
     default:
-      /* A geometry holding a circular arc meets itself along an arc, which
-       * the segment intersection this rests on does not answer */
       return false;
   }
 }

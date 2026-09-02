@@ -1158,6 +1158,33 @@ int main(void)
   assert(meos_errno() == 0);
   free(ubmm); free(ubum); free(ubm); free(ubu); free(ubp);
   meos_errno_reset();
+  /* Whether a geometry is simple is a question about the curves it draws
+   * meeting themselves, and an arc meets a curve along an arc as well as at
+   * isolated points. A closed circular string passes through no point twice,
+   * a compound curve crossing its own earlier segment does, and a multi-curve
+   * asks the further question its straight twin asks -- that the members meet
+   * only on their boundaries */
+  meos_errno_reset();
+  const char *simple_wkt[] = {
+    "CIRCULARSTRING(0 0,2 2,4 0,2 -2,0 0)",
+    "COMPOUNDCURVE((0 0,10 0),CIRCULARSTRING(10 0,5 2,0 0))",
+    "CURVEPOLYGON(CIRCULARSTRING(0 0,2 2,4 0,2 -2,0 0))",
+    "COMPOUNDCURVE((0 0,4 0),(4 0,2 2),(2 2,2 -2))",
+    "MULTICURVE((0 0,4 4),(4 4,4 0),(4 0,0 4))",
+  };
+  const bool simple_exp[] = { true, true, true, false, false };
+  for (int i = 0; i < 5; i++)
+  {
+    GSERIALIZED *sg = geom_in(simple_wkt[i], -1);
+    assert(sg != NULL);
+    meos_errno_reset();
+    bool simple = geom_is_simple(sg);
+    printf("isSimple(%.44s): %d\n", simple_wkt[i], simple);
+    assert(meos_errno() == 0);
+    assert(simple == simple_exp[i]);
+    free(sg);
+    meos_errno_reset();
+  }
 
   /* Finalize MEOS */
   meos_finalize();
