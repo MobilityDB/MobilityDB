@@ -120,3 +120,29 @@ SELECT numInstants(tdensity(seq))  > 0 FROM tbl_tpcpatch_seq;
  t
 (1 row)
 
+SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
+    tpcbox_extent_transfn    
+-----------------------------
+ TPCBOX(X((0,0),(10,10)), 1)
+(1 row)
+
+SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 0));
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 0
+SELECT tpcbox_extent_transfn(NULL::tpcbox, tpcboxX(3, 3, 10, 10, 1));
+    tpcbox_extent_transfn    
+-----------------------------
+ TPCBOX(X((3,3),(10,10)), 1)
+(1 row)
+
+SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), NULL::tpcbox);
+   tpcbox_extent_transfn   
+---------------------------
+ TPCBOX(X((0,0),(5,5)), 1)
+(1 row)
+
+SELECT tpcbox_extent_transfn(NULL::tpcbox, NULL::tpcbox);
+ tpcbox_extent_transfn 
+-----------------------
+ 
+(1 row)
+

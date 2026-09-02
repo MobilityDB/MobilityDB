@@ -738,7 +738,14 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
 
   /* Free memory */
   if (spliced_count != 0)
+  {
     pfree_array((void **) tofree, nfree);
+    /* The merge answers the new values in one array and reports the values to
+     * free in another. The sequence path answers the same array for both, so
+     * the array of new values is a second allocation only when they differ */
+    if (values != (void **) tofree)
+      pfree(values);
+  }
   return;
 }
 

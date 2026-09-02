@@ -7,6 +7,7 @@
 /tnpoint_smoketest.c
 /tgeometry_smoketest.c
 /tjsonb_smoketest.c
+/temporal_agg_smoketest.c
 
 # Table fixtures exported from the pg_regress archives by
 # tools/gen_test_csv.py. mobilitydb/test/<family>/data/load_*.sql.xz is the one
