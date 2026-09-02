@@ -440,6 +440,114 @@ uint32_t pcpatch_npoints(const Pcpatch *pa)
 }
 
 /**
+ * @brief Return a serialized copy of a point
+ * @details The bytes past the meaningful prefix are pgpointcloud's struct-tail
+ * padding, which the serialization leaves uninitialized. They are zeroed so
+ * that two pcpoints holding the same point hold the same bytes, as
+ * @c pcpoint_hex_out prints them
+ */
+static Pcpoint *
+pcpoint_serialize(const PCPOINT *pcpt)
+{
+  Pcpoint *result = (Pcpoint *) meos_pc_point_serialize(pcpt);
+  if (! result)
+    return NULL;
+  size_t meaningful = pcpoint_meaningful_size(result);
+  memset(((uint8_t *) result) + meaningful, 0, VARSIZE(result) - meaningful);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_base_accessor
+ * @brief Return a copy of the n-th point of a pcpatch
+ * @param[in] pa Point cloud patch
+ * @param[in] n Number of the point, one-based: 1 is the first point and the
+ * number of points of the patch the last one. A negative @p n counts from the
+ * end, so that -1 is the last point and minus the number of points the first
+ * @return On error, or when @p n addresses no point of the patch, return
+ * @p NULL
+ * @details The indexing is the one pgPointCloud defines for @c PC_PointN,
+ * which owns the type
+ * @see #pcpatch_points() to obtain every point in a single call
+ */
+Pcpoint *
+pcpatch_point_n(const Pcpatch *pa, int n)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, NULL);
+  const PCSCHEMA *schema = meos_pc_schema(pa->pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pa->pcid);
+    return NULL;
+  }
+
+  /* Pcpatch is byte-compatible with SERIALIZED_PATCH (see pcpatch.h) */
+  PCPATCH *patch = MEOS_PC_PATCH_DESERIALIZE((const SERIALIZED_PATCH *) pa,
+    schema);
+  if (! patch)
+    return NULL;
+
+  /* pc_patch_pointn applies the one-based and the negative convention, and
+   * answers NULL for an index addressing no point of the patch */
+  PCPOINT *pcpt = pc_patch_pointn(patch, n);
+  Pcpoint *result = NULL;
+  if (pcpt)
+  {
+    result = pcpoint_serialize(pcpt);
+    pc_point_free(pcpt);
+  }
+  pc_patch_free(patch);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_base_accessor
+ * @brief Return the array of points of a pcpatch
+ * @param[in] pa Point cloud patch
+ * @param[out] count Number of elements of the output array
+ * @return On error return @p NULL
+ * @details Every point carries the schema of the patch it comes from, and the
+ * points are returned in the order the patch stores them, which is the order
+ * #pcpatch_point_n() indexes
+ */
+Pcpoint **
+pcpatch_points(const Pcpatch *pa, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, NULL); VALIDATE_NOT_NULL(count, NULL);
+  const PCSCHEMA *schema = meos_pc_schema(pa->pcid);
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pa->pcid);
+    return NULL;
+  }
+
+  PCPATCH *patch = MEOS_PC_PATCH_DESERIALIZE((const SERIALIZED_PATCH *) pa,
+    schema);
+  if (! patch)
+    return NULL;
+  PCPOINTLIST *pl = pc_pointlist_from_patch(patch);
+  if (! pl)
+  {
+    pc_patch_free(patch);
+    return NULL;
+  }
+
+  Pcpoint **result = palloc(sizeof(Pcpoint *) * pl->npoints);
+  for (uint32_t i = 0; i < pl->npoints; i++)
+    /* The list owns its points, so each one is serialized into a copy */
+    result[i] = pcpoint_serialize(pc_pointlist_get_point(pl, (int) i));
+  *count = (int) pl->npoints;
+
+  pc_pointlist_free(pl);
+  pc_patch_free(patch);
+  return result;
+}
+
+/**
  * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 32-bit hash of a pcpatch
  * @return On error return @p UINT32_MAX

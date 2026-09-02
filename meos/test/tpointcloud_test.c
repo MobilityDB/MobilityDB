@@ -117,6 +117,60 @@ int main(void)
   assert(meos_errno() != 0);
   meos_errno_reset();
 
+  /* With a schema registered, a patch built from its points answers which
+   * point stands at a given position */
+  PCDimensionSpec dims[3] = {
+    { "X", NULL, 1, "int32_t", 1, 0, true },
+    { "Y", NULL, 2, "int32_t", 1, 0, true },
+    { "Z", NULL, 3, "int32_t", 1, 0, true }
+  };
+  assert(meos_pc_schema_register_dims(2, 4326, "none", dims, 3));
+  double v1[3] = {1, 1, 1}, v2[3] = {2, 2, 2}, v3[3] = {3, 3, 3};
+  Pcpoint *p1 = pcpoint_make(2, v1, 3);
+  Pcpoint *p2 = pcpoint_make(2, v2, 3);
+  Pcpoint *p3 = pcpoint_make(2, v3, 3);
+  assert(p1 != NULL && p2 != NULL && p3 != NULL);
+  const Pcpoint *pts[3] = { p1, p2, p3 };
+  Pcpatch *pa = pcpatch_make(pts, 3);
+  assert(pa != NULL);
+  assert(pcpatch_npoints(pa) == 3);
+
+  /* The position is one-based, and a negative one counts from the end, which
+   * is the indexing pgPointCloud defines for PC_PointN */
+  Pcpoint *first = pcpatch_point_n(pa, 1);
+  Pcpoint *last = pcpatch_point_n(pa, 3);
+  Pcpoint *last_from_end = pcpatch_point_n(pa, -1);
+  Pcpoint *first_from_end = pcpatch_point_n(pa, -3);
+  assert(first != NULL && last != NULL);
+  assert(last_from_end != NULL && first_from_end != NULL);
+  assert(pcpoint_eq(first, p1));
+  assert(pcpoint_eq(last, p3));
+  assert(pcpoint_eq(last_from_end, last));
+  assert(pcpoint_eq(first_from_end, first));
+
+  /* A position addressing no point of the patch is answered with NULL, and
+   * asking for one is not an error */
+  assert(pcpatch_point_n(pa, 0) == NULL);
+  assert(pcpatch_point_n(pa, 4) == NULL);
+  assert(pcpatch_point_n(pa, -4) == NULL);
+  assert(meos_errno() == 0);
+
+  /* The array form holds the same points in the same order */
+  int count;
+  Pcpoint **points = pcpatch_points(pa, &count);
+  assert(points != NULL);
+  assert(count == (int) pcpatch_npoints(pa));
+  for (int i = 0; i < count; i++)
+  {
+    Pcpoint *nth = pcpatch_point_n(pa, i + 1);
+    assert(pcpoint_eq(points[i], nth));
+    free(nth); free(points[i]);
+  }
+  printf("a patch of %d points answers each of them by its position\n", count);
+  free(points);
+  free(first); free(last); free(last_from_end); free(first_from_end);
+  free(p1); free(p2); free(p3); free(pa);
+
   free(tpcpoint); free(tpcpoint_out);
   free(tpcpatch); free(tpcpatch_out);
   free(box);

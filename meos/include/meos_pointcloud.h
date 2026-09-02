@@ -269,6 +269,8 @@ extern Pcpatch *pcpatch_copy(const Pcpatch *pa);
 
 extern uint32_t pcpatch_get_pcid(const Pcpatch *pa);
 extern uint32_t pcpatch_npoints(const Pcpatch *pa);
+extern Pcpoint *pcpatch_point_n(const Pcpatch *pa, int n);
+extern Pcpoint **pcpatch_points(const Pcpatch *pa, int *count);
 extern uint32 pcpatch_hash(const Pcpatch *pa);
 extern uint64 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed);
 
