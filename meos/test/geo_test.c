@@ -357,6 +357,39 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* Contracting a closed ring by more than it encloses carries the contraction
+   * through itself, and it re-emerges inverted at the distance it overshot by.
+   * That curve lies NEARER the input than the buffer distance, so it bounds
+   * nothing and the hole it stands for is gone rather than uncovered; kept, it
+   * punches a hole out of the answer and the buffer stops containing the very
+   * geometry it is taken of. The closed LINESTRING branch tests for it; the
+   * closed CURVE branch is the same shape and asked nothing, so a compound
+   * curve buffered past its inradius answered a surface missing its middle.
+   * The witness is a closed curve about 10 by 2, so its inradius is near 1,
+   * buffered on both sides of that. A buffer contains its own input at EVERY
+   * radius, which needs no oracle to check */
+  const char *closed_curve =
+    "CompoundCurve((0 0,10 0),CircularString(10 0,5 2,0 0))";
+  const double closed_radius[] = {0.5, 3.0};
+  char closed_patt[10] = "T*****FF*";
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *g = geom_in(closed_curve, -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    GSERIALIZED *b = geom_buffer(g, closed_radius[i], "");
+    printf("geom_buffer(a closed curve, %s its inradius): answered %d, "
+      "errno %d\n", i ? "past" : "within", b != NULL, meos_errno());
+    assert(b != NULL);
+    assert(meos_errno() == 0);
+    bool covers = geom_relate_pattern(b, g, closed_patt);
+    printf("  it covers the geometry it is taken of: %d\n", covers);
+    assert(covers == true);
+    assert(meos_errno() == 0);
+    free(b); free(g);
+    meos_errno_reset();
+  }
+
   /* The junction between two offsets is settled from the cross product of the
    * directions the two edges meeting there run in, and that product is a sine
    * only where both directions are of unit length. An arc answers a sine and

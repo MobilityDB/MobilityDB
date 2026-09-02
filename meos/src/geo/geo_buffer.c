@@ -4406,6 +4406,33 @@ buffer_ring_resolved(LWGEOM *raw, const LWGEOM *input, double radius,
 }
 
 /**
+ * @brief Return whether a contracted ring has passed through itself
+ * @details Contracting a ring by more than it encloses carries the contraction
+ * through itself, and it comes back out inverted at the distance it overshot
+ * by. That curve is nearer the input than the buffer distance, so it bounds
+ * nothing and the hole it would stand for is gone rather than uncovered. The
+ * point the ring holds is what says which of the two it is: an interior point
+ * of a true hole lies further from the input than the distance, and an
+ * interior point of the inverted curve lies nearer.
+ * @param[in] ring Contracted ring
+ * @param[in] edges Edges of the geometry being buffered
+ * @param[in] radius Buffer distance
+ * @param[in] srid Spatial reference identifier
+ */
+static bool
+buffer_ring_inverted(LWCOMPOUND *ring, const MeosArray *edges, double radius,
+  int32_t srid)
+{
+  double hx, hy;
+  if (! ring || ! edges)
+    return false;
+  if (! buffer_ring_representative_point(ring, srid, &hx, &hy))
+    return false;
+  return buffer_point_edges_distance(hx, hy, edges) <
+    radius - MEOS_GEOM_TOLERANCE;
+}
+
+/**
  * @brief Buffer a curve, which is a circular string or a compound curve
  * @details The boundary walks the offset of the curve on its left, caps the
  * far end, walks the offset of the reversed curve, which is its right, and
@@ -4441,6 +4468,9 @@ meos_buffer_curve(const LWGEOM *geom, double radius, JoinStyle join_style,
       mitre_limit, true, srid, outer, NULL, NULL);
     bool has_hole = ok && buffer_offset_edges(edges, radius, ! outward,
       join_style, mitre_limit, true, srid, inner, NULL, NULL);
+    /* A closed curve contracts into itself the same way a closed line does */
+    if (has_hole && buffer_ring_inverted(inner, edges, radius, srid))
+      has_hole = false;
     meos_array_destroy(edges);
     if (! ok)
     {
@@ -4906,11 +4936,8 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
     bool inverted = false;
     if (inner)
     {
-      double hx, hy;
       MeosArray *ledges = geom_extract_edges((const LWGEOM *) line);
-      if (ledges && buffer_ring_representative_point(inner, srid, &hx, &hy) &&
-          buffer_point_edges_distance(hx, hy, ledges) <
-            radius - MEOS_GEOM_TOLERANCE)
+      if (buffer_ring_inverted(inner, ledges, radius, srid))
       {
         lwgeom_free(lwcompound_as_lwgeom(inner));
         inner = NULL;
