@@ -466,9 +466,15 @@ RETURNS_BASELINE_HEADER = (
     '# return types than their SQL declarations state, as\n'
     '# tools/scripts/check_csqlfn.py --returns reads them. A host resolves an\n'
     '# overload on the arguments, so this is a surface a binding cannot\n'
-    '# express. Grandfathered in, keyed by wrapper. The list only shrinks: a\n'
-    '# new one fails the check. Regenerate with --returns-rebaseline after a\n'
-    '# fix.\n')
+    '# express. Keyed by wrapper. The list only shrinks: a new one fails the\n'
+    '# check. Regenerate with --returns-rebaseline.\n'
+    '#\n'
+    '# Every claimant here that answers a scalar is a PUBLIC typed function,\n'
+    '# and where a generic claims the wrapper too it is internal and answers\n'
+    '# a Datum. The typed functions are the wrapper\'s public link, so dropping\n'
+    '# their tags takes the SQL name out of every generated binding instead of\n'
+    '# resolving the multiplicity. The type the surface answers is the one the\n'
+    '# CREATE FUNCTION declares, and a binding reads it from there.\n')
 
 
 def read_returns_baseline():
