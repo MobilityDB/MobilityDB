@@ -36,7 +36,7 @@ Five hazards reliably bite workloads using H3 cells. Each is a property of the H
 
 - **Pentagon cells**. The H3 grid has 12 pentagonal (instead of hexagonal) cells per resolution &#x2014; the Eisenstein duals of the icosahedron's 12 vertices. `h3GridRing` may fail near these pentagons; `h3GridPathCells` fails if the path crosses one. The error is loud (libh3 raises an explicit failure), but workloads that expect ring / path operations to always succeed need a guard.
 
-  **Mitigation**: defensive code should wrap pentagon-sensitive calls and check `h3_is_pentagon_cell` on inputs and key outputs. For trajectories that pass near a pentagon, fall back to `gridDisk` (which is pentagon-safe) or compute path segments in pieces around the pentagon.
+  **Mitigation**: defensive code should wrap pentagon-sensitive calls and check `h3_is_pentagon` on inputs and key outputs. For trajectories that pass near a pentagon, fall back to `gridDisk` (which is pentagon-safe) or compute path segments in pieces around the pentagon.
 
 - **Compaction / decompaction round-trip**. `h3CompactCells` produces the most compact mixed-resolution representation of a set of cells; `h3UncompactCells` expands it back. The round-trip is lossless in spatial extent, but **cell ordering is not preserved** &#x2014; libh3 does not guarantee a sorted output. Queries that consume the output as if its order were stable will return different results before and after compaction even when the underlying spatial set is identical.
 
@@ -50,11 +50,11 @@ Five hazards reliably bite workloads using H3 cells. Each is a property of the H
 
 The on-disk representation of `th3index` is byte-identical to `tbigint` (each instant carries one 64-bit H3 cell ID plus a timestamp). Consequences for storage planning:
 
-- **WKT** via `th3_in` and `th3_out`. Cells render as canonical hex strings (e.g. `'8928308280fffff'`), which is also the form accepted on input. Round-trip is bit-stable.
+- **WKT** via `th3index_in`. Cells render as canonical hex strings (e.g. `'8928308280fffff'`), which is also the form accepted on input. Round-trip is bit-stable. The written form comes from the generic `temporal_out`: `T_TH3INDEX` is one of the types that reach it (`type_out.c`) rather than one carrying a renderer of its own, as `tint`, `tfloat`, `tbool` and `ttext` do.
 
 - **WKB / EWKB / HexWKB** via the standard PostGIS endian-flag-then-payload pattern. Stable across PostgreSQL major versions.
 
-- **MFJSON** via `asMFJSON(th3index)` and `th3indexFromMFJSON(text)`. The cell payload renders as the int64 cell identifier in the `values` array, the same representation carried by `tbigint`; consumers that need the canonical hex form apply `h3_cell_to_string`.
+- **MFJSON** via `asMFJSON(th3index)` and `th3indexFromMFJSON(text)`. The cell payload renders as the int64 cell identifier in the `values` array, the same representation carried by `tbigint`; consumers that need the canonical hex form apply `h3index_out`.
 
 - **pg_dump** uses WKT in plain mode and WKB under `--binary-upgrade`; both round-trip cleanly.
 

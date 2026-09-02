@@ -65,7 +65,7 @@ CREATE TABLE pointcloud_dimensions (
 
 **`UNIQUE (pcid, name)`** is what makes `pc_schema_check_xyzm` unambiguous: the X, Y, Z and M dimensions are found by name, so two dimensions sharing one name would leave the choice to array order.
 
-The domains are libpc's own. The interpretation names are the ten of `pc_schema.c:21-22`. `unknown`, the eleventh, sits **outside** the domain: it is what the parser answers for a value it does not recognise, not a storage a schema states. The compression names are those of `pc_compression_string` (`pc_schema.c:84-93`).
+The domains are libpc's own. The interpretation names are the ten of `pc_schema.c:21-22`. `unknown`, the eleventh, sits **outside** the domain: it is what the parser answers for a value it does not recognise, not a storage a schema states. The compression names are those of `pc_compression_name` (`pc_schema.c:84-93`).
 
 ## The example of the manual, stated in SQL
 
