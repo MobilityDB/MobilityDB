@@ -737,7 +737,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
   }
 
   /* Free memory */
-  if (spliced_count != 0)
+  if (spliced_count != 0 && tofree)
   {
     pfree_array((void **) tofree, nfree);
     /* The merge answers the new values in one array and reports the values to
