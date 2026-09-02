@@ -80,11 +80,13 @@
 
 /**
  * @brief Ensure two TPCBoxes share the same schema (pcid).
- * @note pcid 0 is treated as "unknown" — sets/unions involving it propagate
- * the non-zero pcid from the other operand. Rejecting 0-vs-non-0 would
- * block natural workflows like @c tpcbox() aggregation from raw literals.
+ * @note The schemas are compared as they are stated: a pcid of 0 names no
+ * schema, and a box carrying coordinates under it is not comparable with a box
+ * carrying them under a schema that does. The X guard in
+ * #ensure_valid_tpcbox_tpcbox is what lets a box holding no coordinates meet a
+ * box of any schema.
  */
-bool
+static bool
 ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
@@ -100,7 +102,8 @@ ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2)
 
 /**
  * @brief Ensure two TPCBoxes share the same SRID.
- * @note SRID 0 is treated as "unknown" — same relaxation as pcid.
+ * @note The reference systems are compared as they are stated, which is the
+ * same strict equality #ensure_same_srid applies to the spatiotemporal box.
  */
 static bool
 ensure_same_srid_tpcbox(const TPCBox *box1, const TPCBox *box2)
@@ -873,10 +876,12 @@ tpcbox_round(const TPCBox *box, int maxdd)
 
 /**
  * @ingroup meos_pointcloud_box_transf
- * @brief Return a tpcbox with the SRID overwritten.
- * @details Does not transform coordinates; just stamps the new SRID on the
- * result.  For coordinate reprojection, project the underlying tpcpoint first,
- * then take its bbox.
+ * @brief Return a tpcbox stating a reference system its schema does not state
+ * @details The schema a pcid names is what holds the reference system, so
+ * where that schema states one it is not the caller's to set and the box is
+ * refused. A pcid of 0 names no schema and a schema may state none, and there
+ * the box itself is the only level there is. Coordinates are not transformed
+ * either way; to reproject, project the underlying tpcpoint and take its box.
  * @csqlfn #Tpcbox_set_srid()
  */
 TPCBox *
@@ -884,6 +889,17 @@ tpcbox_set_srid(const TPCBox *box, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, NULL);
+  if (box->pcid != 0)
+  {
+    int32_t schema_srid = meos_pc_schema_srid(box->pcid);
+    if (schema_srid != SRID_INVALID && schema_srid != SRID_UNKNOWN)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The SRID of a TPCBox is the one its schema states: pcid %u states "
+        "SRID %d", box->pcid, schema_srid);
+      return NULL;
+    }
+  }
   TPCBox *result = tpcbox_copy(box);
   result->srid = srid;
   return result;

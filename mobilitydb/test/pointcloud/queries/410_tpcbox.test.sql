@@ -217,6 +217,23 @@ SELECT tpcbox 'SRID=3857;TPCBOX(X((0,0),(10,10)), 7)';
 SELECT tpcbox 'TPCBOX(X((0,0),(10,10)), 7)';
 
 -------------------------------------------------------------------------------
+-- setSRID states a reference system the schema does not state
+-------------------------------------------------------------------------------
+
+-- A box naming no schema has no other level, so it takes what it is given
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10), 4326));
+-- The schema pcid 1 names states none either, which leaves the box the only
+-- level there is
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10, 1), 4326));
+-- The schema pcid 5 names states one, so the SRID is not the caller's to set,
+-- and agreeing with it is not a licence to set it either
+SELECT setSRID(tpcboxX(0, 0, 10, 10, 5), 3857);
+SELECT setSRID(tpcboxX(0, 0, 10, 10, 5), 4326);
+-- A box carrying no coordinates states no reference system, and pcid 5 still
+-- speaks for it
+SELECT setSRID(tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 5), 3857);
+
+-------------------------------------------------------------------------------
 
 DELETE FROM pointcloud_formats WHERE pcid IN (2, 5);
 

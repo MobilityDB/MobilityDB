@@ -95,7 +95,8 @@ SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox t2 WHERE t1.b <= t2.b;
 
 -- round(b, 0) is idempotent: applying it twice gives the same value.
 SELECT bool_and(round(round(b, 0), 0) ~= round(b, 0)) FROM tbl_tpcbox;
--- setSRID stamps the new SRID without touching pcid.
+-- setSRID stamps the new SRID without touching pcid. The schema pcid 1 names
+-- states no reference system, which is what leaves the box free to state one.
 SELECT bool_and(SRID(setSRID(b, 4326)) = 4326 AND pcid(setSRID(b, 4326)) = pcid(b))
 FROM tbl_tpcbox;
 

@@ -3259,7 +3259,7 @@
 						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Return a tpcbox with coordinates rounded to a given number of decimal digits</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Return a tpcbox with the SRID overwritten</para>
+						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Return a tpcbox stating a reference system its schema does not state</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

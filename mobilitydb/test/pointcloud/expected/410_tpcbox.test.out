@@ -356,5 +356,23 @@ SELECT tpcbox 'TPCBOX(X((0,0),(10,10)), 7)';
  TPCBOX(X((0,0),(10,10)), 7)
 (1 row)
 
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10), 4326));
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10, 1), 4326));
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT setSRID(tpcboxX(0, 0, 10, 10, 5), 3857);
+ERROR:  The SRID of a TPCBox is the one its schema states: pcid 5 states SRID 4326
+SELECT setSRID(tpcboxX(0, 0, 10, 10, 5), 4326);
+ERROR:  The SRID of a TPCBox is the one its schema states: pcid 5 states SRID 4326
+SELECT setSRID(tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 5), 3857);
+ERROR:  The SRID of a TPCBox is the one its schema states: pcid 5 states SRID 4326
 DELETE FROM pointcloud_formats WHERE pcid IN (2, 5);
 DELETE 2

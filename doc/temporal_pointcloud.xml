@@ -400,14 +400,16 @@ SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1), 2);
 
 				<listitem xml:id="tpcbox_setSRID">
 					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
-					<para>Return a tpcbox with the SRID overwritten</para>
+					<para>Return a tpcbox stating a reference system its schema does not state</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 setSRID(tpcbox,integer) → tpcbox
 </programlisting>
-					<para>Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</para>
+					<para>The schema a pcid names is what holds the reference system, so where that schema states one the box is refused: a pcid of 0 names no schema, and a schema may state none. Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10, 1), 4326));
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10), 4326));
 -- 4326
+SELECT setSRID(tpcboxX(0, 0, 10, 10, 1), 3857);
+-- ERROR: The SRID of a TPCBox is the one its schema states: pcid 1 states SRID 4326
 </programlisting>
 				</listitem>
 			</itemizedlist>
