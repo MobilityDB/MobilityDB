@@ -464,6 +464,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "The temporal values have different value at their common timestamp %s",
             t1);
+          pfree(t1);
           return NULL;
         }
       }
