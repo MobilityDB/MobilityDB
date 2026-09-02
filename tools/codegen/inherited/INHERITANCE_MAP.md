@@ -793,33 +793,47 @@ generators (see memory `mobilityduck-tcbuffer-full-implementation-roadmap`).
 ## 8. Comparison with the MEOS-API generated hierarchy
 
 The MEOS-API catalog derives the ecosystem class hierarchy from a **curated** object
-model, `meta/object-model.json` `lattice` (MEOS-API master `65ced3016`). It declares
-**18 classes**: Temporal · TAlpha{TBool,TText} · TNumber{TInt,TFloat} ·
+model, `meta/object-model.json` `lattice` (MEOS-API master `660c31d3f`). It declares
+**20 classes**: Temporal · TAlpha{TBool,TText,TJsonb} · TNumber{TInt,TBigint,TFloat} ·
 TSpatial{TGeo{TPoint{TGeomPoint,TGeogPoint}, TGeometry, TGeography}, TCbuffer, TNpoint,
 TPose, TRGeometry}. Diffed against the live MEOS catalog predicates
-(`meos_catalog.c` @ MobilityDB `c85c0e1d6`), these live types/classes are **missing**:
+(`meos_catalog.c` @ MobilityDB `5742d5cba`), these live types/classes are **missing**:
 
 | missing from lattice | live type / predicate | belongs under | category |
 |---|---|---|---|
-| **TBigint** | `tbigint` (`tnumber_type` :1214) | TNumber | **in-scope leaf, omitted (defect)** — number family IS in `scope.inScopeTypeFamilies` |
-| **TJsonb** | `tjsonb` (`talpha_type` :1192) | TAlpha | in-scope family (alpha), omitted leaf |
-| **TH3Index** | `th3index` (`tspatial_type` :1374) | TSpatial → Tcell | deferred family (not in declared scope) |
-| **TQuadbin** | `tquadbin` (`tspatial_type` :1375) | TSpatial → Tcell | deferred family |
-| **TS2Cell** | `ts2cell` (`tspatial_type` :1375) | TSpatial → Tcell | deferred family |
-| **TPcpoint** | `tpcpoint` (`tpointcloud_temptype` :1204) | TSpatial → TPointcloud | deferred family (`#if POINTCLOUD`) |
-| **TPcpatch** | `tpcpatch` (`tpointcloud_temptype` :1204) | TSpatial → TPointcloud | deferred family |
-| **Tcell / TCellIndex** (abstract) | `tcellindex_type()` | between TSpatial and cell leaves | missing intermediate |
-| **TPointcloud** (abstract) | `tpointcloud_temptype()` | between TSpatial and pointcloud leaves | missing intermediate |
+| **TPoseChain** | `tposechain` (`meos_catalog.c:175`) | TSpatial → TPose | **in-scope leaf, omitted (defect)** — the pose family IS in `scope.inScopeTypeFamilies` |
+| **TH3Index** | `th3index` (`meos_catalog.c:158`, `tspatial_type` :1367) | TSpatial → Tcell | deferred family (not in declared scope) |
+| **TQuadbin** | `tquadbin` (`meos_catalog.c:161`, `tspatial_type` :1367) | TSpatial → Tcell | deferred family |
+| **TS2Cell** | `ts2cell` (`meos_catalog.c:164`, `tspatial_type` :1367) | TSpatial → Tcell | deferred family |
+| **TPcpoint** | `tpcpoint` (`meos_catalog.c:167`, `tpointcloud_temptype` :1250) | TSpatial → TPointcloud | deferred family (`#if POINTCLOUD`) |
+| **TPcpatch** | `tpcpatch` (`meos_catalog.c:170`, `tpointcloud_temptype` :1250) | TSpatial → TPointcloud | deferred family |
+| **Tcell / TCellIndex** (abstract) | `tcellindex_type()` (`tcellindex.c:71`, declared `tcellindex.h:131`) | between TSpatial and cell leaves | missing intermediate |
+| **TPointcloud** (abstract) | `tpointcloud_temptype()` (`meos_catalog.c:1250`) | between TSpatial and pointcloud leaves | missing intermediate |
 
 Notes:
 - The lattice's `scope.inScopeTypeFamilies` = `[temporal, alpha, number, geo, point,
   cbuffer, npoint, pose, rgeo]` — it does **not** list h3/quadbin/s2cell/pointcloud,
-  so those are *declared* deferrals. But **TBigint / TJsonb** belong to in-scope families
-  (number / alpha) and are silent omissions → genuine curation defects.
+  so those are *declared* deferrals. **TPoseChain** is the one silent omission: the pose
+  family is in scope, so the type is a curation defect rather than a deferral, and
+  `posechain_*` carries 40 of the catalog's unclassified public functions.
 - The model's own correction **OM-M7 is stale**: it states `tpcpoint`/`tpcpatch`
-  are "absent from master MEOS (0 hits)", but live master **has** them
-  (`meos_catalog.c:164/167` + `tpointcloud_temptype()` predicate). The curated lattice
+  are "absent from master MEOS (0 hits)", while live master **has** them
+  (`meos_catalog.c:167/170` + `tpointcloud_temptype()` predicate). The curated lattice
   lags the live catalog.
+- Classification is by **MEOS prefix, longest-match** (`parser/object_model.py`
+  `_classify`), so a class absent from the lattice leaves every one of its functions
+  unclassified and gives a binding no `ooName` to project. On the catalog at MobilityDB
+  `5742d5cba`: **1349 of 4825 functions classified (28.0%)**, and of the 3502
+  `api=public` functions **2548 carry no class**. All 180 distinct leading tokens among
+  those 2548 are absent from the lattice — none is a lookup failure. They fall in two
+  populations: the type-first families this table lists, and **verb-first binary
+  operations** the prefix rule cannot reach at all (`ever_*` 131, `always_*` 130,
+  `minus_*` 68, `union_*` 56, `contains_*` 49, `contained_*` 46, `intersection_*` 46,
+  `distance_*` 41, `teq_*`/`tne_*` 37 each, `adjacent_*`/`left_*`/`right_*`/`overleft_*`/
+  `overright_*`/`nad_*` 36 each), whose first token names the OPERATION rather than the
+  receiver. Binding those to a class needs a receiver rule for symmetric operands — a
+  model decision, not a prefix addition — which is why JMEOS's `ObjectLayerGenerator`
+  emits 5 generated classes against the lattice's 20.
 - **RASTER** (`raquet`) is a base value type, not temporal — correctly absent from a
   `Temporal<T>` lattice.
 - The object model is **curated, not auto-derived** (`"no class is guessed"`), so
