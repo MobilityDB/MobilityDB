@@ -120,6 +120,8 @@ jobs:
           ./error_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o merge_test merge_test.c -L/usr/local/lib -lmeos
           ./merge_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o restrict_tstzset_validity_test restrict_tstzset_validity_test.c -L/usr/local/lib -lmeos
+          ./restrict_tstzset_validity_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
           ./geo_test
           # Every program under meos/test is a check of the installed library, and
