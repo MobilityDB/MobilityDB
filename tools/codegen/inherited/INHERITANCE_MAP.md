@@ -801,7 +801,7 @@ TPose, TRGeometry}. Diffed against the live MEOS catalog predicates
 
 | missing from lattice | live type / predicate | belongs under | category |
 |---|---|---|---|
-| **TPoseChain** | `tposechain` (`meos_catalog.c:175`) | TSpatial → TPose | **in-scope leaf, omitted (defect)** — the pose family IS in `scope.inScopeTypeFamilies` |
+| **TPoseChain** | `tposechain` (`meos_catalog.c:175`) | TSpatial, aggregating TPose | **in-scope leaf, omitted (defect)** — the pose family IS in `scope.inScopeTypeFamilies` |
 | **TH3Index** | `th3index` (`meos_catalog.c:158`, `tspatial_type` :1367) | TSpatial → Tcell | deferred family (not in declared scope) |
 | **TQuadbin** | `tquadbin` (`meos_catalog.c:161`, `tspatial_type` :1367) | TSpatial → Tcell | deferred family |
 | **TS2Cell** | `ts2cell` (`meos_catalog.c:164`, `tspatial_type` :1367) | TSpatial → Tcell | deferred family |
@@ -816,6 +816,24 @@ Notes:
   so those are *declared* deferrals. **TPoseChain** is the one silent omission: the pose
   family is in scope, so the type is a curation defect rather than a deferral, and
   `posechain_*` carries 40 of the catalog's unclassified public functions.
+- **TPoseChain is a child of TSpatial that AGGREGATES TPose, not a subclass of it.** No
+  `tpose_type()` grouping predicate exists, and `tspatial_type()` (`meos_catalog.c:1367`)
+  lists `T_TPOSECHAIN` beside `T_TPOSE` rather than under it. What relates the two is
+  composition: `PoseChain` holds `count` links of the width a `Pose` occupies
+  (`POSECHAIN_LINK_SIZE`, `posechain.h:76`), it publishes them as poses through
+  `posechain_pose_n()` / `posechain_poses()`, and the relation lifts to the temporal level
+  as `tposechain_to_tpose()` (`meos_pose.h:538`) plus `CREATE CAST (tposechain AS tpose)`
+  (`552_tposechain.in.sql:246`) — the same mechanism that makes TRGeometry an aggregation
+  of TPose (`trgeometry_to_tpose`, `meos_rgeo.h:97`). A conversion function and a cast are
+  what a model writes for a part-of relation; a subclass needs neither.
+- **TPoint is a BRANCH of TGeo beside TGeometry and TGeography, not their parent.** The
+  lattice line above reproduces the model's nesting, which the catalog contradicts:
+  `tgeo_type_all()` (`meos_catalog.c:1465`) is the umbrella over all four PostGIS-derived
+  types, while `tpoint_type()` (:1399) holds `{T_TGEOMPOINT, T_TGEOGPOINT}` and
+  `tgeo_type()` (:1421) holds `{T_TGEOMETRY, T_TGEOGRAPHY}` — two DISJOINT subsets. The
+  split is interpolation: `temptype_supports_linear()` (:1200) admits the two point types
+  and its own docstring names `tgeometry`, `tgeography` among the "STEP-only types". A
+  point type therefore cannot be a subtype of a step-only one.
 - The model's own correction **OM-M7 is stale**: it states `tpcpoint`/`tpcpatch`
   are "absent from master MEOS (0 hits)", while live master **has** them
   (`meos_catalog.c:167/170` + `tpointcloud_temptype()` predicate). The curated lattice
