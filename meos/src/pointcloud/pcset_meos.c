@@ -309,7 +309,7 @@ union_set_pcpoint(const Set *s, const Pcpoint *pt)
 /**
  * @ingroup meos_pointcloud_set_setops
  * @brief Return the union of a pcpoint and a set
- * @csqlfn #Union_set_value()
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_pcpoint_set(const Pcpoint *pt, const Set *s)
@@ -337,7 +337,7 @@ intersection_set_pcpoint(const Set *s, const Pcpoint *pt)
 /**
  * @ingroup meos_pointcloud_set_setops
  * @brief Return the intersection of a pcpoint and a set
- * @csqlfn #Intersection_set_value()
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_pcpoint_set(const Pcpoint *pt, const Set *s)
@@ -593,7 +593,7 @@ union_set_pcpatch(const Set *s, const Pcpatch *pa)
 /**
  * @ingroup meos_pointcloud_set_setops
  * @brief Return the union of a pcpatch and a set
- * @csqlfn #Union_set_value()
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_pcpatch_set(const Pcpatch *pa, const Set *s)
@@ -621,7 +621,7 @@ intersection_set_pcpatch(const Set *s, const Pcpatch *pa)
 /**
  * @ingroup meos_pointcloud_set_setops
  * @brief Return the intersection of a pcpatch and a set
- * @csqlfn #Intersection_set_value()
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_pcpatch_set(const Pcpatch *pa, const Set *s)

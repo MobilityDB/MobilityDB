@@ -1397,7 +1397,7 @@ trgeometry_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
  * @brief Restrict a temporal rigid geometry to a timestamptz set
  * @param[in] temp Temporal rigid geometry
  * @param[in] s Set
- * @csqlfn #Temporal_at_tstzspanset()
+ * @csqlfn #Temporal_at_tstzset()
  */
 Temporal *
 trgeometry_at_tstzset(const Temporal *temp, const Set *s)
@@ -1411,7 +1411,7 @@ trgeometry_at_tstzset(const Temporal *temp, const Set *s)
  * timestamptz set
  * @param[in] temp Temporal rigid geometry
  * @param[in] s Set
- * @csqlfn #Temporal_minus_tstzspanset()
+ * @csqlfn #Temporal_minus_tstzset()
  */
 Temporal *
 trgeometry_minus_tstzset(const Temporal *temp, const Set *s)
