@@ -159,7 +159,14 @@ to the function that owns the behaviour; nothing generic reads a box's fields.
 | `temporal_bbox_cmp` | their B-tree order |
 | `temporal_bbox_size` | the box size for a temporal type |
 | `bbox_expand` | merge the first box into the second |
-| `ensure_valid_bbox_bbox` | are two boxes comparable (§2) |
+| `ensure_valid_bbox_bbox` | are two boxes comparable (§2) — **proposed, not yet in the tree** |
+
+Seven of those eight exist. `ensure_valid_bbox_bbox` does not: the tree validates
+comparability through the per-type entries — `ensure_valid_stbox_stbox`,
+`ensure_valid_tbox_tbox`, `ensure_valid_span_span` and their siblings — and every
+caller names the one its operand type needs. The dispatcher below is what this note
+PROPOSES so that generic code has one entry to call (§3.2); it is written out to fix
+the shape, not to describe code that ships.
 
 `ensure_bbox_temporal_compatible` and `ensure_same_index_bboxtype` are `ensure_*`
 members of the same family, so a validating dispatcher is the family's own shape
