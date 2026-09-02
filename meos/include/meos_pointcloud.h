@@ -459,7 +459,6 @@ extern bool overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 
 /* Validity helpers */
 
-extern bool ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2);
 
 /*****************************************************************************
  * Temporal pgpointcloud types (tpcpoint / tpcpatch) — value surface

@@ -3250,7 +3250,7 @@
 						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Devuelve un tpcbox con las coordenadas redondeadas al número de dígitos decimales indicado</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Devuelve un tpcbox con el SRID sobreescrito</para>
+						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Devuelve un tpcbox que declara un sistema de referencia que su esquema no declara</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

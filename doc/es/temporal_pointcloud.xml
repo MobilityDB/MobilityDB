@@ -399,14 +399,16 @@ SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1), 2);
 
 				<listitem xml:id="tpcbox_setSRID">
 					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
-					<para>Devuelve un tpcbox con el SRID sobreescrito</para>
+					<para>Devuelve un tpcbox que declara un sistema de referencia que su esquema no declara</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 setSRID(tpcbox,integer) → tpcbox
 </programlisting>
-					<para>No reproyecta las coordenadas, para ello, proyecte primero el tpcpoint subyacente y tome la caja delimitadora del resultado</para>
+					<para>El esquema nombrado por el pcid es el que contiene el sistema de referencia, por lo que cuando ese esquema declara uno la caja se rechaza: un pcid de 0 no nombra ningún esquema, y un esquema puede no declarar ninguno. No reproyecta las coordenadas, para ello, proyecte primero el tpcpoint subyacente y tome la caja delimitadora del resultado</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10, 1), 4326));
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10), 4326));
 -- 4326
+SELECT setSRID(tpcboxX(0, 0, 10, 10, 1), 3857);
+-- ERROR: The SRID of a TPCBox is the one its schema states: pcid 1 states SRID 4326
 </programlisting>
 				</listitem>
 			</itemizedlist>
