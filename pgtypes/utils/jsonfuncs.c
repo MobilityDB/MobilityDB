@@ -3311,8 +3311,14 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "path element at position %d is not an integer: \"%s\"", level + 1, c);
+      pfree(path_str); /* MEOS */
       return;
     }
+    /* MEOS: the text of the path element has answered the index and is named
+     * by nothing outside this block. PostgreSQL reclaims it by resetting the
+     * memory context this runs in; MEOS maps palloc onto malloc, so the
+     * release is explicit */
+    pfree(path_str);
   }
   else
     idx = nelems;
