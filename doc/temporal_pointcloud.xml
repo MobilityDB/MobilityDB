@@ -437,7 +437,7 @@ SELECT tpcboxX(0, 0, 5, 5, 1) * tpcboxX(3, 3, 10, 10, 1);
 
 		<sect2 xml:id="tpcbox_topo">
 			<title>Topological Operations</title>
-			<para>All topological operators take two <varname>tpcbox</varname> values with matching <varname>pcid</varname>. A pcid mismatch always yields false (not an error) so that index scans behave intuitively.</para>
+			<para>All topological operators take two <varname>tpcbox</varname> values that state the same schema and the same reference system. A mismatch in either raises an error rather than answering false: the <varname>pcid</varname> is what gives a stored number its meaning as a coordinate, so two boxes naming different schemas have no common extent to compare.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcbox_topo_ops">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
@@ -469,7 +469,7 @@ SELECT tpcboxX(0, 0, 5, 5, 1) &amp;&amp; tpcboxX(0, 0, 5, 5, 2);
 
 		<sect2 xml:id="tpcbox_pos">
 			<title>Position Operations</title>
-			<para>Sixteen axis-aligned position predicates, parallel to those on <varname>stbox</varname>. Each tests strict-or-overlap relationship along one axis. All require matching <varname>pcid</varname>; mismatch returns false. Z-axis predicates require both boxes to have a Z dimension; T-axis predicates require both to have a T dimension.</para>
+			<para>Sixteen axis-aligned position predicates, parallel to those on <varname>stbox</varname>. Each tests strict-or-overlap relationship along one axis. All require the same schema and the same reference system, and a mismatch in either raises an error. Z-axis predicates require both boxes to have a Z dimension; T-axis predicates require both to have a T dimension.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcbox_pos_ops">
 					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>

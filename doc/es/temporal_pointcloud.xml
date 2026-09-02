@@ -435,7 +435,7 @@ SELECT tpcboxX(0, 0, 5, 5, 1) * tpcboxX(3, 3, 10, 10, 1);
 
 		<sect2 xml:id="tpcbox_topo">
 			<title>Operaciones topológicas</title>
-			<para>Todos los operadores topológicos toman dos valores <varname>tpcbox</varname> con <varname>pcid</varname> coincidente. Una discrepancia de pcid siempre devuelve falso (no un error) para que los escaneos de índice se comporten de forma intuitiva.</para>
+			<para>Todos los operadores topológicos toman dos valores <varname>tpcbox</varname> que declaran el mismo esquema y el mismo sistema de referencia. Una discrepancia en cualquiera de los dos genera un error en lugar de responder falso: el <varname>pcid</varname> es lo que da a un número almacenado su significado como coordenada, por lo que dos cajas que nombran esquemas distintos no tienen una extensión común que comparar.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcbox_topo_ops">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
@@ -467,7 +467,7 @@ SELECT tpcboxX(0, 0, 5, 5, 1) &amp;&amp; tpcboxX(0, 0, 5, 5, 2);
 
 		<sect2 xml:id="tpcbox_pos">
 			<title>Operaciones de posición</title>
-			<para>Dieciséis predicados de posición alineados por eje, paralelos a los de <varname>stbox</varname>. Cada uno comprueba la relación estricta o de solapamiento a lo largo de un eje. Todos requieren <varname>pcid</varname> coincidente; la discrepancia devuelve falso. Los predicados del eje Z requieren que ambas cajas tengan dimensión Z; los del eje T requieren que ambas tengan dimensión T.</para>
+			<para>Dieciséis predicados de posición alineados por eje, paralelos a los de <varname>stbox</varname>. Cada uno comprueba la relación estricta o de solapamiento a lo largo de un eje. Todos requieren el mismo esquema y el mismo sistema de referencia, y una discrepancia en cualquiera de los dos genera un error. Los predicados del eje Z requieren que ambas cajas tengan dimensión Z; los del eje T requieren que ambas tengan dimensión T.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcbox_pos_ops">
 					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
