@@ -111,8 +111,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a tpcbox with the SRID overwritten. </p>
-<p >Does not transform coordinates; just stamps the new SRID on the result. For coordinate reprojection, project the underlying tpcpoint first, then take its bbox. @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box_ga665c9d0dd249c0d08b963bb0243aab20.html#ga665c9d0dd249c0d08b963bb0243aab20" title="Return a TPCBox with the SRID overwritten (no coordinate reprojection).">Tpcbox_set_srid()</a> </p>
+<p>Return a tpcbox stating a reference system its schema does not state. </p>
+<p >The schema a pcid names is what holds the reference system, so where that schema states one it is not the caller's to set and the box is refused. A pcid of 0 names no schema and a schema may state none, and there the box itself is the only level there is. Coordinates are not transformed either way; to reproject, project the underlying tpcpoint and take its box. @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box_ga665c9d0dd249c0d08b963bb0243aab20.html#ga665c9d0dd249c0d08b963bb0243aab20" title="Return a TPCBox with the SRID overwritten (no coordinate reprojection).">Tpcbox_set_srid()</a> </p>
 
 </div>
 </div>
