@@ -5871,6 +5871,8 @@ typedef struct
   RelateEdges re;  /**< The same edges, with what reading them selectively
                         needs, so a point is located against a component
                         without walking it whole */
+  double xmin, ymin, xmax, ymax; /**< Extent of the component, read from the
+                        boxes its edges already carry */
 } RelateComp;
 
 /**
@@ -5917,6 +5919,14 @@ relate_area_comps_iter(const LWGEOM *geom, RelateComp **comps, int *ncomp,
   for (int i = 0; i < c->nedges; i++)
     c->edges[i] = (Edge *) meos_array_get(c->arr, i);
   relate_edges_init(&c->re, c->edges, c->nedges, index);
+  c->xmin = c->ymin = DBL_MAX;
+  c->xmax = c->ymax = -DBL_MAX;
+  for (int i = 0; i < c->nedges; i++)
+  {
+    const Edge *e = c->edges[i];
+    c->xmin = fmin(c->xmin, e->xmin); c->xmax = fmax(c->xmax, e->xmax);
+    c->ymin = fmin(c->ymin, e->ymin); c->ymax = fmax(c->ymax, e->ymax);
+  }
   return;
 }
 
@@ -6015,7 +6025,12 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
         {
           int j = (int) *(int64 *) meos_array_get(candidates, c);
           double d = relate_edge_distance(x, y, comps[i].edges[j]);
-          if (d <= MEOS_GEOM_TOLERANCE)
+          /* An edge the point LIES ON is no clearance from it. What the
+           * distance misses the edge by is a property of the arithmetic --
+           * a few units in the last place of the largest coordinate -- so an
+           * absolute floor leaves a point on its own edge reading as a
+           * feature a rounding step away */
+          if (d <= fmax(comps[i].edges[j]->tol, MEOS_GEOM_TOLERANCE))
             continue;
           if (best < 0 || d < best)
             best = d;
@@ -6035,7 +6050,12 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
     for (int j = 0; j < comps[i].nedges; j++)
     {
       double d = relate_edge_distance(x, y, comps[i].edges[j]);
-      if (d <= MEOS_GEOM_TOLERANCE)
+      /* An edge the point LIES ON is no clearance from it. What the
+       * distance misses the edge by is a property of the arithmetic --
+       * a few units in the last place of the largest coordinate -- so an
+       * absolute floor leaves a point on its own edge reading as a
+       * feature a rounding step away */
+      if (d <= fmax(comps[i].edges[j]->tol, MEOS_GEOM_TOLERANCE))
         continue;
       if (result < 0 || d < result)
         result = d;
@@ -6081,6 +6101,24 @@ relate_portion_inside_union(const Edge *e, double t, const RelateComp *comps,
 {
   double x, y;
   relate_area_edge_point(e, t, &x, &y);
+  /* A portion is interior to the union only where components MEET: the point
+   * lies on the boundary of the component it belongs to, so some OTHER
+   * component has to cover a neighbourhood of it, and that component's extent
+   * must then contain it. Reading the extents settles every portion no second
+   * component reaches, which is most of them on real multi-part data, and
+   * costs one comparison per component against two point locations */
+  {
+    int reaching = 0;
+    for (int i = 0; i < ncomp && reaching < 2; i++)
+    {
+      double pad = comps[i].re.tol;
+      if (x >= comps[i].xmin - pad && x <= comps[i].xmax + pad &&
+          y >= comps[i].ymin - pad && y <= comps[i].ymax + pad)
+        reaching++;
+    }
+    if (reaching < 2)
+      return false;
+  }
   /* The portion's own edge sets the scale the search starts at: the feature
    * nearest a point of a boundary is normally the next one along it */
   double delta = relate_clearance(x, y, comps, ncomp,

@@ -1126,6 +1126,39 @@ int main(void)
   free(h3s); free(qbs); free(s2s);
   meos_errno_reset();
 
+  /* A second surface lying clear of the first takes nothing away from what
+   * the first covers, so a point interior to one member is interior to the
+   * union of both. A single component answers without reading the union at
+   * all, which makes its answer the reference the two-member spelling is held
+   * to. Both members carry arcs at projected coordinates, where the point the
+   * engine places on an edge misses it by the rounding unit of those
+   * coordinates rather than by nothing */
+  meos_errno_reset();
+  GSERIALIZED *ubm = geom_in("CURVEPOLYGON(CIRCULARSTRING("
+    "448320.7 6180616.3,448330.1 6180626.9,448340.3 6180616.7,"
+    "448330.9 6180606.1,448320.7 6180616.3))", -1);
+  GSERIALIZED *ubu = geom_in("MULTISURFACE(CURVEPOLYGON(CIRCULARSTRING("
+    "448320.7 6180616.3,448330.1 6180626.9,448340.3 6180616.7,"
+    "448330.9 6180606.1,448320.7 6180616.3)),CURVEPOLYGON(CIRCULARSTRING("
+    "448400.3 6180616.1,448410.7 6180626.3,448420.9 6180616.9,"
+    "448410.1 6180606.7,448400.3 6180616.1)))", -1);
+  GSERIALIZED *ubp = geom_in("POINT(448330.5 6180616.5)", -1);
+  assert(ubm != NULL); assert(ubu != NULL); assert(ubp != NULL);
+  char *ubmm = geom_relate(ubm, ubp);
+  char *ubum = geom_relate(ubu, ubp);
+  assert(ubmm != NULL); assert(ubum != NULL);
+  assert(meos_errno() == 0);
+  printf("a point interior to one surface, alone and in the union: %s %s\n",
+    ubmm, ubum);
+  assert(strcmp(ubmm, "0F2FF1FF2") == 0);
+  assert(strcmp(ubum, ubmm) == 0);
+  /* and the predicates the matrix answers say the same */
+  assert(geom_covers(ubu, ubp));
+  assert(geom_intersects(ubu, ubp));
+  assert(meos_errno() == 0);
+  free(ubmm); free(ubum); free(ubm); free(ubu); free(ubp);
+  meos_errno_reset();
+
   /* Finalize MEOS */
   meos_finalize();
 
