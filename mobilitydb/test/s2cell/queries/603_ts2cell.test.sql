@@ -45,6 +45,27 @@ SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
 SELECT asText(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}');
 
 -------------------------------------------------------------------------------
+-- MF-JSON
+--
+-- An s2cell is a scalar cell id carried with a bounding box, so its MF-JSON
+-- form is the one h3index and quadbin take: the 'values' array holds plain
+-- cell ids (mirroring the tbigint sibling).
+-------------------------------------------------------------------------------
+
+SELECT asMFJSON(ts2cell '47c3c3@2012-01-01 08:00:00');
+SELECT asMFJSON(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}');
+SELECT asMFJSON(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT asMFJSON(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02], [47c3c3@2001-01-03, 47c3c3@2001-01-04]}');
+-- Bound the bbox precision so the output is platform-independent
+SELECT asMFJSON(ts2cell '47c3c3@2012-01-01 08:00:00', 1, 3, 6);
+
+-- Round-trip: ts2cellFromMFJSON(asMFJSON(...)) preserves the value
+SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '47c3c3@2012-01-01 08:00:00'));
+SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}'));
+SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]'));
+SELECT ts2cellFromMFJSON(asMFJSON(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02], [47c3c3@2001-01-03, 47c3c3@2001-01-04]}'));
+
+-------------------------------------------------------------------------------
 -- Interpolation
 --
 -- A cell index is discrete, so a sequence is step interpolated and asking for

@@ -491,6 +491,9 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
 #if QUADBIN
       case T_TQUADBIN:
 #endif
+#if S2CELL
+      case T_TS2CELL:
+#endif
         if (json_object_get_type(jvalue) != json_type_int)
         {
           meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1168,6 +1171,11 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     else if (temptype == T_TQUADBIN)
       values = parse_mfjson_values(mfjson, temptype, &nvalues);
 #endif /* QUADBIN */
+#if S2CELL
+    /* an s2cell is the third scalar cell id, read as h3index and quadbin are */
+    else if (temptype == T_TS2CELL)
+      values = parse_mfjson_values(mfjson, temptype, &nvalues);
+#endif /* S2CELL */
     else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1239,6 +1247,11 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
     else if (temptype == T_TQUADBIN)
       values = parse_mfjson_values(mfjson, temptype, &nvalues);
 #endif /* QUADBIN */
+#if S2CELL
+    /* an s2cell is the third scalar cell id, read as h3index and quadbin are */
+    else if (temptype == T_TS2CELL)
+      values = parse_mfjson_values(mfjson, temptype, &nvalues);
+#endif /* S2CELL */
    else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1411,6 +1424,9 @@ ensure_temptype_mfjson(const char *typestr)
 #if QUADBIN
       && strcmp(typestr, "MovingQuadbin") != 0
 #endif /* QUADBIN */
+#if S2CELL
+      && strcmp(typestr, "MovingS2Cell") != 0
+#endif /* S2CELL */
 #if RGEO
       && strcmp(typestr, "MovingRigidGeometry") != 0
 #endif /* RGEO */
@@ -1528,6 +1544,8 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
 #if QUADBIN
   else if (strcmp(typestr, "MovingQuadbin") == 0)
     jtemptype = T_TQUADBIN;
+  else if (strcmp(typestr, "MovingS2Cell") == 0)
+    jtemptype = T_TS2CELL;
 #endif /* QUADBIN */
 #if RGEO
   else if (strcmp(typestr, "MovingRigidGeometry") == 0)

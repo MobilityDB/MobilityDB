@@ -520,6 +520,9 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
 #if QUADBIN
     case T_TQUADBIN:
 #endif
+#if S2CELL
+    case T_TS2CELL:
+#endif
       int64_as_mfjson_sb(sb, DatumGetInt64(value));
       break;
     case T_TFLOAT:
@@ -628,11 +631,11 @@ tbox_as_mfjson_sb(stringbuffer_t *sb, const TBox *box, int precision)
    * its Datum to DatumGetFloat8, which reinterprets the bits rather than
    * converting them, so T_INT8 is named on its own.
    * ⛔ The remaining arm is a plain else rather than a named T_FLOAT8 arm with an
-   * error default, because T_TH3INDEX and T_TQUADBIN reach here from
+   * error default, because T_TH3INDEX, T_TQUADBIN and T_TS2CELL reach here from
    * bbox_as_mfjson_sb while meos_catalog.c gives both type_bboxtype = T_STBOX:
    * an STBox is read through this TBox printer, so box->span holds its coordinate
    * doubles under whatever basetype byte sits at that offset, and an error
-   * default refuses two shipping families. That routing is its own defect, and
+   * default refuses three shipping families. That routing is its own defect, and
    * the else is what keeps those families printing */
   MeosType basetype = box->span.basetype;
   stringbuffer_append_len(sb, "\"bbox\":[", 8);
@@ -745,6 +748,9 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
 #if QUADBIN
     case T_TQUADBIN:
 #endif
+#if S2CELL
+    case T_TS2CELL:
+#endif
       tbox_as_mfjson_sb(sb, (TBox *) box, precision);
       break;
     case T_TGEOMPOINT:
@@ -852,6 +858,11 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
 #if QUADBIN
     case T_TQUADBIN:
       stringbuffer_append_len(sb, "{\"type\":\"MovingQuadbin\",", 24);
+      break;
+#endif
+#if S2CELL
+    case T_TS2CELL:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingS2Cell\",", 23);
       break;
 #endif
 #if RGEO
