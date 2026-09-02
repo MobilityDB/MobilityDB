@@ -445,14 +445,25 @@ posesegm_locate(const Pose *start, const Pose *end, const Pose *value)
     result1 = pointsegm_locate(PointerGetDatum(gs1), PointerGetDatum(gs2),
       PointerGetDatum(gs), NULL);
     if (result1 < 0.0)
+    {
+      pfree(gs1); pfree(gs2); pfree(gs);
       return -1.0;
+    }
   }
   else
   {
     /* If constant segment and the point of the value is different */
     if (! geopoint_eq(gs1, gs))
+    {
+      pfree(gs1); pfree(gs2); pfree(gs);
       return -1.0;
+    }
   }
+  /* The three points have answered the positional question and nothing below
+   * reads them: what follows is the rotation, which the poses carry
+   * themselves. They are this function's own serializations, so they are
+   * released here rather than at each of the returns that follow */
+  pfree(gs1); pfree(gs2); pfree(gs);
   if (MEOS_FLAGS_GET_Z(start->flags))
   {
     /* Invert the SLERP applied in posesegm_interpolate. For
