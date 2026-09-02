@@ -628,6 +628,13 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
         for (int j = 0; j < i; j++)
           pfree(instants[j]);
         pfree(instants);
+        /* The synchronized copies and the piece computed before the
+         * intersection are this function's too, and a negative answer tells
+         * the caller that it wrote nothing, so nothing else will free them */
+        pfree(syncseq1);
+        pfree(syncseq2);
+        for (int j = 0; j < nseqs; j++)
+          pfree(sequences[j]);
         return -1;
       }
     }
@@ -699,6 +706,22 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
   {
     int countstep = tsequence_tagg_iter(seq1, seq2, func, crossings,
       &sequences[k]);
+    if (countstep < 0)
+    {
+      /* The step raised and wrote nothing. Folding a negative answer into the
+       * count walks k backwards and hands the normalization a length that is
+       * not the number of sequences there are, so the aggregation stops here
+       * and answers that it has none. The step freed what it held; the
+       * sequences already placed are this function's, and sequences[k] is the
+       * one tofree names, so it is released once */
+      for (int n = 0; n < k; n++)
+        pfree(sequences[n]);
+      if (tofree)
+        pfree(tofree);
+      pfree(sequences);
+      *newcount = 0;
+      return NULL;
+    }
     k += countstep - 1;
 
     /* Need to get all info from seq1 and seq2 since we might free one of them

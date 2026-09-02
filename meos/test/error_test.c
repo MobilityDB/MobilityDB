@@ -50,6 +50,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <meos.h>
+#include <meos_internal.h>
 #include <meos_geo.h>
 #include <meos_h3.h>
 #include <meos_pose.h>
@@ -295,6 +296,34 @@ int main(void)
   printf("set_round(floatset): answered %s\n", ftext);
   assert(strcmp(ftext, "{1.23, 2.35}") == 0);
   free(ftext); free(frounded); free(fset);
+  meos_errno_reset();
+
+  /* An aggregation whose values disagree at a timestamp they share reports the
+   * disagreement, and under the noexit handler that report RETURNS. The step
+   * that raises answers a negative count; folding it into the running length
+   * walked that length backwards and handed the normalization a number that is
+   * not how many sequences there are, so the process ended inside
+   * tseqarr_normalize instead of at the caller's check */
+  meos_errno_reset();
+  Temporal *magg1 = tint_in("{[1@2001-01-01, 3@2001-01-03]}");
+  Temporal *magg2 = tint_in("{[7@2001-01-01, 9@2001-01-03]}");
+  assert(magg1 != NULL && magg2 != NULL && meos_errno() == 0);
+  SkipList *mst1 = temporal_merge_transfn(NULL, magg1);
+  SkipList *mst2 = temporal_merge_transfn(NULL, magg2);
+  assert(mst1 != NULL && mst2 != NULL && meos_errno() == 0);
+  SkipList *mcomb = temporal_merge_combinefn(mst1, mst2);
+  printf("merge combine of values disagreeing at a shared timestamp: "
+    "declined, errno %d\n", meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  /* The combine answers a state either way, and which of the two it keeps is
+   * what says whose storage is still the caller's */
+  if (mst1 != mcomb)
+    skiplist_free(mst1);
+  if (mst2 != mcomb)
+    skiplist_free(mst2);
+  if (mcomb)
+    skiplist_free(mcomb);
+  free(magg1); free(magg2);
   meos_errno_reset();
 
   free(tpt1); free(tpt2);
