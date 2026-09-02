@@ -12,14 +12,14 @@
 
 	<sect1 xml:id="tspatial">
 		<title>Spatiotemporal Types</title>
-		<para>MobilityDB provides a set of spatiotemporal types, namely, <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tnpoint</varname> (temporal network point), <varname>tpose</varname> (temporal pose), and <varname>trgeometry</varname> (temporal rigid geometry). At a conceptual level, these spatiotemporal types are organized in the hierarchy depicted in <xref linkend="tspatial_fig" />.</para>
+		<para>MobilityDB provides a set of spatiotemporal types, namely, <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tnpoint</varname> (temporal network point), <varname>tpose</varname> (temporal pose), <varname>tposechain</varname> (temporal pose chain), <varname>trgeometry</varname> (temporal rigid geometry), <varname>th3index</varname>, <varname>tquadbin</varname>, and <varname>ts2cell</varname> (the temporal DGGS cell indexes), and <varname>tpcpoint</varname> (temporal point cloud point) and <varname>tpcpatch</varname> (temporal point cloud patch). At a conceptual level, these spatiotemporal types are organized in the hierarchy depicted in <xref linkend="tspatial_fig" />.</para>
 
 		<figure xml:id="tspatial_fig" float="start">
 			<title>Hierarchy of spatiotemporal types in MobilityDB.</title>
 			<mediaobject>
-				<imageobject><imagedata format="PDF" scale='100' fileref="images/tspatial.pdf"/></imageobject>
-				<imageobject><imagedata format="SVG" scale='100' fileref="images/tspatial.svg"/></imageobject>
-				<imageobject><imagedata format="PNG" scale='100' fileref="images/tspatial.png"/></imageobject>
+				<imageobject><imagedata format="PDF" width="100%" scalefit="1" fileref="images/tspatial.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" width="100%" scalefit="1" fileref="images/tspatial.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" width="100%" scalefit="1" fileref="images/tspatial.png"/></imageobject>
 			</mediaobject>
 		</figure>
 
