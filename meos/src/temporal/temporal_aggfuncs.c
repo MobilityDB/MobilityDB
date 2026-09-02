@@ -420,7 +420,11 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
   int count2, datum_func2 func, int *newcount, void ***tofree, int *nfree)
 {
   TInstant **result = palloc(sizeof(TInstant *) * (count1 + count2));
-  void **tofree1 = palloc(sizeof(TInstant *) * Max(count1, count2));
+  /* Every instant this function builds is reported for freeing, and it builds
+   * at most one per input instant, so the array is sized like the result. The
+   * earlier Max(count1, count2) held only while the instants copied from
+   * state1 went unreported, which is what leaked them */
+  void **tofree1 = palloc(sizeof(TInstant *) * (count1 + count2));
   int i = 0, j = 0, count = 0, nfree1 = 0;
   while (i < count1 && j < count2)
   {
@@ -457,6 +461,8 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
         if (tinstant_eq(inst1, inst2))
         {
           result[count++] = tinstant_copy(inst1);
+          if (tofree)
+            tofree1[nfree1++] = result[count - 1];
         }
         else
         {
@@ -474,6 +480,8 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     else if (cmp < 0)
     {
       result[count++] = tinstant_copy(inst1);
+      if (tofree)
+        tofree1[nfree1++] = result[count - 1];
       i++;
     }
     else
