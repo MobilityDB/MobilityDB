@@ -1,0 +1,91 @@
+{
+  "type_label": "temporal agg",
+  "header": "meos.h",
+  "out": "temporal_agg_smoketest.c",
+  "only": [
+    "_(transfn|combinefn|finalfn)$"
+  ],
+  "extra_includes": "#include <meos_internal.h>",
+  "arg_map": {
+    "Temporal *": "tint1",
+    "Set *": "tstzset1",
+    "Span *": "tstzspan1",
+    "SpanSet *": "tstzspanset1",
+    "TBox *": "tbox1",
+    "Interval *": "interv1",
+    "TimestampTz": "tstz1",
+    "DateADT": "date1",
+    "text *": "txt1",
+    "int": "1",
+    "int32": "1",
+    "int64": "1",
+    "double": "1.0"
+  },
+  "name_arg_map": {
+    "^tint_": {
+      "Temporal *": "tint1"
+    },
+    "^tbigint_": {
+      "Temporal *": "tbigint1"
+    },
+    "^tfloat_": {
+      "Temporal *": "tfloat1"
+    },
+    "^tbool_": {
+      "Temporal *": "tbool1"
+    },
+    "^ttext_": {
+      "Temporal *": "ttext1"
+    },
+    "^tnumber_": {
+      "Temporal *": "tfloat1"
+    }
+  },
+  "common_inputs": [
+    "  Temporal *tint1 = tint_in(\"{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}\");",
+    "  Temporal *tbigint1 = tbigint_in(\"{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}\");",
+    "  Temporal *tfloat1 = tfloat_in(\"{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}\");",
+    "  Temporal *tbool1 = tbool_in(\"{[t@2001-01-01, t@2001-01-03],[f@2001-01-04, f@2001-01-06]}\");",
+    "  Temporal *ttext1 = ttext_in(\"{[A@2001-01-01, B@2001-01-03],[C@2001-01-04, D@2001-01-06]}\");",
+    "  Set *tstzset1 = tstzset_in(\"{2001-01-01, 2001-01-03}\");",
+    "  Span *tstzspan1 = tstzspan_in(\"[2001-01-01, 2001-01-03]\");",
+    "  SpanSet *tstzspanset1 = tstzspanset_in(\"{[2001-01-01, 2001-01-03]}\");",
+    "  TBox *tbox1 = tbox_in(\"TBOXFLOAT XT([1,2],[2001-01-01,2001-01-03])\");",
+    "  Interval *interv1 = interval_in(\"1 day\", -1);",
+    "  TimestampTz tstz1 = timestamptz_in(\"2001-01-01\", -1);",
+    "  DateADT date1 = date_in(\"2001-01-01\");",
+    "  text *txt1 = cstring_to_text(\"AAA\");",
+    "  Temporal *tint2 = tint_in(\"{[7@2001-01-10, 9@2001-01-13],[2@2001-01-14, 5@2001-01-16]}\");",
+    "  Temporal *tbigint2 = tbigint_in(\"{[7@2001-01-10, 9@2001-01-13],[2@2001-01-14, 5@2001-01-16]}\");",
+    "  Temporal *tfloat2 = tfloat_in(\"{[7.5@2001-01-10, 9.5@2001-01-13],[2.5@2001-01-14, 5.5@2001-01-16]}\");",
+    "  Temporal *tbool2 = tbool_in(\"{[f@2001-01-10, f@2001-01-13],[t@2001-01-14, t@2001-01-16]}\");",
+    "  Temporal *ttext2 = ttext_in(\"{[X@2001-01-10, Y@2001-01-13],[Z@2001-01-14, W@2001-01-16]}\");",
+    "  Set *tstzset2 = tstzset_in(\"{2001-01-10, 2001-01-13}\");",
+    "  Span *tstzspan2 = tstzspan_in(\"[2001-01-10, 2001-01-13]\");",
+    "  SpanSet *tstzspanset2 = tstzspanset_in(\"{[2001-01-10, 2001-01-13]}\");",
+    "  TBox *tbox2 = tbox_in(\"TBOXFLOAT XT([3,4],[2001-01-10,2001-01-13])\");",
+    "  TimestampTz tstz2 = timestamptz_in(\"2001-01-10\", -1);"
+  ],
+  "cleanup": [
+    "  free(tint1);",
+    "  free(tbigint1);",
+    "  free(tfloat1);",
+    "  free(tbool1);",
+    "  free(ttext1);",
+    "  free(tstzset1);",
+    "  free(tstzspan1);",
+    "  free(tstzspanset1);",
+    "  free(tbox1);",
+    "  free(interv1);",
+    "  free(txt1);",
+    "  free(tint2);",
+    "  free(tbigint2);",
+    "  free(tfloat2);",
+    "  free(tbool2);",
+    "  free(ttext2);",
+    "  free(tstzset2);",
+    "  free(tstzspan2);",
+    "  free(tstzspanset2);",
+    "  free(tbox2);"
+  ]
+}

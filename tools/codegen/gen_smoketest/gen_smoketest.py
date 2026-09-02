@@ -141,19 +141,11 @@ def parse_args(arg_block: str):
     return out
 
 
-# Global skip patterns that apply to every config. Aggregate transfns /
-# combinefns own their first argument (state) — they pfree it internally
-# and return a new state. The smoke-test pattern (call function, then
-# free the result) leaves the original input dangling and reuses it on
-# the next call, producing use-after-free errors under valgrind. These
-# functions need PG's aggregate framework (or a manual state-handoff
-# pattern) to exercise correctly; the smoke test is the wrong harness.
-GLOBAL_SKIP = {
-    # transfn and finalfn are emitted by emit_aggregate; a combinefn merges two
-    # independent transition states, which the single-input harness cannot seed.
-    "re:_combinefn$":
-        "aggregate combine step needs two independent transition states",
-}
+# Global skip patterns that apply to every config. Aggregates are no longer
+# among them: an aggregate entry owns the state it is handed and answers the
+# state to use next, so emit_aggregate() carries the value through the chain
+# rather than freeing an argument the callee has already taken.
+GLOBAL_SKIP = {}
 
 
 # By-value scalar RETURN types: a fixed, whole-repo set (not a per-config
@@ -174,14 +166,23 @@ BY_VALUE_SCALAR_TYPES = {
 # State types a MEOS aggregate threads through its transition/final functions.
 AGG_STATE_TYPES = ("SkipList *", "Set *", "Span *", "SpanSet *", "TBox *", "STBox *")
 
+# How to read back what a finalizer answers, so a combine can be compared
+# against the serial accumulation of the same values. A return type absent
+# here still gets its combine called and freed, just without the assertion.
+AGG_RESULT_PRINTERS = {
+    "Temporal *": "temporal_out(%s, 6)",
+}
 
-def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name):
+
+def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name,
+                   declared_inputs=()):
     """Emit the multi-call sequence for an aggregate transition/final function,
     or return None when this is not a handleable aggregate (leaving it to the
     normal skip machinery).
 
     A `State *X_transfn(State *st, value...)` folds a value into a transition
-    state; a `Result *X_finalfn(State *st)` turns that state into the aggregate.
+    state; a `Result *X_finalfn(State *st)` turns that state into the aggregate;
+    a `State *X_combinefn(State *st1, State *st2)` merges two of them.
     The generic one-call harness cannot express the handoff, so the whole
     sequence is emitted: seed a NULL state, accumulate a canned value (twice for
     a transfn, to exercise the grow/merge path), then free the state (transfn)
@@ -195,6 +196,16 @@ def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name):
             if v is None:
                 return None
             out.append(v)
+        return out
+
+    def sibling(vals):
+        """The same argument list drawn from the sibling inputs, so the second
+        state of a combine holds a different value from the first. An input
+        with no declared sibling is reused unchanged."""
+        out = []
+        for v in vals:
+            alt = v[:-1] + "2" if v.endswith("1") else None
+            out.append(alt if alt and alt in declared_inputs else v)
         return out
 
     def free_state(state_ty, var):
@@ -215,6 +226,72 @@ def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name):
                 f"    st = {fname}(st{tail});\n"
                 f"    st = {fname}(st{tail});\n"
                 f"    if (st) {free_state(state_ty, 'st')}; }}\n")
+    if fname.endswith("_combinefn") and sig_by_name:
+        transfn = fname[:-len("_combinefn")] + "_transfn"
+        tsig = sig_by_name.get(transfn)
+        if not tsig:
+            return None
+        _tret, targs = tsig
+        if not targs or targs[0][0].strip() != state_ty:
+            return None
+        vals = canned(targs[1:])
+        if vals is None:
+            return None
+        tail = (", " + ", ".join(vals)) if vals else ""
+        vals2 = sibling(vals)
+        tail2 = (", " + ", ".join(vals2)) if vals2 else ""
+        # Two states are seeded independently, which is what a combine merges
+        # and what the single-input harness could not express. The combine
+        # copies the values of the state it absorbs and returns the other one,
+        # and which of the two it returns depends on which was empty, so the
+        # returned pointer is what says whose storage is still the caller's.
+        # Two declarators, because a `*` in the type text binds to the first
+        # one alone and the second would come out as a non-pointer.
+        #
+        # The answer a combine produces must be the answer the same two values
+        # produce accumulated serially: that identity is why the aggregate is
+        # allowed a combine at all, so where the finalizer is known the block
+        # asserts it and a combine drifting from its transition fails instead
+        # of merely not leaking. The finalizer is the family's own where it
+        # declares one, else the generic entry the SQL aggregates name --
+        # derived from the header rather than listed here.
+        base = fname[: -len("_combinefn")]
+        finalfn = None
+        if f"{base}_finalfn" in sig_by_name:
+            finalfn = f"{base}_finalfn"
+        elif state_ty == "SkipList *" and "temporal_tagg_finalfn" in sig_by_name:
+            finalfn = "temporal_tagg_finalfn"
+        fret = sig_by_name[finalfn][0].strip() if finalfn else None
+        if finalfn and fret in AGG_RESULT_PRINTERS:
+            printer = AGG_RESULT_PRINTERS[fret]
+            # The finalizer consumes the state it is given, so neither the
+            # combined nor the serial skiplist is freed after it runs.
+            return (f"  {{ {state_ty}st1 = NULL; {state_ty}st2 = NULL; {state_ty}ser = NULL;\n"
+                    f"    st1 = {transfn}(st1{tail});\n"
+                    f"    st2 = {transfn}(st2{tail2});\n"
+                    f"    ser = {transfn}(ser{tail});\n"
+                    f"    ser = {transfn}(ser{tail2});\n"
+                    f"    {state_ty}m = {fname}(st1, st2);\n"
+                    f"    if (st1 && st1 != m) {free_state(state_ty, 'st1')};\n"
+                    f"    if (st2 && st2 != m) {free_state(state_ty, 'st2')};\n"
+                    f"    {fret}rc = m ? {finalfn}(m) : NULL;\n"
+                    f"    {fret}rs = ser ? {finalfn}(ser) : NULL;\n"
+                    f"    char *sc = rc ? {printer % 'rc'} : NULL;\n"
+                    f"    char *ss = rs ? {printer % 'rs'} : NULL;\n"
+                    f'    printf("{fname}: %s\\n", (sc && ss) ?\n'
+                    f'      (strcmp(sc, ss) == 0 ? "agrees with serial" :\n'
+                    f'        "DIFFERS FROM SERIAL") : "no answer");\n'
+                    f"    if (sc) free(sc);\n"
+                    f"    if (ss) free(ss);\n"
+                    f"    if (rc) free(rc);\n"
+                    f"    if (rs) free(rs); }}\n")
+        return (f"  {{ {state_ty}st1 = NULL; {state_ty}st2 = NULL;\n"
+                f"    st1 = {transfn}(st1{tail});\n"
+                f"    st2 = {transfn}(st2{tail2});\n"
+                f"    {state_ty}m = {fname}(st1, st2);\n"
+                f"    if (st1 && st1 != m) {free_state(state_ty, 'st1')};\n"
+                f"    if (st2 && st2 != m) {free_state(state_ty, 'st2')};\n"
+                f"    if (m) {free_state(state_ty, 'm')}; }}\n")
     if fname.endswith("_finalfn") and sig_by_name:
         transfn = fname[:-len("_finalfn")] + "_transfn"
         tsig = sig_by_name.get(transfn)
@@ -237,7 +314,7 @@ def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name):
 
 def emit_call(fname, ret, args, arg_map, skip_map, override_args,
               no_free=(), value_returns=(), name_arg_map=None, manual=(),
-              sig_by_name=None):
+              sig_by_name=None, declared_inputs=()):
     # Manually-covered: the generic emitter cannot express this call shape, and
     # the config exercises the function by hand in its cleanup block, so emit
     # nothing here. A SKIP line would misread as an untested function; the
@@ -266,7 +343,8 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
                 eff_arg_map.update(tymap)
     # Aggregate transition/final functions need a multi-call state handoff that
     # the single-call harness cannot express; emit the whole sequence here.
-    agg = emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name)
+    agg = emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name,
+                         declared_inputs)
     if agg is not None:
         return agg
     # Global regex-pattern skip (applied after per-config so a config can
@@ -478,6 +556,7 @@ HEADER_TEMPLATE = """\
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_geo.h>
@@ -2045,6 +2124,26 @@ def write_test(name, cfg):
     # A finalfn builds its transition state with the paired transfn, looked up
     # by signature from every declaration this suite parses.
     sig_by_name = {fname: (ret, args) for fname, ret, args in decls}
+
+    # A combine merges two INDEPENDENTLY accumulated states, so seeding both
+    # from one value makes every idempotent aggregate (tmax, tmin, tand, tor)
+    # answer the same whether or not the combine reads the second state at
+    # all. Where the config declares a sibling input -- tint2 beside tint1 --
+    # the second state is seeded from it, and the assertion witnesses a
+    # dropped state for those aggregates too.
+    declared_inputs = frozenset(
+        re.findall(r"^\s*(?:const\s+)?\w[\w ]*?\**(\w+)\s*=",
+                   cfg["common_inputs"], re.M))
+
+    # A suite may cover PART of a header: `only` keeps the declarations whose
+    # name matches one of its patterns. The signature index above is built
+    # before the filter, so a final or combine step still resolves its paired
+    # transition function even where the patterns do not name it. A header
+    # carrying one coherent surface needs no `only` and emits everything.
+    only = cfg.get("only", ())
+    if only:
+        pats = [re.compile(p) for p in only]
+        decls = [d for d in decls if any(p.search(d[0]) for p in pats)]
     body = "".join(emit_call(fname, ret, args,
                              cfg["arg_map"], cfg["skip"],
                              cfg["override_args"],
@@ -2052,7 +2151,7 @@ def write_test(name, cfg):
                              cfg.get("value_returns", ()),
                              cfg.get("name_arg_map", {}),
                              cfg.get("manual", ()),
-                             sig_by_name)
+                             sig_by_name, declared_inputs)
                    for fname, ret, args in decls)
     # A common-input variable that a given type's surface never consumes is
     # acknowledged with (void), the same idiom emit_call uses for by-value
@@ -2094,7 +2193,7 @@ def load_sidecar(path):
     in-file CONFIG dicts, with two ergonomic differences for JSON:
       - common_inputs / cleanup are arrays of lines (no C-newline escaping);
       - override_args integer indices arrive as strings and are restored to int.
-    Everything else (header/out/arg_map/skip/value_returns/csv_data/
+    Everything else (header/out/arg_map/skip/only/value_returns/csv_data/
     extra_includes) is passed straight through to write_test()."""
     with open(path) as f:
         raw = json.load(f)

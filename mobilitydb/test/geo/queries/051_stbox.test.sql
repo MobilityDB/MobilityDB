@@ -633,3 +633,29 @@ SELECT round(distance, 6) FROM test;
 DROP INDEX tbl_stbox3d_kdtree_idx;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The combine function answers what the aggregate answers
+--
+-- A COMBINEFUNC is reached only by a parallel plan, and which rows a worker
+-- receives is not controllable, so a parallel query cannot state a
+-- deterministic expected output. The function is therefore called directly,
+-- which is what makes these the first cases to reach it at all.
+-------------------------------------------------------------------------------
+
+SELECT stbox_extent_combinefn(stbox 'SRID=4326;STBOX X((0,0),(1,1))',
+  stbox 'SRID=4326;STBOX X((5,5),(6,6))');
+SELECT stbox_extent_combinefn(stbox 'STBOX T([2001-01-01,2001-01-02])',
+  stbox 'STBOX T([2001-01-03,2001-01-04])');
+-- Two reference systems have no common extent, so the combine refuses
+SELECT stbox_extent_combinefn(stbox 'SRID=4326;STBOX X((0,0),(1,1))',
+  stbox 'SRID=3857;STBOX X((5,5),(6,6))');
+-- And boxes holding different dimensions are the second refusal
+SELECT stbox_extent_combinefn(stbox 'STBOX X((0,0),(1,1))',
+  stbox 'STBOX XT(((5,5),(6,6)),[2001-01-01,2001-01-02])');
+-- A null state on either side leaves the other untouched
+SELECT stbox_extent_combinefn(NULL::stbox, stbox 'STBOX X((5,5),(6,6))');
+SELECT stbox_extent_combinefn(stbox 'STBOX X((0,0),(1,1))', NULL::stbox);
+SELECT stbox_extent_combinefn(NULL::stbox, NULL::stbox);
+
+-------------------------------------------------------------------------------

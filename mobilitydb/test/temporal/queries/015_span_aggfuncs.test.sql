@@ -168,3 +168,26 @@ SELECT numSpans(spanUnion(t)) FROM tbl_tstzspan;
 SELECT numSpans(spansetUnion(t)) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The combine function answers what the aggregate answers
+--
+-- A COMBINEFUNC is reached only by a parallel plan, and which rows a worker
+-- receives is not controllable, so a parallel query cannot state a
+-- deterministic expected output. The function is therefore called directly,
+-- which is what makes these the first cases to reach it at all.
+-------------------------------------------------------------------------------
+
+SELECT span_extent_combinefn(intspan '[1,3)', intspan '[5,7)');
+SELECT span_extent_combinefn(bigintspan '[1,3)', bigintspan '[5,7)');
+SELECT span_extent_combinefn(floatspan '[1.5,3.5)', floatspan '[5.5,7.5)');
+SELECT span_extent_combinefn(datespan '[2001-01-01,2001-01-03)',
+  datespan '[2001-01-05,2001-01-07)');
+SELECT span_extent_combinefn(tstzspan '[2001-01-01,2001-01-03)',
+  tstzspan '[2001-01-05,2001-01-07)');
+-- A null state on either side leaves the other untouched
+SELECT span_extent_combinefn(NULL::intspan, intspan '[5,7)');
+SELECT span_extent_combinefn(intspan '[1,3)', NULL::intspan);
+SELECT span_extent_combinefn(NULL::intspan, NULL::intspan);
+
+-------------------------------------------------------------------------------

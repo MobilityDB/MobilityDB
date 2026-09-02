@@ -93,3 +93,24 @@ SELECT numInstants(tdensity(inst)) > 0 FROM tbl_tpcpatch_inst;
 SELECT numInstants(tdensity(seq))  > 0 FROM tbl_tpcpatch_seq;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The combine function answers what the aggregate answers
+--
+-- A COMBINEFUNC is reached only by a parallel plan, and which rows a worker
+-- receives is not controllable, so a parallel query cannot state a
+-- deterministic expected output. The function is therefore called directly,
+-- which is what makes these the first cases to reach it at all.
+-------------------------------------------------------------------------------
+
+-- extent(tpcbox) names its transition function as its own combine, so the one
+-- function answers in both roles
+SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 1));
+-- The schema states what a coordinate means, so two of them are a refusal
+SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), tpcboxX(3, 3, 10, 10, 0));
+-- A null state on either side leaves the other untouched
+SELECT tpcbox_extent_transfn(NULL::tpcbox, tpcboxX(3, 3, 10, 10, 1));
+SELECT tpcbox_extent_transfn(tpcboxX(0, 0, 5, 5, 1), NULL::tpcbox);
+SELECT tpcbox_extent_transfn(NULL::tpcbox, NULL::tpcbox);
+
+-------------------------------------------------------------------------------
