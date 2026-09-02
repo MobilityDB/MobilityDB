@@ -56,11 +56,13 @@ round(tpcbox,integer=0) → tpcbox
 </pre><pre class="programlisting">
 SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1), 2);
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
-</pre></li><li class="listitem"><a name="tpcbox_setSRID"></a><a class="indexterm" name="id13496"></a><p>Return a tpcbox with the SRID overwritten</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcbox_setSRID"></a><a class="indexterm" name="id13496"></a><p>Return a tpcbox stating a reference system its schema does not state</p><pre class="programlisting">
 setSRID(tpcbox,integer) → tpcbox
-</pre><p>Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</p><pre class="programlisting">
-SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10, 1), 4326));
+</pre><p>The schema a pcid names is what holds the reference system, so where that schema states one the box is refused: a pcid of 0 names no schema, and a schema may state none. Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</p><pre class="programlisting">
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10), 4326));
 -- 4326
+SELECT setSRID(tpcboxX(0, 0, 10, 10, 1), 3857);
+-- ERROR: The SRID of a TPCBox is the one its schema states: pcid 1 states SRID 4326
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_setops"></a>Set Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcboxUnion"></a><a class="indexterm" name="id13507"></a><a class="indexterm" name="id13510"></a><p>Union and intersection of two tpcboxes</p><pre class="programlisting">
 tpcbox {+, *} tpcbox → tpcbox
 </pre><p>Both operands must share the same <code class="varname">pcid</code>, and the intersection is NULL when the two boxes are disjoint.</p><pre class="programlisting">

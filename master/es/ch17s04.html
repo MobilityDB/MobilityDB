@@ -56,11 +56,13 @@ round(tpcbox,integer=0) → tpcbox
 </pre><pre class="programlisting">
 SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1), 2);
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
-</pre></li><li class="listitem"><a name="tpcbox_setSRID"></a><a class="indexterm" name="id12943"></a><p>Devuelve un tpcbox con el SRID sobreescrito</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcbox_setSRID"></a><a class="indexterm" name="id12943"></a><p>Devuelve un tpcbox que declara un sistema de referencia que su esquema no declara</p><pre class="programlisting">
 setSRID(tpcbox,integer) → tpcbox
-</pre><p>No reproyecta las coordenadas, para ello, proyecte primero el tpcpoint subyacente y tome la caja delimitadora del resultado</p><pre class="programlisting">
-SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10, 1), 4326));
+</pre><p>El esquema nombrado por el pcid es el que contiene el sistema de referencia, por lo que cuando ese esquema declara uno la caja se rechaza: un pcid de 0 no nombra ningún esquema, y un esquema puede no declarar ninguno. No reproyecta las coordenadas, para ello, proyecte primero el tpcpoint subyacente y tome la caja delimitadora del resultado</p><pre class="programlisting">
+SELECT SRID(setSRID(tpcboxX(0, 0, 10, 10), 4326));
 -- 4326
+SELECT setSRID(tpcboxX(0, 0, 10, 10, 1), 3857);
+-- ERROR: The SRID of a TPCBox is the one its schema states: pcid 1 states SRID 4326
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_setops"></a>Operaciones de conjuntos</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcboxUnion"></a><a class="indexterm" name="id12954"></a><a class="indexterm" name="id12957"></a><p>Unión e intersección de dos tpcboxes</p><pre class="programlisting">
 tpcbox {+, *} tpcbox → tpcbox
 </pre><p>Ambos operandos deben compartir el mismo <code class="varname">pcid</code>, y la intersección es NULL cuando las dos cajas son disjuntas.</p><pre class="programlisting">
