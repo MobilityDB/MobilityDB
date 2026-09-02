@@ -9,6 +9,7 @@ on:
       - '.github/workflows/generate_dev_docs.yml'
       - 'meos/**'
       - 'mobilitydb/**'
+      - 'pgtypes/**'
       - 'doxygen/**'
     branches:
       - 'master'

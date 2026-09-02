@@ -9,6 +9,7 @@ on:
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
+      - 'pgtypes/**'
       - 'postgis/**'
       - 'CMakeLists.txt'
     branches-ignore:
@@ -20,6 +21,7 @@ on:
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
+      - 'pgtypes/**'
       - 'postgis/**'
       - 'CMakeLists.txt'
     branches-ignore:

@@ -10,6 +10,7 @@ on:
       - 'doc/**'
       - 'meos/**'
       - 'mobilitydb/**'
+      - 'pgtypes/**'
       - 'postgis/**'
       - 'tools/**'
       - 'LICENSE.txt'
