@@ -1302,7 +1302,7 @@ distance_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss1,ss2 Span sets
  * @return On error return the sentinel of the base type given by
  * #distance_sentinel()
- * @csqlfn #Distance_spanset_span()
+ * @csqlfn #Distance_spanset_spanset()
  */
 Datum
 distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
