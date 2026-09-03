@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: temporal_append_free</title>
+<title>MobilityDB: sew_same_point</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -83,7 +83,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_ae2149cf8953e4b07cf9a08e8b2ee1e84.html#ae2149cf8953e4b07cf9a08e8b2ee1e84">ensure_tinstant_same_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__modif_gaea26b74eb7f2a162fa8809c67f5f37f3.html#gaea26b74eb7f2a162fa8809c67f5f37f3">geoarr_merge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_a3edeba21d78ee3037e51d9adb92670f2.html#a3edeba21d78ee3037e51d9adb92670f2">lwmline_sew</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_a63f7b22de41652936944b30fe607572b.html#a63f7b22de41652936944b30fe607572b">sew_same_point</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__modif_8c_a63f7b22de41652936944b30fe607572b.html#a63f7b22de41652936944b30fe607572b">sew_same_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_a89a4fe39552ca0ec0fdad698ed7e1823.html#a89a4fe39552ca0ec0fdad698ed7e1823">tcontseq_delete_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_aea0072c4e2d2d361c08e71b2989910a8.html#aea0072c4e2d2d361c08e71b2989910a8">tcontseq_delete_tstzset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_a5581e2013cc008ff0f4b39940b9eab85.html#a5581e2013cc008ff0f4b39940b9eab85">tcontseq_delete_tstzspan</a></td></tr>
@@ -91,7 +91,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_aeaf91b292531ea7682788c2d9f0d1223.html#aeaf91b292531ea7682788c2d9f0d1223">tcontseq_insert</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_a9d841059cc5959cf551354f17cae9c43.html#a9d841059cc5959cf551354f17cae9c43">tcontseq_merge_array_iter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_a38a9c6045c5010dede3ab00fbd41edea.html#a38a9c6045c5010dede3ab00fbd41edea">tdiscseq_merge_array</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__modif_8c_a5b8ccc03fd17aa08cd33b89c18e9667f.html#a5b8ccc03fd17aa08cd33b89c18e9667f">temporal_append_free</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_a5b8ccc03fd17aa08cd33b89c18e9667f.html#a5b8ccc03fd17aa08cd33b89c18e9667f">temporal_append_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__modif_ga8c88be47cfcb1a4c6b0668d6ed5b3672.html#ga8c88be47cfcb1a4c6b0668d6ed5b3672">temporal_append_tinstant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__modif_ga20088eb838f7416a0e37e608543f812d.html#ga20088eb838f7416a0e37e608543f812d">temporal_append_tsequence</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__modif_8c_a472ef4cce4c306f3affc581f96e423c7.html#a472ef4cce4c306f3affc581f96e423c7">temporal_convert_same_subtype</a></td></tr>
@@ -131,8 +131,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a5b8ccc03fd17aa08cd33b89c18e9667f" name="a5b8ccc03fd17aa08cd33b89c18e9667f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5b8ccc03fd17aa08cd33b89c18e9667f">&#9670;&#160;</a></span>temporal_append_free()</h2>
+<a id="a63f7b22de41652936944b30fe607572b" name="a63f7b22de41652936944b30fe607572b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63f7b22de41652936944b30fe607572b">&#9670;&#160;</a></span>sew_same_point()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -141,16 +141,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void temporal_append_free </td>
+          <td class="memname">static bool sew_same_point </td>
           <td>(</td>
-          <td class="paramtype">void *temp&#160;</td>
-          <td class="paramname"><em>UNUSED</em>, </td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool consume&#160;</td>
-          <td class="paramname"><em>UNUSED</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -165,15 +165,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Free a temporal value whose ownership has been transferred to an append function. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">consume</td><td>True when the calling function transfers the ownership of the temporal value </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section note"><dt>Note</dt><dd>In the PostgreSQL build the memory of the input value belongs to the calling context, which frees it whenever an append function returns a value different from its input, and thus the value must not be freed here </dd></dl>
+<p>Return true if two points are the same to the tolerance their own coordinates fix. </p>
 
 </div>
 </div>
