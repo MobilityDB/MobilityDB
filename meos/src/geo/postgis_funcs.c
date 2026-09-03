@@ -629,7 +629,6 @@ box2d_to_lwgeom(GBOX *box, int32_t srid)
     /* MobilityDB: The above function does not set the geodetic flag */
     FLAGS_SET_GEODETIC(point->flags, FLAGS_GET_GEODETIC(box->flags));
     result = lwpoint_as_lwgeom(point);
-    /* We cannot lwpoint_free(point); */
   }
   else if ( (box->xmin == box->xmax) || (box->ymin == box->ymax) )
   {
@@ -684,7 +683,6 @@ box2d_to_lwgeom(GBOX *box, int32_t srid)
 LWGEOM *
 box3d_to_lwgeom(BOX3D *box)
 {
-  POINTARRAY *pa;
   LWGEOM *result;
   POINT4D pt;
 
@@ -700,12 +698,16 @@ box3d_to_lwgeom(BOX3D *box)
    *     - Otherwise return a POLYHEDRALSURFACE geometry
    */
 
-  pa = ptarray_construct_empty(LW_TRUE, LW_FALSE, 5);
+  /* The point array below belongs to the point or the line that is built from
+   * it, and the polygon and polyhedron arms build their own through
+   * lwpoly_construct_rectangle. Constructing it for every arm left it owned by
+   * nobody in the four that do not take it */
 
   /* BOX3D is a point */
   if ((box->xmin == box->xmax) && (box->ymin == box->ymax) &&
       (box->zmin == box->zmax))
   {
+    POINTARRAY *pa = ptarray_construct_empty(LW_TRUE, LW_FALSE, 5);
     LWPOINT *lwpt = lwpoint_construct(SRID_UNKNOWN, NULL, pa);
 
     pt.x = box->xmin;
@@ -719,6 +721,7 @@ box3d_to_lwgeom(BOX3D *box)
      ((box->xmin == box->xmax || box->zmin == box->zmax) && box->ymin == box->ymax) ||
      ((box->ymin == box->ymax || box->zmin == box->zmax) && box->xmin == box->xmax))
   {
+    POINTARRAY *pa = ptarray_construct_empty(LW_TRUE, LW_FALSE, 5);
     LWLINE *lwline = lwline_construct(SRID_UNKNOWN, NULL, pa);
 
     pt.x = box->xmin;
