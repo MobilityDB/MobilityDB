@@ -260,7 +260,7 @@ CREATE FUNCTION points(tcbuffer)
 CREATE FUNCTION radius(tcbuffer)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Tcbuffer_radius'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 -- Accessors for all temporal types

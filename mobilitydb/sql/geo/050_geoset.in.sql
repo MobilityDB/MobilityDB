@@ -391,7 +391,8 @@ CREATE AGGREGATE setUnion(geometry) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = geomset_union_finalfn
+  FINALFUNC = geomset_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(geography) (
   SFUNC = set_union_transfn,
@@ -399,7 +400,8 @@ CREATE AGGREGATE setUnion(geography) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = geogset_union_finalfn
+  FINALFUNC = geogset_union_finalfn,
+  PARALLEL = safe
 );
 
 CREATE AGGREGATE setUnion(geomset) (
@@ -408,7 +410,8 @@ CREATE AGGREGATE setUnion(geomset) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = geomset_union_finalfn
+  FINALFUNC = geomset_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(geogset) (
   SFUNC = set_union_transfn,
@@ -416,7 +419,8 @@ CREATE AGGREGATE setUnion(geogset) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = geogset_union_finalfn
+  FINALFUNC = geogset_union_finalfn,
+  PARALLEL = safe
 );
 
 /*****************************************************************************

@@ -378,12 +378,12 @@ CREATE FUNCTION expandTime(stbox, interval)
 CREATE FUNCTION tspatial_sel(internal, oid, internal, integer)
   RETURNS float
 AS 'MODULE_PATHNAME', 'Tspatial_sel'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tspatial_joinsel(internal, oid, internal, smallint, internal)
   RETURNS float
 AS 'MODULE_PATHNAME', 'Tspatial_joinsel'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
 * Topological operators

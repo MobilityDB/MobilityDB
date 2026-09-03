@@ -222,7 +222,8 @@ CREATE AGGREGATE setUnion(npoint) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = npointset_union_finalfn
+  FINALFUNC = npointset_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(npointset) (
   SFUNC = set_union_transfn,
@@ -230,7 +231,8 @@ CREATE AGGREGATE setUnion(npointset) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = npointset_union_finalfn
+  FINALFUNC = npointset_union_finalfn,
+  PARALLEL = safe
 );
 
 /******************************************************************************

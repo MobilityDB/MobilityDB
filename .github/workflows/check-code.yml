@@ -166,3 +166,12 @@ jobs:
         uses: actions/checkout@v4
       - name: Check that every @sqlfn tag names a surface the extension builds
         run: python3 tools/scripts/check_sqlfn_names.py
+
+  parallel_safety_check:
+    name: Every SQL declaration states its parallel safety
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check that no declaration is silently PARALLEL UNSAFE
+        run: python3 tools/scripts/check_parallel_safety.py

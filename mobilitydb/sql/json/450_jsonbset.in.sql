@@ -197,7 +197,8 @@ CREATE AGGREGATE setUnion(jsonb) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = jsonbset_union_finalfn
+  FINALFUNC = jsonbset_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(jsonbset) (
   SFUNC = set_union_transfn,
@@ -205,7 +206,8 @@ CREATE AGGREGATE setUnion(jsonbset) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = jsonbset_union_finalfn
+  FINALFUNC = jsonbset_union_finalfn,
+  PARALLEL = safe
 );
 
 /******************************************************************************

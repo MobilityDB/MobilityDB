@@ -393,12 +393,12 @@ CREATE FUNCTION round(tbox, integer DEFAULT 0)
 CREATE FUNCTION tnumber_sel(internal, oid, internal, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tnumber_sel'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tnumber_joinsel(internal, oid, internal, smallint, internal)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tnumber_joinsel'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Topological operators

@@ -3213,9 +3213,9 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
 
 - family: poseset_setunion
@@ -3232,8 +3232,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
 
 - family: cbufferset_setunion
@@ -3250,8 +3250,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
 
 - family: npointset_setunion
@@ -3268,8 +3268,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
 
 - family: jsonbset_setunion
@@ -3286,8 +3286,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
 
 - family: h3indexset_setunion
@@ -3367,8 +3367,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
 
 - family: pcpatchset_setunion
@@ -3385,6 +3385,6 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
