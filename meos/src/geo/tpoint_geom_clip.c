@@ -946,6 +946,407 @@ geo_edge_ctx_make(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return true if the segment kernels answer for a geometry, read from
+ * its serialized form
+ * @details #geom_meos_supported reads the deserialized geometry, which a
+ * caller holding only the serialized one would otherwise deserialize twice
+ */
+bool
+geo_meos_supported(const GSERIALIZED *gs)
+{
+  assert(gs);
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  bool result = geom_meos_supported(geom);
+  lwgeom_free(geom);
+  return result;
+}
+
+/**
+ * @brief Return true if a geometry draws points and nothing else
+ */
+bool
+geo_is_point_set(const GSERIALIZED *gs)
+{
+  assert(gs);
+  if (FLAGS_GET_GEODETIC(gs->gflags))
+    return false;
+  uint32_t t = gserialized_get_type(gs);
+  return (t == POINTTYPE || t == MULTIPOINTTYPE);
+}
+
+/**
+ * @brief Return the points of a point set that a geometry covers, or those it
+ * does not
+ * @details A point set meets another geometry exactly where that geometry
+ * covers a point of it, so the answer needs no overlay: it is a selection.
+ * The complement answers the difference, which takes its first operand apart
+ * @param[in] pts A POINT or MULTIPOINT
+ * @param[in] gs The geometry deciding each point
+ * @param[in] covered True to keep the points @p gs covers, false for the rest
+ */
+GSERIALIZED *
+geo_points_covered(const GSERIALIZED *pts, const GSERIALIZED *gs, bool covered)
+{
+  assert(pts); assert(gs);
+  int32_t srid = gserialized_get_srid(pts);
+  bool hasz = (bool) FLAGS_GET_Z(pts->gflags);
+  int count;
+  GSERIALIZED **elems = geo_extract_elements(pts, &count);
+  LWGEOM **kept = palloc(sizeof(LWGEOM *) * Max(count, 1));
+  int nkept = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (geo_covers2d(gs, elems[i]) == covered)
+      kept[nkept++] = lwgeom_from_gserialized(elems[i]);
+    else
+      pfree(elems[i]);
+  }
+  pfree(elems);
+
+  GSERIALIZED *result;
+  if (nkept == 0)
+  {
+    result = geo_serialize(lwpoint_as_lwgeom(lwpoint_construct_empty(srid,
+      hasz, false)));
+    pfree(kept);
+  }
+  else if (nkept == 1)
+  {
+    result = geo_serialize(kept[0]);
+    lwgeom_free(kept[0]);
+    pfree(kept);
+  }
+  else
+  {
+    LWGEOM *out = lwcollection_as_lwgeom(lwcollection_construct(MULTIPOINTTYPE,
+      srid, NULL, (uint32_t) nkept, kept));
+    result = geo_serialize(out);
+    lwgeom_free(out);
+  }
+  return result;
+}
+
+/**
+ * @brief Return true if a geometry is a planar linear one, whose parts the
+ * segment kernels answer for
+ * @details A curve carries arcs, which a segment does not draw, so it is not
+ * one of these however linear its dimension
+ */
+bool
+geo_is_planar_linear(const GSERIALIZED *gs)
+{
+  assert(gs);
+  if (FLAGS_GET_Z(gs->gflags) || FLAGS_GET_GEODETIC(gs->gflags))
+    return false;
+  uint32_t t = gserialized_get_type(gs);
+  return (t == LINETYPE || t == MULTILINETYPE);
+}
+
+/**
+ * @brief Return true if a point lies on the segment two points draw
+ */
+static bool
+point_on_segment_pts(const POINT2D *p, const POINT2D *a, const POINT2D *b)
+{
+  double dx = b->x - a->x, dy = b->y - a->y;
+  double len2 = dx * dx + dy * dy;
+  if (len2 <= MEOS_GEOM_TOLERANCE * MEOS_GEOM_TOLERANCE)
+    return fabs(p->x - a->x) <= MEOS_GEOM_TOLERANCE &&
+      fabs(p->y - a->y) <= MEOS_GEOM_TOLERANCE;
+  double t = ((p->x - a->x) * dx + (p->y - a->y) * dy) / len2;
+  if (t < 0.0) t = 0.0;
+  if (t > 1.0) t = 1.0;
+  double qx = a->x + t * dx, qy = a->y + t * dy;
+  return fabs(p->x - qx) <= MEOS_GEOM_TOLERANCE &&
+    fabs(p->y - qy) <= MEOS_GEOM_TOLERANCE;
+}
+
+/**
+ * @brief Assemble the pieces one clip produced into a geometry
+ * @details Consecutive pieces meeting end to end are one line rather than two,
+ * so they are welded as they are appended; what remains is a LINESTRING for a
+ * single run and a MULTILINESTRING for several. No piece at all is the empty
+ * geometry of the input's own kind rather than a null answer
+ */
+static GSERIALIZED *
+linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
+  int32_t srid, bool hasz)
+{
+  int npieces = (int) pieces->count / 2;
+  int ntouch = touches ? (int) touches->count : 0;
+  if (npieces == 0 && ntouch == 0)
+    return geo_serialize(lwline_as_lwgeom(lwline_construct_empty(srid, hasz,
+      false)));
+
+  LWGEOM **lines = npieces ? palloc(sizeof(LWGEOM *) * npieces) : NULL;
+  int nlines = 0;
+  POINTARRAY *pa = NULL;
+  POINT2D prev = { 0, 0 };
+  for (int i = 0; i < npieces; i++)
+  {
+    POINT2D *p0 = (POINT2D *) meos_array_get((MeosArray *) pieces, 2 * i);
+    POINT2D *p1 = (POINT2D *) meos_array_get((MeosArray *) pieces, 2 * i + 1);
+    bool weld = pa && fabs(p0->x - prev.x) <= MEOS_GEOM_TOLERANCE &&
+      fabs(p0->y - prev.y) <= MEOS_GEOM_TOLERANCE;
+    if (! weld)
+    {
+      if (pa)
+        lines[nlines++] = lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
+      pa = ptarray_construct_empty(0, 0, 2);
+      POINT4D q = { p0->x, p0->y, 0.0, 0.0 };
+      ptarray_append_point(pa, &q, LW_TRUE);
+    }
+    POINT4D q1 = { p1->x, p1->y, 0.0, 0.0 };
+    /* A vertex the two pieces meeting at it do not turn at draws nothing, so
+     * the weld leaves the line the shape it already had */
+    if (pa->npoints >= 2)
+    {
+      POINT2D u, v;
+      getPoint2d_p(pa, pa->npoints - 2, &u);
+      getPoint2d_p(pa, pa->npoints - 1, &v);
+      double cross = (v.x - u.x) * (q1.y - v.y) - (v.y - u.y) * (q1.x - v.x);
+      double scale = fmax(fabs(v.x - u.x) + fabs(v.y - u.y),
+        fabs(q1.x - v.x) + fabs(q1.y - v.y));
+      if (fabs(cross) <= MEOS_GEOM_TOLERANCE * fmax(scale, 1.0))
+      {
+        ptarray_remove_point(pa, pa->npoints - 1);
+      }
+    }
+    ptarray_append_point(pa, &q1, LW_TRUE);
+    prev = *p1;
+  }
+  if (pa)
+    lines[nlines++] = lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
+
+  /* The points a segment merely meets, kept only where no piece covers them */
+  LWGEOM **pts = ntouch ? palloc(sizeof(LWGEOM *) * ntouch) : NULL;
+  int npts = 0;
+  for (int i = 0; i < ntouch; i++)
+  {
+    POINT2D *t = (POINT2D *) meos_array_get((MeosArray *) touches, i);
+    bool covered = false;
+    for (int j = 0; j < npieces && ! covered; j++)
+    {
+      const POINT2D *q0 = (const POINT2D *) meos_array_get(
+        (MeosArray *) pieces, 2 * j);
+      const POINT2D *q1 = (const POINT2D *) meos_array_get(
+        (MeosArray *) pieces, 2 * j + 1);
+      covered = point_on_segment_pts(t, q0, q1);
+    }
+    for (int j = 0; j < npts && ! covered; j++)
+    {
+      const POINT2D *q = getPoint2d_cp(((LWPOINT *) pts[j])->point, 0);
+      covered = (fabs(q->x - t->x) <= MEOS_GEOM_TOLERANCE &&
+        fabs(q->y - t->y) <= MEOS_GEOM_TOLERANCE);
+    }
+    if (! covered)
+      pts[npts++] = lwpoint_as_lwgeom(lwpoint_make2d(srid, t->x, t->y));
+  }
+
+  GSERIALIZED *result;
+  int ntotal = nlines + npts;
+  if (lines && ntotal == 1 && nlines == 1)
+  {
+    result = geo_serialize(lines[0]);
+    lwgeom_free(lines[0]);
+    pfree(lines);
+    if (pts)
+      pfree(pts);
+  }
+  else if (pts && ntotal == 1)
+  {
+    result = geo_serialize(pts[0]);
+    lwgeom_free(pts[0]);
+    pfree(pts);
+    if (lines)
+      pfree(lines);
+  }
+  else
+  {
+    /* One kind draws a multi-geometry of it, both draw a collection */
+    uint32_t type = npts == 0 ? MULTILINETYPE :
+      (nlines == 0 ? MULTIPOINTTYPE : COLLECTIONTYPE);
+    LWGEOM **all = palloc(sizeof(LWGEOM *) * ntotal);
+    if (lines)
+    {
+      for (int i = 0; i < nlines; i++)
+        all[i] = lines[i];
+      pfree(lines);
+    }
+    if (pts)
+    {
+      for (int i = 0; i < npts; i++)
+        all[nlines + i] = pts[i];
+      pfree(pts);
+    }
+    LWGEOM *out = lwcollection_as_lwgeom(lwcollection_construct(type, srid,
+      NULL, (uint32_t) ntotal, all));
+    result = geo_serialize(out);
+    lwgeom_free(out);
+  }
+  return result;
+}
+
+/**
+ * @brief Add to @p out the part of one straight segment that the intervals
+ * describe, as a point array per piece
+ * @details The kernels answer the parameter intervals of the segment lying
+ * INSIDE the geometry. The part outside is their complement in [0,1], which
+ * is what a difference asks for, so one walk answers both
+ */
+static void
+segment_pieces(const POINT2D *a, const POINT2D *b, const Span *intervarr,
+  int count, bool inside, MeosArray *out, MeosArray *touches)
+{
+  double prev = 0.0;
+  for (int j = 0; j <= count; j++)
+  {
+    double lo = (j < count) ? DatumGetFloat8(intervarr[j].lower) : 1.0;
+    double hi = (j < count) ? DatumGetFloat8(intervarr[j].upper) : 1.0;
+    double s0, s1;
+    if (inside)
+    {
+      if (j == count)
+        break;
+      s0 = lo; s1 = hi;
+    }
+    else
+    {
+      /* the gap the previous interval left behind */
+      s0 = prev; s1 = lo;
+      prev = hi;
+    }
+    if (s1 - s0 <= MEOS_GEOM_TOLERANCE)
+    {
+      /* An interval of no length is a point the segment meets rather than a
+       * stretch it runs along, and two lines crossing meet exactly so */
+      if (inside)
+      {
+        POINT2D touch;
+        touch.x = a->x + s0 * (b->x - a->x);
+        touch.y = a->y + s0 * (b->y - a->y);
+        meos_array_add(touches, &touch);
+      }
+      continue;
+    }
+    POINT2D piece[2];
+    piece[0].x = a->x + s0 * (b->x - a->x);
+    piece[0].y = a->y + s0 * (b->y - a->y);
+    piece[1].x = a->x + s1 * (b->x - a->x);
+    piece[1].y = a->y + s1 * (b->y - a->y);
+    meos_array_add(out, &piece[0]);
+    meos_array_add(out, &piece[1]);
+  }
+  return;
+}
+
+/**
+ * @brief Return the part of a linear geometry lying inside, or outside, a
+ * geometry
+ * @details Every segment of @p line is asked of the same kernels the temporal
+ * clip asks, which answer the parameter intervals of a segment lying inside a
+ * geometry exactly, arcs of the CLIP geometry included. The pieces are then
+ * read back as coordinates rather than as timestamps
+ * @param[in] line A LINESTRING or MULTILINESTRING
+ * @param[in] gs The geometry to clip against
+ * @param[in] inside True for the part inside @p gs, false for the part outside
+ */
+GSERIALIZED *
+geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
+  bool inside)
+{
+  assert(line); assert(gs);
+  GeoEdgeCtx *ctx = (GeoEdgeCtx *) geo_edge_ctx_make(gs);
+  if (! ctx)
+    return NULL;
+
+  LWGEOM *lw = lwgeom_from_gserialized(line);
+  int32_t srid = gserialized_get_srid(line);
+  MeosArray *pieces = meos_array_create(sizeof(POINT2D));
+  MeosArray *touches = meos_array_create(sizeof(POINT2D));
+  /* The kernels accumulate into the thread-local arrays the temporal walker
+   * gives them: the polygon one sorts its crossings through `events` */
+  events = meos_array_create(sizeof(double));
+  intervals = meos_array_create(sizeof(Span));
+
+  /* The components a linear geometry draws, one point array each */
+  uint32_t ncomp = 1;
+  const LWLINE **lines = NULL;
+  LWLINE *single = NULL;
+  if (lw->type == MULTILINETYPE)
+  {
+    const LWMLINE *ml = (const LWMLINE *) lw;
+    ncomp = ml->ngeoms;
+    lines = (const LWLINE **) ml->geoms;
+  }
+  else
+  {
+    single = (LWLINE *) lw;
+    lines = (const LWLINE **) &single;
+  }
+
+  for (uint32_t c = 0; c < ncomp; c++)
+  {
+    const LWLINE *ln = lines[c];
+    if (! ln || ! ln->points || ln->points->npoints < 2)
+      continue;
+    for (uint32_t i = 1; i < ln->points->npoints; i++)
+    {
+      POINT2D pa, pb;
+      getPoint2d_p(ln->points, i - 1, &pa);
+      getPoint2d_p(ln->points, i, &pb);
+      Edge **sel = ctx->edge_ptrs;
+      int seln = ctx->nedges;
+      if (ctx->rtree)
+      {
+        STBox query;
+        stbox_set(true, false, false, ctx->srid, Min(pa.x, pb.x),
+          Max(pa.x, pb.x), Min(pa.y, pb.y), Max(pa.y, pb.y), 0, 0, NULL,
+          &query);
+        int nc = rtree_search(ctx->rtree, INDEX_OVERLAPS, &query,
+          rtree_results);
+        for (int k = 0; k < nc; k++)
+          ctx->cand_edges[k] =
+            ctx->edge_ptrs[*(int64 *) meos_array_get(rtree_results, k)];
+        sel = ctx->cand_edges; seln = nc;
+      }
+      intervals->count = 0;
+      intervals_from_points(&pa, &pb, sel, seln);
+      intervals_from_lines(&pa, &pb, sel, seln);
+      intervals_from_arcs(&pa, &pb, sel, seln);
+      intervals_from_polygons(&pa, &pb, sel, seln, ctx->edge_ptrs,
+        ctx->nedges, ctx->rtree, ctx->srid, ctx->box.xmax);
+
+      const Span *intervarr = intervals->elems;
+      int count = (int) intervals->count;
+      Span *norm = NULL;
+      if (count > 1)
+      {
+        /* The kernels answer in the order the EDGES come, which is the order
+         * the clip geometry stores them, not the order along the segment. The
+         * complement a difference reads walks the intervals from one end to
+         * the other, so they are ordered here rather than assumed to be */
+        norm = spanarr_normalize(intervals->elems, count, ORDER, &count);
+        intervarr = norm;
+      }
+      segment_pieces(&pa, &pb, intervarr, count, inside, pieces, touches);
+      if (norm)
+        pfree(norm);
+    }
+  }
+
+  GSERIALIZED *result = linear_pieces_geo(pieces, touches, srid,
+    FLAGS_GET_Z(line->gflags));
+  meos_array_destroy(pieces);
+  meos_array_destroy(touches);
+  meos_array_destroy(intervals); intervals = NULL;
+  meos_array_destroy(events); events = NULL;
+  lwgeom_free(lw);
+  geo_edge_ctx_free(ctx);
+  return result;
+}
+
+/**
  * @brief Free an edge context built by #geo_edge_ctx_make
  */
 void
