@@ -122,7 +122,9 @@ $(function() {
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>On error return <code>DBL_MAX</code> </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>LWGEOM_perimeter2d_poly(PG_FUNCTION_ARGS)</code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>An empty geometry bounds no area, so its perimeter is 0. The question has an answer, and #lwgeom_perimeter_2d gives it </dd>
+<dd>
+PostGIS function: <code>LWGEOM_perimeter2d_poly(PG_FUNCTION_ARGS)</code> </dd></dl>
 </li>
 </ul>
 
