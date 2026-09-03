@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pcpatch_parse</title>
+<title>MobilityDB: pcpoint_serialize</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -99,42 +99,41 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="pcpatch_8c_a9068bc0060475a35c2dd1ac942ad3fe2.html#a9068bc0060475a35c2dd1ac942ad3fe2">pcpatch_meaningful_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__comp_ga830f588e9b62539ba3ca6e49f3a3ba88.html#ga830f588e9b62539ba3ca6e49f3a3ba88">pcpatch_ne</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gaa584062d1f5985dbd56aa1184ee5d676.html#gaa584062d1f5985dbd56aa1184ee5d676">pcpatch_npoints</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pcpatch_8c_a783a57f156f6a97061eba0c23b89402b.html#a783a57f156f6a97061eba0c23b89402b">pcpatch_parse</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pcpatch_8c_a783a57f156f6a97061eba0c23b89402b.html#a783a57f156f6a97061eba0c23b89402b">pcpatch_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gad94dad11cb5d1a8acc64790229367804.html#gad94dad11cb5d1a8acc64790229367804">pcpatch_point_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga99a06a5f7fd52f28d43c150c675a6cab.html#ga99a06a5f7fd52f28d43c150c675a6cab">pcpatch_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pcpatch_8c_a647c65010a7cbbdbea56d2c74d254c64.html#a647c65010a7cbbdbea56d2c74d254c64">PCPATCH_TAIL_PADDING</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="pcpatch_8c_aa59c787ae5ec43e07059c466416cb120.html#aa59c787ae5ec43e07059c466416cb120">pcpoint_serialize</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pcpatch_8c_aa59c787ae5ec43e07059c466416cb120.html#aa59c787ae5ec43e07059c466416cb120">pcpoint_serialize</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a783a57f156f6a97061eba0c23b89402b" name="a783a57f156f6a97061eba0c23b89402b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a783a57f156f6a97061eba0c23b89402b">&#9670;&#160;</a></span>pcpatch_parse()</h2>
+<a id="aa59c787ae5ec43e07059c466416cb120" name="aa59c787ae5ec43e07059c466416cb120"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa59c787ae5ec43e07059c466416cb120">&#9670;&#160;</a></span>pcpoint_serialize()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structPcpatch.html">Pcpatch</a> * pcpatch_parse </td>
+          <td class="memname">static <a class="el" href="structPcpoint.html">Pcpoint</a> * pcpoint_serialize </td>
           <td>(</td>
-          <td class="paramtype">const char **&#160;</td>
-          <td class="paramname"><em>str</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const PCPOINT *&#160;</td>
+          <td class="paramname"><em>pcpt</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>end</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Parse a pcpatch from its hex-encoded representation in a cursor. </p>
+<p>Return a serialized copy of a point. </p>
+<p >The bytes past the meaningful prefix are pgpointcloud's struct-tail padding, which the serialization leaves uninitialized. They are zeroed so that two pcpoints holding the same point hold the same bytes, as <code>pcpoint_hex_out</code> prints them </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pcpatch_get_pcid</title>
+<title>MobilityDB: pcpatch_point_n</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,11 +79,11 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga8b3f148a83e829908dd51c3414dfd69a.html#ga8b3f148a83e829908dd51c3414dfd69a">pcpatch_get_pcid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga8b3f148a83e829908dd51c3414dfd69a.html#ga8b3f148a83e829908dd51c3414dfd69a">pcpatch_get_pcid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga87c1b2ad5c4a30cc8d8024e2d5940024.html#ga87c1b2ad5c4a30cc8d8024e2d5940024">pcpatch_hash</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gac372b557e1ff1c7092f2c44752f5a499.html#gac372b557e1ff1c7092f2c44752f5a499">pcpatch_hash_extended</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gaa584062d1f5985dbd56aa1184ee5d676.html#gaa584062d1f5985dbd56aa1184ee5d676">pcpatch_npoints</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gad94dad11cb5d1a8acc64790229367804.html#gad94dad11cb5d1a8acc64790229367804">pcpatch_point_n</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__base__accessor_gad94dad11cb5d1a8acc64790229367804.html#gad94dad11cb5d1a8acc64790229367804">pcpatch_point_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga99a06a5f7fd52f28d43c150c675a6cab.html#ga99a06a5f7fd52f28d43c150c675a6cab">pcpatch_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga06a4a88076e90f8b3dea6e388f29426f.html#ga06a4a88076e90f8b3dea6e388f29426f">pcpoint_get_dim</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga5c947b0c862b2261ba25b87ccb915ce8.html#ga5c947b0c862b2261ba25b87ccb915ce8">pcpoint_get_pcid</a></td></tr>
@@ -96,23 +96,42 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga8b3f148a83e829908dd51c3414dfd69a" name="ga8b3f148a83e829908dd51c3414dfd69a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8b3f148a83e829908dd51c3414dfd69a">&#9670;&#160;</a></span>pcpatch_get_pcid()</h2>
+<a id="gad94dad11cb5d1a8acc64790229367804" name="gad94dad11cb5d1a8acc64790229367804"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad94dad11cb5d1a8acc64790229367804">&#9670;&#160;</a></span>pcpatch_point_n()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint32_t pcpatch_get_pcid </td>
+          <td class="memname"><a class="el" href="structPcpoint.html">Pcpoint</a> * pcpatch_point_n </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structPcpatch.html">Pcpatch</a> *&#160;</td>
-          <td class="paramname"><em>pa</em></td><td>)</td>
+          <td class="paramname"><em>pa</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the pcid (schema id) of a pcpatch @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__accessor_gaeee80083c7d7c1ea5f4f106769592fa9.html#gaeee80083c7d7c1ea5f4f106769592fa9" title="Return the schema id (pcid) of a pcpatch @sqlfn pcid()">Pcpatch_pcid()</a> </p>
+<p>Return a copy of the n-th point of a pcpatch. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pa</td><td>Point cloud patch </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of the point, one-based: 1 is the first point and the number of points of the patch the last one. A negative <code>n</code> counts from the end, so that -1 is the last point and minus the number of points the first </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On error, or when <code>n</code> addresses no point of the patch, return <code>NULL</code> </dd></dl>
+<p>The indexing is the one pgPointCloud defines for <code>PC_PointN</code>, which owns the type </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__meos__pointcloud__base__accessor_ga99a06a5f7fd52f28d43c150c675a6cab.html#ga99a06a5f7fd52f28d43c150c675a6cab" title="Return the array of points of a pcpatch.">pcpatch_points()</a> to obtain every point in a single call </dd></dl>
 
 </div>
 </div>
