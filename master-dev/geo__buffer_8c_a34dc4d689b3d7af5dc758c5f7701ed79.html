@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_pieces_from_geometry</title>
+<title>MobilityDB: buffer_ring_inverted</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -165,7 +165,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af617b2433a140e377e26bc83dce6f0f8.html#af617b2433a140e377e26bc83dce6f0f8">buffer_piece_start</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ab9a4a2defc94f93e6a56362f7d13dfbc.html#ab9a4a2defc94f93e6a56362f7d13dfbc">buffer_pieces_add_unique</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a03e6d054dbb33d37a5c8bdd8b6a190bd.html#a03e6d054dbb33d37a5c8bdd8b6a190bd">buffer_pieces_equal</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a81a483b9c206bf2af963eb29862d36d4.html#a81a483b9c206bf2af963eb29862d36d4">buffer_pieces_from_geometry</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a81a483b9c206bf2af963eb29862d36d4.html#a81a483b9c206bf2af963eb29862d36d4">buffer_pieces_from_geometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2da911d37898237aab38db871fb33d64.html#a2da911d37898237aab38db871fb33d64">buffer_pieces_meet</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa769075729327141bd98598b1e2092b3.html#aa769075729327141bd98598b1e2092b3">buffer_point_edge_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2a9b213088ae7accdbc0b10efbc2849d.html#a2a9b213088ae7accdbc0b10efbc2849d">buffer_point_edges_distance</a></td></tr>
@@ -184,7 +184,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aeaa3c6d88322ab595605294e14047479.html#aeaa3c6d88322ab595605294e14047479">buffer_ring_info_release</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a8b50171f8d1f2337a79046a0624aec1a.html#a8b50171f8d1f2337a79046a0624aec1a">buffer_ring_infos_destroy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a312ecd0ec9d23c62026e344f46984ef3.html#a312ecd0ec9d23c62026e344f46984ef3">buffer_ring_infos_free</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a34dc4d689b3d7af5dc758c5f7701ed79.html#a34dc4d689b3d7af5dc758c5f7701ed79">buffer_ring_inverted</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a34dc4d689b3d7af5dc758c5f7701ed79.html#a34dc4d689b3d7af5dc758c5f7701ed79">buffer_ring_inverted</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5fd9bc8b4ad1c67220d79b64cf7f0203.html#a5fd9bc8b4ad1c67220d79b64cf7f0203">buffer_ring_outward_left</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aaf671e3020ba966666efdd9d59ebe9f2.html#aaf671e3020ba966666efdd9d59ebe9f2">buffer_ring_representative_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a0cffdb8062753e65b73434771fbde5db.html#a0cffdb8062753e65b73434771fbde5db">buffer_ring_resolve</a></td></tr>
@@ -228,8 +228,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a81a483b9c206bf2af963eb29862d36d4" name="a81a483b9c206bf2af963eb29862d36d4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a81a483b9c206bf2af963eb29862d36d4">&#9670;&#160;</a></span>buffer_pieces_from_geometry()</h2>
+<a id="a34dc4d689b3d7af5dc758c5f7701ed79" name="a34dc4d689b3d7af5dc758c5f7701ed79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a34dc4d689b3d7af5dc758c5f7701ed79">&#9670;&#160;</a></span>buffer_ring_inverted()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -238,16 +238,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool buffer_pieces_from_geometry </td>
+          <td class="memname">static bool buffer_ring_inverted </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom</em>, </td>
+          <td class="paramtype"><a class="el" href="structLWCOMPOUND.html">LWCOMPOUND</a> *&#160;</td>
+          <td class="paramname"><em>ring</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>pieces</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>edges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -262,8 +274,16 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Collect the boundary pieces of an areal geometry. </p>
-<p >See <a class="el" href="geo__buffer_8c_abec96c166711641584b1bcfd71881b38.html#abec96c166711641584b1bcfd71881b38" title="Collect the boundary pieces of an areal geometry.">buffer_piece_from_edge()</a> </p>
+<p>Return whether a contracted ring has passed through itself. </p>
+<p >Contracting a ring by more than it encloses carries the contraction through itself, and it comes back out inverted at the distance it overshot by. That curve is nearer the input than the buffer distance, so it bounds nothing and the hole it would stand for is gone rather than uncovered. The point the ring holds is what says which of the two it is: an interior point of a true hole lies further from the input than the distance, and an interior point of the inverted curve lies nearer. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ring</td><td>Contracted ring </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">edges</td><td>Edges of the geometry being buffered </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">radius</td><td>Buffer distance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference identifier </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
