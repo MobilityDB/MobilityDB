@@ -786,6 +786,8 @@ TPOSE_CONFIG = dict(
         "GSERIALIZED **":      "&geom_out_param",
         "Pose *":              "pose1",
         "Pose **":             "&pose_out_param",
+        "PoseChain *":         "posechain1",
+        "PoseChain **":        "&posechain_out_param",
         "STBox *":             "stbox1",
         "Set *":               "tstzset1",
         "Span *":              "tstzspan1",
@@ -855,11 +857,42 @@ TPOSE_CONFIG = dict(
         # by hand in the cleanup block instead (same pattern as trgeo's
         # trgeometry_value_n).
         "poseset_make": {0: "posearr1", 1: "2"},
+        # The pose chain twins of the string / array / reprojection entries
+        # above, each canned input taken from the same place as its pose
+        # sibling: the WKT from mobilitydb/test/posechain/queries, the hexWKB /
+        # GeoPose / MFJSON from posechain_as_hexwkb / tposechain_as_geopose /
+        # temporal_as_mfjson run against the canned value.
+        "posechain_in":               {0: "posechain_wkt1"},
+        "posechain_from_hexwkb":      {0: "posechain_hexwkb1"},
+        "posechain_from_wkb":         {0: "posechain_wkb1",
+                                       1: "posechain_wkb1_size"},
+        # posechain_make builds a chain FROM POSES, so its array is the pose
+        # one; posechainset_make's is the chain one.
+        "posechain_make":             {0: "posearr1", 1: "2"},
+        "posechainset_in":            {0: "posechainset_wkt1"},
+        "posechainset_make":          {0: "posechainarr1", 1: "2"},
+        "posechain_transform":        {0: "posechain_srid1", 1: "3857"},
+        "posechain_transform_pipeline": {1: "pipeline1", 2: "4326"},
+        "tposechain_in":              {0: "tposechain_wkt1"},
+        "tposechain_from_mfjson":     {0: "tposechain_mfjson1"},
+        "tposechain_from_geopose":    {0: "tposechain_geopose1"},
+        # A GeoPose chain document carries ONE valid time, so it is written
+        # from an INSTANT whose outer link is geodetic -- a sequence is the
+        # documented error (mobilitydb/test/posechain/queries/
+        # 555_tposechain_geopose.test.sql: "A chain document carries one valid
+        # time, so it is written from an instant").
+        "tposechain_as_geopose":      {0: "tposechain_geod1"},
+        "tposechainarr_as_geopose":   {0: "tposechainarr1", 1: "2"},
     },
     # A Set * argument to the pose set operations must be a poseset, not the
-    # default tstzset.
+    # default tstzset; and the pose chain functions are a second family in this
+    # header, whose Set * is a posechainset and whose Temporal * is a
+    # tposechain. The chain rule matches the name anywhere, so it covers the
+    # set operations spelled with the operand on either side
+    # (contained_posechain_set, union_set_posechain) as well as the accessors.
     name_arg_map={
         r"_pose_set$|_set_pose$|^poseset": {"Set *": "poseset1"},
+        r"posechain": {"Set *": "posechainset1", "Temporal *": "tposechain1"},
     },
     skip={},
     # posearr_round's `Pose **` return has neither an `int *` count arg nor a
@@ -884,6 +917,24 @@ TPOSE_CONFIG = dict(
    * carries one explicitly. */
   Pose *pose_srid1 = pose_in("SRID=4326;Pose(Point(1 2), 0.5)");
   Pose *pose_out_param = NULL;
+  /* The pose chain family, the second family this header publishes. The WKT
+   * values are those of mobilitydb/test/posechain/queries/550_posechain and
+   * 551_posechainset rather than invented ones. */
+  PoseChain *posechain1 =
+    posechain_in("PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))");
+  PoseChain *posechain2 =
+    posechain_in("PoseChain(Pose(Point(1 1), 0), Pose(Point(2 1), 0))");
+  const PoseChain *posechainarr1[] = { posechain1, posechain2 };
+  PoseChain *posechain_out_param = NULL;
+  /* As for pose_srid1: reprojection reads the source SRID off the value. */
+  PoseChain *posechain_srid1 = posechain_in(
+    "SRID=4326;PoseChain(Pose(Point(1 2), 0.5), Pose(Point(2 3), 0.5))");
+  /* As poseset1 holds pose1: the set contains the canned value, so the
+   * containment and intersection entries exercise their answering branch
+   * rather than only the empty one. */
+  Set *posechainset1 = posechainset_in(
+    "{\\"PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))\\", "
+    "\\"PoseChain(Pose(Point(1 1), 0), Pose(Point(2 1), 0))\\"}");
   GSERIALIZED *geom_pointz1 = geom_in("SRID=5676;Point(0 0 0)", -1);
   Pose *pose3d1 = pose_make_3d(0, 0, 0, 1, 0, 0, 0, false, 5676);
   Set *poseset1 = poseset_in("{\\"Pose(Point(0 0), 0.0)\\", \\"Pose(Point(1 1), 0.5)\\"}");
@@ -895,6 +946,9 @@ TPOSE_CONFIG = dict(
    * a canned pose rather than guessed. */
   size_t pose_wkb1_size = 0;
   uint8_t *pose_wkb1 = pose_as_wkb(pose1, 0, &pose_wkb1_size);
+  size_t posechain_wkb1_size = 0;
+  uint8_t *posechain_wkb1 =
+    posechain_as_wkb(posechain1, 0, &posechain_wkb1_size);
   /* char * literals for the pose/tpose string constructors, one per parsed
    * format. The hexWKB / GeoPose / MFJSON ones are pasted verbatim from the
    * output of pose_as_hexwkb() / pose_as_geopose() / tpose_as_geopose() /
@@ -935,6 +989,38 @@ TPOSE_CONFIG = dict(
     "[ \\"2001-01-02T00:00:00+00\\", \\"2001-01-03T00:00:00+00\\" ], "
     "\\"lower_inc\\": true, \\"upper_inc\\": true, "
     "\\"interpolation\\": \\"Linear\\" }";
+  /* The pose chain twins of the four literals above, minted the same way. */
+  char *posechain_wkt1 = "PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))";
+  char *posechainset_wkt1 =
+    "{\\"PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))\\", "
+    "\\"PoseChain(Pose(Point(1 1), 0), Pose(Point(2 1), 0))\\"}";
+  char *tposechain_wkt1 =
+    "[PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2001-01-02,"
+    " PoseChain(Pose(Point(1 1), 0.5), Pose(Point(2 1), 0.5))@2001-01-03]";
+  /* posechain_as_hexwkb() on posechain1. */
+  char *posechain_hexwkb1 =
+    "0101020000000000000000000000000000000000000000000000000000000000"
+    "00000000F03F00000000000000000000000000000000";
+  /* temporal_as_mfjson() on the tposechain1 sequence built below. */
+  char *tposechain_mfjson1 =
+    "{\\"type\\":\\"MovingPoseChain\\",\\"values\\":[[{\\"position\\":"
+    "{\\"lat\\":0,\\"lon\\":0},\\"yaw\\":0},{\\"position\\":{\\"lat\\":0,"
+    "\\"lon\\":1},\\"yaw\\":0}],[{\\"position\\":{\\"lat\\":1,\\"lon\\":1},"
+    "\\"yaw\\":0.5},{\\"position\\":{\\"lat\\":1,\\"lon\\":2},\\"yaw\\":0.5}]],"
+    "\\"datetimes\\":[\\"2001-01-02T00:00:00+00:00\\","
+    "\\"2001-01-03T00:00:00+00:00\\"],\\"lower_inc\\":true,"
+    "\\"upper_inc\\":true,\\"interpolation\\":\\"Linear\\"}";
+  /* tposechain_as_geopose() on the tposechain_geod1 instant built below. */
+  char *tposechain_geopose1 =
+    "{\\"validTime\\":978393600000,\\"outerFrame\\":{\\"authority\\":"
+    "\\"/geopose/1.0\\",\\"id\\":\\"/Extrinsic/LTP-ENU\\",\\"parameters\\":"
+    "\\"longitude=-122.3&latitude=47.7&height=11&crs=EPSG:4979\\"},"
+    "\\"frameChain\\":[{\\"authority\\":\\"/geopose/1.0\\",\\"id\\":"
+    "\\"/Intrinsic/Translate-Rotate\\",\\"parameters\\":"
+    "\\"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]\\"},"
+    "{\\"authority\\":\\"/geopose/1.0\\",\\"id\\":"
+    "\\"/Intrinsic/Translate-Rotate\\",\\"parameters\\":"
+    "\\"translation=[2, 0, 0]&rotation=[1, 0, 0, 0]\\"}]}";
   /* A no-op PROJ pipeline: valid regardless of the source/target SRID. */
   char *pipeline1 = "+proj=pipeline +step +proj=noop";
 
@@ -945,6 +1031,20 @@ TPOSE_CONFIG = dict(
   TSequence    *tpose_tseq1    = (TSequence *) tpose1;
   TSequenceSet *tpose_tseqset1 = NULL;
   Temporal *tpoint1 = tpose_to_tpoint(tpose1);
+  /* The temporal pose chain, and the geodetic INSTANT the GeoPose writers
+   * take -- a chain document carries one valid time. */
+  Temporal *tposechain1 = tposechain_in(tposechain_wkt1);
+  Temporal *tposechain_geod1 = tposechain_in(
+    "SRID=4326;PoseChain(GeodPose(Point Z(-122.3 47.7 11), 1, 0, 0, 0),"
+    " Pose(Point Z(2 0 0), 1, 0, 0, 0))@2001-01-02");
+  /* A GeoPose Graph is the several limbs hanging off ONE topocentric frame,
+   * so the second chain of the array shares the first's outer link and its
+   * instant and differs only in the link below -- the two-limb shape of
+   * 555_tposechain_geopose.test.sql. */
+  Temporal *tposechain_geod2 = tposechain_in(
+    "SRID=4326;PoseChain(GeodPose(Point Z(-122.3 47.7 11), 1, 0, 0, 0),"
+    " Pose(Point Z(0 3 0), 1, 0, 0, 0))@2001-01-02");
+  const Temporal *tposechainarr1[] = { tposechain_geod1, tposechain_geod2 };
   int n_out = 0;
 """,
     cleanup="""\
@@ -964,6 +1064,14 @@ TPOSE_CONFIG = dict(
   if (tpose1) free(tpose1);
   if (tpoint1) free(tpoint1);
   if (tfloat1) free(tfloat1);
+  if (tposechain1) free(tposechain1);
+  if (tposechain_geod1) free(tposechain_geod1);
+  if (tposechain_geod2) free(tposechain_geod2);
+  if (posechain1) free(posechain1);
+  if (posechain2) free(posechain2);
+  if (posechain_srid1) free(posechain_srid1);
+  if (posechainset1) free(posechainset1);
+  free(posechain_wkb1);
   free(pose_wkb1);
   free(stbox1);
   free(pose1);
