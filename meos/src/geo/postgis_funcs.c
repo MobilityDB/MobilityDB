@@ -863,6 +863,35 @@ geo_is_unitary(const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_geo_base_accessor
+ * @brief Return the area of a geometry
+ * @details Defined by
+ *   - area(point) = 0
+ *   - area(line) = 0
+ *   - area(polygon) = the area it encloses, its holes taken out
+ *
+ * Uses Euclidean 2D computation even if input is 3D.
+ * @param[in] gs Geometry
+ * @return On error return @p DBL_MAX
+ * @note An empty geometry encloses nothing, so its area is 0. The question has
+ * an answer, and #lwgeom_area gives it
+ * @note PostGIS function: @p ST_Area(PG_FUNCTION_ARGS)
+ */
+double
+geom_area(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, DBL_MAX);
+  if (! ensure_not_geodetic_geo(gs))
+    return DBL_MAX;
+
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  double area = lwgeom_area(lwgeom);
+  lwgeom_free(lwgeom);
+  return area;
+}
+
+/**
+ * @ingroup meos_geo_base_accessor
  * @brief Return the length of a geometry
  * @details Defined by
  *   - length(point) = 0

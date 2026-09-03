@@ -48,6 +48,7 @@
  */
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -625,10 +626,12 @@ int main(void)
     meos_errno_reset();
     double elen = geom_length(e);
     double eper = geom_perimeter(e);
-    printf("%s: length %g, perimeter %g, errno %d\n", emptywkt[i], elen, eper,
-      meos_errno());
+    double ear = geom_area(e);
+    printf("%s: length %g, perimeter %g, area %g, errno %d\n", emptywkt[i],
+      elen, eper, ear, meos_errno());
     assert(elen == 0.0);
     assert(eper == 0.0);
+    assert(ear == 0.0);
     assert(meos_errno() == 0);
     free(e);
     meos_errno_reset();
@@ -638,12 +641,44 @@ int main(void)
   GSERIALIZED *meas = geom_in("POLYGON((0 0,3 0,3 4,0 4,0 0))", -1);
   assert(meas != NULL);
   meos_errno_reset();
-  printf("the 3 by 4 rectangle: length %g, perimeter %g\n", geom_length(meas),
-    geom_perimeter(meas));
+  printf("the 3 by 4 rectangle: length %g, perimeter %g, area %g\n",
+    geom_length(meas), geom_perimeter(meas), geom_area(meas));
   assert(geom_length(meas) == 0.0);
   assert(geom_perimeter(meas) == 14.0);
+  assert(geom_area(meas) == 12.0);
   assert(meos_errno() == 0);
   free(meas);
+  meos_errno_reset();
+
+  /* The area a geometry of each dimension carries: a point and a line enclose
+   * nothing, a ring encloses what it bounds less its holes, and a geodetic
+   * geometry is measured by #geog_area rather than by this one */
+  GSERIALIZED *apt = geom_in("POINT(1 1)", -1);
+  GSERIALIZED *aln = geom_in("LINESTRING(0 0,3 4)", -1);
+  GSERIALIZED *ahole = geom_in(
+    "POLYGON((0 0,10 0,10 10,0 10,0 0),(2 2,4 2,4 4,2 4,2 2))", -1);
+  GSERIALIZED *amulti = geom_in(
+    "MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((5 5,8 5,8 9,5 9,5 5)))", -1);
+  assert(apt && aln && ahole && amulti);
+  meos_errno_reset();
+  printf("area: point %g, line %g, holed square %g, multipolygon %g\n",
+    geom_area(apt), geom_area(aln), geom_area(ahole), geom_area(amulti));
+  assert(geom_area(apt) == 0.0);
+  assert(geom_area(aln) == 0.0);
+  assert(geom_area(ahole) == 96.0);
+  assert(geom_area(amulti) == 16.0);
+  assert(meos_errno() == 0);
+  free(apt); free(aln); free(ahole); free(amulti);
+  meos_errno_reset();
+  /* A geodetic geometry is refused, as it is by the other planar measures */
+  GSERIALIZED *ageog = geog_in("SRID=4326;POLYGON((0 0,1 0,1 1,0 1,0 0))", -1);
+  assert(ageog != NULL);
+  meos_errno_reset();
+  double gar = geom_area(ageog);
+  printf("area of a geography: %g, errno %d\n", gar, meos_errno());
+  assert(gar == DBL_MAX);
+  assert(meos_errno() != 0);
+  free(ageog);
   meos_errno_reset();
 
   /* A relationship of a curved geometry is read on the arc itself. The
