@@ -366,7 +366,10 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
   for (int i = 0; i < count; i++)
   {
     /* Extract lon/lat from point geometry via GBOX (xmin==xmax for points) */
-    GSERIALIZED *pt_gs = (GSERIALIZED *) DatumGetPointer(tinstant_value(insts[i]));
+    /* The point is read, never kept, and the instant that holds it outlives
+     * this call, so it is borrowed rather than copied */
+    const GSERIALIZED *pt_gs =
+      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(insts[i]));
     GBOX pt_box;
     gserialized_get_gbox_p(pt_gs, &pt_box);
     double lon = pt_box.xmin;
@@ -445,8 +448,9 @@ raster_value(const Temporal *traj, const STBox *box, raster_sample_fn sample,
 
   for (int i = 0; i < count; i++)
   {
-    GSERIALIZED *pt_gs =
-      (GSERIALIZED *) DatumGetPointer(tinstant_value(insts[i]));
+    /* Borrowed, as above: the sampling reads the point and keeps nothing */
+    const GSERIALIZED *pt_gs =
+      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(insts[i]));
 
     /* Bounding-box pre-filter: for a point the GBOX is degenerate */
     if (box)
@@ -677,7 +681,10 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
 
   for (int i = 0; i < ninsts; i++)
   {
-    GSERIALIZED *pt_gs = (GSERIALIZED *) DatumGetPointer(tinstant_value(insts[i]));
+    /* The point is read, never kept, and the instant that holds it outlives
+     * this call, so it is borrowed rather than copied */
+    const GSERIALIZED *pt_gs =
+      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(insts[i]));
     GBOX pt_box;
     gserialized_get_gbox_p(pt_gs, &pt_box);
     double lon = pt_box.xmin;
