@@ -46,7 +46,7 @@ CREATE AGGREGATE extent(ts2cell) (
 );
 
 -- The function is not STRICT
-CREATE FUNCTION tcount_transfn(internal, ts2cell)
+CREATE FUNCTION tCountTransition(internal, ts2cell)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -57,7 +57,7 @@ CREATE FUNCTION ts2cell_tagg_finalfn(internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE tCount(ts2cell) (
-  SFUNC = tcount_transfn,
+  SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -67,13 +67,13 @@ CREATE AGGREGATE tCount(ts2cell) (
 );
 
 -- The function is not STRICT
-CREATE FUNCTION wcount_transfn(internal, ts2cell, interval)
+CREATE FUNCTION wCountTransition(internal, ts2cell, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wCount(ts2cell, interval) (
-  SFUNC = wcount_transfn,
+  SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -83,15 +83,15 @@ CREATE AGGREGATE wCount(ts2cell, interval) (
 );
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_merge_transfn(internal, ts2cell)
+CREATE FUNCTION mergeTransition(internal, ts2cell)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE mergeAgg(ts2cell) (
-  SFUNC = temporal_merge_transfn,
+  SFUNC = mergeTransition,
   STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
+  COMBINEFUNC = mergeCombine,
   FINALFUNC = ts2cell_tagg_finalfn,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
@@ -99,18 +99,18 @@ CREATE AGGREGATE mergeAgg(ts2cell) (
   PARALLEL = safe
 );
 
-CREATE FUNCTION temporal_app_tinst_transfn(ts2cell, ts2cell)
+CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION temporal_app_tinst_transfn(ts2cell, ts2cell, interp text)
+CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell, interp text)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tinst_transfn(ts2cell, ts2cell, interp text,
+CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell, interp text,
     maxt interval)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
@@ -122,19 +122,19 @@ CREATE FUNCTION temporal_append_finalfn(ts2cell)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE appendInstantAgg(ts2cell) (
-  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell),
+  SFUNC = appendInstantTransition(ts2cell, ts2cell),
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(ts2cell, interp text) (
-  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell, text),
+  SFUNC = appendInstantTransition(ts2cell, ts2cell, text),
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(ts2cell, interp text, maxt interval) (
-  SFUNC = temporal_app_tinst_transfn(ts2cell, ts2cell, text, maxt),
+  SFUNC = appendInstantTransition(ts2cell, ts2cell, text, maxt),
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -143,13 +143,13 @@ CREATE AGGREGATE appendInstantAgg(ts2cell, interp text, maxt interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tseq_transfn(ts2cell, ts2cell)
+CREATE FUNCTION appendSequenceTransition(ts2cell, ts2cell)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE appendSequenceAgg(ts2cell) (
-  SFUNC = temporal_app_tseq_transfn,
+  SFUNC = appendSequenceTransition,
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

@@ -45,7 +45,7 @@ CREATE FUNCTION tint_wsum_transfn(internal, tint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_wsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION wcount_transfn(internal, tint, interval)
+CREATE FUNCTION wCountTransition(internal, tint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -82,7 +82,7 @@ CREATE AGGREGATE wSum(tint, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wCount(tint, interval) (
-  SFUNC = wcount_transfn,
+  SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -115,7 +115,7 @@ CREATE FUNCTION tbigint_wsum_transfn(internal, tbigint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_wsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION wcount_transfn(internal, tbigint, interval)
+CREATE FUNCTION wCountTransition(internal, tbigint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -152,7 +152,7 @@ CREATE AGGREGATE wSum(tbigint, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wCount(tbigint, interval) (
-  SFUNC = wcount_transfn,
+  SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tsum_combinefn,
   FINALFUNC = tbigint_tagg_finalfn,
@@ -185,7 +185,7 @@ CREATE FUNCTION tfloat_wsum_transfn(internal, tfloat, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_wsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION wcount_transfn(internal, tfloat, interval)
+CREATE FUNCTION wCountTransition(internal, tfloat, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -222,7 +222,7 @@ CREATE AGGREGATE wSum(tfloat, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wCount(tfloat, interval) (
-  SFUNC = wcount_transfn,
+  SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
   FINALFUNC = tint_tagg_finalfn,
