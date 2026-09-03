@@ -1275,7 +1275,7 @@ minus_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
  * @param[in] ss Span set
  * @param[in] i Value
  * @return On error return @p INT_MAX
- * @csqlfn #Distance_spanset_value()
+ * @csqlfn #Distance_spanset_value() #Distance_value_spanset()
  */
 int
 distance_spanset_int(const SpanSet *ss, int i)
@@ -1291,7 +1291,7 @@ distance_spanset_int(const SpanSet *ss, int i)
  * @param[in] ss Span set
  * @param[in] i Value
  * @return On error return @p INT64_MAX
- * @csqlfn #Distance_spanset_value()
+ * @csqlfn #Distance_spanset_value() #Distance_value_spanset()
  */
 int64
 distance_spanset_bigint(const SpanSet *ss, int64 i)
@@ -1307,7 +1307,7 @@ distance_spanset_bigint(const SpanSet *ss, int64 i)
  * @param[in] ss Span set
  * @param[in] d Value
  * @return On error return @p DBL_MAX
- * @csqlfn #Distance_spanset_value()
+ * @csqlfn #Distance_spanset_value() #Distance_value_spanset()
  */
 double
 distance_spanset_float(const SpanSet *ss, double d)
@@ -1324,7 +1324,7 @@ distance_spanset_float(const SpanSet *ss, double d)
  * @param[in] ss Span set
  * @param[in] d Value
  * @return On error return @p INT_MAX
- * @csqlfn #Distance_spanset_value()
+ * @csqlfn #Distance_spanset_value() #Distance_value_spanset()
  */
 int
 distance_spanset_date(const SpanSet *ss, DateADT d)
@@ -1340,7 +1340,7 @@ distance_spanset_date(const SpanSet *ss, DateADT d)
  * @param[in] ss Span set
  * @param[in] t Value
  * @return On error return @p DBL_MAX
- * @csqlfn #Distance_spanset_value()
+ * @csqlfn #Distance_spanset_value() #Distance_value_spanset()
  */
 double
 distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
