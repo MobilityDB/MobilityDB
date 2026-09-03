@@ -130,6 +130,149 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
+ * @brief Return true if two points are the same to the tolerance their own
+ * coordinates fix
+ */
+static bool
+sew_same_point(const POINT2D *a, const POINT2D *b)
+{
+  return fabs(a->x - b->x) <= coordinate_tolerance(a->x, b->x) &&
+    fabs(a->y - b->y) <= coordinate_tolerance(a->y, b->y);
+}
+
+/**
+ * @brief Sew the lines of a multi-line into the longest lines they draw
+ * @details Two lines meeting end to end draw one line, and a merge that keeps
+ * them apart reports a different geometry from the one the points make. The
+ * walk is over the ENDPOINTS rather than the geometry: a point where exactly
+ * two line ends meet is passed through, and one where a single end or three
+ * or more meet ends a line. So each line is followed from an end that nothing
+ * continues, and what remains once every such line is taken is the closed
+ * rings, each walked from any of its ends.
+ * @note The join is undirected, a line being reversed where that is what
+ * makes the ends meet, which is what `lwgeom_linemerge_directed(geom, 0)`
+ * answers
+ */
+static LWGEOM *
+lwmline_sew(const LWMLINE *mline)
+{
+  assert(mline);
+  uint32_t n = mline->ngeoms;
+  if (n == 0)
+    return lwmline_as_lwgeom(lwmline_construct_empty(mline->srid, 0, 0));
+
+  /* The two ends of every component, and whether it is already taken */
+  POINT2D *head = palloc(sizeof(POINT2D) * n);
+  POINT2D *tail = palloc(sizeof(POINT2D) * n);
+  bool *used = palloc0(sizeof(bool) * n);
+  bool *empty = palloc0(sizeof(bool) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const LWLINE *ln = mline->geoms[i];
+    if (! ln || ! ln->points || ln->points->npoints < 2)
+    {
+      empty[i] = used[i] = true;
+      continue;
+    }
+    getPoint2d_p(ln->points, 0, &head[i]);
+    getPoint2d_p(ln->points, ln->points->npoints - 1, &tail[i]);
+  }
+
+  /* How many line ends meet at each end, which is what tells a point the
+   * lines pass through from one they stop at */
+  int *deg_head = palloc0(sizeof(int) * n);
+  int *deg_tail = palloc0(sizeof(int) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    if (empty[i])
+      continue;
+    for (uint32_t j = 0; j < n; j++)
+    {
+      if (i == j || empty[j])
+        continue;
+      if (sew_same_point(&head[i], &head[j]) ||
+          sew_same_point(&head[i], &tail[j]))
+        deg_head[i]++;
+      if (sew_same_point(&tail[i], &head[j]) ||
+          sew_same_point(&tail[i], &tail[j]))
+        deg_tail[i]++;
+    }
+  }
+
+  LWGEOM **out = palloc(sizeof(LWGEOM *) * n);
+  uint32_t nout = 0;
+
+  /* Two passes: the lines that start somewhere nothing continues, then the
+   * rings, which have no such end */
+  for (int pass = 0; pass < 2; pass++)
+  {
+    for (uint32_t i = 0; i < n; i++)
+    {
+      if (used[i])
+        continue;
+      bool from_head = (deg_head[i] != 1);
+      bool from_tail = (deg_tail[i] != 1);
+      if (pass == 0 && ! from_head && ! from_tail)
+        continue;
+
+      /* Follow the chain, reversing a component where that is what joins it */
+      POINTARRAY *pa = ptarray_construct_empty(0, 0,
+        mline->geoms[i]->points->npoints);
+      bool reverse = (pass == 0 && ! from_head);
+      uint32_t cur = i;
+      POINT2D at;
+      while (true)
+      {
+        const POINTARRAY *cpa = mline->geoms[cur]->points;
+        uint32_t np = cpa->npoints;
+        for (uint32_t k = 0; k < np; k++)
+        {
+          POINT4D q;
+          getPoint4d_p(cpa, reverse ? np - 1 - k : k, &q);
+          /* The point the two components share is written once */
+          if (pa->npoints > 0 && k == 0)
+            continue;
+          ptarray_append_point(pa, &q, LW_FALSE);
+        }
+        used[cur] = true;
+        at = reverse ? head[cur] : tail[cur];
+
+        /* The one component continuing this end, if exactly one does */
+        uint32_t next = n;
+        int meeting = 0;
+        for (uint32_t j = 0; j < n; j++)
+        {
+          if (used[j] || empty[j])
+            continue;
+          if (sew_same_point(&at, &head[j]) || sew_same_point(&at, &tail[j]))
+          {
+            meeting++;
+            next = j;
+          }
+        }
+        if (meeting != 1)
+          break;
+        reverse = ! sew_same_point(&at, &head[next]);
+        cur = next;
+      }
+      out[nout++] = lwline_as_lwgeom(lwline_construct(mline->srid, NULL, pa));
+    }
+  }
+
+  pfree(head); pfree(tail); pfree(used); pfree(empty);
+  pfree(deg_head); pfree(deg_tail);
+
+  if (nout == 1)
+  {
+    LWGEOM *only = out[0];
+    pfree(out);
+    return only;
+  }
+  return lwcollection_as_lwgeom(lwcollection_construct(MULTILINETYPE,
+    mline->srid, NULL, nout, out));
+}
+
+/**
  * @ingroup meos_internal_temporal_modif
  * @brief Merge two temporal instants
  * @param[in] gsarr Array of geometries
@@ -153,21 +296,12 @@ geoarr_merge(GSERIALIZED **gsarr, int count)
    */
   if (gserialized_get_type(result) == MULTILINETYPE)
   {
-#if GEOS
     LWGEOM *geom = lwgeom_from_gserialized(result);
-    LWGEOM *geom1 = lwgeom_linemerge_directed(geom, 0);
-    GSERIALIZED *tmp = gserialized_from_lwgeom(geom1, NULL);
+    LWGEOM *sewn = lwmline_sew((const LWMLINE *) geom);
+    GSERIALIZED *tmp = geo_serialize(sewn);
+    lwgeom_free(sewn); lwgeom_free(geom);
     pfree(result);
     result = tmp;
-#else /* ! GEOS */
-    /* Answering the union without sewing its lines is a different geometry,
-     * not the same one built differently, so it is reported rather than given */
-    pfree(result);
-    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "Sewing the lines of a merged geometry is answered by the GEOS library, "
-      "which this build excludes: configure with -DGEOS=ON");
-    return NULL;
-#endif /* GEOS */
   }
   return result;
 }
