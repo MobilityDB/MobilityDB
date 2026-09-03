@@ -91,8 +91,25 @@ for suite in "${SUITES[@]}"; do
     fail=1
   else
     lines=$(wc -l < "$bin.out")
-    warns=$(wc -l < "$bin.err")
-    echo "[ok]    $suite — $lines results, $warns validation warns"
+    # A validation warning is a `[meos warn]` line, which the generated suite's
+    # own error handler writes when MEOS REFUSES an input. Count that, not the
+    # whole of stderr: PROJ writes its own notices there
+    # (proj_normalize_for_visualization, from the reprojection entries), so a
+    # line count reports a suite as carrying warnings it does not have.
+    warns=$(grep -c '\[meos warn\]' "$bin.err" || true)
+    notices=$(grep -vc '\[meos warn\]' "$bin.err" || true)
+    if [ "$warns" -ne 0 ]; then
+      # A refused input means the call returned at its guard and the function
+      # body never ran, so the suite reports coverage it does not have and
+      # anything wrong below that guard is unreachable. Every entry is to be
+      # called with a value it ACCEPTS.
+      echo "[FAIL]  $suite — $lines results, $warns validation warning(s):"
+      grep '\[meos warn\]' "$bin.err" | sort | uniq -c | sed 's/^/          /'
+      echo "          give each entry an input it accepts, then re-run"
+      fail=1
+    else
+      echo "[ok]    $suite — $lines results, 0 validation warns, $notices library notice(s)"
+    fi
   fi
 done
 
