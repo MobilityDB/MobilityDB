@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geog_length</title>
+<title>MobilityDB: geom_area</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,9 +84,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gadae62576fac32cf2a1ab666dd5792e8f.html#gadae62576fac32cf2a1ab666dd5792e8f">geo_typename</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga523b91b48ef9af6cd35a8dd81b361673.html#ga523b91b48ef9af6cd35a8dd81b361673">geog_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga645b98114810eca294dac46f7b7b2c9e.html#ga645b98114810eca294dac46f7b7b2c9e">geog_centroid</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__accessor_gaad3e0b48756848a3b2780b449e4e9ccf.html#gaad3e0b48756848a3b2780b449e4e9ccf">geog_length</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gaad3e0b48756848a3b2780b449e4e9ccf.html#gaad3e0b48756848a3b2780b449e4e9ccf">geog_length</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga5ef380ee1aa9b1d68a96e250484a29a0.html#ga5ef380ee1aa9b1d68a96e250484a29a0">geog_perimeter</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gafb9cf6bf0ce902ea68bfa14523e43158.html#gafb9cf6bf0ce902ea68bfa14523e43158">geom_area</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__accessor_gafb9cf6bf0ce902ea68bfa14523e43158.html#gafb9cf6bf0ce902ea68bfa14523e43158">geom_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga28dca3f4d5f757de8c4d247ce8f25b82.html#ga28dca3f4d5f757de8c4d247ce8f25b82">geom_azimuth</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga01cd2560611df2fa68834096f589cf9a.html#ga01cd2560611df2fa68834096f589cf9a">geom_length</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga35cd617a271bf5569039434a60e41318.html#ga35cd617a271bf5569039434a60e41318">geom_perimeter</a></td></tr>
@@ -96,42 +96,38 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaad3e0b48756848a3b2780b449e4e9ccf" name="gaad3e0b48756848a3b2780b449e4e9ccf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaad3e0b48756848a3b2780b449e4e9ccf">&#9670;&#160;</a></span>geog_length()</h2>
+<a id="gafb9cf6bf0ce902ea68bfa14523e43158" name="gafb9cf6bf0ce902ea68bfa14523e43158"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafb9cf6bf0ce902ea68bfa14523e43158">&#9670;&#160;</a></span>geom_area()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double geog_length </td>
+          <td class="memname">double geom_area </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>gs</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>use_spheroid</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return double length in meters. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the area of a geometry. </p>
+<p >Defined by</p><ul>
+<li>area(point) = 0</li>
+<li>area(line) = 0</li>
+<li>area(polygon) = the area it encloses, its holes taken out</li>
+</ul>
+<p >Uses Euclidean 2D computation even if input is 3D. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geography </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">use_spheroid</td><td>True when using a spheroid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>On error return <code>DBL_MAX</code> </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a0b6202ea67e2b0ba290d43d3032a596f.html#a0b6202ea67e2b0ba290d43d3032a596f">geography_length(PG_FUNCTION_ARGS)</a></code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>An empty geometry encloses nothing, so its area is 0. The question has an answer, and #lwgeom_area gives it </dd>
+<dd>
+PostGIS function: <code>ST_Area(PG_FUNCTION_ARGS)</code> </dd></dl>
 
 </div>
 </div>
