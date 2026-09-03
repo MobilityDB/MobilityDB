@@ -678,7 +678,7 @@ ea_touches_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] dist Distance
- * @csqlfn #Edwithin_trgeometry_geo()
+ * @csqlfn #Edwithin_trgeometry_geo() #Edwithin_geo_trgeometry()
  */
 int
 edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
@@ -698,7 +698,7 @@ edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] dist Distance
- * @csqlfn #Adwithin_trgeometry_geo()
+ * @csqlfn #Adwithin_trgeometry_geo() #Adwithin_geo_trgeometry()
  */
 int
 adwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)

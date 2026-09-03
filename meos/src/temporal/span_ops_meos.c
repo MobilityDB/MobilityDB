@@ -1356,7 +1356,7 @@ minus_span_timestamptz(const Span *s, TimestampTz t)
  * @param[in] s Span
  * @param[in] i Value
  * @return On error return @p INT_MAX
- * @csqlfn #Distance_span_value()
+ * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 int
 distance_span_int(const Span *s, int i)
@@ -1372,7 +1372,7 @@ distance_span_int(const Span *s, int i)
  * @param[in] s Span
  * @param[in] i Value
  * @return On error return @p INT64_MAX
- * @csqlfn #Distance_span_value()
+ * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 int64
 distance_span_bigint(const Span *s, int64 i)
@@ -1388,7 +1388,7 @@ distance_span_bigint(const Span *s, int64 i)
  * @param[in] s Span
  * @param[in] d Value
  * @return On error return @p DBL_MAX
- * @csqlfn #Distance_span_value()
+ * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 double
 distance_span_float(const Span *s, double d)
@@ -1404,7 +1404,7 @@ distance_span_float(const Span *s, double d)
  * @param[in] s Span
  * @param[in] d Value
  * @return On error return @p INT_MAX
- * @csqlfn #Distance_span_value()
+ * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 int
 distance_span_date(const Span *s, DateADT d)
@@ -1421,7 +1421,7 @@ distance_span_date(const Span *s, DateADT d)
  * @param[in] s Span
  * @param[in] t Value
  * @return On error return @p DBL_MAX
- * @csqlfn #Distance_span_value()
+ * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 double
 distance_span_timestamptz(const Span *s, TimestampTz t)

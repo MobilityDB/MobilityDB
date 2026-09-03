@@ -59,7 +59,7 @@
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @return On error return @p NULL
- * @csqlfn #Tdistance_tnumber_number()
+ * @csqlfn #Tdistance_tnumber_number() #Tdistance_number_tnumber()
  */
 Temporal *
 tdistance_tint_int(const Temporal *temp, int i)
@@ -75,7 +75,7 @@ tdistance_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @return On error return @p NULL
- * @csqlfn #Tdistance_tnumber_number()
+ * @csqlfn #Tdistance_tnumber_number() #Tdistance_number_tnumber()
  */
 Temporal *
 tdistance_tfloat_float(const Temporal *temp, double d)

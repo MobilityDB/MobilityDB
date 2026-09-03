@@ -1533,7 +1533,7 @@ minus_set_timestamptz(const Set *s, TimestampTz t)
  * @param[in] s Set
  * @param[in] i Value
  * @return On error return @p INT_MAX
- * @csqlfn #Distance_set_value()
+ * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 int
 distance_set_int(const Set *s, int i)
@@ -1549,7 +1549,7 @@ distance_set_int(const Set *s, int i)
  * @param[in] s Set
  * @param[in] i Value
  * @return On error return @p INT64_MAX
- * @csqlfn #Distance_set_value()
+ * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 int64
 distance_set_bigint(const Set *s, int64 i)
@@ -1565,7 +1565,7 @@ distance_set_bigint(const Set *s, int64 i)
  * @param[in] s Set
  * @param[in] d Value
  * @return On error return @p DBL_MAX
- * @csqlfn #Distance_set_value()
+ * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 double
 distance_set_float(const Set *s, double d)
@@ -1581,7 +1581,7 @@ distance_set_float(const Set *s, double d)
  * @param[in] s Set
  * @param[in] d Value
  * @return On error return @p INT_MAX
- * @csqlfn #Distance_set_value()
+ * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 int
 distance_set_date(const Set *s, DateADT d)
@@ -1598,7 +1598,7 @@ distance_set_date(const Set *s, DateADT d)
  * @param[in] s Set
  * @param[in] t Value
  * @return On error return @p DBL_MAX
- * @csqlfn #Distance_set_value()
+ * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 double
 distance_set_timestamptz(const Set *s, TimestampTz t)
