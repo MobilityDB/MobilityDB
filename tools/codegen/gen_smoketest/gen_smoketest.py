@@ -912,6 +912,16 @@ TPOSE_CONFIG = dict(
         # regardless of the source/target SRID. The default int32_t -> 0
         # target SRID is SRID_UNKNOWN, which ensure_srid_known() rejects.
         "pose_transform_pipeline": {1: "pipeline1", 2: "4326"},
+        # The GeoPose writers need a geodetic value, and the two elevation
+        # restrictions a value carrying Z and a floatspan to cut it with.
+        "pose_as_geopose":                 {0: "pose_geod1"},
+        "tpose_as_geopose":                {0: "tpose_geod1"},
+        "tpose_as_geopose_stream":         {0: "tpose_geod1"},
+        "tpose_as_geopose_stream_header":  {0: "tpose_geod1"},
+        "tpose_as_geopose_stream_element": {0: "tpose_geod1",
+                                            1: "tpose_geod_inst1"},
+        "tpose_at_elevation":    {0: "tpose_z1", 1: "floatspan1"},
+        "tpose_minus_elevation": {0: "tpose_z1", 1: "floatspan1"},
         # posearr_round takes a canned array of poses plus its count; the
         # return is a `Pose **` array of fresh per-element copies with no
         # `int *` count arg and no `Set *` arg for emit_call's generic
@@ -978,6 +988,14 @@ TPOSE_CONFIG = dict(
   /* Reprojection reads the source SRID off the value, so the transform input
    * carries one explicitly. */
   Pose *pose_srid1 = pose_in("SRID=4326;Pose(Point(1 2), 0.5)");
+  /* GeoPose is defined against a geodetic frame, so the writers take a GEODETIC
+   * pose; pose1 is planar and draws "GeoPose JSON requires a geodetic pose, got
+   * a planar one". The value is the one 103_pose_geopose.test.sql uses. */
+  Pose *pose_geod1 =
+    pose_in("SRID=4326;Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)");
+  /* An elevation is a range of Z, so the span these two restrict by is a
+   * FLOATSPAN, not the tstzspan every other Span * argument here takes. */
+  Span *floatspan1 = floatspan_in("[1, 2]");
   Pose *pose_out_param = NULL;
   /* The pose chain family, the second family this header publishes. The WKT
    * values are those of mobilitydb/test/posechain/queries/550_posechain and
@@ -1107,6 +1125,16 @@ TPOSE_CONFIG = dict(
     "SRID=4326;PoseChain(GeodPose(Point Z(-122.3 47.7 11), 1, 0, 0, 0),"
     " Pose(Point Z(0 3 0), 1, 0, 0, 0))@2001-01-02");
   const Temporal *tposechainarr1[] = { tposechain_geod1, tposechain_geod2 };
+  /* The geodetic twin of tpose1, for the four GeoPose writers, with its start
+   * instant for the per-instant stream entry. */
+  Temporal *tpose_geod1 = tpose_in(
+    "SRID=4326;[Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)@2001-01-02,"
+    " Geodpose(Point(9 48 1600), 0.707107, 0, 0, 0.707107)@2001-01-03]");
+  TInstant *tpose_geod_inst1 = (TInstant *) temporal_start_instant(tpose_geod1);
+  /* A tpose carrying Z, for the two elevation restrictions. The pose climbs
+   * from 0 to 4 so floatspan1 cuts it rather than missing it entirely. */
+  Temporal *tpose_z1 = tpose_in(
+    "[Pose(Point(0 0 0),1,0,0,0)@2001-01-02, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]");
   int n_out = 0;
 """,
     cleanup="""\
@@ -1123,6 +1151,11 @@ TPOSE_CONFIG = dict(
   }
 
   if (tpose_inst1) free(tpose_inst1);
+  if (tpose_geod_inst1) free(tpose_geod_inst1);
+  if (tpose_geod1) free(tpose_geod1);
+  if (tpose_z1) free(tpose_z1);
+  if (floatspan1) free(floatspan1);
+  if (pose_geod1) free(pose_geod1);
   if (tpose1) free(tpose1);
   if (tpoint1) free(tpoint1);
   if (tfloat1) free(tfloat1);
