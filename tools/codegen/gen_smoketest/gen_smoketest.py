@@ -174,8 +174,26 @@ AGG_RESULT_PRINTERS = {
 }
 
 
+def effective_arg_map(fname, arg_map, name_arg_map):
+    """The C-type -> canned-input map as it applies to ONE function.
+
+    A whole family of functions can share a precondition on an argument type
+    (every `tpoint_*` wants its `Temporal *` to be a temporal point), so a
+    name_arg_map regex remaps that type for the matching names. The map is
+    therefore a property of the NAME, not of the config, and any site building
+    a call must ask for that call's own map."""
+    eff = arg_map
+    if name_arg_map:
+        for pat, tymap in name_arg_map.items():
+            if re.search(pat, fname):
+                if eff is arg_map:
+                    eff = dict(arg_map)
+                eff.update(tymap)
+    return eff
+
+
 def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name,
-                   declared_inputs=()):
+                   declared_inputs=(), arg_map=None, name_arg_map=None):
     """Emit the multi-call sequence for an aggregate transition/final function,
     or return None when this is not a handleable aggregate (leaving it to the
     normal skip machinery).
@@ -295,19 +313,58 @@ def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name,
     if fname.endswith("_finalfn") and sig_by_name:
         transfn = fname[:-len("_finalfn")] + "_transfn"
         tsig = sig_by_name.get(transfn)
+        cand_map = None
+        if not tsig:
+            # A GENERIC finalizer has no transition of its own name: the SQL
+            # aggregates pair temporal_tagg_finalfn with each family's own
+            # transition. Any transition producing the same state seeds it, so
+            # the first one the header declares is taken -- derived from the
+            # header rather than hand-listed, the same way the combine arm
+            # above finds this finalizer.
+            for cand in sorted(sig_by_name):
+                if not cand.endswith("_transfn"):
+                    continue
+                cret, cargs = sig_by_name[cand]
+                if not (cret.strip() == state_ty and cargs and
+                        cargs[0][0].strip() == state_ty):
+                    continue
+                # The canned inputs are read through the CANDIDATE's own name
+                # rules, not the finalizer's: tbigint_tmax_transfn wants the
+                # tbigint its `^tbigint_` rule names, and the finalizer's name
+                # matches no rule at all.
+                cmap = effective_arg_map(cand, arg_map if arg_map is not None
+                                         else eff_arg_map, name_arg_map)
+                if all(cmap.get(ty) is not None for ty, _n, _c in cargs[1:]):
+                    transfn, tsig, cand_map = cand, sig_by_name[cand], cmap
+                    break
         if not tsig:
             return None
         _tret, targs = tsig
         if not targs or targs[0][0].strip() != state_ty:
             return None
-        vals = canned(targs[1:])
+        if cand_map is not None:
+            vals = [cand_map[ty] for ty, _n, _c in targs[1:]]
+        else:
+            vals = canned(targs[1:])
         if vals is None:
             return None
         tail = (", " + ", ".join(vals)) if vals else ""
         decl_ret = ret if ret.endswith("*") else ret + " "
+        # The finalizer answers the aggregate, so print it: an unprinted call
+        # is exercised by valgrind and invisible to a reader of the output.
+        printer = AGG_RESULT_PRINTERS.get(ret.strip())
+        if printer:
+            return (f"  {{ {state_ty}st = NULL;\n"
+                    f"    st = {transfn}(st{tail});\n"
+                    f"    {decl_ret}r = {fname}(st);\n"
+                    f"    char *s = r ? {printer % 'r'} : NULL;\n"
+                    f'    printf("{fname}: %s\\n", s ? s : "no answer");\n'
+                    f"    if (s) free(s);\n"
+                    f"    if (r) free(r); }}\n")
         return (f"  {{ {state_ty}st = NULL;\n"
                 f"    st = {transfn}(st{tail});\n"
                 f"    {decl_ret}r = {fname}(st);\n"
+                f'    printf("{fname}: %s\\n", r ? "OK" : "NULL");\n'
                 f"    if (r) free(r); }}\n")
     return None
 
@@ -334,17 +391,13 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
     # must be a temporal point), so a single regex remaps that C type to the
     # right canned input for all matching functions. Position-based
     # override_args below still take precedence.
-    eff_arg_map = arg_map
-    if name_arg_map:
-        for pat, tymap in name_arg_map.items():
-            if re.search(pat, fname):
-                if eff_arg_map is arg_map:
-                    eff_arg_map = dict(arg_map)
-                eff_arg_map.update(tymap)
+    eff_arg_map = effective_arg_map(fname, arg_map, name_arg_map)
     # Aggregate transition/final functions need a multi-call state handoff that
-    # the single-call harness cannot express; emit the whole sequence here.
+    # the single-call harness cannot express; emit the whole sequence here. The
+    # sequence may reach for a SIBLING function, whose own name may match a
+    # different rule, so the raw map and the rules travel with it.
     agg = emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name,
-                         declared_inputs)
+                         declared_inputs, arg_map, name_arg_map)
     if agg is not None:
         return agg
     # Global regex-pattern skip (applied after per-config so a config can
@@ -684,12 +737,17 @@ TRGEO_CONFIG = dict(
         "trgeometryseq_make":         {1: "trinstarr1", 2: "2"},
         "trgeometryseqset_make":      {1: "trseqarr1",  2: "1"},
         "trgeometryseqset_make_gaps": {1: "trinstarr1", 2: "2"},
+        # The merge takes an array of whole temporal values. Its two elements
+        # must not disagree where they overlap, so they are the two instants
+        # the sequence above is built from, each on its own.
+        "trgeometry_merge_array":     {0: "trgeoarr1", 1: "2"},
     },
-    skip={
-        # The generic emitter would allocate into geom_out_param and never free
-        # it; the cleanup block below calls the function and frees the result.
-        "trgeometry_value_n":         "out-param GSERIALIZED ** is exercised manually below",
-    },
+    skip={},
+    # The generic emitter would allocate into geom_out_param and never free it;
+    # the cleanup block below calls the function and frees the result. It is
+    # listed here rather than in `skip` because the function IS exercised, and
+    # a SKIP line naming it would read as one nothing calls.
+    manual=["trgeometry_value_n"],
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -735,6 +793,10 @@ TRGEO_CONFIG = dict(
    * constructors copy their elements, so these stay owned by the blocks that
    * built them. */
   TInstant *trinstarr1[] = {trgeo_inst1, trgeo_inst2};
+  /* The same two instants as whole temporal values, for the merge. They carry
+   * the same geometry and pose at different times, so they agree wherever they
+   * meet and the merge has an answer. */
+  Temporal *trgeoarr1[] = {(Temporal *) trgeo_inst1, (Temporal *) trgeo_inst2};
   TSequence *trseqarr1[] = {trgeo_tseq2};
   int n_out = 0;
 """,
@@ -1514,6 +1576,9 @@ TGEOMETRY_CONFIG = dict(
         "geo_collect_garray":  {0: "gsarr1", 1: "2"},
         "geo_makeline_garray": {0: "gsarr1", 1: "2"},
         "geom_array_union":    {0: "gsarr1", 1: "2"},
+        # Its geodetic twin, which was left without one: geography
+        # refuses the planar array the line above passes.
+        "geog_array_union":    {0: "ggarr1", 1: "2"},
         "geoset_make":         {0: "gsarr1", 1: "2"},
         "geo_cluster_kmeans":       {0: "cgsarr1", 1: "2", 2: "2"},
         "geo_cluster_dbscan":       {0: "cgsarr1", 1: "2", 3: "1"},
@@ -1734,8 +1799,13 @@ TGEOMETRY_CONFIG = dict(
    * constructors and relationship family below. */
   GSERIALIZED *garr_g1 = geom_in("SRID=5676;Point(0 0)", -1);
   GSERIALIZED *garr_g2 = geom_in("SRID=5676;Point(1 1)", -1);
+  /* The geodetic twin of the pair: geography accepts only a lon/lat system,
+   * so these carry 4326 rather than the planar 5676 the geometries use. */
+  GSERIALIZED *garr_gg1 = geog_in("SRID=4326;Point(2 49)", -1);
+  GSERIALIZED *garr_gg2 = geog_in("SRID=4326;Point(3 50)", -1);
   GSERIALIZED *gsarr1[] = { garr_g1, garr_g2 };
   const GSERIALIZED *cgsarr1[] = { garr_g1, garr_g2 };
+  GSERIALIZED *ggarr1[] = { garr_gg1, garr_gg2 };
   Temporal *tgeoarr_tp1 = tgeompoint_in(
     "[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]");
   Temporal *tgeoarr_tp2 = tgeompoint_in(
@@ -1818,6 +1888,8 @@ TGEOMETRY_CONFIG = dict(
   if (tgeoarr_tp2) free(tgeoarr_tp2);
   free(garr_g1);
   free(garr_g2);
+  free(garr_gg1);
+  free(garr_gg2);
   free(stbox1);
   free(stbox_zt1);
   free(box3d1);
