@@ -2960,31 +2960,17 @@ geom_is_simple(const GSERIALIZED *gs)
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   bool result;
-  if (meos_is_simple(geom, &result))
-  {
-    lwgeom_free(geom);
+  bool covered = meos_is_simple(geom, &result);
+  lwgeom_free(geom);
+  if (covered)
     return result;
-  }
 
-#if GEOS
-  /* A geometry carrying a circular arc meets itself along an arc, which the
-   * segment intersection the answer above rests on does not read */
-  int simple = lwgeom_is_simple(geom);
-  lwgeom_free(geom);
-  if (simple < 0)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Whether the geometry is simple could not be determined");
-    return false;
-  }
-  return simple != 0;
-#else /* ! GEOS */
-  lwgeom_free(geom);
+  /* #meos_is_simple answers every type #geom_meos_supported admits, and a
+   * geodetic geometry is refused above, so a geometry reaching here carries a
+   * type the engine does not read at all */
   meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-    "Whether a geometry carrying a circular arc is simple is answered by the "
-    "GEOS library, which this build excludes: configure with -DGEOS=ON");
+    "Unsupported geometry type");
   return false;
-#endif /* GEOS */
 }
 
 /*****************************************************************************/
