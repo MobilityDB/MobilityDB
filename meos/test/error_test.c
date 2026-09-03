@@ -203,7 +203,9 @@ int main(void)
   GSERIALIZED *webmerc = geo_transform(wgs84, 3857);
   assert(webmerc != NULL);
   assert(meos_errno() == 0);
-  printf("geo_transform(4326 -> 3857): %s\n", geo_as_ewkt(webmerc, 2));
+  char *webmerc_ewkt = geo_as_ewkt(webmerc, 2);
+  printf("geo_transform(4326 -> 3857): %s\n", webmerc_ewkt);
+  free(webmerc_ewkt);
 
   /* An ordered comparison admits only a temporal type whose base type carries
    * an order. A geometry has a B-tree order so that it can be indexed, which is

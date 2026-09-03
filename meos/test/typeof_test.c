@@ -40,6 +40,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <meos.h>
 #include <meos_catalog.h>
 
@@ -69,19 +70,48 @@ int main(void)
   meos_initialize();
   meos_initialize_timezone("UTC");
 
-  /* Self-describing serializations: the concrete type is recovered */
-  check("tint", temporal_as_hexwkb(tint_in("1@2001-01-01"), 0, &sz), T_TINT);
-  check("tfloat", temporal_as_hexwkb(tfloat_in("1.5@2001-01-01"), 0, &sz),
-    T_TFLOAT);
-  check("intspan", span_as_hexwkb(intspan_in("[1, 3]"), 0, &sz), T_INTSPAN);
-  check("floatspan", span_as_hexwkb(floatspan_in("[1.0, 3.0]"), 0, &sz),
-    T_FLOATSPAN);
-  check("tstzspan",
-    span_as_hexwkb(tstzspan_in("[2001-01-01, 2001-01-02]"), 0, &sz),
-    T_TSTZSPAN);
-  check("intset", set_as_hexwkb(intset_in("{1, 2, 3}"), 0, &sz), T_INTSET);
-  check("intspanset", spanset_as_hexwkb(intspanset_in("{[1,2],[4,5]}"), 0, &sz),
-    T_INTSPANSET);
+  /* Self-describing serializations: the concrete type is recovered. The value
+   * and the text it serializes to are both allocations of this program, so
+   * each is held in a variable long enough to be freed: a value handed
+   * straight to the serializer, or a serialization handed straight to the
+   * check, is one nothing can free */
+  void *val;
+  char *hex;
+
+  val = tint_in("1@2001-01-01");
+  hex = temporal_as_hexwkb(val, 0, &sz);
+  check("tint", hex, T_TINT);
+  free(hex); free(val);
+
+  val = tfloat_in("1.5@2001-01-01");
+  hex = temporal_as_hexwkb(val, 0, &sz);
+  check("tfloat", hex, T_TFLOAT);
+  free(hex); free(val);
+
+  val = intspan_in("[1, 3]");
+  hex = span_as_hexwkb(val, 0, &sz);
+  check("intspan", hex, T_INTSPAN);
+  free(hex); free(val);
+
+  val = floatspan_in("[1.0, 3.0]");
+  hex = span_as_hexwkb(val, 0, &sz);
+  check("floatspan", hex, T_FLOATSPAN);
+  free(hex); free(val);
+
+  val = tstzspan_in("[2001-01-01, 2001-01-02]");
+  hex = span_as_hexwkb(val, 0, &sz);
+  check("tstzspan", hex, T_TSTZSPAN);
+  free(hex); free(val);
+
+  val = intset_in("{1, 2, 3}");
+  hex = set_as_hexwkb(val, 0, &sz);
+  check("intset", hex, T_INTSET);
+  free(hex); free(val);
+
+  val = intspanset_in("{[1,2],[4,5]}");
+  hex = spanset_as_hexwkb(val, 0, &sz);
+  check("intspanset", hex, T_INTSPANSET);
+  free(hex); free(val);
 
   /* Malformed input yields T_UNKNOWN without raising */
   check("null", NULL, T_UNKNOWN);
