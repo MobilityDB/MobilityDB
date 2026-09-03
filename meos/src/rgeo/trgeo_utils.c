@@ -139,6 +139,8 @@ ensure_same_geom(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on different reference geometries");
+    lwgeom_free(geom1);
+    lwgeom_free(geom2);
     return false;
   }
 
