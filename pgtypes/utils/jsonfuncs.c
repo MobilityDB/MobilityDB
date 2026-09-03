@@ -813,10 +813,15 @@ pg_jsonb_array_element_text(const Jsonb *jb, int idx)
   }
 
   JsonbValue *v = getIthJsonbValueFromContainer(&((Jsonb *) jb)->root, idx);
-  if (v != NULL && v->type != jbvNull)
-    return JsonbValueAsText(v);
-
-  return NULL;
+  if (! v)
+    return NULL;
+  /* The container answers a value of its own, as the element accessor above
+   * says by freeing it, and JsonbValueAsText copies out of that value and
+   * keeps none of it -- so the value is this function's to release whichever
+   * branch it takes */
+  text *result = (v->type != jbvNull) ? JsonbValueAsText(v) : NULL;
+  pfree(v); /* MEOS */
+  return result;
 }
 
 /*****************************************************************************/

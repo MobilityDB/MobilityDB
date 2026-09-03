@@ -2102,8 +2102,65 @@ TJSONB_CONFIG = dict(
         # jsonpath_in needs a jsonpath string, not the jsonb document string
         "jsonpath_in": {0: "jp_str"},
         # jsonb_to_numeric needs a scalar-numeric jsonb document; the default
-        # jb1 is a JSON object, which JsonbExtractScalar() rejects.
+        # jb1 is a JSON object, which JsonbExtractScalar() rejects. Every other
+        # cast out of jsonb wants a scalar of its own kind for the same reason,
+        # and drew "cannot cast jsonb object to type <t>" without one.
         "jsonb_to_numeric": {0: "jb_num1"},
+        "jsonb_to_float4":  {0: "jb_num1"},
+        "jsonb_to_float8":  {0: "jb_num1"},
+        "jsonb_to_int16":   {0: "jb_num1"},
+        "jsonb_to_int32":   {0: "jb_num1"},
+        "jsonb_to_int64":   {0: "jb_num1"},
+        "jsonb_to_bool":    {0: "jb_bool1"},
+        # The ARRAY operations need a jsonb ARRAY: an object has no length, no
+        # element n and no index to delete ("cannot get array length of a
+        # non-array", "cannot delete from object using integer index").
+        "jsonb_array_element":       {0: "jb_arr1"},
+        "jsonb_array_element_text":  {0: "jb_arr1"},
+        "jsonb_array_elements":      {0: "jb_arr1"},
+        "jsonb_array_elements_text": {0: "jb_arr1"},
+        "jsonb_array_length":        {0: "jb_arr1"},
+        "jsonb_delete_index":        {0: "jb_arr1"},
+        # Their temporal and set twins want the same thing one level up: a
+        # temporal value and a set whose VALUES are arrays.
+        "tjsonb_array_length":    {0: "tjsonb_arr1"},
+        "tjsonb_delete_index":    {0: "tjsonb_arr1"},
+        "tjsonb_array_element":   {0: "tjsonb_arr1"},
+        "tjson_array_element":    {0: "ttext_arr1"},
+        "jsonbset_array_length":  {0: "jsonbset_arr1"},
+        "jsonbset_delete_index":  {0: "jsonbset_arr1"},
+        "jsonbset_array_element": {0: "jsonbset_arr1"},
+        # These reach for a key, so their set holds the objects that have one.
+        "jsonbset_object_field":  {0: "jsonbset_obj1"},
+        # jsonbset_delete removes a KEY, so its set holds objects, not the
+        # scalars of jsonbset1 ("cannot delete from scalar").
+        "jsonbset_delete":        {0: "jsonbset_obj1"},
+        # The text-backed json_* entries parse their first argument AS JSON, and
+        # the default txt1 is the bare key "a" -- "invalid input syntax for type
+        # json". The document ones take json_doc1, whose "a" key txt1 then names;
+        # the array ones take a JSON array.
+        "jsonb_from_text":         {0: "json_doc1"},
+        "json_object_field":       {0: "json_doc1"},
+        "json_object_field_text":  {0: "json_doc1"},
+        "json_object_keys":        {0: "json_doc1"},
+        "json_typeof":             {0: "json_doc1"},
+        "json_strip_nulls":        {0: "json_doc1"},
+        "json_array_element":      {0: "json_arr1"},
+        "json_array_element_text": {0: "json_arr1"},
+        "json_array_elements":     {0: "json_arr1"},
+        "json_array_elements_text": {0: "json_arr1"},
+        "json_array_length":       {0: "json_arr1"},
+        # These four take a char * and the default is the bare jsonb document
+        # string, which is not what any of them parses.
+        "tjsonb_in":                  {0: "tjs_seq_str"},
+        "tjsonbinst_in":              {0: "tjs_inst_str"},
+        "tjsonb_from_mfjson":         {0: "tjs_mfjson_str"},
+        "null_handle_type_from_string": {0: "null_handle_str1"},
+        # jsonbset_in parses a SET literal, not a bare jsonb document.
+        "jsonbset_in":                {0: "jsonbset_str1"},
+        # The base-and-time constructors take the TIME set, not a jsonb one.
+        "tjsonbseq_from_base_tstzset": {1: "tstzset1"},
+        "tjsonbseqset_from_base_tstzspanset": {1: "tstzspanset1"},
         # the sequence/sequence-set parsers need temporal WKT, not a bare
         # jsonb document (temporal_parse() would reject it and the callers
         # assert on the subtype of the resulting non-sequence/NULL).
@@ -2113,7 +2170,9 @@ TJSONB_CONFIG = dict(
         # text-backed temporal JSON (T_TTEXT), not on a tjsonb (T_TJSONB).
         "tjson_strip_nulls": {0: "ttext1"},
         "tjson_array_element": {0: "ttext1"},
-        "tjson_array_length": {0: "ttext1"},
+        # ... and this one reads that text AS AN ARRAY, so its ttext carries
+        # arrays rather than the bare strings of ttext1.
+        "tjson_array_length": {0: "ttext_arr1"},
         "tjson_object_field": {0: "ttext1"},
         "tjson_extract_path": {0: "ttext1", 1: "path1", 2: "2"},
         # Input-array double-pointers, paired with a trailing count arg.
@@ -2128,7 +2187,11 @@ TJSONB_CONFIG = dict(
         "jsonb_extract_path_text": {0: "jb_obj1", 1: "path1", 2: "2"},
         "jsonb_delete_array":     {0: "jb_obj1", 1: "keys1", 2: "1"},
         "jsonb_delete_path":      {0: "jb_obj1", 1: "path1", 2: "2"},
-        "jsonb_insert":           {0: "jb_obj1", 1: "path1", 2: "2", 3: "jb1"},
+        # An INSERT refuses a path that already holds a value ("cannot replace
+        # existing key"), so unlike its set/extract/delete siblings it needs a
+        # path whose last element is absent from jb_obj1.
+        "jsonb_insert":           {0: "jb_obj1", 1: "path_new1", 2: "2",
+                                    3: "jb1"},
         "jsonb_set":              {0: "jb_obj1", 1: "path1", 2: "2", 3: "jb1"},
         "jsonb_set_lax":          {0: "jb_obj1", 1: "path1", 2: "2", 3: "jb1",
                                     5: "null_handle_text1"},
@@ -2172,14 +2235,30 @@ TJSONB_CONFIG = dict(
   /* A scalar-numeric jsonb document, for jsonb_to_numeric (a JSON object like
    * jb1 has no scalar to extract). */
   Jsonb *jb_num1 = jsonb_in("123.45");
+  /* The other two scalar kinds the casts out of jsonb ask for, and the ARRAY
+   * the length / element / delete-by-index entries ask for. */
+  Jsonb *jb_bool1 = jsonb_in("true");
+  Jsonb *jb_arr1 = jsonb_in("[1, 2, 3]");
   char *jp_str = "$.a";
   JsonPath *jp1 = jsonpath_in(jp_str);
   char *tjs_seq_str = "[{\\"a\\": 1}@2001-01-02, {\\"a\\": 2}@2001-01-03]";
   char *tjs_seqset_str = "{[{\\"a\\": 1}@2001-01-02], [{\\"a\\": 2}@2001-01-03]}";
+  char *tjs_inst_str = "{\\"a\\": 1}@2001-01-02";
+  /* temporal_as_mfjson() on the array-valued tjsonb built below. */
+  char *tjs_mfjson_str =
+    "{\\"type\\":\\"MovingJsonb\\",\\"values\\":[[1, 2, 3],[4, 5, 6]],"
+    "\\"datetimes\\":[\\"2001-01-02T00:00:00+00:00\\","
+    "\\"2001-01-03T00:00:00+00:00\\"],\\"lower_inc\\":true,"
+    "\\"upper_inc\\":true,\\"interpolation\\":\\"Step\\"}";
+  /* A null-value-treatment keyword, the only thing this parser reads. */
+  char *null_handle_str1 = "use_json_null";
   text *txt1 = text_in("a");
   text *txtarr1[] = { txt1 };
   Numeric num1 = NULL;
   Set *jsonbset1 = jsonbset_in("{1, 2, 3}");
+  /* The time set the base-and-time sequence constructor takes. */
+  Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
+  text *json_arr1 = text_in("[1, 2, 3]");
   /* Input arrays for the json_make / *_extract_path / *_delete_array /
    * *_exists_array / *_set / *_insert family below. */
   text *key_a1 = text_in("a");
@@ -2189,6 +2268,10 @@ TJSONB_CONFIG = dict(
   text *keys1[] = { key_a1 };
   text *values1[] = { val_11 };
   text *path1[] = { key_a1, key_b1 };
+  /* A path whose last element is ABSENT from jb_obj1, for the insert. */
+  text *key_c1 = text_in("c");
+  text *path_new1[] = { key_a1, key_c1 };
+  char *jsonbset_str1 = "{1, 2, 3}";
   text *json_doc1 = text_in("{\\"a\\": {\\"b\\": 1}}");
   Jsonb *jb_obj1 = jsonb_in("{\\"a\\": {\\"b\\": 1}}");
   /* A null-value-treatment keyword for jsonb_set_lax / jsonbset_set. */
@@ -2203,9 +2286,21 @@ TJSONB_CONFIG = dict(
   const Jsonb *jbarr1[] = { jb_a1 };
   const Jsonb *jbarr2[] = { jb_a1, jb_b1 };
   Set *jsonbset_obj1 = jsonbset_make(jbarr2, 2);
+  /* A jsonbset of ARRAYS, for the two entries that ask a set for a length or
+   * an index rather than for a key. */
+  Jsonb *jb_arr_a1 = jsonb_in("[1, 2]");
+  Jsonb *jb_arr_b1 = jsonb_in("[3, 4]");
+  const Jsonb *jbarr3[] = { jb_arr_a1, jb_arr_b1 };
+  Set *jsonbset_arr1 = jsonbset_make(jbarr3, 2);
   int n_out = 0;
   Temporal *tjsonb1 = tjsonb_in(
     "[{\\"a\\": 1}@2001-01-02, {\\"a\\": 2}@2001-01-03]");
+  /* The array-valued twins of tjsonb1 and ttext1, for the two entries that
+   * read a temporal value's arrays. */
+  Temporal *tjsonb_arr1 = tjsonb_in(
+    "[[1, 2, 3]@2001-01-02, [4, 5, 6]@2001-01-03]");
+  Temporal *ttext_arr1 = ttext_in(
+    "[\\"[1, 2, 3]\\"@2001-01-02, \\"[4, 5, 6]\\"@2001-01-03]");
   /* borrowed accessor: points into tjsonb1, no allocation and nothing to free */
   const TInstant *tjsonb_inst1 = temporal_start_inst(tjsonb1);
   TSequence    *tjsonb_tseq1    = (TSequence *) tjsonb1;
@@ -2272,10 +2367,19 @@ TJSONB_CONFIG = dict(
   }
 
   if (tjsonb1) free(tjsonb1);
+  if (tjsonb_arr1) free(tjsonb_arr1);
+  if (ttext_arr1) free(ttext_arr1);
   free(ttext1);
   free(jp1);
   free(jb1);
   free(jb_num1);
+  free(jb_bool1);
+  free(jb_arr1);
+  free(json_arr1);
+  free(tstzset1);
+  free(jsonbset_arr1);
+  free(jb_arr_a1);
+  free(jb_arr_b1);
   free(txt1);
   free(jsonbset1);
   free(jsonbset_obj1);
@@ -2285,6 +2389,7 @@ TJSONB_CONFIG = dict(
   free(json_doc1);
   free(key_a1);
   free(key_b1);
+  free(key_c1);
   free(val_11);
   free(null_handle_text1);
   free(tstzspanset1);
@@ -2375,8 +2480,14 @@ def write_test(name, cfg):
     # strip /* */ and // comments before counting (matching the compiler's view).
     code_only = re.sub(r"/\*.*?\*/", "", full_text, flags=re.S)
     code_only = re.sub(r"//[^\n]*", "", code_only)
-    declared = re.findall(r"^\s*[A-Za-z_]\w*[ \t]+\**[ \t]*([A-Za-z_]\w*)[ \t]*=",
-                          cfg["common_inputs"], re.M)
+    # The scanner has to see the SAME declarations the compiler does, or an
+    # unused input keeps its warning: a leading qualifier (`const Jsonb *x`)
+    # and an array declarator (`text *x[] = {...}`) are both ordinary here, and
+    # a pattern reading only `Type *name =` matches neither.
+    declared = re.findall(
+        r"^\s*(?:(?:const|static|unsigned|signed|struct)[ \t]+)*"
+        r"[A-Za-z_]\w*[ \t]+\**[ \t]*([A-Za-z_]\w*)(?:[ \t]*\[[^\]]*\])?[ \t]*=",
+        cfg["common_inputs"], re.M)
     unused = [v for v in dict.fromkeys(declared)
               if len(re.findall(r"\b" + re.escape(v) + r"\b", code_only)) == 1]
     void_block = "".join(f"  (void) {v};\n" for v in unused)
