@@ -38,7 +38,6 @@
 
 #include "pg_basetypes.h"
 
-typedef struct varlena;
 typedef struct varlena text;
 
 typedef unsigned int Oid;
