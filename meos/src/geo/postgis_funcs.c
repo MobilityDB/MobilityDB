@@ -4396,7 +4396,7 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
  * geometry/geography
  * @param[in] gs Geometry/geography
  * @param[in] endian Endianness
- * @param[in] size Size of result
+ * @param[out] size Size of result
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
  */
 uint8_t *

@@ -1013,7 +1013,7 @@ tsequenceset_sequences_p(const TSequenceSet *ss)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return the array of segments of a temporal sequence set
  * @param[in] ss Temporal sequence set
- * @param[in] count Number of values in the output array
+ * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_segments()
  */
 TSequence **
@@ -1241,7 +1241,7 @@ tsequenceset_timestamptz_n(const TSequenceSet *ss, int n, TimestampTz *result)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return the array of distinct timestamps of a temporal sequence set
  * @param[in] ss Temporal sequence set
- * @param[in] count Number of elements in the output array
+ * @param[out] count Number of elements in the output array
  * @csqlfn #Temporal_timestamps()
  */
 TimestampTz *

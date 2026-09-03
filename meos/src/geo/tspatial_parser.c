@@ -89,7 +89,7 @@ srid_parse(const char **str, int *srid)
  * @details Shared by the STBox and TPCBox text parsers. Does NOT enforce
  * end-of-input, so a caller may parse a trailing suffix (e.g. the TPCBox
  * `PCID`) after the box body.
- * @param[in] str Input string
+ * @param[in,out] str Input string, advanced past what is read
  * @param[in] geodetic True for a geodetic box
  * @param[in] srid SRID of the box
  * @param[in] type_str Type name used in error messages
@@ -591,7 +591,7 @@ error:
 
 /**
  * @brief Parse a spatiotemporal value from the input buffer
- * @param[in] str Input string
+ * @param[in,out] str Input string, advanced past what is read
   * @param[in] temptype Temporal type
 */
 Temporal *
