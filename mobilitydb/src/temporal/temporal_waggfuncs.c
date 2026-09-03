@@ -259,7 +259,7 @@ PG_FUNCTION_INFO_V1(Temporal_wcount_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for moving window count aggregation for temporal
  * values
- * @sqlfn wcount_transfn()
+ * @sqlfn wCountTransition()
  * @sqlaggfn wCount()
  */
 inline Datum

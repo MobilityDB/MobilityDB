@@ -157,7 +157,7 @@ PG_FUNCTION_INFO_V1(Timestamptz_tcount_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamptz values
- * @sqlfn tcount_transfn()
+ * @sqlfn tCountTransition()
  * @sqlaggfn tCount()
  */
 Datum
@@ -178,7 +178,7 @@ PG_FUNCTION_INFO_V1(Tstzset_tcount_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamptz sets
- * @sqlfn tcount_transfn()
+ * @sqlfn tCountTransition()
  * @sqlaggfn tCount()
  */
 Datum
@@ -200,7 +200,7 @@ PG_FUNCTION_INFO_V1(Tstzspan_tcount_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamptz spans
- * @sqlfn tcount_transfn()
+ * @sqlfn tCountTransition()
  * @sqlaggfn tCount()
  */
 Datum
@@ -222,7 +222,7 @@ PG_FUNCTION_INFO_V1(Tstzspanset_tcount_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamptz span
  * sets
- * @sqlfn tcount_transfn()
+ * @sqlfn tCountTransition()
  * @sqlaggfn tCount()
  */
 Datum
@@ -246,7 +246,7 @@ PG_FUNCTION_INFO_V1(Temporal_tcount_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal count aggregation of temporal values
- * @sqlfn tcount_transfn()
+ * @sqlfn tCountTransition()
  * @sqlaggfn tCount()
  */
 Datum
@@ -778,7 +778,7 @@ PG_FUNCTION_INFO_V1(Temporal_merge_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for merge aggregate of temporal values
- * @sqlfn temporal_merge_transfn()
+ * @sqlfn mergeTransition()
  * @sqlaggfn merge(), mergeAgg()
  */
 Datum
@@ -792,7 +792,7 @@ PG_FUNCTION_INFO_V1(Temporal_merge_combinefn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for merge aggregate of temporal values
- * @sqlfn temporal_merge_combinefn()
+ * @sqlfn mergeCombine()
  * @sqlaggfn merge(), mergeAgg()
  */
 Datum
@@ -810,7 +810,7 @@ PG_FUNCTION_INFO_V1(Temporal_app_tinst_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for append temporal instant aggregate
- * @sqlfn temporal_app_tinst_transfn()
+ * @sqlfn appendInstantTransition()
  * @sqlaggfn appendInstant(), appendInstantAgg()
  */
 Datum
@@ -879,7 +879,7 @@ PG_FUNCTION_INFO_V1(Temporal_app_tseq_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for append temporal sequence aggregate
- * @sqlfn temporal_app_tseq_transfn()
+ * @sqlfn appendSequenceTransition()
  * @sqlaggfn appendSequence(), appendSequenceAgg()
  */
 Datum

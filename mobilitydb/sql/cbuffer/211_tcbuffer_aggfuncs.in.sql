@@ -33,13 +33,13 @@
  */
 
 -- The function is not strict
-CREATE FUNCTION tcount_transfn(internal, tcbuffer)
+CREATE FUNCTION tCountTransition(internal, tcbuffer)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tCount(tcbuffer) (
-  SFUNC = tcount_transfn,
+  SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -49,13 +49,13 @@ CREATE AGGREGATE tCount(tcbuffer) (
 );
 
 -- The function is not strict
-CREATE FUNCTION wcount_transfn(internal, tcbuffer, interval)
+CREATE FUNCTION wCountTransition(internal, tcbuffer, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wCount(tcbuffer, interval) (
-  SFUNC = wcount_transfn,
+  SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -67,7 +67,7 @@ CREATE AGGREGATE wCount(tcbuffer, interval) (
 /*****************************************************************************/
 
 -- The functions are not strict
-CREATE FUNCTION temporal_merge_transfn(internal, tcbuffer)
+CREATE FUNCTION mergeTransition(internal, tcbuffer)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -79,9 +79,9 @@ CREATE FUNCTION tcbuffer_tagg_finalfn(internal)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tcbuffer) (
-  SFUNC = temporal_merge_transfn,
+  SFUNC = mergeTransition,
   STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
+  COMBINEFUNC = mergeCombine,
   FINALFUNC = tcbuffer_tagg_finalfn,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
@@ -89,9 +89,9 @@ CREATE AGGREGATE merge(tcbuffer) (
   PARALLEL = safe
 );
 CREATE AGGREGATE mergeAgg(tcbuffer) (
-  SFUNC = temporal_merge_transfn,
+  SFUNC = mergeTransition,
   STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
+  COMBINEFUNC = mergeCombine,
   FINALFUNC = tcbuffer_tagg_finalfn,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
@@ -104,16 +104,16 @@ CREATE AGGREGATE mergeAgg(tcbuffer) (
  *****************************************************************************/
 
 -- The functions are not strict
-CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer)
+CREATE FUNCTION appendInstantTransition(tcbuffer, tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer,
+CREATE FUNCTION appendInstantTransition(tcbuffer, tcbuffer,
     interp text DEFAULT NULL)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer,
+CREATE FUNCTION appendInstantTransition(tcbuffer, tcbuffer,
     interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
     maxt interval DEFAULT NULL)
   RETURNS tcbuffer
@@ -127,13 +127,13 @@ CREATE FUNCTION temporal_append_finalfn(tcbuffer)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tcbuffer) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tcbuffer) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -142,13 +142,13 @@ CREATE AGGREGATE appendInstantAgg(tcbuffer) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tcbuffer, text) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tcbuffer, text) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -157,13 +157,13 @@ CREATE AGGREGATE appendInstantAgg(tcbuffer, text) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tcbuffer, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tcbuffer, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -172,7 +172,7 @@ CREATE AGGREGATE appendInstantAgg(tcbuffer, text, float, interval) (
 /*****************************************************************************/
 
 -- The function is not strict
-CREATE FUNCTION temporal_app_tseq_transfn(tcbuffer, tcbuffer)
+CREATE FUNCTION appendSequenceTransition(tcbuffer, tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -180,13 +180,13 @@ CREATE FUNCTION temporal_app_tseq_transfn(tcbuffer, tcbuffer)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tcbuffer) (
-  SFUNC = temporal_app_tseq_transfn,
+  SFUNC = appendSequenceTransition,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequenceAgg(tcbuffer) (
-  SFUNC = temporal_app_tseq_transfn,
+  SFUNC = appendSequenceTransition,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

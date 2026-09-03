@@ -46,7 +46,7 @@ CREATE AGGREGATE extent(tjsonb) (
 );
 
 -- The function is not STRICT
-CREATE FUNCTION tcount_transfn(internal, tjsonb)
+CREATE FUNCTION tCountTransition(internal, tjsonb)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -57,7 +57,7 @@ CREATE FUNCTION tjsonb_tagg_finalfn(internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE tCount(tjsonb) (
-  SFUNC = tcount_transfn,
+  SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -67,13 +67,13 @@ CREATE AGGREGATE tCount(tjsonb) (
 );
 
 -- The function is not STRICT
-CREATE FUNCTION wcount_transfn(internal, tjsonb, interval)
+CREATE FUNCTION wCountTransition(internal, tjsonb, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wCount(tjsonb, interval) (
-  SFUNC = wcount_transfn,
+  SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -83,7 +83,7 @@ CREATE AGGREGATE wCount(tjsonb, interval) (
 );
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_merge_transfn(internal, tjsonb)
+CREATE FUNCTION mergeTransition(internal, tjsonb)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -91,9 +91,9 @@ CREATE FUNCTION temporal_merge_transfn(internal, tjsonb)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tjsonb) (
-  SFUNC = temporal_merge_transfn,
+  SFUNC = mergeTransition,
   STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
+  COMBINEFUNC = mergeCombine,
   FINALFUNC = tjsonb_tagg_finalfn,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
@@ -101,9 +101,9 @@ CREATE AGGREGATE merge(tjsonb) (
   PARALLEL = safe
 );
 CREATE AGGREGATE mergeAgg(tjsonb) (
-  SFUNC = temporal_merge_transfn,
+  SFUNC = mergeTransition,
   STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
+  COMBINEFUNC = mergeCombine,
   FINALFUNC = tjsonb_tagg_finalfn,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
@@ -111,18 +111,18 @@ CREATE AGGREGATE mergeAgg(tjsonb) (
   PARALLEL = safe
 );
 
-CREATE FUNCTION temporal_app_tinst_transfn(tjsonb, tjsonb)
+CREATE FUNCTION appendInstantTransition(tjsonb, tjsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  
-CREATE FUNCTION temporal_app_tinst_transfn(tjsonb, tjsonb, interp text)
+CREATE FUNCTION appendInstantTransition(tjsonb, tjsonb, interp text)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tinst_transfn(tjsonb, tjsonb, interp text,
+CREATE FUNCTION appendInstantTransition(tjsonb, tjsonb, interp text,
     maxt interval)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
@@ -136,13 +136,13 @@ CREATE FUNCTION temporal_append_finalfn(tjsonb)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tjsonb) (
-  SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb),
+  SFUNC = appendInstantTransition(tjsonb, tjsonb),
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tjsonb) (
-  SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb),
+  SFUNC = appendInstantTransition(tjsonb, tjsonb),
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -150,13 +150,13 @@ CREATE AGGREGATE appendInstantAgg(tjsonb) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tjsonb, interp text) (
-  SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb, text),
+  SFUNC = appendInstantTransition(tjsonb, tjsonb, text),
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tjsonb, interp text) (
-  SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb, text),
+  SFUNC = appendInstantTransition(tjsonb, tjsonb, text),
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -164,13 +164,13 @@ CREATE AGGREGATE appendInstantAgg(tjsonb, interp text) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tjsonb, interp text, maxt interval) (
-  SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb, text, maxt),
+  SFUNC = appendInstantTransition(tjsonb, tjsonb, text, maxt),
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tjsonb, interp text, maxt interval) (
-  SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb, text, maxt),
+  SFUNC = appendInstantTransition(tjsonb, tjsonb, text, maxt),
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -179,7 +179,7 @@ CREATE AGGREGATE appendInstantAgg(tjsonb, interp text, maxt interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tseq_transfn(tjsonb, tjsonb)
+CREATE FUNCTION appendSequenceTransition(tjsonb, tjsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -187,13 +187,13 @@ CREATE FUNCTION temporal_app_tseq_transfn(tjsonb, tjsonb)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tjsonb) (
-  SFUNC = temporal_app_tseq_transfn,
+  SFUNC = appendSequenceTransition,
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequenceAgg(tjsonb) (
-  SFUNC = temporal_app_tseq_transfn,
+  SFUNC = appendSequenceTransition,
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

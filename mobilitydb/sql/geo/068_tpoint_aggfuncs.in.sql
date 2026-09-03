@@ -58,18 +58,18 @@ CREATE AGGREGATE extent(tgeogpoint) (
 /*****************************************************************************/
 
 -- The function is not strict
-CREATE FUNCTION tcount_transfn(internal, tgeompoint)
+CREATE FUNCTION tCountTransition(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION tcount_transfn(internal, tgeogpoint)
+CREATE FUNCTION tCountTransition(internal, tgeogpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tCount(tgeompoint) (
-  SFUNC = tcount_transfn,
+  SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -79,7 +79,7 @@ CREATE AGGREGATE tCount(tgeompoint) (
 );
 
 CREATE AGGREGATE tCount(tgeogpoint) (
-  SFUNC = tcount_transfn,
+  SFUNC = tCountTransition,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -89,17 +89,17 @@ CREATE AGGREGATE tCount(tgeogpoint) (
 );
 
 -- The function is not strict
-CREATE FUNCTION wcount_transfn(internal, tgeompoint, interval)
+CREATE FUNCTION wCountTransition(internal, tgeompoint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION wcount_transfn(internal, tgeogpoint, interval)
+CREATE FUNCTION wCountTransition(internal, tgeogpoint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wCount(tgeompoint, interval) (
-  SFUNC = wcount_transfn,
+  SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -108,7 +108,7 @@ CREATE AGGREGATE wCount(tgeompoint, interval) (
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wCount(tgeogpoint, interval) (
-  SFUNC = wcount_transfn,
+  SFUNC = wCountTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -144,11 +144,11 @@ CREATE AGGREGATE tCentroid(tgeompoint) (
 /*****************************************************************************/
 
 -- The function is not strict
-CREATE FUNCTION temporal_merge_transfn(internal, tgeompoint)
+CREATE FUNCTION mergeTransition(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_merge_transfn(internal, tgeogpoint)
+CREATE FUNCTION mergeTransition(internal, tgeogpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -165,9 +165,9 @@ CREATE FUNCTION tgeogpoint_tagg_finalfn(internal)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tgeompoint) (
-  SFUNC = temporal_merge_transfn,
+  SFUNC = mergeTransition,
   STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
+  COMBINEFUNC = mergeCombine,
   FINALFUNC = tgeompoint_tagg_finalfn,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
@@ -175,9 +175,9 @@ CREATE AGGREGATE merge(tgeompoint) (
   PARALLEL = safe
 );
 CREATE AGGREGATE mergeAgg(tgeompoint) (
-  SFUNC = temporal_merge_transfn,
+  SFUNC = mergeTransition,
   STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
+  COMBINEFUNC = mergeCombine,
   FINALFUNC = tgeompoint_tagg_finalfn,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
@@ -187,9 +187,9 @@ CREATE AGGREGATE mergeAgg(tgeompoint) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tgeogpoint) (
-  SFUNC = temporal_merge_transfn,
+  SFUNC = mergeTransition,
   STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
+  COMBINEFUNC = mergeCombine,
   FINALFUNC = tgeogpoint_tagg_finalfn,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
@@ -197,9 +197,9 @@ CREATE AGGREGATE merge(tgeogpoint) (
   PARALLEL = safe
 );
 CREATE AGGREGATE mergeAgg(tgeogpoint) (
-  SFUNC = temporal_merge_transfn,
+  SFUNC = mergeTransition,
   STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
+  COMBINEFUNC = mergeCombine,
   FINALFUNC = tgeogpoint_tagg_finalfn,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
@@ -212,35 +212,35 @@ CREATE AGGREGATE mergeAgg(tgeogpoint) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tinst_transfn(tgeompoint, tgeompoint)
+CREATE FUNCTION appendInstantTransition(tgeompoint, tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tinst_transfn(tgeogpoint, tgeogpoint)
+CREATE FUNCTION appendInstantTransition(tgeogpoint, tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tinst_transfn(tgeompoint, tgeompoint,
+CREATE FUNCTION appendInstantTransition(tgeompoint, tgeompoint,
     interp text DEFAULT NULL)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tinst_transfn(tgeogpoint, tgeogpoint,
+CREATE FUNCTION appendInstantTransition(tgeogpoint, tgeogpoint,
     interp text DEFAULT NULL)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tinst_transfn(tgeompoint, tgeompoint,
+CREATE FUNCTION appendInstantTransition(tgeompoint, tgeompoint,
     interp text DEFAULT NULL, maxdist float DEFAULT NULL,
     maxt interval DEFAULT NULL)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tinst_transfn(tgeogpoint, tgeogpoint,
+CREATE FUNCTION appendInstantTransition(tgeogpoint, tgeogpoint,
     interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
     maxt interval DEFAULT NULL)
   RETURNS tgeogpoint
@@ -259,13 +259,13 @@ CREATE FUNCTION temporal_append_finalfn(tgeogpoint)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeompoint) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeompoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeompoint) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeompoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -273,13 +273,13 @@ CREATE AGGREGATE appendInstantAgg(tgeompoint) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeogpoint) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeogpoint) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -288,13 +288,13 @@ CREATE AGGREGATE appendInstantAgg(tgeogpoint) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeompoint, text) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeompoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeompoint, text) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeompoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -302,13 +302,13 @@ CREATE AGGREGATE appendInstantAgg(tgeompoint, text) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeogpoint, text) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeogpoint, text) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -317,13 +317,13 @@ CREATE AGGREGATE appendInstantAgg(tgeogpoint, text) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeompoint, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeompoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeompoint, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeompoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -331,13 +331,13 @@ CREATE AGGREGATE appendInstantAgg(tgeompoint, text, float, interval) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tgeogpoint, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstantAgg(tgeogpoint, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = appendInstantTransition,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -346,11 +346,11 @@ CREATE AGGREGATE appendInstantAgg(tgeogpoint, text, float, interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tseq_transfn(tgeompoint, tgeompoint)
+CREATE FUNCTION appendSequenceTransition(tgeompoint, tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tseq_transfn(tgeogpoint, tgeogpoint)
+CREATE FUNCTION appendSequenceTransition(tgeogpoint, tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -358,13 +358,13 @@ CREATE FUNCTION temporal_app_tseq_transfn(tgeogpoint, tgeogpoint)
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tgeompoint) (
-  SFUNC = temporal_app_tseq_transfn,
+  SFUNC = appendSequenceTransition,
   STYPE = tgeompoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequenceAgg(tgeompoint) (
-  SFUNC = temporal_app_tseq_transfn,
+  SFUNC = appendSequenceTransition,
   STYPE = tgeompoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -372,13 +372,13 @@ CREATE AGGREGATE appendSequenceAgg(tgeompoint) (
 /* Function deprecated in 1.4
    Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tgeogpoint) (
-  SFUNC = temporal_app_tseq_transfn,
+  SFUNC = appendSequenceTransition,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequenceAgg(tgeogpoint) (
-  SFUNC = temporal_app_tseq_transfn,
+  SFUNC = appendSequenceTransition,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
