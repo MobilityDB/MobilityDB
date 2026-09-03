@@ -2240,6 +2240,13 @@ makeItemNumeric(JsonPathString *s)
 {
   JsonPathParseItem *v = makeItemType(jpiNumeric);
   v->value.numeric = pg_numeric_in(s->val, -1);
+  /* MEOS: a numeric literal is converted here and the text it was scanned
+   * into is kept by nobody -- unlike a string, a key or a variable, whose
+   * item holds the same buffer and frees it with the parse tree. PostgreSQL
+   * reclaims it by resetting the memory context; here it goes on the
+   * parse-time free list that jsonPathFromCstring drains, the mechanism
+   * jsonb_from_cstring already uses for its own scan scratch */
+  json_add_tofree(s->val);
   return v;
 }
 

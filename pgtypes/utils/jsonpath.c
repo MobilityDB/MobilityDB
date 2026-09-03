@@ -268,6 +268,8 @@ jsonPathFromCstring(char *str, int len, struct Node *escontext)
     freeJsonPathParseItem(jsonpath->expr);
     pfree(jsonpath);
     pfree(buf.data);
+    /* MEOS: reclaim the scratch the scan put on the free list (early-return) */
+    json_reset_tofree();
     return NULL;
   }
 
@@ -279,6 +281,10 @@ jsonPathFromCstring(char *str, int len, struct Node *escontext)
 
   freeJsonPathParseItem(jsonpath->expr);
   pfree(jsonpath);
+  /* MEOS: the flattening above copies every string into the result, so the
+   * scratch the scan left on the free list is dead here. jsonb_from_cstring
+   * drains at the same point of its own conversion */
+  json_reset_tofree();
   return result;
 }
 
