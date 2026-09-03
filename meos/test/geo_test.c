@@ -1374,6 +1374,40 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* An overlay of a geometry the GEOS library cannot read answers NOTHING
+   * rather than an empty geometry, and serializing what is absent reads a null
+   * pointer. A polyhedral surface is the type it refuses, and the error the
+   * refusal raises is what a caller reads the absence by. Under the handler
+   * that EXITS these lines are unreachable, so only a binding meets them */
+  const char *ps = "POLYHEDRALSURFACE(((0 0,4 0,4 4,0 4,0 0)))";
+  const char *ovl[] = {
+    "LINESTRING(0 2,4 2)",
+    "POLYGON((1 1,2 1,2 2,1 2,1 1))",
+    "POLYHEDRALSURFACE(((0 0,4 0,4 4,0 4,0 0)))",
+  };
+  for (int i = 0; i < 3; i++)
+  {
+    GSERIALIZED *pa = geom_in(ps, -1);
+    GSERIALIZED *pb = geom_in(ovl[i], -1);
+    assert(pa != NULL); assert(pb != NULL);
+    meos_errno_reset();
+    GSERIALIZED *pd = geom_difference2d(pa, pb);
+    int ed = meos_errno();
+    printf("difference of a polyhedral surface: %s, errno %d\n",
+      pd ? "answered" : "nothing", ed);
+    assert(pd == NULL);
+    assert(ed != 0);
+    if (pd) free(pd);
+    meos_errno_reset();
+    GSERIALIZED *pi = geom_intersection2d(pa, pb);
+    int ei = meos_errno();
+    printf("intersection of a polyhedral surface: %s, errno %d\n",
+      pi ? "answered" : "nothing", ei);
+    if (pi) free(pi);
+    free(pa); free(pb);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 

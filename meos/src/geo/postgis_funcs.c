@@ -2112,6 +2112,15 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   LWGEOM *lwresult = lwgeom_intersection_prec(geom1, geom2, -1);
+  /* MEOS: the overlay answers NULL for a geometry it cannot read -- a
+   * polyhedral surface reaches the default arm of #LWGEOM2GEOS, whose lwerror
+   * the MEOS handler reports and RETURNS from -- so the answer is absent
+   * rather than empty and serializing it would read a null pointer */
+  if (! lwresult)
+  {
+    lwgeom_free(geom1); lwgeom_free(geom2);
+    return NULL;
+  }
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(lwresult);
   return result;
@@ -2153,6 +2162,15 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   LWGEOM *lwresult = lwgeom_difference_prec(geom1, geom2, -1);
+  /* MEOS: the overlay answers NULL for a geometry it cannot read -- a
+   * polyhedral surface reaches the default arm of #LWGEOM2GEOS, whose lwerror
+   * the MEOS handler reports and RETURNS from -- so the answer is absent
+   * rather than empty and serializing it would read a null pointer */
+  if (! lwresult)
+  {
+    lwgeom_free(geom1); lwgeom_free(geom2);
+    return NULL;
+  }
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(lwresult);
   return result;
