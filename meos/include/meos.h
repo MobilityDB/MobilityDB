@@ -1472,7 +1472,7 @@ extern bool tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool 
 extern bool tint_value_n(const Temporal *temp, int n, int *result);
 extern bool tbigint_value_n(const Temporal *temp, int64 n, int64 *result);
 extern int *tint_values(const Temporal *temp, int *count);
-extern int64 *tbigint_values(const Temporal *temp, int32 *count);
+extern int64 *tbigint_values(const Temporal *temp, int *count);
 extern double tnumber_avg_value(const Temporal *temp);
 extern double tnumber_integral(const Temporal *temp);
 extern double tnumber_twavg(const Temporal *temp);
