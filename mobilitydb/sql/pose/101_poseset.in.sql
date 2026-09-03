@@ -244,7 +244,8 @@ CREATE AGGREGATE setUnion(pose) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = poseset_union_finalfn
+  FINALFUNC = poseset_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(poseset) (
   SFUNC = set_union_transfn,
@@ -252,7 +253,8 @@ CREATE AGGREGATE setUnion(poseset) (
   COMBINEFUNC = array_agg_combine,
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
-  FINALFUNC = poseset_union_finalfn
+  FINALFUNC = poseset_union_finalfn,
+  PARALLEL = safe
 );
 
 /******************************************************************************

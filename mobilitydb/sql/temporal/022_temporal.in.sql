@@ -46,12 +46,12 @@ CREATE TYPE ttext;
 CREATE FUNCTION mobilitydbVersion()
   RETURNS text
   AS 'MODULE_PATHNAME', 'Mobilitydb_version'
-  LANGUAGE C IMMUTABLE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION mobilitydbFullVersion()
   RETURNS text
   AS 'MODULE_PATHNAME', 'Mobilitydb_full_version'
-  LANGUAGE C IMMUTABLE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
  * Input/Output
@@ -2319,12 +2319,12 @@ CREATE FUNCTION twAvg(tfloat)
 CREATE FUNCTION temporal_sel(internal, oid, internal, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_sel'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION temporal_joinsel(internal, oid, internal, smallint, internal)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_joinsel'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Comparison functions and B-tree indexing

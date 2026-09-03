@@ -264,7 +264,7 @@ io_families:
     po:
       t: tpose
   blocks:
-  - lit: "CREATE TYPE tpose;\n\n/******************************************************************************\n * Input/output\n ******************************************************************************/\n\nCREATE FUNCTION tpose_in(cstring, oid, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Tpose_in'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_out(tpose)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Temporal_out'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION tpose_recv(internal, oid, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Temporal_recv'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_send(tpose)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Temporal_send'\n  LANGUAGE C IMMUTABLE STRICT;\n\n"
+  - lit: "CREATE TYPE tpose;\n\n/******************************************************************************\n * Input/output\n ******************************************************************************/\n\nCREATE FUNCTION tpose_in(cstring, oid, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Tpose_in'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION temporal_out(tpose)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Temporal_out'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION tpose_recv(internal, oid, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Temporal_recv'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION temporal_send(tpose)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Temporal_send'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - sig: '{t}_typmod_in(cstring[])'
     ret: integer
     sym: Tpose_typmod_in
@@ -284,7 +284,7 @@ io_families:
     po:
       t: tposechain
   blocks:
-  - lit: "CREATE TYPE tposechain;\n\n/******************************************************************************\n * Input/output\n ******************************************************************************/\n\nCREATE FUNCTION tposechain_in(cstring, oid, integer)\n  RETURNS tposechain\n  AS 'MODULE_PATHNAME', 'Tposechain_in'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_out(tposechain)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Temporal_out'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION tposechain_recv(internal, oid, integer)\n  RETURNS tposechain\n  AS 'MODULE_PATHNAME', 'Temporal_recv'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_send(tposechain)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Temporal_send'\n  LANGUAGE C IMMUTABLE STRICT;\n\n"
+  - lit: "CREATE TYPE tposechain;\n\n/******************************************************************************\n * Input/output\n ******************************************************************************/\n\nCREATE FUNCTION tposechain_in(cstring, oid, integer)\n  RETURNS tposechain\n  AS 'MODULE_PATHNAME', 'Tposechain_in'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION temporal_out(tposechain)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Temporal_out'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION tposechain_recv(internal, oid, integer)\n  RETURNS tposechain\n  AS 'MODULE_PATHNAME', 'Temporal_recv'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION temporal_send(tposechain)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Temporal_send'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - sig: '{t}_typmod_in(cstring[])'
     ret: integer
     sym: Tposechain_typmod_in
@@ -304,7 +304,7 @@ io_families:
     rg:
       t: trgeometry
   blocks:
-  - lit: "CREATE TYPE trgeometry;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\nCREATE FUNCTION trgeometry_in(cstring, oid, integer)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME', 'Trgeometry_in'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION trgeometry_out(trgeometry)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Trgeometry_out'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION trgeometry_recv(internal)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME', 'Trgeometry_recv'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION trgeometry_send(trgeometry)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Trgeometry_send'\n  LANGUAGE C IMMUTABLE STRICT;\n\n"
+  - lit: "CREATE TYPE trgeometry;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\nCREATE FUNCTION trgeometry_in(cstring, oid, integer)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME', 'Trgeometry_in'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION trgeometry_out(trgeometry)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Trgeometry_out'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION trgeometry_recv(internal)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME', 'Trgeometry_recv'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION trgeometry_send(trgeometry)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Trgeometry_send'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - sig: '{t}_typmod_in(cstring[])'
     ret: integer
     sym: Trgeometry_typmod_in

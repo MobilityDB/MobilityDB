@@ -63,22 +63,22 @@ CREATE TYPE raquet;
 CREATE FUNCTION raquet_in(cstring)
   RETURNS raquet
   AS 'MODULE_PATHNAME', 'Raquet_in'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION raquet_out(raquet)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Raquet_out'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION raquet_recv(internal)
   RETURNS raquet
   AS 'MODULE_PATHNAME', 'Raquet_recv'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION raquet_send(raquet)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Raquet_send'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE raquet (
   internallength = variable,
@@ -130,7 +130,7 @@ CREATE FUNCTION raquet(pixels bytea, width integer, height integer,
     quadbin bigint, pixtype text, nodata float8 DEFAULT NULL)
   RETURNS raquet
   AS 'MODULE_PATHNAME', 'Raquet_constructor'
-  LANGUAGE C IMMUTABLE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /**
  * @ingroup mobilitydb_raster
@@ -144,7 +144,7 @@ CREATE FUNCTION raquetRead(
     quadbin    bigint DEFAULT NULL
 ) RETURNS raquet
   AS 'MODULE_PATHNAME', 'Raquet_read'
-  LANGUAGE C IMMUTABLE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
  * rasterValue
@@ -164,7 +164,7 @@ CREATE OR REPLACE FUNCTION rasterValue(
     band  integer DEFAULT 1
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_value'
-  LANGUAGE C STRICT;
+  LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * rasterTileValueQuadbin
@@ -194,7 +194,7 @@ CREATE OR REPLACE FUNCTION rasterTileValueQuadbin(
     has_nodata boolean
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_tile_value_quadbin'
-  LANGUAGE C STRICT;
+  LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * rasterTileValue
@@ -211,7 +211,7 @@ CREATE FUNCTION rasterTileValue(
     rast raquet
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_tile_value'
-  LANGUAGE C STRICT;
+  LANGUAGE C STRICT PARALLEL SAFE;
 
 /**
  * @ingroup mobilitydb_raster
@@ -225,7 +225,7 @@ CREATE FUNCTION rasterTileValue(
     rast raquet[]
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_tile_value_array'
-  LANGUAGE C STRICT;
+  LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * quadbins
@@ -243,7 +243,7 @@ CREATE OR REPLACE FUNCTION quadbins(
     zoom  integer
 ) RETURNS bigint[]
   AS 'MODULE_PATHNAME', 'Trajectory_quadbins'
-  LANGUAGE C STRICT;
+  LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * atRasterValue
@@ -262,7 +262,7 @@ CREATE OR REPLACE FUNCTION atRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Raster_at_value'
-  LANGUAGE C STRICT;
+  LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * minusRasterValue
@@ -281,7 +281,7 @@ CREATE OR REPLACE FUNCTION minusRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Raster_minus_value'
-  LANGUAGE C STRICT;
+  LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * eRasterValue
@@ -300,7 +300,7 @@ CREATE OR REPLACE FUNCTION eRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eraster_value'
-  LANGUAGE C STRICT;
+  LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * aRasterValue
@@ -318,7 +318,7 @@ CREATE OR REPLACE FUNCTION eRasterValue(traj tgeompoint, rast raster,
 CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Araster_value'
-  LANGUAGE C STRICT;
+  LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * numBands

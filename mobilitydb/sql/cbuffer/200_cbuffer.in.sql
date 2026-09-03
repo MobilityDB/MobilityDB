@@ -43,22 +43,22 @@ CREATE TYPE cbuffer;
 CREATE FUNCTION cbuffer_in(cstring)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Cbuffer_in'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION cbuffer_out(cbuffer)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Cbuffer_out'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION cbuffer_recv(internal)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Cbuffer_recv'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION cbuffer_send(cbuffer)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Cbuffer_send'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE cbuffer (
   internallength = variable,
@@ -176,12 +176,12 @@ CREATE CAST (geometry AS cbuffer) WITH FUNCTION cbuffer(geometry);
 CREATE FUNCTION point(cbuffer)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Cbuffer_point'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION radius(cbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Cbuffer_radius'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Transformation functions
@@ -199,7 +199,7 @@ CREATE FUNCTION round(cbuffer, integer DEFAULT 0)
 CREATE FUNCTION SRID(cbuffer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Cbuffer_srid'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setSRID(cbuffer, integer)
   RETURNS cbuffer

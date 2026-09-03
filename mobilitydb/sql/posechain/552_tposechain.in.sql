@@ -43,19 +43,19 @@ CREATE TYPE tposechain;
 CREATE FUNCTION tposechain_in(cstring, oid, integer)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Tposechain_in'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_out(tposechain)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Temporal_out'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tposechain_recv(internal, oid, integer)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_recv'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_send(tposechain)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_send'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tposechain_typmod_in(cstring[])
   RETURNS integer
@@ -253,7 +253,7 @@ CREATE CAST (tposechain AS tpose) WITH FUNCTION tpose(tposechain);
 CREATE FUNCTION numPoses(tposechain)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Tposechain_num_poses'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 -- Accessors for all temporal types

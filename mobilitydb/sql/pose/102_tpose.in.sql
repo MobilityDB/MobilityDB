@@ -43,19 +43,19 @@ CREATE TYPE tpose;
 CREATE FUNCTION tpose_in(cstring, oid, integer)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Tpose_in'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_out(tpose)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Temporal_out'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpose_recv(internal, oid, integer)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_recv'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_send(tpose)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_send'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tpose_typmod_in(cstring[])
   RETURNS integer
@@ -291,32 +291,32 @@ CREATE CAST (tpose AS tgeogpoint) WITH FUNCTION tgeogpoint(tpose);
 CREATE FUNCTION points(tpose)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Tpose_points'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION yaw(tpose)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpose_yaw'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION pitch(tpose)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpose_pitch'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION roll(tpose)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpose_roll'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION speed(tpose)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpose_speed'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION angularSpeed(tpose)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpose_angular_speed'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- A quaternion is a composite type, not a temporal base type, so the
 -- orientation of a temporal pose has no temporal lift. The temporal
@@ -324,7 +324,7 @@ CREATE FUNCTION angularSpeed(tpose)
 -- CREATE FUNCTION quaternion(tpose)
   -- RETURNS quaternion[]
   -- AS 'MODULE_PATHNAME', 'Tpose_quaternion'
-  -- LANGUAGE C IMMUTABLE STRICT;
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 -- Accessors for all temporal types
