@@ -373,6 +373,7 @@ extern GSERIALIZED *geog_centroid(const GSERIALIZED *gs, bool use_spheroid);
 extern double geog_length(const GSERIALIZED *gs, bool use_spheroid);
 extern double geog_perimeter(const GSERIALIZED *gs, bool use_spheroid);
 extern bool geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
+extern double geom_area(const GSERIALIZED *gs);
 extern double geom_length(const GSERIALIZED *gs);
 extern double geom_perimeter(const GSERIALIZED *gs);
 extern int line_numpoints(const GSERIALIZED *gs);
