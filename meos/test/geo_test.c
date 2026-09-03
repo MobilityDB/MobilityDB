@@ -609,6 +609,42 @@ int main(void)
   free(tri); free(env);
   meos_errno_reset();
 
+  /* An EMPTY geometry draws no line and bounds no area, so it measures 0.
+   * That is an ANSWER: nothing is raised, and a caller reading the error
+   * return would have no error to read it by */
+  const char *emptywkt[] = {
+    "LINESTRING EMPTY",
+    "POLYGON EMPTY",
+    "GEOMETRYCOLLECTION EMPTY",
+  };
+  for (int i = 0; i < 3; i++)
+  {
+    GSERIALIZED *e = geom_in(emptywkt[i], -1);
+    assert(e != NULL);
+    meos_errno_reset();
+    double elen = geom_length(e);
+    double eper = geom_perimeter(e);
+    printf("%s: length %g, perimeter %g, errno %d\n", emptywkt[i], elen, eper,
+      meos_errno());
+    assert(elen == 0.0);
+    assert(eper == 0.0);
+    assert(meos_errno() == 0);
+    free(e);
+    meos_errno_reset();
+  }
+  /* The measures a NON-empty geometry carries are what says the removed guard
+   * took the empty case alone */
+  GSERIALIZED *meas = geom_in("POLYGON((0 0,3 0,3 4,0 4,0 0))", -1);
+  assert(meas != NULL);
+  meos_errno_reset();
+  printf("the 3 by 4 rectangle: length %g, perimeter %g\n", geom_length(meas),
+    geom_perimeter(meas));
+  assert(geom_length(meas) == 0.0);
+  assert(geom_perimeter(meas) == 14.0);
+  assert(meos_errno() == 0);
+  free(meas);
+  meos_errno_reset();
+
   /* A relationship of a curved geometry is read on the arc itself. The
    * polygon below is a circle of centre (49.092934300 -78.568502344) and
    * radius 17.469913928; the segment's ends lie 1.646e-3 and 5.64 INSIDE it,
