@@ -1413,14 +1413,15 @@ int main(void)
    * rather than an empty geometry, and serializing what is absent reads a null
    * pointer. A polyhedral surface is the type it refuses, and the error the
    * refusal raises is what a caller reads the absence by. Under the handler
-   * that EXITS these lines are unreachable, so only a binding meets them */
+   * that EXITS these lines are unreachable, so only a binding meets them.
+   * Each clip here COVERS AREA, which is what carries the pair to the overlay:
+   * a clip of no area is answered from the subject and never reaches it */
   const char *ps = "POLYHEDRALSURFACE(((0 0,4 0,4 4,0 4,0 0)))";
   const char *ovl[] = {
-    "LINESTRING(0 2,4 2)",
     "POLYGON((1 1,2 1,2 2,1 2,1 1))",
     "POLYHEDRALSURFACE(((0 0,4 0,4 4,0 4,0 0)))",
   };
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 2; i++)
   {
     GSERIALIZED *pa = geom_in(ps, -1);
     GSERIALIZED *pb = geom_in(ovl[i], -1);
@@ -1442,6 +1443,122 @@ int main(void)
     free(pa); free(pb);
     meos_errno_reset();
   }
+  /* A region loses no area to a clip that covers none, so the difference is
+   * the subject itself -- kept as the subject was WRITTEN, where the overlay
+   * would return a curve as the chain of chords it reads it by and a triangle
+   * as a polygon. The rule needs the subject to enclose something: a flat ring
+   * is its own boundary, and the line it lies along removes all of it */
+  const char *ar_subj[] = {
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "TRIANGLE((0 0,4 0,2 4,0 0))",
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
+    /* A surface of one flat face bounds a region as much as a polygon does,
+     * and it is the region the GEOS overlay refuses to read at all, so here
+     * the rule answers where reaching the overlay has nothing to answer */
+    "POLYHEDRALSURFACE(((0 0,4 0,4 4,0 4,0 0)))",
+  };
+  const char *ar_clip[] = {
+    "POINT(2 2)",
+    "LINESTRING(0 2,4 2)",
+    "CIRCULARSTRING(0 2,2 4,4 2)",
+  };
+  for (int i = 0; i < 4; i++)
+  {
+    GSERIALIZED *as = geom_in(ar_subj[i], -1);
+    assert(as != NULL);
+    char *aw = geo_as_text(as, 6);
+    for (int j = 0; j < 3; j++)
+    {
+      GSERIALIZED *ac = geom_in(ar_clip[j], -1);
+      assert(ac != NULL);
+      meos_errno_reset();
+      GSERIALIZED *ad = geom_difference2d(as, ac);
+      assert(ad != NULL);
+      char *dw = geo_as_text(ad, 6);
+      printf("%.28s minus %.24s: %s\n", ar_subj[i], ar_clip[j],
+        strcmp(dw, aw) == 0 ? "the subject" : dw);
+      assert(strcmp(dw, aw) == 0);
+      free(dw); free(ad); free(ac);
+      meos_errno_reset();
+    }
+    free(aw); free(as);
+  }
+  /* THE RULE IS ABOUT EVERY PART, NOT ABOUT A TOTAL. A subject mixing a
+   * region with a ring that encloses no area is not a region throughout: the
+   * ring traces the segment (3 0)-(5 0), so a clip covering that segment takes
+   * it, and only the square is left. Reading a total area instead would answer
+   * the subject unchanged and keep a segment the clip covers -- and would
+   * answer one point set two ways, since the same members spelled as a
+   * collection stay outside the guard and lose the segment */
+  const char *pt_subj[] = {
+    "MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((3 0,5 0,5 0,3 0,3 0)))",
+    "GEOMETRYCOLLECTION(POLYGON((0 0,1 0,1 1,0 1,0 0)),"
+      "POLYGON((3 0,5 0,5 0,3 0,3 0)))",
+  };
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *ps1 = geom_in(pt_subj[i], -1);
+    GSERIALIZED *ps2 = geom_in("LINESTRING(3 0,5 0)", -1);
+    assert(ps1 != NULL); assert(ps2 != NULL);
+    meos_errno_reset();
+    GSERIALIZED *pr = geom_difference2d(ps1, ps2);
+    assert(pr != NULL);
+    double pa_area = geom_area(pr);
+    char *pw = geo_as_text(pr, 6);
+    printf("a subject carrying a part of no area, minus that part: %s\n", pw);
+    /* The square alone: the part of no area is gone, and both spellings of
+     * the same point set answer it the same way */
+    assert(strstr(pw, "3 0") == NULL);
+    assert(strstr(pw, "5 0") == NULL);
+    assert(fabs(pa_area - 1.0) < 1e-12);
+    free(pw); free(pr); free(ps1); free(ps2);
+    meos_errno_reset();
+  }
+  /* A hole enclosing no area removes nothing from the surface it sits in, so
+   * the subject IS a region and the rule holds of it: the answer is the
+   * subject, of the subject's own area */
+  GSERIALIZED *dh = geom_in("POLYGON((0 0,10 0,10 10,0 10,0 0),"
+    "(3 5,7 5,7 5,3 5,3 5))", -1);
+  GSERIALIZED *dl = geom_in("LINESTRING(3 5,7 5)", -1);
+  assert(dh != NULL); assert(dl != NULL);
+  meos_errno_reset();
+  GSERIALIZED *dr = geom_difference2d(dh, dl);
+  assert(dr != NULL);
+  printf("a shell carrying a hole of no area, minus that hole's line: "
+    "area %.6f\n", geom_area(dr));
+  assert(fabs(geom_area(dr) - 100.0) < 1e-12);
+  free(dr); free(dh); free(dl);
+  meos_errno_reset();
+
+  /* Only the DIFFERENCE of such a pair is answered from the subject. The
+   * intersection of the same surface with the same line keeps its own arm,
+   * which reads the line as the subject it clips and answers it, so the two
+   * overlays part company on this pair and each says so here */
+  GSERIALIZED *ps_s = geom_in("POLYHEDRALSURFACE(((0 0,4 0,4 4,0 4,0 0)))", -1);
+  GSERIALIZED *ps_l = geom_in("LINESTRING(0 2,4 2)", -1);
+  assert(ps_s != NULL); assert(ps_l != NULL);
+  meos_errno_reset();
+  GSERIALIZED *ps_i = geom_intersection2d(ps_s, ps_l);
+  int ps_e = meos_errno();
+  printf("intersection of a polyhedral surface and a line: %s, errno %d\n",
+    ps_i ? "answered" : "nothing", ps_e);
+  assert(ps_i != NULL);
+  assert(ps_e == 0);
+  free(ps_i); free(ps_s); free(ps_l);
+  meos_errno_reset();
+  /* A subject enclosing nothing is NOT one of them: the line it lies along
+   * takes all of it, and the answer is the region of no area */
+  GSERIALIZED *flat = geom_in("POLYGON((0 0,2 0,4 0,0 0))", -1);
+  GSERIALIZED *along = geom_in("LINESTRING(0 0,4 0)", -1);
+  assert(flat != NULL); assert(along != NULL);
+  meos_errno_reset();
+  GSERIALIZED *fd = geom_difference2d(flat, along);
+  assert(fd != NULL);
+  char *fw = geo_as_text(fd, 6);
+  printf("a flat ring minus the line it lies along: %s\n", fw);
+  assert(strstr(fw, "EMPTY") != NULL);
+  free(fw); free(fd); free(flat); free(along);
+  meos_errno_reset();
 
   /* Finalize MEOS */
   meos_finalize();
