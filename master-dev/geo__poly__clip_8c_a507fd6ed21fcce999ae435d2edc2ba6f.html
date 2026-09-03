@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: _Static_assert</title>
+<title>MobilityDB: clip_empty_areal</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,38 +82,39 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__poly__clip_8c_ae32d8b21e08ca716869c7a0c7170aa00.html#ae32d8b21e08ca716869c7a0c7170aa00">_Static_assert</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__poly__clip_8c_ae8701b5624b350dedda4b4155ed5b827.html#ae8701b5624b350dedda4b4155ed5b827">_Static_assert</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__poly__clip_8c_a0d44138984dfe7c3c44282c0865a6a15.html#a0d44138984dfe7c3c44282c0865a6a15">_Static_assert</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__poly__clip_8c_a1b8098cdee0d6f8639ef9ce292b6d465.html#a1b8098cdee0d6f8639ef9ce292b6d465">_Static_assert</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__poly__clip_8c_a507fd6ed21fcce999ae435d2edc2ba6f.html#a507fd6ed21fcce999ae435d2edc2ba6f">clip_empty_areal</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__poly__clip_8c_a1b8098cdee0d6f8639ef9ce292b6d465.html#a1b8098cdee0d6f8639ef9ce292b6d465">_Static_assert</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__poly__clip_8c_a507fd6ed21fcce999ae435d2edc2ba6f.html#a507fd6ed21fcce999ae435d2edc2ba6f">clip_empty_areal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__poly__clip_8c_ad3b1d40dc618656053274868cb21738d.html#ad3b1d40dc618656053274868cb21738d">clip_poly_poly</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a1b8098cdee0d6f8639ef9ce292b6d465" name="a1b8098cdee0d6f8639ef9ce292b6d465"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1b8098cdee0d6f8639ef9ce292b6d465">&#9670;&#160;</a></span>_Static_assert() <span class="overload">[4/4]</span></h2>
+<a id="a507fd6ed21fcce999ae435d2edc2ba6f" name="a507fd6ed21fcce999ae435d2edc2ba6f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a507fd6ed21fcce999ae435d2edc2ba6f">&#9670;&#160;</a></span>clip_empty_areal()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">_Static_assert </td>
+          <td class="memname">static <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * clip_empty_areal </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4aaccb06d90f929475347249cc2ae85948">CL_XOR</a>&#160;</td>
-          <td class="paramname"> = <code>=<a class="el" href="clip__clipper2_8h_ae377de65f46a0154bc97a7e7cf707727.html#ae377de65f46a0154bc97a7e7cf707727">MEOS_CLIP_XOR</a></code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">&quot;ClipOper / <a class="el" href="clip__clipper2_8h_ae377de65f46a0154bc97a7e7cf707727.html#ae377de65f46a0154bc97a7e7cf707727">MEOS_CLIP_XOR</a> drift&quot;&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return the areal region of no area. </p>
+<p >Every outcome of a polygon Boolean covering nothing answers this, so what an empty result is drawn as follows from the OPERATION and never from which of the trivial cases reached it. PostGIS instead clones whichever operand happens to be empty, which answers <code>MULTIPOLYGON EMPTY</code> down one path and <code>POLYGON EMPTY</code> down another for one question; the general path it takes when neither operand is empty answers <code>POLYGON EMPTY</code>, and that is the spelling kept here for all of them. </p>
 
 </div>
 </div>

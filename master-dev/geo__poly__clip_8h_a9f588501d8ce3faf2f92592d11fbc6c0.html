@@ -126,7 +126,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Newly-allocated <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> holding the result, or <code>NULL</code> on empty result. Caller owns the result.</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Newly-allocated <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> holding the result, which is an EMPTY geometry where the operation covers nothing, as PostGIS answers. Caller owns the result.</dd></dl>
 <p>3D rejection, geography rejection, SRID-mismatch and type-validity checks are performed by the SQL wrapper layer (<code><a class="el" href="mobilitydb_2src_2geo_2tgeo__spatialfuncs_8c.html" title="Spatial functions for temporal geos.">mobilitydb/src/geo/tgeo_spatialfuncs.c</a></code>). </p>
 
 </div>
