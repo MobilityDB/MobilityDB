@@ -878,7 +878,7 @@ error:
 
 /**
  * @brief Parse a temporal value from the buffer (dispatch function)
- * @param[in] str Input string
+ * @param[in,out] str Input string, advanced past what is read
  * @param[in] temptype Temporal type
  * @return On error return @p NULL
  */

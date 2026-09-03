@@ -44,6 +44,15 @@ jobs:
       - name: Reject an empty or repeated @brief
         run: python3 tools/scripts/check_doxygen_briefs.py
 
+  param_direction_check:
+    name: Every @param[in] names a parameter only read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Reject an @param[in] the function writes through
+        run: python3 tools/scripts/check_param_direction.py
+
   license_check:
     runs-on: ubuntu-latest
     steps:

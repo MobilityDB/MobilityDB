@@ -252,7 +252,7 @@ error:
 
 /**
  * @brief Parse the reference geometry of a temporal rigid geometry
- * @param[in] str Input string
+ * @param[in,out] str Input string, advanced past what is read
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
  */
 GSERIALIZED *
@@ -299,7 +299,7 @@ trgeo_parse_geom(const char **str, int32_t temp_srid)
 
 /**
  * @brief Parse a temporal rigid geometry from the buffer.
- * @param[in] str Input string
+ * @param[in,out] str Input string, advanced past what is read
  * @param[in] temptype Temporal type
  */
 Temporal *
