@@ -2186,6 +2186,24 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geo_clip_subject(gs1) && geo_meos_supported(gs2))
     return geo_clip_linear_geom(gs1, gs2, false);
 
+  /* A region loses no area to a clip that covers none. A point set and a curve
+   * are of lower dimension than the plane, so what they take from a region is
+   * of lower dimension too, and the region a difference answers is the subject
+   * unchanged -- which also keeps the arcs of a curved subject, where reaching
+   * the overlay would return them as the chain of chords it reads them by */
+  if (geo_is_planar_areal(gs1) &&
+      (geo_is_point_set(gs2) || geo_clip_subject(gs2)))
+  {
+    /* A part enclosing NO area is not a region but its own boundary, and a
+     * clip of no area takes part of THAT: the line a flat ring lies along
+     * removes the ring entirely. The rule holds of a region, so the guard asks
+     * whether EVERY part of the subject is one -- a total would let a subject
+     * mixing a region with a part of no area keep the part a clip covers, and
+     * answer one point set two ways depending on how it is spelled */
+    if (geo_every_part_bounds_area(gs1))
+      return geo_copy(gs1);
+  }
+
 #if GEOS
   /* Other types fall through to GEOS */
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
