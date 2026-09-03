@@ -259,6 +259,13 @@ extern TSequenceSet *tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STB
 /* Native temporal-point geometry-clip engine */
 
 extern void *geo_edge_ctx_make(const GSERIALIZED *gs);
+extern bool geo_is_planar_linear(const GSERIALIZED *gs);
+extern bool geo_is_point_set(const GSERIALIZED *gs);
+extern bool geo_meos_supported(const GSERIALIZED *gs);
+extern GSERIALIZED *geo_points_covered(const GSERIALIZED *pts,
+  const GSERIALIZED *gs, bool covered);
+extern GSERIALIZED *geo_clip_linear_geom(const GSERIALIZED *line,
+  const GSERIALIZED *gs, bool inside);
 extern void geo_edge_ctx_free(void *ctx);
 extern bool geo_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctx);

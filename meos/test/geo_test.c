@@ -1219,6 +1219,51 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* The intersection and the difference of two geometries that are not both
+   * polygonal. A point set meets another geometry where that geometry covers
+   * a point of it; a line meets one along the stretches the segment kernels
+   * answer, which read an arc of the other geometry exactly rather than as
+   * the chain of chords a stroke would draw. The circle here has radius 2
+   * about (2 2), so a line at y = 3 enters and leaves it at 2 -/+ sqrt(3) */
+  meos_errno_reset();
+  const char *clip_a[] = {
+    "MULTIPOINT((1 1),(9 9),(3 3))",
+    "LINESTRING(-2 2,6 2)",
+    "LINESTRING(-2 3,6 3)",
+  };
+  const char *clip_b[] = {
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
+  };
+  const char *clip_inter[] = {
+    "MULTIPOINT((1 1),(3 3))",
+    "LINESTRING(0 2,4 2)",
+    "LINESTRING(0.267949 3,3.732051 3)",
+  };
+  for (int i = 0; i < 3; i++)
+  {
+    GSERIALIZED *ca = geom_in(clip_a[i], -1);
+    GSERIALIZED *cb = geom_in(clip_b[i], -1);
+    assert(ca != NULL); assert(cb != NULL);
+    meos_errno_reset();
+    GSERIALIZED *ci = geom_intersection2d(ca, cb);
+    assert(ci != NULL);
+    assert(meos_errno() == 0);
+    char *cw = geo_as_text(ci, 6);
+    printf("intersection: %s\n", cw);
+    assert(strcmp(cw, clip_inter[i]) == 0);
+    free(cw); free(ci);
+    /* The difference answers the rest of the first geometry, so the two
+     * together give it back */
+    meos_errno_reset();
+    GSERIALIZED *cd = geom_difference2d(ca, cb);
+    assert(cd != NULL);
+    assert(meos_errno() == 0);
+    free(cd); free(ca); free(cb);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 
