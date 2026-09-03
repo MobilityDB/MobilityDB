@@ -50,6 +50,7 @@
 #include <meos_geo.h>        /* for geo_copy */
 #include <meos_internal.h>
 #include "geo/clip_clipper2.h"
+#include "geo/geo_funcs.h"   /* for geo_serialize */
 
 /*****************************************************************************/
 
@@ -67,13 +68,30 @@ _Static_assert(CL_XOR          == MEOS_CLIP_XOR,
 /*****************************************************************************/
 
 /**
+ * @brief Return the areal region of no area
+ * @details Every outcome of a polygon Boolean covering nothing answers this,
+ * so what an empty result is drawn as follows from the OPERATION and never
+ * from which of the trivial cases reached it. PostGIS instead clones whichever
+ * operand happens to be empty, which answers `MULTIPOLYGON EMPTY` down one
+ * path and `POLYGON EMPTY` down another for one question; the general path it
+ * takes when neither operand is empty answers `POLYGON EMPTY`, and that is the
+ * spelling kept here for all of them.
+ */
+static GSERIALIZED *
+clip_empty_areal(int32_t srid)
+{
+  return geo_serialize(lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0)));
+}
+
+/**
  * @brief Clip the two polygons using the given Boolean operation.
  * @param subj  Subject geometry (POLYGON or MULTIPOLYGON, 2D)
  * @param clip  Clipping geometry (POLYGON or MULTIPOLYGON, 2D)
  * @param oper  Operation selector (#CL_INTERSECTION, #CL_UNION,
  * #CL_DIFFERENCE, #CL_XOR)
- * @return Newly-allocated GSERIALIZED holding the result, or @c NULL on
- * empty result. Caller owns the result.
+ * @return Newly-allocated GSERIALIZED holding the result, which is an EMPTY
+ * geometry where the operation covers nothing, as PostGIS answers. Caller owns
+ * the result.
  *
  * 3D rejection, geography rejection, SRID-mismatch and type-validity
  * checks are performed by the SQL wrapper layer
@@ -82,19 +100,22 @@ _Static_assert(CL_XOR          == MEOS_CLIP_XOR,
 GSERIALIZED *
 clip_poly_poly(const GSERIALIZED *subj, const GSERIALIZED *clip, ClipOper oper)
 {
-  /* Trivial cases: at least one input is empty. */
+  /* Trivial cases: at least one input is empty. What each answers is the set
+   * identity for its operation -- nothing meets an empty region, nothing is
+   * taken from a subject by one, and a union with one is the other side */
+  int32_t srid = gserialized_get_srid(subj);
   bool empty_subj = gserialized_is_empty(subj);
   bool empty_clip = gserialized_is_empty(clip);
   if (empty_subj || empty_clip)
   {
     if (oper == CL_INTERSECTION)
-      return NULL;
+      return clip_empty_areal(srid);
     if (oper == CL_DIFFERENCE)
-      return empty_subj ? NULL : geo_copy(subj);
+      return empty_subj ? clip_empty_areal(srid) : geo_copy(subj);
     /* CL_UNION || CL_XOR */
     if (empty_subj && empty_clip)
-      return NULL;
-    return empty_subj ? geo_copy(clip) : geo_copy(subj);
+      return clip_empty_areal(srid);
+    return geo_copy(empty_subj ? clip : subj);
   }
 
   /* Trivial case: bounding boxes don't overlap. Saves the Clipper2 setup
@@ -107,7 +128,7 @@ clip_poly_poly(const GSERIALIZED *subj, const GSERIALIZED *clip, ClipOper oper)
       gbox_overlaps_2d(&sbbox, &clbox) == LW_FALSE)
   {
     if (oper == CL_INTERSECTION)
-      return NULL;
+      return clip_empty_areal(srid);
     if (oper == CL_DIFFERENCE)
       return geo_copy(subj);
     /* CL_UNION || CL_XOR — disjoint, return whichever side. The wrapper

@@ -259,8 +259,11 @@ polytree_to_lwgeom(const PolyTree64 &tree, int32_t srid)
   for (const auto &top : tree)
     emit_polygons(*top, srid, polys);
 
+  /* An overlay covering no area is an EMPTY polygon, which is an answer: the
+   * arms that clip a line or a point set answer the empty geometry of their
+   * own kind, and so does the GEOS overlay this one stands in front of */
   if (polys.empty())
-    return nullptr;
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
   if (polys.size() == 1)
     return polys[0];
 
@@ -360,7 +363,15 @@ clipper2_clip_poly_poly(const GSERIALIZED *subj_g, const GSERIALIZED *clip_g,
 
   LWGEOM *out_lw = polytree_to_lwgeom(polytree, srid);
   if (out_lw == nullptr)
+  {
+    /* The tree answers a geometry for every outcome, the empty overlay
+     * included, so nothing reaches here. It raises rather than returning
+     * nothing, a null carrying no error being indistinguishable to a caller
+     * from an answer */
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "clipper2_clip_poly_poly: the clip tree yielded no geometry");
     return nullptr;
+  }
   GSERIALIZED *result = geo_serialize(out_lw);
   lwgeom_free(out_lw);
   return result;
