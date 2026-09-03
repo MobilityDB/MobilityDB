@@ -692,7 +692,8 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
         (! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin))) ||
       (MEOS_FLAGS_GET_Z(bounds->flags) &&
         (! ensure_not_negative_datum(Float8GetDatum(zsize), T_FLOAT8) ||
-         ! ensure_same_spatial_dimensionality_stbox_geo(bounds, sorigin))) ||
+         (sorigin &&
+           ! ensure_same_spatial_dimensionality_stbox_geo(bounds, sorigin)))) ||
       (duration &&
         (! ensure_has_T(T_STBOX, bounds->flags) ||
          ! ensure_positive_duration(duration))))
