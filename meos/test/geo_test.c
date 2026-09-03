@@ -48,6 +48,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1261,6 +1262,79 @@ int main(void)
     assert(cd != NULL);
     assert(meos_errno() == 0);
     free(cd); free(ca); free(cb);
+    meos_errno_reset();
+  }
+
+  /* A geometry that is ITSELF a curve keeps its arcs through the clip, so the
+   * pieces come back as arcs rather than as the chords a stroke would draw.
+   * The circle is again the one of radius 2 about (2 2), and the clip cuts it
+   * at y = 3, so the two pieces reach 2 -/+ sqrt(3) exactly. The second row
+   * meets the clip at a single point, which no stretch of the arc reports */
+  const char *arc_a[] = {
+    "CIRCULARSTRING(0 2,2 4,4 2)",
+    "CIRCULARSTRING(0 2,2 4,4 2)",
+    "CIRCULARSTRING(0 2,2 4,4 2)",
+    "CIRCULARSTRING(0 2,2 4,4 2)",
+  };
+  const char *arc_b[] = {
+    "POLYGON((0 0,4 0,4 3,0 3,0 0))",
+    "LINESTRING(2 0,2 5)",
+    /* The quarter of the SAME circle running from (0 2) to (2 4), which the
+     * subject runs ALONG rather than crosses */
+    "CIRCULARSTRING(0 2.0000000000000004,"
+      "0.58578643762690508 3.4142135623730949,2 4)",
+    /* A clip the arc MEETS at a point BEFORE the stretch it runs inside, so
+     * the two kinds of answer arrive in the opposite of their order along
+     * the arc. The difference reads the gaps between them and a wrong order
+     * makes those gaps overlap */
+    "GEOMETRYCOLLECTION(LINESTRING(0.1 0,0.1 5),"
+      "POLYGON((3 -1,5 -1,5 5,3 5,3 -1)))",
+  };
+  const char *arc_inter[] = {
+    "MULTICURVE(CIRCULARSTRING(0 2,0.068148 2.517638,0.267949 3),"
+      "CIRCULARSTRING(3.732051 3,3.931852 2.517638,4 2))",
+    "POINT(2 4)",
+    "CIRCULARSTRING(0 2,0.585786 3.414214,2 4)",
+    "GEOMETRYCOLLECTION(CIRCULARSTRING(3 3.732051,3.732051 3,4 2),"
+      "POINT(0.1 2.6245))",
+  };
+  const char *arc_diff[] = {
+    "CIRCULARSTRING(0.267949 3,2 4,3.732051 3)",
+    "MULTICURVE(CIRCULARSTRING(0 2,0.585786 3.414214,2 4),"
+      "CIRCULARSTRING(2 4,3.414214 3.414214,4 2))",
+    "CIRCULARSTRING(2 4,3.414214 3.414214,4 2)",
+    "MULTICURVE(CIRCULARSTRING(0 2,0.025158 2.316228,0.1 2.6245),"
+      "CIRCULARSTRING(0.1 2.6245,1.28644 3.868377,3 3.732051))",
+  };
+  for (int i = 0; i < 4; i++)
+  {
+    GSERIALIZED *aa = geom_in(arc_a[i], -1);
+    GSERIALIZED *ab = geom_in(arc_b[i], -1);
+    assert(aa != NULL); assert(ab != NULL);
+    meos_errno_reset();
+    GSERIALIZED *ai = geom_intersection2d(aa, ab);
+    assert(ai != NULL);
+    assert(meos_errno() == 0);
+    char *aw = geo_as_text(ai, 6);
+    printf("arc intersection: %s\n", aw);
+    assert(strcmp(aw, arc_inter[i]) == 0);
+    free(aw);
+    meos_errno_reset();
+    GSERIALIZED *ad = geom_difference2d(aa, ab);
+    assert(ad != NULL);
+    assert(meos_errno() == 0);
+    aw = geo_as_text(ad, 6);
+    printf("arc difference: %s\n", aw);
+    assert(strcmp(aw, arc_diff[i]) == 0);
+    free(aw);
+    /* The clip PARTITIONS its subject, so the two pieces give back the length
+     * the whole curve draws. That holds of the arcs themselves rather than of
+     * a drawing of them, which is what the exact answer buys */
+    double whole = geom_length(aa);
+    double part = geom_length(ai) + geom_length(ad);
+    printf("arc length: %.9f against %.9f\n", part, whole);
+    assert(fabs(part - whole) < 1e-9);
+    free(ai); free(ad); free(aa); free(ab);
     meos_errno_reset();
   }
 

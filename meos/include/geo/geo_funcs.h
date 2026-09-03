@@ -396,6 +396,31 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
  *****************************************************************************/
 
 /**
+ * @brief Return how far an angular span turns, in the sense it is traversed
+ * @details The span runs from @p theta0 to @p theta1, counterclockwise when
+ * @p ccw is true and clockwise otherwise
+ */
+static inline double
+arc_span_sweep(double theta0, double theta1, bool ccw)
+{
+  return ccw ?
+    angle_normalize(theta1 - theta0) :
+    angle_normalize(theta0 - theta1);
+}
+
+/**
+ * @brief Return how far an angle stands from the start of an angular span, in
+ * the sense the span is traversed
+ */
+static inline double
+arc_span_offset(double theta0, bool ccw, double phi)
+{
+  return ccw ?
+    angle_normalize(phi - theta0) :
+    angle_normalize(theta0 - phi);
+}
+
+/**
  * @brief Return true if an angle lies within an angular span
  * @details The span is traversed from @p theta0 to @p theta1, counterclockwise
  * when @p ccw is true and clockwise otherwise. Every arc question either
@@ -405,12 +430,8 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
 static inline bool
 arc_span_contains(double theta0, double theta1, bool ccw, double phi)
 {
-  double sweep = ccw ?
-    angle_normalize(theta1 - theta0) :
-    angle_normalize(theta0 - theta1);
-  double off = ccw ?
-    angle_normalize(phi - theta0) :
-    angle_normalize(theta0 - phi);
+  double sweep = arc_span_sweep(theta0, theta1, ccw);
+  double off = arc_span_offset(theta0, ccw, phi);
   return off <= sweep + MEOS_GEOM_TOLERANCE;
 }
 
@@ -538,7 +559,46 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
 }
 
 /**
- * @brief Return true if two circular arc edges intersect
+ * @brief Return where along an arc a point of it stands, as a fraction of the
+ * arc's span
+ * @details An arc is walked by its ANGLE, so the parameter of a point is how
+ * far its direction from the centre has turned from the arc's start, over how
+ * far the arc turns in all. The turn is read in the arc's own sense, so a
+ * clockwise arc grows its parameter clockwise
+ */
+static inline double
+arc_point_parameter(const Edge *e, double x, double y)
+{
+  double phi = atan2(y - e->cy, x - e->cx);
+  double sweep = arc_span_sweep(e->theta0, e->theta1, e->ccw);
+  if (sweep < MEOS_GEOM_TOLERANCE)
+    return 0.0;
+  double off = arc_span_offset(e->theta0, e->ccw, phi);
+  double t = off / sweep;
+  /* A point the arithmetic puts just OUTSIDE the span belongs to whichever end
+   * it stands nearer, and one a rounding step BEFORE the start has turned
+   * nearly the whole circle rather than none of it */
+  if (t > 1.0 && (2 * M_PI - off) < (off - sweep))
+    return 0.0;
+  return (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+}
+
+/**
+ * @brief Return the point standing at a fraction along an arc's span
+ */
+static inline void
+arc_parameter_point(const Edge *e, double t, double *x, double *y)
+{
+  double sweep = arc_span_sweep(e->theta0, e->theta1, e->ccw);
+  double phi = e->ccw ? e->theta0 + t * sweep : e->theta0 - t * sweep;
+  *x = e->cx + e->radius * cos(phi);
+  *y = e->cy + e->radius * sin(phi);
+  return;
+}
+
+/**
+ * @brief Return the points at which two circular arc edges meet, and whether
+ * they are arcs of ONE circle
  * @details The supporting circles of two arcs meet on their radical line at
  * `a = (d^2 + r1^2 - r2^2) / (2 d)` from the first centre, at a half-chord
  * `h = sqrt(r1^2 - a^2)` off the centre line, giving at most two candidate
@@ -547,27 +607,33 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
  * arcs of equal radius lie on the same circle: they meet iff their angular
  * spans share an endpoint.
  */
-static inline bool
-arcarc_intersect(const Edge *e1, const Edge *e2)
+static inline int
+arcarc_intersect_points(const Edge *e1, const Edge *e2, double ix[2],
+  double iy[2], bool *same_circle)
 {
   double dx = e2->cx - e1->cx, dy = e2->cy - e1->cy;
   double d = hypot(dx, dy);
   double r1 = e1->radius, r2 = e2->radius;
+  if (same_circle)
+    *same_circle = false;
 
   /* Concentric supporting circles */
   if (d < MEOS_GEOM_TOLERANCE)
   {
     if (fabs(r1 - r2) > MEOS_GEOM_TOLERANCE)
-      return false;
-    /* Same circle: the arcs meet iff their spans share an endpoint angle */
-    return arc_contains_angle(e2, e1->theta0) ||
-      arc_contains_angle(e2, e1->theta1) ||
-      arc_contains_angle(e1, e2->theta0) ||
-      arc_contains_angle(e1, e2->theta1);
+      return 0;
+    /* Same circle: the arcs run along one another wherever their spans do,
+     * which is a shared stretch rather than a pair of points */
+    if (same_circle)
+      *same_circle = arc_contains_angle(e2, e1->theta0) ||
+        arc_contains_angle(e2, e1->theta1) ||
+        arc_contains_angle(e1, e2->theta0) ||
+        arc_contains_angle(e1, e2->theta1);
+    return 0;
   }
   /* Circles too far apart or one strictly inside the other */
   if (d > r1 + r2 + MEOS_GEOM_TOLERANCE || d < fabs(r1 - r2) - MEOS_GEOM_TOLERANCE)
-    return false;
+    return 0;
 
   double a = (d * d + r1 * r1 - r2 * r2) / (2 * d);
   double h2 = r1 * r1 - a * a;
@@ -577,19 +643,36 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
   double ux = dx / d, uy = dy / d;         /* Unit vector from c1 to c2 */
   double mx = e1->cx + a * ux, my = e1->cy + a * uy; /* Foot on the centre line */
 
-  /* Candidate points m +/- h * perp(u), tested against both arcs' spans */
+  /* Candidate points m +/- h * perp(u), kept when both spans hold them */
+  int n = 0;
   for (int k = 0; k < 2; k++)
   {
     double px = mx + (k ? h : -h) * (-uy);
     double py = my + (k ? h : -h) * ux;
     if (arc_contains_angle(e1, atan2(py - e1->cy, px - e1->cx)) &&
         arc_contains_angle(e2, atan2(py - e2->cy, px - e2->cx)))
-      return true;
+    {
+      ix[n] = px; iy[n] = py; n++;
+    }
     /* A tangency has a single candidate point */
     if (h < MEOS_GEOM_TOLERANCE)
       break;
   }
-  return false;
+  return n;
+}
+
+/**
+ * @brief Return true if two circular arc edges intersect
+ * @details The points they meet at answer it, together with the case of two
+ * arcs of ONE circle, which share a stretch rather than a point
+ */
+static inline bool
+arcarc_intersect(const Edge *e1, const Edge *e2)
+{
+  double ix[2], iy[2];
+  bool same_circle;
+  int n = arcarc_intersect_points(e1, e2, ix, iy, &same_circle);
+  return (n > 0 || same_circle);
 }
 
 /*****************************************************************************

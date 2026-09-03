@@ -260,6 +260,7 @@ extern TSequenceSet *tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STB
 
 extern void *geo_edge_ctx_make(const GSERIALIZED *gs);
 extern bool geo_is_planar_linear(const GSERIALIZED *gs);
+extern bool geo_clip_subject(const GSERIALIZED *gs);
 extern bool geo_is_point_set(const GSERIALIZED *gs);
 extern bool geo_meos_supported(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_points_covered(const GSERIALIZED *pts,
