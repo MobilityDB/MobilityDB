@@ -2102,9 +2102,9 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
   /* The part of a line inside the other geometry, read from the segment
    * kernels, which answer an arc of that geometry exactly */
-  if (geo_is_planar_linear(gs1) && geo_meos_supported(gs2))
+  if (geo_clip_subject(gs1) && geo_meos_supported(gs2))
     return geo_clip_linear_geom(gs1, gs2, true);
-  if (geo_is_planar_linear(gs2) && geo_meos_supported(gs1))
+  if (geo_clip_subject(gs2) && geo_meos_supported(gs1))
     return geo_clip_linear_geom(gs2, gs1, true);
 
 #if GEOS
@@ -2145,7 +2145,7 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   /* Difference takes the FIRST operand apart, so only its own kind decides */
   if (geo_is_point_set(gs1))
     return geo_points_covered(gs1, gs2, false);
-  if (geo_is_planar_linear(gs1) && geo_meos_supported(gs2))
+  if (geo_clip_subject(gs1) && geo_meos_supported(gs2))
     return geo_clip_linear_geom(gs1, gs2, false);
 
 #if GEOS

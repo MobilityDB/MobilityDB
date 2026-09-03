@@ -962,6 +962,25 @@ geo_meos_supported(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return true if the clip walks a geometry as its subject
+ * @details The walk solves each edge of the subject against the other
+ * geometry, and it has a kernel for a straight edge and one for an arc, so
+ * every planar geometry whose edges are curves of those two kinds is one it
+ * takes. An areal subject is left to the overlay, which answers a surface
+ * rather than the curves bounding it
+ */
+bool
+geo_clip_subject(const GSERIALIZED *gs)
+{
+  assert(gs);
+  if (FLAGS_GET_Z(gs->gflags) || FLAGS_GET_GEODETIC(gs->gflags))
+    return false;
+  uint32_t t = gserialized_get_type(gs);
+  return (t == LINETYPE || t == MULTILINETYPE || t == CIRCSTRINGTYPE ||
+    t == COMPOUNDTYPE || t == MULTICURVETYPE);
+}
+
+/**
  * @brief Return true if a geometry draws points and nothing else
  */
 bool
@@ -1043,6 +1062,207 @@ geo_is_planar_linear(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Add to @p out the part of one arc the intervals describe, each piece
+ * carrying the three points a circular string is read from
+ * @details An arc keeps its own circle, so a piece of it is the arc through
+ * its two ends and the point halfway along the stretch, never the chord
+ * between them
+ */
+static void
+arc_pieces(const Edge *arc, const Span *intervarr, int count, bool inside,
+  MeosArray *out, MeosArray *touches)
+{
+  double prev = 0.0;
+  for (int j = 0; j <= count; j++)
+  {
+    double lo = (j < count) ? DatumGetFloat8(intervarr[j].lower) : 1.0;
+    double hi = (j < count) ? DatumGetFloat8(intervarr[j].upper) : 1.0;
+    double s0, s1;
+    if (inside)
+    {
+      if (j == count)
+        break;
+      s0 = lo; s1 = hi;
+    }
+    else
+    {
+      s0 = prev; s1 = lo;
+      prev = hi;
+    }
+    if (s1 - s0 <= MEOS_GEOM_TOLERANCE)
+    {
+      if (inside)
+      {
+        POINT2D touch;
+        arc_parameter_point(arc, s0, &touch.x, &touch.y);
+        meos_array_add(touches, &touch);
+      }
+      continue;
+    }
+    POINT2D piece[3];
+    arc_parameter_point(arc, s0, &piece[0].x, &piece[0].y);
+    arc_parameter_point(arc, (s0 + s1) * 0.5, &piece[1].x, &piece[1].y);
+    arc_parameter_point(arc, s1, &piece[2].x, &piece[2].y);
+    /* An end of the arc is the point the arc is READ from, not the one its
+     * angle recomputes, which lands a rounding step away */
+    if (s0 <= MEOS_GEOM_TOLERANCE)
+    {
+      piece[0].x = arc->x1; piece[0].y = arc->y1;
+    }
+    if (s1 >= 1.0 - MEOS_GEOM_TOLERANCE)
+    {
+      piece[2].x = arc->x2; piece[2].y = arc->y2;
+    }
+    meos_array_add(out, &piece[0]);
+    meos_array_add(out, &piece[1]);
+    meos_array_add(out, &piece[2]);
+  }
+  return;
+}
+
+/**
+ * @brief Order two parameters along an arc
+ */
+static int
+arc_cut_cmp(const void *a, const void *b)
+{
+  double x = *(const double *) a, y = *(const double *) b;
+  return (x < y) ? -1 : ((x > y) ? 1 : 0);
+}
+
+/**
+ * @brief Compute the parameter intervals of one ARC lying inside a geometry
+ * @details The straight kernels solve a segment against each edge and answer
+ * in the SEGMENT's parameter. An arc is walked by its angle instead, so its
+ * crossings are collected as points and read back through
+ * #arc_point_parameter, and the stretches between consecutive crossings are
+ * decided by where their midpoint stands. Two arcs of ONE circle share a
+ * stretch rather than a pair of points, which is the case a crossing count
+ * cannot see and #arcarc_intersect_points reports separately
+ * @param[in] arc The arc being clipped
+ * @param[in] edges,nedges The edges of the geometry to clip against
+ * @param[in] all_edges,nall,rtree,xmax What locating a point against the
+ * geometry needs
+ */
+static void
+intervals_from_arc_subject(const Edge *arc, Edge **edges, int nedges,
+  Edge **all_edges, int nall, const RTree *rtree, double xmax)
+{
+  assert(arc); assert(edges);
+  /* The parameters at which the arc meets anything, its two ends included */
+  double *cuts = palloc(sizeof(double) * (2 * nedges + 2));
+  double *meets = palloc(sizeof(double) * (2 * nedges + 2));
+  int ncuts = 0, nmeets = 0;
+  cuts[ncuts++] = 0.0;
+  cuts[ncuts++] = 1.0;
+
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    double ix[2], iy[2];
+    int n = 0;
+    if (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC)
+    {
+      bool same_circle;
+      n = arcarc_intersect_points(arc, e, ix, iy, &same_circle);
+      if (same_circle)
+      {
+        /* The two run along one another, so the other's ends standing in
+         * THIS arc's span are what bound the stretch they share */
+        double ax, ay;
+        for (int k = 0; k < 2; k++)
+        {
+          arc_parameter_point(e, k ? 1.0 : 0.0, &ax, &ay);
+          if (arc_contains_angle(arc, atan2(ay - arc->cy, ax - arc->cx)))
+            cuts[ncuts++] = arc_point_parameter(arc, ax, ay);
+        }
+        continue;
+      }
+    }
+    else if (e->etype == EDGE_POINT)
+    {
+      if (point_on_arc(e->x1, e->y1, arc))
+      {
+        ix[0] = e->x1; iy[0] = e->y1; n = 1;
+      }
+    }
+    else
+    {
+      /* A straight edge meets the arc where the segment does, and the point
+       * it meets at is what carries over to the arc's own parameter */
+      double t[2];
+      int m = arcsegm_intersect(e->x1, e->y1, e->x2 - e->x1, e->y2 - e->y1,
+        arc, t);
+      for (int k = 0; k < m; k++)
+      {
+        if (t[k] < -MEOS_GEOM_TOLERANCE || t[k] > 1.0 + MEOS_GEOM_TOLERANCE)
+          continue;
+        ix[n] = e->x1 + t[k] * (e->x2 - e->x1);
+        iy[n] = e->y1 + t[k] * (e->y2 - e->y1);
+        n++;
+      }
+    }
+    for (int k = 0; k < n; k++)
+    {
+      double t = arc_point_parameter(arc, ix[k], iy[k]);
+      cuts[ncuts++] = t;
+      /* An edge that bounds no area is met at a POINT rather than along a
+       * stretch, and no midpoint between crossings reports it */
+      if (e->etype == EDGE_POINT || e->etype == EDGE_LINESEG ||
+          e->etype == EDGE_LINEARC)
+        meets[nmeets++] = t;
+    }
+  }
+  qsort(cuts, ncuts, sizeof(double), arc_cut_cmp);
+
+  /* A stretch between two consecutive crossings lies wholly inside or wholly
+   * outside, so its midpoint answers for all of it */
+  for (int k = 0; k < ncuts - 1; k++)
+  {
+    double lo = cuts[k], hi = cuts[k + 1];
+    if (hi - lo <= MEOS_GEOM_TOLERANCE)
+      continue;
+    double mx, my;
+    arc_parameter_point(arc, (lo + hi) * 0.5, &mx, &my);
+    bool inside = point_in_polygon_index(mx, my, all_edges, nall, rtree, xmax);
+    if (! inside)
+    {
+      /* A stretch a surface does not hold may still run along a line of it */
+      POINT2D mp = { mx, my };
+      inside = point_inter_points_lines(&mp, edges, nedges);
+    }
+    if (inside)
+    {
+      Span sp;
+      span_set(Float8GetDatum(lo), Float8GetDatum(hi), true, true, T_FLOAT8,
+        T_FLOATSPAN, &sp);
+      meos_array_add(intervals, &sp);
+    }
+  }
+  /* The points the arc merely meets, kept where no stretch already holds one */
+  for (int k = 0; k < nmeets; k++)
+  {
+    bool held = false;
+    for (uint32_t q = 0; q < intervals->count && ! held; q++)
+    {
+      const Span *sp = (const Span *) meos_array_get(intervals, q);
+      double lo = DatumGetFloat8(sp->lower), hi = DatumGetFloat8(sp->upper);
+      held = (meets[k] >= lo - MEOS_GEOM_TOLERANCE &&
+        meets[k] <= hi + MEOS_GEOM_TOLERANCE);
+    }
+    if (! held)
+    {
+      Span sp;
+      span_set(Float8GetDatum(meets[k]), Float8GetDatum(meets[k]), true, true,
+        T_FLOAT8, T_FLOATSPAN, &sp);
+      meos_array_add(intervals, &sp);
+    }
+  }
+  pfree(cuts); pfree(meets);
+  return;
+}
+
+/**
  * @brief Return true if a point lies on the segment two points draw
  */
 static bool
@@ -1070,11 +1290,12 @@ point_on_segment_pts(const POINT2D *p, const POINT2D *a, const POINT2D *b)
  */
 static GSERIALIZED *
 linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
-  int32_t srid, bool hasz)
+  const MeosArray *arcs, int32_t srid, bool hasz)
 {
   int npieces = (int) pieces->count / 2;
   int ntouch = touches ? (int) touches->count : 0;
-  if (npieces == 0 && ntouch == 0)
+  int narcs = arcs ? (int) arcs->count / 3 : 0;
+  if (npieces == 0 && ntouch == 0 && narcs == 0)
     return geo_serialize(lwline_as_lwgeom(lwline_construct_empty(srid, hasz,
       false)));
 
@@ -1143,13 +1364,41 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
       pts[npts++] = lwpoint_as_lwgeom(lwpoint_make2d(srid, t->x, t->y));
   }
 
+  /* Each arc piece keeps the circle it came from, so it is written as the
+   * circular string through its two ends and the point between them */
+  LWGEOM **acs = narcs ? palloc(sizeof(LWGEOM *) * narcs) : NULL;
+  for (int i = 0; i < narcs; i++)
+  {
+    POINTARRAY *apa = ptarray_construct_empty(0, 0, 3);
+    for (int k = 0; k < 3; k++)
+    {
+      const POINT2D *q = (const POINT2D *) meos_array_get((MeosArray *) arcs,
+        3 * i + k);
+      POINT4D p4 = { q->x, q->y, 0.0, 0.0 };
+      ptarray_append_point(apa, &p4, LW_TRUE);
+    }
+    acs[i] = lwcircstring_as_lwgeom(lwcircstring_construct(srid, NULL, apa));
+  }
+
   GSERIALIZED *result;
-  int ntotal = nlines + npts;
+  int ntotal = nlines + npts + narcs;
   if (lines && ntotal == 1 && nlines == 1)
   {
     result = geo_serialize(lines[0]);
     lwgeom_free(lines[0]);
     pfree(lines);
+    if (pts)
+      pfree(pts);
+    if (acs)
+      pfree(acs);
+  }
+  else if (acs && ntotal == 1 && narcs == 1)
+  {
+    result = geo_serialize(acs[0]);
+    lwgeom_free(acs[0]);
+    pfree(acs);
+    if (lines)
+      pfree(lines);
     if (pts)
       pfree(pts);
   }
@@ -1160,23 +1409,40 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
     pfree(pts);
     if (lines)
       pfree(lines);
+    if (acs)
+      pfree(acs);
   }
   else
   {
-    /* One kind draws a multi-geometry of it, both draw a collection */
-    uint32_t type = npts == 0 ? MULTILINETYPE :
-      (nlines == 0 ? MULTIPOINTTYPE : COLLECTIONTYPE);
+    /* One kind draws a multi-geometry of it, several draw a collection. A
+     * curve among them is a multi-curve, which admits a straight member */
+    uint32_t type;
+    if (npts == 0 && narcs == 0)
+      type = MULTILINETYPE;
+    else if (nlines == 0 && narcs == 0)
+      type = MULTIPOINTTYPE;
+    else if (npts == 0)
+      type = MULTICURVETYPE;
+    else
+      type = COLLECTIONTYPE;
     LWGEOM **all = palloc(sizeof(LWGEOM *) * ntotal);
+    int at = 0;
     if (lines)
     {
       for (int i = 0; i < nlines; i++)
-        all[i] = lines[i];
+        all[at++] = lines[i];
       pfree(lines);
+    }
+    if (acs)
+    {
+      for (int i = 0; i < narcs; i++)
+        all[at++] = acs[i];
+      pfree(acs);
     }
     if (pts)
     {
       for (int i = 0; i < npts; i++)
-        all[nlines + i] = pts[i];
+        all[at++] = pts[i];
       pfree(pts);
     }
     LWGEOM *out = lwcollection_as_lwgeom(lwcollection_construct(type, srid,
@@ -1264,12 +1530,70 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
   int32_t srid = gserialized_get_srid(line);
   MeosArray *pieces = meos_array_create(sizeof(POINT2D));
   MeosArray *touches = meos_array_create(sizeof(POINT2D));
+  /* Arc pieces are kept apart, each three points of its own circle */
+  MeosArray *arcs = meos_array_create(sizeof(POINT2D));
   /* The kernels accumulate into the thread-local arrays the temporal walker
    * gives them: the polygon one sorts its crossings through `events` */
   events = meos_array_create(sizeof(double));
   intervals = meos_array_create(sizeof(Span));
 
   /* The components a linear geometry draws, one point array each */
+  /* A subject carrying arcs is walked through its EDGES, each solved by the
+   * kernel its own shape asks for */
+  if (! geo_is_planar_linear(line))
+  {
+    MeosArray *sarr = geom_extract_edges(lw);
+    int sn = (int) sarr->count;
+    for (int i = 0; i < sn; i++)
+    {
+      Edge *se = (Edge *) meos_array_get(sarr, i);
+      intervals->count = 0;
+      if (se->etype == EDGE_POLYARC || se->etype == EDGE_LINEARC)
+      {
+        intervals_from_arc_subject(se, ctx->edge_ptrs, ctx->nedges,
+          ctx->edge_ptrs, ctx->nedges, ctx->rtree, ctx->box.xmax);
+        /* The stretches arrive in order and the points the arc merely MEETS
+         * after them, so the array is sorted only where no such point falls
+         * before a stretch. #arc_pieces takes a difference by walking the
+         * GAPS between consecutive intervals, and an unsorted array gives it
+         * gaps that overlap */
+        const Span *aiv = intervals->elems;
+        int acnt = (int) intervals->count;
+        Span *anm = NULL;
+        if (acnt > 1)
+        {
+          anm = spanarr_normalize(intervals->elems, acnt, ORDER, &acnt);
+          aiv = anm;
+        }
+        arc_pieces(se, aiv, acnt, inside, arcs, touches);
+        if (anm)
+          pfree(anm);
+      }
+      else
+      {
+        POINT2D pa = { se->x1, se->y1 }, pb = { se->x2, se->y2 };
+        intervals_from_points(&pa, &pb, ctx->edge_ptrs, ctx->nedges);
+        intervals_from_lines(&pa, &pb, ctx->edge_ptrs, ctx->nedges);
+        intervals_from_arcs(&pa, &pb, ctx->edge_ptrs, ctx->nedges);
+        intervals_from_polygons(&pa, &pb, ctx->edge_ptrs, ctx->nedges,
+          ctx->edge_ptrs, ctx->nedges, ctx->rtree, ctx->srid, ctx->box.xmax);
+        const Span *iv = intervals->elems;
+        int cnt = (int) intervals->count;
+        Span *nm = NULL;
+        if (cnt > 1)
+        {
+          nm = spanarr_normalize(intervals->elems, cnt, ORDER, &cnt);
+          iv = nm;
+        }
+        segment_pieces(&pa, &pb, iv, cnt, inside, pieces, touches);
+        if (nm)
+          pfree(nm);
+      }
+    }
+    meos_array_destroy(sarr);
+    goto assemble;
+  }
+
   uint32_t ncomp = 1;
   const LWLINE **lines = NULL;
   LWLINE *single = NULL;
@@ -1335,10 +1659,13 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
     }
   }
 
-  GSERIALIZED *result = linear_pieces_geo(pieces, touches, srid,
+assemble:
+  ;
+  GSERIALIZED *result = linear_pieces_geo(pieces, touches, arcs, srid,
     FLAGS_GET_Z(line->gflags));
   meos_array_destroy(pieces);
   meos_array_destroy(touches);
+  meos_array_destroy(arcs);
   meos_array_destroy(intervals); intervals = NULL;
   meos_array_destroy(events); events = NULL;
   lwgeom_free(lw);
