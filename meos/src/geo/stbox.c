@@ -652,9 +652,12 @@ stbox_geo(const STBox *box)
   FLAGS_SET_Z(geo->flags, hasz);
   FLAGS_SET_GEODETIC(geo->flags, geodetic);
   result = geo_serialize(geo);
-  /* We cannot lwgeom_free(geo); */
-  if (gserialized_get_type(result) != POINTTYPE)
-    lwgeom_free(geo);
+  /* The serialization copies, so the geometry it was built from is this
+   * function's to release whatever its type. The point case was exempted to
+   * avoid a crash that no longer happens: every shape this function can build
+   * -- point, line, plane and polyhedron in 3D, point, line and polygon in 2D,
+   * geodetic and planar alike -- survives the release */
+  lwgeom_free(geo);
   return result;
 }
 
