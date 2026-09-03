@@ -700,7 +700,23 @@ TRGEO_CONFIG = dict(
         "Datum":               "geom1_datum",
     },
     override_args={
-        "geo_tpose_to_trgeometry":          {1: "tpose1"},
+        # The lifting constructor takes a TPOSE, not the default trgeometry.
+        # (The key read `geo_tpose_to_trgeometry`, a name the header no longer
+        # carries, so the override named nothing and the entry drew "The
+        # temporal value must be of type tpose".)
+        "geometry_tpose_to_trgeometry":     {1: "tpose1"},
+        # The four distance entries pair a trgeometry with a temporal POINT.
+        "tdistance_trgeometry_tpoint":      {1: "tpoint1"},
+        "nad_trgeometry_tpoint":            {1: "tpoint1"},
+        "nai_trgeometry_tpoint":            {1: "tpoint1"},
+        "shortestline_trgeometry_tpoint":   {1: "tpoint1"},
+        # The merge refuses two values that disagree where they overlap, so its
+        # second operand is the LATER sequence rather than the canned one.
+        "trgeometry_merge":                 {1: "(Temporal *) trgeo_tseq2"},
+        # An elevation is a range of Z, so the span is a FLOATSPAN and the value
+        # must carry Z -- neither of which the defaults give them.
+        "trgeometry_at_elevation":          {0: "trgeo_z1", 1: "floatspan1"},
+        "trgeometry_minus_elevation":       {0: "trgeo_z1", 1: "floatspan1"},
         # The body-point trajectory follows one POINT of the rigid body; the
         # default polygon geom1 is rejected ("Only point geometries accepted").
         "trgeometry_body_point_trajectory": {1: "geom_point1"},
@@ -721,6 +737,10 @@ TRGEO_CONFIG = dict(
         # is a poseset; the default tstzset1 is refused ("The set must be of
         # type poseset").
         "trgeometry_restrict_values":       {1: "poseset1"},
+        # ... and so are the two entries that spell the same restriction as a
+        # pair, which the line above did not reach.
+        "trgeometry_at_values":             {1: "poseset1"},
+        "trgeometry_minus_values":          {1: "poseset1"},
         "trgeometry_append_tsequence":      {1: "trgeo_tseq2", 2: "false"},
         # char * string constructors and interpolation projections. The WKT is
         # hand-written in the parser format; the MFJSON is pasted verbatim from
@@ -788,6 +808,13 @@ TRGEO_CONFIG = dict(
     (Temporal *) trgeo_inst3, trgeo_inst4, LINEAR, 0.0, NULL, false);
   Temporal *tpoint1 = trgeometry_to_tgeompoint(trgeo_seq1);
   Temporal *tpose1 = trgeometry_to_tpose(trgeo_seq1);
+  /* A rigid geometry carrying Z and the elevation span that cuts it, spelled
+   * as 153_trgeo_spatialfuncs.test.sql spells them. The body climbs from 0 to
+   * 4 so the span crosses it rather than missing it entirely. */
+  Temporal *trgeo_z1 = trgeometry_in(
+    "Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));"
+    "[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]");
+  Span *floatspan1 = floatspan_in("[1, 2]");
   /* Canned input arrays for the array-input constructors: two same-geometry
    * instants in increasing time, and the canned trgeometry sequence. The
    * constructors copy their elements, so these stay owned by the blocks that
@@ -817,6 +844,8 @@ TRGEO_CONFIG = dict(
   if (trgeo_seq1) free(trgeo_seq1);
   if (tpoint1) free(tpoint1);
   if (tpose1) free(tpose1);
+  if (trgeo_z1) free(trgeo_z1);
+  if (floatspan1) free(floatspan1);
   free(stbox1);
   free(poseset1);
   free(pose1);
@@ -1619,6 +1648,26 @@ TGEOMETRY_CONFIG = dict(
         "tpoint_as_mvtgeom":      {2: "4096", 3: "256"},
         "stbox_get_space_tile":   {0: "geom_point1", 4: "geom_point1"},
         "stbox_space_tiles":      {4: "geom_point1"},
+        # ... and their SPACE-TIME twins, which take the same point operands one
+        # argument further along and were left without them.
+        "stbox_get_space_time_tile": {0: "geom_point1", 6: "geom_point1"},
+        # A space-time tiling of a ZT box needs a 3D origin: the box and the
+        # origin must agree in dimension.
+        "stbox_space_time_tiles": {0: "stbox_zt1", 5: "geom_pointz1"},
+        # geom_dwithin is the dimension-aware entry of its trio, so 2D operands
+        # leave its z unknown and liblwgeom says so; the 3D point is what its
+        # own geom_dwithin3d sibling is already given.
+        "geom_dwithin":           {0: "geom_pointz1", 1: "geom_pointz1"},
+        # A time tiling needs the T dimension, so it takes the ZT box its
+        # siblings above already use.
+        "stbox_time_tiles":       {0: "stbox_zt1"},
+        # Azimuth and bearing are defined between two POINTS, and between two
+        # DISTINCT ones -- the default polygon draws "Only point geometries
+        # accepted".
+        "geom_azimuth":           {0: "geom_point1", 1: "geom_point2"},
+        "bearing_point_point":    {0: "geom_point1", 1: "geom_point2"},
+        # The measure a trajectory is annotated with is a temporal FLOAT.
+        "tpoint_tfloat_to_geomeas": {1: "tfloat1"},
         # A tgeometry carrying point values is what converts to a tgeompoint.
         "tgeometry_to_tgeompoint": {0: "tgeo_point1"},
         # The reverse conversion takes a STEP temporal point: a tgeometry can
@@ -1797,6 +1846,9 @@ TGEOMETRY_CONFIG = dict(
   Interval *interv1 = interval_in("1 day", -1);
   GSERIALIZED *geom1 = geom_in("SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))", -1);
   GSERIALIZED *geom_point1 = geom_in("SRID=5676;Point(1 1)", -1);
+  /* A second, DISTINCT point: azimuth and bearing are undefined between a
+   * point and itself. */
+  GSERIALIZED *geom_point2 = geom_in("SRID=5676;Point(3 4)", -1);
   GSERIALIZED *geom_pointz1 = geom_in("SRID=5676;Point(1 1 1)", -1);
   GSERIALIZED *geom_line1 = geom_in("SRID=5676;Linestring(0 0, 2 2, 4 0)", -1);
   /* An M-dimensional geometry whose measures are epoch seconds, for the
@@ -1917,6 +1969,8 @@ TGEOMETRY_CONFIG = dict(
     "[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]");
   Temporal *tpoint_z1 = tgeompoint_in(
     "[SRID=5676;Point(0 0 0)@2001-01-02, SRID=5676;Point(1 1 1)@2001-01-03]");
+  /* The measure a trajectory is annotated with, over the same span. */
+  Temporal *tfloat1 = tfloat_in("[1@2001-01-02, 2@2001-01-03]");
   /* A tgeometry carrying point values, and the STEP temporal point it
    * converts to and from. A tgeometry is never linearly interpolated, so the
    * point-valued literal parses as STEP. */
@@ -2017,6 +2071,7 @@ TGEOMETRY_CONFIG = dict(
   if (tgeo1) free(tgeo1);
   if (tpoint1) free(tpoint1);
   if (tpoint_z1) free(tpoint_z1);
+  if (tfloat1) free(tfloat1);
   if (tgeo_point1) free(tgeo_point1);
   if (tpoint_step1) free(tpoint_step1);
   if (tgeo_geod1) free(tgeo_geod1);
@@ -2041,6 +2096,7 @@ TGEOMETRY_CONFIG = dict(
   free(geom_lonlat1);
   free(geog1);
   free(geom_point1);
+  free(geom_point2);
   free(geom_pointz1);
   free(geom_line1);
   free(geom_meas1);
