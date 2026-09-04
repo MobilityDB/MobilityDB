@@ -131,6 +131,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Can any span from nodebox overlap with the query? </p>
+<p >A node bounds spans of the tree's own type &ndash; the centroid it is built from fixes it &ndash; and the query span carries the operand type the operator class declares, so this predicate and the six below it compare spans that are comparable by construction. They therefore call the internal predicates, which assert that contract; the external ones test it, and a descent testing it here would pay for it once per node it visits </p>
 
 </div>
 </div>
