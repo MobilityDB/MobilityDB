@@ -111,7 +111,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the spatial bounding box of a pcpatch as a <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a>. </p>
+<p>Return the spatial bounding box of a pcpatch as a <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a>. </p>
 <p >The schema the pcid of the patch names decides whether the box carries a Z dimension, in the same way it decides whether the box of a pcpoint carries one. The X and Y extent is the one the <code>PCBOUNDS</code> header of the patch states, which is why a patch of a pcid no schema states still answers the extent it holds; the Z extent is the one its points state, so a patch of a schema holding Z is walked once. The time dimension is absent, a patch being static. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pa</td><td>Patch </td></tr>

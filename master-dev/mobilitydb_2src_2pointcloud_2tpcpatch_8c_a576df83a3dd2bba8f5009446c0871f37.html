@@ -149,12 +149,12 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Patch-level <code>at</code> / <code>minus</code> restriction by <code><a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a></code>. </p>
+<p>Patch-level <code>at</code> / <code>minus</code> restriction by <code><a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a></code>. </p>
 <p >Walks every instant of <code>temp</code>, collects the timestamps whose patch passes the <code>PCBOUNDS-overlap</code> + timestamp-in-period predicate, then defers to <code>temporal_restrict_tstzset</code> for the actual restriction. Granularity is patch-level — surviving instants keep their pcpatch payload verbatim.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">temp</td><td>Source tpcpatch. </td></tr>
-    <tr><td class="paramname">box</td><td>Filtering <code><a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a></code>. </td></tr>
+    <tr><td class="paramname">box</td><td>Filtering <code><a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a></code>. </td></tr>
     <tr><td class="paramname">border_inc</td><td>Inclusive (<code>true</code>) or strict (<code>false</code>) overlap. </td></tr>
     <tr><td class="paramname">atfunc</td><td><code>REST_AT</code> keeps passing instants; <code>REST_MINUS</code> keeps the complement. </td></tr>
   </table>

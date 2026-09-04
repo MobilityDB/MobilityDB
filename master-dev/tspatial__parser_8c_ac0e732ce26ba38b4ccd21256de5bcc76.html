@@ -136,7 +136,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Parse the dimension and coordinate part of a spatiotemporal box from the buffer, after the <code>(GEOD)STBOX</code> prefix and any SRID have already been consumed. </p>
-<p >Shared by the <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> and <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> text parsers. Does NOT enforce end-of-input, so a caller may parse a trailing suffix (e.g. the <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> <code>PCID</code>) after the box body. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Shared by the <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> and <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> text parsers. Does NOT enforce end-of-input, so a caller may parse a trailing suffix (e.g. the <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> <code>PCID</code>) after the box body. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">str</td><td>Input string, advanced past what is read </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">geodetic</td><td>True for a geodetic box </td></tr>

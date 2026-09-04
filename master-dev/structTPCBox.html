@@ -76,10 +76,10 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Bounding box for pgpointcloud temporal types.  
+<p>Structure to represent point cloud spatiotemporal boxes.  
  <a href="structTPCBox.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="meos__pointcloud_8h_source.html">meos_pointcloud.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
@@ -118,11 +118,10 @@ Data Fields</h2></td></tr>
 <tr class="separator:ac1549827d071d30e635af6505b734e89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Bounding box for pgpointcloud temporal types. </p>
-<p >Mirrors <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> (spatiotemporal box) but carries an additional <code>pcid</code> field — pgpointcloud schema id — because TPCBoxes from different schemas cannot meaningfully be compared / unioned (the underlying dimensions are schema-specific). Fixed-size struct; no varlena.</p>
-<p >Flag bits live in <code>MEOS_FLAGS_*</code> (see <code><a class="el" href="meos__internal_8h.html">meos_internal.h</a></code>): <code>X</code> (bounds present), <code>Z</code> (z-dimension present), <code>T</code> (time span present), <code>GEODETIC</code> (geographic coords). A <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> must have at least one of X or T. </p>
+<div class="textblock"><p >Structure to represent point cloud spatiotemporal boxes. </p>
+<p >Every field down to the flags is byte-identical to <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a>, so the shared spatiotemporal code reads a <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> through an <code><a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a></code> pointer and projects it to one by dropping the trailing pcid. The pgpointcloud schema id follows that common prefix, since boxes of different schemas name different dimensions and cannot be compared. <code><a class="el" href="meos__pointcloud_8h.html">meos_pointcloud.h</a></code> asserts the shared offsets field by field. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
-<li>meos/include/<a class="el" href="meos__pointcloud_8h_source.html">meos_pointcloud.h</a></li>
+<li>meos/include/<a class="el" href="meos_8h_source.html">meos.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

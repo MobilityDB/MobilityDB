@@ -76,16 +76,16 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Constructor PG wrappers for the <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> type.  
+<p>Constructor PG wrappers for the <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> type.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga4353a2ecb925245ee5d042fc927ff17b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga4353a2ecb925245ee5d042fc927ff17b.html#ga4353a2ecb925245ee5d042fc927ff17b">Pcpatch_to_tpcbox</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:ga4353a2ecb925245ee5d042fc927ff17b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> built from a pcpatch — auto-fills SRID from the pgpointcloud schema via the per-backend schema cache @sqlfn tpcbox()  <a href="group__mobilitydb__pointcloud__box__constructor_ga4353a2ecb925245ee5d042fc927ff17b.html#ga4353a2ecb925245ee5d042fc927ff17b">More...</a><br /></td></tr>
+<tr class="memdesc:ga4353a2ecb925245ee5d042fc927ff17b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> built from a pcpatch — auto-fills SRID from the pgpointcloud schema via the per-backend schema cache @sqlfn tpcbox()  <a href="group__mobilitydb__pointcloud__box__constructor_ga4353a2ecb925245ee5d042fc927ff17b.html#ga4353a2ecb925245ee5d042fc927ff17b">More...</a><br /></td></tr>
 <tr class="separator:ga4353a2ecb925245ee5d042fc927ff17b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa81ae5078c3ab66a0266577e074e6de7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__box__constructor_gaa81ae5078c3ab66a0266577e074e6de7.html#gaa81ae5078c3ab66a0266577e074e6de7">Pcpoint_to_tpcbox</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:gaa81ae5078c3ab66a0266577e074e6de7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a degenerate (single-point) <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> built from a pcpoint.  <a href="group__mobilitydb__pointcloud__box__constructor_gaa81ae5078c3ab66a0266577e074e6de7.html#gaa81ae5078c3ab66a0266577e074e6de7">More...</a><br /></td></tr>
+<tr class="memdesc:gaa81ae5078c3ab66a0266577e074e6de7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a degenerate (single-point) <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> built from a pcpoint.  <a href="group__mobilitydb__pointcloud__box__constructor_gaa81ae5078c3ab66a0266577e074e6de7.html#gaa81ae5078c3ab66a0266577e074e6de7">More...</a><br /></td></tr>
 <tr class="separator:gaa81ae5078c3ab66a0266577e074e6de7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf4f7c9fc09cbee3140be2724ad106dfb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__pointcloud__box__constructor_gaf4f7c9fc09cbee3140be2724ad106dfb.html#gaf4f7c9fc09cbee3140be2724ad106dfb">Tpcbox_constructor_2d</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gaf4f7c9fc09cbee3140be2724ad106dfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">2D constructor — tpcbox(xmin, ymin, xmax, ymax, pcid, srid) @sqlfn tpcboxX()  <a href="group__mobilitydb__pointcloud__box__constructor_gaf4f7c9fc09cbee3140be2724ad106dfb.html#gaf4f7c9fc09cbee3140be2724ad106dfb">More...</a><br /></td></tr>
@@ -104,7 +104,7 @@ Functions</h2></td></tr>
 <tr class="separator:gadbe3810115555a126cb64ef1a1f74ac3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Constructor PG wrappers for the <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> type. </p>
+<p >Constructor PG wrappers for the <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> type. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
