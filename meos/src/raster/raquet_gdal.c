@@ -560,7 +560,7 @@ raster_value_gdal(const Temporal *traj, const char *path, int band)
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return NULL;
   meos_gdal_enter();
-  Temporal *result = raster_value(traj, &box, &raster_value_gdal_sample,
+  Temporal *result = raster_value_sampler(traj, &box, &raster_value_gdal_sample,
     &ctx);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);
@@ -590,7 +590,7 @@ raster_at_value_gdal(const Temporal *traj, const char *path, int band,
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return NULL;
   meos_gdal_enter();
-  Temporal *result = raster_at_value(traj, &box, &raster_value_gdal_sample,
+  Temporal *result = raster_at_value_sampler(traj, &box, &raster_value_gdal_sample,
     &ctx, vspan);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);
@@ -620,7 +620,7 @@ raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return NULL;
   meos_gdal_enter();
-  Temporal *result = raster_minus_value(traj, &box,
+  Temporal *result = raster_minus_value_sampler(traj, &box,
     &raster_value_gdal_sample, &ctx, vspan);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);
@@ -652,7 +652,7 @@ eraster_value_gdal(const Temporal *traj, const char *path, int band,
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return -1;
   meos_gdal_enter();
-  int result = eraster_value(traj, &box, &raster_value_gdal_sample, &ctx,
+  int result = eraster_value_sampler(traj, &box, &raster_value_gdal_sample, &ctx,
     vspan);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);
@@ -684,7 +684,7 @@ araster_value_gdal(const Temporal *traj, const char *path, int band,
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return -1;
   meos_gdal_enter();
-  int result = araster_value(traj, &box, &raster_value_gdal_sample, &ctx,
+  int result = araster_value_sampler(traj, &box, &raster_value_gdal_sample, &ctx,
     vspan);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);

@@ -102,6 +102,33 @@ FROM rast;
 (1 row)
 
 WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r, 2)
+FROM rast;
+ERROR:  Raster has no band 2, it has 1
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r, 0)
+FROM rast;
+ERROR:  Raster has no band 0, it has 1
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=3857;{POINT(1.5 1.5)@2001-01-01}', r)
+FROM rast;
+ERROR:  Operation on mixed SRID
+WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
       ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),

@@ -8,6 +8,9 @@ meos/src/geo/postgis_funcs.c	lwgeom_difference_prec
 meos/src/geo/postgis_funcs.c	lwgeom_intersection_prec
 meos/src/geo/postgis_funcs.c	lwgeom_unaryunion_prec
 meos/src/raster/raster_rtcore.c	rt_raster_destroy
+meos/src/raster/raster_rtcore.c	rt_raster_geopoint_to_rasterpoint
 meos/src/raster/raster_rtcore.c	rt_raster_get_band
+meos/src/raster/raster_rtcore.c	rt_raster_get_envelope
+meos/src/raster/raster_rtcore.c	rt_raster_get_inverse_geotransform_matrix
 meos/src/raster/raster_rtcore.c	rt_raster_get_num_bands
-meos/src/temporal/temporal_modif.c	lwgeom_linemerge_directed
+meos/src/raster/raster_rtcore.c	rt_raster_get_srid

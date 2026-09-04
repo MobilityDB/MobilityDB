@@ -74,6 +74,14 @@ static const char *raster_two_bands =
   "0a0000000000000000000000000000000000000000000000000000000000000000000000"
   "0000000000";
 
+/* The 3x3 raster of the rasterValue cases: a 32BF band of 1 degree pixels
+ * holding 10, nodata, 30 / 40, 50, 60 / 70, 80, 90, with -9999 declared as
+ * its nodata value */
+static const char *raster_values =
+  "0100000100000000000000f03f000000000000f0bf0000000000000000000000000000"
+  "084000000000000000000000000000000000e6100000030003004a003c1cc600002041"
+  "003c1cc60000f04100002042000048420000704200008c420000a0420000b442";
+
 /* Main program */
 int main(void)
 {
@@ -267,6 +275,78 @@ int main(void)
   }
   free(zero_quadbin);
   free(traj);
+
+  /* The sampling of a PostGIS raster is answered by MEOS, so a program using
+   * the library reads the values a PostgreSQL session reads. The trajectory
+   * below visits pixel(1,1) = 10, the nodata pixel(1,2), a position outside
+   * the raster, and pixel(3,1) = 70, so the two positions carrying data are
+   * the two the sampling answers */
+  Raster *rast_values = raster_from_hexwkb(raster_values);
+  assert(rast_values != NULL);
+  Temporal *traj_values = tgeompoint_in("SRID=4326;[POINT(0.5 2.5)@2001-01-01,"
+    " POINT(1.5 2.5)@2001-01-02, POINT(5.5 5.5)@2001-01-03,"
+    " POINT(0.5 0.5)@2001-01-04]");
+  assert(traj_values != NULL);
+  meos_errno_reset();
+  Temporal *values = raster_value(traj_values, rast_values, 1);
+  assert(values != NULL);
+  assert(meos_errno() == 0);
+  char *values_str = tfloat_out(values, 0);
+  printf("raster_value(traj, raster, 1): %s\n", values_str);
+  assert(temporal_num_instants(values) == 2);
+  assert(tfloat_start_value(values) == 10.0);
+  assert(tfloat_end_value(values) == 70.0);
+  free(values_str); free(values);
+
+  /* The restrictions and the predicates read the same values: only the
+   * position sampling 70 falls inside [40, 90] */
+  Span *vspan = floatspan_in("[40, 90]");
+  assert(vspan != NULL);
+  Temporal *at = raster_at_value(traj_values, rast_values, 1, vspan);
+  assert(at != NULL && temporal_num_instants(at) == 1);
+  Temporal *minus = raster_minus_value(traj_values, rast_values, 1,
+    vspan);
+  assert(minus != NULL && temporal_num_instants(minus) == 1);
+  int ever = eraster_value(traj_values, rast_values, 1, vspan);
+  int always = araster_value(traj_values, rast_values, 1, vspan);
+  printf("eraster_value: %d, araster_value: %d\n", ever,
+    always);
+  assert(ever == 1 && always == 0);
+  assert(meos_errno() == 0);
+  free(at); free(minus);
+
+  /* A band the raster does not have is refused, in either direction */
+  const int bad_bands[] = {0, -1, 2};
+  for (size_t i = 0; i < sizeof(bad_bands) / sizeof(bad_bands[0]); i++)
+  {
+    meos_errno_reset();
+    Temporal *none = raster_value(traj_values, rast_values,
+      bad_bands[i]);
+    printf("raster_value(band %d): %s, errno %d\n", bad_bands[i],
+      none ? "non-NULL" : "NULL", meos_errno());
+    assert(none == NULL);
+    assert(meos_errno() != 0);
+  }
+
+  /* A raster and a trajectory in different reference systems state their
+   * positions in different units, which is an error and not an empty answer */
+  Temporal *traj_3857 = tgeompoint_in("SRID=3857;{POINT(0.5 2.5)@2001-01-01}");
+  assert(traj_3857 != NULL);
+  meos_errno_reset();
+  assert(raster_value(traj_3857, rast_values, 1) == NULL);
+  assert(meos_errno() != 0);
+
+  /* A null argument is rejected rather than dereferenced */
+  meos_errno_reset();
+  assert(raster_value(NULL, rast_values, 1) == NULL);
+  assert(raster_value(traj_values, NULL, 1) == NULL);
+  assert(raster_at_value(traj_values, rast_values, 1, NULL) == NULL);
+  assert(raster_minus_value(traj_values, rast_values, 1, NULL) == NULL);
+  assert(eraster_value(traj_values, rast_values, 1, NULL) == -1);
+  assert(araster_value(traj_values, rast_values, 1, NULL) == -1);
+  assert(meos_errno() != 0);
+
+  free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 
   meos_finalize();
   printf("raster_test: all assertions passed\n");

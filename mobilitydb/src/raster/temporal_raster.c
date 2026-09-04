@@ -29,48 +29,24 @@
 
 /**
  * @file
- * @brief C implementation of raster_value() — PostGIS raster band sampling
- * along tgeompoint trajectories.
+ * @brief PostgreSQL functions of the raster sampling operators.
  *
- * The function iterates over the instants of the trajectory in C, filters
- * out-of-range positions with a bounding-box pre-check derived from the
- * raster's convex hull, calls PostGIS ST_Value() for each in-range instant,
- * and assembles the surviving (value, timestamp) pairs directly into a
- * heap-allocated TSequence (DISCRETE interpolation), bypassing the SQL
- * string_agg / to_char / text→tfloat pipeline.
- *
- * PostGIS raster internals (rt_api.h) are not exported from
- * postgis_raster-3.so.  The implementation therefore calls the published SQL
- * surface (ST_ConvexHull, ST_Value) via PostgreSQL's OidFunctionCall
- * mechanism, resolving OIDs once per session through regprocedurein.
+ * The wrappers pass their arguments to MEOS, which samples a PostGIS raster
+ * through the vendored raster core: a `raster` column is detoasted into the
+ * serialized form the MEOS functions take, so the operators answer the same
+ * values to every binding of the library and not to PostgreSQL alone.
  */
 
-/* C */
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-/*
- * utils/builtins.h pulls in fmgrprotos.h, which declares `json_object` as a
- * PostgreSQL callable function.  meos_internal.h then includes json-c/json.h
- * which tries to typedef the same name as a struct — a C-level conflict.
- * Forward-declare only the symbols we need to avoid the full builtins.h include.
- */
-
-extern Datum regprocedurein(PG_FUNCTION_ARGS);
-
-/* PostgreSQL */
 #include <utils/array.h>
-/* PostGIS */
-#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_raster.h>
-#include <pgtypes.h>
+#include <pgtypes.h>          /* text_to_cstring, cstring_to_text */
 #include "temporal/span.h"    /* PG_GETARG_SPAN_P */
-#include "temporal/tinstant.h"
-#include "temporal/tsequence.h"
 #include "temporal/type_util.h" /* bstring2bytea */
 #include "geo/stbox.h"        /* PG_RETURN_STBOX_P */
 #include "raster/raquet.h"    /* Raquet, PG_GETARG_RAQUET_P, raquet_pixtype_size */
@@ -80,120 +56,14 @@ extern Datum regprocedurein(PG_FUNCTION_ARGS);
 #include "pg_temporal/type_util.h" /* raquetarr_extract */
 #include "pg_raster/temporal_raster.h"
 
-/*****************************************************************************
- * OID cache helpers
- *****************************************************************************/
-
-/**
- * @brief Return the OID of a function identified by its SQL signature string.
- *
- * Uses regprocedurein so that type names are resolved in the current search
- * path without hard-coding any numeric OIDs.
- */
-static Oid
-lookup_func_oid(const char *signature)
-{
-  return DatumGetObjectId(DirectFunctionCall1(regprocedurein,
-    CStringGetDatum(signature)));
-}
-
-/** Cached OID for ST_ConvexHull(raster) → geometry */
-static Oid st_convexhull_raster_oid = InvalidOid;
-
-/** Cached OID for ST_Value(raster, integer, geometry, boolean) → float8 */
-static Oid st_value_oid = InvalidOid;
-
-static void
-init_oids(void)
-{
-  if (st_convexhull_raster_oid == InvalidOid)
-    st_convexhull_raster_oid = lookup_func_oid("st_convexhull(raster)");
-  if (st_value_oid == InvalidOid)
-    st_value_oid =
-      lookup_func_oid("st_value(raster,integer,geometry,boolean,text)");
-}
-
-/*****************************************************************************
- * raster_value
- *****************************************************************************/
-
-/**
- * @brief Raster sampling callback backed by PostGIS raster's ST_Value: the
- * context is a prepared FunctionCallInfo whose raster/band/nodata/resample
- * arguments are constant, only the point argument varies per call
- */
-static bool
-raster_st_value_sample(void *ctx, const GSERIALIZED *point, double *value)
-{
-  FunctionCallInfo fcinfo_val = (FunctionCallInfo) ctx;
-  fcinfo_val->args[2].value = PointerGetDatum(point);
-  fcinfo_val->args[2].isnull = false;
-  fcinfo_val->isnull = false;   /* reset before every call */
-  Datum pixval = FunctionCallInvoke(fcinfo_val);
-  if (fcinfo_val->isnull)
-    return false;   /* nodata pixel, or point outside the raster or the band */
-  *value = DatumGetFloat8(pixval);
-  return true;
-}
-
-/**
- * @brief Build the convex-hull STBox pre-filter and the reusable ST_Value
- * FunctionCallInfo shared by every raster sampling/restriction/predicate
- * wrapper
- * @details Arg 2 (the point) of @p fcinfo_val is left uninitialized: it is
- * set on every call by #raster_st_value_sample. The FmgrInfo backing
- * @p fcinfo_val is palloc'd so that its lifetime matches the calling
- * wrapper's memory context, same as the LOCAL_FCINFO buffer itself.
- */
-static void
-raster_value_setup(Datum rast_datum, int32 band, STBox *box,
-  FunctionCallInfo fcinfo_val)
-{
-  /* OID resolution (once per session) */
-  init_oids();
-
-  /* Raster convex hull — the bounding-box pre-filter of the MEOS kernel */
-  Datum hull_datum =
-    OidFunctionCall1(st_convexhull_raster_oid, rast_datum);
-  GSERIALIZED *hull_gs = (GSERIALIZED *) DatumGetPointer(hull_datum);
-  GBOX hull_box;
-  gserialized_get_gbox_p(hull_gs, &hull_box);
-  pfree(hull_gs);
-  memset(box, 0, sizeof(STBox));
-  box->xmin = hull_box.xmin;
-  box->xmax = hull_box.xmax;
-  box->ymin = hull_box.ymin;
-  box->ymax = hull_box.ymax;
-
-  /* Prepare a reusable FunctionCallInfo for ST_Value (handles NULL returns) */
-  FmgrInfo *flinfo = palloc0(sizeof(FmgrInfo));
-  fmgr_info(st_value_oid, flinfo);
-  InitFunctionCallInfoData(*fcinfo_val, flinfo, 5, DEFAULT_COLLATION_OID,
-    NULL, NULL);
-  /* Arg 0 (raster) and Arg 1 (band) are constant for every instant */
-  fcinfo_val->args[0].value = rast_datum;
-  fcinfo_val->args[0].isnull = false;
-  fcinfo_val->args[1].value = Int32GetDatum(band);
-  fcinfo_val->args[1].isnull = false;
-  /* Arg 3 (exclude_nodata) = true — ST_Value reports a nodata pixel as NULL,
-   * which #raster_st_value_sample turns into "no value here", as the
-   * #raster_sample_fn contract requires. With false the sentinel comes back as
-   * an ordinary number and is sampled as though it were data */
-  fcinfo_val->args[3].value  = BoolGetDatum(true);
-  fcinfo_val->args[3].isnull = false;
-  /* Arg 4 (resample) = 'nearest' — PostGIS 3.6+ added this parameter */
-  fcinfo_val->args[4].value = PointerGetDatum(cstring_to_text("nearest"));
-  fcinfo_val->args[4].isnull = false;
-}
-
 PGDLLEXPORT Datum Raster_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Raster_value);
 /**
  * @ingroup mobilitydb_raster
  * @brief Return the values of a raster band sampled at the instants of a
  * trajectory
- * @param[in] rast Raster
  * @param[in] traj Trajectory
+ * @param[in] rast Raster
  * @param[in] band Band number (1-based, default 1)
  * @sqlfn rasterValue()
  */
@@ -201,17 +71,13 @@ Datum
 Raster_value(PG_FUNCTION_ARGS)
 {
   Temporal *traj = PG_GETARG_TEMPORAL_P(0);
-  Datum rast_datum = PG_GETARG_DATUM(1);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
   int32 band = PG_ARGISNULL(2) ? 1 : PG_GETARG_INT32(2);
 
-  STBox box;
-  LOCAL_FCINFO(fcinfo_val, 5);
-  raster_value_setup(rast_datum, band, &box, fcinfo_val);
-
-  Temporal *result = raster_value(traj, &box, &raster_st_value_sample,
-    fcinfo_val);
+  Temporal *result = raster_value(traj, rast, band);
 
   PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rast, 1);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -237,18 +103,14 @@ Datum
 Raster_at_value(PG_FUNCTION_ARGS)
 {
   Temporal *traj = PG_GETARG_TEMPORAL_P(0);
-  Datum rast_datum = PG_GETARG_DATUM(1);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
   Span *vspan = PG_GETARG_SPAN_P(2);
   int32 band = PG_ARGISNULL(3) ? 1 : PG_GETARG_INT32(3);
 
-  STBox box;
-  LOCAL_FCINFO(fcinfo_val, 5);
-  raster_value_setup(rast_datum, band, &box, fcinfo_val);
-
-  Temporal *result = raster_at_value(traj, &box, &raster_st_value_sample,
-    fcinfo_val, vspan);
+  Temporal *result = raster_at_value(traj, rast, band, vspan);
 
   PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rast, 1);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -270,18 +132,14 @@ Datum
 Raster_minus_value(PG_FUNCTION_ARGS)
 {
   Temporal *traj = PG_GETARG_TEMPORAL_P(0);
-  Datum rast_datum = PG_GETARG_DATUM(1);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
   Span *vspan = PG_GETARG_SPAN_P(2);
   int32 band = PG_ARGISNULL(3) ? 1 : PG_GETARG_INT32(3);
 
-  STBox box;
-  LOCAL_FCINFO(fcinfo_val, 5);
-  raster_value_setup(rast_datum, band, &box, fcinfo_val);
-
-  Temporal *result = raster_minus_value(traj, &box, &raster_st_value_sample,
-    fcinfo_val, vspan);
+  Temporal *result = raster_minus_value(traj, rast, band, vspan);
 
   PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rast, 1);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -293,8 +151,8 @@ PG_FUNCTION_INFO_V1(Eraster_value);
  * @ingroup mobilitydb_raster
  * @brief Return true if a trajectory ever samples a raster pixel value
  * inside a float range
- * @param[in] rast Raster
  * @param[in] traj Trajectory (SRID matching the raster)
+ * @param[in] rast Raster
  * @param[in] vspan Float value range
  * @param[in] band Band number (1-based, default 1)
  * @sqlfn eRasterValue()
@@ -303,18 +161,14 @@ Datum
 Eraster_value(PG_FUNCTION_ARGS)
 {
   Temporal *traj = PG_GETARG_TEMPORAL_P(0);
-  Datum rast_datum = PG_GETARG_DATUM(1);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
   Span *vspan = PG_GETARG_SPAN_P(2);
   int32 band = PG_ARGISNULL(3) ? 1 : PG_GETARG_INT32(3);
 
-  STBox box;
-  LOCAL_FCINFO(fcinfo_val, 5);
-  raster_value_setup(rast_datum, band, &box, fcinfo_val);
-
-  int result = eraster_value(traj, &box, &raster_st_value_sample,
-    fcinfo_val, vspan);
+  int result = eraster_value(traj, rast, band, vspan);
 
   PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rast, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
@@ -326,8 +180,8 @@ PG_FUNCTION_INFO_V1(Araster_value);
  * @ingroup mobilitydb_raster
  * @brief Return true if every in-raster-extent instant of a trajectory
  * samples a pixel value inside a float range
- * @param[in] rast Raster
  * @param[in] traj Trajectory (SRID matching the raster)
+ * @param[in] rast Raster
  * @param[in] vspan Float value range
  * @param[in] band Band number (1-based, default 1)
  * @sqlfn aRasterValue()
@@ -336,18 +190,14 @@ Datum
 Araster_value(PG_FUNCTION_ARGS)
 {
   Temporal *traj = PG_GETARG_TEMPORAL_P(0);
-  Datum rast_datum = PG_GETARG_DATUM(1);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
   Span *vspan = PG_GETARG_SPAN_P(2);
   int32 band = PG_ARGISNULL(3) ? 1 : PG_GETARG_INT32(3);
 
-  STBox box;
-  LOCAL_FCINFO(fcinfo_val, 5);
-  raster_value_setup(rast_datum, band, &box, fcinfo_val);
-
-  int result = araster_value(traj, &box, &raster_st_value_sample,
-    fcinfo_val, vspan);
+  int result = araster_value(traj, rast, band, vspan);
 
   PG_FREE_IF_COPY(traj, 0);
+  PG_FREE_IF_COPY(rast, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
