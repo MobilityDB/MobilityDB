@@ -1724,6 +1724,48 @@ int main(void)
   free(pzw); free(pz); free(pz_a); free(pz_b);
   meos_errno_reset();
 
+  /* A REGION WHOLLY INSIDE ANOTHER LEAVES NOTHING BEHIND, and it leaves
+   * nothing behind whether or not the two boundaries touch on the way: what
+   * they share along the touch is of no area, and a difference of regions does
+   * not answer one. The pairs below all touch -- a disc inscribed in a square
+   * meets it at four points, and a geometry against itself shares the whole of
+   * its boundary -- so each is a difference that keeps no piece of either
+   * boundary and covers nothing */
+  const char *ins_a[] = {
+    "TRIANGLE((0 0,4 0,2 4,0 0))",
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
+    /* A multisurface is a region the route below declines to read at all, so
+     * these two are answered where nothing answered them */
+    "MULTISURFACE(CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2)),"
+      "((3 3,4 3,4 4,3 4,3 3)))",
+    "MULTISURFACE(CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2)),"
+      "((3 3,4 3,4 4,3 4,3 3)))",
+  };
+  const char *ins_b[] = {
+    "TRIANGLE((0 0,4 0,2 4,0 0))",
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "MULTISURFACE(CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2)),"
+      "((3 3,4 3,4 4,3 4,3 3)))",
+  };
+  for (int i = 0; i < 5; i++)
+  {
+    GSERIALIZED *ia = geom_in(ins_a[i], -1);
+    GSERIALIZED *ib = geom_in(ins_b[i], -1);
+    assert(ia != NULL); assert(ib != NULL);
+    meos_errno_reset();
+    GSERIALIZED *ir = geom_difference2d(ia, ib);
+    assert(ir != NULL);
+    assert(meos_errno() == 0);
+    char *iw = geo_as_text(ir, 6);
+    printf("a region inside another leaves: %s\n", iw);
+    assert(strcmp(iw, "POLYGON EMPTY") == 0);
+    free(iw); free(ir); free(ia); free(ib);
+    meos_errno_reset();
+  }
+
   /* ONE REGION, TWO SPELLINGS, AND THEY MUST AGREE. A pair of POLYGONs is
    * overlaid by the Clipper2 arm; the same region spelled TRIANGLE reaches
    * the native one. Neither carries an arc, so the two answer the same

@@ -3710,15 +3710,24 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
     meos_array_destroy(intersections);
     return NULL;
   }
-  /* An operation keeping no piece of either boundary covers no area. Where
-   * the boundaries stay apart that IS the answer -- two regions that never
-   * meet share nothing, and one inside the other leaves nothing behind. Where
-   * they MEET it is not: two discs touching at a point share that point, and
-   * two surfaces meeting along an edge share the edge. Such an answer is of
-   * lower dimension than the surfaces this assembles, so the pair is left to
-   * the caller rather than answered as the region of no area, which would
-   * drop a point set that is really there */
-  if (meos_array_count(selected) == 0 && crossing)
+  /* An operation keeping no piece of either boundary covers no area, and what
+   * that means differs between the two operations.
+   *
+   * A DIFFERENCE keeping nothing says the FIRST geometry is wholly inside the
+   * second: no piece of its boundary lies outside, and no piece of the other's
+   * lies within. A region inside another leaves nothing behind, and it leaves
+   * nothing behind whether or not the two boundaries touch on the way -- what
+   * they share is of no area, and a difference of regions does not answer one.
+   * So the region of no area IS the answer here.
+   *
+   * An INTERSECTION keeping nothing does NOT say that. Where the boundaries
+   * stay apart the two share nothing and the region of no area is right; but
+   * where they MEET, the two share exactly what they meet along -- two discs
+   * touching at a point share that point, two surfaces meeting along an edge
+   * share the edge. That answer is of lower dimension than the surfaces this
+   * assembles, so the pair is left to the caller rather than answered as
+   * covering nothing, which would drop a point set that is really there */
+  if (meos_array_count(selected) == 0 && crossing && oper != CL_DIFFERENCE)
   {
     meos_array_destroy(selected); meos_array_destroy(boundary);
     meos_array_destroy(split_a); meos_array_destroy(split_b);
