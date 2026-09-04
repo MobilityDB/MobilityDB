@@ -156,7 +156,7 @@ bool
 span_contains(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2);
-  assert(s1->spantype == s2->spantype);
+  assert(ensure_valid_span_span(s1, s2));
   int cmp1 = datum_cmp(s1->lower, s2->lower, s1->basetype);
   int cmp2 = datum_cmp(s1->upper, s2->upper, s1->basetype);
   if (
@@ -207,7 +207,7 @@ bool
 span_contained(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2);
-  assert(s1->spantype == s2->spantype);
+  assert(ensure_valid_span_span(s1, s2));
   return span_contains(s2, s1);
 }
 
@@ -240,7 +240,7 @@ bool
 span_overlaps(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2);
-  assert(s1->spantype == s2->spantype);
+  assert(ensure_valid_span_span(s1, s2));
   int cmp1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
   int cmp2 = datum_cmp(s2->lower, s1->upper, s1->basetype);
   if (
@@ -313,7 +313,7 @@ bool
 span_adjacent(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2);
-  assert(s1->spantype == s2->spantype);
+  assert(ensure_valid_span_span(s1, s2));
   /*
    * Canonical span-adjacency rule: set-theoretic share-a-boundary.
    * Two spans are adjacent iff their closures meet at a single boundary value
@@ -362,7 +362,7 @@ bool
 span_same(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2);
-  assert(s1->spantype == s2->spantype);
+  assert(ensure_valid_span_span(s1, s2));
   /* A span is a single dimension, so `same` (`~=`) reduces to span equality.
    * This is the base case of the bounding-box `same` family (#same_tbox_tbox(),
    * #same_stbox_stbox()), letting the temporal/span bounding-box wrappers
@@ -427,7 +427,7 @@ bool
 span_left(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2);
-  assert(s1->spantype == s2->spantype);
+  assert(ensure_valid_span_span(s1, s2));
   int cmp = datum_cmp(s1->upper, s2->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
 }
@@ -500,7 +500,7 @@ bool
 span_right(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2);
-  assert(s1->spantype == s2->spantype);
+  assert(ensure_valid_span_span(s1, s2));
   return span_left(s2, s1);
 }
 
@@ -565,7 +565,7 @@ bool
 span_overleft(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2);
-  assert(s1->spantype == s2->spantype);
+  assert(ensure_valid_span_span(s1, s2));
   int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
 }
@@ -628,7 +628,7 @@ bool
 span_overright(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2);
-  assert(s1->spantype == s2->spantype);
+  assert(ensure_valid_span_span(s1, s2));
   int cmp = datum_cmp(s2->lower, s1->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->lower_inc || s2->lower_inc)));
 }

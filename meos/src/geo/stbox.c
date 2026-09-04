@@ -1884,6 +1884,8 @@ bool
 stbox_contains(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   bool hasx, hasz, hast, geodetic;
   stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
   if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
@@ -1925,6 +1927,8 @@ bool
 stbox_contained(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   return stbox_contains(box2, box1);
 }
 
@@ -1954,6 +1958,8 @@ bool
 stbox_overlaps(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   bool hasx, hasz, hast, geodetic;
   stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
   if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
@@ -1994,6 +2000,8 @@ bool
 stbox_same(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   bool hasx, hasz, hast, geodetic;
   stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
   if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
@@ -2052,6 +2060,8 @@ bool
 stbox_adjacent(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   bool hasx, hasz, hast, geodetic;
   stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
   /* Boxes are adjacent if they meet in every common dimension and touch in at
@@ -2135,8 +2145,9 @@ bool
 stbox_left(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
   return (box1->xmax < box2->xmin);
 }
 
@@ -2169,8 +2180,9 @@ bool
 stbox_overleft(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
   return (box1->xmax <= box2->xmax);
 }
 
@@ -2203,8 +2215,9 @@ bool
 stbox_right(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
   return (box1->xmin > box2->xmax);
 }
 
@@ -2237,8 +2250,9 @@ bool
 stbox_overright(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
   return (box1->xmin >= box2->xmin);
 }
 
@@ -2270,8 +2284,9 @@ bool
 stbox_below(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
   return (box1->ymax < box2->ymin);
 }
 
@@ -2303,8 +2318,9 @@ bool
 stbox_overbelow(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
   return (box1->ymax <= box2->ymax);
 }
 
@@ -2336,8 +2352,9 @@ bool
 stbox_above(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
   return (box1->ymin > box2->ymax);
 }
 
@@ -2369,8 +2386,9 @@ bool
 stbox_overabove(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
   return (box1->ymin >= box2->ymin);
 }
 
@@ -2403,8 +2421,9 @@ bool
 stbox_front(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_Z(box1->flags));
-  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_Z(T_STBOX, box1->flags));
+  assert(ensure_has_Z(T_STBOX, box2->flags));
   return (box1->zmax < box2->zmin);
 }
 
@@ -2437,8 +2456,9 @@ bool
 stbox_overfront(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_Z(box1->flags));
-  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_Z(T_STBOX, box1->flags));
+  assert(ensure_has_Z(T_STBOX, box2->flags));
   return (box1->zmax <= box2->zmax);
 }
 
@@ -2471,8 +2491,9 @@ bool
 stbox_back(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_Z(box1->flags));
-  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_Z(T_STBOX, box1->flags));
+  assert(ensure_has_Z(T_STBOX, box2->flags));
   return (box1->zmin > box2->zmax);
 }
 
@@ -2505,8 +2526,9 @@ bool
 stbox_overback(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_Z(box1->flags));
-  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_Z(T_STBOX, box1->flags));
+  assert(ensure_has_Z(T_STBOX, box2->flags));
   return (box1->zmin >= box2->zmin);
 }
 
@@ -2540,8 +2562,8 @@ bool
 stbox_before(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_STBOX, box1->flags));
+  assert(ensure_has_T(T_STBOX, box2->flags));
   return span_left(&box1->period, &box2->period);
 }
 
@@ -2573,8 +2595,8 @@ bool
 stbox_overbefore(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_STBOX, box1->flags));
+  assert(ensure_has_T(T_STBOX, box2->flags));
   return span_overleft(&box1->period, &box2->period);
 }
 
@@ -2606,8 +2628,8 @@ bool
 stbox_after(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_STBOX, box1->flags));
+  assert(ensure_has_T(T_STBOX, box2->flags));
   return span_right(&box1->period, &box2->period);
 }
 
@@ -2639,8 +2661,8 @@ bool
 stbox_overafter(const STBox *box1, const STBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_STBOX, box1->flags));
+  assert(ensure_has_T(T_STBOX, box2->flags));
   return span_overright(&box1->period, &box2->period);
 }
 
