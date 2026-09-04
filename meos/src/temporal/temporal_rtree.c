@@ -185,12 +185,15 @@ bbox_expand_tpcbox(const void *box1, void *box2)
 /**
  * @brief Return `true` if the first span contains the second one, `false`
  * otherwise
+ * @details An R-tree stores homogeneous boxes -- same span type by
+ * construction -- so the validation of #contains_span_span is unnecessary here
+ * and the internal predicate, which asserts that contract, is called instead
  * @param[in] box1,box2 Spans
  */
 static inline bool
 bbox_contains_span(const void *box1, const void *box2)
 {
-  return contains_span_span((Span *) box1, (Span *) box2);
+  return span_contains((const Span *) box1, (const Span *) box2);
 }
 
 /**
@@ -259,7 +262,7 @@ bbox_overlaps_span(const void *box1, const void *box2)
 static bool
 bbox_adjacent_span(const void *box1, const void *box2)
 {
-  return adjacent_span_span((const Span *) box1, (const Span *) box2);
+  return span_adjacent((const Span *) box1, (const Span *) box2);
 }
 
 static bool
@@ -415,10 +418,10 @@ bbox_position_span(const void *box1, const void *box2, IndexSearchOp op)
   const Span *s2 = (const Span *) box2;
   switch (op)
   {
-    case INDEX_LEFT:      return left_span_span(s1, s2);
-    case INDEX_OVERLEFT:  return overleft_span_span(s1, s2);
-    case INDEX_RIGHT:     return right_span_span(s1, s2);
-    case INDEX_OVERRIGHT: return overright_span_span(s1, s2);
+    case INDEX_LEFT:      return span_left(s1, s2);
+    case INDEX_OVERLEFT:  return span_overleft(s1, s2);
+    case INDEX_RIGHT:     return span_right(s1, s2);
+    case INDEX_OVERRIGHT: return span_overright(s1, s2);
     default:              return false;
   }
 }

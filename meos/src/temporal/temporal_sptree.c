@@ -141,6 +141,14 @@ span_inner_consistent(const void *nodebox, const void *query, IndexSearchOp op)
   }
 }
 
+/**
+ * @brief Return true if a leaf entry satisfies the search operation
+ * @details A tree stores homogeneous spans -- same span type by construction,
+ * which #ensure_valid_sptree_box establishes at the entry point -- so the
+ * internal predicates, which assert that contract, are what the descent calls
+ * @param[in] key,query Spans
+ * @param[in] op Search operation
+ */
 static bool
 span_leaf_consistent(const void *key, const void *query, IndexSearchOp op)
 {
@@ -148,15 +156,15 @@ span_leaf_consistent(const void *key, const void *query, IndexSearchOp op)
   const Span *q = (const Span *) query;
   switch (op)
   {
-    case INDEX_CONTAINS:      return contains_span_span(k, q);
-    case INDEX_CONTAINED_BY:  return contains_span_span(q, k);
-    case INDEX_SAME:          return contains_span_span(k, q) && contains_span_span(q, k);
-    case INDEX_ADJACENT:      return adjacent_span_span(k, q);
-    case INDEX_OVERLAPS:      return overlaps_span_span(k, q);
-    case INDEX_LEFT:          return left_span_span(k, q);
-    case INDEX_OVERLEFT:      return overleft_span_span(k, q);
-    case INDEX_RIGHT:         return right_span_span(k, q);
-    case INDEX_OVERRIGHT:     return overright_span_span(k, q);
+    case INDEX_CONTAINS:      return span_contains(k, q);
+    case INDEX_CONTAINED_BY:  return span_contains(q, k);
+    case INDEX_SAME:          return span_contains(k, q) && span_contains(q, k);
+    case INDEX_ADJACENT:      return span_adjacent(k, q);
+    case INDEX_OVERLAPS:      return span_overlaps(k, q);
+    case INDEX_LEFT:          return span_left(k, q);
+    case INDEX_OVERLEFT:      return span_overleft(k, q);
+    case INDEX_RIGHT:         return span_right(k, q);
+    case INDEX_OVERRIGHT:     return span_overright(k, q);
     default:
       /* A span has one dimension, which the value operations order */
       return false;

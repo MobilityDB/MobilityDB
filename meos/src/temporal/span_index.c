@@ -53,6 +53,11 @@
 
 /**
  * @brief Leaf consistency for span types
+ * @details An index holds spans of one type -- the column fixes it, and the
+ * query span is built from the operand type the operator class declares -- so
+ * the two spans are comparable by construction. A descent therefore calls the
+ * internal predicates, which assert that contract; the external ones test it,
+ * and testing here would pay for it again at every entry the scan visits
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
@@ -65,28 +70,28 @@ span_index_leaf_consistent(const Span *key, const Span *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
-      return overlaps_span_span(key, query);
+      return span_overlaps(key, query);
     case RTContainsStrategyNumber:
-      return contains_span_span(key, query);
+      return span_contains(key, query);
     case RTContainedByStrategyNumber:
-      return contains_span_span(query, key);
+      return span_contains(query, key);
     case RTEqualStrategyNumber:
     case RTSameStrategyNumber:
       return span_eq(key, query);
     case RTAdjacentStrategyNumber:
-      return adjacent_span_span(key, query);
+      return span_adjacent(key, query);
     case RTLeftStrategyNumber:
     case RTBeforeStrategyNumber:
-      return left_span_span(key, query);
+      return span_left(key, query);
     case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
-      return overleft_span_span(key, query);
+      return span_overleft(key, query);
     case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
-      return right_span_span(key, query);
+      return span_right(key, query);
     case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
-      return overright_span_span(key, query);
+      return span_overright(key, query);
     default:
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "unrecognized span strategy: %d", strategy);
@@ -108,25 +113,25 @@ span_gist_inner_consistent(const Span *key, const Span *query,
   {
     case RTOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
-      return overlaps_span_span(key, query);
+      return span_overlaps(key, query);
     case RTContainsStrategyNumber:
     case RTEqualStrategyNumber:
     case RTSameStrategyNumber:
-      return contains_span_span(key, query);
+      return span_contains(key, query);
     case RTAdjacentStrategyNumber:
-      return adjacent_span_span(key, query) || overlaps_span_span(key, query);
+      return span_adjacent(key, query) || span_overlaps(key, query);
     case RTLeftStrategyNumber:
     case RTBeforeStrategyNumber:
-      return ! overright_span_span(key, query);
+      return ! span_overright(key, query);
     case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
-      return ! right_span_span(key, query);
+      return ! span_right(key, query);
     case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
-      return ! overleft_span_span(key, query);
+      return ! span_overleft(key, query);
     case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
-      return ! left_span_span(key, query);
+      return ! span_left(key, query);
     default:
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "unrecognized span strategy: %d", strategy);
