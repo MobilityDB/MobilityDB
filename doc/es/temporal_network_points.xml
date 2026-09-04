@@ -333,7 +333,6 @@ SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 			<para>Dos valores <varname>npoint</varname> pueden tener diferentes identificadores de ruta pero pueden representar el mismo punto espacial en la intersección de las dos rutas. La función <varname>same</varname> se utiliza para verificar la similitud espacial de los puntos de la red.</para>
 			<itemizedlist>
 				<listitem xml:id="npoint_same">
-					<indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 					<para>¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">

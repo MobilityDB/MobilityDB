@@ -31,6 +31,8 @@
 				<row><entry>Topology</entry><entry>&amp;&amp;</entry><entry><indexterm significance="normal"><primary><varname>overlaps</varname></primary></indexterm>overlaps(a, b)</entry></row>
 				<row><entry></entry><entry>@&gt;</entry><entry><indexterm significance="normal"><primary><varname>contains</varname></primary></indexterm>contains(a, b)</entry></row>
 				<row><entry></entry><entry>&lt;@</entry><entry><indexterm significance="normal"><primary><varname>contained</varname></primary></indexterm>contained(a, b)</entry></row>
+				<row><entry></entry><entry>#@&gt;</entry><entry>contains(a, b)</entry></row>
+				<row><entry></entry><entry>&lt;@#</entry><entry>contained(a, b)</entry></row>
 				<row><entry></entry><entry>-|-</entry><entry><indexterm significance="normal"><primary><varname>adjacent</varname></primary></indexterm>adjacent(a, b)</entry></row>
 				<row><entry>Time position</entry><entry>&lt;&lt;#</entry><entry><indexterm significance="normal"><primary><varname>before</varname></primary></indexterm>before(a, b)</entry></row>
 				<row><entry></entry><entry>#&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>after</varname></primary></indexterm>after(a, b)</entry></row>
@@ -56,6 +58,8 @@
 				<row><entry></entry><entry>#&gt;=</entry><entry><indexterm significance="normal"><primary><varname>tGe</varname></primary></indexterm>tGe(a, b)</entry></row>
 				<row><entry>Distance</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>tDistance(a, b)</entry></row>
 				<row><entry></entry><entry>|=|</entry><entry><indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>nearestApproachDistance(a, b)</entry></row>
+				<row><entry>Distance (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry>distance / setDistance (a, b)</entry></row>
+				<row><entry>Grid distance (cell index)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>th3GridDistance(a, b)</entry></row>
 				<row><entry>Same</entry><entry>~=</entry><entry><indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>same(a, b)</entry></row>
 				<row><entry>Traditional comparison</entry><entry>=</entry><entry><indexterm significance="normal"><primary><varname>eq</varname></primary></indexterm>eq(a, b)</entry></row>
 				<row><entry></entry><entry>&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>ne</varname></primary></indexterm>ne(a, b)</entry></row>
@@ -86,6 +90,18 @@
 				<row><entry>Intersection (set / span / span set)</entry><entry>*</entry><entry>setIntersection / spanIntersection / spansetIntersection (a, b)</entry></row>
 				<row><entry>Difference (set / span / span set)</entry><entry>-</entry><entry>setMinus / spanMinus / spansetMinus (a, b)</entry></row>
 				<row><entry>Concatenation (set / temporal)</entry><entry>||</entry><entry>setConcat / tConcat (a, b)</entry></row>
+				<row><entry>JSON field / element access</entry><entry>-&gt;</entry><entry>jsonbsetObjectField / tjsonbObjectField / jsonbsetArrayElement / tjsonbArrayElement (a, b)</entry></row>
+				<row><entry></entry><entry>-&gt;&gt;</entry><entry>jsonbsetObjectFieldText / tjsonbObjectFieldText / jsonbsetArrayElementText / tjsonbArrayElementText (a, b)</entry></row>
+				<row><entry>JSON key existence</entry><entry>?</entry><entry>jsonbsetExists / tjsonbExists (a, b)</entry></row>
+				<row><entry></entry><entry>?&amp;</entry><entry>jsonbsetExistsAll / tjsonbExistsAll (a, b)</entry></row>
+				<row><entry></entry><entry>?|</entry><entry>jsonbsetExistsAny / tjsonbExistsAny (a, b)</entry></row>
+				<row><entry>JSON path</entry><entry>@?</entry><entry>jsonbsetPathExists / tjsonbPathExists (a, b)</entry></row>
+				<row><entry></entry><entry>@@</entry><entry>jsonbsetPathMatch / tjsonbPathMatch (a, b)</entry></row>
+				<row><entry></entry><entry>#-</entry><entry>jsonbsetDeletePath / tjsonbDeletePath (a, b)</entry></row>
+				<row><entry>Route identifier (network point)</entry><entry>@=</entry><entry><indexterm significance="normal"><primary><varname>same_rid</varname></primary></indexterm>same_rid(a, b)</entry></row>
+				<row><entry></entry><entry>@?</entry><entry><indexterm significance="normal"><primary><varname>contains_rid</varname></primary></indexterm>contains_rid(a, b)</entry></row>
+				<row><entry></entry><entry>?@</entry><entry><indexterm significance="normal"><primary><varname>contained_rid</varname></primary></indexterm>contained_rid(a, b)</entry></row>
+				<row><entry></entry><entry>@@</entry><entry><indexterm significance="normal"><primary><varname>overlaps_rid</varname></primary></indexterm>overlaps_rid(a, b)</entry></row>
 			</tbody>
 		</tgroup>
 	</informaltable>

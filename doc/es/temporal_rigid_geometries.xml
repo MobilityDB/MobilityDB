@@ -675,7 +675,6 @@ SELECT getTime(minusElevation(trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0
 		<itemizedlist>
 			<listitem xml:id="trgeometry_tdistance">
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>
 				<para>Devuelve la distancia temporal entre dos geometrías rígidas temporales</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {geometry,trgeometry} &lt;-&gt; {geometry,trgeometry} → tfloat
@@ -697,7 +696,6 @@ SELECT asText(tDistance( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 			<listitem xml:id="trgeometry_nad">
 				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 				<para>Devuelve la distancia más pequeña entre dos geometrías rígidas temporales sobre su dominio temporal compartido</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {geometry,trgeometry,stbox} |=| {geometry,trgeometry,stbox} → float

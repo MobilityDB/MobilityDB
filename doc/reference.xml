@@ -1381,10 +1381,10 @@
 				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pose_distance_op"><varname>distance</varname>, <varname>&lt;-&gt;</varname></link>: Return the distance</para>
+						<para><link linkend="pose_distance_op"><varname>&lt;-&gt;</varname></link>: Return the distance</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_nearestApproachDistance"><varname>nearestApproachDistance</varname>, <varname>|=|</varname></link>: Return the nearest approach distance</para>
+						<para><link linkend="pose_nearestApproachDistance"><varname>|=|</varname></link>: Return the nearest approach distance</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1395,7 +1395,7 @@
 						<para><link linkend="pose_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_same"><varname>same</varname>, <varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
+						<para><link linkend="pose_same"><varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1822,7 +1822,7 @@
 						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="npoint_same"><varname>same</varname>, <varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
+						<para><link linkend="npoint_same"><varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2094,10 +2094,10 @@
 				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="cbuffer_distance_op"><varname>distance</varname>, <varname>&lt;-&gt;</varname></link>: Return the distance</para>
+						<para><link linkend="cbuffer_distance_op"><varname>&lt;-&gt;</varname></link>: Return the distance</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="cbuffer_nearestApproachDistance"><varname>nearestApproachDistance</varname>, <varname>|=|</varname></link>: Return the nearest approach distance</para>
+						<para><link linkend="cbuffer_nearestApproachDistance"><varname>|=|</varname></link>: Return the nearest approach distance</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2108,7 +2108,7 @@
 						<para><link linkend="cbuffer_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="cbuffer_same"><varname>same</varname>, <varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
+						<para><link linkend="cbuffer_same"><varname>~=</varname></link>: Are the two values approximately equal with respect to an epsilon value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2483,10 +2483,10 @@
 			<title>Distance Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname>, <varname>tDistance</varname></link>: Return the temporal distance between two temporal rigid geometries</para>
+					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance between two temporal rigid geometries</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_nad"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Return the smallest distance between two temporal rigid geometries over their shared time domain</para>
+					<para><link linkend="trgeometry_nad"><varname>|=|</varname></link>: Return the smallest distance between two temporal rigid geometries over their shared time domain</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_nai"><varname>nearestApproachInstant</varname></link>: Return the instant at which the two arguments are at their smallest mutual distance</para>
@@ -2998,10 +2998,10 @@
 					<para><link linkend="tcell_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_ever_always"><varname>eEq</varname>, <varname>aEq</varname>, <varname>eNe</varname>, <varname>aNe</varname>, <varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
+					<para><link linkend="tcell_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Ever and always comparisons</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_tcomp"><varname>tEq</varname>, <varname>tNe</varname>, <varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Temporal comparisons</para>
+					<para><link linkend="tcell_tcomp"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Temporal comparisons</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3086,7 +3086,7 @@
 					<para><link linkend="tcell_h3_is_valid_vertex"><varname>isValidVertex</varname></link>: Return a temporal boolean stating at each instant whether the value is a valid H3 vertex</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_h3_grid_distance"><varname>th3GridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Return the temporal grid-hop distance (number of single-cell steps) between two temporal cells</para>
+					<para><link linkend="tcell_h3_grid_distance"><varname>&lt;-&gt;</varname></link>: Return the temporal grid-hop distance (number of single-cell steps) between two temporal cells</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_h3_cell_to_local_ij"><varname>th3CellToLocalIj</varname>, <varname>th3LocalIjToCell</varname></link>: Convert between a temporal cell and a temporal local (I, J) coordinate pair relative to an origin temporal cell</para>
@@ -3419,7 +3419,7 @@
 				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_nearestApproachDistance"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Return the smallest distance ever</para>
+						<para><link linkend="tpcpoint_nearestApproachDistance"><varname>|=|</varname></link>: Return the smallest distance ever</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the tpcpoint at which the two arguments are at the nearest distance</para>
@@ -3428,7 +3428,7 @@
 						<para><link linkend="tpcpoint_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the nearest approach point between the two arguments</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_tDistance"><varname>tDistance</varname>, <varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
+						<para><link linkend="tpcpoint_tDistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3589,7 +3589,7 @@
 				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_nearestApproachDistance"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Return the smallest distance ever</para>
+						<para><link linkend="tpcpatch_nearestApproachDistance"><varname>|=|</varname></link>: Return the smallest distance ever</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

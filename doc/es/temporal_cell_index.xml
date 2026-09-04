@@ -995,10 +995,6 @@ SELECT ts2cell '47c3c@2001-01-01' = ts2cell '47c3c@2001-01-01';
 		</listitem>
 
 		<listitem xml:id="tcell_ever_always">
-			<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
-			<indexterm significance="normal"><primary><varname>aEq</varname></primary></indexterm>
-			<indexterm significance="normal"><primary><varname>eNe</varname></primary></indexterm>
-			<indexterm significance="normal"><primary><varname>aNe</varname></primary></indexterm>
 			<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
 			<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
 			<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
@@ -1021,8 +1017,6 @@ SELECT ts2cell '47c3c@2001-01-01' ?= s2cell '47c3c';
 		</listitem>
 
 		<listitem xml:id="tcell_tcomp">
-			<indexterm significance="normal"><primary><varname>tEq</varname></primary></indexterm>
-			<indexterm significance="normal"><primary><varname>tNe</varname></primary></indexterm>
 			<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
 			<indexterm significance="normal"><primary><varname>#&lt;&gt;</varname></primary></indexterm>
 			<para>Comparaciones temporales</para>
@@ -1406,7 +1400,6 @@ SELECT isValidVertex(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0));
 </programlisting>
 			</listitem>
 			<listitem xml:id="tcell_h3_grid_distance">
-				<indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 				<para>Devolver la distancia temporal en saltos de cuadrícula (número de pasos de una sola celda) entre dos celdas temporales</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
