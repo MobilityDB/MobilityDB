@@ -255,13 +255,13 @@ SELECT to_timestamp(ST_ClosestPointOfApproach( tgeompoint '[Point(0 0 0)@2001-01
 
 			<listitem xml:id="tgeo_minDistance">
 				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
-				<para>Devuelve la distancia espacial mínima entre dos geometrías temporales sobre la unión de sus extensiones temporales</para>
+				<para>Devuelve la distancia espacial mínima entre dos geometrías temporales, ignorando el tiempo</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minDistance({tgeo,geo},{tgeo,geo}) → float
 minDistance(tgeo[],tgeo[]) → float
 minDistance(tgeo,tgeo) → float
 </programlisting>
-				<para>La forma escalar devuelve la distancia mínima alcanzada entre los dos argumentos sobre la intersección de sus extensiones temporales, equivalente al valor mínimo de la distancia temporal <varname>&lt;-&gt;</varname>. La forma de arreglo generaliza esto a dos conjuntos de geometrías temporales y devuelve el mínimo sobre todos los pares. La forma de agregado, utilizada con <varname>GROUP BY</varname>, devuelve la distancia mínima alcanzada sobre todos los pares agregados en el grupo.</para>
+				<para>La distancia se mide entre las dos trayectorias descartando el tiempo, igual a <varname>ST_Distance</varname> de la trayectoria de cada argumento. Por lo tanto, dos valores que siguen el mismo camino en momentos distintos están a distancia cero. La cantidad sincronizada en el tiempo, que compara los dos argumentos solo en los instantes que comparten, es <link linkend="tgeo_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>. La forma de arreglo generaliza esto a dos conjuntos de geometrías temporales y devuelve el mínimo sobre todos los pares. La forma de agregado, utilizada con <varname>GROUP BY</varname>, devuelve la distancia mínima alcanzada sobre todos los pares agregados en el grupo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
   geometry 'Point(0 1)');
