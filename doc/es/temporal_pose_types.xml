@@ -410,7 +410,6 @@ SELECT asEWKT(transformPipeline(transformPipeline(pose, pipeline, 4326), pipelin
 
 			<itemizedlist>
 				<listitem xml:id="pose_distance_op">
-					<indexterm significance="normal"><primary><varname>distance</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 					<para>Devuelve la distancia</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
@@ -432,7 +431,6 @@ SELECT round(geometry 'Point empty' &lt;-&gt; pose 'Pose(Point(4 0),0)', 6);
 </programlisting>
 				</listitem>
 				<listitem xml:id="pose_nearestApproachDistance">
-					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
 					<para>Devuelve la distancia de aproximación más cercana</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
@@ -486,7 +484,6 @@ SELECT pose 'Pose(Point(1 1), 0.6)' &gt;= pose 'Pose(Point(1 1), 0.5)';
 				</listitem>
 
 				<listitem xml:id="pose_same">
-					<indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 					<para>¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">

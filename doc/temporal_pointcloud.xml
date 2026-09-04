@@ -1064,7 +1064,6 @@ SELECT tpcpointSeq(ARRAY[
 				<itemizedlist>
 					<listitem xml:id="tpcpoint_nearestApproachDistance">
 						<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
-						<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 						<para>Return the smallest distance ever</para>
 						<programlisting role="syntax" xml:space="preserve" format="linespecific">
 nearestApproachDistance(tpcpoint,{tpcbox,tpcpoint}) → float
@@ -1116,7 +1115,6 @@ SELECT ST_AsText(shortestLine(tpcpointSeq(ARRAY[
 					</listitem>
 
 					<listitem xml:id="tpcpoint_tDistance">
-						<indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>
 						<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 						<para>Return the temporal distance</para>
 						<programlisting role="syntax" xml:space="preserve" format="linespecific">
@@ -1840,7 +1838,6 @@ SELECT tpcpatchSeq(ARRAY[
 				<itemizedlist>
 					<listitem xml:id="tpcpatch_nearestApproachDistance">
 						<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
-						<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 						<para>Return the smallest distance ever</para>
 						<programlisting role="syntax" xml:space="preserve" format="linespecific">
 nearestApproachDistance(tpcpatch,{tpcbox,tpcpatch}) → float

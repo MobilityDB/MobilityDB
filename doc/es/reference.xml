@@ -1381,10 +1381,10 @@
 				<title>Operaciones de distancia</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pose_distance_op"><varname>distance</varname>, <varname>&lt;-&gt;</varname></link>: Devuelve la distancia</para>
+						<para><link linkend="pose_distance_op"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_nearestApproachDistance"><varname>nearestApproachDistance</varname>, <varname>|=|</varname></link>: Devuelve la distancia de aproximación más cercana</para>
+						<para><link linkend="pose_nearestApproachDistance"><varname>|=|</varname></link>: Devuelve la distancia de aproximación más cercana</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1395,7 +1395,7 @@
 						<para><link linkend="pose_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_same"><varname>same</varname>, <varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
+						<para><link linkend="pose_same"><varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1819,7 +1819,7 @@
 						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="npoint_same"><varname>same</varname>, <varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
+						<para><link linkend="npoint_same"><varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2088,10 +2088,10 @@
 				<title>Operaciones de distancia</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="cbuffer_distance_op"><varname>distance</varname>, <varname>&lt;-&gt;</varname></link>: Devuelve la distancia</para>
+						<para><link linkend="cbuffer_distance_op"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="cbuffer_nearestApproachDistance"><varname>nearestApproachDistance</varname>, <varname>|=|</varname></link>: Devuelve la distancia de aproximación más cercana</para>
+						<para><link linkend="cbuffer_nearestApproachDistance"><varname>|=|</varname></link>: Devuelve la distancia de aproximación más cercana</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2102,7 +2102,7 @@
 						<para><link linkend="cbuffer_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="cbuffer_same"><varname>same</varname>, <varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
+						<para><link linkend="cbuffer_same"><varname>~=</varname></link>: ¿Son los dos valores aproximadamente iguales con respecto a un valor épsilon?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2474,10 +2474,10 @@
 			<title>Operaciones de distancia</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname>, <varname>tDistance</varname></link>: Devuelve la distancia temporal entre dos geometrías rígidas temporales</para>
+					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal entre dos geometrías rígidas temporales</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_nad"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Devuelve la distancia más pequeña entre dos geometrías rígidas temporales sobre su dominio temporal compartido</para>
+					<para><link linkend="trgeometry_nad"><varname>|=|</varname></link>: Devuelve la distancia más pequeña entre dos geometrías rígidas temporales sobre su dominio temporal compartido</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_nai"><varname>nearestApproachInstant</varname></link>: Devuelve el instante en el que los dos argumentos están a su menor distancia mutua</para>
@@ -2989,10 +2989,10 @@
 					<para><link linkend="tcell_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_ever_always"><varname>eEq</varname>, <varname>aEq</varname>, <varname>eNe</varname>, <varname>aNe</varname>, <varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Comparaciones siempre y alguna vez</para>
+					<para><link linkend="tcell_ever_always"><varname>?=</varname>, <varname>?&lt;&gt;</varname>, <varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Comparaciones siempre y alguna vez</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_tcomp"><varname>tEq</varname>, <varname>tNe</varname>, <varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Comparaciones temporales</para>
+					<para><link linkend="tcell_tcomp"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Comparaciones temporales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3077,7 +3077,7 @@
 					<para><link linkend="tcell_h3_is_valid_vertex"><varname>isValidVertex</varname></link>: Devolver un booleano temporal que indica en cada instante si el valor es un vértice H3 válido</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_h3_grid_distance"><varname>th3GridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Devolver la distancia temporal en saltos de cuadrícula (número de pasos de una sola celda) entre dos celdas temporales</para>
+					<para><link linkend="tcell_h3_grid_distance"><varname>&lt;-&gt;</varname></link>: Devolver la distancia temporal en saltos de cuadrícula (número de pasos de una sola celda) entre dos celdas temporales</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_h3_cell_to_local_ij"><varname>th3CellToLocalIj</varname>, <varname>th3LocalIjToCell</varname></link>: Convertir entre una celda temporal y un par de coordenadas locales (I, J) temporales relativas a una celda temporal de origen</para>
@@ -3410,7 +3410,7 @@
 				<title>Operaciones de distancia</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_nearestApproachDistance"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Devuelve la distancia más cercana</para>
+						<para><link linkend="tpcpoint_nearestApproachDistance"><varname>|=|</varname></link>: Devuelve la distancia más cercana</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del tpcpoint en el que los dos argumentos están a la distancia más cercana</para>
@@ -3419,7 +3419,7 @@
 						<para><link linkend="tpcpoint_shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea que une el punto de acercamiento más cercano entre los dos argumentos</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_tDistance"><varname>tDistance</varname>, <varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
+						<para><link linkend="tpcpoint_tDistance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3580,7 +3580,7 @@
 				<title>Operaciones de distancia</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_nearestApproachDistance"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Devuelve la distancia más cercana</para>
+						<para><link linkend="tpcpatch_nearestApproachDistance"><varname>|=|</varname></link>: Devuelve la distancia más cercana</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

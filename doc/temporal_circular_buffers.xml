@@ -293,7 +293,6 @@ SELECT asEWKT(transformPipeline(transformPipeline(cbuffer, pipeline, 4326), pipe
 
 			<itemizedlist>
 				<listitem xml:id="cbuffer_distance_op">
-					<indexterm significance="normal"><primary><varname>distance</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 					<para>Return the distance</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
@@ -312,7 +311,6 @@ SELECT round(cbuffer 'Cbuffer(Point(0 0),3)' &lt;-&gt; cbuffer 'Cbuffer(Point(3 
 </programlisting>
 				</listitem>
 				<listitem xml:id="cbuffer_nearestApproachDistance">
-					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
 					<para>Return the nearest approach distance</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
@@ -364,7 +362,6 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.6)' &gt;= cbuffer 'Cbuffer(Point(1 1), 0.5
 				</listitem>
 
 				<listitem xml:id="cbuffer_same">
-					<indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 					<para>Are the two values approximately equal with respect to an epsilon value?</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
