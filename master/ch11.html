@@ -137,7 +137,7 @@ SELECT SRID(npoint 'Npoint(76, 0.3)');
 -- 5676
 SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 5676
-</pre></li></ul></div><p>Two <code class="varname">npoint</code> values may be have different route identifiers but may represent the same spatial point at the intersection of the two routes. Function <code class="varname">same</code> is used for testing spatial simalarity of network points.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7579"></a><a class="indexterm" name="id7582"></a><p>Are the two values approximately equal with respect to an epsilon value?</p><pre class="programlisting">
+</pre></li></ul></div><p>Two <code class="varname">npoint</code> values may be have different route identifiers but may represent the same spatial point at the intersection of the two routes. Function <code class="varname">same</code> is used for testing spatial simalarity of network points.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7579"></a><p>Are the two values approximately equal with respect to an epsilon value?</p><pre class="programlisting">
 same(npoint,npoint) → boolean
 npoint ~= npoint → boolean
 </pre><pre class="programlisting">
@@ -148,7 +148,7 @@ WITH inter(geom) AS (
   FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)
 SELECT same(npoint(1, f1), npoint(2, f2)) FROM fractions;
 -- true
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_comparisons"></a>Comparisons</h3></div></div></div><p>The comparison operators (=, &lt;, and so on) for static network types require that the left and right arguments be of the same type. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on static network types.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_eq"></a><a class="indexterm" name="id7593"></a><a class="indexterm" name="id7596"></a><a class="indexterm" name="id7599"></a><a class="indexterm" name="id7602"></a><a class="indexterm" name="id7605"></a><a class="indexterm" name="id7608"></a><p>Traditional comparisons</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_comparisons"></a>Comparisons</h3></div></div></div><p>The comparison operators (=, &lt;, and so on) for static network types require that the left and right arguments be of the same type. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on static network types.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_eq"></a><a class="indexterm" name="id7590"></a><a class="indexterm" name="id7593"></a><a class="indexterm" name="id7596"></a><a class="indexterm" name="id7599"></a><a class="indexterm" name="id7602"></a><a class="indexterm" name="id7605"></a><p>Traditional comparisons</p><pre class="programlisting">
 npoint {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} npoint
 nsegment {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} nsegment
 </pre><pre class="programlisting">
