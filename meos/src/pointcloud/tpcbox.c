@@ -66,6 +66,7 @@
 #include "temporal/span.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/tspatial_parser.h"
 #include "pointcloud/pcpatch.h"
 #include "pointcloud/pgsql_compat.h"
@@ -133,11 +134,13 @@ ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
   /* Both boxes carry coordinates here, so both name the schema those
-   * coordinates are read in. A box carrying none has nothing to interpret,
-   * so it meets a box of any schema */
+   * coordinates are read in, the reference system they are measured in, and
+   * whether they are planar or spherical. A box carrying none has nothing to
+   * interpret, so it meets a box of any schema */
   if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
       (! ensure_same_pcid_tpcbox(box1, box2) ||
-       ! ensure_same_srid_tpcbox(box1, box2)))
+       ! ensure_same_srid_tpcbox(box1, box2) ||
+       ! ensure_same_geodetic(box1->flags, box2->flags)))
     return false;
   return true;
 }
