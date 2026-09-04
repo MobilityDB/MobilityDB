@@ -199,6 +199,20 @@ SELECT tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0) &&
 SELECT tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0) +
   tpcboxT(tstzspan '[2024-01-02, 2024-01-03]', 1);
 
+-- Planar and spherical coordinates are two different measurements of the
+-- world, so a box of each has nothing comparable to offer the other even when
+-- both name the same schema and the same reference system
+SELECT tpcbox 'SRID=4326;TPCBOX(X((1,1),(2,2)), 1)' &&
+  tpcbox 'GEODTPCBOX(X((1,1),(2,2)), 1)';
+SELECT tpcbox 'SRID=4326;TPCBOX(X((1,1),(2,2)), 1)' @>
+  tpcbox 'GEODTPCBOX(X((1,1),(2,2)), 1)';
+SELECT tpcbox 'SRID=4326;TPCBOX(X((1,1),(2,2)), 1)' <<
+  tpcbox 'GEODTPCBOX(X((5,5),(7,7)), 1)';
+
+-- Two spherical boxes of the same schema are compared as any other pair
+SELECT tpcbox 'GEODTPCBOX(X((1,1),(2,2)), 1)' &&
+  tpcbox 'GEODTPCBOX(X((1,1),(3,3)), 1)';
+
 -------------------------------------------------------------------------------
 -- Position predicates — each asks about the axis it reads
 -------------------------------------------------------------------------------
