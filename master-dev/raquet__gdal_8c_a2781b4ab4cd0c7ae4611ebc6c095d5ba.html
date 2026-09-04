@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raquet_gdal_release</title>
+<title>MobilityDB: meos_gdal_leave</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,9 +85,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a1ad6caa75bcb39f22b945dd177ce05a8.html#a1ad6caa75bcb39f22b945dd177ce05a8">gdal_to_pixtype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a2aa785fb83c959341f9f7bd015cca86d.html#a2aa785fb83c959341f9f7bd015cca86d">meos_gdal_enter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a9fbb2d6c64a09ece02163052abafbf9d.html#a9fbb2d6c64a09ece02163052abafbf9d">meos_gdal_error</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a2781b4ab4cd0c7ae4611ebc6c095d5ba.html#a2781b4ab4cd0c7ae4611ebc6c095d5ba">meos_gdal_leave</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_a2781b4ab4cd0c7ae4611ebc6c095d5ba.html#a2781b4ab4cd0c7ae4611ebc6c095d5ba">meos_gdal_leave</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_ae115395300b255eb9da79f60367ac2ff.html#ae115395300b255eb9da79f60367ac2ff">raquet_from_gdal_dataset</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_aa8ba3cee2ca57e824909bb69c5e9050d.html#aa8ba3cee2ca57e824909bb69c5e9050d">raquet_gdal_release</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_aa8ba3cee2ca57e824909bb69c5e9050d.html#aa8ba3cee2ca57e824909bb69c5e9050d">raquet_gdal_release</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_gadbb297bae58b06d3ebba66b7c5a10f86.html#gadbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_gaf51244fc65dac809d5dab41025f0990a.html#gaf51244fc65dac809d5dab41025f0990a">raster_at_value_gdal</a></td></tr>
@@ -99,8 +99,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa8ba3cee2ca57e824909bb69c5e9050d" name="aa8ba3cee2ca57e824909bb69c5e9050d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa8ba3cee2ca57e824909bb69c5e9050d">&#9670;&#160;</a></span>raquet_gdal_release()</h2>
+<a id="a2781b4ab4cd0c7ae4611ebc6c095d5ba" name="a2781b4ab4cd0c7ae4611ebc6c095d5ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2781b4ab4cd0c7ae4611ebc6c095d5ba">&#9670;&#160;</a></span>meos_gdal_leave()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -109,27 +109,11 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void raquet_gdal_release </td>
+          <td class="memname">static void meos_gdal_leave </td>
           <td>(</td>
-          <td class="paramtype">GDALDatasetH&#160;</td>
-          <td class="paramname"><em>ds</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>vpath</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint8_t *&#160;</td>
-          <td class="paramname"><em>buf</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -139,15 +123,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Release the resources a raquet ingest holds. </p>
-<p >Every error path calls this before <a class="el" href="group__meos__misc_gae25eac26575ca0d33b0667ca0c635278.html#gae25eac26575ca0d33b0667ca0c635278" title="Report an error at the given level/code with a printf-style message.">meos_error</a>, because the error handler a host installs need not return to the caller: the PostgreSQL handler leaves through <code>ereport(ERROR)</code> and the standalone one exits, so a release written after the report never runs and the dataset leaks. Reporting last is the idiom the rest of MEOS follows. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Open GDAL dataset, or NULL </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vpath</td><td><code>/vsimem/</code> path backing <code>ds</code>, or NULL for a real file </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">buf</td><td>Band buffer, or NULL </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Give the GDAL error handler back to the host. </p>
 
 </div>
 </div>
