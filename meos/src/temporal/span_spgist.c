@@ -247,6 +247,12 @@ getQuadrant2D(const Span *centroid, const Span *query)
 
 /**
  * @brief Can any span from nodebox overlap with the query?
+ * @details A node bounds spans of the tree's own type -- the centroid it is
+ * built from fixes it -- and the query span carries the operand type the
+ * operator class declares, so this predicate and the six below it compare
+ * spans that are comparable by construction. They therefore call the internal
+ * predicates, which assert that contract; the external ones test it, and a
+ * descent testing it here would pay for it once per node it visits
  */
 bool
 overlap2D(const SpanNode *nodebox, const Span *query)
@@ -254,7 +260,7 @@ overlap2D(const SpanNode *nodebox, const Span *query)
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
     nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  return overlaps_span_span(&s, query);
+  return span_overlaps(&s, query);
 }
 
 /**
@@ -266,7 +272,7 @@ contain2D(const SpanNode *nodebox, const Span *query)
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
     nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  return contains_span_span(&s, query);
+  return span_contains(&s, query);
 }
 
 /**
@@ -275,7 +281,7 @@ contain2D(const SpanNode *nodebox, const Span *query)
 bool
 left2D(const SpanNode *nodebox, const Span *query)
 {
-  return left_span_span(&nodebox->right, query);
+  return span_left(&nodebox->right, query);
 }
 
 /**
@@ -284,7 +290,7 @@ left2D(const SpanNode *nodebox, const Span *query)
 bool
 overLeft2D(const SpanNode *nodebox, const Span *query)
 {
-  return overleft_span_span(&nodebox->right, query);
+  return span_overleft(&nodebox->right, query);
 }
 
 /**
@@ -293,7 +299,7 @@ overLeft2D(const SpanNode *nodebox, const Span *query)
 bool
 right2D(const SpanNode *nodebox, const Span *query)
 {
-  return right_span_span(&nodebox->left, query);
+  return span_right(&nodebox->left, query);
 }
 
 /**
@@ -302,7 +308,7 @@ right2D(const SpanNode *nodebox, const Span *query)
 bool
 overRight2D(const SpanNode *nodebox, const Span *query)
 {
-  return overright_span_span(&nodebox->left, query);
+  return span_overright(&nodebox->left, query);
 }
 
 /**
@@ -311,8 +317,8 @@ overRight2D(const SpanNode *nodebox, const Span *query)
 bool
 adjacent2D(const SpanNode *nodebox, const Span *query)
 {
-  return adjacent_span_span(&nodebox->left, query) ||
-    adjacent_span_span(&nodebox->right, query);
+  return span_adjacent(&nodebox->left, query) ||
+    span_adjacent(&nodebox->right, query);
 }
 
 /**
