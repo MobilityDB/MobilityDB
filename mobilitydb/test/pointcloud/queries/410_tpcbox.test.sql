@@ -142,6 +142,33 @@ SELECT tpcboxX(0, 0, 5, 5, 1)  -|- tpcboxX(5, 0, 10, 5, 1);
 SELECT adjacent(tpcboxX(0, 0, 5, 5, 1), tpcboxX(5, 0, 10, 5, 1));
 
 -------------------------------------------------------------------------------
+-- Topological predicates — the boxes must share a dimension to be compared
+-------------------------------------------------------------------------------
+
+-- A box holding coordinates and a box holding a period have no axis in
+-- common, so there is nothing for a topological predicate to compare and it
+-- has no answer to give. The box naming no schema is comparable with any
+-- schema, which leaves the shared dimension the only question left to fail on
+SELECT tpcboxX(0, 0, 10, 10, 1) && tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
+SELECT tpcboxX(0, 0, 10, 10, 1) @> tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
+SELECT tpcboxX(0, 0, 10, 10, 1) <@ tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
+SELECT tpcboxX(0, 0, 10, 10, 1) -|- tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
+SELECT tpcboxX(0, 0, 10, 10, 1) ~= tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
+
+-- The portable spelling of each of them refuses the same pair
+SELECT overlaps(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT contains(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT contained(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT adjacent(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+SELECT same(tpcboxX(0, 0, 10, 10, 1), tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0));
+
+-- A box carrying both axes shares one with each of them, so it is compared
+SELECT tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 1) &&
+  tpcboxX(2, 2, 8, 8, 1);
+SELECT tpcboxXT(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 1) &&
+  tpcboxT(tstzspan '[2024-01-02, 2024-01-03]', 0);
+
+-------------------------------------------------------------------------------
 -- Topological predicates — the schema decides what a coordinate means
 -------------------------------------------------------------------------------
 

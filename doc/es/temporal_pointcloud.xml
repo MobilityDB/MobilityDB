@@ -438,6 +438,7 @@ SELECT tpcboxX(0, 0, 5, 5, 1) * tpcboxX(3, 3, 10, 10, 1);
 		<sect2 xml:id="tpcbox_topo">
 			<title>Operaciones topológicas</title>
 			<para>Todos los operadores topológicos toman dos valores <varname>tpcbox</varname> que declaran el mismo esquema y el mismo sistema de referencia. Una discrepancia en cualquiera de los dos genera un error en lugar de responder falso: el <varname>pcid</varname> es lo que da a un número almacenado su significado como coordenada, por lo que dos cajas que nombran esquemas distintos no tienen una extensión común que comparar.</para>
+			<para>También toman dos cajas que comparten un eje. Una caja que contiene coordenadas y una caja que contiene un período no coinciden en ningún eje, por lo que un predicado topológico entre ellas no tiene nada que comparar y genera un error a su vez.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcbox_topo_ops">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
@@ -462,6 +463,8 @@ SELECT tpcboxX(0, 0, 2, 2) -|- tpcboxX(5, 5, 7, 7);
 -- f
 SELECT tpcboxX(0, 0, 5, 5, 1) &amp;&amp; tpcboxX(0, 0, 5, 5, 2);
 -- ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
+SELECT tpcboxX(0, 0, 10, 10, 1) &amp;&amp; tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
+-- ERROR:  The temporal values must have at least one common dimension
 </programlisting>
 				</listitem>
 			</itemizedlist>
