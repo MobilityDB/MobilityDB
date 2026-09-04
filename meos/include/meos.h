@@ -207,6 +207,31 @@ typedef struct
 } STBox;
 
 /**
+ * Structure to represent point cloud spatiotemporal boxes
+ *
+ * Every field down to the flags is byte-identical to #STBox, so the shared
+ * spatiotemporal code reads a TPCBox through an @p STBox pointer and projects
+ * it to one by dropping the trailing pcid. The pgpointcloud schema id follows
+ * that common prefix, since boxes of different schemas name different
+ * dimensions and cannot be compared. @p meos_pointcloud.h asserts the shared
+ * offsets field by field.
+ */
+typedef struct
+{
+  Span period;          /**< time span */
+  double xmin;          /**< minimum x value */
+  double ymin;          /**< minimum y value */
+  double zmin;          /**< minimum z value */
+  double xmax;          /**< maximum x value */
+  double ymax;          /**< maximum y value */
+  double zmax;          /**< maximum z value */
+  int32_t srid;         /**< SRID */
+  int16 flags;          /**< flags */
+  char padding[2];      /**< explicit pad, kept zero: send/recv copy the struct */
+  uint32_t pcid;        /**< pgpointcloud schema id */
+} TPCBox;
+
+/**
  * @brief Enumeration that defines the temporal subtypes used in MEOS
  */
 typedef enum
