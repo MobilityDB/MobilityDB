@@ -142,6 +142,10 @@ angle_normalize(double a)
 
 extern LWGEOM *meos_oriented_envelope(const LWGEOM *geom);
 extern LWGEOM *meos_areal_union(const LWGEOM *geom);
+extern LWGEOM *meos_areal_intersection(const LWGEOM *geom1,
+  const LWGEOM *geom2);
+extern LWGEOM *meos_areal_difference(const LWGEOM *geom1,
+  const LWGEOM *geom2);
 extern LWGEOM *meos_linear_union(const LWGEOM *geom);
 extern LWGEOM *meos_centroid(const LWGEOM *geom);
 extern LWGEOM *meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms,

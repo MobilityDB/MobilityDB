@@ -2136,6 +2136,24 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geo_clip_subject(gs2) && geo_meos_supported(gs1))
     return geo_clip_linear_geom(gs2, gs1, true);
 
+  /* An areal pair the native overlay reads is answered on the circles its
+   * operands carry, where the route below reads an arc as the chain of chords
+   * a linearization puts in its place. It declines a pair whose boundaries run
+   * along one another rather than crossing, and the route below answers that
+   * one */
+  if (geo_is_planar_areal(gs1) && geo_is_planar_areal(gs2))
+  {
+    LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+    LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+    LWGEOM *lwresult = meos_areal_intersection(geom1, geom2);
+    GSERIALIZED *result = lwresult ? geo_serialize(lwresult) : NULL;
+    if (lwresult)
+      lwgeom_free(lwresult);
+    lwgeom_free(geom1); lwgeom_free(geom2);
+    if (result)
+      return result;
+  }
+
 #if GEOS
   /* Other types fall through to GEOS */
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
@@ -2202,6 +2220,24 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
      * answer one point set two ways depending on how it is spelled */
     if (geo_every_part_bounds_area(gs1))
       return geo_copy(gs1);
+  }
+
+  /* An areal pair the native overlay reads is answered on the circles its
+   * operands carry, where the route below reads an arc as the chain of chords
+   * a linearization puts in its place. It declines a pair whose boundaries run
+   * along one another rather than crossing, and the route below answers that
+   * one */
+  if (geo_is_planar_areal(gs1) && geo_is_planar_areal(gs2))
+  {
+    LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+    LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+    LWGEOM *lwresult = meos_areal_difference(geom1, geom2);
+    GSERIALIZED *result = lwresult ? geo_serialize(lwresult) : NULL;
+    if (lwresult)
+      lwgeom_free(lwresult);
+    lwgeom_free(geom1); lwgeom_free(geom2);
+    if (result)
+      return result;
   }
 
 #if GEOS
