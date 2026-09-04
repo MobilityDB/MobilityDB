@@ -63,36 +63,12 @@ typedef struct Pcpatch Pcpatch;
  * pointer; obtain one via @ref meos_pc_schema. */
 typedef struct PCSCHEMA PCSCHEMA;
 
-/**
- * @brief Bounding box for pgpointcloud temporal types.
- *
- * Mirrors STBox (spatiotemporal box) but carries an additional @p pcid
- * field — pgpointcloud schema id — because TPCBoxes from different
- * schemas cannot meaningfully be compared / unioned (the underlying
- * dimensions are schema-specific). Fixed-size struct; no varlena.
- *
- * Flag bits live in @p MEOS_FLAGS_* (see @p meos_internal.h): @p X
- * (bounds present), @p Z (z-dimension present), @p T (time span
- * present), @p GEODETIC (geographic coords). A TPCBox must have at
- * least one of X or T.
- */
-typedef struct
-{
-  Span period;        /**< time span */
-  double xmin;        /**< minimum x value */
-  double ymin;        /**< minimum y value */
-  double zmin;        /**< minimum z value */
-  double xmax;        /**< maximum x value */
-  double ymax;        /**< maximum y value */
-  double zmax;        /**< maximum z value */
-  int32_t srid;       /**< SRID */
-  int16 flags;        /**< flags */
-  /* Every field above is byte-identical to STBox, so a TPCBox is read
-   * through an @p STBox pointer by the shared spatiotemporal code. The
-   * pgpointcloud schema id follows that common prefix. */
-  char padding[2];    /**< explicit pad, kept zero: send/recv copy the struct */
-  uint32_t pcid;      /**< pgpointcloud schema id */
-} TPCBox;
+/* @p TPCBox is declared in @p meos.h beside the three other bounding boxes
+ * (@p Span, @p TBox, @p STBox), so that every box type is one member of
+ * @p bboxunion. Its flag bits live in @p MEOS_FLAGS_* (see
+ * @p meos_internal.h): @p X (bounds present), @p Z (z-dimension present),
+ * @p T (time span present), @p GEODETIC (geographic coords). A TPCBox must
+ * have at least one of X or T. */
 
 /* A TPCBox begins with a whole STBox: every STBox field sits at the same
  * offset, so the shared spatiotemporal code reads a TPCBox through an
