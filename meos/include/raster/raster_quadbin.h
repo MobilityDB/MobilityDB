@@ -37,6 +37,7 @@
 
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_raster.h>
 
 /*****************************************************************************/
@@ -48,6 +49,25 @@ extern void raster_quadbin_bounds(uint64 cell, double *xmin, double *ymin,
   double *xmax, double *ymax);
 
 extern uint32_t raster_quadbin_zoom(uint64 cell);
+
+/**
+ * @brief Callback returning the raster pixel value at a point: return true
+ * and set @p value, or return false when the point lies outside the raster
+ * or on a nodata pixel
+ */
+typedef bool (*raster_sample_fn)(void *ctx, const GSERIALIZED *point,
+  double *value);
+
+extern Temporal *raster_value_sampler(const Temporal *traj, const STBox *box,
+  raster_sample_fn sample, void *ctx);
+extern Temporal *raster_at_value_sampler(const Temporal *traj,
+  const STBox *box, raster_sample_fn sample, void *ctx, const Span *vspan);
+extern Temporal *raster_minus_value_sampler(const Temporal *traj,
+  const STBox *box, raster_sample_fn sample, void *ctx, const Span *vspan);
+extern int eraster_value_sampler(const Temporal *traj, const STBox *box,
+  raster_sample_fn sample, void *ctx, const Span *vspan);
+extern int araster_value_sampler(const Temporal *traj, const STBox *box,
+  raster_sample_fn sample, void *ctx, const Span *vspan);
 
 /*****************************************************************************/
 

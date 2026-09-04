@@ -145,30 +145,24 @@ extern bool raquet_gt(const Raquet *rq1, const Raquet *rq2);
 
 /* Sampling functions */
 
-/**
- * @brief Callback returning the raster pixel value at a point: return true
- * and set @p value, or return false when the point lies outside the raster
- * or on a nodata pixel
- */
-typedef bool (*raster_sample_fn)(void *ctx, const GSERIALIZED *point,
-  double *value);
+/* Sampling of a PostGIS raster: reads the band the position falls in with
+ * nearest-neighbour resampling, and derives the bounding-box pre-filter from
+ * the raster extent */
 
-extern Temporal *raster_value(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx);
-
-extern Temporal *raster_at_value(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan);
-extern Temporal *raster_minus_value(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan);
-extern int eraster_value(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan);
-extern int araster_value(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan);
+extern Temporal *raster_value(const Temporal *traj, const Raster *rast,
+  int band);
+extern Temporal *raster_at_value(const Temporal *traj, const Raster *rast,
+  int band, const Span *vspan);
+extern Temporal *raster_minus_value(const Temporal *traj, const Raster *rast,
+  int band, const Span *vspan);
+extern int eraster_value(const Temporal *traj, const Raster *rast, int band,
+  const Span *vspan);
+extern int araster_value(const Temporal *traj, const Raster *rast, int band,
+  const Span *vspan);
 
 /* GDAL-backed sampling of a raster file: opens the file, derives the
- * bounding-box pre-filter from its geotransform, and thinly wraps
- * raster_value/raster_at_value/raster_minus_value/eraster_value/
- * araster_value with a GDALRasterIO-backed sample callback */
+ * bounding-box pre-filter from its geotransform, and reads the band through
+ * GDALRasterIO */
 
 extern Temporal *raster_value_gdal(const Temporal *traj, const char *path,
   int band);

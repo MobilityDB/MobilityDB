@@ -57,8 +57,11 @@
 #include <string.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_raster.h>
+#include "geo/geo_funcs.h"
+#include "raster/raster_quadbin.h"
 #include "temporal/temporal.h"
 
 /*****************************************************************************
@@ -258,6 +261,269 @@ raster_num_bands(const Raster *rast)
   }
   int result = (int) rt_raster_get_num_bands(raster);
   rt_raster_destroy(raster);
+  return result;
+}
+
+/*****************************************************************************
+ * Sampling functions
+ *
+ * The trajectory-sampling algorithm itself lives in #raster_value() and its
+ * restriction and predicate companions; what follows is the pixel reader that
+ * answers them for a PostGIS raster, so that the operators are computed by
+ * MEOS for every binding rather than by PostgreSQL for one of them.
+ *****************************************************************************/
+
+/**
+ * @brief State a raster sampling call keeps for the length of a trajectory:
+ * the deserialized raster, the band the values are read from, and the inverse
+ * geotransform, computed once and handed to every point conversion
+ */
+typedef struct
+{
+  rt_raster raster;   /**< Raster carrying its bands */
+  rt_band band;       /**< Band the pixel values are read from */
+  double igt[6];      /**< Inverse geotransform of the raster */
+} RasterSampleState;
+
+/**
+ * @brief Raster sampling callback reading one pixel of a PostGIS raster
+ * through the vendored raster core
+ * @details The point is converted to raster coordinates with the inverse
+ * geotransform and read with nearest-neighbour resampling. A point outside
+ * the pixel grid and a nodata pixel alike answer that there is no value,
+ * which is the contract of ::raster_sample_fn
+ */
+static bool
+raster_value_sample(void *ctxp, const GSERIALIZED *point, double *value)
+{
+  RasterSampleState *state = (RasterSampleState *) ctxp;
+  /* The point is read, not kept: its GBOX is degenerate, so its lower corner
+   * is the point itself */
+  GBOX gbox;
+  gserialized_get_gbox_p((GSERIALIZED *) point, &gbox);
+  double xr, yr;
+  if (rt_raster_geopoint_to_rasterpoint(state->raster, gbox.xmin, gbox.ymin,
+      &xr, &yr, state->igt) != ES_NONE)
+    return false;
+  int isnodata;
+  if (rt_band_get_pixel_resample(state->band, xr, yr, RT_NEAREST, value,
+      &isnodata) != ES_NONE)
+    return false;
+  return ! isnodata;
+}
+
+/**
+ * @brief Build the sampling state and the extent pre-filter shared by every
+ * raster sampling function
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rast Raster
+ * @param[in] band Band number (1-based)
+ * @param[out] state Sampling state; on success its raster is owned by the
+ * caller, which releases it with #raster_destroy()
+ * @param[out] box Bounding box of the raster extent
+ * @return true on success; on failure sets a MEOS error and returns false
+ */
+static bool
+raster_sample_state_make(const Temporal *traj, const Raster *rast, int band,
+  RasterSampleState *state, STBox *box)
+{
+  /* The bands are needed, so the raster is fully deserialized. It keeps
+   * pointers into `rast` without owning them, and the caller destroys it
+   * before `rast` is handed back to its own caller */
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return false;
+  }
+  /* A raster and a trajectory in different reference systems state their
+   * positions in different units, which the sampling cannot reconcile */
+  if (! ensure_same_srid(tspatial_srid(traj), rt_raster_get_srid(raster)))
+  {
+    raster_destroy(raster);
+    return false;
+  }
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  if (band < 1 || band > numbands)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster has no band %d, it has %d", band, numbands);
+    return false;
+  }
+  /* Fetch the band using the 0-based internal index */
+  rt_band rtband = rt_raster_get_band(raster, (uint32_t) (band - 1));
+  if (! rtband ||
+      rt_raster_get_inverse_geotransform_matrix(raster, NULL,
+        state->igt) != ES_NONE)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read band %d of the raster", band);
+    return false;
+  }
+  state->raster = raster;
+  state->band = rtband;
+
+  /* Bounding box of the raster extent, which bears the rotation of the
+   * geotransform */
+  rt_envelope env;
+  if (rt_raster_get_envelope(raster, &env) != ES_NONE)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not compute the extent of the raster");
+    return false;
+  }
+  memset(box, 0, sizeof(STBox));
+  box->xmin = env.MinX; box->xmax = env.MaxX;
+  box->ymin = env.MinY; box->ymax = env.MaxY;
+  return true;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return the values of a raster band sampled at the instants of a
+ * trajectory
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rast Raster
+ * @param[in] band Band number (1-based)
+ * @return A temporal float, or @p NULL when no instant of @p traj falls
+ * inside the raster or survives nodata filtering
+ * @csqlfn #Raster_value()
+ */
+Temporal *
+raster_value(const Temporal *traj, const Raster *rast, int band)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
+
+  RasterSampleState state;
+  STBox box;
+  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+    return NULL;
+  Temporal *result = raster_value_sampler(traj, &box, &raster_value_sample,
+    &state);
+  raster_destroy(state.raster);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return the instants of a trajectory where the sampled raster pixel
+ * value falls inside a float span
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rast Raster
+ * @param[in] band Band number (1-based)
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return A trajectory restricted to the qualifying instants, or @p NULL
+ * when none qualify
+ * @csqlfn #Raster_at_value()
+ */
+Temporal *
+raster_at_value(const Temporal *traj, const Raster *rast, int band,
+  const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
+  VALIDATE_NOT_NULL(vspan, NULL);
+
+  RasterSampleState state;
+  STBox box;
+  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+    return NULL;
+  Temporal *result = raster_at_value_sampler(traj, &box, &raster_value_sample,
+    &state, vspan);
+  raster_destroy(state.raster);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return the instants of a trajectory where the sampled raster pixel
+ * value falls outside a float span
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rast Raster
+ * @param[in] band Band number (1-based)
+ * @param[in] vspan Float value range to exclude
+ * @return A trajectory restricted to the qualifying instants, or @p NULL
+ * when none qualify
+ * @csqlfn #Raster_minus_value()
+ */
+Temporal *
+raster_minus_value(const Temporal *traj, const Raster *rast, int band,
+  const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
+  VALIDATE_NOT_NULL(vspan, NULL);
+
+  RasterSampleState state;
+  STBox box;
+  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+    return NULL;
+  Temporal *result = raster_minus_value_sampler(traj, &box,
+    &raster_value_sample, &state, vspan);
+  raster_destroy(state.raster);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return true if a trajectory ever samples a raster pixel value inside
+ * a float span
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rast Raster
+ * @param[in] band Band number (1-based)
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return On error, return -1
+ * @csqlfn #Eraster_value()
+ */
+int
+eraster_value(const Temporal *traj, const Raster *rast, int band,
+  const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL(rast, -1);
+  VALIDATE_NOT_NULL(vspan, -1);
+
+  RasterSampleState state;
+  STBox box;
+  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+    return -1;
+  int result = eraster_value_sampler(traj, &box, &raster_value_sample, &state,
+    vspan);
+  raster_destroy(state.raster);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return true if every instant of a trajectory that falls inside a
+ * raster samples a pixel value inside a float span
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rast Raster
+ * @param[in] band Band number (1-based)
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @return On error, return -1
+ * @csqlfn #Araster_value()
+ */
+int
+araster_value(const Temporal *traj, const Raster *rast, int band,
+  const Span *vspan)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL(rast, -1);
+  VALIDATE_NOT_NULL(vspan, -1);
+
+  RasterSampleState state;
+  STBox box;
+  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+    return -1;
+  int result = araster_value_sampler(traj, &box, &raster_value_sample, &state,
+    vspan);
+  raster_destroy(state.raster);
   return result;
 }
 

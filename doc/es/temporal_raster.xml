@@ -34,7 +34,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
 </programlisting>
-				<para>Evalúa el píxel de la <varname>band</varname> en cada instante de <varname>traj</varname> usando muestreo bilineal-vecino más próximo (<varname>ST_Value</varname> con <varname>resample=false</varname>). Devuelve un <varname>tfloat</varname> de conjunto de instantes cuyos valores se redondean a cuatro decimales. Devuelve <varname>NULL</varname> cuando ningún instante se interseca con el ráster.</para>
+				<para>Evalúa la banda <varname>band</varname> en cada instante de <varname>traj</varname> con muestreo del vecino más próximo, es decir, el valor del píxel en el que cae la posición. Devuelve un <varname>tfloat</varname> de conjunto de instantes que contiene los instantes que caen en un píxel con datos, y <varname>NULL</varname> cuando ningún instante se interseca con el ráster.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (

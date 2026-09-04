@@ -417,13 +417,12 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
 }
 
 /**
- * @ingroup meos_raster
  * @brief Return the values of a raster sampled at the instants of a
  * trajectory
  * @details The pixel access is delegated to the @p sample callback so that
- * the one algorithm serves any raster engine: the MobilityDB extension
- * samples through PostGIS raster's @p ST_Value, a program using the MEOS
- * library samples through GDAL or any other reader.
+ * the one algorithm serves any raster engine: a PostGIS raster is read
+ * through the vendored raster core, a raster file through GDAL, a Raquet
+ * tile from its own pixel array.
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] box Bounding box of the raster used as a pre-filter, may be
  * @p NULL
@@ -431,11 +430,10 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
  * @param[in] ctx Opaque context passed through to the callback
  * @return A temporal float, or @p NULL when no instant of @p traj falls
  * inside the raster or survives nodata filtering
- * @csqlfn #Raster_value()
  */
 Temporal *
-raster_value(const Temporal *traj, const STBox *box, raster_sample_fn sample,
-  void *ctx)
+raster_value_sampler(const Temporal *traj, const STBox *box,
+  raster_sample_fn sample, void *ctx)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
@@ -482,21 +480,21 @@ raster_value(const Temporal *traj, const STBox *box, raster_sample_fn sample,
 }
 
 /*****************************************************************************
- * raster_at_value / raster_minus_value / eraster_value / araster_value
+ * raster_at_value_sampler / raster_minus_value_sampler /
+ * eraster_value_sampler / araster_value_sampler
  *****************************************************************************/
 
 /**
- * @ingroup meos_raster
  * @brief Return a trajectory restricted to the instants where the sampled
  * raster pixel value falls inside a float span
- * @details Equivalent to, with @p v = #raster_value(traj, box, sample, ctx):
+ * @details Equivalent to, with
+ * @p v = #raster_value_sampler(traj, box, sample, ctx):
  * @code
  * atTime(traj, getTime(atSpan(v, vspan)))
  * @endcode
- * composed here in C (on top of #tnumber_restrict_span, #temporal_time and
- * #temporal_restrict_tstzspanset) so that any MEOS caller supplying a
- * @p sample callback gets the restriction, not just the PostGIS raster PG
- * binding.
+ * composed here in C on top of #tnumber_restrict_span, #temporal_time and
+ * #temporal_restrict_tstzspanset, so that every caller supplying a @p sample
+ * callback gets the restriction.
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] box Bounding box of the raster used as a pre-filter, may be
  * @p NULL
@@ -505,17 +503,16 @@ raster_value(const Temporal *traj, const STBox *box, raster_sample_fn sample,
  * @param[in] vspan Float value range (inclusive bounds)
  * @return A trajectory restricted to the qualifying instants, or @p NULL
  * when none qualify
- * @csqlfn #Raster_at_value()
  */
 Temporal *
-raster_at_value(const Temporal *traj, const STBox *box,
+raster_at_value_sampler(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx, const Span *vspan)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
-  Temporal *v = raster_value(traj, box, sample, ctx);
+  Temporal *v = raster_value_sampler(traj, box, sample, ctx);
   if (! v)
     return NULL;
   Temporal *v1 = tnumber_restrict_span(v, vspan, REST_AT);
@@ -530,10 +527,10 @@ raster_at_value(const Temporal *traj, const STBox *box,
 }
 
 /**
- * @ingroup meos_raster
  * @brief Return a trajectory restricted to the instants where the sampled
  * raster pixel value falls outside a float span
- * @details Equivalent to, with @p v = #raster_value(traj, box, sample, ctx):
+ * @details Equivalent to, with
+ * @p v = #raster_value_sampler(traj, box, sample, ctx):
  * @code
  * atTime(traj, getTime(minusSpan(v, vspan)))
  * @endcode
@@ -545,17 +542,16 @@ raster_at_value(const Temporal *traj, const STBox *box,
  * @param[in] vspan Float value range to exclude
  * @return A trajectory restricted to the qualifying instants, or @p NULL
  * when none qualify
- * @csqlfn #Raster_minus_value()
  */
 Temporal *
-raster_minus_value(const Temporal *traj, const STBox *box,
+raster_minus_value_sampler(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx, const Span *vspan)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
-  Temporal *v = raster_value(traj, box, sample, ctx);
+  Temporal *v = raster_value_sampler(traj, box, sample, ctx);
   if (! v)
     return NULL;
   Temporal *v1 = tnumber_restrict_span(v, vspan, REST_MINUS);
@@ -570,7 +566,6 @@ raster_minus_value(const Temporal *traj, const STBox *box,
 }
 
 /**
- * @ingroup meos_raster
  * @brief Return true if a trajectory ever samples a raster pixel value
  * inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
@@ -581,17 +576,16 @@ raster_minus_value(const Temporal *traj, const STBox *box,
  * @param[in] vspan Float value range
  * @return 1 if the trajectory ever samples a value inside @p vspan, 0 if
  * not, and -1 on error
- * @csqlfn #Eraster_value()
  */
 int
-eraster_value(const Temporal *traj, const STBox *box,
+eraster_value_sampler(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx, const Span *vspan)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) sample, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
-  Temporal *v = raster_value(traj, box, sample, ctx);
+  Temporal *v = raster_value_sampler(traj, box, sample, ctx);
   if (! v)
     return 0;
   Temporal *v1 = tnumber_restrict_span(v, vspan, REST_AT);
@@ -603,7 +597,6 @@ eraster_value(const Temporal *traj, const STBox *box,
 }
 
 /**
- * @ingroup meos_raster
  * @brief Return true if every in-raster-extent instant of a trajectory
  * samples a pixel value inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
@@ -614,17 +607,16 @@ eraster_value(const Temporal *traj, const STBox *box,
  * @param[in] vspan Float value range
  * @return 1 if every sampled value falls inside @p vspan, 0 if not, and -1
  * on error
- * @csqlfn #Araster_value()
  */
 int
-araster_value(const Temporal *traj, const STBox *box,
+araster_value_sampler(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx, const Span *vspan)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) sample, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
-  Temporal *v = raster_value(traj, box, sample, ctx);
+  Temporal *v = raster_value_sampler(traj, box, sample, ctx);
   if (! v)
     return 0;
   Temporal *v1 = tnumber_restrict_span(v, vspan, REST_MINUS);
