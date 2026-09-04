@@ -474,7 +474,7 @@ SELECT tpcboxX(0, 0, 10, 10, 1) &amp;&amp; tpcboxT(tstzspan '[2024-01-01, 2024-0
 
 		<sect2 xml:id="tpcbox_pos">
 			<title>Position Operations</title>
-			<para>Sixteen axis-aligned position predicates, parallel to those on <varname>stbox</varname>. Each tests strict-or-overlap relationship along one axis. All require the same schema and the same reference system, and a mismatch in either raises an error. Z-axis predicates require both boxes to have a Z dimension; T-axis predicates require both to have a T dimension.</para>
+			<para>Sixteen axis-aligned position predicates, parallel to those on <varname>stbox</varname>. Each tests a strict-or-overlap relationship along one axis. The twelve that read coordinates require the same schema and the same reference system, and a mismatch in either raises an error; the four that read the time axis require neither, a timestamp meaning the same thing whichever schema the coordinates are read in. Every predicate requires both boxes to carry the axis it reads, so the Z-axis ones need a Z dimension in both and the T-axis ones a time span in both.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcbox_pos_ops">
 					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
@@ -506,11 +506,16 @@ SELECT tpcboxX(0, 0, 2, 2) &lt;&lt; tpcboxX(5, 5, 7, 7);
 -- t
 SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;| tpcboxX(5, 5, 7, 7);
 -- t
--- Neither box carries a z dimension or a time span, so those tests are false.
+-- Neither box carries a z dimension or a time span, so neither of the next two
+-- has an axis to compare along. The last pair states two schemas, which the
+-- time axis does not read.
 SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;/ tpcboxX(5, 5, 7, 7);
--- f
+-- ERROR:  The tpcbox must have Z dimension
 SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;# tpcboxX(5, 5, 7, 7);
--- f
+-- ERROR:  The tpcbox must have T dimension
+SELECT tpcboxXT(0, 0, 5, 5, tstzspan '[2024-01-01, 2024-01-15]', 1) &lt;&lt;#
+  tpcboxXT(0, 0, 5, 5, tstzspan '[2025-01-01, 2025-01-15]', 2);
+-- t
 </programlisting>
 				</listitem>
 			</itemizedlist>

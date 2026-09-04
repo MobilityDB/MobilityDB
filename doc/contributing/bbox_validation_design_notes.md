@@ -340,18 +340,41 @@ if (! ensure_valid_stbox_stbox(box1, box2) ||
   return false;
 ```
 
-### 4.1 Layer 1 is called first, always
+### 4.1 Layer 1 is asked about the axes the operation reads
 
-Where an operation composes the checks inline, the layer-1 call is first in the
-chain; where an operation-class helper exists, it calls layer 1 as its first
-statement.
+An operation validates the frame of every axis it reads, and of no other. Which
+axes those are is what decides whether the layer-1 question arises at all.
 
-This is a rule rather than a preference, for two reasons. Comparability is the
-more fundamental failure — mixing metres with feet is wrong regardless of which
-dimensions happen to be present, so it is what the caller needs to be told. And
-fixing the order makes the diagnostic deterministic: a pair of boxes failing both
-checks reports the same error wherever it enters, rather than whichever failure
-the local author happened to test first.
+Read the frame column of the table in §1 and every entry governs coordinates: a
+span type says what the value extent measures, an SRID and the geodetic bit say
+where the coordinates are, a `pcid` says which schema they are read in. **No box
+type carries a frame field for the time axis.** A timestamp means the same thing
+in every reference system and under every schema, so an operation that compares
+only periods has no frame to disagree about, and asking would refuse a pair it can
+answer.
+
+That gives one rule per operation class:
+
+```
+topological   reads every shared axis  -> the coordinate frame, when both carry X
+position on X/Y/Z  reads coordinates   -> the coordinate frame
+position on T      reads periods       -> nothing to ask
+```
+
+The validators of §2 already carry the same principle one level down: each gates
+its frame predicates on `MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags)`,
+so a box holding no coordinates states no reference system and is comparable with
+any. A topological operation therefore calls the validator unconditionally and
+lets it decide, while a `before` / `after` / `overbefore` / `overafter` does not
+call it at all. `Span` is not an exception: its one axis is the axis every
+operation on it reads, so its validator is always called.
+
+**Where layer 1 is asked, it is asked first.** Comparability is the more
+fundamental failure — mixing metres with feet is wrong regardless of which
+dimensions happen to be present, so it is what the caller needs to be told — and
+fixing the order makes the diagnostic deterministic: a pair failing both checks
+reports the same error wherever it enters, rather than whichever failure the local
+author happened to test first.
 
 ---
 
@@ -488,7 +511,9 @@ Wiring is `new_temporal_type.md` §3.4. The validation contract is this:
    box type must appear in (§2.2); `new_temporal_type.md` §3.4 lists the rest.
 6. **Add nothing to layer 2** (§4). If a dimension primitive seems to be missing,
    check whether the constraint is really frame.
-7. **Call layer 1 first in every operation** (§4.1).
+7. **Ask layer 1 about the axes the operation reads, and ask it first** (§4.1).
+   An operation over periods alone asks nothing: no box type carries a frame
+   field for the time axis.
 8. **Compare frame fields strictly** (§5.2). Absorb belongs to parsers and
    constructors, and there the mismatch branch is mandatory (§5.1).
 9. **Never fill an unset frame field during an expand or merge** (§5.2).
