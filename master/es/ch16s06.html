@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s05.html" title="Accesores"><link rel="next" href="ch16s07.html" title="Modificaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_shift_scale"></a><a class="indexterm" name="id11693"></a><a class="indexterm" name="id11696"></a><a class="indexterm" name="id11699"></a><p>Desplazar, escalar, o desplazar y escalar el lapso de tiempo de una celda temporal</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Tipos de índices de celdas temporales"><link rel="prev" href="ch16s05.html" title="Accesores"><link rel="next" href="ch16s07.html" title="Modificaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Tipos de índices de celdas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_shift_scale"></a><a class="indexterm" name="id11681"></a><a class="indexterm" name="id11684"></a><a class="indexterm" name="id11687"></a><p>Desplazar, escalar, o desplazar y escalar el lapso de tiempo de una celda temporal</p><pre class="programlisting">
 shiftTime(tcell,interval) → tcell
 scaleTime(tcell,interval) → tcell
 shiftScaleTime(tcell,interval,interval) → tcell
@@ -17,7 +17,7 @@ SELECT shiftTime(ts2cell '47c3c@2001-01-01', interval '1 day');
 -- 47c3c@2001-01-02
 SELECT scaleTime(ts2cell '[47c3c@2001-01-01, 47c4@2001-01-03]', interval '4 days');
 -- [47c3c@2001-01-01, 47c4@2001-01-05]
-</pre></li><li class="listitem"><a name="tcell_append"></a><a class="indexterm" name="id11706"></a><a class="indexterm" name="id11709"></a><p>Añadir un instante temporal o una secuencia temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_append"></a><a class="indexterm" name="id11694"></a><a class="indexterm" name="id11697"></a><p>Añadir un instante temporal o una secuencia temporal</p><pre class="programlisting">
 appendInstant(tcell,tcellInst) → tcell
 appendSequence(tcell,tcellSeq) → tcell
 </pre><pre class="programlisting">
@@ -27,7 +27,7 @@ SELECT asText(appendInstant(th3index '831c02fffffffff@2001-01-01',
 SELECT asText(appendSequence(tquadbin '[48a6227affffffff@2001-01-01]',
   tquadbin '[485623ffffffffff@2001-01-02]'));
 -- {[48a6227affffffff@2001-01-01], [485623ffffffffff@2001-01-02]}
-</pre></li><li class="listitem"><a name="tcell_merge"></a><a class="indexterm" name="id11716"></a><p>Fusionar las celdas temporales</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_merge"></a><a class="indexterm" name="id11704"></a><p>Fusionar las celdas temporales</p><pre class="programlisting">
 merge(tcell,tcell) → tcell
 merge(tcell[]) → tcell
 </pre><pre class="programlisting">
@@ -37,7 +37,7 @@ SELECT asText(merge(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-03]',
 SELECT asText(merge(ARRAY[th3index '831c02fffffffff@2001-01-01',
   th3index '831c00fffffffff@2001-01-03']));
 -- {831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-03}
-</pre></li><li class="listitem"><a name="tcell_set_interp"></a><a class="indexterm" name="id11723"></a><p>Establecer la interpolación de una celda temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_set_interp"></a><a class="indexterm" name="id11711"></a><p>Establecer la interpolación de una celda temporal</p><pre class="programlisting">
 setInterp(tcell,interp text) → tcell
 </pre><pre class="programlisting">
 SELECT setInterp(th3index '{871fa4418ffffff@2001-01-01,

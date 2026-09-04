@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s09.html" title="Accesores"><link rel="next" href="ch13s11.html" title="Modificaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s11.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_subtype"></a><a class="indexterm" name="id9161"></a><a class="indexterm" name="id9164"></a><a class="indexterm" name="id9167"></a><p>Transforma a otro subtipo</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s09.html" title="Accesores"><link rel="next" href="ch13s11.html" title="Modificaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s09.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s11.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_transformations"></a>Transformaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_subtype"></a><a class="indexterm" name="id9149"></a><a class="indexterm" name="id9152"></a><a class="indexterm" name="id9155"></a><p>Transforma a otro subtipo</p><pre class="programlisting">
 tposeInst(tpose) → tposeInst
 tposeSeq(tpose) → tposeSeq
 tposeSeqSet(tpose) → tposeSeqSet
@@ -9,7 +9,7 @@ SELECT asText(tposeSeq(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'));
 -- [Pose(POINT(1 1),0.5)@2001-01-01]
 SELECT asText(tposeSeqSet(tpose 'Pose(PointZ(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01'));
 -- {[Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-01]}
-</pre></li><li class="listitem"><a name="tpose_setInterp"></a><a class="indexterm" name="id9174"></a><p>Transforma a otra interpolación</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_setInterp"></a><a class="indexterm" name="id9162"></a><p>Transforma a otra interpolación</p><pre class="programlisting">
 setInterp(tpose,interp) → tpose
 </pre><pre class="programlisting">
 SELECT asText(setInterp(tpose 'Pose(Point(1 1),0.2)@2001-01-01','linear'));
@@ -17,7 +17,7 @@ SELECT asText(setInterp(tpose 'Pose(Point(1 1),0.2)@2001-01-01','linear'));
 SELECT asText(setInterp(tpose '{[Pose(Point Z(1 1 1),1,0,0,0)@2001-01-01],
   [Pose(Point Z(2 2 2),0,0,0,1)@2001-01-02]}', 'discrete'));
 -- {Pose(POINT Z (1 1 1),1,0,0,0)@2001-01-01, Pose(POINT Z (2 2 2),0,0,0,1)@2001-01-02}
-</pre></li><li class="listitem"><a name="tpose_round"></a><a class="indexterm" name="id9181"></a><p>Redondea los puntos y las orientaciones de la pose temporal al número de posiciones decimales</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_round"></a><a class="indexterm" name="id9169"></a><p>Redondea los puntos y las orientaciones de la pose temporal al número de posiciones decimales</p><pre class="programlisting">
 round({tpose,tposechain},integer=0) → {tpose,tposechain}
 shiftTime({tpose,tposechain},interval) → {tpose,tposechain}
 </pre><pre class="programlisting">
