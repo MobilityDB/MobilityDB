@@ -200,6 +200,34 @@ SELECT tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0) +
   tpcboxT(tstzspan '[2024-01-02, 2024-01-03]', 1);
 
 -------------------------------------------------------------------------------
+-- Position predicates — each asks about the axis it reads
+-------------------------------------------------------------------------------
+
+-- The time axis carries no schema and no reference system: a timestamp means
+-- the same thing whatever schema the coordinates are read in, so the four
+-- time-axis predicates compare two boxes of different schemas
+SELECT tpcboxXT(0, 0, 5, 5, tstzspan '[2024-01-01, 2024-01-15]', 1) <<#
+  tpcboxXT(0, 0, 5, 5, tstzspan '[2025-01-01, 2025-01-15]', 2);
+SELECT tpcboxXT(0, 0, 5, 5, tstzspan '[2024-01-01, 2024-01-15]', 1) &<#
+  tpcboxXT(0, 0, 5, 5, tstzspan '[2025-01-01, 2025-01-15]', 2);
+SELECT tpcboxXT(0, 0, 5, 5, tstzspan '[2025-01-01, 2025-01-15]', 1) #>>
+  tpcboxXT(0, 0, 5, 5, tstzspan '[2024-01-01, 2024-01-15]', 2);
+SELECT tpcboxXT(0, 0, 5, 5, tstzspan '[2025-01-01, 2025-01-15]', 1) #&>
+  tpcboxXT(0, 0, 5, 5, tstzspan '[2024-01-01, 2024-01-15]', 2);
+
+-- The twelve that read coordinates still refuse the same pair, the schema being
+-- what gives a coordinate its meaning
+SELECT tpcboxXT(0, 0, 5, 5, tstzspan '[2024-01-01, 2024-01-15]', 1) <<
+  tpcboxXT(10, 10, 20, 20, tstzspan '[2025-01-01, 2025-01-15]', 2);
+SELECT tpcboxXT(0, 0, 5, 5, tstzspan '[2024-01-01, 2024-01-15]', 1) <<|
+  tpcboxXT(10, 10, 20, 20, tstzspan '[2025-01-01, 2025-01-15]', 2);
+
+-- Every predicate needs both boxes to carry the axis it reads, which two boxes
+-- of coordinates alone do not for the Z and the time axis
+SELECT tpcboxX(0, 0, 2, 2, 1) <</ tpcboxX(5, 5, 7, 7, 1);
+SELECT tpcboxX(0, 0, 2, 2, 1) <<# tpcboxX(5, 5, 7, 7, 1);
+
+-------------------------------------------------------------------------------
 -- Extent aggregation
 -------------------------------------------------------------------------------
 

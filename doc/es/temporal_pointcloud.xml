@@ -472,7 +472,7 @@ SELECT tpcboxX(0, 0, 10, 10, 1) &amp;&amp; tpcboxT(tstzspan '[2024-01-01, 2024-0
 
 		<sect2 xml:id="tpcbox_pos">
 			<title>Operaciones de posición</title>
-			<para>Dieciséis predicados de posición alineados por eje, paralelos a los de <varname>stbox</varname>. Cada uno comprueba la relación estricta o de solapamiento a lo largo de un eje. Todos requieren el mismo esquema y el mismo sistema de referencia, y una discrepancia en cualquiera de los dos genera un error. Los predicados del eje Z requieren que ambas cajas tengan dimensión Z; los del eje T requieren que ambas tengan dimensión T.</para>
+			<para>Dieciséis predicados de posición alineados por eje, paralelos a los de <varname>stbox</varname>. Cada uno comprueba la relación estricta o de solapamiento a lo largo de un eje. Los doce que leen coordenadas requieren el mismo esquema y el mismo sistema de referencia, y una discrepancia en cualquiera de los dos genera un error; los cuatro que leen el eje temporal no requieren ninguno de los dos, ya que una marca de tiempo significa lo mismo sea cual sea el esquema en el que se leen las coordenadas. Todo predicado requiere que ambas cajas lleven el eje que él lee, de modo que los del eje Z necesitan una dimensión Z en ambas y los del eje T un período en ambas.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcbox_pos_ops">
 					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
@@ -504,11 +504,16 @@ SELECT tpcboxX(0, 0, 2, 2) &lt;&lt; tpcboxX(5, 5, 7, 7);
 -- t
 SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;| tpcboxX(5, 5, 7, 7);
 -- t
--- Neither box carries a z dimension or a time span, so those tests are false.
+-- Neither box carries a z dimension or a time span, so neither of the next two
+-- has an axis to compare along. The last pair states two schemas, which the
+-- time axis does not read.
 SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;/ tpcboxX(5, 5, 7, 7);
--- f
+-- ERROR:  The tpcbox must have Z dimension
 SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;# tpcboxX(5, 5, 7, 7);
--- f
+-- ERROR:  The tpcbox must have T dimension
+SELECT tpcboxXT(0, 0, 5, 5, tstzspan '[2024-01-01, 2024-01-15]', 1) &lt;&lt;#
+  tpcboxXT(0, 0, 5, 5, tstzspan '[2025-01-01, 2025-01-15]', 2);
+-- t
 </programlisting>
 				</listitem>
 			</itemizedlist>

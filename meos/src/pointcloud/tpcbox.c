@@ -1657,8 +1657,8 @@ bool
 before_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
-      ! ensure_has_T(T_TPCBOX, box1->flags) ||
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
   return tpcbox_before(box1, box2);
@@ -1687,8 +1687,8 @@ bool
 overbefore_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
-      ! ensure_has_T(T_TPCBOX, box1->flags) ||
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
   return tpcbox_overbefore(box1, box2);
@@ -1717,8 +1717,8 @@ bool
 after_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
-      ! ensure_has_T(T_TPCBOX, box1->flags) ||
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
   return tpcbox_after(box1, box2);
@@ -1747,8 +1747,8 @@ bool
 overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
-      ! ensure_has_T(T_TPCBOX, box1->flags) ||
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
   return tpcbox_overafter(box1, box2);
