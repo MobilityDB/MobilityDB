@@ -1431,18 +1431,44 @@ int main(void)
     int ed = meos_errno();
     printf("difference of a polyhedral surface: %s, errno %d\n",
       pd ? "answered" : "nothing", ed);
-    assert(pd == NULL);
-    assert(ed != 0);
+    /* A FLAT polyhedral surface is a region, and its faces are read as the
+     * region they cover between them, so the pair is answered here and never
+     * reaches the route that refuses the type */
+    assert(pd != NULL);
+    assert(ed == 0);
     if (pd) free(pd);
     meos_errno_reset();
     GSERIALIZED *pi = geom_intersection2d(pa, pb);
     int ei = meos_errno();
     printf("intersection of a polyhedral surface: %s, errno %d\n",
       pi ? "answered" : "nothing", ei);
+    assert(pi != NULL);
+    assert(ei == 0);
     if (pi) free(pi);
     free(pa); free(pb);
     meos_errno_reset();
   }
+  /* WHAT THE REFUSAL IS STILL FOR. A collection is a region only when every
+   * member draws one, and one holding a point and a line draws neither, so it
+   * reaches the route that reads the type. WHICH of the two answers that route
+   * gives is a property of the build -- a geometry where the fall-through
+   * draws one, an absence where it is compiled out -- and what holds of both
+   * is that an absence is ANNOUNCED: a caller never reads a null pointer with
+   * nothing set beside it. That is the assertion, so it fails on either build
+   * the moment a refusal goes unreported */
+  GSERIALIZED *nra = geom_in("GEOMETRYCOLLECTION(POINT(1 1),"
+    "LINESTRING(0 2,4 2))", -1);
+  GSERIALIZED *nrb = geom_in("POLYGON((0 0,4 0,4 4,0 4,0 0))", -1);
+  assert(nra != NULL); assert(nrb != NULL);
+  meos_errno_reset();
+  GSERIALIZED *nrd = geom_difference2d(nra, nrb);
+  int nrerrno = meos_errno();
+  printf("a collection that draws no region: %s\n",
+    nrd ? "answered" : "reported the refusal");
+  assert(nrd != NULL || nrerrno != 0);
+  if (nrd) free(nrd);
+  free(nra); free(nrb);
+  meos_errno_reset();
   /* A region loses no area to a clip that covers none, so the difference is
    * the subject itself -- kept as the subject was WRITTEN, where the overlay
    * would return a curve as the chain of chords it reads it by and a triangle
@@ -1800,6 +1826,42 @@ int main(void)
     assert(fabs(geom_area(tu) - tri_area[i]) < 1e-12);
     assert(strstr(tuw, "TRIANGLE") == NULL);
     free(tuw); free(tu); free(ta[0]); free(ta[1]);
+    meos_errno_reset();
+  }
+
+  /* A TIN AND A POLYHEDRAL SURFACE ARE COLLECTIONS OF FACES, so what they
+   * draw is read the way their multi- siblings are. The faces of one SHARE
+   * edges, and a shared edge bounds nothing -- it is interior to the region
+   * the faces cover together -- so the parts are dissolved before the boundary
+   * is walked. Reading them without that dissolve splits one region into the
+   * faces it happens to be written as */
+  const char *fc_a[] = {
+    "TIN(((0 0,4 0,4 4,0 0)),((0 0,4 4,0 4,0 0)))",
+    "TIN(((0 0,4 0,4 4,0 0)),((0 0,4 4,0 4,0 0)))",
+    /* A polyhedral surface is a region the existing route refuses to read */
+    "POLYHEDRALSURFACE(((0 0,2 0,2 2,0 2,0 0)),((2 0,4 0,4 2,2 2,2 0)))",
+  };
+  const char *fc_b[] = {
+    "POLYGON((1 1,3 1,3 3,1 3,1 1))",
+    "POLYGON((2 2,6 2,6 6,2 6,2 2))",
+    "POLYGON((1 0,3 0,3 2,1 2,1 0))",
+  };
+  const double fc_area[] = { 4.0, 4.0, 4.0 };
+  for (int i = 0; i < 3; i++)
+  {
+    GSERIALIZED *fa = geom_in(fc_a[i], -1);
+    GSERIALIZED *fb = geom_in(fc_b[i], -1);
+    assert(fa != NULL); assert(fb != NULL);
+    meos_errno_reset();
+    GSERIALIZED *fr = geom_intersection2d(fa, fb);
+    assert(fr != NULL);
+    assert(meos_errno() == 0);
+    char *fw = geo_as_text(fr, 6);
+    printf("a geometry of faces meets a region: %.44s\n", fw);
+    assert(fabs(geom_area(fr) - fc_area[i]) < 1e-12);
+    /* ONE region, not the faces it is written as */
+    assert(strncmp(fw, "MULTI", 5) != 0);
+    free(fw); free(fr); free(fa); free(fb);
     meos_errno_reset();
   }
 
