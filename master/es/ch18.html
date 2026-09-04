@@ -4,7 +4,7 @@ Los tipos <code class="varname">uint64</code> e <code class="varname">int64</cod
 CREATE EXTENSION mobilitydb CASCADE;
 -- NOTICE:  installing required extension "postgis"
 -- NOTICE:  installing required extension "postgis_raster"
-</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raster_sampling_operator"></a>Operador de Muestreo</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_rasterValue"></a><a class="indexterm" name="id14184"></a><p>Muestrea una banda de ráster en cada instante de una trayectoria</p><pre class="programlisting">
+</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raster_sampling_operator"></a>Operador de Muestreo</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_rasterValue"></a><a class="indexterm" name="id14186"></a><p>Muestrea una banda de ráster en cada instante de una trayectoria</p><pre class="programlisting">
 rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
 </pre><p>Evalúa el píxel de la <code class="varname">band</code> en cada instante de <code class="varname">traj</code> usando muestreo bilineal-vecino más próximo (<code class="varname">ST_Value</code> con <code class="varname">resample=false</code>). Devuelve un <code class="varname">tfloat</code> de conjunto de instantes cuyos valores se redondean a cuatro decimales. Devuelve <code class="varname">NULL</code> cuando ningún instante se interseca con el ráster.</p><pre class="programlisting">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)

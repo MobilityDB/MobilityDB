@@ -1,23 +1,23 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Motion Metrics</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch14.html" title="Chapter 14. Temporal Rigid Geometries"><link rel="prev" href="ch14s06.html" title="Spatial Functions"><link rel="next" href="ch14s08.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Motion Metrics</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s06.html">Prev</a> </td><th width="60%" align="center">Chapter 14. Temporal Rigid Geometries</th><td width="20%" align="right"> <a accesskey="n" href="ch14s08.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_motion_metrics"></a>Motion Metrics</h2></div></div></div><p>These functions report the motion of a temporal rigid geometry along its centroid trajectory.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_length"></a><a class="indexterm" name="id10691"></a><a class="indexterm" name="id10694"></a><p>Return the total length traversed by the centroid, or its cumulative length over time</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Motion Metrics</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch14.html" title="Chapter 14. Temporal Rigid Geometries"><link rel="prev" href="ch14s06.html" title="Spatial Functions"><link rel="next" href="ch14s08.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Motion Metrics</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s06.html">Prev</a> </td><th width="60%" align="center">Chapter 14. Temporal Rigid Geometries</th><td width="20%" align="right"> <a accesskey="n" href="ch14s08.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_motion_metrics"></a>Motion Metrics</h2></div></div></div><p>These functions report the motion of a temporal rigid geometry along its centroid trajectory.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_length"></a><a class="indexterm" name="id10693"></a><a class="indexterm" name="id10696"></a><p>Return the total length traversed by the centroid, or its cumulative length over time</p><pre class="programlisting">
 length(trgeometry) → float
 cumulativeLength(trgeometry) → tfloat
 </pre><pre class="programlisting">
 SELECT length(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]');
 -- 5
-</pre></li><li class="listitem"><a name="trgeometry_speed"></a><a class="indexterm" name="id10701"></a><p>Return the speed of the centroid as a temporal float</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_speed"></a><a class="indexterm" name="id10703"></a><p>Return the speed of the centroid as a temporal float</p><pre class="programlisting">
 speed(trgeometry) → tfloat
 </pre><pre class="programlisting">
 SELECT speed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]');
 -- Interp=Step;[0.000115740740741@2001-01-01, 0.000115740740741@2001-01-02]
-</pre></li><li class="listitem"><a name="trgeometry_angular_speed"></a><a class="indexterm" name="id10708"></a><p>Return the angular speed as a temporal float</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_angular_speed"></a><a class="indexterm" name="id10710"></a><p>Return the angular speed as a temporal float</p><pre class="programlisting">
 angularSpeed(trgeometry) → tfloat
 </pre><p>The shape of a rigid geometry never changes, so its angular speed is the angular speed of the pose that carries it, in radians per unit time.</p><pre class="programlisting">
 SELECT asText(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'));
 -- Interp=Step;[0.000011574074074@2001-01-01, 0.000011574074074@2001-01-02]
-</pre></li><li class="listitem"><a name="trgeometry_twcentroid"></a><a class="indexterm" name="id10716"></a><p>Return the time-weighted centroid of the centroid trajectory as a geometry</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_twcentroid"></a><a class="indexterm" name="id10718"></a><p>Return the time-weighted centroid of the centroid trajectory as a geometry</p><pre class="programlisting">
 twCentroid(trgeometry) → geometry
 </pre><pre class="programlisting">
 SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
