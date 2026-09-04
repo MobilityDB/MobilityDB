@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: RTREE_MIN_NUMBER_ELEMS</title>
+<title>MobilityDB: geo_every_part_bounds_area</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -95,7 +95,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a3d32ec974d83f5a47d5241de4bf6b3da.html#a3d32ec974d83f5a47d5241de4bf6b3da">geo_covers2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a65d72bb98c70fad282756d68604dc8f6.html#a65d72bb98c70fad282756d68604dc8f6">geo_edge_ctx_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2a14b37366acda8c4c698fd59806a20c.html#a2a14b37366acda8c4c698fd59806a20c">geo_edge_ctx_make</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a366d17e349af2ae6ca862721c098681b.html#a366d17e349af2ae6ca862721c098681b">geo_every_part_bounds_area</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a366d17e349af2ae6ca862721c098681b.html#a366d17e349af2ae6ca862721c098681b">geo_every_part_bounds_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ac7de362b2498565cfd46dcdb17552ad6.html#ac7de362b2498565cfd46dcdb17552ad6">geo_intersects2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a4d47d6aa4598038bd57ece67feb2505a.html#a4d47d6aa4598038bd57ece67feb2505a">geo_intersects2d_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a24d46b160155514d81ea485664a51624.html#a24d46b160155514d81ea485664a51624">geo_is_planar_areal</a></td></tr>
@@ -125,7 +125,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a81fecab8510a75f4ddf23c95f5c98eea.html#a81fecab8510a75f4ddf23c95f5c98eea">point_on_poly_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ada9806d45a2318f54240b6b7d54105dc.html#ada9806d45a2318f54240b6b7d54105dc">point_on_segment_pts</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a69d51ea8bc5f58caaf352b093c159eb5.html#a69d51ea8bc5f58caaf352b093c159eb5">point_seg_dist2</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_abc1554629b609538e5923536e313ca91.html#abc1554629b609538e5923536e313ca91">RTREE_MIN_NUMBER_ELEMS</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_abc1554629b609538e5923536e313ca91.html#abc1554629b609538e5923536e313ca91">RTREE_MIN_NUMBER_ELEMS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a1641bd3a1bc3520a3b1c82ca53d32952.html#a1641bd3a1bc3520a3b1c82ca53d32952">rtree_results</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ac6081bf7caa5bd5060681b1cae13ba32.html#ac6081bf7caa5bd5060681b1cae13ba32">segment_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aed195d063358fd239b0e1a224471688f.html#aed195d063358fd239b0e1a224471688f">segment_within_closure</a></td></tr>
@@ -145,17 +145,24 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="abc1554629b609538e5923536e313ca91" name="abc1554629b609538e5923536e313ca91"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abc1554629b609538e5923536e313ca91">&#9670;&#160;</a></span>RTREE_MIN_NUMBER_ELEMS</h2>
+<a id="a366d17e349af2ae6ca862721c098681b" name="a366d17e349af2ae6ca862721c098681b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a366d17e349af2ae6ca862721c098681b">&#9670;&#160;</a></span>geo_every_part_bounds_area()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define RTREE_MIN_NUMBER_ELEMS&#160;&#160;&#160;100</td>
+          <td class="memname">bool geo_every_part_bounds_area </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return true if every part of a geometry bounds a region. </p>
+<p >A ring enclosing no area bounds no region: what it contributes is the linework it traces, one dimension lower. <a class="el" href="geo__funcs_8h_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc" title="Return the edges of a geometry in a dynamic array.">geom_extract_edges</a> already says which of the two every ring of every part is &ndash; a ring of no area yields LINE edges where one bounding a region yields POLY ones &ndash; so reading that classification is what keeps this answer and the engine's own from disagreeing about a part. It also needs no tolerance of its own: the one that decides a ring lives in the extraction, where it is an area read against the extent the ring occupies rather than a length </p>
 
 </div>
 </div>
