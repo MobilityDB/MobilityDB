@@ -87,7 +87,7 @@ SELECT tpcboxX(0, 0, 5, 5, 1) &amp;&amp; tpcboxX(0, 0, 5, 5, 2);
 -- ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
 SELECT tpcboxX(0, 0, 10, 10, 1) &amp;&amp; tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
 -- ERROR:  The temporal values must have at least one common dimension
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_pos"></a>Position Operations</h3></div></div></div><p>Sixteen axis-aligned position predicates, parallel to those on <code class="varname">stbox</code>. Each tests strict-or-overlap relationship along one axis. All require the same schema and the same reference system, and a mismatch in either raises an error. Z-axis predicates require both boxes to have a Z dimension; T-axis predicates require both to have a T dimension.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_pos_ops"></a><a class="indexterm" name="id13560"></a><a class="indexterm" name="id13563"></a><a class="indexterm" name="id13566"></a><a class="indexterm" name="id13569"></a><a class="indexterm" name="id13572"></a><a class="indexterm" name="id13575"></a><a class="indexterm" name="id13578"></a><a class="indexterm" name="id13581"></a><a class="indexterm" name="id13584"></a><a class="indexterm" name="id13587"></a><a class="indexterm" name="id13590"></a><a class="indexterm" name="id13593"></a><a class="indexterm" name="id13596"></a><a class="indexterm" name="id13599"></a><a class="indexterm" name="id13602"></a><a class="indexterm" name="id13605"></a><p>Position operators</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_pos"></a>Position Operations</h3></div></div></div><p>Sixteen axis-aligned position predicates, parallel to those on <code class="varname">stbox</code>. Each tests a strict-or-overlap relationship along one axis. The twelve that read coordinates require the same schema and the same reference system, and a mismatch in either raises an error; the four that read the time axis require neither, a timestamp meaning the same thing whichever schema the coordinates are read in. Every predicate requires both boxes to carry the axis it reads, so the Z-axis ones need a Z dimension in both and the T-axis ones a time span in both.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_pos_ops"></a><a class="indexterm" name="id13560"></a><a class="indexterm" name="id13563"></a><a class="indexterm" name="id13566"></a><a class="indexterm" name="id13569"></a><a class="indexterm" name="id13572"></a><a class="indexterm" name="id13575"></a><a class="indexterm" name="id13578"></a><a class="indexterm" name="id13581"></a><a class="indexterm" name="id13584"></a><a class="indexterm" name="id13587"></a><a class="indexterm" name="id13590"></a><a class="indexterm" name="id13593"></a><a class="indexterm" name="id13596"></a><a class="indexterm" name="id13599"></a><a class="indexterm" name="id13602"></a><a class="indexterm" name="id13605"></a><p>Position operators</p><pre class="programlisting">
 tpcbox {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} tpcbox → boolean
 tpcbox {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} tpcbox → boolean
 tpcbox {&lt;&lt;/, &amp;&lt;/, /&gt;&gt;, /&amp;&gt;} tpcbox → boolean
@@ -97,11 +97,16 @@ SELECT tpcboxX(0, 0, 2, 2) &lt;&lt; tpcboxX(5, 5, 7, 7);
 -- t
 SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;| tpcboxX(5, 5, 7, 7);
 -- t
--- Neither box carries a z dimension or a time span, so those tests are false.
+-- Neither box carries a z dimension or a time span, so neither of the next two
+-- has an axis to compare along. The last pair states two schemas, which the
+-- time axis does not read.
 SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;/ tpcboxX(5, 5, 7, 7);
--- f
+-- ERROR:  The tpcbox must have Z dimension
 SELECT tpcboxX(0, 0, 2, 2) &lt;&lt;# tpcboxX(5, 5, 7, 7);
--- f
+-- ERROR:  The tpcbox must have T dimension
+SELECT tpcboxXT(0, 0, 5, 5, tstzspan '[2024-01-01, 2024-01-15]', 1) &lt;&lt;#
+  tpcboxXT(0, 0, 5, 5, tstzspan '[2025-01-01, 2025-01-15]', 2);
+-- t
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcbox_comparisons"></a>Comparisons</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcbox_btree"></a><a class="indexterm" name="id13616"></a><a class="indexterm" name="id13619"></a><a class="indexterm" name="id13622"></a><a class="indexterm" name="id13625"></a><a class="indexterm" name="id13628"></a><a class="indexterm" name="id13631"></a><p>Compare two tpcboxes; total order over the canonical encoding (pcid, srid, flags, period, then spatial bounds in XYZ-min/max order)</p><pre class="programlisting">
 tpcbox {=, &lt;&gt;, &lt;, &lt;=, &gt;, &gt;=} tpcbox → boolean
 </pre><pre class="programlisting">
