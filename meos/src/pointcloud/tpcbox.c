@@ -1033,7 +1033,8 @@ bool
 contains_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tpcbox_contains(box1, box2);
 }
@@ -1059,7 +1060,8 @@ bool
 contained_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tpcbox_contained(box1, box2);
 }
@@ -1085,7 +1087,8 @@ bool
 overlaps_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tpcbox_overlaps(box1, box2);
 }
@@ -1113,7 +1116,8 @@ bool
 same_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tpcbox_same(box1, box2);
 }
@@ -1139,7 +1143,8 @@ bool
 adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   return tpcbox_adjacent(box1, box2);
 }

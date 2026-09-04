@@ -440,6 +440,7 @@ SELECT tpcboxX(0, 0, 5, 5, 1) * tpcboxX(3, 3, 10, 10, 1);
 		<sect2 xml:id="tpcbox_topo">
 			<title>Topological Operations</title>
 			<para>All topological operators take two <varname>tpcbox</varname> values that state the same schema and the same reference system. A mismatch in either raises an error rather than answering false: the <varname>pcid</varname> is what gives a stored number its meaning as a coordinate, so two boxes naming different schemas have no common extent to compare.</para>
+			<para>They also take two boxes sharing an axis. A box holding coordinates and a box holding a period meet on no axis at all, so a topological predicate between them has nothing to compare and raises in its turn.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcbox_topo_ops">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
@@ -464,6 +465,8 @@ SELECT tpcboxX(0, 0, 2, 2) -|- tpcboxX(5, 5, 7, 7);
 -- f
 SELECT tpcboxX(0, 0, 5, 5, 1) &amp;&amp; tpcboxX(0, 0, 5, 5, 2);
 -- ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
+SELECT tpcboxX(0, 0, 10, 10, 1) &amp;&amp; tpcboxT(tstzspan '[2024-01-01, 2024-01-02]', 0);
+-- ERROR:  The temporal values must have at least one common dimension
 </programlisting>
 				</listitem>
 			</itemizedlist>
