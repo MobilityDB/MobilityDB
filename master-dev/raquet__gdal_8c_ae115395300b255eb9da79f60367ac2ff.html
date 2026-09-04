@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_value_gdal_sample</title>
+<title>MobilityDB: raquet_from_gdal_dataset</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -83,7 +83,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_ac39227a30ae3a48e67a0ff4219b4cec9.html#ac39227a30ae3a48e67a0ff4219b4cec9">derive_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_gac15a181d296799256a56519f1f0fbe01.html#gac15a181d296799256a56519f1f0fbe01">eraster_value_gdal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a1ad6caa75bcb39f22b945dd177ce05a8.html#a1ad6caa75bcb39f22b945dd177ce05a8">gdal_to_pixtype</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_ae115395300b255eb9da79f60367ac2ff.html#ae115395300b255eb9da79f60367ac2ff">raquet_from_gdal_dataset</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_ae115395300b255eb9da79f60367ac2ff.html#ae115395300b255eb9da79f60367ac2ff">raquet_from_gdal_dataset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_aa8ba3cee2ca57e824909bb69c5e9050d.html#aa8ba3cee2ca57e824909bb69c5e9050d">raquet_gdal_release</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_gadbb297bae58b06d3ebba66b7c5a10f86.html#gadbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
@@ -91,13 +91,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga9efd41ca7120b99502f0e392ce5cce94.html#ga9efd41ca7120b99502f0e392ce5cce94">raster_minus_value_gdal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga53345ad5839dfb7d63ac1e0afde597fa.html#ga53345ad5839dfb7d63ac1e0afde597fa">raster_value_gdal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_aed00e70863ee161d315e89c87ea3faed.html#aed00e70863ee161d315e89c87ea3faed">raster_value_gdal_open</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_ab87a1c152ee495b1cb908bb4a2347c07.html#ab87a1c152ee495b1cb908bb4a2347c07">raster_value_gdal_sample</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_ab87a1c152ee495b1cb908bb4a2347c07.html#ab87a1c152ee495b1cb908bb4a2347c07">raster_value_gdal_sample</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab87a1c152ee495b1cb908bb4a2347c07" name="ab87a1c152ee495b1cb908bb4a2347c07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab87a1c152ee495b1cb908bb4a2347c07">&#9670;&#160;</a></span>raster_value_gdal_sample()</h2>
+<a id="ae115395300b255eb9da79f60367ac2ff" name="ae115395300b255eb9da79f60367ac2ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae115395300b255eb9da79f60367ac2ff">&#9670;&#160;</a></span>raquet_from_gdal_dataset()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -106,22 +106,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool raster_value_gdal_sample </td>
+          <td class="memname">static <a class="el" href="structRaquet.html">Raquet</a> * raquet_from_gdal_dataset </td>
           <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>ctxp</em>, </td>
+          <td class="paramtype">GDALDatasetH&#160;</td>
+          <td class="paramname"><em>ds</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>point</em>, </td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>vpath</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>value</em>&#160;</td>
+          <td class="paramtype">uint64&#160;</td>
+          <td class="paramname"><em>quadbin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>label</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -136,7 +142,16 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Raster sampling callback backed by a single-pixel GDALRasterIO read: the context carries the band and the inverse geotransform, only the point argument varies per call. </p>
+<p>Pack the first band of an open GDAL dataset into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile. </p>
+<p >The band data type must be one of Byte / Int16 / Int32 / Float32 / Float64; the band nodata value (if any) is carried into the tile. When <code>quadbin</code> is 0 the tile identifier is derived from the dataset georeferencing. This function takes over <code>ds</code> and the <code>/vsimem/</code> file <code>vpath</code>, releasing both on every path, so that the release still happens when a report does not return; <code>label</code> names the source in error messages. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Open GDAL dataset, taken over by this function </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vpath</td><td><code>/vsimem/</code> path backing <code>ds</code>, or NULL for a real file </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell, or 0 to derive it </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">label</td><td>Source name used in error messages </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
