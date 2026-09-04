@@ -1024,6 +1024,8 @@ bool
 tpcbox_contains(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   return stbox_contains((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1051,6 +1053,8 @@ bool
 tpcbox_contained(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   return stbox_contained((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1078,6 +1082,8 @@ bool
 tpcbox_overlaps(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   return stbox_overlaps((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1106,6 +1112,8 @@ bool
 tpcbox_same(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   return stbox_same((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1134,6 +1142,8 @@ bool
 tpcbox_adjacent(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   return stbox_adjacent((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1275,8 +1285,9 @@ bool
 tpcbox_left(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_X(T_TPCBOX, box1->flags));
+  assert(ensure_has_X(T_TPCBOX, box2->flags));
   return stbox_left((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1306,8 +1317,9 @@ bool
 tpcbox_overleft(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_X(T_TPCBOX, box1->flags));
+  assert(ensure_has_X(T_TPCBOX, box2->flags));
   return stbox_overleft((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1336,8 +1348,9 @@ bool
 tpcbox_right(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_X(T_TPCBOX, box1->flags));
+  assert(ensure_has_X(T_TPCBOX, box2->flags));
   return stbox_right((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1366,8 +1379,9 @@ bool
 tpcbox_overright(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_X(T_TPCBOX, box1->flags));
+  assert(ensure_has_X(T_TPCBOX, box2->flags));
   return stbox_overright((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1398,8 +1412,9 @@ bool
 tpcbox_below(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_X(T_TPCBOX, box1->flags));
+  assert(ensure_has_X(T_TPCBOX, box2->flags));
   return stbox_below((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1428,8 +1443,9 @@ bool
 tpcbox_overbelow(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_X(T_TPCBOX, box1->flags));
+  assert(ensure_has_X(T_TPCBOX, box2->flags));
   return stbox_overbelow((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1458,8 +1474,9 @@ bool
 tpcbox_above(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_X(T_TPCBOX, box1->flags));
+  assert(ensure_has_X(T_TPCBOX, box2->flags));
   return stbox_above((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1488,8 +1505,9 @@ bool
 tpcbox_overabove(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_X(T_TPCBOX, box1->flags));
+  assert(ensure_has_X(T_TPCBOX, box2->flags));
   return stbox_overabove((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1521,8 +1539,9 @@ bool
 tpcbox_front(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_Z(box1->flags));
-  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_Z(T_TPCBOX, box1->flags));
+  assert(ensure_has_Z(T_TPCBOX, box2->flags));
   return stbox_front((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1552,8 +1571,9 @@ bool
 tpcbox_overfront(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_Z(box1->flags));
-  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_Z(T_TPCBOX, box1->flags));
+  assert(ensure_has_Z(T_TPCBOX, box2->flags));
   return stbox_overfront((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1582,8 +1602,9 @@ bool
 tpcbox_back(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_Z(box1->flags));
-  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_Z(T_TPCBOX, box1->flags));
+  assert(ensure_has_Z(T_TPCBOX, box2->flags));
   return stbox_back((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1612,8 +1633,9 @@ bool
 tpcbox_overback(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_Z(box1->flags));
-  assert(MEOS_FLAGS_GET_Z(box2->flags));
+  assert(ensure_valid_tpcbox_tpcbox(box1, box2));
+  assert(ensure_has_Z(T_TPCBOX, box1->flags));
+  assert(ensure_has_Z(T_TPCBOX, box2->flags));
   return stbox_overback((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1645,8 +1667,8 @@ bool
 tpcbox_before(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_TPCBOX, box1->flags));
+  assert(ensure_has_T(T_TPCBOX, box2->flags));
   return stbox_before((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1676,8 +1698,8 @@ bool
 tpcbox_overbefore(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_TPCBOX, box1->flags));
+  assert(ensure_has_T(T_TPCBOX, box2->flags));
   return stbox_overbefore((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1706,8 +1728,8 @@ bool
 tpcbox_after(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_TPCBOX, box1->flags));
+  assert(ensure_has_T(T_TPCBOX, box2->flags));
   return stbox_after((const STBox *) box1, (const STBox *) box2);
 }
 
@@ -1736,8 +1758,8 @@ bool
 tpcbox_overafter(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_TPCBOX, box1->flags));
+  assert(ensure_has_T(T_TPCBOX, box2->flags));
   return stbox_overafter((const STBox *) box1, (const STBox *) box2);
 }
 

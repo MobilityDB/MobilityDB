@@ -1624,6 +1624,8 @@ bool
 tbox_contains(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tbox_tbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   bool hasx, hast;
   tbox_tbox_flags(box1, box2, &hasx, &hast);
   if (hasx && ! span_contains(&box1->span, &box2->span))
@@ -1659,6 +1661,8 @@ bool
 tbox_contained(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tbox_tbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   return tbox_contains(box2, box1);
 }
 
@@ -1688,6 +1692,8 @@ bool
 tbox_overlaps(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tbox_tbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   bool hasx, hast;
   tbox_tbox_flags(box1, box2, &hasx, &hast);
   if (hasx && ! span_overlaps(&box1->span, &box2->span))
@@ -1723,6 +1729,8 @@ bool
 tbox_same(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tbox_tbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   bool hasx, hast;
   tbox_tbox_flags(box1, box2, &hasx, &hast);
   if (hasx && ! span_eq(&box1->span, &box2->span))
@@ -1758,6 +1766,8 @@ bool
 tbox_adjacent(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
+  assert(ensure_valid_tbox_tbox(box1, box2));
+  assert(ensure_common_dimension(box1->flags, box2->flags));
   bool hasx, hast;
   tbox_tbox_flags(box1, box2, &hasx, &hast);
   /* Boxes are adjacent if they meet in every common dimension and touch in at
@@ -1811,8 +1821,9 @@ bool
 tbox_left(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tbox_tbox(box1, box2));
+  assert(ensure_has_X(T_TBOX, box1->flags));
+  assert(ensure_has_X(T_TBOX, box2->flags));
   return span_left(&box1->span, &box2->span);
 }
 
@@ -1845,8 +1856,9 @@ bool
 tbox_overleft(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tbox_tbox(box1, box2));
+  assert(ensure_has_X(T_TBOX, box1->flags));
+  assert(ensure_has_X(T_TBOX, box2->flags));
   return span_overleft(&box1->span, &box2->span);
 }
 
@@ -1879,8 +1891,9 @@ bool
 tbox_right(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tbox_tbox(box1, box2));
+  assert(ensure_has_X(T_TBOX, box1->flags));
+  assert(ensure_has_X(T_TBOX, box2->flags));
   return span_right(&box1->span, &box2->span);
 }
 
@@ -1913,8 +1926,9 @@ bool
 tbox_overright(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_X(box1->flags));
-  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(ensure_valid_tbox_tbox(box1, box2));
+  assert(ensure_has_X(T_TBOX, box1->flags));
+  assert(ensure_has_X(T_TBOX, box2->flags));
   return span_overright(&box1->span, &box2->span);
 }
 
@@ -1946,8 +1960,8 @@ bool
 tbox_before(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_TBOX, box1->flags));
+  assert(ensure_has_T(T_TBOX, box2->flags));
   return span_left(&box1->period, &box2->period);
 }
 
@@ -1978,8 +1992,8 @@ bool
 tbox_overbefore(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_TBOX, box1->flags));
+  assert(ensure_has_T(T_TBOX, box2->flags));
   return span_overleft(&box1->period, &box2->period);
 }
 
@@ -2010,8 +2024,8 @@ bool
 tbox_after(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_TBOX, box1->flags));
+  assert(ensure_has_T(T_TBOX, box2->flags));
   return span_right(&box1->period, &box2->period);
 }
 
@@ -2042,8 +2056,8 @@ bool
 tbox_overafter(const TBox *box1, const TBox *box2)
 {
   assert(box1); assert(box2);
-  assert(MEOS_FLAGS_GET_T(box1->flags));
-  assert(MEOS_FLAGS_GET_T(box2->flags));
+  assert(ensure_has_T(T_TBOX, box1->flags));
+  assert(ensure_has_T(T_TBOX, box2->flags));
   return span_overright(&box1->period, &box2->period);
 }
 
