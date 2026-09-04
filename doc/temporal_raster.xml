@@ -489,9 +489,10 @@ sudo make install
 
 		<para>Neither path replaces the other. Work on the <varname>raquet</varname> path extends what a cloud-native tile can do along a trajectory; it is not an attempt to reimplement raster processing.</para>
 
-		<para>The extensions below require a general raster data model, that is, arbitrary spatial reference systems, arbitrary affine georeferencing and several bands per tile. A <varname>raquet</varname> value is a single-band tile whose extent and pixel grid follow from its QUADBIN cell, so these lie outside that model and remain available through the PostGIS <varname>raster</varname> path:</para>
+		<para>A multi-spectral coverage is read band by band on either path. The RaQuet specification gives each band of a tile a column of its own, <varname>band_1</varname>, <varname>band_2</varname> and so on, so such a coverage is a set of single-band tiles sharing one QUADBIN cell and <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> samples the band it is given, while on the PostGIS <varname>raster</varname> path the <varname>band</varname> argument names it. What a <varname>raquet</varname> value does not carry is the interleaved layout the specification offers for RGB imagery, which packs the bands of a tile into a single JPEG- or WebP-compressed column.</para>
+
+		<para>The extensions below require a general raster data model, that is, arbitrary spatial reference systems and arbitrary affine georeferencing. The extent and the pixel grid of a <varname>raquet</varname> value follow from its QUADBIN cell, so these lie outside that model and remain available through the PostGIS <varname>raster</varname> path:</para>
 		<itemizedlist>
-			<listitem><para><emphasis>Multi-band tiles</emphasis>, one <varname>tfloat</varname> per band for multi-spectral imagery such as RGB or multi-channel satellite scenes.</para></listitem>
 			<listitem><para><emphasis>Arbitrary spatial reference systems</emphasis>, tiles outside the Web-Mercator grid, and reprojection between reference systems.</para></listitem>
 			<listitem><para><emphasis>Raster processing</emphasis>, map algebra, summary statistics, resampling, and conversion to polygons, together with clipping a tile to a region, such as the extent a set of trajectories visits over a time interval.</para></listitem>
 		</itemizedlist>
