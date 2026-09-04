@@ -1099,7 +1099,7 @@
 					<para><link linkend="tgeo_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_minDistance"><varname>minDistance</varname></link>: Devuelve la distancia espacial mínima entre dos geometrías temporales sobre la unión de sus extensiones temporales</para>
+					<para><link linkend="tgeo_minDistance"><varname>minDistance</varname></link>: Devuelve la distancia espacial mínima entre dos geometrías temporales, ignorando el tiempo</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_setset_join"><varname>eDwithinPairs</varname>, <varname>aDwithinPairs</varname>, <varname>tDwithinPairs</varname>, <varname>eIntersectsPairs</varname>, <varname>aIntersectsPairs</varname>, <varname>tIntersectsPairs</varname>, <varname>eDisjointPairs</varname>, <varname>aDisjointPairs</varname>, <varname>tDisjointPairs</varname>, <varname>eTouchesPairs</varname>, <varname>aTouchesPairs</varname>, <varname>tTouchesPairs</varname></link>: Devuelve los pares de índices que cumplen la relación entre dos arreglos de geometrías temporales, generalizando las relaciones espaciales escalares a una unión espacial conjunto-conjunto</para>

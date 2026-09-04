@@ -1099,7 +1099,7 @@
 					<para><link linkend="tgeo_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal point at which the two arguments are at the nearest distance &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_minDistance"><varname>minDistance</varname></link>: Return the minimum spatial distance between two temporal geometries over the union of their temporal extents</para>
+					<para><link linkend="tgeo_minDistance"><varname>minDistance</varname></link>: Return the minimum spatial distance between two temporal geometries, ignoring time</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_setset_join"><varname>eDwithinPairs</varname>, <varname>aDwithinPairs</varname>, <varname>tDwithinPairs</varname>, <varname>eIntersectsPairs</varname>, <varname>aIntersectsPairs</varname>, <varname>tIntersectsPairs</varname>, <varname>eDisjointPairs</varname>, <varname>aDisjointPairs</varname>, <varname>tDisjointPairs</varname>, <varname>eTouchesPairs</varname>, <varname>aTouchesPairs</varname>, <varname>tTouchesPairs</varname></link>: Return the qualifying index pairs of two arrays of temporal geometries, generalising the scalar spatial relationships to a set-set spatial join</para>
