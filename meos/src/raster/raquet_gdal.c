@@ -103,6 +103,59 @@ gdal_to_pixtype(GDALDataType dt, MeosPixType *pixtype)
   }
 }
 
+/*****************************************************************************
+ * GDAL error handling
+ *
+ * GDAL announces a failure twice: it returns an error indication -- a NULL
+ * dataset, a CPLErr other than CE_None -- and it calls the error handler the
+ * process has installed. The code below reads the return value, which is the
+ * contract C code can honour.
+ *
+ * Reading it is sound only while MEOS owns the handler. A host embedding MEOS
+ * beside another GDAL consumer need not leave the handler alone, and one that
+ * throws unwinds through the C frames here, past the release every path ends
+ * with. Each GDAL call therefore sits between #meos_gdal_enter and
+ * #meos_gdal_leave: the push puts a quiet handler on top of GDAL's per-thread
+ * handler stack, so a failure comes back as a return value, and the pop hands
+ * the handler back for the host's own calls. Reporting happens after the pop,
+ * never inside the bracket, because a report need not return.
+ *****************************************************************************/
+
+/**
+ * @brief Take the GDAL error handler for the duration of one GDAL call, so
+ * that the call reports its failure by return value
+ */
+static void
+meos_gdal_enter(void)
+{
+  CPLErrorReset();
+  CPLPushErrorHandler(CPLQuietErrorHandler);
+  return;
+}
+
+/**
+ * @brief Give the GDAL error handler back to the host
+ */
+static void
+meos_gdal_leave(void)
+{
+  CPLPopErrorHandler();
+  return;
+}
+
+/**
+ * @brief Return what GDAL recorded about the last failure, for the message
+ * MEOS composes about it
+ * @details GDAL keeps the text in per-thread state that outlives the handler
+ * bracket, so this reads correctly after #meos_gdal_leave
+ */
+static const char *
+meos_gdal_error(void)
+{
+  const char *msg = CPLGetLastErrorMsg();
+  return (msg && *msg) ? msg : "GDAL gave no further detail";
+}
+
 /**
  * @brief Derive the QUADBIN cell of a raster tile from an open GDAL dataset's
  * EPSG:3857 geotransform and spatial reference
@@ -115,7 +168,10 @@ static bool
 derive_quadbin(GDALDatasetH ds, uint64 *quadbin, const char *label)
 {
   double gt[6];
-  if (GDALGetGeoTransform(ds, gt) != CE_None)
+  meos_gdal_enter();
+  CPLErr gterr = GDALGetGeoTransform(ds, gt);
+  meos_gdal_leave();
+  if (gterr != CE_None)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Raster has no geotransform; cannot derive its QUADBIN cell: %s", label);
@@ -128,8 +184,10 @@ derive_quadbin(GDALDatasetH ds, uint64 *quadbin, const char *label)
       label);
     return false;
   }
+  meos_gdal_enter();
   OGRSpatialReferenceH srs = GDALGetSpatialRef(ds);
   const char *code = srs ? OSRGetAuthorityCode(srs, NULL) : NULL;
+  meos_gdal_leave();
   if (! code || strcmp(code, "3857") != 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -157,10 +215,12 @@ raquet_gdal_release(GDALDatasetH ds, const char *vpath, uint8_t *buf)
 {
   if (buf)
     pfree(buf);
+  meos_gdal_enter();
   if (ds)
     GDALClose(ds);
   if (vpath)
     VSIUnlink(vpath);
+  meos_gdal_leave();
   return;
 }
 
@@ -215,8 +275,10 @@ raquet_from_gdal_dataset(GDALDatasetH ds, const char *vpath, uint64 quadbin,
     quadbin = cell;
   }
 
+  meos_gdal_enter();
   GDALRasterBandH band = GDALGetRasterBand(ds, 1);
   GDALDataType dt = GDALGetRasterDataType(band);
+  meos_gdal_leave();
   MeosPixType pixtype;
   if (! gdal_to_pixtype(dt, &pixtype))
   {
@@ -230,12 +292,18 @@ raquet_from_gdal_dataset(GDALDatasetH ds, const char *vpath, uint64 quadbin,
   size_t pixsize = raquet_pixtype_size(pixtype);
   size_t nbytes = (size_t) xsize * ysize * pixsize;
   buf = palloc(nbytes);
-  if (GDALRasterIO(band, GF_Read, 0, 0, xsize, ysize, buf, xsize, ysize,
-      dt, 0, 0) != CE_None)
+  meos_gdal_enter();
+  CPLErr ioerr = GDALRasterIO(band, GF_Read, 0, 0, xsize, ysize, buf, xsize,
+    ysize, dt, 0, 0);
+  meos_gdal_leave();
+  if (ioerr != CE_None)
   {
+    char detail[512];
+    snprintf(detail, sizeof(detail), "%s", meos_gdal_error());
     raquet_gdal_release(ds, vpath, buf);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "GDAL failed to read raster band for raquet ingest: %s", label);
+      "GDAL failed to read raster band for raquet ingest: %s (%s)", label,
+      detail);
     return NULL;
   }
   /* GDAL hands over the band in the byte order of this machine, while a Raquet
@@ -269,11 +337,14 @@ raquet_read(const char *path, uint64 quadbin)
   VALIDATE_NOT_NULL(path, NULL);
 
   GDALAllRegister();
+  meos_gdal_enter();
   GDALDatasetH ds = GDALOpen(path, GA_ReadOnly);
+  meos_gdal_leave();
   if (! ds)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot open raster file for raquet ingest: %s", path);
+      "Cannot open raster file for raquet ingest: %s (%s)", path,
+      meos_gdal_error());
     return NULL;
   }
   /* The callee takes over the dataset and closes it on every path */
@@ -305,22 +376,29 @@ raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
    * caller (bTakeOwnership = FALSE) and the buffer outlives the dataset. */
   char vpath[64];
   snprintf(vpath, sizeof(vpath), "/vsimem/raquet_%p", (const void *) data);
+  meos_gdal_enter();
   VSILFILE *vf = VSIFileFromMemBuffer(vpath, (GByte *) (uintptr_t) data,
     (vsi_l_offset) size, FALSE);
+  meos_gdal_leave();
   if (! vf)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot expose the in-memory raster to GDAL for raquet ingest");
+      "Cannot expose the in-memory raster to GDAL for raquet ingest (%s)",
+      meos_gdal_error());
     return NULL;
   }
+  meos_gdal_enter();
   VSIFCloseL(vf);
-
   GDALDatasetH ds = GDALOpen(vpath, GA_ReadOnly);
+  meos_gdal_leave();
   if (! ds)
   {
-    VSIUnlink(vpath);
+    char detail[512];
+    snprintf(detail, sizeof(detail), "%s", meos_gdal_error());
+    raquet_gdal_release(NULL, vpath, NULL);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "GDAL cannot decode the in-memory raster for raquet ingest");
+      "GDAL cannot decode the in-memory raster for raquet ingest (%s)",
+      detail);
     return NULL;
   }
   /* The callee takes over the dataset and the `/vsimem/` file, releasing both
@@ -366,6 +444,8 @@ raster_value_gdal_sample(void *ctxp, const GSERIALIZED *point, double *value)
   if (col < 0 || col >= ctx->xsize || row < 0 || row >= ctx->ysize)
     return false;   /* point outside the pixel grid */
   double val;
+  /* No bracket here: the caller holds the handler across the whole walk, and
+   * pushing one per instant costs a CPL allocation per sample */
   if (GDALRasterIO(ctx->band, GF_Read, col, row, 1, 1, &val, 1, 1,
       GDT_Float64, 0, 0) != CE_None)
     return false;
@@ -390,15 +470,20 @@ raster_value_gdal_open(const char *path, int band_num, GDALDatasetH *ds_out,
   RasterValueGdalCtx *ctx, STBox *box)
 {
   GDALAllRegister();
+  meos_gdal_enter();
   GDALDatasetH ds = GDALOpen(path, GA_ReadOnly);
+  meos_gdal_leave();
   if (! ds)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot open raster file: %s", path);
+      "Cannot open raster file: %s (%s)", path, meos_gdal_error());
     return false;
   }
   double gt[6];
-  if (GDALGetGeoTransform(ds, gt) != CE_None)
+  meos_gdal_enter();
+  CPLErr gterr = GDALGetGeoTransform(ds, gt);
+  meos_gdal_leave();
+  if (gterr != CE_None)
   {
     raquet_gdal_release(ds, NULL, NULL);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -412,7 +497,9 @@ raster_value_gdal_open(const char *path, int band_num, GDALDatasetH *ds_out,
       "Raster geotransform is not invertible: %s", path);
     return false;
   }
+  meos_gdal_enter();
   GDALRasterBandH rb = GDALGetRasterBand(ds, band_num);
+  meos_gdal_leave();
   if (! rb)
   {
     raquet_gdal_release(ds, NULL, NULL);
@@ -472,9 +559,11 @@ raster_value_gdal(const Temporal *traj, const char *path, int band)
   STBox box;
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return NULL;
+  meos_gdal_enter();
   Temporal *result = raster_value(traj, &box, &raster_value_gdal_sample,
     &ctx);
-  GDALClose(ds);
+  meos_gdal_leave();
+  raquet_gdal_release(ds, NULL, NULL);
   return result;
 }
 
@@ -500,9 +589,11 @@ raster_at_value_gdal(const Temporal *traj, const char *path, int band,
   STBox box;
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return NULL;
+  meos_gdal_enter();
   Temporal *result = raster_at_value(traj, &box, &raster_value_gdal_sample,
     &ctx, vspan);
-  GDALClose(ds);
+  meos_gdal_leave();
+  raquet_gdal_release(ds, NULL, NULL);
   return result;
 }
 
@@ -528,9 +619,11 @@ raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
   STBox box;
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return NULL;
+  meos_gdal_enter();
   Temporal *result = raster_minus_value(traj, &box,
     &raster_value_gdal_sample, &ctx, vspan);
-  GDALClose(ds);
+  meos_gdal_leave();
+  raquet_gdal_release(ds, NULL, NULL);
   return result;
 }
 
@@ -558,9 +651,11 @@ eraster_value_gdal(const Temporal *traj, const char *path, int band,
   STBox box;
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return -1;
+  meos_gdal_enter();
   int result = eraster_value(traj, &box, &raster_value_gdal_sample, &ctx,
     vspan);
-  GDALClose(ds);
+  meos_gdal_leave();
+  raquet_gdal_release(ds, NULL, NULL);
   return result;
 }
 
@@ -588,9 +683,11 @@ araster_value_gdal(const Temporal *traj, const char *path, int band,
   STBox box;
   if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
     return -1;
+  meos_gdal_enter();
   int result = araster_value(traj, &box, &raster_value_gdal_sample, &ctx,
     vspan);
-  GDALClose(ds);
+  meos_gdal_leave();
+  raquet_gdal_release(ds, NULL, NULL);
   return result;
 }
 
