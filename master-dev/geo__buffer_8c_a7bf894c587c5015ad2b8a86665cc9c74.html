@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_collect_boundary_intersections</title>
+<title>MobilityDB: buffer_piece_end_direction</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -116,7 +116,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a0a07ac8b917ff6fb5ef63ea90995b9f8.html#a0a07ac8b917ff6fb5ef63ea90995b9f8">buffer_classify_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac1190514d62b6f917ec736f5f444e2db.html#ac1190514d62b6f917ec736f5f444e2db">buffer_classify_rings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a273488c41e0f6689cea430f495deff12.html#a273488c41e0f6689cea430f495deff12">buffer_collect_arc_arc_intersections</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a2f5a5eba9d3a7f14d4bb838e5d7b3711.html#a2f5a5eba9d3a7f14d4bb838e5d7b3711">buffer_collect_boundary_intersections</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2f5a5eba9d3a7f14d4bb838e5d7b3711.html#a2f5a5eba9d3a7f14d4bb838e5d7b3711">buffer_collect_boundary_intersections</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aaa34922fda694a35151085ad9ccc848d.html#aaa34922fda694a35151085ad9ccc848d">buffer_collect_edge_intersections</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a4af7bb9c11927f8c8903787838f6ab9f.html#a4af7bb9c11927f8c8903787838f6ab9f">buffer_collect_line_arc_intersections</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9aa7fc166227907f22c71c043125e135.html#a9aa7fc166227907f22c71c043125e135">buffer_collect_line_line_intersections</a></td></tr>
@@ -156,7 +156,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aaa4dc96497171c4604d7afe8bead63dd.html#aaa4dc96497171c4604d7afe8bead63dd">buffer_piece_array_contains</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae05a5a2be01c805428b0075a4a4aeaa6.html#ae05a5a2be01c805428b0075a4a4aeaa6">buffer_piece_contains_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a09ecc865ea15c5cb9232425c15b43610.html#a09ecc865ea15c5cb9232425c15b43610">buffer_piece_end</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7bf894c587c5015ad2b8a86665cc9c74.html#a7bf894c587c5015ad2b8a86665cc9c74">buffer_piece_end_direction</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a7bf894c587c5015ad2b8a86665cc9c74.html#a7bf894c587c5015ad2b8a86665cc9c74">buffer_piece_end_direction</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_abec96c166711641584b1bcfd71881b38.html#abec96c166711641584b1bcfd71881b38">buffer_piece_from_edge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a0dfd529a436e493356dd021addad9f8a.html#a0dfd529a436e493356dd021addad9f8a">buffer_piece_holds</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad9a59879b1298d69dd429e1271c59d59.html#ad9a59879b1298d69dd429e1271c59d59">buffer_piece_interior_side</a></td></tr>
@@ -234,8 +234,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a2f5a5eba9d3a7f14d4bb838e5d7b3711" name="a2f5a5eba9d3a7f14d4bb838e5d7b3711"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2f5a5eba9d3a7f14d4bb838e5d7b3711">&#9670;&#160;</a></span>buffer_collect_boundary_intersections()</h2>
+<a id="a7bf894c587c5015ad2b8a86665cc9c74" name="a7bf894c587c5015ad2b8a86665cc9c74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7bf894c587c5015ad2b8a86665cc9c74">&#9670;&#160;</a></span>buffer_piece_end_direction()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -244,22 +244,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool buffer_collect_boundary_intersections </td>
+          <td class="memname">static bool buffer_piece_end_direction </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structBufferPiece.html">BufferPiece</a> *&#160;</td>
+          <td class="paramname"><em>piece</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom2</em>, </td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>at_start</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>intersections</em>&#160;</td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>dy</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -274,8 +280,17 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Collect all exact boundary intersection nodes into the intersection array. </p>
-<p >The existing low-level intersection routines operate on <a class="el" href="structMeosArray.html" title="Structure of an expandable arrays used in particular to avoid parsing twice a MEOS value input in tex...">MeosArray</a>. We therefore use a temporary <a class="el" href="structMeosArray.html" title="Structure of an expandable arrays used in particular to avoid parsing twice a MEOS value input in tex...">MeosArray</a> for each edge pair and transfer the resulting points to <a class="el" href="structMeosArray.html" title="Structure of an expandable arrays used in particular to avoid parsing twice a MEOS value input in tex...">MeosArray</a>. </p>
+<p>Find an unused piece whose endpoint is connected to point. </p>
+<p >If reverse is returned true, the piece must be reversed before it is appended to the boundary.</p>
+<p >Return the direction a piece leaves one of its ends in</p>
+<p >The tangent of a segment is the segment; the tangent of an arc is the sine and cosine at the angle of the end it leaves, turned the way the arc sweeps. Reading it AT AN END rather than at the midpoint is what tells two pieces apart where they meet: their midpoints say nothing about the node they share. See <a class="el" href="geo__buffer_8c_a4dcd5edabac5d338de7fe116a9321e5e.html#a4dcd5edabac5d338de7fe116a9321e5e" title="Compute a point on the left/right side of a buffer piece.">buffer_piece_side_points()</a>, which reads the same tangent at the middle to find the sides of a piece </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">piece</td><td>Boundary piece </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">at_start</td><td>Read the direction it leaves its START in, rather than the direction it arrives at its END from </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dx,dy</td><td>Unit direction </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
