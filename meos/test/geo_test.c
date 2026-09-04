@@ -1560,6 +1560,138 @@ int main(void)
   free(fw); free(fd); free(flat); free(along);
   meos_errno_reset();
 
+  /* An areal pair is overlaid on the circles its operands carry. The two
+   * discs of radius 2 about (2,2) and (4,2) cross where both circles pass,
+   * at x = 3 and y = 2 +- sqrt(3), and the answer names those points and
+   * keeps the two arcs between them -- where reaching the GEOS overlay
+   * strokes both circles first and answers the chords */
+  const char *d1w = "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))";
+  const char *d2w = "CURVEPOLYGON(CIRCULARSTRING(2 2,4 4,6 2,4 0,2 2))";
+  const char *inw = "CURVEPOLYGON(CIRCULARSTRING(1 2,2 3,3 2,2 1,1 2))";
+  const char *awayw = "POLYGON((100 100,101 100,101 101,100 101,100 100))";
+  const char *ov_exp[] = {
+    /* the lens the two discs share */
+    "CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3 3.732051,2.267949 3,2 2),"
+      "CIRCULARSTRING(2 2,2.267949 1,3 0.267949),"
+      "CIRCULARSTRING(3 0.267949,3.732051 1,4 2),"
+      "CIRCULARSTRING(4 2,3.732051 3,3 3.732051)))",
+    /* the first disc with that lens taken out of it */
+    "CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(0 2,1 0.267949,3 0.267949),"
+      "CIRCULARSTRING(3 0.267949,2.267949 1,2 2),"
+      "CIRCULARSTRING(2 2,2.267949 3,3 3.732051),"
+      "CIRCULARSTRING(3 3.732051,1 3.732051,0 2)))",
+    /* a disc inside a disc: the intersection is the inner one ... */
+    "CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(1 2,2 1,3 2),"
+      "CIRCULARSTRING(3 2,2 3,1 2)))",
+    /* ... and the difference is the outer one carrying it as a HOLE */
+    "CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(0 2,2 0,4 2),"
+      "CIRCULARSTRING(4 2,2 4,0 2)),"
+      "COMPOUNDCURVE(CIRCULARSTRING(1 2,2 3,3 2),"
+      "CIRCULARSTRING(3 2,2 1,1 2)))",
+    /* a disc inside a disc, the other way round: nothing is left */
+    "POLYGON EMPTY",
+    /* and two regions that never meet share no area */
+    "POLYGON EMPTY",
+  };
+  const char *ov_a[] = { d1w, d1w, d1w, d1w, inw, d1w };
+  const char *ov_b[] = { d2w, d2w, inw, inw, d1w, awayw };
+  const int ov_op[] =  { 0,   1,   0,   1,   1,   0 };
+  for (int i = 0; i < 6; i++)
+  {
+    GSERIALIZED *oa = geom_in(ov_a[i], -1);
+    GSERIALIZED *ob = geom_in(ov_b[i], -1);
+    assert(oa != NULL); assert(ob != NULL);
+    meos_errno_reset();
+    GSERIALIZED *ores = ov_op[i] ? geom_difference2d(oa, ob) :
+      geom_intersection2d(oa, ob);
+    assert(ores != NULL);
+    char *ow = geo_as_text(ores, 6);
+    printf("areal overlay %d: %.60s\n", i, ow);
+    assert(strcmp(ow, ov_exp[i]) == 0);
+    free(ow); free(ores); free(oa); free(ob);
+    meos_errno_reset();
+  }
+  /* THE REGION OF NO AREA IS SPELLED ONE WAY, whichever operand is empty and
+   * whatever type it carries. That is the rule #clip_empty_areal states for
+   * the polygonal arm -- what an empty result is drawn as follows from the
+   * OPERATION, never from which trivial case reached it -- and an empty
+   * CURVEPOLYGON operand is the one route by which the other spelling still
+   * came back */
+  const char *em_a[] = { "CURVEPOLYGON EMPTY", "POLYGON EMPTY",
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))", "POLYGON EMPTY" };
+  const char *em_b[] = { "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
+    "MULTISURFACE EMPTY", "CURVEPOLYGON EMPTY" };
+  const int em_op[] = { 0, 0, 0, 1 };
+  for (int i = 0; i < 4; i++)
+  {
+    GSERIALIZED *ea = geom_in(em_a[i], -1);
+    GSERIALIZED *eb = geom_in(em_b[i], -1);
+    assert(ea != NULL); assert(eb != NULL);
+    meos_errno_reset();
+    GSERIALIZED *er = em_op[i] ? geom_difference2d(ea, eb) :
+      geom_intersection2d(ea, eb);
+    assert(er != NULL);
+    char *ew = geo_as_text(er, 6);
+    printf("an empty areal operand answers: %s\n", ew);
+    assert(strcmp(ew, "POLYGON EMPTY") == 0);
+    free(ew); free(er); free(ea); free(eb);
+    meos_errno_reset();
+  }
+  /* WHAT THE OVERLAY KEEPS ANSWERING BECAUSE THIS ARM DECLINES IT. Two discs
+   * touching at one point share that point, and a point is of lower dimension
+   * than the surfaces the arm assembles. Answering the region of no area there
+   * would drop a point set that is really there, so the pair goes on to the
+   * route that draws it */
+  GSERIALIZED *tg1 = geom_in("CURVEPOLYGON(CIRCULARSTRING(0 0,1 1,2 0,1 -1,"
+    "0 0))", -1);
+  GSERIALIZED *tg2 = geom_in("CURVEPOLYGON(CIRCULARSTRING(2 0,3 1,4 0,3 -1,"
+    "2 0))", -1);
+  assert(tg1 != NULL); assert(tg2 != NULL);
+  meos_errno_reset();
+  GSERIALIZED *tgi = geom_intersection2d(tg1, tg2);
+  assert(tgi != NULL);
+  char *tgw = geo_as_text(tgi, 6);
+  printf("two discs touching at one point share: %s\n", tgw);
+  assert(strcmp(tgw, "POINT(2 0)") == 0);
+  free(tgw); free(tgi);
+  /* The DIFFERENCE of the same pair takes a point set of no area from a
+   * region, so it is the region -- and it keeps its arcs */
+  meos_errno_reset();
+  GSERIALIZED *tgd = geom_difference2d(tg1, tg2);
+  assert(tgd != NULL);
+  char *tgdw = geo_as_text(tgd, 6);
+  printf("the first of them less the second: %.44s\n", tgdw);
+  assert(strstr(tgdw, "CIRCULARSTRING") != NULL);
+  free(tgdw); free(tgd); free(tg1); free(tg2);
+  meos_errno_reset();
+  /* ONE REGION, TWO SPELLINGS, AND THEY MUST AGREE. A pair of POLYGONs is
+   * overlaid by the Clipper2 arm; the same region spelled TRIANGLE reaches
+   * the native one. Neither carries an arc, so the two answer the same
+   * polygon and the areas are exact */
+  const char *sp_tri = "TRIANGLE((0 0,4 0,2 4,0 0))";
+  const char *sp_pol = "POLYGON((0 0,4 0,2 4,0 0))";
+  const char *sp_cl  = "POLYGON((1 1,5 1,5 5,1 5,1 1))";
+  for (int op = 0; op < 2; op++)
+  {
+    GSERIALIZED *ta = geom_in(sp_tri, -1);
+    GSERIALIZED *pa2 = geom_in(sp_pol, -1);
+    GSERIALIZED *cb2 = geom_in(sp_cl, -1);
+    assert(ta != NULL); assert(pa2 != NULL); assert(cb2 != NULL);
+    meos_errno_reset();
+    GSERIALIZED *rn = op ? geom_difference2d(ta, cb2) :
+      geom_intersection2d(ta, cb2);
+    GSERIALIZED *rc = op ? geom_difference2d(pa2, cb2) :
+      geom_intersection2d(pa2, cb2);
+    assert(rn != NULL); assert(rc != NULL);
+    double an = geom_area(rn), ac = geom_area(rc);
+    printf("triangle and polygon spellings of one region, %s: %.12f %.12f\n",
+      op ? "minus" : "meet", an, ac);
+    assert(fabs(an - ac) < 1e-12);
+    free(rn); free(rc); free(ta); free(pa2); free(cb2);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 

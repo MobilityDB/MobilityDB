@@ -48,6 +48,7 @@
 #include "meos.h"
 #include "meos_internal_geo.h"
 #include "geo/geo_funcs.h"
+#include "geo/geo_poly_clip.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 
@@ -2358,30 +2359,43 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
  *****************************************************************************/
 
 /**
- * @brief Select all non-interior pieces from two boundaries for a union.
- * @details This function does not resolve coincident boundary pieces.
- * Those pieces are returned in @p boundary and are handled by the next
- * overlay stage. The result is therefore:
- *   exterior(A relative to B) + exterior(B relative to A)
- * while pieces lying strictly inside the other geometry are discarded.
+ * @brief Select the pieces of two boundaries that bound the overlay
+ * @details A piece of one boundary bounds the answer when it lies on the side
+ * of the other geometry that the operation keeps, and the operation is the
+ * whole of what tells the three apart:
+ *
+ *     union         exterior(A wrt B) + exterior(B wrt A)
+ *     intersection  interior(A wrt B) + interior(B wrt A)
+ *     difference    exterior(A wrt B) + interior(B wrt A)
+ *
+ * so nothing about the two shapes enters beyond where each piece sits.
+ * A piece lying ON the other boundary is coincident, and only a union
+ * resolves one here. The others are returned in @p boundary, which the caller
+ * reads as a pair this does not answer.
  */
 static void
-buffer_select_union_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
-  const MeosArray *pieces_b, const LWGEOM *geom_a, MeosArray *result,
-  MeosArray *boundary)
+buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
+  const MeosArray *pieces_b, const LWGEOM *geom_a, ClipOper oper,
+  MeosArray *result, MeosArray *boundary)
 {
   assert(pieces_a); assert(geom_b); assert(pieces_b); assert(geom_a);
   assert(result); assert(boundary);
+  /* The side of the other geometry each of the two boundaries contributes */
+  BufferPieceLocation keep_a = (oper == CL_INTERSECTION) ?
+    BUFFER_PIECE_INTERIOR : BUFFER_PIECE_EXTERIOR;
+  BufferPieceLocation keep_b = (oper == CL_UNION) ?
+    BUFFER_PIECE_EXTERIOR : BUFFER_PIECE_INTERIOR;
   /* Pieces belonging to A */
   for (uint32_t i = 0; i < pieces_a->count; i++)
   {
     BufferPiece *piece = (BufferPiece *) meos_array_get(pieces_a, i);
     BufferPieceLocation location = buffer_classify_piece(piece, geom_b);
-    if (location == BUFFER_PIECE_EXTERIOR)
+    if (location == keep_a)
       meos_array_add(result, piece);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
-      if (! buffer_resolve_coincident_piece(piece, geom_a, geom_b, result))
+      if (oper != CL_UNION ||
+          ! buffer_resolve_coincident_piece(piece, geom_a, geom_b, result))
         meos_array_add(boundary, piece);
     }
   }
@@ -2390,11 +2404,12 @@ buffer_select_union_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
   {
     BufferPiece *piece = (BufferPiece *) meos_array_get(pieces_b, i);
     BufferPieceLocation location = buffer_classify_piece(piece, geom_a);
-    if (location == BUFFER_PIECE_EXTERIOR)
+    if (location == keep_b)
       meos_array_add(result, piece);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
-      if (! buffer_resolve_coincident_piece(piece, geom_b, geom_a, result))
+      if (oper != CL_UNION ||
+          ! buffer_resolve_coincident_piece(piece, geom_b, geom_a, result))
         meos_array_add(boundary, piece);
     }
   }
@@ -3452,46 +3467,65 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
  *****************************************************************************/
 
 /**
- * @brief Union two crossing buffer surfaces while preserving circular arcs.
- * @details This is the first end-to-end overlay path.
- * It is intentionally restricted to the crossing case:
- * - boundaries intersect at one or more discrete nodes;
- * - neither geometry contains the other;
- * - coincident boundary portions are deferred;
- * - the selected exterior pieces form one connected boundary.
+ * @brief Answer a Boolean operation on two areal geometries while preserving
+ * circular arcs
+ * @details One mechanism answers the three operations, and the boundary of the
+ * answer is always built the same way: the two boundaries are cut at the nodes
+ * where they meet, every piece is placed inside or outside the other geometry
+ * by its own midpoint, the operation says which side it keeps
+ * (#buffer_select_overlay_boundary), and the kept pieces are chained back into
+ * rings. An arc is cut into arcs of its own circle throughout, so the answer
+ * carries the circles its operands do rather than the chords a linearization
+ * would put in their place.
+ *
+ * Nothing here asks how the two geometries lie relative to one another. Where
+ * their boundaries stay apart there is nothing to cut and every piece is
+ * wholly inside or wholly outside, which is the containment and the disjoint
+ * case answered by the same selection; and a geometry of several components is
+ * read piece by piece, so one component inside and another outside need no
+ * separate treatment.
+ * @param[in] geom1,geom2 Areal geometries
+ * @param[in] oper Operation, one of @p CL_UNION, @p CL_INTERSECTION and
+ * @p CL_DIFFERENCE
+ * @param[out] touching Set when the two boundaries meet without their
+ * interiors overlapping, which a union answers as two surfaces
+ * @return The overlay, an EMPTY geometry where it covers nothing, or @p NULL
+ * for a pair this does not answer -- boundaries that run along one another,
+ * and a meeting that is not a crossing
  */
 static LWGEOM *
-buffer_union_crossing(const LWGEOM *geom1, const LWGEOM *geom2,
+buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   bool *touching)
 {
   assert(geom1); assert(geom2); assert(touching);
   *touching = false;
-  int relation = buffer_components_relation(geom1, geom2);
-  /* This routine is only for the proper crossing/partial-overlap case */
-  if (relation != 1)
-    return NULL;
+  bool crossing = buffer_boundaries_intersect(geom1, geom2);
 
   /* A point intersection by itself does not imply an overlapping union
    * boundary. In particular, two buffers may merely touch at one point.
    * Such components should remain separate surfaces. */
-  if (! buffer_boundaries_cross(geom1, geom2))
+  if (crossing && ! buffer_boundaries_cross(geom1, geom2))
     return NULL;
 
-  /* Collect the exact intersection nodes */
+  /* Collect the exact intersection nodes. Boundaries that stay apart have
+   * none, and the split below then leaves every piece whole */
   MeosArray *intersections = meos_array_create(sizeof(POINT2D));
-  if (! buffer_collect_boundary_intersections(geom1, geom2, intersections))
+  if (crossing)
   {
-    meos_array_destroy(intersections);
-    return NULL;
-  }
+    if (! buffer_collect_boundary_intersections(geom1, geom2, intersections))
+    {
+      meos_array_destroy(intersections);
+      return NULL;
+    }
 
-  /* A boundary intersection was reported, but there are no discrete
-   * nodes. This indicates a coincident/overlapping-boundary case.
-   * Defer it to the next topology layer. */
-  if (meos_array_count(intersections) == 0)
-  {
-    meos_array_destroy(intersections);
-    return NULL;
+    /* A boundary intersection was reported, but there are no discrete
+     * nodes. This indicates a coincident/overlapping-boundary case.
+     * Defer it to the next topology layer. */
+    if (meos_array_count(intersections) == 0)
+    {
+      meos_array_destroy(intersections);
+      return NULL;
+    }
   }
 
   /* Extract and split both complete boundaries */
@@ -3510,18 +3544,20 @@ buffer_union_crossing(const LWGEOM *geom1, const LWGEOM *geom2,
   buffer_split_pieces(raw_a, intersections, split_a);
   buffer_split_pieces(raw_b, intersections, split_b);
 
-  /* Select the exterior portions of both boundaries */
+  /* Select the portions of both boundaries the operation keeps */
   MeosArray *selected = meos_array_create(sizeof(BufferPiece));
   MeosArray *boundary = meos_array_create(sizeof(BufferPiece));
-  buffer_select_union_boundary(split_a, geom2, split_b, geom1, selected,
-    boundary);
+  buffer_select_overlay_boundary(split_a, geom2, split_b, geom1, oper,
+    selected, boundary);
 
   /* Two boundaries that meet only at isolated points without their interiors
    * overlapping, as two discs touching at one point do, leave every piece of
    * both boundaries on the union boundary. There is nothing to dissolve, and
    * chaining rings that meet at a single node does not produce a surface, so
-   * the pair is left to the caller as two surfaces. */
-  if (meos_array_count(selected) ==
+   * the pair is left to the caller as two surfaces. Boundaries that never meet
+   * keep every piece for a union too, and that is an answer rather than a
+   * refusal, so the question is only asked where they do */
+  if (crossing && meos_array_count(selected) ==
       meos_array_count(split_a) + meos_array_count(split_b))
   {
     *touching = true;
@@ -3541,7 +3577,24 @@ buffer_union_crossing(const LWGEOM *geom1, const LWGEOM *geom2,
     meos_array_destroy(intersections);
     return NULL;
   }
-  /* Reconstruct the complete union boundary:
+  /* An operation keeping no piece of either boundary covers no area. Where
+   * the boundaries stay apart that IS the answer -- two regions that never
+   * meet share nothing, and one inside the other leaves nothing behind. Where
+   * they MEET it is not: two discs touching at a point share that point, and
+   * two surfaces meeting along an edge share the edge. Such an answer is of
+   * lower dimension than the surfaces this assembles, so the pair is left to
+   * the caller rather than answered as the region of no area, which would
+   * drop a point set that is really there */
+  if (meos_array_count(selected) == 0 && crossing)
+  {
+    meos_array_destroy(selected); meos_array_destroy(boundary);
+    meos_array_destroy(split_a); meos_array_destroy(split_b);
+    meos_array_destroy(raw_a); meos_array_destroy(raw_b);
+    meos_array_destroy(intersections);
+    return NULL;
+  }
+
+  /* Reconstruct the complete overlay boundary:
    * selected pieces
    * -> closed rings
    * -> containment hierarchy
@@ -3550,13 +3603,32 @@ buffer_union_crossing(const LWGEOM *geom1, const LWGEOM *geom2,
    * -> CURVEPOLYGON / MULTISURFACE
    */
   int32_t srid = lwgeom_get_srid(geom1);
-  LWGEOM *result = buffer_make_surfaces_from_pieces(selected, srid);
+  LWGEOM *result = meos_array_count(selected) == 0 ?
+    lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0)) :
+    buffer_make_surfaces_from_pieces(selected, srid);
   /* Clean up and return */
   meos_array_destroy(selected); meos_array_destroy(boundary);
   meos_array_destroy(split_a); meos_array_destroy(split_b);
   meos_array_destroy(raw_a); meos_array_destroy(raw_b);
   meos_array_destroy(intersections);
   return result;
+}
+
+/**
+ * @brief Union two crossing buffer surfaces while preserving circular arcs.
+ * @details The caller asks whether the two surfaces MERGE into one, so only
+ * the proper crossing case answers it: a pair whose boundaries stay apart, or
+ * one of which contains the other, is left to the caller to assemble.
+ */
+static LWGEOM *
+buffer_union_crossing(const LWGEOM *geom1, const LWGEOM *geom2,
+  bool *touching)
+{
+  assert(geom1); assert(geom2); assert(touching);
+  *touching = false;
+  if (buffer_components_relation(geom1, geom2) != 1)
+    return NULL;
+  return buffer_areal_overlay(geom1, geom2, CL_UNION, touching);
 }
 
 /*****************************************************************************
@@ -4684,6 +4756,34 @@ buffer_union_components(LWGEOM **buffers, uint32_t count, int32_t srid)
 }
 
 /**
+ * @brief Return whether the overlay reads a geometry as the surfaces it draws
+ * @details The engine walks a boundary that bounds area, so what it reads is a
+ * surface or a collection of surfaces and nothing besides: a member of any
+ * other kind draws something the boundary walk has no place for
+ */
+static bool
+buffer_is_areal_geometry(const LWGEOM *geom)
+{
+  assert(geom);
+  uint8_t type = geom->type;
+  if (type == POLYGONTYPE || type == CURVEPOLYTYPE || type == TRIANGLETYPE)
+    return true;
+  if (type != MULTIPOLYGONTYPE && type != MULTISURFACETYPE &&
+      type != COLLECTIONTYPE)
+    return false;
+  const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+  if (coll->ngeoms == 0)
+    return false;
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
+  {
+    uint8_t comp = coll->geoms[i]->type;
+    if (comp != POLYGONTYPE && comp != CURVEPOLYTYPE && comp != TRIANGLETYPE)
+      return false;
+  }
+  return true;
+}
+
+/**
  * @brief Return the union of the areal components of a geometry
  * @details The components are dissolved into the surfaces they cover: a pair
  * whose interiors meet becomes one surface, and a pair that only touches stays
@@ -4703,25 +4803,17 @@ meos_areal_union(const LWGEOM *geom)
   if (lwgeom_is_empty(geom))
     return NULL;
 
+  /* A point or a line has no area to dissolve, and a geometry carrying one is
+   * not what this answers */
+  if (! buffer_is_areal_geometry(geom))
+    return NULL;
+
   /* One surface is its own union */
   uint8_t type = geom->type;
   if (type == POLYGONTYPE || type == CURVEPOLYTYPE || type == TRIANGLETYPE)
     return lwgeom_clone_deep(geom);
-  if (type != MULTIPOLYGONTYPE && type != MULTISURFACETYPE &&
-      type != COLLECTIONTYPE)
-    return NULL;
 
   const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
-  if (coll->ngeoms == 0)
-    return NULL;
-  /* A point or a line has no area to dissolve, and a geometry carrying one is
-   * not what this answers */
-  for (uint32_t i = 0; i < coll->ngeoms; i++)
-  {
-    uint8_t comp = coll->geoms[i]->type;
-    if (comp != POLYGONTYPE && comp != CURVEPOLYTYPE && comp != TRIANGLETYPE)
-      return NULL;
-  }
   if (coll->ngeoms == 1)
     return lwgeom_clone_deep(coll->geoms[0]);
 
@@ -4782,6 +4874,89 @@ meos_areal_union(const LWGEOM *geom)
     }
   }
   return result;
+}
+
+/**
+ * @brief Answer a Boolean operation on two areal geometries
+ * @details The operands are read as the surfaces they draw and the answer is
+ * built from their two boundaries, so an operand bounded by circular arcs is
+ * answered on those circles. An operand carrying anything that is not a
+ * surface is not one this reads, and neither is a pair whose boundaries run
+ * along one another rather than crossing
+ * @param[in] geom1,geom2 Geometries
+ * @param[in] oper Operation
+ * @return The overlay, an EMPTY geometry where the operation covers nothing,
+ * or @p NULL for a pair this does not answer -- a caller that has another way
+ * to answer may take it
+ */
+static LWGEOM *
+buffer_areal_operation(const LWGEOM *geom1, const LWGEOM *geom2,
+  ClipOper oper)
+{
+  assert(geom1); assert(geom2);
+  int32_t srid = lwgeom_get_srid(geom1);
+  /* What an empty operand answers is the set identity of the operation:
+   * nothing meets an empty region, and an empty region takes nothing from a
+   * subject while leaving nothing of one */
+  bool empty1 = lwgeom_is_empty(geom1);
+  bool empty2 = lwgeom_is_empty(geom2);
+  if (empty1 || empty2)
+  {
+    if (oper == CL_DIFFERENCE && ! empty1)
+      return lwgeom_clone_deep(geom1);
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
+  }
+  if (! buffer_is_areal_geometry(geom1) || ! buffer_is_areal_geometry(geom2))
+    return NULL;
+
+  bool touching;
+  LWGEOM *result = buffer_areal_overlay(geom1, geom2, oper, &touching);
+  if (! result)
+    return NULL;
+
+  /* The boundary is welded out of pieces, so a surface comes back as a curve
+   * polygon even where every piece of it is a segment. A pair of operands
+   * carrying no arc is answered with polygons: the conversion reads the pieces
+   * of a ring that carries no arc into one point array and loses nothing */
+  if (! lwgeom_has_arc(result))
+  {
+    LWGEOM *straight = lwgeom_stroke(result, 0);
+    if (straight)
+    {
+      lwgeom_free(result);
+      result = straight;
+    }
+  }
+  return result;
+}
+
+/**
+ * @brief Return the intersection of two areal geometries
+ * @details See #buffer_areal_operation()
+ * @param[in] geom1,geom2 Geometries
+ * @return The region both cover, an EMPTY geometry where they cover none in
+ * common, or @p NULL for a pair this does not answer
+ */
+LWGEOM *
+meos_areal_intersection(const LWGEOM *geom1, const LWGEOM *geom2)
+{
+  assert(geom1); assert(geom2);
+  return buffer_areal_operation(geom1, geom2, CL_INTERSECTION);
+}
+
+/**
+ * @brief Return the difference of two areal geometries
+ * @details See #buffer_areal_operation()
+ * @param[in] geom1,geom2 Geometries
+ * @return The region the first covers and the second does not, an EMPTY
+ * geometry where the second covers all of the first, or @p NULL for a pair
+ * this does not answer
+ */
+LWGEOM *
+meos_areal_difference(const LWGEOM *geom1, const LWGEOM *geom2)
+{
+  assert(geom1); assert(geom2);
+  return buffer_areal_operation(geom1, geom2, CL_DIFFERENCE);
 }
 
 /*****************************************************************************
