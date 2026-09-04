@@ -370,34 +370,4 @@ Tne_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Teq_tnpoint_tnpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Teq_tnpoint_tnpoint);
-/**
- * @ingroup mobilitydb_npoint_comp_temp
- * @brief Return a temporal Boolean that states whether two temporal geos are
- * equal
- * @sqlfn tEq()
- * @sqlop @p #=
- */
-inline Datum
-Teq_tnpoint_tnpoint(PG_FUNCTION_ARGS)
-{
-  return Tcomp_temporal_temporal(fcinfo, &teq_temporal_temporal);
-}
-
-PGDLLEXPORT Datum Tne_tnpoint_tnpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tne_tnpoint_tnpoint);
-/**
- * @ingroup mobilitydb_npoint_comp_temp
- * @brief Return a temporal Boolean that states whether two temporal geos are
- * different
- * @sqlfn tNe()
- * @sqlop @p #<>
- */
-inline Datum
-Tne_tnpoint_tnpoint(PG_FUNCTION_ARGS)
-{
-  return Tcomp_temporal_temporal(fcinfo, &tne_temporal_temporal);
-}
-
 /*****************************************************************************/

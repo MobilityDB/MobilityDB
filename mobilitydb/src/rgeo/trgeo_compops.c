@@ -297,32 +297,4 @@ Tne_trgeometry_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Teq_trgeometry_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Teq_trgeometry_trgeometry);
-/**
- * @ingroup mobilitydb_rgeo_comp_temp
- * @brief Return true if two temporal poses are ever equal
- * @sqlfn tEq()
- * @sqlop @p #=
- */
-inline Datum
-Teq_trgeometry_trgeometry(PG_FUNCTION_ARGS)
-{
-  return Tcomp_temporal_temporal(fcinfo, &teq_temporal_temporal);
-}
-
-PGDLLEXPORT Datum Tne_trgeometry_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tne_trgeometry_trgeometry);
-/**
- * @ingroup mobilitydb_rgeo_comp_temp
- * @brief Return true if two temporal poses are ever different
- * @sqlfn tNe()
- * @sqlop @p #<>
- */
-inline Datum
-Tne_trgeometry_trgeometry(PG_FUNCTION_ARGS)
-{
-  return Tcomp_temporal_temporal(fcinfo, &tne_temporal_temporal);
-}
-
 /*****************************************************************************/
