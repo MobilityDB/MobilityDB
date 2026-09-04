@@ -142,15 +142,44 @@ derive_quadbin(GDALDatasetH ds, uint64 *quadbin, const char *label)
 }
 
 /**
+ * @brief Release the resources a raquet ingest holds
+ * @details Every error path calls this before #meos_error, because the error
+ * handler a host installs need not return to the caller: the PostgreSQL
+ * handler leaves through `ereport(ERROR)` and the standalone one exits, so a
+ * release written after the report never runs and the dataset leaks. Reporting
+ * last is the idiom the rest of MEOS follows.
+ * @param[in] ds Open GDAL dataset, or NULL
+ * @param[in] vpath `/vsimem/` path backing @p ds, or NULL for a real file
+ * @param[in] buf Band buffer, or NULL
+ */
+static void
+raquet_gdal_release(GDALDatasetH ds, const char *vpath, uint8_t *buf)
+{
+  if (buf)
+    pfree(buf);
+  if (ds)
+    GDALClose(ds);
+  if (vpath)
+    VSIUnlink(vpath);
+  return;
+}
+
+/**
  * @brief Pack the first band of an open GDAL dataset into a Raquet tile
  * @details The band data type must be one of Byte / Int16 / Int32 / Float32 /
  * Float64; the band nodata value (if any) is carried into the tile. When
  * @p quadbin is 0 the tile identifier is derived from the dataset
- * georeferencing. The caller owns @p ds and closes it; @p label names the
- * source in error messages.
+ * georeferencing. This function takes over @p ds and the `/vsimem/` file
+ * @p vpath, releasing both on every path, so that the release still happens
+ * when a report does not return; @p label names the source in error messages.
+ * @param[in] ds Open GDAL dataset, taken over by this function
+ * @param[in] vpath `/vsimem/` path backing @p ds, or NULL for a real file
+ * @param[in] quadbin CARTO QUADBIN cell, or 0 to derive it
+ * @param[in] label Source name used in error messages
  */
 static Raquet *
-raquet_from_gdal_dataset(GDALDatasetH ds, uint64 quadbin, const char *label)
+raquet_from_gdal_dataset(GDALDatasetH ds, const char *vpath, uint64 quadbin,
+  const char *label)
 {
   Raquet *result = NULL;
   uint8_t *buf = NULL;
@@ -158,28 +187,42 @@ raquet_from_gdal_dataset(GDALDatasetH ds, uint64 quadbin, const char *label)
   int ysize = GDALGetRasterYSize(ds);
   if (GDALGetRasterCount(ds) < 1)
   {
+    raquet_gdal_release(ds, vpath, buf);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Raster has no bands for raquet ingest: %s", label);
-    goto cleanup;
+    return NULL;
   }
   if (xsize <= 0 || ysize <= 0 || xsize > UINT16_MAX || ysize > UINT16_MAX)
   {
+    raquet_gdal_release(ds, vpath, buf);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Raster dimensions %dx%d out of range for a raquet tile (1..%u)",
       xsize, ysize, (unsigned) UINT16_MAX);
-    goto cleanup;
+    return NULL;
   }
 
   /* A zero quadbin requests deriving the tile identifier from the dataset
-   * geotransform and spatial reference */
-  if (quadbin == 0 && ! derive_quadbin(ds, &quadbin, label))
-    goto cleanup;
+   * geotransform and spatial reference. The callee reports, so the release
+   * comes first and holds whether or not that report returns. */
+  if (quadbin == 0)
+  {
+    uint64 cell;
+    if (! derive_quadbin(ds, &cell, label))
+    {
+      raquet_gdal_release(ds, vpath, buf);
+      return NULL;
+    }
+    quadbin = cell;
+  }
 
   GDALRasterBandH band = GDALGetRasterBand(ds, 1);
   GDALDataType dt = GDALGetRasterDataType(band);
   MeosPixType pixtype;
   if (! gdal_to_pixtype(dt, &pixtype))
-    goto cleanup;
+  {
+    raquet_gdal_release(ds, vpath, buf);
+    return NULL;
+  }
 
   int has_nodata = 0;
   double nodata = GDALGetRasterNoDataValue(band, &has_nodata);
@@ -190,9 +233,10 @@ raquet_from_gdal_dataset(GDALDatasetH ds, uint64 quadbin, const char *label)
   if (GDALRasterIO(band, GF_Read, 0, 0, xsize, ysize, buf, xsize, ysize,
       dt, 0, 0) != CE_None)
   {
+    raquet_gdal_release(ds, vpath, buf);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "GDAL failed to read raster band for raquet ingest: %s", label);
-    goto cleanup;
+    return NULL;
   }
   /* GDAL hands over the band in the byte order of this machine, while a Raquet
    * band is little-endian wherever it was made, so that the tile keeps its
@@ -202,9 +246,7 @@ raquet_from_gdal_dataset(GDALDatasetH ds, uint64 quadbin, const char *label)
   result = raquet_make(quadbin, xsize, ysize, pixtype,
     nodata, (bool) has_nodata, buf, nbytes);
 
-cleanup:
-  if (buf)
-    pfree(buf);
+  raquet_gdal_release(ds, vpath, buf);
   return result;
 }
 
@@ -234,9 +276,8 @@ raquet_read(const char *path, uint64 quadbin)
       "Cannot open raster file for raquet ingest: %s", path);
     return NULL;
   }
-  Raquet *result = raquet_from_gdal_dataset(ds, quadbin, path);
-  GDALClose(ds);
-  return result;
+  /* The callee takes over the dataset and closes it on every path */
+  return raquet_from_gdal_dataset(ds, NULL, quadbin, path);
 }
 
 /**
@@ -282,10 +323,9 @@ raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
       "GDAL cannot decode the in-memory raster for raquet ingest");
     return NULL;
   }
-  Raquet *result = raquet_from_gdal_dataset(ds, quadbin, "in-memory raster");
-  GDALClose(ds);
-  VSIUnlink(vpath);
-  return result;
+  /* The callee takes over the dataset and the `/vsimem/` file, releasing both
+   * on every path */
+  return raquet_from_gdal_dataset(ds, vpath, quadbin, "in-memory raster");
 }
 
 /*****************************************************************************
@@ -360,22 +400,25 @@ raster_value_gdal_open(const char *path, int band_num, GDALDatasetH *ds_out,
   double gt[6];
   if (GDALGetGeoTransform(ds, gt) != CE_None)
   {
+    raquet_gdal_release(ds, NULL, NULL);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Raster has no geotransform: %s", path);
-    goto cleanup;
+    return false;
   }
   if (! GDALInvGeoTransform(gt, ctx->inv_gt))
   {
+    raquet_gdal_release(ds, NULL, NULL);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Raster geotransform is not invertible: %s", path);
-    goto cleanup;
+    return false;
   }
   GDALRasterBandH rb = GDALGetRasterBand(ds, band_num);
   if (! rb)
   {
+    raquet_gdal_release(ds, NULL, NULL);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Raster has no band %d: %s", band_num, path);
-    goto cleanup;
+    return false;
   }
   int has_nodata = 0;
   double nodata = GDALGetRasterNoDataValue(rb, &has_nodata);
@@ -408,10 +451,6 @@ raster_value_gdal_open(const char *path, int band_num, GDALDatasetH *ds_out,
 
   *ds_out = ds;
   return true;
-
-cleanup:
-  GDALClose(ds);
-  return false;
 }
 
 /**
