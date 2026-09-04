@@ -1766,6 +1766,43 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* EVERY MEMBER OF A DISSOLVED COLLECTION IS A TYPE ITS READERS ANSWER.
+   * A triangle draws a region a polygon draws, but @c lwmsurface_linearize
+   * answers a CURVEPOLYGON and a POLYGON and has no arm for anything else, so
+   * a triangle left in the collection leaves its slot of that reader's output
+   * array unset and the collection built from it reads whatever the
+   * allocation held. The union of surfaces that do not merge into one is
+   * where such a collection is built, so a pair that stays apart is the
+   * shortest way to ask for it */
+  const char *tri_a[] = {
+    "TRIANGLE((0 0,1 0,0 1,0 0))",
+    "TRIANGLE((0 0,1 0,0 1,0 0))",
+    "POLYGON((0 0,1 0,1 1,0 1,0 0))",
+  };
+  const char *tri_b[] = {
+    "TRIANGLE((5 5,6 5,5 6,5 5))",
+    "POLYGON((5 5,6 5,6 6,5 6,5 5))",
+    "POLYGON((5 5,6 5,6 6,5 6,5 5))",
+  };
+  const double tri_area[] = { 1.0, 1.5, 2.0 };
+  for (int i = 0; i < 3; i++)
+  {
+    GSERIALIZED *ta[2];
+    ta[0] = geom_in(tri_a[i], -1);
+    ta[1] = geom_in(tri_b[i], -1);
+    assert(ta[0] != NULL); assert(ta[1] != NULL);
+    meos_errno_reset();
+    GSERIALIZED *tu = geom_array_union(ta, 2);
+    assert(tu != NULL);
+    char *tuw = geo_as_text(tu, 6);
+    printf("surfaces that stay apart dissolve to: %.46s\n", tuw);
+    /* Both parts are there, and every member is a polygon */
+    assert(fabs(geom_area(tu) - tri_area[i]) < 1e-12);
+    assert(strstr(tuw, "TRIANGLE") == NULL);
+    free(tuw); free(tu); free(ta[0]); free(ta[1]);
+    meos_errno_reset();
+  }
+
   /* ONE REGION, TWO SPELLINGS, AND THEY MUST AGREE. A pair of POLYGONs is
    * overlaid by the Clipper2 arm; the same region spelled TRIANGLE reaches
    * the native one. Neither carries an arc, so the two answer the same

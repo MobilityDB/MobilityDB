@@ -4926,6 +4926,26 @@ buffer_is_areal_geometry(const LWGEOM *geom)
 }
 
 /**
+ * @brief Return a triangle as the polygon it draws
+ * @details A triangle is a polygon of a single ring, so the two draw the same
+ * region -- but the readers of a collection of surfaces do not take them
+ * alike. @c lwmsurface_linearize (@c postgis/liblwgeom/lwstroke.c) answers a
+ * CURVEPOLYGON and a POLYGON and has no arm for anything else, so a member of
+ * another type leaves its slot of the output array UNSET, and the collection
+ * built from that array reads whatever the allocation happened to hold.
+ * Writing the ring into a polygon loses nothing and keeps every member a type
+ * the readers answer
+ */
+static LWGEOM *
+buffer_triangle_as_poly(const LWTRIANGLE *tri)
+{
+  assert(tri);
+  POINTARRAY **rings = lwalloc(sizeof(POINTARRAY *));
+  rings[0] = ptarray_clone_deep(tri->points);
+  return lwpoly_as_lwgeom(lwpoly_construct(tri->srid, NULL, 1, rings));
+}
+
+/**
  * @brief Return the union of the areal components of a geometry
  * @details The components are dissolved into the surfaces they cover: a pair
  * whose interiors meet becomes one surface, and a pair that only touches stays
@@ -4990,6 +5010,17 @@ meos_areal_union(const LWGEOM *geom)
         /* A member that is not a surface is not an answer this gives */
         lwgeom_free(result);
         return NULL;
+      }
+      /* A TRIANGLE draws a region a POLYGON draws, and only the polygon is a
+       * type every reader of the collection answers, so the member is written
+       * as one and the collection stays a multipolygon */
+      if (comp == TRIANGLETYPE)
+      {
+        LWGEOM *poly = buffer_triangle_as_poly(
+          (const LWTRIANGLE *) res_coll->geoms[i]);
+        lwgeom_free(res_coll->geoms[i]);
+        res_coll->geoms[i] = poly;
+        continue;
       }
       collected = MULTISURFACETYPE;
     }
