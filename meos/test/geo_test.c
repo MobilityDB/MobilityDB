@@ -1665,6 +1665,65 @@ int main(void)
   assert(strstr(tgdw, "CIRCULARSTRING") != NULL);
   free(tgdw); free(tgd); free(tg1); free(tg2);
   meos_errno_reset();
+  /* A BOUNDARY THE TWO SHARE IS PLACED, NOT DECLINED. Every piece of the
+   * stretch they share lies on both boundaries, so which side each interior
+   * occupies is what decides it: on the SAME side the two overlap and a union
+   * and an intersection are bounded by it, on OPPOSITE sides they merely meet
+   * and a difference is. A disc against itself shares the whole of its
+   * boundary, and keeps its own circle rather than the chords the route below
+   * would put there */
+  const char *cw_a[] = {
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
+    "POLYGON((0 0,2 0,2 2,0 2,0 0))",
+    "POLYGON((0 0,2 0,2 2,0 2,0 0))",
+  };
+  const char *cw_b[] = {
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
+    "POLYGON((2 0,4 0,4 2,2 2,2 0))",
+    "POLYGON((2 0,4 0,4 2,2 2,2 0))",
+  };
+  const int cw_op[] = { 0, 0, 1 };
+  const char *cw_exp[] = {
+    /* the disc, on its own circle */
+    "CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(0 2,2 0,4 2),"
+      "CIRCULARSTRING(4 2,2 4,0 2)))",
+    /* two squares meeting along an edge share no area ... */
+    "POLYGON EMPTY",
+    /* ... and neither takes any from the other */
+    "POLYGON((2 2,2 0,0 0,0 2,2 2))",
+  };
+  for (int i = 0; i < 3; i++)
+  {
+    GSERIALIZED *ca = geom_in(cw_a[i], -1);
+    GSERIALIZED *cb = geom_in(cw_b[i], -1);
+    assert(ca != NULL); assert(cb != NULL);
+    meos_errno_reset();
+    GSERIALIZED *cr = cw_op[i] ? geom_difference2d(ca, cb) :
+      geom_intersection2d(ca, cb);
+    assert(cr != NULL);
+    char *cwt = geo_as_text(cr, 6);
+    printf("a shared boundary %d: %.58s\n", i, cwt);
+    assert(strcmp(cwt, cw_exp[i]) == 0);
+    free(cwt); free(cr); free(ca); free(cb);
+    meos_errno_reset();
+  }
+  /* WHERE THE ANSWER LEAVES TWO REGIONS TOUCHING AT ONE POINT, four piece-ends
+   * meet on that node and the walk takes the nearest piece round rather than
+   * the first it finds: the two regions close as two rings, where the first it
+   * finds closes one ring that visits the node twice and is not simple */
+  GSERIALIZED *pz_a = geom_in("POLYGON((0 0,4 0,4 4,0 4,0 0))", -1);
+  GSERIALIZED *pz_b = geom_in("TRIANGLE((0 0,4 0,2 4,0 0))", -1);
+  assert(pz_a != NULL); assert(pz_b != NULL);
+  meos_errno_reset();
+  GSERIALIZED *pz = geom_difference2d(pz_a, pz_b);
+  assert(pz != NULL);
+  char *pzw = geo_as_text(pz, 6);
+  printf("two regions touching at a point: %.46s\n", pzw);
+  assert(strncmp(pzw, "MULTIPOLYGON", 12) == 0);
+  assert(fabs(geom_area(pz) - 8.0) < 1e-12);
+  free(pzw); free(pz); free(pz_a); free(pz_b);
+  meos_errno_reset();
+
   /* ONE REGION, TWO SPELLINGS, AND THEY MUST AGREE. A pair of POLYGONs is
    * overlaid by the Clipper2 arm; the same region spelled TRIANGLE reaches
    * the native one. Neither carries an arc, so the two answer the same

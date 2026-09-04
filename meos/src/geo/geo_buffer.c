@@ -2269,22 +2269,31 @@ buffer_classify_coincident_piece(const BufferPiece *piece, const LWGEOM *owner,
  */
 static bool
 buffer_resolve_coincident_piece(BufferPiece *piece, const LWGEOM *owner,
-  const LWGEOM *other, MeosArray *result)
+  const LWGEOM *other, ClipOper oper, MeosArray *result)
 {
   assert(piece); assert(owner); assert(other); assert(result);
   int classification = buffer_classify_coincident_piece(piece, owner, other);
-  /* The coincident boundary is external to the union */
-  if (classification == 1)
-  {
-    buffer_pieces_add_unique(result, piece);
-    return true;
-  }
-  /* The coincident boundary is internal to the union */
-  if (classification == 0)
-    return true;
-
   /* Unknown / degenerate topology */
-  return false;
+  if (classification < 0)
+    return false;
+
+  /* Which side each interior lies on is the whole of what the operation needs,
+   * and the two answers it can give divide the three operations in one place:
+   *
+   *   THE SAME SIDE -- the two overlap along here, so a union and an
+   *   intersection are both bounded by the piece, while a difference has
+   *   nothing to bound: where both are present, the first less the second
+   *   covers nothing.
+   *
+   *   OPPOSITE SIDES -- the interiors meet along the piece without overlapping,
+   *   so a difference is bounded by it, the first geometry lying on its own
+   *   side; a union reads it as interior, and an intersection as bounding a
+   *   region that is not there.
+   */
+  bool same_side = (classification == 1);
+  if (same_side == (oper != CL_DIFFERENCE))
+    buffer_pieces_add_unique(result, piece);
+  return true;
 }
 
 /**
@@ -2369,8 +2378,9 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
  *     difference    exterior(A wrt B) + interior(B wrt A)
  *
  * so nothing about the two shapes enters beyond where each piece sits.
- * A piece lying ON the other boundary is coincident, and only a union
- * resolves one here. The others are returned in @p boundary, which the caller
+ * A piece lying ON the other boundary is coincident, and
+ * #buffer_resolve_coincident_piece places it from the side each interior
+ * occupies. One it cannot place is returned in @p boundary, which the caller
  * reads as a pair this does not answer.
  */
 static void
@@ -2394,8 +2404,8 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
       meos_array_add(result, piece);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
-      if (oper != CL_UNION ||
-          ! buffer_resolve_coincident_piece(piece, geom_a, geom_b, result))
+      if (! buffer_resolve_coincident_piece(piece, geom_a, geom_b, oper,
+            result))
         meos_array_add(boundary, piece);
     }
   }
@@ -2408,8 +2418,8 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
       meos_array_add(result, piece);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
-      if (oper != CL_UNION ||
-          ! buffer_resolve_coincident_piece(piece, geom_b, geom_a, result))
+      if (! buffer_resolve_coincident_piece(piece, geom_b, geom_a, oper,
+            result))
         meos_array_add(boundary, piece);
     }
   }
@@ -2513,11 +2523,87 @@ buffer_append_piece_to_curve(LWCOMPOUND *curve, int32_t srid,
  * @details If reverse is returned true, the piece must be reversed before it
  * is appended to the boundary.
  */
+/**
+ * @brief Return the direction a piece leaves one of its ends in
+ * @details The tangent of a segment is the segment; the tangent of an arc is
+ * the sine and cosine at the angle of the end it leaves, turned the way the
+ * arc sweeps. Reading it AT AN END rather than at the midpoint is what tells
+ * two pieces apart where they meet: their midpoints say nothing about the node
+ * they share. See #buffer_piece_side_points(), which reads the same tangent
+ * at the middle to find the sides of a piece
+ * @param[in] piece Boundary piece
+ * @param[in] at_start Read the direction it leaves its START in, rather than
+ * the direction it arrives at its END from
+ * @param[out] dx,dy Unit direction
+ */
+static bool
+buffer_piece_end_direction(const BufferPiece *piece, bool at_start,
+  double *dx, double *dy)
+{
+  assert(piece); assert(dx); assert(dy);
+  double tx, ty;
+  if (piece->type == BUFFER_SEGMENT)
+  {
+    tx = piece->x2 - piece->x1;
+    ty = piece->y2 - piece->y1;
+  }
+  else if (piece->type == BUFFER_ARC)
+  {
+    double sweep = buffer_arc_sweep(piece);
+    if (sweep <= MEOS_GEOM_TOLERANCE)
+      return false;
+    double theta = at_start ? piece->theta1 :
+      (piece->ccw ? piece->theta1 + sweep : piece->theta1 - sweep);
+    if (piece->ccw)
+    {
+      tx = -sin(theta);
+      ty =  cos(theta);
+    }
+    else
+    {
+      tx =  sin(theta);
+      ty = -cos(theta);
+    }
+  }
+  else
+    return false;
+  double length = hypot(tx, ty);
+  if (length <= MEOS_GEOM_TOLERANCE)
+    return false;
+  /* Leaving the END means travelling back along the piece */
+  double sign = at_start ? 1.0 : -1.0;
+  *dx = sign * tx / length;
+  *dy = sign * ty / length;
+  return true;
+}
+
+/**
+ * @brief Return the piece a boundary continues into at a node, and whether it
+ * is traversed in reverse
+ * @details WHERE MORE THAN TWO PIECE-ENDS MEET AT ONE NODE the boundary pinches
+ * -- two regions of the answer touch there at a single point -- and which piece
+ * the walk takes decides whether it closes the two rings that are really there
+ * or ONE ring that visits the node twice. The ring is chosen by turning as
+ * sharply as the node allows, clockwise from the direction the walk arrives in,
+ * which is the traversal that keeps each face of the boundary to itself.
+ * A node where exactly two ends meet has one candidate and the rule does not
+ * arise
+ * @param[in] pieces Boundary pieces
+ * @param[in] used Which of them the walk has taken
+ * @param[in] point The node the walk stands on
+ * @param[in] from_dx,from_dy The direction the walk arrived in, zero for the
+ * first piece of a ring, which has no direction to turn from
+ * @param[out] reverse Set when the piece is traversed from its end
+ */
 static int
 buffer_find_connected_piece(const MeosArray *pieces, const bool *used,
-  POINT2D point, bool *reverse)
+  POINT2D point, double from_dx, double from_dy, bool *reverse)
 {
   assert(pieces); assert(used); assert(reverse);
+  int best = -1;
+  bool best_reverse = false;
+  double best_turn = 0.0;
+  bool have_direction = (from_dx != 0.0 || from_dy != 0.0);
   for (uint32_t i = 0; i < pieces->count; i++)
   {
     if (used[i])
@@ -2525,20 +2611,55 @@ buffer_find_connected_piece(const MeosArray *pieces, const bool *used,
     const BufferPiece *piece = (BufferPiece *) meos_array_get(pieces, i);
     POINT2D start = buffer_piece_start(piece);
     POINT2D end = buffer_piece_end(piece);
-    /* Prefer the natural orientation */
+    bool rev;
     if (buffer_points_equal(start, point))
+      rev = false;
+    else if (buffer_points_equal(end, point))
+      rev = true;
+    else
+      continue;
+    /* The first piece of a ring, and a node with one candidate, need no turn */
+    if (! have_direction)
     {
-      *reverse = false;
+      *reverse = rev;
       return (int) i;
     }
-    /* Otherwise the piece can be traversed in reverse */
-    if (buffer_points_equal(end, point))
+    double dx, dy;
+    if (! buffer_piece_end_direction(piece, ! rev, &dx, &dy))
     {
-      *reverse = true;
-      return (int) i;
+      /* A direction this cannot read orders nothing, so it is taken only where
+       * nothing else offers itself */
+      if (best < 0)
+      {
+        best = (int) i;
+        best_reverse = rev;
+        best_turn = 10.0;
+      }
+      continue;
+    }
+    /* The turn from the arriving direction to the leaving one, measured
+     * clockwise so that the sharpest right turn scores highest. The walk
+     * arrives travelling along (from_dx,from_dy) and leaves along (dx,dy) */
+    double cross = from_dx * dy - from_dy * dx;
+    double dot = from_dx * dx + from_dy * dy;
+    double turn = -atan2(cross, dot);
+    /* Read the turn as a full circle so that the FIRST piece round from the
+     * direction the walk came back along is the smallest, which is the one
+     * that keeps the walk on the face it is tracing rather than crossing to
+     * the other side of the node */
+    if (turn <= 0.0)
+      turn += 2.0 * M_PI;
+    if (best < 0 || turn < best_turn)
+    {
+      best = (int) i;
+      best_reverse = rev;
+      best_turn = turn;
     }
   }
-  return -1;
+  if (best < 0)
+    return -1;
+  *reverse = best_reverse;
+  return best;
 }
 
 /**
@@ -2566,10 +2687,17 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, bool *used,
   used[start_index] = true;
   POINT2D start = buffer_piece_start(&oriented);
   POINT2D current = buffer_piece_end(&oriented);
+  /* The direction the walk arrives in, which is what decides its turn at a
+   * node several pieces share. It is read from the piece just taken, in the
+   * orientation it was taken in */
+  double from_dx = 0.0, from_dy = 0.0;
+  if (! buffer_piece_end_direction(&oriented, false, &from_dx, &from_dy))
+    from_dx = from_dy = 0.0;
   while (! buffer_points_equal(current, start))
   {
     bool reverse = false;
-    int index = buffer_find_connected_piece(pieces, used, current, &reverse);
+    int index = buffer_find_connected_piece(pieces, used, current, -from_dx,
+      -from_dy, &reverse);
     if (index < 0)
     {
       lwgeom_free(lwcompound_as_lwgeom(curve));
@@ -2590,6 +2718,8 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, bool *used,
     meos_array_add(ordered, &oriented);
     used[(uint32_t) index] = true;
     current = buffer_piece_end(&oriented);
+    if (! buffer_piece_end_direction(&oriented, false, &from_dx, &from_dy))
+      from_dx = from_dy = 0.0;
   }
   return curve;
 }
@@ -3489,8 +3619,11 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
  * @p CL_DIFFERENCE
  * @param[out] touching Set when the two boundaries meet without their
  * interiors overlapping, which a union answers as two surfaces
+ * A stretch the two boundaries SHARE is bounded by the nodes at its ends, so
+ * it splits into a piece of its own and is placed like any other -- by the
+ * side each interior occupies rather than by a midpoint that lies on both.
  * @return The overlay, an EMPTY geometry where it covers nothing, or @p NULL
- * for a pair this does not answer -- boundaries that run along one another,
+ * for a pair this does not answer -- a shared piece whose sides do not resolve,
  * and a meeting that is not a crossing
  */
 static LWGEOM *
