@@ -106,17 +106,12 @@ def emit(name, T, wrapper, dist, periods):
     )
 
 
-def base_geo(T):
-    """Return the static geometry type matching a temporal geo type."""
-    return "geography" if T in ("tgeogpoint", "tgeography") else "geometry"
-
-
 def mindist_functions(types):
-    """Emit the set-set minDistance forms for the given temporal geo types.
+    """Emit the set-set minDistance form for the given temporal geo types.
 
-    The forms are the array-to-array minimum distance, the scalar overloads
-    against a static geometry (which reduce to the nearest-approach distance),
-    and the 2-ary aggregate over pairs of temporal values.
+    The array-to-array minimum distance is the whole surface: it answers the
+    minimum over every pair drawn from two sets, and a single pair is the
+    one-element case.
     """
     fns = []
     for T in types:
@@ -125,31 +120,6 @@ def mindist_functions(types):
             "  RETURNS float\n"
             "  AS 'MODULE_PATHNAME', 'Mindistance_tgeoarr_tgeoarr'\n"
             "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n" % (T, T)
-        )
-    for T in types:
-        geo = base_geo(T)
-        fns.append(
-            "CREATE FUNCTION minDistance(%s, %s)\n"
-            "  RETURNS float\n"
-            "  AS 'MODULE_PATHNAME', 'NAD_tgeo_geo'\n"
-            "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n"
-            "CREATE FUNCTION minDistance(%s, %s)\n"
-            "  RETURNS float\n"
-            "  AS 'MODULE_PATHNAME', 'NAD_geo_tgeo'\n"
-            "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n" % (T, geo, geo, T)
-        )
-    for T in types:
-        fns.append(
-            "CREATE FUNCTION minDistance_transfn(float, %s, %s)\n"
-            "  RETURNS float\n"
-            "  AS 'MODULE_PATHNAME', 'Mindistance_transfn'\n"
-            "  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n"
-            "CREATE AGGREGATE minDistance(%s, %s) (\n"
-            "  SFUNC = minDistance_transfn,\n"
-            "  STYPE = float,\n"
-            "  COMBINEFUNC = float8smaller,\n"
-            "  PARALLEL = SAFE\n"
-            ");\n" % (T, T, T, T)
         )
     return fns
 

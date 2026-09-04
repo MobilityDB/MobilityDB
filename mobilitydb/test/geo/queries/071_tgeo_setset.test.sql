@@ -34,14 +34,7 @@
 SELECT round(minDistance(
   ARRAY[tgeometry '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]'],
   ARRAY[tgeometry '[Point(0 5)@2001-01-01, Point(1 5)@2001-01-02]'])::numeric, 6);
-SELECT round(minDistance(
-  tgeometry '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Point(0 5)')::numeric, 6);
-SELECT round(minDistance(t1, t2)::numeric, 6) FROM (VALUES
-  (tgeometry '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]',
-   tgeometry '[Point(0 3)@2001-01-01, Point(1 3)@2001-01-02]'),
-  (tgeometry '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]',
-   tgeometry '[Point(0 2)@2001-01-01, Point(1 2)@2001-01-02]')) v(t1, t2);
--- Geodetic array and aggregate
+-- Geodetic array
 SELECT round(minDistance(
   ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]'],
   ARRAY[tgeography '[Point(0 2)@2001-01-01, Point(0 3)@2001-01-02]'])::numeric, 0);

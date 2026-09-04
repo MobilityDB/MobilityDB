@@ -158,99 +158,6 @@ SELECT round(tcbuffer 'Interp=Step;[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffe
 SELECT round(tcbuffer '{[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(3 10), 0.5)@2001-01-02], [Cbuffer(Point(50 20), 1)@2001-01-03, Cbuffer(Point(51 20), 1)@2001-01-04]}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
 
 -------------------------------------------------------------------------------
--- minDistance(tcbuffer, geometry) / (geometry, tcbuffer) -- scalar, reduces
--- to NAD when one side has no time dimension
--------------------------------------------------------------------------------
-
-SELECT round(minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(10 0), 0.5)@2001-01-02]', geometry 'Point(5 5)')::numeric, 6);
-SELECT round(minDistance(geometry 'Point(5 5)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(10 0), 0.5)@2001-01-02]')::numeric, 6);
--- Trajectory disc sweeps over the static point: distance 0
-SELECT minDistance(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-02]', geometry 'Point(5 0)');
--- Static polygon
-SELECT round(minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(2 2), 0.5)@2001-01-02]', geometry 'POLYGON((10 10, 20 10, 20 20, 10 20, 10 10))')::numeric, 6);
-
--------------------------------------------------------------------------------
--- minDistance(tcbuffer, cbuffer) / (cbuffer, tcbuffer) -- scalar
--------------------------------------------------------------------------------
-
-SELECT round(minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(10 0), 0.5)@2001-01-02]', cbuffer 'Cbuffer(Point(5 5), 1)')::numeric, 6);
-SELECT round(minDistance(cbuffer 'Cbuffer(Point(5 5), 1)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(10 0), 0.5)@2001-01-02]')::numeric, 6);
--- Moving disc closest to the static disc at (5,0): 5 - 1 (moving) - 2 (static) = 2
-SELECT round(cbuffer 'Cbuffer(Point(5 5), 2)' |=| tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-02]', 6);
-
--------------------------------------------------------------------------------
--- minDistance(tcbuffer, tcbuffer) -- 2-ary aggregate, time-agnostic spatial
--- min equivalent to ST_Distance(traversedArea, traversedArea)
--------------------------------------------------------------------------------
-
--- Aggregate over one row equals the per-pair value
-SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
-  SELECT tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(10 0), 0.5)@2001-01-02]' AS t1,
-         tcbuffer '[Cbuffer(Point(0 5), 0.5)@2001-01-01, Cbuffer(Point(10 5), 0.5)@2001-01-02]' AS t2) v;
-
--- Parallel segments, constant radius: gap is centerline gap minus both radii
-SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
-  SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(10 0), 1)@2001-01-02]' AS t1,
-         tcbuffer '[Cbuffer(Point(0 6), 1)@2001-01-01, Cbuffer(Point(10 6), 1)@2001-01-02]' AS t2) v;
-
--- Crossing centerlines, tapered radius: exercises the interior critical point
-SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
-  SELECT tcbuffer '[Cbuffer(Point(0 0), 0.2)@2001-01-01, Cbuffer(Point(10 10), 2.0)@2001-01-02]' AS t1,
-         tcbuffer '[Cbuffer(Point(0 10), 2.0)@2001-01-01, Cbuffer(Point(10 0), 0.2)@2001-01-02]' AS t2) v;
-
--- Overlapping swept discs: distance 0
-SELECT minDistance(t1, t2) FROM (
-  SELECT tcbuffer '[Cbuffer(Point(0 0), 2)@2001-01-01, Cbuffer(Point(10 0), 2)@2001-01-02]' AS t1,
-         tcbuffer '[Cbuffer(Point(5 0), 2)@2001-01-01, Cbuffer(Point(5 5), 2)@2001-01-02]' AS t2) v;
-
--- Instant vs sequence (TINSTANT dispatch)
-SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
-  SELECT tcbuffer 'Cbuffer(Point(5 5), 0.5)@2001-01-01' AS t1,
-         tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(10 0), 0.5)@2001-01-02]' AS t2) v;
-
--- Sequence set on both sides (TSEQUENCESET dispatch)
-SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
-  SELECT tcbuffer '{[Cbuffer(Point(0 0), 0.3)@2001-01-01, Cbuffer(Point(2 0), 0.3)@2001-01-02], [Cbuffer(Point(20 20), 0.3)@2001-01-04, Cbuffer(Point(22 20), 0.3)@2001-01-05]}' AS t1,
-         tcbuffer '{[Cbuffer(Point(0 4), 0.3)@2001-01-01, Cbuffer(Point(2 4), 0.3)@2001-01-02], [Cbuffer(Point(40 40), 0.3)@2001-01-04, Cbuffer(Point(42 40), 0.3)@2001-01-05]}' AS t2) v;
-
--- Aggregate over multiple rows: minimum across all per-pair distances
-WITH pairs(t1, t2) AS (VALUES
-  (tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]',
-   tcbuffer '[Cbuffer(Point(10 10), 0.5)@2001-01-01, Cbuffer(Point(11 11), 0.5)@2001-01-02]'),
-  (tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]',
-   tcbuffer '[Cbuffer(Point(0 5), 0.5)@2001-01-01, Cbuffer(Point(1 5), 0.5)@2001-01-02]'),
-  (tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]',
-   tcbuffer '[Cbuffer(Point(2 1), 0.5)@2001-01-01, Cbuffer(Point(2 2), 0.5)@2001-01-02]'))
-SELECT round(minDistance(t1, t2)::numeric, 6) FROM pairs;
-
--- Grouped: per-group minimum, exercises the running-threshold tightening
-WITH src(g, t1, t2) AS (VALUES
-  (1, tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]',
-      tcbuffer '[Cbuffer(Point(0 10), 0.5)@2001-01-01, Cbuffer(Point(1 10), 0.5)@2001-01-02]'),
-  (1, tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]',
-      tcbuffer '[Cbuffer(Point(0 5), 0.5)@2001-01-01, Cbuffer(Point(1 5), 0.5)@2001-01-02]'),
-  (2, tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]',
-      tcbuffer '[Cbuffer(Point(0 2), 0.5)@2001-01-01, Cbuffer(Point(1 2), 0.5)@2001-01-02]'))
-SELECT g, round(minDistance(t1, t2)::numeric, 6) FROM src GROUP BY g ORDER BY g;
-
--- Empty group returns NULL
-SELECT minDistance(t1, t2) FROM (
-  SELECT tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]' AS t1,
-         tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]' AS t2 WHERE false) v;
-
--- Agreement with ST_Distance over the traversed areas.  The kernel is the
--- exact circular-geometry minimum; traversedArea facets each arc into a
--- finite polygon, so the two agree only up to that polygonisation error
--- (here under 1e-3 for these small radii).
-WITH d(a, b) AS (
-  SELECT minDistance(t1, t2),
-         min(ST_Distance(traversedArea(t1), traversedArea(t2)))
-  FROM (
-    SELECT tcbuffer '[Cbuffer(Point(0 0), 0.4)@2001-01-01, Cbuffer(Point(8 3), 0.7)@2001-01-02, Cbuffer(Point(12 1), 0.5)@2001-01-03]' AS t1,
-           tcbuffer '[Cbuffer(Point(2 9), 0.6)@2001-01-01, Cbuffer(Point(9 7), 0.3)@2001-01-02, Cbuffer(Point(13 8), 0.5)@2001-01-03]' AS t2) v)
-SELECT abs(a - b) < 1e-3 FROM d;
-
--------------------------------------------------------------------------------
 -- nearestApproachInstant
 -------------------------------------------------------------------------------
 
@@ -329,14 +236,11 @@ SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(141.421
 -- A circular buffer as the other argument, in both orders. The distance between
 -- two buffers is the distance between their centres less both radii, so centres
 -- sqrt(2) apart with radii 0.5 and 0.7 give sqrt(2) - 0.5 - 0.7 = 0.214214
--- exactly, the two orders of a commutative operation agree, and minDistance --
--- which names the same kernel -- agrees with both.
+-- exactly, and the two orders of a commutative operation agree.
 SELECT round(nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2001-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)')::numeric, 6);
 SELECT round(nearestApproachDistance(cbuffer 'Cbuffer(Point(1 1), 0.7)', tcbuffer 'Cbuffer(Point(0 0), 0.5)@2001-01-01')::numeric, 6);
 SELECT nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2001-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)')
      = nearestApproachDistance(cbuffer 'Cbuffer(Point(1 1), 0.7)', tcbuffer 'Cbuffer(Point(0 0), 0.5)@2001-01-01');
-SELECT nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2001-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)')
-     = minDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2001-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)');
 -- A buffer beside the path: the distance is the centre distance less both radii
 SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01, Cbuffer(Point(4 0), 0.5)@2001-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)')::numeric, 6);
 

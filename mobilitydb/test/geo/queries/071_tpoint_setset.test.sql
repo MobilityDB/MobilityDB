@@ -34,23 +34,10 @@
 SELECT round(minDistance(
   ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]'],
   ARRAY[tgeompoint '[Point(0 5)@2001-01-01, Point(1 5)@2001-01-02]'])::numeric, 6);
--- Scalar overload against a static geometry (reduces to nearest-approach)
-SELECT round(minDistance(
-  tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Point(0 5)')::numeric, 6);
-SELECT round(minDistance(
-  geometry 'Point(0 5)', tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-02]')::numeric, 6);
--- 2-ary aggregate over pairs of temporal values
-SELECT round(minDistance(t1, t2)::numeric, 6) FROM (VALUES
-  (tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]',
-   tgeompoint '[Point(0 3)@2001-01-01, Point(1 3)@2001-01-02]'),
-  (tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]',
-   tgeompoint '[Point(0 2)@2001-01-01, Point(1 2)@2001-01-02]')) v(t1, t2);
--- Geodetic: array, scalar overload, aggregate
+-- Geodetic array
 SELECT round(minDistance(
   ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]'],
   ARRAY[tgeogpoint '[Point(0 2)@2001-01-01, Point(0 3)@2001-01-02]'])::numeric, 0);
-SELECT round(minDistance(
-  tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', geography 'Point(0 3)')::numeric, 0);
 
 -------------------------------------------------------------------------------
 -- Set-set spatial join: ever / always

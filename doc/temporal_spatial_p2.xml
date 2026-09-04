@@ -254,25 +254,17 @@ SELECT to_timestamp(ST_ClosestPointOfApproach( tgeompoint '[Point(0 0 0)@2001-01
 
 			<listitem xml:id="tgeo_minDistance">
 				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
-				<para>Return the minimum spatial distance between two temporal geometries, ignoring time</para>
+				<para>Return the minimum spatial distance between two sets of temporal geometries, ignoring time</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-minDistance({tgeo,geo},{tgeo,geo}) → float
 minDistance(tgeo[],tgeo[]) → float
-minDistance(tgeo,tgeo) → float
 </programlisting>
-				<para>The distance is measured between the two trajectories with time discarded, equal to <varname>ST_Distance</varname> of the trajectory of each argument. Two values that follow the same path at different times are therefore at distance zero. The time-synchronous quantity, which compares the two arguments only at the instants they share, is <link linkend="tgeo_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>. The array form generalises this to two sets of temporal geometries and returns the minimum across all pairs. The aggregate form, used with <varname>GROUP BY</varname>, returns the minimum distance reached over all aggregated pairs in the group.</para>
+				<para>The distance is measured between the trajectories with time discarded, equal to <varname>ST_Distance</varname> of the trajectory of each argument, and the result is the minimum over every pair drawn from the two sets. Two values that follow the same path at different times are therefore at distance zero. The time-synchronous quantity, which compares two arguments only at the instants they share, is <link linkend="tgeo_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>. A single pair is the one-element case.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT minDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
-  geometry 'Point(0 1)');
--- 0.707106781186548
 SELECT minDistance(ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
   tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03)'],
   ARRAY[tgeompoint '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-03)']);
 -- 0
-SELECT g, minDistance(t1.Trip, t2.Trip) FROM Trips t1, Trips t2, Groups g
-WHERE t1.GroupId = g AND t2.GroupId = g AND t1.TripId &lt; t2.TripId GROUP BY g;
 </programlisting>
-				<para>The aggregate form is well suited to BerlinMOD-style queries that compute the minimum approach distance between trip pairs grouped by license or vehicle class. On a single-row group the aggregate degenerates to the scalar minimum distance between the pair.</para>
 			</listitem>
 
 			<listitem xml:id="tgeo_setset_join">
