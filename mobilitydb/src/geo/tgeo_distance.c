@@ -455,28 +455,4 @@ Mindistance_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum Mindistance_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Mindistance_transfn);
-/**
- * @ingroup mobilitydb_geo_dist
- * @brief Aggregate transition function for the 2-ary `minDistance`
- * aggregate: threads the running min as the threshold into the
- * per-pair plane-sweep kernel
- * @sqlfn minDistance_transfn()
- * @sqlaggfn minDistance()
- */
-Datum
-Mindistance_transfn(PG_FUNCTION_ARGS)
-{
-  double state = PG_ARGISNULL(0) ? DBL_MAX : PG_GETARG_FLOAT8(0);
-  if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-    PG_RETURN_FLOAT8(state);
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(2);
-  double d = mindistance_tgeo_tgeo(temp1, temp2, state);
-  PG_FREE_IF_COPY(temp1, 1);
-  PG_FREE_IF_COPY(temp2, 2);
-  PG_RETURN_FLOAT8(d);
-}
-
 /*****************************************************************************/

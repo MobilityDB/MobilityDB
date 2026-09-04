@@ -46,46 +46,6 @@ CREATE FUNCTION minDistance(tgeography[], tgeography[])
   AS 'MODULE_PATHNAME', 'Mindistance_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minDistance(tgeometry, geometry)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_tgeo_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minDistance(geometry, tgeometry)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_geo_tgeo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION minDistance(tgeography, geography)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_tgeo_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minDistance(geography, tgeography)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_geo_tgeo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION minDistance_transfn(float, tgeometry, tgeometry)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Mindistance_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE minDistance(tgeometry, tgeometry) (
-  SFUNC = minDistance_transfn,
-  STYPE = float,
-  COMBINEFUNC = float8smaller,
-  PARALLEL = SAFE
-);
-
-CREATE FUNCTION minDistance_transfn(float, tgeography, tgeography)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Mindistance_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE minDistance(tgeography, tgeography) (
-  SFUNC = minDistance_transfn,
-  STYPE = float,
-  COMBINEFUNC = float8smaller,
-  PARALLEL = SAFE
-);
-
 CREATE FUNCTION eDwithinPairs(tgeometry[], tgeometry[], dist float,
     OUT i integer, OUT j integer)
   RETURNS setof record
