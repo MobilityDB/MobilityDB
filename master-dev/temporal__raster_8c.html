@@ -75,26 +75,21 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">temporal_raster.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>C implementation of <a class="el" href="group__meos__raster_ga3f954c8594d253d7ecc6677e8fdeabc6.html#ga3f954c8594d253d7ecc6677e8fdeabc6" title="Return the values of a raster sampled at the instants of a trajectory.">raster_value()</a> — PostGIS raster band sampling along tgeompoint trajectories.  
+<p>PostgreSQL functions of the raster sampling operators.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;math.h&gt;</code><br />
-<code>#include &lt;postgres.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
 <code>#include &lt;utils/array.h&gt;</code><br />
-<code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__raster_8h_source.html">meos_raster.h</a>&gt;</code><br />
 <code>#include &lt;pgtypes.h&gt;</code><br />
 <code>#include &quot;temporal/span.h&quot;</code><br />
-<code>#include &quot;temporal/tinstant.h&quot;</code><br />
-<code>#include &quot;temporal/tsequence.h&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="raquet_8h_source.html">raster/raquet.h</a>&quot;</code><br />
@@ -111,11 +106,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gae9c9098c8219a9092c10f057e69f3f06"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__raster_gae9c9098c8219a9092c10f057e69f3f06.html#gae9c9098c8219a9092c10f057e69f3f06">Eraster_value</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gae9c9098c8219a9092c10f057e69f3f06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a trajectory ever samples a raster pixel value inside a float range.  <a href="group__mobilitydb__raster_gae9c9098c8219a9092c10f057e69f3f06.html#gae9c9098c8219a9092c10f057e69f3f06">More...</a><br /></td></tr>
 <tr class="separator:gae9c9098c8219a9092c10f057e69f3f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae9be7db2121c6df4ebdbdfaec10c89da"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_ae9be7db2121c6df4ebdbdfaec10c89da.html#ae9be7db2121c6df4ebdbdfaec10c89da">init_oids</a> (void)</td></tr>
-<tr class="separator:ae9be7db2121c6df4ebdbdfaec10c89da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a917d86a5cb7eadfc7427feec28a65001"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_a917d86a5cb7eadfc7427feec28a65001.html#a917d86a5cb7eadfc7427feec28a65001">lookup_func_oid</a> (const char *signature)</td></tr>
-<tr class="memdesc:a917d86a5cb7eadfc7427feec28a65001"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the OID of a function identified by its SQL signature string.  <a href="temporal__raster_8c_a917d86a5cb7eadfc7427feec28a65001.html#a917d86a5cb7eadfc7427feec28a65001">More...</a><br /></td></tr>
-<tr class="separator:a917d86a5cb7eadfc7427feec28a65001"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad87935ae5d6d320ce16d29468de29622"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__raster_gad87935ae5d6d320ce16d29468de29622.html#gad87935ae5d6d320ce16d29468de29622">Raquet_as_hexwkb</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gad87935ae5d6d320ce16d29468de29622"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the ASCII hex-encoded Well-Known Binary (HexWKB) representation of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile @sqlfn asHexWKB()  <a href="group__mobilitydb__raster_gad87935ae5d6d320ce16d29468de29622.html#gad87935ae5d6d320ce16d29468de29622">More...</a><br /></td></tr>
 <tr class="separator:gad87935ae5d6d320ce16d29468de29622"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -203,9 +193,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga62dd24fd24b3e60b02e6a577c6eac980"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__raster_ga62dd24fd24b3e60b02e6a577c6eac980.html#ga62dd24fd24b3e60b02e6a577c6eac980">Raster_num_bands</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga62dd24fd24b3e60b02e6a577c6eac980"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of bands of a raster.  <a href="group__mobilitydb__raster_ga62dd24fd24b3e60b02e6a577c6eac980.html#ga62dd24fd24b3e60b02e6a577c6eac980">More...</a><br /></td></tr>
 <tr class="separator:ga62dd24fd24b3e60b02e6a577c6eac980"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad36fde1b63cc87f547cc56f6ed024935"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_ad36fde1b63cc87f547cc56f6ed024935.html#ad36fde1b63cc87f547cc56f6ed024935">raster_st_value_sample</a> (void *ctx, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *point, double *value)</td></tr>
-<tr class="memdesc:ad36fde1b63cc87f547cc56f6ed024935"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raster sampling callback backed by PostGIS raster's ST_Value: the context is a prepared FunctionCallInfo whose raster/band/nodata/resample arguments are constant, only the point argument varies per call.  <a href="temporal__raster_8c_ad36fde1b63cc87f547cc56f6ed024935.html#ad36fde1b63cc87f547cc56f6ed024935">More...</a><br /></td></tr>
-<tr class="separator:ad36fde1b63cc87f547cc56f6ed024935"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf0323c7209a520ec3dae3743a04ac175"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__raster_gaf0323c7209a520ec3dae3743a04ac175.html#gaf0323c7209a520ec3dae3743a04ac175">Raster_tile_value</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gaf0323c7209a520ec3dae3743a04ac175"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sample a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile along a tgeompoint trajectory.  <a href="group__mobilitydb__raster_gaf0323c7209a520ec3dae3743a04ac175.html#gaf0323c7209a520ec3dae3743a04ac175">More...</a><br /></td></tr>
 <tr class="separator:gaf0323c7209a520ec3dae3743a04ac175"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -218,31 +205,16 @@ Functions</h2></td></tr>
 <tr class="memitem:gad0c70f99b636a9ede4a0918e33b9e808"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__raster_gad0c70f99b636a9ede4a0918e33b9e808.html#gad0c70f99b636a9ede4a0918e33b9e808">Raster_value</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gad0c70f99b636a9ede4a0918e33b9e808"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the values of a raster band sampled at the instants of a trajectory.  <a href="group__mobilitydb__raster_gad0c70f99b636a9ede4a0918e33b9e808.html#gad0c70f99b636a9ede4a0918e33b9e808">More...</a><br /></td></tr>
 <tr class="separator:gad0c70f99b636a9ede4a0918e33b9e808"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3044ebe933a3d396571df4b1c83eedfe"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_a3044ebe933a3d396571df4b1c83eedfe.html#a3044ebe933a3d396571df4b1c83eedfe">raster_value_setup</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> rast_datum, int32 band, <a class="el" href="structSTBox.html">STBox</a> *box, FunctionCallInfo fcinfo_val)</td></tr>
-<tr class="memdesc:a3044ebe933a3d396571df4b1c83eedfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the convex-hull <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> pre-filter and the reusable ST_Value FunctionCallInfo shared by every raster sampling/restriction/predicate wrapper.  <a href="temporal__raster_8c_a3044ebe933a3d396571df4b1c83eedfe.html#a3044ebe933a3d396571df4b1c83eedfe">More...</a><br /></td></tr>
-<tr class="separator:a3044ebe933a3d396571df4b1c83eedfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf591719978f28de933370efdc49276b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_aaf591719978f28de933370efdc49276b.html#aaf591719978f28de933370efdc49276b">regprocedurein</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="separator:aaf591719978f28de933370efdc49276b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79e095e85106757b7e4da7bad4767f47"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_a79e095e85106757b7e4da7bad4767f47.html#a79e095e85106757b7e4da7bad4767f47">text_to_pixtype</a> (const <a class="el" href="postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1">text</a> *pt)</td></tr>
 <tr class="memdesc:a79e095e85106757b7e4da7bad4767f47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map a pixtype name text argument to a MeosPixType code.  <a href="temporal__raster_8c_a79e095e85106757b7e4da7bad4767f47.html#a79e095e85106757b7e4da7bad4767f47">More...</a><br /></td></tr>
 <tr class="separator:a79e095e85106757b7e4da7bad4767f47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5a84025ae3b110fb38f4c2a1cf3730f9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__raster_ga5a84025ae3b110fb38f4c2a1cf3730f9.html#ga5a84025ae3b110fb38f4c2a1cf3730f9">Trajectory_quadbins</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga5a84025ae3b110fb38f4c2a1cf3730f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distinct QUADBIN cells at a zoom level covered by a trajectory, for use as a WHERE-clause join key against a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> table.  <a href="group__mobilitydb__raster_ga5a84025ae3b110fb38f4c2a1cf3730f9.html#ga5a84025ae3b110fb38f4c2a1cf3730f9">More...</a><br /></td></tr>
 <tr class="separator:ga5a84025ae3b110fb38f4c2a1cf3730f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:ae4055b01e5263a93fbd6ed1736b2949f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_ae4055b01e5263a93fbd6ed1736b2949f.html#ae4055b01e5263a93fbd6ed1736b2949f">st_convexhull_raster_oid</a> = InvalidOid</td></tr>
-<tr class="memdesc:ae4055b01e5263a93fbd6ed1736b2949f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cached OID for ST_ConvexHull(raster) → geometry.  <a href="temporal__raster_8c_ae4055b01e5263a93fbd6ed1736b2949f.html#ae4055b01e5263a93fbd6ed1736b2949f">More...</a><br /></td></tr>
-<tr class="separator:ae4055b01e5263a93fbd6ed1736b2949f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4d7085aa36fbb34dba63eaf9834cc2e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_ab4d7085aa36fbb34dba63eaf9834cc2e.html#ab4d7085aa36fbb34dba63eaf9834cc2e">st_value_oid</a> = InvalidOid</td></tr>
-<tr class="memdesc:ab4d7085aa36fbb34dba63eaf9834cc2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cached OID for ST_Value(raster, integer, geometry, boolean) → float8.  <a href="temporal__raster_8c_ab4d7085aa36fbb34dba63eaf9834cc2e.html#ab4d7085aa36fbb34dba63eaf9834cc2e">More...</a><br /></td></tr>
-<tr class="separator:ab4d7085aa36fbb34dba63eaf9834cc2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >C implementation of <a class="el" href="group__meos__raster_ga3f954c8594d253d7ecc6677e8fdeabc6.html#ga3f954c8594d253d7ecc6677e8fdeabc6" title="Return the values of a raster sampled at the instants of a trajectory.">raster_value()</a> — PostGIS raster band sampling along tgeompoint trajectories. </p>
-<p >The function iterates over the instants of the trajectory in C, filters out-of-range positions with a bounding-box pre-check derived from the raster's convex hull, calls PostGIS ST_Value() for each in-range instant, and assembles the surviving (value, timestamp) pairs directly into a heap-allocated <a class="el" href="structTSequence.html" title="Structure to represent temporal values of sequence subtype.">TSequence</a> (DISCRETE interpolation), bypassing the SQL string_agg / to_char / text→tfloat pipeline.</p>
-<p >PostGIS raster internals (rt_api.h) are not exported from postgis_raster-3.so. The implementation therefore calls the published SQL surface (ST_ConvexHull, ST_Value) via PostgreSQL's OidFunctionCall mechanism, resolving OIDs once per session through regprocedurein. </p>
+<div class="textblock"><p >PostgreSQL functions of the raster sampling operators. </p>
+<p >The wrappers pass their arguments to MEOS, which samples a PostGIS raster through the vendored raster core: a <code>raster</code> column is detoasted into the serialized form the MEOS functions take, so the operators answer the same values to every binding of the library and not to PostgreSQL alone. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

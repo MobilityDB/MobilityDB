@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">raster_quadbin.h File Reference</div></div>
 </div><!--header-->
@@ -83,12 +84,31 @@ $(function() {
 <p>Internal header for QUADBIN-keyed raster chip sampling.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__raster_8h_source.html">meos_raster.h</a>&gt;</code><br />
 </div>
 <p><a href="raster__quadbin_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ad1d2107f437db77a74b9e4ae942b1bc6"><td class="memItemLeft" align="right" valign="top">typedef bool(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a>) (void *ctx, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *point, double *value)</td></tr>
+<tr class="memdesc:ad1d2107f437db77a74b9e4ae942b1bc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback returning the raster pixel value at a point: return true and set <code>value</code>, or return false when the point lies outside the raster or on a nodata pixel.  <a href="raster__quadbin_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">More...</a><br /></td></tr>
+<tr class="separator:ad1d2107f437db77a74b9e4ae942b1bc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:afb5c38007b0118631db9cb8e650b85c4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8h_afb5c38007b0118631db9cb8e650b85c4.html#afb5c38007b0118631db9cb8e650b85c4">araster_value_sampler</a> (const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSTBox.html">STBox</a> *box, <a class="el" href="raster__quadbin_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a> sample, void *ctx, const <a class="el" href="structSpan.html">Span</a> *vspan)</td></tr>
+<tr class="memdesc:afb5c38007b0118631db9cb8e650b85c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if every in-raster-extent instant of a trajectory samples a pixel value inside a float span.  <a href="raster__quadbin_8h_afb5c38007b0118631db9cb8e650b85c4.html#afb5c38007b0118631db9cb8e650b85c4">More...</a><br /></td></tr>
+<tr class="separator:afb5c38007b0118631db9cb8e650b85c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac70f16baad58434fabcb9cdc8a3a7782"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8h_ac70f16baad58434fabcb9cdc8a3a7782.html#ac70f16baad58434fabcb9cdc8a3a7782">eraster_value_sampler</a> (const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSTBox.html">STBox</a> *box, <a class="el" href="raster__quadbin_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a> sample, void *ctx, const <a class="el" href="structSpan.html">Span</a> *vspan)</td></tr>
+<tr class="memdesc:ac70f16baad58434fabcb9cdc8a3a7782"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a trajectory ever samples a raster pixel value inside a float span.  <a href="raster__quadbin_8h_ac70f16baad58434fabcb9cdc8a3a7782.html#ac70f16baad58434fabcb9cdc8a3a7782">More...</a><br /></td></tr>
+<tr class="separator:ac70f16baad58434fabcb9cdc8a3a7782"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26bd497d333f8ecd7436b21532fbe4b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8h_a26bd497d333f8ecd7436b21532fbe4b2.html#a26bd497d333f8ecd7436b21532fbe4b2">raster_at_value_sampler</a> (const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSTBox.html">STBox</a> *box, <a class="el" href="raster__quadbin_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a> sample, void *ctx, const <a class="el" href="structSpan.html">Span</a> *vspan)</td></tr>
+<tr class="memdesc:a26bd497d333f8ecd7436b21532fbe4b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a trajectory restricted to the instants where the sampled raster pixel value falls inside a float span.  <a href="raster__quadbin_8h_a26bd497d333f8ecd7436b21532fbe4b2.html#a26bd497d333f8ecd7436b21532fbe4b2">More...</a><br /></td></tr>
+<tr class="separator:a26bd497d333f8ecd7436b21532fbe4b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7706fa89d3c13e8e57cd7f59d5f159c1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8h_a7706fa89d3c13e8e57cd7f59d5f159c1.html#a7706fa89d3c13e8e57cd7f59d5f159c1">raster_minus_value_sampler</a> (const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSTBox.html">STBox</a> *box, <a class="el" href="raster__quadbin_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a> sample, void *ctx, const <a class="el" href="structSpan.html">Span</a> *vspan)</td></tr>
+<tr class="memdesc:a7706fa89d3c13e8e57cd7f59d5f159c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a trajectory restricted to the instants where the sampled raster pixel value falls outside a float span.  <a href="raster__quadbin_8h_a7706fa89d3c13e8e57cd7f59d5f159c1.html#a7706fa89d3c13e8e57cd7f59d5f159c1">More...</a><br /></td></tr>
+<tr class="separator:a7706fa89d3c13e8e57cd7f59d5f159c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf3f3f250d1f143ef97f65dc904c4b40"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8h_acf3f3f250d1f143ef97f65dc904c4b40.html#acf3f3f250d1f143ef97f65dc904c4b40">raster_quadbin_bounds</a> (uint64 cell, double *xmin, double *ymin, double *xmax, double *ymax)</td></tr>
 <tr class="memdesc:acf3f3f250d1f143ef97f65dc904c4b40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the WGS-84 bounding box of the tile identified by a QUADBIN cell.  <a href="raster__quadbin_8h_acf3f3f250d1f143ef97f65dc904c4b40.html#acf3f3f250d1f143ef97f65dc904c4b40">More...</a><br /></td></tr>
 <tr class="separator:acf3f3f250d1f143ef97f65dc904c4b40"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -98,6 +118,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ac18e1d3cea95768bc5975eb8ede0c6e2"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8h_ac18e1d3cea95768bc5975eb8ede0c6e2.html#ac18e1d3cea95768bc5975eb8ede0c6e2">raster_quadbin_zoom</a> (uint64 cell)</td></tr>
 <tr class="memdesc:ac18e1d3cea95768bc5975eb8ede0c6e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the zoom level of the tile identified by a QUADBIN cell.  <a href="raster__quadbin_8h_ac18e1d3cea95768bc5975eb8ede0c6e2.html#ac18e1d3cea95768bc5975eb8ede0c6e2">More...</a><br /></td></tr>
 <tr class="separator:ac18e1d3cea95768bc5975eb8ede0c6e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39014e5cb0d6f4a6b2a715ce749acd8c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8h_a39014e5cb0d6f4a6b2a715ce749acd8c.html#a39014e5cb0d6f4a6b2a715ce749acd8c">raster_value_sampler</a> (const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSTBox.html">STBox</a> *box, <a class="el" href="raster__quadbin_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a> sample, void *ctx)</td></tr>
+<tr class="memdesc:a39014e5cb0d6f4a6b2a715ce749acd8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the values of a raster sampled at the instants of a trajectory.  <a href="raster__quadbin_8h_a39014e5cb0d6f4a6b2a715ce749acd8c.html#a39014e5cb0d6f4a6b2a715ce749acd8c">More...</a><br /></td></tr>
+<tr class="separator:a39014e5cb0d6f4a6b2a715ce749acd8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Internal header for QUADBIN-keyed raster chip sampling. </p>
