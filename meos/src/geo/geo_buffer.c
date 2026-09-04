@@ -4910,8 +4910,19 @@ buffer_is_areal_geometry(const LWGEOM *geom)
   uint8_t type = geom->type;
   if (type == POLYGONTYPE || type == CURVEPOLYTYPE || type == TRIANGLETYPE)
     return true;
+  /* A TIN and a polyhedral surface are collections of faces -- triangles and
+   * polygons -- so what they draw is read the same way their multi- siblings
+   * are, member by member. ⛔ Only where they are FLAT: both types name a
+   * surface in space as readily as a region of the plane, and the faces of a
+   * surface in space do not bound one region between them, so a Z one is not
+   * a geometry this reads. The multi- siblings carry elevations on a planar
+   * region instead, which is why the test is on these two types */
+  if ((type == TINTYPE || type == POLYHEDRALSURFACETYPE) &&
+      FLAGS_GET_Z(geom->flags))
+    return false;
   if (type != MULTIPOLYGONTYPE && type != MULTISURFACETYPE &&
-      type != COLLECTIONTYPE)
+      type != COLLECTIONTYPE && type != TINTYPE &&
+      type != POLYHEDRALSURFACETYPE)
     return false;
   const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
   if (coll->ngeoms == 0)
@@ -5050,6 +5061,36 @@ meos_areal_union(const LWGEOM *geom)
 }
 
 /**
+ * @brief Return a geometry as the surfaces its parts COVER, or NULL where it
+ * is one surface already
+ * @details A geometry of several parts can carry an edge two of them SHARE,
+ * and such an edge bounds nothing: it is interior to the region the parts
+ * cover together. A boundary walk meets it twice and has no way to know that,
+ * so it splits one region into the parts the geometry happens to be written
+ * as -- two triangles of a TIN meeting along a diagonal come back as two
+ * triangles rather than the square they cover. Dissolving the parts first
+ * removes the edge, and #meos_areal_union is the dissolve the buffer of a
+ * geometry of several components already performs
+ * @param[in] geom Areal geometry
+ * @param[out] dissolved The dissolved geometry, owned by the caller, or NULL
+ * where the geometry is a single surface and carries no shared edge
+ * @return False where the parts do not dissolve, which is a geometry this
+ * does not answer
+ */
+static bool
+buffer_areal_dissolve(const LWGEOM *geom, LWGEOM **dissolved)
+{
+  assert(geom); assert(dissolved);
+  *dissolved = NULL;
+  uint8_t type = geom->type;
+  /* One surface shares an edge with nothing */
+  if (type == POLYGONTYPE || type == CURVEPOLYTYPE || type == TRIANGLETYPE)
+    return true;
+  *dissolved = meos_areal_union(geom);
+  return *dissolved != NULL;
+}
+
+/**
  * @brief Answer a Boolean operation on two areal geometries
  * @details The operands are read as the surfaces they draw and the answer is
  * built from their two boundaries, so an operand bounded by circular arcs is
@@ -5082,8 +5123,23 @@ buffer_areal_operation(const LWGEOM *geom1, const LWGEOM *geom2,
   if (! buffer_is_areal_geometry(geom1) || ! buffer_is_areal_geometry(geom2))
     return NULL;
 
+  /* The parts of each operand are dissolved into the surfaces they cover, so
+   * that an edge two of them share is gone before the boundary walk meets it */
+  LWGEOM *dis1 = NULL, *dis2 = NULL;
+  if (! buffer_areal_dissolve(geom1, &dis1) ||
+      ! buffer_areal_dissolve(geom2, &dis2))
+  {
+    if (dis1) lwgeom_free(dis1);
+    if (dis2) lwgeom_free(dis2);
+    return NULL;
+  }
+  const LWGEOM *op1 = dis1 ? dis1 : geom1;
+  const LWGEOM *op2 = dis2 ? dis2 : geom2;
+
   bool touching;
-  LWGEOM *result = buffer_areal_overlay(geom1, geom2, oper, &touching);
+  LWGEOM *result = buffer_areal_overlay(op1, op2, oper, &touching);
+  if (dis1) lwgeom_free(dis1);
+  if (dis2) lwgeom_free(dis2);
   if (! result)
     return NULL;
 
