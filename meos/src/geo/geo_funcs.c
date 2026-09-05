@@ -2859,6 +2859,17 @@ geo_extract_elements(const GSERIALIZED *gs, int *count)
   /* Extract the elements of the arguments, if they are collections */
   LWCOLLECTION *coll;
   GSERIALIZED **result = NULL;
+  /* An empty geometry holds no element, and it is neither unitary --
+   * #geo_is_unitary refuses an empty one deliberately -- nor necessarily a
+   * collection, so without this it reaches the collection arm below and
+   * #lwgeom_as_lwcollection answers NULL for the POINT, LINESTRING or POLYGON
+   * it is. The array is still allocated because every caller releases it with
+   * #pfree_array, which asserts the pointer it is given */
+  if (gserialized_is_empty(gs))
+  {
+    *count = 0;
+    return palloc(sizeof(GSERIALIZED *));
+  }
   if (geo_is_unitary(gs))
   {
     *count = 1;
