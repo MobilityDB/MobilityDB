@@ -589,12 +589,17 @@ buffer_geometries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
           b->etype != EDGE_LINEARC && b->etype != EDGE_LINESEG)
         continue;
 
-      /* Two edges whose boxes lie apart cannot meet; the box each edge
-       * carries covers an arc's bulge as well as a segment's endpoints */
-      if (a->xmax < b->xmin - MEOS_GEOM_TOLERANCE ||
-          b->xmax < a->xmin - MEOS_GEOM_TOLERANCE ||
-          a->ymax < b->ymin - MEOS_GEOM_TOLERANCE ||
-          b->ymax < a->ymin - MEOS_GEOM_TOLERANCE)
+      /* Two edges whose boxes lie apart cannot meet. The band is the one the
+       * meeting test itself works to: each Edge carries the tolerance
+       * #edge_set_tolerance reads off its OWN coordinates, so the reject and
+       * the kernel behind it ask one question. Bounding the reject tighter --
+       * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
+       * orders of magnitude smaller -- discards pairs the kernel answers */
+      double band = fmax(fmax(a->tol, b->tol), MEOS_GEOM_TOLERANCE);
+      if (a->xmax < b->xmin - band ||
+          b->xmax < a->xmin - band ||
+          a->ymax < b->ymin - band ||
+          b->ymax < a->ymin - band)
         continue;
 
       /* Line / line */
@@ -759,12 +764,17 @@ buffer_boundaries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
       const Edge *e2 = (const Edge *) meos_array_get(a2, j);
       if (! e2)
         continue;
-      /* Two edges whose boxes lie apart cannot meet; the box each edge
-       * carries covers an arc's bulge as well as a segment's endpoints */
-      if (e1->xmax < e2->xmin - MEOS_GEOM_TOLERANCE ||
-          e2->xmax < e1->xmin - MEOS_GEOM_TOLERANCE ||
-          e1->ymax < e2->ymin - MEOS_GEOM_TOLERANCE ||
-          e2->ymax < e1->ymin - MEOS_GEOM_TOLERANCE)
+      /* Two edges whose boxes lie apart cannot meet. The band is the one the
+       * meeting test itself works to: each Edge carries the tolerance
+       * #edge_set_tolerance reads off its OWN coordinates, so the reject and
+       * the kernel behind it ask one question. Bounding the reject tighter --
+       * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
+       * orders of magnitude smaller -- discards pairs the kernel answers */
+      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      if (e1->xmax < e2->xmin - band ||
+          e2->xmax < e1->xmin - band ||
+          e1->ymax < e2->ymin - band ||
+          e2->ymax < e1->ymin - band)
         continue;
       if (buffer_edges_intersect(e1, e2))
       {
@@ -1122,6 +1132,14 @@ buffer_boundary_self_intersects(const LWGEOM *geom)
        * end point instead meet where the boundary touches itself. */
       if (buffer_nodes_equal(e1->x2, e1->y2, e2->x1, e2->y1) ||
           buffer_nodes_equal(e2->x2, e2->y2, e1->x1, e1->y1))
+        continue;
+      /* Two edges whose boxes lie apart cannot meet, read at the band the
+       * meeting test itself works to */
+      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      if (e1->xmax < e2->xmin - band ||
+          e2->xmax < e1->xmin - band ||
+          e1->ymax < e2->ymin - band ||
+          e2->ymax < e1->ymin - band)
         continue;
       if (buffer_boundary_intersection(e1, e2) >= 0)
       {
@@ -2445,16 +2463,17 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
       const Edge *e2 = (const Edge *) meos_array_get(a2, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
         continue;
-      /* Two edges whose boxes lie apart cannot meet, and the box each edge
-       * carries is EXACT for its kind: the endpoints for a segment, and for an
-       * arc #arc_set_bbox spans the endpoints together with whichever of the
-       * four cardinal extremes the arc's angular span reaches, so it covers
-       * the bulge rather than the chord. The same four comparisons stand in
-       * front of the relate engine's own edge walk in #relate_edges_meet_any */
-      if (e1->xmax < e2->xmin - MEOS_GEOM_TOLERANCE ||
-          e2->xmax < e1->xmin - MEOS_GEOM_TOLERANCE ||
-          e1->ymax < e2->ymin - MEOS_GEOM_TOLERANCE ||
-          e2->ymax < e1->ymin - MEOS_GEOM_TOLERANCE)
+      /* Two edges whose boxes lie apart cannot meet. The band is the one the
+       * meeting test itself works to: each Edge carries the tolerance
+       * #edge_set_tolerance reads off its OWN coordinates, so the reject and
+       * the kernel behind it ask one question. Bounding the reject tighter --
+       * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
+       * orders of magnitude smaller -- discards pairs the kernel answers */
+      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      if (e1->xmax < e2->xmin - band ||
+          e2->xmax < e1->xmin - band ||
+          e1->ymax < e2->ymin - band ||
+          e2->ymax < e1->ymin - band)
         continue;
       /* The existing intersection collectors expect MeosArray, and each
        * appends to what it is given, so the pair starts from an empty one */
@@ -3725,6 +3744,14 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
       const Edge *e2 = (const Edge *) meos_array_get(a2, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
         continue;
+      /* Two edges whose boxes lie apart cannot meet, read at the band the
+       * meeting test itself works to */
+      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      if (e1->xmax < e2->xmin - band ||
+          e2->xmax < e1->xmin - band ||
+          e1->ymax < e2->ymin - band ||
+          e2->ymax < e1->ymin - band)
+        continue;
       int dimension = buffer_boundary_intersection(e1, e2);
 
       /* A curve the two boundaries share is bounded by two nodes, so it splits
@@ -4848,12 +4875,17 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
       const Edge *e2 = (const Edge *) meos_array_get(arr, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
         continue;
-      /* Two edges whose boxes lie apart cannot meet; the box each edge
-       * carries covers an arc's bulge as well as a segment's endpoints */
-      if (e1->xmax < e2->xmin - MEOS_GEOM_TOLERANCE ||
-          e2->xmax < e1->xmin - MEOS_GEOM_TOLERANCE ||
-          e1->ymax < e2->ymin - MEOS_GEOM_TOLERANCE ||
-          e2->ymax < e1->ymin - MEOS_GEOM_TOLERANCE)
+      /* Two edges whose boxes lie apart cannot meet. The band is the one the
+       * meeting test itself works to: each Edge carries the tolerance
+       * #edge_set_tolerance reads off its OWN coordinates, so the reject and
+       * the kernel behind it ask one question. Bounding the reject tighter --
+       * by an absolute MEOS_GEOM_TOLERANCE, which at projected coordinates is
+       * orders of magnitude smaller -- discards pairs the kernel answers */
+      double band = fmax(fmax(e1->tol, e2->tol), MEOS_GEOM_TOLERANCE);
+      if (e1->xmax < e2->xmin - band ||
+          e2->xmax < e1->xmin - band ||
+          e1->ymax < e2->ymin - band ||
+          e2->ymax < e1->ymin - band)
         continue;
       /* #buffer_add_intersection_point scans up to the count to reject a
        * duplicate before adding, so a pair must start from an empty array or
