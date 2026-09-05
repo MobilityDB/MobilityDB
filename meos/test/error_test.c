@@ -328,6 +328,65 @@ int main(void)
   free(magg1); free(magg2);
   meos_errno_reset();
 
+  /* A sequence set is held to ONE temporal type. tsequenceset_make_exp labels
+   * the result with the type of the FIRST sequence and sizes its bounding box
+   * from it, and tseqarr_compute_bbox then dispatches on that type and reads
+   * every other sequence's box as if it were the same. A TBox is 56 bytes and
+   * an STBox 80, so a mixed array reads past what it owns. The array reaches
+   * this entry only from a caller building it directly: the SQL constructors
+   * take a homogeneous array of a single type */
+  meos_errno_reset();
+  Temporal *mixf = tfloat_in("[1@2001-01-01, 2@2001-01-02]");
+  Temporal *mixi = tint_in("[1@2001-01-03, 2@2001-01-04]");
+  Temporal *mixg = tgeompoint_in("[Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]");
+  Temporal *mixf2 = tfloat_in("[3@2001-01-03, 4@2001-01-04]");
+  Temporal *mixg2 = tgeompoint_in("[Point(3 3)@2001-01-05, Point(4 4)@2001-01-06]");
+  assert(mixf && mixi && mixg && mixf2 && mixg2 && meos_errno() == 0);
+
+  /* A number beside a number of another type, in both orders: neither
+   * operand's position makes the pair acceptable */
+  TSequence *mix_fi[2] = { (TSequence *) mixf, (TSequence *) mixi };
+  assert(tsequenceset_make(mix_fi, 2, false) == NULL);
+  printf("tsequenceset_make({tfloat, tint}): declined, errno %d\n",
+    meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+
+  TSequence *mix_if[2] = { (TSequence *) mixi, (TSequence *) mixf };
+  assert(tsequenceset_make(mix_if, 2, false) == NULL);
+  printf("tsequenceset_make({tint, tfloat}): declined, errno %d\n",
+    meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+
+  /* The pair whose boxes are of DIFFERENT SIZE, which is what a read past the
+   * allocation needs */
+  TSequence *mix_fg[2] = { (TSequence *) mixf, (TSequence *) mixg };
+  assert(tsequenceset_make(mix_fg, 2, false) == NULL);
+  printf("tsequenceset_make({tfloat, tgeompoint}): declined, errno %d\n",
+    meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+
+  /* The controls, without which a block expecting only refusals cannot fail:
+   * each type paired with ITSELF is built rather than declined */
+  TSequence *same_f[2] = { (TSequence *) mixf, (TSequence *) mixf2 };
+  TSequenceSet *ss_f = tsequenceset_make(same_f, 2, false);
+  printf("tsequenceset_make({tfloat, tfloat}): %s, errno %d\n",
+    ss_f ? "built" : "NULL", meos_errno());
+  assert(ss_f != NULL && meos_errno() == 0);
+  free(ss_f);
+
+  TSequence *same_g[2] = { (TSequence *) mixg, (TSequence *) mixg2 };
+  TSequenceSet *ss_g = tsequenceset_make(same_g, 2, false);
+  printf("tsequenceset_make({tgeompoint, tgeompoint}): %s, errno %d\n",
+    ss_g ? "built" : "NULL", meos_errno());
+  assert(ss_g != NULL && meos_errno() == 0);
+  free(ss_g);
+
+  free(mixf); free(mixi); free(mixg); free(mixf2); free(mixg2);
+  meos_errno_reset();
+
   free(tpt1); free(tpt2);
 
   meos_errno_reset();
