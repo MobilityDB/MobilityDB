@@ -192,7 +192,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the array of <b>pointers</b> to the base values of a temporal value. </p>
+<p>Return the array of <b>pointers</b> to the <b>distinct</b> base values of a temporal value, <b>sorted</b> by base type order. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
@@ -200,6 +200,7 @@ $(function() {
   </table>
   </dd>
 </dl>
+<dl class="section post"><dt>Postcondition</dt><dd>The output array is sorted and holds no duplicate, which each of the three subtype functions establishes: <a class="el" href="group__meos__internal__temporal__accessor_ga1f03af594d8f6f2a17ad147e76e87d43.html#ga1f03af594d8f6f2a17ad147e76e87d43" title="Return the singleton (pointer to the) base value of a temporal instant.">tinstant_values_p</a> returns a single value, and <a class="el" href="group__meos__internal__temporal__accessor_gaa3c688cbe7f0d5b7994f43e7fa01272f.html#gaa3c688cbe7f0d5b7994f43e7fa01272f" title="Return the array of (pointer to the) distinct values of a temporal sequence.">tsequence_values_p</a> and <a class="el" href="group__meos__internal__temporal__accessor_gacbc1542a733a38e2e360a68746e23139.html#gacbc1542a733a38e2e360a68746e23139" title="Return the array of (pointers to the) distinct values of a temporal sequence set.">tsequenceset_values_p</a> both sort the values they collect and remove the duplicates </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__meos__internal__temporal__accessor_ga439245a99f826df3f3cb0faa93fafd3a.html#ga439245a99f826df3f3cb0faa93fafd3a" title="Return the array of copies of the distinct base values of a temporal value.">temporal_values</a> </dd></dl>
 
 </div>
