@@ -3214,6 +3214,10 @@ geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       pfree_array((void *) res, count);
     }
   }
+  else
+    /* The two cover nothing in common, so the array holds no element to keep
+     * and no element to release -- only itself */
+    pfree(res);
   /* Clean up and return */
   pfree_array((void *) elems1, count1);
   pfree_array((void *) elems2, count2);
