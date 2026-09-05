@@ -276,6 +276,28 @@ int main(void)
   free(zero_quadbin);
   free(traj);
 
+  /* A trajectory that moves between its instants covers the tiles it crosses:
+   * a tile spans 45 degrees of longitude at zoom 3, so a trip from 10E to
+   * 170E crosses four of them, and the same path sampled every 20 degrees
+   * answers the same four. A join filtered on a set that omits a crossed tile
+   * never reads that tile */
+  Temporal *traj_across = tgeompoint_in("SRID=4326;[Point(10.0 10.0)@2024-01-01,"
+    " Point(170.0 10.0)@2024-01-02]");
+  Temporal *traj_sampled = tgeompoint_in("SRID=4326;{Point(10.0 10.0)@2024-01-01,"
+    " Point(30.0 10.0)@2024-01-02, Point(50.0 10.0)@2024-01-03,"
+    " Point(70.0 10.0)@2024-01-04, Point(90.0 10.0)@2024-01-05,"
+    " Point(110.0 10.0)@2024-01-06, Point(130.0 10.0)@2024-01-07,"
+    " Point(150.0 10.0)@2024-01-08, Point(170.0 10.0)@2024-01-09}");
+  assert(traj_across != NULL && traj_sampled != NULL);
+  int ncrossed, nsampled;
+  uint64 *crossed = trajectory_quadbins(traj_across, 3, &ncrossed);
+  uint64 *sampled = trajectory_quadbins(traj_sampled, 3, &nsampled);
+  printf("trajectory_quadbins(linear trip, 3): %d cell(s), sampled: %d\n",
+    ncrossed, nsampled);
+  assert(ncrossed == 4);
+  assert(nsampled == 4);
+  free(crossed); free(sampled); free(traj_across); free(traj_sampled);
+
   /* The sampling of a PostGIS raster is answered by MEOS, so a program using
    * the library reads the values a PostgreSQL session reads. The trajectory
    * below visits pixel(1,1) = 10, the nodata pixel(1,2), a position outside
