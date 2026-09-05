@@ -66,16 +66,33 @@ jobs:
           ./meos/test/run_smoketests.sh
 
       # Building an index from a whole entry set releases the nodes the index
-      # holds, which the assertions cannot see and only a leak check reports
-      - name: Run the index builds under valgrind
+      # holds, which the assertions cannot see and only a leak check reports.
+      # A test of that kind is named meos/test/*_load_test.c and is DISCOVERED
+      # here rather than listed, so adding one needs no edit to this workflow --
+      # the rule the build step above already states for families, and the one
+      # run_smoketests.sh follows for its smoke/*.json sidecars. Naming them
+      # meant a test dropped into meos/test/ got no leak check and nothing said
+      # so. A glob matching nothing is a step that checks nothing, so the count
+      # carries a floor rather than passing quietly.
+      - name: Run the leak-checked tests under valgrind
         run: |
           cd meos/test
-          for t in rtree_load_test sptree_load_test; do
+          found=0
+          for src in *_load_test.c; do
+            [ -e "$src" ] || continue
+            t="${src%.c}"
+            echo "[valgrind] $t"
             gcc -Wall -Werror=implicit-function-declaration -g \
-              -I/usr/local/include -o $t $t.c -L/usr/local/lib -lmeos -lm
+              -I/usr/local/include -o $t $src -L/usr/local/lib -lmeos -lm
             valgrind --leak-check=full --errors-for-leak-kinds=definite \
               --error-exitcode=1 ./$t
+            found=$((found + 1))
           done
+          echo "$found leak-checked test(s) ran"
+          if [ "$found" -lt "${MEOS_VALGRIND_FLOOR:-2}" ]; then
+            echo "::error::$found leak-checked test(s), below the floor of ${MEOS_VALGRIND_FLOOR:-2}"
+            exit 1
+          fi
 
       - name: Upload valgrind logs on failure
         if: failure()
