@@ -681,6 +681,29 @@ ensure_valid_sptree_box(const SPTree *sptree, const void *box)
 }
 
 /**
+ * @brief Return true if two SPTrees may be joined, report an error otherwise
+ * @details A join compares a box of one tree with a box of the other, so the
+ * two trees answer the same question #ensure_valid_sptree_box asks of a query.
+ * Both trees hold their centroids in the internal box type, a tpcbox tree
+ * already projected to an @p STBox, so the two SRIDs compare directly rather
+ * than through that function's projection of an incoming box
+ */
+static bool
+ensure_valid_sptree_sptree(const SPTree *sptree1, const SPTree *sptree2)
+{
+  if (! sptree1->root || ! sptree2->root)
+    return true;
+  if (sptree1->bboxtype == T_STBOX
+#if POINTCLOUD
+      || sptree1->bboxtype == T_TPCBOX
+#endif /* POINTCLOUD */
+     )
+    return ensure_same_srid(((const STBox *) sptree1->root->centroid)->srid,
+      ((const STBox *) sptree2->root->centroid)->srid);
+  return true;
+}
+
+/**
  * @ingroup meos_temporal_box_index
  * @brief Insert a bounding box into an in-memory space-partitioning index
  * @details The box is stored at the first empty child slot reached while
@@ -1198,6 +1221,7 @@ sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
   VALIDATE_NOT_NULL(sptree1, INT_MAX); VALIDATE_NOT_NULL(sptree2, INT_MAX);
   VALIDATE_NOT_NULL(result, INT_MAX);
   if (! ensure_same_index_bboxtype(sptree1->bboxtype, sptree2->bboxtype) ||
+      ! ensure_valid_sptree_sptree(sptree1, sptree2) ||
       ! ensure_index_join_op(op))
     return INT_MAX;
 

@@ -409,7 +409,52 @@ test_refused(void)
   check("the R-tree refuses a null index",
     rtree_join(rtree1, NULL, INDEX_OVERLAPS, result) == INT_MAX &&
     meos_errno() != 0);
+
+  /* A join reads a box of one index against a box of the other, which is the
+   * comparison one SRID makes meaningful, so a pair of indexes is refused
+   * exactly where a query box of another SRID is */
+  SPTree *sp4326 = sptree_create_stbox(SPTREE_QUADTREE);
+  SPTree *sp4326b = sptree_create_stbox(SPTREE_QUADTREE);
+  SPTree *sp3857 = sptree_create_stbox(SPTREE_QUADTREE);
+  RTree *rt4326 = rtree_create_stbox();
+  RTree *rt4326b = rtree_create_stbox();
+  RTree *rt3857 = rtree_create_stbox();
+  STBox *box4326 = stbox_in("SRID=4326;STBOX X((0,0),(1,1))");
+  STBox *box3857 = stbox_in("SRID=3857;STBOX X((0,0),(1,1))");
+  sptree_insert(sp4326, box4326, 0);
+  sptree_insert(sp4326b, box4326, 1);
+  sptree_insert(sp3857, box3857, 1);
+  rtree_insert(rt4326, box4326, 0);
+  rtree_insert(rt4326b, box4326, 1);
+  rtree_insert(rt3857, box3857, 1);
+
   meos_errno_reset();
+  check("indexes of different SRIDs are refused",
+    sptree_join(sp4326, sp3857, INDEX_OVERLAPS, result) == INT_MAX &&
+    meos_errno() != 0);
+
+  meos_errno_reset();
+  check("the R-tree refuses indexes of different SRIDs",
+    rtree_join(rt4326, rt3857, INDEX_OVERLAPS, result) == INT_MAX &&
+    meos_errno() != 0);
+
+  /* The SRID is what the refusal reads and not the pair: the same two boxes
+   * under one SRID are a reported pair, so neither case passes by joining
+   * nothing */
+  meos_errno_reset();
+  check("indexes of one SRID join",
+    sptree_join(sp4326, sp4326b, INDEX_OVERLAPS, result) == 1 &&
+    meos_errno() == 0);
+
+  meos_errno_reset();
+  check("the R-tree joins indexes of one SRID",
+    rtree_join(rt4326, rt4326b, INDEX_OVERLAPS, result) == 1 &&
+    meos_errno() == 0);
+  meos_errno_reset();
+
+  free(box4326); free(box3857);
+  sptree_free(sp4326); sptree_free(sp4326b); sptree_free(sp3857);
+  rtree_free(rt4326); rtree_free(rt4326b); rtree_free(rt3857);
 
   meos_array_destroy(result);
   free(box);
