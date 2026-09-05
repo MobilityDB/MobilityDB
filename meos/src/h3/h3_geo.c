@@ -516,14 +516,27 @@ geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
 }
 
 /**
+ * @brief Return true if any instant of a temporal sequence holds a value that
+ * a set contains
+ */
+static bool
+tsequence_ever_in_set(const TSequence *seq, const Set *s)
+{
+  for (int i = 0; i < seq->count; i++)
+    if (contains_set_value(s, tinstant_value_p(TSEQUENCE_INST_N(seq, i))))
+      return true;
+  return false;
+}
+
+/**
  * @ingroup meos_h3_comp
  * @brief Return true if a temporal H3 cell is ever equal to a cell of an H3
  * cell set
- * @details Returns 1 if any cell of @p cells appears in the value sequence of
+ * @details Returns 1 if any cell of @p cells appears among the values of
  * @p th3idx, 0 if none does, and -1 on error. This is the cross-platform
  * spatial prefilter the `eIntersects` SQL wrappers and Spark UDFs consume: it
- * walks the value sequence of the temporal H3 cell, one entry per distinct
- * instant, and tests membership of the set.
+ * walks the instants of the temporal H3 cell and stops at the first instant
+ * the set contains.
  * @param[in] cells The candidate H3 cell set (T_H3INDEX).
  * @param[in] th3idx The th3index temporal value.
  * @csqlfn #Ever_eq_h3indexset_th3index()
@@ -533,22 +546,27 @@ ever_eq_h3indexset_th3index(const Set *cells, const Temporal *th3idx)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cells, -1); VALIDATE_NOT_NULL(th3idx, -1);
+  /* The value the caller gets for a temporal value of another type is the one
+   * #th3index_values gave it, which is the answer that it holds no cell */
+  VALIDATE_TH3INDEX(th3idx, 0);
 
-  int count = 0;
-  H3Index *vals = th3index_values(th3idx, &count);
-  if (vals == NULL)
-    return 0;
-  int found = 0;
-  for (int i = 0; i < count; i++)
+  assert(temptype_subtype(th3idx->subtype));
+  switch (th3idx->subtype)
   {
-    if (contains_set_value(cells, H3IndexGetDatum(vals[i])))
+    case TINSTANT:
+      return contains_set_value(cells,
+        tinstant_value_p((TInstant *) th3idx)) ? 1 : 0;
+    case TSEQUENCE:
+      return tsequence_ever_in_set((TSequence *) th3idx, cells) ? 1 : 0;
+    default: /* TSEQUENCESET */
     {
-      found = 1;
-      break;
+      const TSequenceSet *ss = (TSequenceSet *) th3idx;
+      for (int i = 0; i < ss->count; i++)
+        if (tsequence_ever_in_set(TSEQUENCESET_SEQ_N(ss, i), cells))
+          return 1;
+      return 0;
     }
   }
-  pfree(vals);
-  return found;
 }
 
 /*****************************************************************************/
