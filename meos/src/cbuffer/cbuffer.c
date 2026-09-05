@@ -615,7 +615,7 @@ cbufferarr_to_geom(const Cbuffer **cbarr, int count)
     if (! ensure_same_srid(srid, srid_elem))
     {
       for (int j = 0; j < i; j++)
-        pfree(geoms[i]);
+        pfree(geoms[j]);
       pfree(geoms);
       return NULL;
     }
