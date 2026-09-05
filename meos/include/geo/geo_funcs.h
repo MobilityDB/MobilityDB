@@ -212,6 +212,34 @@ geom_ring_is_convex(const POINTARRAY *pa)
 extern bool relate_point_on_boundary(double x, double y, Edge **edges,
   int nedges);
 extern int relate_point_in_area(double x, double y, Edge **edges, int nedges);
+/* Reading a point question out of an index instead of the whole array, which
+ * the buffer overlay asks as well: it locates a point per boundary piece
+ * against each operand, so the edges are read once and the questions asked
+ * through them. The threshold lives here so the two engines gate on ONE
+ * number rather than on copies that can drift apart */
+#define RELATE_INDEX_MIN_PAIRS 100000
+
+/**
+ * @brief An edge array together with what a question about one point needs in
+ * order to read only the edges that can answer it
+ * @details The index is absent below the threshold, and every function taking
+ * this reads the whole array in that case, so the answer never depends on
+ * whether the index was built
+ */
+typedef struct
+{
+  Edge **edges;   /**< Edges the array holds */
+  int nedges;     /**< Number of edges */
+  RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
+  double xmax;    /**< Greatest x the edges reach */
+  double tol;     /**< Widest tolerance any of the edges asks for */
+} RelateEdges;
+
+extern void relate_edges_init(RelateEdges *re, Edge **edges, int nedges,
+  bool index);
+extern void relate_edges_clear(RelateEdges *re);
+extern int relate_point_in_area_index(double x, double y,
+  const RelateEdges *re);
 /* Where two arcs meet, which the buffer overlay asks as well: solving the two
  * circles and keeping the solutions both angular spans hold is one
  * computation, and an intersection the two engines place differently is a
