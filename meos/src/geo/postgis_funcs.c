@@ -2101,6 +2101,53 @@ geo_is_planar_polygonal(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return what two areal geometries meet along where they share no area,
+ * or @c NULL where they meet in nothing
+ * @details The intersection of two point sets is a point set, and nothing
+ * about it promises an area. An engine that assembles regions answers the
+ * region, so for a pair meeting at a point or along a curve it answers an
+ * empty one -- and "no area" and "nothing" are different sentences.
+ *
+ * Where the two share no area, no part of the first one's boundary reaches
+ * the interior of the second: a point of it that did would carry a
+ * neighbourhood of the first one's own interior into the second's, which is
+ * area they would then share. So the part of that boundary the second
+ * geometry covers is exactly the part lying ON its boundary, which is what
+ * the two meet along, and #geo_clip_linear_geom answers it from the segment
+ * kernels over an edge index. Asking it of the first operand's boundary also
+ * keeps the answer running in that operand's own direction
+ * @param[in] gs1,gs2 Geometries
+ * @pre The two share no area, which is what the caller has just read
+ */
+static GSERIALIZED *
+geom_areal_meeting(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  assert(gs1); assert(gs2);
+  /* Two geometries whose bounding boxes lie apart meet nowhere, which spares
+   * an ordinary spatial join a boundary of its own for every pair it rejects */
+  GBOX box1, box2;
+  memset(&box1, 0, sizeof(GBOX));
+  memset(&box2, 0, sizeof(GBOX));
+  if (gserialized_get_gbox_p(gs1, &box1) && gserialized_get_gbox_p(gs2, &box2)
+      && gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
+    return NULL;
+
+  GSERIALIZED *bound = geom_boundary(gs1);
+  if (! bound)
+    return NULL;
+  GSERIALIZED *result = geo_clip_subject(bound) ?
+    geo_clip_linear_geom(bound, gs2, true) : NULL;
+  pfree(bound);
+  /* A meeting of nothing is the empty region the caller already holds */
+  if (result && geo_is_empty(result))
+  {
+    pfree(result);
+    result = NULL;
+  }
+  return result;
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the intersection of two geometries
  * @param[in] gs1,gs2 Geometries
@@ -2108,8 +2155,10 @@ geo_is_planar_polygonal(const GSERIALIZED *gs)
  * to the original function we do not use the @p prec argument.
  *
  * When both inputs are 2D POLYGON / MULTIPOLYGON the call routes through
- * the Clipper2-backed #clip_poly_poly. Other type combinations fall
- * through to PostGIS's GEOS-backed @c lwgeom_intersection_prec.
+ * the Clipper2-backed #clip_poly_poly, and where that answers a region of no
+ * area #geom_areal_meeting answers what the two meet along. Other type
+ * combinations fall through to PostGIS's GEOS-backed
+ * @c lwgeom_intersection_prec.
  */
 GSERIALIZED *
 geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -2120,7 +2169,21 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
   /* Clipper2 fast-path for 2D polygonal inputs */
   if (geo_is_planar_polygonal(gs1) && geo_is_planar_polygonal(gs2))
-    return clip_poly_poly(gs1, gs2, CL_INTERSECTION);
+  {
+    GSERIALIZED *result = clip_poly_poly(gs1, gs2, CL_INTERSECTION);
+    /* The region two surfaces share is empty where they meet without
+     * overlapping, and what they meet along is still theirs in common */
+    if (result && geo_is_empty(result))
+    {
+      GSERIALIZED *meeting = geom_areal_meeting(gs1, gs2);
+      if (meeting)
+      {
+        pfree(result);
+        return meeting;
+      }
+    }
+    return result;
+  }
 
   /* The points of a point set that the other geometry covers ARE the
    * intersection, whatever the other geometry draws */
