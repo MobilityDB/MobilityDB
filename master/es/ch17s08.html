@@ -1,10 +1,10 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Agregaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Nubes de puntos temporales"><link rel="prev" href="ch17s07.html" title="Indexación"><link rel="next" href="ch18.html" title="Capítulo 18. Muestreo de Ráster"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Agregaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Nubes de puntos temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch18.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpointcloud_aggregations"></a>Agregaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_extent"></a><a class="indexterm" name="id14010"></a><p>Agregado de caja delimitadora sobre una columna de valores tpcpoint, tpcpatch o tpcbox</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Agregaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch17.html" title="Capítulo 17. Nubes de puntos temporales"><link rel="prev" href="ch17s07.html" title="Indexación"><link rel="next" href="ch18.html" title="Capítulo 18. Muestreo de Ráster"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Agregaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 17. Nubes de puntos temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch18.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpointcloud_aggregations"></a>Agregaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_extent"></a><a class="indexterm" name="id14011"></a><p>Agregado de caja delimitadora sobre una columna de valores tpcpoint, tpcpatch o tpcbox</p><pre class="programlisting">
 extent({tpcpoint,tpcpatch,tpcbox}) → tpcbox
 </pre><p>Devuelve el tpcbox más pequeño que contiene todas las entradas. Agregar a través de pcid distintos genera un error, la caja delimitadora sería ininterpretable ya que las dimensiones son relativas al pcid.</p><pre class="programlisting">
 SELECT extent(v) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- TPCBOX(ZT(((1,1,1),(2,2,2)),[2001-01-01, 2001-01-02]), 1)
-</pre></li><li class="listitem"><a name="tpcpoint_tCount"></a><a class="indexterm" name="id14018"></a><a class="indexterm" name="id14021"></a><p>Conteo temporal y conteo por ventana de filas superpuestas en cada marca de tiempo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_tCount"></a><a class="indexterm" name="id14019"></a><a class="indexterm" name="id14022"></a><p>Conteo temporal y conteo por ventana de filas superpuestas en cada marca de tiempo</p><pre class="programlisting">
 tCount({tpcpoint,tpcpatch}) → tint
 wCount({tpcpoint,tpcpatch},interval) → tint
 </pre><p>El resultado es un tint. Todas las filas de entrada deben compartir el mismo subtipo temporal (instante / secuencia / conjunto de secuencias).</p><pre class="programlisting">
@@ -15,7 +15,7 @@ SELECT wCount(v, interval '1 day') FROM (VALUES
   (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- {[1@2001-01-01, 2@2001-01-02], (1@2001-01-02, 1@2001-01-03]}
-</pre></li><li class="listitem"><a name="tpcpatch_tnpoints"></a><a class="indexterm" name="id14029"></a><p>Conteo de puntos de pcpatch por instante, sumado a través de las filas</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_tnpoints"></a><a class="indexterm" name="id14030"></a><p>Conteo de puntos de pcpatch por instante, sumado a través de las filas</p><pre class="programlisting">
 tnpoints(tpcpatch) → tint
 </pre><p>Distinto de <code class="varname">tCount(tpcpatch)</code>, que cuenta el número de parches (siempre 1 por instante). <code class="varname">tnpoints</code> se lee como «cuántos puntos había en la nube en el tiempo t», la primitiva natural para el control de calidad de la ingesta y los paneles de densidad a lo largo del tiempo.</p><pre class="programlisting">
 SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
@@ -23,7 +23,7 @@ SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz))) t(v);
 -- {2@2001-01-01, 2@2001-01-02}
-</pre></li><li class="listitem"><a name="tpcpatch_tdensity"></a><a class="indexterm" name="id14039"></a><p>Densidad de puntos por instante (<code class="varname">numPoints / área-bbox-xy</code>) sumada a través de las filas</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_tdensity"></a><a class="indexterm" name="id14040"></a><p>Densidad de puntos por instante (<code class="varname">numPoints / área-bbox-xy</code>) sumada a través de las filas</p><pre class="programlisting">
 tdensity(tpcpatch) → tfloat
 </pre><p>Cada pcpatch lleva el <code class="varname">PCBOUNDS</code> en línea (xmin / xmax / ymin / ymax) por lo que el término de área de la caja delimitadora se lee directamente, sin recálculo. Un parche de 1 punto o colineal produce <code class="varname">+Infinity</code> para ese instante; filtre con <code class="varname">isfinite()</code> en consultas posteriores si es necesario.</p><pre class="programlisting">
 -- Each patch holds 2 points over a 1x1 xy-bbox.
@@ -32,7 +32,7 @@ SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz))) t(v);
 -- {2@2001-01-01, 2@2001-01-02}
-</pre></li><li class="listitem"><a name="tpcpoint_mergeAgg"></a><a class="indexterm" name="id14051"></a><a class="indexterm" name="id14054"></a><p>Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_mergeAgg"></a><a class="indexterm" name="id14052"></a><a class="indexterm" name="id14055"></a><p>Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal</p><pre class="programlisting">
 mergeAgg(tpcpoint) → tpcpoint
 mergeAgg(tpcpatch) → tpcpatch
 </pre><p>Todas las entradas deben compartir el mismo pcid y subtipo.</p><pre class="programlisting">
@@ -40,7 +40,7 @@ SELECT numInstants(mergeAgg(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- 2
-</pre></li><li class="listitem"><a name="tpcpoint_appendInstantAgg"></a><a class="indexterm" name="id14062"></a><a class="indexterm" name="id14065"></a><a class="indexterm" name="id14068"></a><a class="indexterm" name="id14071"></a><p>Agregados de construcción en flujo: <code class="varname">appendInstant</code> ensambla instantes en una secuencia; <code class="varname">appendSequence</code> ensambla secuencias en un conjunto de secuencias</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_appendInstantAgg"></a><a class="indexterm" name="id14063"></a><a class="indexterm" name="id14066"></a><a class="indexterm" name="id14069"></a><a class="indexterm" name="id14072"></a><p>Agregados de construcción en flujo: <code class="varname">appendInstant</code> ensambla instantes en una secuencia; <code class="varname">appendSequence</code> ensambla secuencias en un conjunto de secuencias</p><pre class="programlisting">
 appendInstantAgg(tpcpoint[,interp,maxt]) → tpcpoint
 appendInstantAgg(tpcpatch) → tpcpatch
 appendSequenceAgg(tpcpoint) → tpcpoint

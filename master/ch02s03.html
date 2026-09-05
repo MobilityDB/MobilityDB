@@ -1,6 +1,6 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversions</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="prev" href="ch02s02.html" title="Constructors"><link rel="next" href="ch02s04.html" title="Accessors"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s02.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Set and Span Types</th><td width="20%" align="right"> <a accesskey="n" href="ch02s04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2337"></a>Conversions</h2></div></div></div><p>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversions</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="prev" href="ch02s02.html" title="Constructors"><link rel="next" href="ch02s04.html" title="Accessors"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s02.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Set and Span Types</th><td width="20%" align="right"> <a accesskey="n" href="ch02s04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2338"></a>Conversions</h2></div></div></div><p>
 			Values of set and span types can be converted to one another or converted to and from PostgreSQL range types using the function <code class="varname">CAST</code> or using the <code class="varname">::</code> notation.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="base_convert"></a><a class="indexterm" name="id2344"></a><a class="indexterm" name="id2347"></a><a class="indexterm" name="id2350"></a><a class="indexterm" name="id2353"></a><p>Convert a base value to a set, span, or span set value</p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="base_convert"></a><a class="indexterm" name="id2345"></a><a class="indexterm" name="id2348"></a><a class="indexterm" name="id2351"></a><a class="indexterm" name="id2354"></a><p>Convert a base value to a set, span, or span set value</p><pre class="programlisting">
 base::{set,span,spanset}
 set(base) → set
 span(base) → span
@@ -12,7 +12,7 @@ SELECT timestamptz '2001-01-01 08:00:00'::tstzspan;
 -- [2001-01-01 08:00:00, 2001-01-01 08:00:00]
 SELECT spanset(timestamptz '2001-01-01 08:00:00');
 -- {[2001-01-01 08:00:00, 2001-01-01 08:00:00]}
-</pre></li><li class="listitem"><a name="set_convert"></a><a class="indexterm" name="id2360"></a><a class="indexterm" name="id2363"></a><p>Convert a set value to a span set value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="set_convert"></a><a class="indexterm" name="id2361"></a><a class="indexterm" name="id2364"></a><p>Convert a set value to a span set value</p><pre class="programlisting">
 set::spanset
 spanset(set) → spanset
 </pre><pre class="programlisting">
@@ -20,7 +20,7 @@ SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00, 2001-01-01 08
 /* {[2001-01-01 08:00:00, 2001-01-01 08:00:00], [2001-01-01 08:15:00,
    2001-01-01 08:15:00],
    [2001-01-01 08:25:00, 2001-01-01 08:25:00]} */
-</pre></li><li class="listitem"><a name="span_convert"></a><a class="indexterm" name="id2370"></a><a class="indexterm" name="id2373"></a><p>Convert a span value to a span set value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="span_convert"></a><a class="indexterm" name="id2371"></a><a class="indexterm" name="id2374"></a><p>Convert a span value to a span set value</p><pre class="programlisting">
 span::spanset
 spanset(span) → spanset
 </pre><pre class="programlisting">
@@ -28,7 +28,7 @@ SELECT floatspan '[1.5,2.5]'::floatspanset;
 -- {[1.5, 2.5]}
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
 -- {[2001-01-01 08:00:00, 2001-01-01 08:30:00)}
-</pre></li><li class="listitem"><a name="setspan_span"></a><a class="indexterm" name="id2380"></a><p>Convert a set or a span set into a span, ignoring the potential time gaps</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_span"></a><a class="indexterm" name="id2381"></a><p>Convert a set or a span set into a span, ignoring the potential time gaps</p><pre class="programlisting">
 {set,spanset}::span
 span({set,spanset}) → span
 </pre><pre class="programlisting">
@@ -36,7 +36,7 @@ SELECT span(dateset '{2001-01-01, 2001-01-03, 2001-01-05}');
 -- [2001-01-01, 2001-01-06)
 SELECT span(tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- [2001-01-01, 2001-01-04)
-</pre></li><li class="listitem"><a name="range_convert"></a><a class="indexterm" name="id2387"></a><a class="indexterm" name="id2390"></a><a class="indexterm" name="id2393"></a><p>Convert a span value to and from a PostgreSQL range value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="range_convert"></a><a class="indexterm" name="id2388"></a><a class="indexterm" name="id2391"></a><a class="indexterm" name="id2394"></a><p>Convert a span value to and from a PostgreSQL range value</p><pre class="programlisting">
 {span,range}::{range,span}
 range(span) → range
 span(range) → span
@@ -53,7 +53,7 @@ SELECT int4range '[10,)'::intspan;
 -- ERROR:  Range bounds cannot be infinite
 SELECT tstzrange '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspan;
 -- [2001-01-01 08:00:00, 2001-01-01 08:30:00)
-</pre></li><li class="listitem"><a name="multirange_convert"></a><a class="indexterm" name="id2401"></a><a class="indexterm" name="id2404"></a><a class="indexterm" name="id2407"></a><p>Convert a span set value to and from a PostgreSQL multirange value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="multirange_convert"></a><a class="indexterm" name="id2402"></a><a class="indexterm" name="id2405"></a><a class="indexterm" name="id2408"></a><p>Convert a span set value to and from a PostgreSQL multirange value</p><pre class="programlisting">
 {spanset,multirange}::{multirange,spanset}
 multirange(spanset) → multirange
 spanset(multirange) → spanset

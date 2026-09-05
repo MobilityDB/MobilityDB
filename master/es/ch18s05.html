@@ -1,63 +1,11 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores y Comparación de Raquet</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch18.html" title="Capítulo 18. Muestreo de Ráster"><link rel="prev" href="ch18s04.html" title="Serialización de Raquet"><link rel="next" href="ch18s06.html" title="Operadores de Restricción y Predicado"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores y Comparación de Raquet</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch18s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 18. Muestreo de Ráster</th><td width="20%" align="right"> <a accesskey="n" href="ch18s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raquet_accessors"></a>Accesores y Comparación de Raquet</h2></div></div></div><p>Un valor <code class="varname">raquet</code> es autodescriptivo: los accesores siguientes leen la georreferenciación y la disposición que transporta, de modo que una tesela empaquetada con el constructor <a class="link" href="ch18s03.html#raquet"><code class="varname">raquet</code></a> o decodificada con <a class="link" href="ch18s03.html#raquetRead"><code class="varname">raquetRead</code></a> puede inspeccionarse sin conservar las columnas sueltas a partir de las cuales se construyó.</p><p>Las teselas también admiten el conjunto completo de operadores de comparación. El orden es total y se define primero por la celda QUADBIN, luego por el tipo de píxel, el ancho, el alto y finalmente los bytes de píxeles; está pensado para indexación y deduplicación, no para una interpretación espacial. Una clase de operadores btree por defecto hace que <code class="varname">ORDER BY</code>, <code class="varname">DISTINCT</code> y las uniones por mezcla funcionen sobre columnas <code class="varname">raquet</code>, y una clase de operadores hash por defecto habilita las uniones y agregaciones hash.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raquet_quadbin_accessor"></a><a class="indexterm" name="id14330"></a><p>Devuelve la celda QUADBIN de una tesela Raquet</p><pre class="programlisting">
-quadbin(raquet) → bigint
-</pre><pre class="programlisting">
-SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- 5193776270265024512
-</pre></li><li class="listitem"><a name="raquet_width"></a><a class="indexterm" name="id14337"></a><p>Devuelve el ancho en píxeles de una tesela Raquet</p><pre class="programlisting">
-width(raquet) → integer
-</pre><pre class="programlisting">
-SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- 2
-</pre></li><li class="listitem"><a name="raquet_height"></a><a class="indexterm" name="id14344"></a><p>Devuelve el alto en píxeles de una tesela Raquet</p><pre class="programlisting">
-height(raquet) → integer
-</pre><pre class="programlisting">
-SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- 2
-</pre></li><li class="listitem"><a name="raquet_nodata"></a><a class="indexterm" name="id14351"></a><p>Devuelve el valor centinela nodata de una tesela Raquet</p><pre class="programlisting">
-nodata(raquet) → float8
-</pre><pre class="programlisting">
-SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8', 255));
--- 255
--- The sentinel defaults to 0 when the constructor omits it.
-SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- 0
-</pre></li><li class="listitem"><a name="raquet_pixtype"></a><a class="indexterm" name="id14358"></a><p>Devuelve el nombre del tipo de dato de píxel de una tesela Raquet</p><pre class="programlisting">
-pixtype(raquet) → text
-</pre><p>El nombre devuelto es el que aceptan los constructores, es decir, uno de <code class="varname">uint8</code>, <code class="varname">int8</code>, <code class="varname">uint16</code>, <code class="varname">int16</code>, <code class="varname">uint32</code>, <code class="varname">int32</code>, <code class="varname">uint64</code>, <code class="varname">int64</code>, <code class="varname">float16</code>, <code class="varname">float32</code> o <code class="varname">float64</code>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <code class="varname">type</code> de una tesela, por lo que se compara igual a ese campo tal cual.</p><pre class="programlisting">
--- Read back the layout of a packaged tile
-SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
--- 5193776270265024512 | 2 | 2 | uint8 | 0
-</pre></li><li class="listitem"><a name="raquet_pixels"></a><a class="indexterm" name="id14378"></a><p>Devuelve los bytes de píxeles de un mosaico Raquet</p><pre class="programlisting">
-pixels(raquet) → bytea
-</pre><p>Los bytes están en orden de fila mayor y empaquetados, <code class="varname">width</code> × <code class="varname">height</code> píxeles del tamaño de <code class="varname">pixtype</code> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</p><pre class="programlisting">
-SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- \x01020304
-</pre></li><li class="listitem"><a name="raquet_to_stbox"></a><a class="indexterm" name="id14389"></a><p>Convierte una tesela Raquet en una caja espaciotemporal</p><pre class="programlisting">
-stbox(raquet) → stbox
-</pre><p>Devuelve la huella de la tesela: la envolvente de longitud y latitud de su celda QUADBIN, en SRID 4326 y sin dimensión temporal. La huella se deriva únicamente de la celda, por lo que teselas que difieren en píxeles, dimensiones o tipo de píxel la comparten. La conversión también está disponible como conversión de tipo.</p><pre class="programlisting">
--- The footprint of a tile covering the north-eastern quadrant at zoom 1
-SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')), 6);
--- SRID=4326;STBOX X((0,0),(180,85.051129))
--- Keep the tiles whose footprint overlaps a region of interest
-SELECT * FROM elevation_tiles WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;
-  STBOX X((0,0),(30,30))';
-</pre><p>La huella admite los operadores, agregados y clases de operadores de <code class="varname">stbox</code>, por lo que una tabla de teselas se consulta por solapamiento espacial en cualquier nivel de zoom en lugar de por una prueba de igualdad sobre la celda QUADBIN en uno fijo. Indexar la conversión dota a la tabla de teselas de un índice espacial, y la extensión de un conjunto de teselas es la extensión de sus huellas.</p><pre class="programlisting">
--- A spatial index over the tile footprints
-CREATE INDEX elevation_tiles_gist ON elevation_tiles USING gist (stbox(tile));
-CREATE INDEX elevation_tiles_spgist ON elevation_tiles USING spgist (stbox(tile));
--- The extent covered by a set of tiles
-SELECT extent(stbox(tile)) FROM elevation_tiles;
--- Tiles a trajectory passes through, at whatever zoom levels the table holds
-SELECT t.tripid, r.tile FROM trips t,
-  elevation_tiles r WHERE stbox(r.tile) &amp;&amp; stbox(t.trip);
-</pre></li><li class="listitem"><a name="raquet_comparison"></a><a class="indexterm" name="id14400"></a><a class="indexterm" name="id14403"></a><a class="indexterm" name="id14406"></a><a class="indexterm" name="id14409"></a><a class="indexterm" name="id14412"></a><a class="indexterm" name="id14415"></a><a class="indexterm" name="id14418"></a><p>Compara dos teselas Raquet</p><pre class="programlisting">
-raquet {=, &lt;&gt;, &lt;, &lt;=, &gt;=, &gt;} raquet → boolean
-</pre><p>Las funciones que respaldan estos operadores son <code class="varname">eq</code>, <code class="varname">ne</code>, <code class="varname">lt</code>, <code class="varname">le</code>, <code class="varname">ge</code> y <code class="varname">gt</code>, junto con <code class="varname">cmp(raquet,raquet) → integer</code>, que devuelve -1, 0 o 1.</p><pre class="programlisting">
--- Two tiles with the same cell, layout and pixels are equal
-SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512,
-  'uint8') = raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'uint8');
--- true
--- Deduplicate tiles, which the btree and hash operator classes support
-SELECT DISTINCT tile FROM elevation_tiles;
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch18s04.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch18.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch18s06.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Serialización de Raquet </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operadores de Restricción y Predicado</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Funciones que devuelven conjuntos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch18.html" title="Capítulo 18. Muestreo de Ráster"><link rel="prev" href="ch18s04.html" title="Accesores"><link rel="next" href="ch18s06.html" title="Comparaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Funciones que devuelven conjuntos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch18s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 18. Muestreo de Ráster</th><td width="20%" align="right"> <a accesskey="n" href="ch18s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raster_set_returning"></a>Funciones que devuelven conjuntos</h2></div></div></div><p>Las celdas QUADBIN que cubre una trayectoria se devuelven en un arreglo, que es la clave de unión por la que se lee una tabla Raquet.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_quadbins"></a><a class="indexterm" name="id14327"></a><p>Devuelve las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</p><pre class="programlisting">
+quadbins(tgeompoint,zoom integer) → bigint[]
+</pre><p>Devuelve el conjunto de celdas QUADBIN únicas que cubre la trayectoria. Una trayectoria que no afirma nada entre sus instantes cubre las teselas que los contienen; una que se mueve entre ellos cubre además las teselas que atraviesa por el camino, y el segmento se recorre a media tesela para encontrarlas, estrechándose la tesela hacia los polos como lo hace su envolvente Web-Mercator. El resultado es adecuado como clave de unión en la cláusula WHERE contra una tabla Raquet, donde una tesela que el trayecto atraviesa pero el conjunto omite es una tesela que la unión nunca lee. El parámetro <code class="varname">zoom</code> debe estar en [0, 15].</p><pre class="programlisting">
+-- Three instants spanning three tiles at zoom 3
+SELECT quadbins(tgeompoint 'SRID=4326;
+  {Point(-60 45)@2024-01-01, Point(0 45)@2024-01-02, Point(60 45)@2024-01-03}', 3);
+-- {5202501994543054848,5203346419473186816,5203416788217364480}
+-- Count of Raquet tiles a ship trajectory overlaps at zoom 8
+SELECT array_length(quadbins(trip, 8),
+  1) AS tile_count FROM trips ORDER BY tile_count DESC;
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch18s04.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch18.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch18s06.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Accesores </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Comparaciones</td></tr></table></div></body></html>

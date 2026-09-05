@@ -1,11 +1,11 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones específicas de S2</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Teselaciones temporales"><link rel="prev" href="ch16s22.html" title="Operaciones específicas de QUADBIN"><link rel="next" href="ch17.html" title="Capítulo 17. Nubes de puntos temporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones específicas de S2</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s22.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Teselaciones temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_s2_specific"></a>Operaciones específicas de S2</h2></div></div></div><p>Las operaciones de más abajo no tienen análogo en H3 ni en QUADBIN. Se presentan sobre una <code class="varname">s2cell</code> estática, ya que un identificador de celda las responde sin referencia al tiempo; las operaciones compartidas que presentan las secciones anteriores se aplican a un <code class="varname">ts2cell</code> a través de la notación <code class="varname">tcell</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_s2_get_face"></a><a class="indexterm" name="id12478"></a><p>Devolver la cara del cubo de 0 a 5 sobre la que se asienta una celda S2</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones específicas de S2</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Teselaciones temporales"><link rel="prev" href="ch16s22.html" title="Operaciones específicas de QUADBIN"><link rel="next" href="ch17.html" title="Capítulo 17. Nubes de puntos temporales"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones específicas de S2</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s22.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Teselaciones temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch17.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_s2_specific"></a>Operaciones específicas de S2</h2></div></div></div><p>Las operaciones de más abajo no tienen análogo en H3 ni en QUADBIN. Se presentan sobre una <code class="varname">s2cell</code> estática, ya que un identificador de celda las responde sin referencia al tiempo; las operaciones compartidas que presentan las secciones anteriores se aplican a un <code class="varname">ts2cell</code> a través de la notación <code class="varname">tcell</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_s2_get_face"></a><a class="indexterm" name="id12479"></a><p>Devolver la cara del cubo de 0 a 5 sobre la que se asienta una celda S2</p><pre class="programlisting">
 s2GetFace(s2cell) → integer
 </pre><p>S2 proyecta la esfera sobre las seis caras de un cubo circunscrito y tiende una curva de Hilbert sobre cada una, de modo que la cara son los tres primeros bits del identificador y dos celdas de caras distintas no comparten ningún ancestro.</p><pre class="programlisting">
 SELECT s2GetFace(s2cell '47c3c3');
 -- 2
 SELECT s2GetFace(geoToS2Cell(geography 'SRID=4326;Point(-122.4 37.8)', 10));
 -- 4
-</pre></li><li class="listitem"><a name="tcell_s2_token"></a><a class="indexterm" name="id12486"></a><a class="indexterm" name="id12489"></a><a class="indexterm" name="id12492"></a><p>Convertir entre una celda S2 y su token, la forma que publican las bibliotecas de S2</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_token"></a><a class="indexterm" name="id12487"></a><a class="indexterm" name="id12490"></a><a class="indexterm" name="id12493"></a><p>Convertir entre una celda S2 y su token, la forma que publican las bibliotecas de S2</p><pre class="programlisting">
 s2CellToToken(s2cell) → text
 s2TokenToCell(text) → s2cell
 ts2CellToToken(ts2cell) → ttext
@@ -16,19 +16,19 @@ SELECT s2TokenToCell('47c3c3');
 -- 47c3c3
 SELECT asText(ts2CellToToken(ts2cell '47c3c3@2001-01-01'));
 -- "47c3c3"@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_s2_common_ancestor"></a><a class="indexterm" name="id12500"></a><p>Devolver el nivel de la celda más profunda que contiene a dos celdas S2</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_common_ancestor"></a><a class="indexterm" name="id12501"></a><p>Devolver el nivel de la celda más profunda que contiene a dos celdas S2</p><pre class="programlisting">
 s2CommonAncestorLevel(s2cell,s2cell) → integer
 </pre><p>Dos celdas de caras distintas del cubo no están contenidas por ninguna celda, y la función responde -1 para ellas.</p><pre class="programlisting">
 SELECT s2CommonAncestorLevel(s2cell '47c3c3', s2cell '47c4');
 -- 5
 SELECT s2CommonAncestorLevel(s2cell '47c3c3', s2cell '808581');
 -- -1
-</pre></li><li class="listitem"><a name="tcell_s2_cell_contains"></a><a class="indexterm" name="id12508"></a><p>Devolver verdadero si la primera celda S2 contiene a la segunda</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_contains"></a><a class="indexterm" name="id12509"></a><p>Devolver verdadero si la primera celda S2 contiene a la segunda</p><pre class="programlisting">
 s2CellContains(s2cell,s2cell) → boolean
 </pre><pre class="programlisting">
 SELECT s2CellContains(s2cell '47c4', s2cell '47c3c3');
 -- t
-</pre></li><li class="listitem"><a name="tcell_s2_cell_range"></a><a class="indexterm" name="id12515"></a><a class="indexterm" name="id12518"></a><p>Devolver la primera y la última celda hoja que contiene una celda S2</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_range"></a><a class="indexterm" name="id12516"></a><a class="indexterm" name="id12519"></a><p>Devolver la primera y la última celda hoja que contiene una celda S2</p><pre class="programlisting">
 s2RangeMin(s2cell) → s2cell
 s2RangeMax(s2cell) → s2cell
 </pre><p>Los descendientes de una celda S2 ocupan un intervalo contiguo de la curva de Hilbert, de modo que una prueba de ascendencia es el par de comparaciones <code class="varname">other &gt;= s2RangeMin(cell)</code> y <code class="varname">other &lt;= s2RangeMax(cell)</code>. Eso es lo que aporta S2 y no aporta una cuadrícula hexagonal ni de Web-Mercator, y es un filtro que alimenta el índice <code class="varname">stbox</code> más que una clave de índice propia.</p><pre class="programlisting">
@@ -36,17 +36,17 @@ SELECT s2RangeMin(s2cell '47c3c3');
 -- 47c3c20000000001
 SELECT s2RangeMax(s2cell '47c3c3');
 -- 47c3c3ffffffffff
-</pre></li><li class="listitem"><a name="tcell_s2_cell_to_child"></a><a class="indexterm" name="id12529"></a><p>Devolver el descendiente de una celda S2 en la posición dada a lo largo de la curva de Hilbert</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_to_child"></a><a class="indexterm" name="id12530"></a><p>Devolver el descendiente de una celda S2 en la posición dada a lo largo de la curva de Hilbert</p><pre class="programlisting">
 s2CellToChild(s2cell,level integer,position integer) → s2cell
 </pre><p>El nivel es exactamente uno más fino que el de la propia celda, de modo que la posición va de 0 a 3; <code class="varname">cellToChildren</code>, que presenta la sección de jerarquía, responde todos los descendientes en cualquier nivel más fino.</p><pre class="programlisting">
 SELECT s2CellToChild(s2cell '47c3c3', 11, 0);
 -- 47c3c24
-</pre></li><li class="listitem"><a name="tcell_s2_cell_edge_length"></a><a class="indexterm" name="id12538"></a><p>Devolver la longitud en metros de una arista de una celda S2</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_edge_length"></a><a class="indexterm" name="id12539"></a><p>Devolver la longitud en metros de una arista de una celda S2</p><pre class="programlisting">
 s2EdgeLength(s2cell,edge integer) → float
 </pre><p>La arista va del vértice del índice dado, que va de 0 a 3, al siguiente en sentido antihorario, y la longitud se mide sobre la esfera WGS84.</p><pre class="programlisting">
 SELECT round(s2EdgeLength(s2cell '47c3c3', 0)::numeric, 3);
 -- 9270.048
-</pre></li><li class="listitem"><a name="tcell_s2_cell_neighbors"></a><a class="indexterm" name="id12546"></a><p>Devolver las cuatro celdas que comparten una arista con una celda S2</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_s2_cell_neighbors"></a><a class="indexterm" name="id12547"></a><p>Devolver las cuatro celdas que comparten una arista con una celda S2</p><pre class="programlisting">
 s2EdgeNeighbors(s2cell) → s2cellset
 </pre><p>Una celda S2 es un cuadrilátero, de modo que tiene cuatro vecinas por arista y ningún anillo de un radio dado; el disco de cuadrícula de H3 no tiene análogo en S2.</p><pre class="programlisting">
 SELECT s2EdgeNeighbors(s2cell '47c3c3');

@@ -1,18 +1,18 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch06.html" title="Capítulo 6. Tipos alfanuméricos temporales"><link rel="prev" href="ch06s02.html" title="Conversión de tipos"><link rel="next" href="ch06s04.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06s02.html">Anterior</a> </td><th width="60%" align="center">Capítulo 6. Tipos alfanuméricos temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch06s04.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="talpha_accessors"></a>Accessores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="talpha_valueSpan"></a><a class="indexterm" name="id4231"></a><p>Devuelve el intervalo de valores ignorando las brechas potenciales</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch06.html" title="Capítulo 6. Tipos alfanuméricos temporales"><link rel="prev" href="ch06s02.html" title="Conversión de tipos"><link rel="next" href="ch06s04.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06s02.html">Anterior</a> </td><th width="60%" align="center">Capítulo 6. Tipos alfanuméricos temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch06s04.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="talpha_accessors"></a>Accessores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="talpha_valueSpan"></a><a class="indexterm" name="id4232"></a><p>Devuelve el intervalo de valores ignorando las brechas potenciales</p><pre class="programlisting">
 valueSpan(tnumber) → numspan
 </pre><pre class="programlisting">
 SELECT valueSpan(tint '{1@2001-01-01, 5@2001-01-02, 3@2001-01-03}');
 -- [1, 6)
 SELECT valueSpan(tfloat '[1.5@2001-01-01, 4.5@2001-01-03]');
 -- [1.5, 4.5]
-</pre></li><li class="listitem"><a name="talpha_valueSet"></a><a class="indexterm" name="id4238"></a><p>Devuelve el conjunto de valores de un número temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="talpha_valueSet"></a><a class="indexterm" name="id4239"></a><p>Devuelve el conjunto de valores de un número temporal</p><pre class="programlisting">
 valueSet(tnumber) → numset
 </pre><pre class="programlisting">
 SELECT valueSet(tint '[1@2001-01-01, 2@2001-01-03]');
 -- {1, 2}
 SELECT valueSet(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-05)}');
 -- {1, 2, 3, 4}
-</pre></li><li class="listitem"><a name="talpha_minValue"></a><a class="indexterm" name="id4245"></a><a class="indexterm" name="id4248"></a><a class="indexterm" name="id4251"></a><p>Devuelve el valor mínimo, máximo, o promedio</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="talpha_minValue"></a><a class="indexterm" name="id4246"></a><a class="indexterm" name="id4249"></a><a class="indexterm" name="id4252"></a><p>Devuelve el valor mínimo, máximo, o promedio</p><pre class="programlisting">
 minValue(torder) → base
 maxValue(torder) → base
 avgValue(tnumber) → base
@@ -28,7 +28,7 @@ SELECT minValue(ttext '{[A@2001-01-01, B@2001-01-02], [C@2001-01-03, E@2001-01-0
 -- A
 SELECT maxValue(ttext '{[A@2001-01-01, B@2001-01-02], [C@2001-01-03, E@2001-01-05]}');
 -- E
-</pre></li><li class="listitem"><a name="talpha_minInstant"></a><a class="indexterm" name="id4260"></a><a class="indexterm" name="id4263"></a><p>Devuelve el instante con el valor mínimo o máximo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="talpha_minInstant"></a><a class="indexterm" name="id4261"></a><a class="indexterm" name="id4264"></a><p>Devuelve el instante con el valor mínimo o máximo</p><pre class="programlisting">
 minInstant(torder) → base
 maxInstant(torder) → base
 </pre><p>Las funciones no tienen en cuenta si los límites son inclusivos o no. Si varios instantes tienen el valor mínimo, se devuelve el primero.</p><pre class="programlisting">
