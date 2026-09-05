@@ -2681,13 +2681,14 @@ nai_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
   Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
   if (dist != NULL)
   {
-    const TInstant *min = temporal_min_instant(dist);
+    /* temporal_min_instant returns a copy that must be freed */
+    TInstant *min = temporal_min_instant(dist);
     /* The closest point may be at an exclusive bound */
     Datum value;
     temporal_value_at_timestamptz(temp1, min->t, false, &value);
     result = trgeometryinst_make(trgeo_geom_p(temp1), DatumGetPoseP(value),
       min->t);
-    pfree(dist); pfree(DatumGetPointer(value));
+    pfree(dist); pfree(min); pfree(DatumGetPointer(value));
   }
   return result;
 }
