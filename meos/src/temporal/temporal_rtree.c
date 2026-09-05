@@ -1940,14 +1940,22 @@ nn_heap_pop(RTreeNNCursor *cursor)
  * an STBox index yields a purely spatial ordering, while a query carrying a
  * time dimension additionally requires overlapping time extents (as for
  * `|=|`). Close the cursor with #rtree_nn_cursor_close.
+ *
+ * As for #rtree_search, the query box is validated here, at the entry point,
+ * so that every distance the traversal computes can assume it.
  * @param[in] rtree The RTree to query
- * @param[in] query The query bounding box of type @p rtree->bboxtype
- * @return A cursor to be freed with #rtree_nn_cursor_close
+ * @param[in] query The query bounding box of type @p rtree->bboxtype and of
+ * the SRID the tree holds
+ * @return A cursor to be freed with #rtree_nn_cursor_close, on error @p NULL
  */
 RTreeNNCursor *
 rtree_nn_cursor_open(const RTree *rtree, const void *query)
 {
-  assert(rtree); assert(query);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! ensure_valid_rtree_box(rtree, query))
+    return NULL;
+
   RTreeNNCursor *cursor = palloc0(sizeof(RTreeNNCursor));
   cursor->rtree = rtree;
   cursor->query = palloc(rtree->bboxsize);
@@ -1979,12 +1987,15 @@ rtree_nn_cursor_open(const RTree *rtree, const void *query)
  * @param[in] cursor The cursor previously opened with #rtree_nn_cursor_open
  * @param[out] id_out Receives the id of the next neighbour, or @p NULL
  * @param[out] dist_out Receives the distance of the next neighbour, or @p NULL
- * @return @p true if a neighbour was produced, @p false once exhausted
+ * @return @p true if a neighbour was produced, @p false once exhausted or on
+ * error
  */
 bool
 rtree_nn_cursor_next(RTreeNNCursor *cursor, int64 *id_out, double *dist_out)
 {
-  assert(cursor);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cursor, false);
+
   while (cursor->count > 0)
   {
     RTreeNNEntry entry = nn_heap_pop(cursor);
