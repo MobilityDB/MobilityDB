@@ -103,7 +103,6 @@ LAYOUT = [
                       ["GiST, SP-GiST, B-tree, and hash opclasses for tpcpoint, "
                        "tpcpatch, and tpcbox"], None)],
          }},
-    {"title": "Raster Sampling", "chapters": ["temporal_raster.xml"]},
 ]
 
 HEADER = """<?xml version="1.0" encoding="UTF-8"?>

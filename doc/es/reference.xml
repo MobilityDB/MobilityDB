@@ -2803,6 +2803,18 @@
 				<listitem>
 					<para><link linkend="tcell_frombinary"><varname>tcellFromBinary</varname>, <varname>tcellFromHexWKB</varname>, <varname>tcellFromMFJSON</varname></link>: Reconstruir una celda temporal a partir de su representación binaria, hexadecimal o MF-JSON</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (WKB) de una tesela Raquet</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB) de una tesela Raquet</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Devuelve una tesela Raquet a partir de su representación binaria conocida (WKB)</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Devuelve una tesela Raquet a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -2814,6 +2826,12 @@
 				<listitem>
 					<para><link linkend="tcell_seq_const"><varname>tcellInst</varname>, <varname>tcellSeq</varname>, <varname>tcellSeqSet</varname></link>: Construir una celda temporal de un subtipo dado a partir de sus componentes</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raquet"><varname>raquet</varname></link>: Construye una tesela ráster Raquet a partir de sus bytes de píxeles, dimensiones, celda QUADBIN y tipo de píxel</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decodifica un archivo ráster en memoria en una tesela ráster Raquet mediante GDAL</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -2824,6 +2842,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_tgeogpoint"><varname>::</varname></link>: Convertir una celda temporal en un punto temporal geodésico o plano de centroides de celda</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convierte una tesela Raquet en una caja espaciotemporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2838,6 +2859,27 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devolver el identificador de celda en una marca de tiempo dada, usando interpolación de pasos</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Devuelve el número de bandas de un ráster</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_quadbin_accessor"><varname>quadbin</varname></link>: Devuelve la celda QUADBIN de una tesela Raquet</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_width"><varname>width</varname></link>: Devuelve el ancho en píxeles de una tesela Raquet</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_height"><varname>height</varname></link>: Devuelve el alto en píxeles de una tesela Raquet</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Devuelve el valor centinela nodata de una tesela Raquet</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_pixtype"><varname>pixtype</varname></link>: Devuelve el nombre del tipo de dato de píxel de una tesela Raquet</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Devuelve los bytes de píxeles de un mosaico Raquet</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2964,6 +3006,9 @@
 				<listitem>
 					<para><link linkend="tcell_uncompact_cells"><varname>uncompactCells</varname></link>: Representación descompactada en la resolución dada, la inversa de <varname>compactCells</varname></para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raster_quadbins"><varname>quadbins</varname></link>: Devuelve las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -2993,6 +3038,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_tcomp"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Comparaciones temporales</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_comparison"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>&gt;</varname>, <varname>cmp</varname></link>: Compara dos teselas Raquet</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3130,6 +3178,35 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_s2_cell_neighbors"><varname>s2EdgeNeighbors</varname></link>: Devolver las cuatro celdas que comparten una arista con una celda S2</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Operaciones específicas de ráster</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Muestrea una banda de ráster en cada instante de una trayectoria</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Muestrea un arreglo de teselas ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Muestrea un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Devuelve los instantes de una trayectoria donde el valor ráster muestreado cae dentro de un rango de flotante</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_minusRasterValue"><varname>minusRasterValue</varname></link>: Devuelve los instantes de una trayectoria donde el valor ráster muestreado cae fuera de un rango de flotante</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_eRasterValue"><varname>eRasterValue</varname></link>: Devuelve verdadero si la trayectoria alguna vez muestrea un valor de píxel ráster dentro de un rango de flotante</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_aRasterValue"><varname>aRasterValue</varname></link>: Devuelve verdadero si cada instante de la trayectoria dentro de la extensión del ráster muestrea un valor de píxel dentro de un rango de flotante</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3640,117 +3717,6 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tpointcloud_indexes">GiST, SP-GiST, B-tree, and hash opclasses for tpcpoint, tpcpatch, and tpcbox</link></para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-	</sect1>
-
-	<sect1>
-		<title>Raster Sampling</title>
-		<sect2>
-			<title>Entrada y salida</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (WKB) de una tesela Raquet</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB) de una tesela Raquet</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Devuelve una tesela Raquet a partir de su representación binaria conocida (WKB)</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Devuelve una tesela Raquet a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Constructores</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raquet"><varname>raquet</varname></link>: Construye una tesela ráster Raquet a partir de sus bytes de píxeles, dimensiones, celda QUADBIN y tipo de píxel</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decodifica un archivo ráster en memoria en una tesela ráster Raquet mediante GDAL</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Conversión de tipos</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convierte una tesela Raquet en una caja espaciotemporal</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Accesores</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Devuelve el número de bandas de un ráster</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_quadbin_accessor"><varname>quadbin</varname></link>: Devuelve la celda QUADBIN de una tesela Raquet</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_width"><varname>width</varname></link>: Devuelve el ancho en píxeles de una tesela Raquet</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_height"><varname>height</varname></link>: Devuelve el alto en píxeles de una tesela Raquet</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Devuelve el valor centinela nodata de una tesela Raquet</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_pixtype"><varname>pixtype</varname></link>: Devuelve el nombre del tipo de dato de píxel de una tesela Raquet</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Devuelve los bytes de píxeles de un mosaico Raquet</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Funciones que devuelven conjuntos</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raster_quadbins"><varname>quadbins</varname></link>: Devuelve las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Comparaciones</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raquet_comparison"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>&gt;</varname>, <varname>cmp</varname></link>: Compara dos teselas Raquet</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Operaciones específicas de ráster</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Muestrea una banda de ráster en cada instante de una trayectoria</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Muestrea un arreglo de teselas ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Muestrea un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Devuelve los instantes de una trayectoria donde el valor ráster muestreado cae dentro de un rango de flotante</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_minusRasterValue"><varname>minusRasterValue</varname></link>: Devuelve los instantes de una trayectoria donde el valor ráster muestreado cae fuera de un rango de flotante</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_eRasterValue"><varname>eRasterValue</varname></link>: Devuelve verdadero si la trayectoria alguna vez muestrea un valor de píxel ráster dentro de un rango de flotante</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_aRasterValue"><varname>aRasterValue</varname></link>: Devuelve verdadero si cada instante de la trayectoria dentro de la extensión del ráster muestrea un valor de píxel dentro de un rango de flotante</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

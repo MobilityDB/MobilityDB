@@ -45,6 +45,12 @@
 
 	<para>As with other temporal types, a cell index type has four subtypes: <varname>Instant</varname>, discrete sequence, continuous sequence with step interpolation, and <varname>SequenceSet</varname>. Cell identifiers are discrete, so linear interpolation between two of them has no meaning and step interpolation is always used.</para>
 
+	<para>A raster is a tessellation of its own: a grid of pixels laid over a footprint, whose cell is a pixel. It stands in this chapter beside the three global grids, and differs from them in what a cell carries. An H3, QUADBIN or S2 cell carries identity, so what a trajectory over one of them makes is a temporal cell index; a raster cell carries a value, so what a trajectory read against a raster makes is a <varname>tfloat</varname> of the values it passes over, and there is no temporal raster type. The sections below therefore state a raster wherever it answers the operation a cell answers, and state the reading of one along a trip on its own.</para>
+
+	<para>The <ulink url="https://postgis.net/docs/using_raster_dataman.html">PostGIS raster</ulink> extension stores gridded coverage data (elevation, temperature, satellite imagery, …) in the <varname>raster</varname> type. Each raster has one or more bands; a band holds a 2D array of pixel values, a spatial extent, a pixel size, and an optional nodata sentinel value.</para>
+
+	<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> is a cloud-native raster format that stores raster tiles as rows in an Apache Parquet file. Each row holds the pixel bytes for one Web-Mercator tile together with its <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink> cell identifier, a 64-bit integer that encodes the tile's zoom level and Morton-interleaved x/y coordinates. No separate spatial metadata is required: the bounding box and pixel-to-coordinate mapping are fully determined by the QUADBIN value.</para>
+
 	<sect1 xml:id="tcell_notation">
 		<title>Notation</title>
 		<para>Most functions and operators for temporal types described in the previous chapters can be applied to temporal cell index types. Therefore, in the signatures of the functions, the notation <varname>base</varname> represents a <varname>cell</varname> and the notation <varname>ttype</varname> also represents a <varname>tcell</varname>. To avoid redundancy, we present next only the functions and operators specific to the cell index types.</para>
@@ -62,12 +68,17 @@
 			<listitem>
 				<para><varname>geo</varname> and <varname>tgeo</varname> represent the geometry type a grid answers in, planar for QUADBIN and geodetic for H3 and S2.</para>
 			</listitem>
+			<listitem>
+				<para><varname>raster</varname> is the PostGIS raster type and <varname>raquet</varname> a single Web-Mercator raster tile; neither is a cell type, so an operation that reads one names it.</para>
+			</listitem>
 		</itemizedlist>
-
 	</sect1>
 	<sect1 xml:id="tcell_inout">
 		<title>Input and Output</title>
 		<para>A temporal cell value is entered using the standard temporal syntax with the underlying 64-bit cell identifier. The input parser accepts the canonical hexadecimal form each grid publishes — the form the H3 CLI and <varname>h3_cell_to_string</varname> emit, and the form the CARTO reference implementation reads — with an optional <varname>0x</varname> prefix, in either letter case, and at most 16 significant digits. Hexadecimal is idiomatic in all three ecosystems and is what the output function emits, so every example below uses it. The value must also denote something its grid indexes: for H3 a cell, a directed edge or a vertex, so that a well-formed hexadecimal literal such as <varname>12345</varname>, which is none of the three, is rejected rather than stored as a value with no location. For reference, the hexadecimal <varname>480fffffffffffff</varname> used in the examples is the QUADBIN resolution-0 world cell, equal to the decimal <varname>5192650370358181887</varname>.</para>
+
+		<para>The functions <varname>asBinary</varname> and <varname>asHexWKB</varname> serialize a <varname>raquet</varname> value, and <link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link> and <link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link> reconstruct it. A tile carries its pixels and its QUADBIN georeferencing in one value, so it round-trips through a portable byte string with no spatial extension involved, and the hexadecimal form lets a tile column round-trip through a text-based <varname>COPY</varname>. Both output functions accept an optional endianness argument, <varname>NDR</varname> for little-endian or <varname>XDR</varname> for big-endian, defaulting to the endianness of the server.</para>
+
 		<itemizedlist>
 			<listitem xml:id="tcell_in_out">
 				<indexterm significance="normal"><primary><varname>tcell</varname></primary></indexterm>
@@ -129,10 +140,58 @@ SELECT ts2cellFromHexWKB(asHexWKB(ts2cell '47c3c@2001-01-01'));
 -- 47c3c@2001-01-01
 </programlisting>
 			</listitem>
-		</itemizedlist>
-	</sect1>
+
+			<listitem xml:id="raquet_asBinary">
+				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+				<para>Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asBinary(raquet,endian text='') → bytea
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));
+-- 31
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquet_asHexWKB">
+				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+				<para>Return the Hexadecimal Well-Known Binary (HexWKB) representation of a Raquet tile</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asHexWKB(raquet,endian text='') → text
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));
+-- 62
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquetFromBinary">
+				<indexterm significance="normal"><primary><varname>raquetFromBinary</varname></primary></indexterm>
+				<para>Return a Raquet tile from its Well-Known Binary (WKB) representation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raquetFromBinary(bytea) → raquet
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
+-- true
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquetFromHexWKB">
+				<indexterm significance="normal"><primary><varname>raquetFromHexWKB</varname></primary></indexterm>
+				<para>Return a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raquetFromHexWKB(text) → raquet
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_constructors">
 		<title>Constructors</title>
+		<para>A <varname>raquet</varname> tile is built either from pixel bytes already in hand or by decoding a raster file, and carries its QUADBIN georeferencing in the value itself.</para>
+
 		<itemizedlist>
 			<listitem xml:id="tcell_const">
 				<indexterm significance="normal"><primary><varname>tcell</varname></primary></indexterm>
@@ -180,12 +239,44 @@ SELECT ts2cellSeq(ARRAY[ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02'], 
 -- [47c3c@2001-01-01, 47c4@2001-01-02]
 </programlisting>
 			</listitem>
-		</itemizedlist>
-	</sect1>
+
+			<listitem xml:id="raquet">
+				<indexterm significance="normal"><primary><varname>raquet</varname></primary></indexterm>
+				<para>Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raquet(bytea,width integer,height integer,quadbin bigint,pixtype text,
+  nodata float8) → raquet
+</programlisting>
+				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. Pixels of more than one byte are little-endian, which is the byte order the RaQuet specification gives them whatever the byte order of the server, so that a tile keeps its values when it is read on another machine. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Package the loose tile columns of a Raquet table into raquet values
+SELECT raquet(band_data, width, height, quadbin, 'float32',
+  nodata) AS tile FROM elevation_raquet;
+-- A 2 x 2 UINT8 tile with no nodata
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquetRead">
+				<indexterm significance="normal"><primary><varname>raquetRead</varname></primary></indexterm>
+				<para>Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raquetRead(bytea,quadbin bigint) → raquet
+</programlisting>
+				<para>Reads the bytes of <varname>rasterfile</varname>, a raster in any format GDAL supports (GeoTIFF, PNG, …), through GDAL's <varname>/vsimem/</varname> virtual filesystem, and packs its first band, row-major, into a single self-describing <varname>raquet</varname> value georeferenced by the <varname>quadbin</varname> cell. The band data type must be one of <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname>, or <varname>Float64</varname>; the band nodata value, when set, is carried into the tile. Because the file is supplied as bytes, no server-side file access is required. GDAL performs the decode, so the raster's format driver must be permitted by PostGIS's <varname>postgis.gdal_enabled_drivers</varname> setting (which disables all drivers by default); enable it with, for example, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. This is the ingest counterpart of the <link linkend="raquet"><varname>raquet</varname></link> constructor, which builds a tile from already-decoded pixel bytes. When <varname>quadbin</varname> is omitted or <varname>NULL</varname>, the tile identifier is derived from the raster's georeferencing: the raster must carry an <varname>EPSG:3857</varname> (Web-Mercator) spatial reference and an axis-aligned geotransform describing a single QUADBIN tile. A raster with no spatial reference, one that is not in <varname>EPSG:3857</varname>, or a geotransform that is rotated or not aligned to the tile grid raises an error rather than being coerced.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Decode a GeoTIFF stored in a bytea column into a raquet tile
+SELECT raquetRead(file_bytes, quadbin) AS tile FROM elevation_files;
+-- Derive the QUADBIN cell from an EPSG:3857 GeoTIFF's georeferencing
+SELECT raquetRead(file_bytes) AS tile FROM elevation_files;
+</programlisting>
+			</listitem>
+		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_conversions">
 		<title>Conversions</title>
 
 		<para>A <varname>tcell</varname> value shares the same on-disk representation as <varname>tbigint</varname>. The binary-coercion cast between them is <emphasis>explicit</emphasis>, requiring <varname>::</varname>, so cell-specific functions cannot be silently called on arbitrary bigint trajectories.</para>
+
+		<para>A tile converts to the spatiotemporal box of its footprint, which is what gives a table of tiles a spatial index.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tcell_tbigint">
@@ -223,10 +314,41 @@ SELECT asText((ts2cell '47c3c@2001-01-01')::tgeogpoint, 6);
 -- POINT(4.222019 50.936164)@2001-01-01
 </programlisting>
 			</listitem>
-		</itemizedlist>
-	</sect1>
+
+			<listitem xml:id="raquet_to_stbox">
+				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
+				<para>Convert a Raquet tile into a spatiotemporal box</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stbox(raquet) → stbox
+</programlisting>
+				<para>Returns the tile footprint: the longitude and latitude envelope of its QUADBIN cell, in SRID 4326 and without a time dimension. The footprint follows from the cell alone, so tiles differing in pixels, dimensions or pixel type share it. The conversion is also available as a cast.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The footprint of a tile covering the north-eastern quadrant at zoom 1
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')), 6);
+-- SRID=4326;STBOX X((0,0),(180,85.051129))
+-- Keep the tiles whose footprint overlaps a region of interest
+SELECT * FROM elevation_tiles WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;
+  STBOX X((0,0),(30,30))';
+</programlisting>
+				<para>The footprint carries the <varname>stbox</varname> operators, aggregates and operator classes, so a tile table is searched by spatial overlap at any zoom level rather than by an equality test on the QUADBIN cell at a single fixed one. Indexing the conversion gives the tile table a spatial index, and the extent of a set of tiles is the extent of their footprints.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A spatial index over the tile footprints
+CREATE INDEX elevation_tiles_gist ON elevation_tiles USING gist (stbox(tile));
+CREATE INDEX elevation_tiles_spgist ON elevation_tiles USING spgist (stbox(tile));
+-- The extent covered by a set of tiles
+SELECT extent(stbox(tile)) FROM elevation_tiles;
+-- Tiles a trajectory passes through, at whatever zoom levels the table holds
+SELECT t.tripid, r.tile FROM trips t,
+  elevation_tiles r WHERE stbox(r.tile) &amp;&amp; stbox(t.trip);
+</programlisting>
+			</listitem>
+		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_accessors">
 		<title>Accessors</title>
+		<para><link linkend="raster_numBands"><varname>numBands</varname></link> reads the band count of a PostGIS <varname>raster</varname>; the accessors that follow read a <varname>raquet</varname> tile.</para>
+
+		<para>A <varname>raquet</varname> value is self-describing: the accessors below read back the georeferencing and layout it carries, so a tile packaged with the <link linkend="raquet"><varname>raquet</varname></link> constructor or decoded with <link linkend="raquetRead"><varname>raquetRead</varname></link> can be inspected without keeping the loose columns it was built from.</para>
+
 		<itemizedlist>
 			<listitem xml:id="tcell_startValue">
 				<indexterm significance="normal"><primary><varname>startValue</varname></primary></indexterm>
@@ -302,8 +424,98 @@ SELECT valueAtTimestamp(ts2cell '47c3c@2001-01-01', timestamptz '2001-01-01');
 -- 47c3c
 </programlisting>
 			</listitem>
-		</itemizedlist>
-	</sect1>
+
+			<listitem xml:id="raster_numBands">
+				<indexterm significance="normal"><primary><varname>numBands</varname></primary></indexterm>
+				<para>Return the number of bands of a raster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+numBands(raster) → integer
+</programlisting>
+				<para>The band number accepted by <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> and by the operators built on it ranges from 1 to this value.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast1 AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8 ) AS r ), rast2 AS (
+  SELECT ST_AddBand(r, '32BF'::text, 0.0::float8, NULL::float8) AS r FROM rast1 )
+SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
+  numBands((SELECT r FROM rast2)) AS num_bands_two;
+-- 1 | 2
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquet_quadbin_accessor">
+				<indexterm significance="normal"><primary><varname>quadbin</varname></primary></indexterm>
+				<para>Return the QUADBIN cell of a Raquet tile</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+quadbin(raquet) → bigint
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 5193776270265024512
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquet_width">
+				<indexterm significance="normal"><primary><varname>width</varname></primary></indexterm>
+				<para>Return the width in pixels of a Raquet tile</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+width(raquet) → integer
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 2
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquet_height">
+				<indexterm significance="normal"><primary><varname>height</varname></primary></indexterm>
+				<para>Return the height in pixels of a Raquet tile</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+height(raquet) → integer
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 2
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquet_nodata">
+				<indexterm significance="normal"><primary><varname>nodata</varname></primary></indexterm>
+				<para>Return the nodata sentinel value of a Raquet tile</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+nodata(raquet) → float8
+</programlisting>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8', 255));
+-- 255
+-- The sentinel defaults to 0 when the constructor omits it.
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 0
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquet_pixtype">
+				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
+				<para>Return the name of the pixel data type of a Raquet tile</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pixtype(raquet) → text
+</programlisting>
+				<para>The returned name is the one the constructors accept, that is, one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>. The constructors read the name without regard to case, so the name PostGIS raster gives a pixel type carries into them as it stands; the name returned here is the lower-case spelling the RaQuet specification gives a tile's <varname>type</varname> field, so it compares equal to that field as it stands.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Read back the layout of a packaged tile
+SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
+-- 5193776270265024512 | 2 | 2 | uint8 | 0
+</programlisting>
+			</listitem>
+			<listitem xml:id="raquet_pixels">
+				<indexterm significance="normal"><primary><varname>pixels</varname></primary></indexterm>
+				<para>Return the pixel bytes of a Raquet tile</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pixels(raquet) → bytea
+</programlisting>
+				<para>The bytes are row-major and packed, <varname>width</varname> × <varname>height</varname> pixels of the size of <varname>pixtype</varname> each, little-endian when a pixel is wider than one byte, which is the layout the constructors accept. A tile therefore round trips through its own accessors.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- \x01020304
+</programlisting>
+			</listitem>
+		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_transformations">
 		<title>Transformations</title>
 		<itemizedlist>
@@ -819,6 +1031,8 @@ SELECT cellArea(ts2cell '47c3c@2001-01-01');
 		<title>Set-Returning Functions</title>
 		<para>The following static helpers return a <varname>cellset</varname>, the finite-collection companion type of <varname>cell</varname>. They operate on a static <varname>cell</varname> or on a <varname>cellset</varname> and are not lifted to <varname>tcell</varname>, the temporal lift being deferred pending a <varname>tset&lt;T&gt;</varname> primitive.</para>
 
+		<para>The QUADBIN cells a trajectory covers are returned as an array, which is the join key a Raquet table is read by.</para>
+
 		<itemizedlist>
 			<listitem xml:id="tcell_grid_disk">
 				<indexterm significance="normal"><primary><varname>gridDisk</varname></primary></indexterm>
@@ -890,8 +1104,25 @@ SELECT numValues(h3UncompactCells(h3CompactCells(
 
 
 
-		</itemizedlist>
-	</sect1>
+
+			<listitem xml:id="raster_quadbins">
+				<indexterm significance="normal"><primary><varname>quadbins</varname></primary></indexterm>
+				<para>Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+quadbins(tgeompoint,zoom integer) → bigint[]
+</programlisting>
+				<para>Returns the set of unique QUADBIN cells the trajectory covers. A trajectory that states nothing between its instants covers the tiles holding them; one that moves between them also covers the tiles it crosses on the way, and the segment is walked at half a tile to find them, the tile narrowing towards the poles as its Web-Mercator envelope does. The result is suitable as a WHERE-clause join key against a Raquet table, where a tile the trip crosses but the set omits is a tile the join never reads. <varname>zoom</varname> must be in [0, 15].</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Three instants spanning three tiles at zoom 3
+SELECT quadbins(tgeompoint 'SRID=4326;
+  {Point(-60 45)@2024-01-01, Point(0 45)@2024-01-02, Point(60 45)@2024-01-03}', 3);
+-- {5202501994543054848,5203346419473186816,5203416788217364480}
+-- Count of Raquet tiles a ship trajectory overlaps at zoom 8
+SELECT array_length(quadbins(trip, 8),
+  1) AS tile_count FROM trips ORDER BY tile_count DESC;
+</programlisting>
+			</listitem>
+		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_everalways_rels">
 		<title>Ever and Always Relationships</title>
 		<itemizedlist>
@@ -975,6 +1206,8 @@ SELECT tIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
 	</sect1>
 	<sect1 xml:id="tcell_comparisons">
 		<title>Comparisons</title>
+		<para>Tiles also support the full set of comparison operators. The ordering is total and is defined on the QUADBIN cell first, then the pixel type, the width, the height, and finally the pixel bytes; it is meant for indexing and deduplication rather than for a spatial interpretation. A default btree operator class makes <varname>ORDER BY</varname>, <varname>DISTINCT</varname> and merge joins work on <varname>raquet</varname> columns, and a default hash operator class enables hash joins and hash aggregation.</para>
+
 		<itemizedlist>
 		<listitem xml:id="tcell_comp">
 			<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
@@ -1036,8 +1269,30 @@ SELECT ts2cell '47c3c@2001-01-01' #= s2cell '47c3c';
 -- t@2001-01-01
 </programlisting>
 		</listitem>
-		</itemizedlist>
-	</sect1>
+
+			<listitem xml:id="raquet_comparison">
+				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
+				<para>Compare two Raquet tiles</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raquet {=, &lt;&gt;, &lt;, &lt;=, &gt;=, &gt;} raquet → boolean
+</programlisting>
+				<para>The functions backing these operators are <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> and <varname>gt</varname>, together with <varname>cmp(raquet,raquet) → integer</varname>, which returns -1, 0, or 1.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Two tiles with the same cell, layout and pixels are equal
+SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512,
+  'uint8') = raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'uint8');
+-- true
+-- Deduplicate tiles, which the btree and hash operator classes support
+SELECT DISTINCT tile FROM elevation_tiles;
+</programlisting>
+			</listitem>
+		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_aggregations">
 		<title>Aggregations</title>
 		<para>The aggregate functions for temporal cells are illustrated next.</para>
@@ -1636,4 +1891,200 @@ SELECT s2EdgeNeighbors(s2cell '47c3c3');
 		<para>A region covering, which answers the set of cells approximating an arbitrary geometry, is the one S2 operation this chapter states no signature for: the S2 libraries publish it and MobilityDB does not yet carry a kernel for it.</para>
 	</sect1>
 
+	<sect1 xml:id="tcell_raster_specific">
+		<title>Raster-Specific Operations</title>
+
+		<para>The sections above state what a raster shares with the other tessellations. The operations below are the raster's own: a raster cell carries a <emphasis>value</emphasis> where an H3, QUADBIN or S2 cell carries only identity, so a trajectory read against a raster answers a <varname>tfloat</varname> rather than a temporal cell.</para>
+
+		<para>MobilityDB's raster sampling operator evaluates a raster band at the instants of a moving-point trajectory and returns a <varname>tfloat</varname>. Instants whose position falls outside the raster extent or on a nodata pixel are silently dropped. The sampling operators are double-valued whatever the pixel type of the band, so a pixel type belongs to the sampling surface when every value it can hold is exactly representable in a double precision number. That is what lets a band of any type be sampled into one <varname>tfloat</varname>, and a column holding tiles of several pixel types be read by a single query. A pixel type is also accepted under the name PostGIS raster gives it, so the band type an <varname>ST_BandPixelType</varname> call reports (<varname>8BUI</varname>, <varname>16BSI</varname>, <varname>32BF</varname>, …) passes into the tile constructors as it stands. PostGIS raster carries no 16-bit float and no 64-bit integer, so <varname>float16</varname>, <varname>int64</varname> and <varname>uint64</varname> take the spelling its grammar gives them, <varname>16BF</varname>, <varname>64BSI</varname> and <varname>64BUI</varname>. Its <varname>1BB</varname>, <varname>2BUI</varname> and <varname>4BUI</varname> types bound a pixel to less than a byte while PostGIS stores each of them a byte a pixel, so such a band is already the bytes of an unsigned 8-bit band and the constructors read it as <varname>uint8</varname>; the bound is the only thing the name adds, and a tile does not carry it. The name a tile reports is the one the RaQuet specification gives the type.
+
+The types <varname>uint64</varname> and <varname>int64</varname> hold values beyond that domain: a tile of either is stored and read back exactly, while sampling a pixel whose value no double precision number names raises an error rather than answering with a neighbouring value. This enables queries such as <emphasis>what elevation profile did each vehicle follow?</emphasis> or <emphasis>which trips entered a temperature threshold band?</emphasis></para>
+
+		<para>The typical query pattern joins a trajectory against a Raquet table in two steps:</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Step 1: identify which tiles the trajectory overlaps
+SELECT DISTINCT q FROM unnest(quadbins(traj, 8)) AS q;
+-- Step 2: sample each matching tile
+SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32', nodata,
+  true) FROM elevation_raquet WHERE quadbin = ANY(quadbins(traj, 8));
+</programlisting>
+
+		<para>The restriction and predicate operators that close the section compose <varname>rasterValue</varname> with the standard MobilityDB temporal restriction and predicate functions. They accept an optional <varname>band</varname> argument (default 1) and call <varname>rasterValue</varname> exactly once per invocation.</para>
+
+		<itemizedlist>
+			<listitem xml:id="raster_rasterValue">
+				<indexterm significance="normal"><primary><varname>rasterValue</varname></primary></indexterm>
+				<para>Sample a raster band at each instant of a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
+</programlisting>
+				<para>Reads band <varname>band</varname> along <varname>traj</varname>, taking the value of the pixel each position falls in. A trajectory that states nothing between its instants is read at its instants and answers an instant-set <varname>tfloat</varname>. A trajectory that moves between them passes over the pixels between them, so it is walked at half a pixel, the step at which a hexagonal cell index is walked, and answers a step <varname>tfloat</varname> holding each value until the trip reaches a pixel holding another. A position outside the raster or over a nodata pixel carries no value and ends the run, so a trip that leaves and re-enters the raster answers one sequence per visit, and <varname>NULL</varname> when it never meets a pixel carrying data.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r)::text FROM rast;
+-- {10@2001-01-01, 30@2001-01-02, 70@2001-01-03}
+</programlisting>
+				<para>Applied to a trajectory dataset with a terrain elevation raster:</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Elevation profile per trip (requires a loaded elevation raster)
+SELECT tripid, rasterValue(trip, elev) AS elevation FROM trips, elevation_raster;
+-- Average elevation per trip
+SELECT tripid, avgValue(rasterValue(trip, elev)) AS mean_elev FROM trips,
+  elevation_raster;
+-- Trips that crossed terrain above 200 m
+SELECT tripid FROM trips, elevation_raster
+WHERE atSpan(rasterValue(trip, elev), floatspan '[200, 9999]') IS NOT NULL;
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_rasterTileValue">
+				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
+				<para>Sample a <varname>raquet</varname> raster tile along a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterTileValue(tgeompoint,rast raquet) → tfloat
+</programlisting>
+				<para>Evaluates the tile at each instant of <varname>traj</varname> (SRID 4326), returning the sampled pixel values as a <varname>tfloat</varname>. This is the typed equivalent of <link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: the dimensions, QUADBIN cell, pixel type and nodata handling are taken from the <varname>raquet</varname> value instead of from separate arguments. Returns <varname>NULL</varname> when no instant falls inside the tile or survives nodata filtering.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Sample pre-packaged raquet tiles along ship trajectories
+SELECT t.tripid, rasterTileValue(t.trip, r.tile)
+FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8));
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_rasterTileValueArray">
+				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
+				<para>Sample an array of <varname>raquet</varname> raster tiles along a trajectory</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterTileValue(tgeompoint,rast raquet[]) → tfloat
+</programlisting>
+				<para>Evaluates every tile of <varname>rast</varname> at each instant of <varname>traj</varname> (SRID 4326) and returns the sampled pixel values as a single <varname>tfloat</varname>. A trajectory that leaves one tile is covered by several of them, each contributing the instants that fall inside it. Tiles of one zoom level partition the plane, so they contribute disjoint instants. Tiles of different zoom levels overlap, and where two of them sample the same instant the value of the tile of higher zoom is kept, that being the one carrying the finer resolution. Returns <varname>NULL</varname> when no instant falls inside a tile or survives nodata filtering.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Sample a trajectory across every tile it crosses, in one value
+SELECT t.tripid, rasterTileValue(t.trip, array_agg(r.tile)) FROM trips t
+JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8)) GROUP BY t.tripid, t.trip;
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_rasterTileValueQuadbin">
+				<indexterm significance="normal"><primary><varname>rasterTileValueQuadbin</varname></primary></indexterm>
+				<para>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterTileValueQuadbin(tgeompoint,pixels bytea,width integer,height integer,
+  quadbin bigint,pixtype text,nodata float8,has_nodata boolean) → tfloat
+</programlisting>
+				<para>Evaluates a row-major single-band pixel array at each instant of <varname>traj</varname> (SRID 4326). The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <varname>quadbin</varname> alone via the Web-Mercator slippy-tile transform. The <varname>pixtype</varname> argument must be one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>. When <varname>has_nodata</varname> is true, instants whose pixel equals <varname>nodata</varname> are silently dropped. Returns <varname>NULL</varname> when no instant survives.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Sample elevation tiles from a Raquet Parquet table for all ship trajectories
+SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_data, r.width, r.height,
+  r.quadbin, 'float32', r.nodata, true) FROM trips t
+JOIN elevation_raquet r ON r.quadbin = ANY(quadbins(t.trip, 8));
+-- Average sea-surface temperature per trajectory
+SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
+  r.band_data, 256, 256, r.quadbin, 'int16', -9999, true)) AS mean_sst FROM trips t
+JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_atRasterValue">
+				<indexterm significance="normal"><primary><varname>atRasterValue</varname></primary></indexterm>
+				<para>Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+atRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
+</programlisting>
+				<para>Evaluates <varname>rasterValue</varname> at every instant of <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no instant satisfies the condition.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT asText(atRasterValue(tgeompoint 'SRID=4326;
+  [POINT(0.5 2.5)@2001-01-01, POINT(1.5 1.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r,
+  floatspan '[40, 90]')) FROM rast;
+-- {[POINT(1.5 1.5)@2001-01-02], [POINT(0.5 0.5)@2001-01-03]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_minusRasterValue">
+				<indexterm significance="normal"><primary><varname>minusRasterValue</varname></primary></indexterm>
+				<para>Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
+</programlisting>
+				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when every instant satisfies the condition.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Keep only the instant whose raster value (10) is below 40
+SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM trips,
+  elevation_raster;
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_eRasterValue">
+				<indexterm significance="normal"><primary><varname>eRasterValue</varname></primary></indexterm>
+				<para>Return true if the trajectory ever samples a raster pixel value inside a float range</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+eRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
+</programlisting>
+				<para>Returns <varname>true</varname> when at least one in-extent instant of <varname>traj</varname> samples a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Trips that ever crossed terrain above 200 m
+SELECT tripid FROM trips,
+  elevation_raster WHERE eRasterValue(trip, elev_raster, floatspan '[200, 9999]');
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_aRasterValue">
+				<indexterm significance="normal"><primary><varname>aRasterValue</varname></primary></indexterm>
+				<para>Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+aRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
+</programlisting>
+				<para>Returns <varname>true</varname> when every in-extent instant of <varname>traj</varname> samples a pixel value within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Trips that stayed entirely below 100 m elevation
+SELECT tripid FROM trips,
+  elevation_raster WHERE aRasterValue(trip, elev_raster, floatspan '[0, 100]');
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
+		<para>To use the operators described here, MobilityDB must be built with <varname>-DRASTER=ON</varname>. On such a build the generated <filename>mobilitydb.control</filename> declares <varname>requires = 'postgis, postgis_raster'</varname>, so a single <varname>CASCADE</varname> creates the full stack:</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE EXTENSION mobilitydb CASCADE;
+-- NOTICE:  installing required extension "postgis"
+-- NOTICE:  installing required extension "postgis_raster"
+</programlisting>
+
+		<para>PostGIS raster is part of the standard <varname>postgresql-<replaceable>N</replaceable>-postgis-3</varname> package on Debian/Ubuntu; no extra package is required. Pass <varname>-DRASTER=ON</varname> to CMake:</para>
+		<programlisting language="bash" xml:space="preserve" format="linespecific">
+cmake -DRASTER=ON ..
+make -j$(nproc)
+sudo make install
+</programlisting>
+		<para>To include raster in the CI coverage build alongside other optional families, add <varname>-DRASTER=ON</varname> to the cmake invocation in <filename>.github/workflows/pgversion.yml</filename>.</para>
+	</sect1>
+
+	<sect1 xml:id="raster_roadmap">
+		<title>Production Roadmap</title>
+
+		<para>The two paths described in this chapter serve different purposes and are both maintained. The <varname>raquet</varname> path is a self-contained MEOS value type: it carries its pixels and its QUADBIN georeferencing in a single value and needs no PostgreSQL to evaluate, so it is available to every language binding derived from MEOS. The PostGIS <varname>raster</varname> path offers the far richer raster processing of the <varname>postgis_raster</varname> extension, map algebra, statistics, resampling, clipping, conversion to polygons, inside PostgreSQL only.</para>
+
+		<para>Neither path replaces the other. Work on the <varname>raquet</varname> path extends what a cloud-native tile can do along a trajectory; it is not an attempt to reimplement raster processing.</para>
+
+		<para>A multi-spectral coverage is read band by band on either path. The RaQuet specification gives each band of a tile a column of its own, <varname>band_1</varname>, <varname>band_2</varname> and so on, so such a coverage is a set of single-band tiles sharing one QUADBIN cell and <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> samples the band it is given, while on the PostGIS <varname>raster</varname> path the <varname>band</varname> argument names it. What a <varname>raquet</varname> value does not carry is the interleaved layout the specification offers for RGB imagery, which packs the bands of a tile into a single JPEG- or WebP-compressed column.</para>
+
+		<para>The extensions below require a general raster data model, that is, arbitrary spatial reference systems and arbitrary affine georeferencing. The extent and the pixel grid of a <varname>raquet</varname> value follow from its QUADBIN cell, so these lie outside that model and remain available through the PostGIS <varname>raster</varname> path:</para>
+		<itemizedlist>
+			<listitem><para><emphasis>Arbitrary spatial reference systems</emphasis>, tiles outside the Web-Mercator grid, and reprojection between reference systems.</para></listitem>
+			<listitem><para><emphasis>Raster processing</emphasis>, map algebra, summary statistics, resampling, and conversion to polygons, together with clipping a tile to a region, such as the extent a set of trajectories visits over a time interval.</para></listitem>
+		</itemizedlist>
+	</sect1>
 </chapter>

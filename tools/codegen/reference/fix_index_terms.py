@@ -78,9 +78,9 @@ REPLACE = [
     ("doc/es/temporal_network_points.xml", "tnpoint_ever_always",
      ["?=", "%="]),
     # a comparison entry indexes the operators it documents, as its siblings do
-    ("doc/temporal_raster.xml", "raquet_comparison",
+    ("doc/temporal_cell_index.xml", "raquet_comparison",
      ["=", "&lt;&gt;", "&lt;", "&lt;=", "&gt;=", "&gt;", "cmp"]),
-    ("doc/es/temporal_raster.xml", "raquet_comparison",
+    ("doc/es/temporal_cell_index.xml", "raquet_comparison",
      ["=", "&lt;&gt;", "&lt;", "&lt;=", "&gt;=", "&gt;", "cmp"]),
 ]
 

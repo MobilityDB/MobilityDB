@@ -29,7 +29,6 @@
 <!ENTITY temporal_jsonb SYSTEM "temporal_jsonb.xml">
 <!ENTITY temporal_cell_index SYSTEM "temporal_cell_index.xml">
 <!ENTITY temporal_pointcloud SYSTEM "temporal_pointcloud.xml">
-<!ENTITY temporal_raster SYSTEM "temporal_raster.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY portable_sql SYSTEM "portable_sql.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
@@ -137,7 +136,6 @@
 	&temporal_jsonb;
 	&temporal_cell_index;
 	&temporal_pointcloud;
-	&temporal_raster;
 	&reference;
 	&portable_sql;
 	&data_generator;
