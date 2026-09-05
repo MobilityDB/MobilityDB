@@ -1360,6 +1360,10 @@ buffer_locator_free(BufferLocator *loc)
  * for every point
  * @param[in,out] loc Locator, whose edges are read on the first call
  * @param[in] x,y Point to locate
+ * @return
+ *   0 = interior
+ *   1 = boundary
+ *   2 = exterior
  */
 static int
 buffer_locator_point(BufferLocator *loc, double x, double y)
@@ -1386,24 +1390,6 @@ buffer_locator_point(BufferLocator *loc, double x, double y)
   if (loc->re.nedges == 0)
     return 2;
   return relate_point_in_area_index(x, y, &loc->re);
-}
-
-/**
- * @brief Return the location of a point with respect to a buffer.
- * @return
- *   0 = interior
- *   1 = boundary
- *   2 = exterior
- */
-static int
-buffer_point_location(const LWGEOM *geom, double x, double y)
-{
-  assert(geom);
-  BufferLocator loc;
-  buffer_locator_make(&loc, geom, 1);
-  int result = buffer_locator_point(&loc, x, y);
-  buffer_locator_free(&loc);
-  return result;
 }
 
 /**
@@ -1455,8 +1441,15 @@ buffer_is_contained(const LWGEOM *inner, const LWGEOM *outer)
   double y1 = y + ny * epsilon;
   double x2 = x - nx * epsilon;
   double y2 = y - ny * epsilon;
-  int loc1 = buffer_point_location(outer, x1, y1);
-  int loc2 = buffer_point_location(outer, x2, y2);
+  /* Both probes ask about the SAME geometry, so they share one locator, which
+   * reads the edges of @p outer once and answers both from them. A locator per
+   * point extracts that geometry once per point instead, which is what
+   * #buffer_locator_point's own `ready` flag exists to avoid */
+  BufferLocator outer_loc;
+  buffer_locator_make(&outer_loc, outer, 2);
+  int loc1 = buffer_locator_point(&outer_loc, x1, y1);
+  int loc2 = buffer_locator_point(&outer_loc, x2, y2);
+  buffer_locator_free(&outer_loc);
 
   /* If either side of the boundary is inside the outer buffer, the candidate
    * buffer is contained in it, provided the boundaries are known not to
@@ -2320,7 +2313,7 @@ buffer_piece_interior_side(const BufferPiece *piece, BufferLocator *geom)
     int left_loc = buffer_locator_point(geom, left.x, left.y);
     int right_loc = buffer_locator_point(geom, right.x, right.y);
 
-    /* buffer_point_location():
+    /* #buffer_locator_point():
      *   0 = interior
      *   1 = boundary
      *   2 = exterior */
