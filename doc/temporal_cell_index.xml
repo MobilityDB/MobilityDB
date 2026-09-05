@@ -9,9 +9,9 @@
    ****************************************************************************
 -->
 <chapter xml:id="tcell">
-	<title>Temporal Cell Index Types</title>
+	<title>Temporal Tessellations</title>
 
-	<para>A <emphasis>discrete global grid system</emphasis> (DGGS) partitions the Earth into a hierarchy of cells, each identified by a 64-bit integer, so that a position becomes a cell identifier and a containment test becomes an integer comparison. MobilityDB supports three of them, and a temporal cell index type records the movement of an object as the sequence of cells it occupies over time.</para>
+	<para>A <emphasis>discrete global grid system</emphasis> (DGGS) partitions the Earth into a hierarchy of cells, each identified by a 64-bit integer, so that a position becomes a cell identifier and a containment test becomes an integer comparison. MobilityDB supports three of them, and a temporal cell index type records the movement of an object as the sequence of cells it occupies over time. Each grid tessellates the Earth, and these three tessellate it globally: a cell identifier names a cell of one of them wherever it is read, which is what lets a temporal type carry cells and nothing else.</para>
 
 	<informaltable frame="all">
 		<tgroup cols="5" align="left" colsep="1" rowsep="1">

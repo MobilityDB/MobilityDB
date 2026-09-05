@@ -9,9 +9,9 @@
    ****************************************************************************
 -->
 <chapter xml:id="tcell">
-	<title>Tipos de índices de celdas temporales</title>
+	<title>Teselaciones temporales</title>
 
-	<para>Un <emphasis>sistema de cuadrícula global discreta</emphasis> (DGGS) divide la Tierra en una jerarquía de celdas, cada una identificada por un entero de 64 bits, de modo que una posición se convierte en un identificador de celda y una prueba de contención se convierte en una comparación de enteros. MobilityDB admite tres de ellos, y un tipo de índice de celda temporal registra el movimiento de un objeto como la secuencia de celdas que ocupa a lo largo del tiempo.</para>
+	<para>Un <emphasis>sistema de cuadrícula global discreta</emphasis> (DGGS) divide la Tierra en una jerarquía de celdas, cada una identificada por un entero de 64 bits, de modo que una posición se convierte en un identificador de celda y una prueba de contención se convierte en una comparación de enteros. MobilityDB admite tres de ellos, y un tipo de índice de celda temporal registra el movimiento de un objeto como la secuencia de celdas que ocupa a lo largo del tiempo. Cada cuadrícula tesela la Tierra, y estas tres la teselan globalmente: un identificador de celda nombra una celda de una de ellas dondequiera que se lea, que es lo que permite a un tipo temporal transportar celdas y nada más.</para>
 
 	<informaltable frame="all">
 		<tgroup cols="5" align="left" colsep="1" rowsep="1">
