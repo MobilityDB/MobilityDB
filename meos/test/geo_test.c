@@ -1664,11 +1664,12 @@ int main(void)
     free(ew); free(er); free(ea); free(eb);
     meos_errno_reset();
   }
-  /* WHAT THE OVERLAY KEEPS ANSWERING BECAUSE THIS ARM DECLINES IT. Two discs
+  /* TWO SURFACES SHARING NO AREA STILL SHARE WHAT THEY MEET AT. Two discs
    * touching at one point share that point, and a point is of lower dimension
-   * than the surfaces the arm assembles. Answering the region of no area there
-   * would drop a point set that is really there, so the pair goes on to the
-   * route that draws it */
+   * than the surfaces the arm assembles -- so the meeting is read off the
+   * nodes the overlay already solved on the two circles, which is exact,
+   * rather than answered as the region of no area, which would drop a point
+   * set that is really there */
   GSERIALIZED *tg1 = geom_in("CURVEPOLYGON(CIRCULARSTRING(0 0,1 1,2 0,1 -1,"
     "0 0))", -1);
   GSERIALIZED *tg2 = geom_in("CURVEPOLYGON(CIRCULARSTRING(2 0,3 1,4 0,3 -1,"
@@ -1690,6 +1691,51 @@ int main(void)
   printf("the first of them less the second: %.44s\n", tgdw);
   assert(strstr(tgdw, "CIRCULARSTRING") != NULL);
   free(tgdw); free(tgd); free(tg1); free(tg2);
+  meos_errno_reset();
+  /* AND THE POINT IS NOT A VERTEX ANY READING KEEPS BY LUCK. Turned off the
+   * axes, the tangent point of the pair above is an ordinary point of both
+   * arcs rather than a cardinal point of either circle, and a reading that
+   * replaces an arc by chords loses it -- the chords of two circles touching
+   * at such a point do not meet at all. Solved on the circles it is exactly
+   * the midpoint of the segment joining the two centres, which is what this
+   * asserts: radius 2 about the origin and about (2*sqrt(3), 2) touch at
+   * (sqrt(3), 1) */
+  GSERIALIZED *rt1 = geom_in("CURVEPOLYGON(CIRCULARSTRING(-2 0,0 2,2 0,0 -2,"
+    "-2 0))", -1);
+  GSERIALIZED *rt2 = geom_in("CURVEPOLYGON(CIRCULARSTRING("
+    "1.4641016151377544 2,3.4641016151377544 4,5.4641016151377544 2,"
+    "3.4641016151377544 0,1.4641016151377544 2))", -1);
+  assert(rt1 != NULL); assert(rt2 != NULL);
+  meos_errno_reset();
+  GSERIALIZED *rti = geom_intersection2d(rt1, rt2);
+  assert(rti != NULL);
+  char *rtw = geo_as_text(rti, 6);
+  printf("two discs touching off the axes share: %s\n", rtw);
+  assert(strcmp(rtw, "POINT(1.732051 1)") == 0);
+  free(rtw); free(rti); free(rt1); free(rt2);
+  meos_errno_reset();
+  /* THE MEETING IS NOT ALWAYS A POINT SET, AND THAT IS WHAT THE NODES CANNOT
+   * SAY. Two half discs glued along their diameter meet along the whole of
+   * it, and the nodes bounding that stretch are its two ENDS -- they state
+   * where the meeting begins and ends, never what it draws. So the pair is
+   * left to the route below rather than answered from them, and what this
+   * asserts is that whatever comes back is not a point set */
+  GSERIALIZED *hd1 = geom_in("CURVEPOLYGON(COMPOUNDCURVE("
+    "CIRCULARSTRING(-2 0,0 2,2 0),(2 0,-2 0)))", -1);
+  GSERIALIZED *hd2 = geom_in("CURVEPOLYGON(COMPOUNDCURVE("
+    "CIRCULARSTRING(2 0,0 -2,-2 0),(-2 0,2 0)))", -1);
+  assert(hd1 != NULL); assert(hd2 != NULL);
+  meos_errno_reset();
+  GSERIALIZED *hdi = geom_intersection2d(hd1, hd2);
+  char *hdw = hdi ? geo_as_text(hdi, 6) : NULL;
+  printf("two half discs sharing their diameter answer: %s\n",
+    hdw ? hdw : "nothing");
+  assert(hdw == NULL || strstr(hdw, "POINT") == NULL);
+  if (hdw)
+    free(hdw);
+  if (hdi)
+    free(hdi);
+  free(hd1); free(hd2);
   meos_errno_reset();
   /* A BOUNDARY THE TWO SHARE IS PLACED, NOT DECLINED. Every piece of the
    * stretch they share lies on both boundaries, so which side each interior
