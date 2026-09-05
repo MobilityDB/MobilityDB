@@ -143,7 +143,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5725c86bdf4ad4a115ad37e404e639a7.html#a5725c86bdf4ad4a115ad37e404e639a7">buffer_keep_closest</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a804e90f95a99f3d9cba68d31a02a3f25.html#a804e90f95a99f3d9cba68d31a02a3f25">buffer_line_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a15728da7384d2eb369e3a13c4f71a5e4.html#a15728da7384d2eb369e3a13c4f71a5e4">buffer_locator_free</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_ab944620a4909a963e670bd69c18ca8e2.html#ab944620a4909a963e670bd69c18ca8e2">buffer_locator_make</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a01b3bb60e73f627b1abd9e336d3caa9f.html#a01b3bb60e73f627b1abd9e336d3caa9f">buffer_locator_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac4e0865876d9181ce640766c5195130f.html#ac4e0865876d9181ce640766c5195130f">buffer_locator_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af9af0cf6671ead3eff15a09a35ce6330.html#af9af0cf6671ead3eff15a09a35ce6330">buffer_make_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a90a2d51bc6c20391a519fb60b9264a7a.html#a90a2d51bc6c20391a519fb60b9264a7a">buffer_make_segment</a></td></tr>
@@ -242,8 +242,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab944620a4909a963e670bd69c18ca8e2" name="ab944620a4909a963e670bd69c18ca8e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab944620a4909a963e670bd69c18ca8e2">&#9670;&#160;</a></span>buffer_locator_make()</h2>
+<a id="a01b3bb60e73f627b1abd9e336d3caa9f" name="a01b3bb60e73f627b1abd9e336d3caa9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01b3bb60e73f627b1abd9e336d3caa9f">&#9670;&#160;</a></span>buffer_locator_make()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -261,7 +261,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom</em>&#160;</td>
+          <td class="paramname"><em>geom</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>npoints</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -281,6 +287,7 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">loc</td><td>Locator to prepare </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">geom</td><td>Geometry points are located against </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">npoints</td><td>How many points the caller expects to locate against it, which together with the edge count is what decides whether an index earns its build &ndash; the product is the work an index removes, which is the rule <a class="el" href="geo__funcs_8h_ae6c4ca203b651cd9bdfd1371f7772612.html#ae6c4ca203b651cd9bdfd1371f7772612" title="Fill in an edge array together with what reading it selectively needs.">relate_edges_init</a> states for its own two arrays </td></tr>
   </table>
   </dd>
 </dl>
