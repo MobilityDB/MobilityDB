@@ -1412,13 +1412,13 @@ geo_values_collect(const Temporal *temp, bool unary_union)
   /* Get the array of pointers to the component values */
   int count;
   Datum *values = temporal_values_p(temp, &count);
-  MeosType basetype = temptype_basetype(temp->temptype);
-  datumarr_sort(values, count, basetype);
-  int newcount = datumarr_remove_duplicates(values, count, basetype);
-  GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * newcount);
-  for (int i = 0; i < newcount; i++)
+  /* The array arrives sorted and free of duplicates: that is the contract
+   * #temporal_values_p states and each of its three subtype functions
+   * establishes, so the values are collected in the order they are given */
+  GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * count);
+  for (int i = 0; i < count; i++)
     gsarr[i] = DatumGetGserializedP(values[i]);
-  GSERIALIZED *res = geo_collect_garray(gsarr, newcount);
+  GSERIALIZED *res = geo_collect_garray(gsarr, count);
   pfree(values); pfree(gsarr);
   if (! unary_union)
     return res;
