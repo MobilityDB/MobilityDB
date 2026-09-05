@@ -486,10 +486,15 @@ tspatial_valid_typmod(Temporal *temp, int32_t typmod)
   {
     int count;
     Datum *datumarr = temporal_values_p(temp, &count);
+    Temporal *result = temp;
     for (int i = 0; i < count; i++)
       if (! postgis_valid_typmod(DatumGetGserializedP(datumarr[i]), typmod))
-        return NULL;
-    return temp;
+      {
+        result = NULL;
+        break;
+      }
+    pfree(datumarr);
+    return result;
   }
 
   return temp;
