@@ -1007,11 +1007,7 @@ ensure_valid_tinstarr_common(TInstant **instants, int count, bool lower_inc,
  */
 bool
 ensure_valid_tinstarr(TInstant **instants, int count, bool merge,
-#if NPOINT
-  interpType interp)
-#else
   interpType interp UNUSED)
-#endif /* NPOINT */
 {
   /* The sequence takes its temporal type from the first instant, both here
    * and in #tsequence_make_exp1, so an array whose instants do not agree on
