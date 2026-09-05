@@ -2382,14 +2382,20 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
  * #buffer_resolve_coincident_piece places it from the side each interior
  * occupies. One it cannot place is returned in @p boundary, which the caller
  * reads as a pair this does not answer.
+ * @param[out] coincident Set when either boundary carries a piece lying ON the
+ * other, so that a caller keeping no piece can tell a meeting at isolated
+ * NODES from one along a whole STRETCH. A resolved coincident piece the
+ * operation drops leaves neither @p result nor @p boundary anything, so it is
+ * the only report of it
  */
 static void
 buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
   const MeosArray *pieces_b, const LWGEOM *geom_a, ClipOper oper,
-  MeosArray *result, MeosArray *boundary)
+  MeosArray *result, MeosArray *boundary, bool *coincident)
 {
   assert(pieces_a); assert(geom_b); assert(pieces_b); assert(geom_a);
-  assert(result); assert(boundary);
+  assert(result); assert(boundary); assert(coincident);
+  *coincident = false;
   /* The side of the other geometry each of the two boundaries contributes */
   BufferPieceLocation keep_a = (oper == CL_INTERSECTION) ?
     BUFFER_PIECE_INTERIOR : BUFFER_PIECE_EXTERIOR;
@@ -2404,6 +2410,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
       meos_array_add(result, piece);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
+      *coincident = true;
       if (! buffer_resolve_coincident_piece(piece, geom_a, geom_b, oper,
             result))
         meos_array_add(boundary, piece);
@@ -2418,6 +2425,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
       meos_array_add(result, piece);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
+      *coincident = true;
       if (! buffer_resolve_coincident_piece(piece, geom_b, geom_a, oper,
             result))
         meos_array_add(boundary, piece);
@@ -3597,6 +3605,36 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
  *****************************************************************************/
 
 /**
+ * @brief Read a set of nodes as the geometry it draws
+ * @details One node draws a point and several draw a multipoint, which is the
+ * shape #geo_points_covered gives the points it keeps of a point set.
+ * @param[in] nodes Nodes, as #POINT2D
+ * @param[in] srid Spatial reference identifier the answer carries
+ */
+static LWGEOM *
+buffer_nodes_geometry(const MeosArray *nodes, int32_t srid)
+{
+  assert(nodes);
+  uint32_t count = meos_array_count(nodes);
+  if (count == 0)
+    return lwpoint_as_lwgeom(lwpoint_construct_empty(srid, 0, 0));
+  if (count == 1)
+  {
+    const POINT2D *p = (const POINT2D *) meos_array_get(nodes, 0);
+    return lwpoint_as_lwgeom(lwpoint_make2d(srid, p->x, p->y));
+  }
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * count);
+  for (uint32_t i = 0; i < count; i++)
+  {
+    const POINT2D *p = (const POINT2D *) meos_array_get(nodes, i);
+    points[i] = lwpoint_as_lwgeom(lwpoint_make2d(srid, p->x, p->y));
+  }
+  /* #lwcollection_construct keeps the array it is given */
+  return lwcollection_as_lwgeom(lwcollection_construct(MULTIPOINTTYPE, srid,
+    NULL, count, points));
+}
+
+/**
  * @brief Answer a Boolean operation on two areal geometries while preserving
  * circular arcs
  * @details One mechanism answers the three operations, and the boundary of the
@@ -3622,9 +3660,11 @@ buffer_boundaries_cross(const LWGEOM *geom1, const LWGEOM *geom2)
  * A stretch the two boundaries SHARE is bounded by the nodes at its ends, so
  * it splits into a piece of its own and is placed like any other -- by the
  * side each interior occupies rather than by a midpoint that lies on both.
- * @return The overlay, an EMPTY geometry where it covers nothing, or @p NULL
- * for a pair this does not answer -- a shared piece whose sides do not resolve,
- * and a meeting that is not a crossing
+ * @return The overlay, an EMPTY geometry where it covers nothing, the NODES an
+ * intersection meets at where the two share no area, or @p NULL for a pair
+ * this does not answer -- a shared piece whose sides do not resolve, a meeting
+ * that is not a crossing, and an intersection meeting along a stretch rather
+ * than at nodes
  */
 static LWGEOM *
 buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
@@ -3680,8 +3720,9 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   /* Select the portions of both boundaries the operation keeps */
   MeosArray *selected = meos_array_create(sizeof(BufferPiece));
   MeosArray *boundary = meos_array_create(sizeof(BufferPiece));
+  bool coincident;
   buffer_select_overlay_boundary(split_a, geom2, split_b, geom1, oper,
-    selected, boundary);
+    selected, boundary, &coincident);
 
   /* Two boundaries that meet only at isolated points without their interiors
    * overlapping, as two discs touching at one point do, leave every piece of
@@ -3725,15 +3766,27 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
    * where they MEET, the two share exactly what they meet along -- two discs
    * touching at a point share that point, two surfaces meeting along an edge
    * share the edge. That answer is of lower dimension than the surfaces this
-   * assembles, so the pair is left to the caller rather than answered as
-   * covering nothing, which would drop a point set that is really there */
+   * assembles, so it is read off the meeting itself.
+   *
+   * The two meetings are answered differently, and the difference is what
+   * separates a point from a curve. Where no piece of either boundary lies ON
+   * the other, the two meet at the isolated NODES collected above and those
+   * nodes ARE the answer -- exactly, since each is solved on the circles the
+   * operands carry. Where a piece does lie on the other, they meet along a
+   * whole STRETCH whose ends are the nodes, so the nodes state where the
+   * meeting begins and ends and not what it draws; such a pair is left to the
+   * caller, as is a union, which reaches this at all only where both
+   * boundaries lie wholly within the other */
+  int32_t srid = lwgeom_get_srid(geom1);
   if (meos_array_count(selected) == 0 && crossing && oper != CL_DIFFERENCE)
   {
+    LWGEOM *meeting = (oper == CL_INTERSECTION && ! coincident) ?
+      buffer_nodes_geometry(intersections, srid) : NULL;
     meos_array_destroy(selected); meos_array_destroy(boundary);
     meos_array_destroy(split_a); meos_array_destroy(split_b);
     meos_array_destroy(raw_a); meos_array_destroy(raw_b);
     meos_array_destroy(intersections);
-    return NULL;
+    return meeting;
   }
 
   /* Reconstruct the complete overlay boundary:
@@ -3744,7 +3797,6 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
    * -> orientation normalization
    * -> CURVEPOLYGON / MULTISURFACE
    */
-  int32_t srid = lwgeom_get_srid(geom1);
   LWGEOM *result = meos_array_count(selected) == 0 ?
     lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0)) :
     buffer_make_surfaces_from_pieces(selected, srid);
@@ -5059,8 +5111,9 @@ meos_areal_union(const LWGEOM *geom)
  * @param[in] geom1,geom2 Geometries
  * @param[in] oper Operation
  * @return The overlay, an EMPTY geometry where the operation covers nothing,
- * or @p NULL for a pair this does not answer -- a caller that has another way
- * to answer may take it
+ * the point set an intersection meets at where the two share no area, or
+ * @p NULL for a pair this does not answer -- a caller that has another way to
+ * answer may take it
  */
 static LWGEOM *
 buffer_areal_operation(const LWGEOM *geom1, const LWGEOM *geom2,
