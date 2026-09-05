@@ -2734,6 +2734,34 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 }
 
 /**
+ * @ingroup meos_internal_geo_dist
+ * @brief Return the nearest approach distance between two spatiotemporal
+ * boxes
+ * @param[in] box1,box2 Spatiotemporal boxes
+ * @return If the time frames do not intersect return infinity
+ * @pre The boxes are comparable, both carry a spatial extent, and they have
+ * the same spatial dimensionality
+ */
+double
+stbox_nad(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
+  assert(ensure_same_spatial_dimensionality(box1->flags, box2->flags));
+
+  /* If the boxes do not intersect in the time dimension return infinity */
+  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
+      return DBL_MAX;
+
+  /* The nearest approach distance is the spatial-only distance between the
+   * boxes (time already tested above) */
+  return stbox_spatial_distance(box1, box2);
+}
+
+/**
  * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between two spatiotemporal
  * boxes
@@ -2750,15 +2778,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
       ! ensure_has_X(T_STBOX, box2->flags) ||
       ! ensure_same_spatial_dimensionality(box1->flags, box2->flags))
     return DBL_MAX;
-
-  /* If the boxes do not intersect in the time dimension return infinity */
-  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
-      return DBL_MAX;
-
-  /* The nearest approach distance is the spatial-only distance between the
-   * boxes (time already tested above) */
-  return stbox_spatial_distance(box1, box2);
+  return stbox_nad(box1, box2);
 }
 
 /**

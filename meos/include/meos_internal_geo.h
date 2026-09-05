@@ -297,6 +297,8 @@ extern bool geom_meos_supported(const LWGEOM *geom);
 
 /* Distance functions */
 
+extern double stbox_nad(const STBox *box1, const STBox *box2);
+
 /*****************************************************************************
  * Spatial functions for temporal points
  *****************************************************************************/
