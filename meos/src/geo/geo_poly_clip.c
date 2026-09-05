@@ -80,7 +80,12 @@ _Static_assert(CL_XOR          == MEOS_CLIP_XOR,
 static GSERIALIZED *
 clip_empty_areal(int32_t srid)
 {
-  return geo_serialize(lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0)));
+  /* Serializing copies, so the geometry built to be serialized is this
+   * function's to release -- as it is on every other answer this file gives */
+  LWGEOM *empty = lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
+  GSERIALIZED *result = geo_serialize(empty);
+  lwgeom_free(empty);
+  return result;
 }
 
 /**
