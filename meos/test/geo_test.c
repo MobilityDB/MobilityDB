@@ -1717,9 +1717,8 @@ int main(void)
   /* THE MEETING IS NOT ALWAYS A POINT SET, AND THAT IS WHAT THE NODES CANNOT
    * SAY. Two half discs glued along their diameter meet along the whole of
    * it, and the nodes bounding that stretch are its two ENDS -- they state
-   * where the meeting begins and ends, never what it draws. So the pair is
-   * left to the route below rather than answered from them, and what this
-   * asserts is that whatever comes back is not a point set */
+   * where the meeting begins and ends, never what it draws. What draws it is
+   * the piece of boundary both carry, so that piece is the answer */
   GSERIALIZED *hd1 = geom_in("CURVEPOLYGON(COMPOUNDCURVE("
     "CIRCULARSTRING(-2 0,0 2,2 0),(2 0,-2 0)))", -1);
   GSERIALIZED *hd2 = geom_in("CURVEPOLYGON(COMPOUNDCURVE("
@@ -1727,15 +1726,29 @@ int main(void)
   assert(hd1 != NULL); assert(hd2 != NULL);
   meos_errno_reset();
   GSERIALIZED *hdi = geom_intersection2d(hd1, hd2);
-  char *hdw = hdi ? geo_as_text(hdi, 6) : NULL;
-  printf("two half discs sharing their diameter answer: %s\n",
-    hdw ? hdw : "nothing");
-  assert(hdw == NULL || strstr(hdw, "POINT") == NULL);
-  if (hdw)
-    free(hdw);
-  if (hdi)
-    free(hdi);
-  free(hd1); free(hd2);
+  assert(hdi != NULL);
+  char *hdw = geo_as_text(hdi, 6);
+  printf("two half discs sharing their diameter answer: %s\n", hdw);
+  assert(strcmp(hdw, "LINESTRING(-2 0,2 0)") == 0);
+  free(hdw); free(hdi); free(hd1); free(hd2);
+  meos_errno_reset();
+  /* AND THE STRETCH KEEPS THE CIRCLE IT IS AN ARC OF. The disc and the lune
+   * outside it share the upper semicircle and their interiors lie apart, so
+   * the meeting is that arc; read as chords it comes back a chain of segments
+   * along it, and read on the circle it comes back the arc itself */
+  GSERIALIZED *sa1 = geom_in("CURVEPOLYGON(CIRCULARSTRING(-2 0,0 2,2 0,0 -2,"
+    "-2 0))", -1);
+  GSERIALIZED *sa2 = geom_in("CURVEPOLYGON(COMPOUNDCURVE("
+    "CIRCULARSTRING(-2 0,0 2,2 0),CIRCULARSTRING(2 0,0 3,-2 0)))", -1);
+  assert(sa1 != NULL); assert(sa2 != NULL);
+  meos_errno_reset();
+  GSERIALIZED *sai = geom_intersection2d(sa1, sa2);
+  assert(sai != NULL);
+  char *saw = geo_as_text(sai, 6);
+  printf("a disc and a lune sharing an arc answer: %s\n", saw);
+  assert(strstr(saw, "CIRCULARSTRING") != NULL);
+  assert(strstr(saw, "(-2 0,") != NULL);
+  free(saw); free(sai); free(sa1); free(sa2);
   meos_errno_reset();
   /* A BOUNDARY THE TWO SHARE IS PLACED, NOT DECLINED. Every piece of the
    * stretch they share lies on both boundaries, so which side each interior
