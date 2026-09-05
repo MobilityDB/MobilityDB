@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos_buffer_line_offset</title>
+<title>MobilityDB: buffer_areal_dissolve</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -97,7 +97,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a37affffff49ddf6663431f2b3eb1a615.html#a37affffff49ddf6663431f2b3eb1a615">buffer_areal_collection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7398c3eea0ea3ccd6db0e6d8922954bc.html#a7398c3eea0ea3ccd6db0e6d8922954bc">buffer_areal_contains</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2cb628ab5a458eaac1db65be3cbbff76.html#a2cb628ab5a458eaac1db65be3cbbff76">buffer_areal_contains_point</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a1e70769ab5617570d900e380bbfe28c1.html#a1e70769ab5617570d900e380bbfe28c1">buffer_areal_dissolve</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a1e70769ab5617570d900e380bbfe28c1.html#a1e70769ab5617570d900e380bbfe28c1">buffer_areal_dissolve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a26fd3a91bf0a99fee0a411c5dbacd25b.html#a26fd3a91bf0a99fee0a411c5dbacd25b">buffer_areal_is_degenerate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a357a495dc1101c3616b54c8c033437b6.html#a357a495dc1101c3616b54c8c033437b6">buffer_areal_operation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa9e1545e514f0621709f49e985036282.html#aa9e1545e514f0621709f49e985036282">buffer_areal_overlay</a></td></tr>
@@ -223,7 +223,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5470de299f1f5b8f907fa71429830a6d.html#a5470de299f1f5b8f907fa71429830a6d">meos_buffer_curve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a40431d5c5a8a86e86d307210f6afb869.html#a40431d5c5a8a86e86d307210f6afb869">meos_buffer_curvepoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_adbe8590a311e114b037d2199b1d2aee9.html#adbe8590a311e114b037d2199b1d2aee9">meos_buffer_line</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_af461b9fb26d92f4cfe22fbcf486167cf.html#af461b9fb26d92f4cfe22fbcf486167cf">meos_buffer_line_offset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af461b9fb26d92f4cfe22fbcf486167cf.html#af461b9fb26d92f4cfe22fbcf486167cf">meos_buffer_line_offset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad4cf5a4d4131d48215f5d2ab4abe5dea.html#ad4cf5a4d4131d48215f5d2ab4abe5dea">meos_buffer_line_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2772aa735cbf0be1b11254c97e6c7b3c.html#a2772aa735cbf0be1b11254c97e6c7b3c">meos_buffer_mline</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aba00ba4d4d0b628e6f21673eab8ffa04.html#aba00ba4d4d0b628e6f21673eab8ffa04">meos_buffer_mpoint</a></td></tr>
@@ -236,8 +236,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="af461b9fb26d92f4cfe22fbcf486167cf" name="af461b9fb26d92f4cfe22fbcf486167cf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af461b9fb26d92f4cfe22fbcf486167cf">&#9670;&#160;</a></span>meos_buffer_line_offset()</h2>
+<a id="a1e70769ab5617570d900e380bbfe28c1" name="a1e70769ab5617570d900e380bbfe28c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e70769ab5617570d900e380bbfe28c1">&#9670;&#160;</a></span>buffer_areal_dissolve()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -246,34 +246,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * meos_buffer_line_offset </td>
+          <td class="memname">static bool buffer_areal_dissolve </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWLINE.html">LWLINE</a> *&#160;</td>
-          <td class="paramname"><em>line</em>, </td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>geom</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>radius</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="geo__buffer_8c_a4ae807b1d30d2a3c375f0616740e8b3c.html#a4ae807b1d30d2a3c375f0616740e8b3c">JoinStyle</a>&#160;</td>
-          <td class="paramname"><em>join_style</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="geo__buffer_8c_a86f08a9480ea92952cca8145ef3d4251.html#a86f08a9480ea92952cca8145ef3d4251">EndCapStyle</a>&#160;</td>
-          <td class="paramname"><em>cap_style</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>mitre_limit</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> **&#160;</td>
+          <td class="paramname"><em>dissolved</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -288,16 +270,15 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Construct a curved buffer around a LINESTRING by offsetting it. </p>
-<p >The boundary consists of LINESTRING and CIRCULARSTRING components. Supported:</p><ul>
-<li>round joins</li>
-<li>mitre joins</li>
-<li>bevel joins</li>
-<li>round caps</li>
-<li>flat caps</li>
-<li>square caps <dl class="section return"><dt>Returns</dt><dd>The buffer, or <code>NULL</code> when the offset of the line crosses itself, which leaves a ring bounding no surface. <a class="el" href="geo__buffer_8c_adbe8590a311e114b037d2199b1d2aee9.html#adbe8590a311e114b037d2199b1d2aee9" title="Construct a curved buffer around a LINESTRING.">meos_buffer_line</a> answers that case by cutting the line where it crosses itself. </dd></dl>
-</li>
-</ul>
+<p>Return a geometry as the surfaces its parts COVER, or NULL where it is one surface already. </p>
+<p >A geometry of several parts can carry an edge two of them SHARE, and such an edge bounds nothing: it is interior to the region the parts cover together. A boundary walk meets it twice and has no way to know that, so it splits one region into the parts the geometry happens to be written as &ndash; two triangles of a TIN meeting along a diagonal come back as two triangles rather than the square they cover. Dissolving the parts first removes the edge, and <a class="el" href="geo__buffer_8c_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a" title="Return the union of the areal components of a geometry.">meos_areal_union</a> is the dissolve the buffer of a geometry of several components already performs </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geom</td><td>Areal geometry </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dissolved</td><td>The dissolved geometry, owned by the caller, or NULL where the geometry is a single surface and carries no shared edge </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>False where the parts do not dissolve, which is a geometry this does not answer </dd></dl>
 
 </div>
 </div>
