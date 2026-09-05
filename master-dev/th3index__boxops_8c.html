@@ -75,7 +75,9 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">th3index_boxops.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -95,8 +97,17 @@ $(function() {
 <code>#include &quot;<a class="el" href="tcellindex_8h_source.html">temporal/tcellindex.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="h3index_8h_source.html">h3/h3index.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ae66bf8d7b48722a8d71f849f80730716"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__boxops_8c_ae66bf8d7b48722a8d71f849f80730716.html#ae66bf8d7b48722a8d71f849f80730716">H3_RESOLUTION_COUNT</a>&#160;&#160;&#160;16</td></tr>
+<tr class="memdesc:ae66bf8d7b48722a8d71f849f80730716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of H3 resolutions, 0 to the finest the h3index descriptor carries.  <a href="th3index__boxops_8c_ae66bf8d7b48722a8d71f849f80730716.html#ae66bf8d7b48722a8d71f849f80730716">More...</a><br /></td></tr>
+<tr class="separator:ae66bf8d7b48722a8d71f849f80730716"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a9a3e576dd3f2d1dc432f7422f9e55933"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__boxops_8c_a9a3e576dd3f2d1dc432f7422f9e55933.html#a9a3e576dd3f2d1dc432f7422f9e55933">h3index_pole_cells</a> (int32_t res, H3Index *north, H3Index *south)</td></tr>
+<tr class="memdesc:a9a3e576dd3f2d1dc432f7422f9e55933"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last two arguments the cells holding the north and the south pole at a resolution.  <a href="th3index__boxops_8c_a9a3e576dd3f2d1dc432f7422f9e55933.html#a9a3e576dd3f2d1dc432f7422f9e55933">More...</a><br /></td></tr>
+<tr class="separator:a9a3e576dd3f2d1dc432f7422f9e55933"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga57347bdb79223162d69aad86662d2ed4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__box__conversion_ga57347bdb79223162d69aad86662d2ed4.html#ga57347bdb79223162d69aad86662d2ed4">h3index_set_stbox</a> (H3Index cell, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
 <tr class="memdesc:ga57347bdb79223162d69aad86662d2ed4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument a spatiotemporal box constructed from a single H3 cell (the geodetic X/Y box of the cell, no T dimension)  <a href="group__meos__internal__box__conversion_ga57347bdb79223162d69aad86662d2ed4.html#ga57347bdb79223162d69aad86662d2ed4">More...</a><br /></td></tr>
 <tr class="separator:ga57347bdb79223162d69aad86662d2ed4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,6 +135,13 @@ Functions</h2></td></tr>
 <tr class="memitem:aa980959011b8619f70f77e7492e21103"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__boxops_8c_aa980959011b8619f70f77e7492e21103.html#aa980959011b8619f70f77e7492e21103">th3indexseq_expand_stbox</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq, const <a class="el" href="structTInstant.html">TInstant</a> *inst)</td></tr>
 <tr class="memdesc:aa980959011b8619f70f77e7492e21103"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expand the bounding box of a temporal H3 cell sequence with a new instant.  <a href="th3index__boxops_8c_aa980959011b8619f70f77e7492e21103.html#aa980959011b8619f70f77e7492e21103">More...</a><br /></td></tr>
 <tr class="separator:aa980959011b8619f70f77e7492e21103"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a7eccaca3faeeb2dd7b232bac36741e08"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__tls_8h_a4f938531e64b0b1babd66b9a29301ff6.html#a4f938531e64b0b1babd66b9a29301ff6">MEOS_TLS</a> H3Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__boxops_8c_a7eccaca3faeeb2dd7b232bac36741e08.html#a7eccaca3faeeb2dd7b232bac36741e08">MEOS_H3_POLE_CELL</a> [2][<a class="el" href="th3index__boxops_8c_ae66bf8d7b48722a8d71f849f80730716.html#ae66bf8d7b48722a8d71f849f80730716">H3_RESOLUTION_COUNT</a>]</td></tr>
+<tr class="separator:a7eccaca3faeeb2dd7b232bac36741e08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a878dd444c17e7bb0d6fd106769e0c101"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__tls_8h_a4f938531e64b0b1babd66b9a29301ff6.html#a4f938531e64b0b1babd66b9a29301ff6">MEOS_TLS</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="th3index__boxops_8c_a878dd444c17e7bb0d6fd106769e0c101.html#a878dd444c17e7bb0d6fd106769e0c101">MEOS_H3_POLE_CELL_SET</a> [<a class="el" href="th3index__boxops_8c_ae66bf8d7b48722a8d71f849f80730716.html#ae66bf8d7b48722a8d71f849f80730716">H3_RESOLUTION_COUNT</a>]</td></tr>
+<tr class="separator:a878dd444c17e7bb0d6fd106769e0c101"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Bounding box functions for temporal H3 cell indices. </p>
