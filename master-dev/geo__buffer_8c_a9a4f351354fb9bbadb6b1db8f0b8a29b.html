@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_select_overlay_boundary</title>
+<title>MobilityDB: buffer_nodes_geometry</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -149,6 +149,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac45c0e1ea2117e802572ac52344abd74.html#ac45c0e1ea2117e802572ac52344abd74">BUFFER_MITRE_ON_SEGMENTS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af8ddb015bb92bc1f954e5702339da187.html#af8ddb015bb92bc1f954e5702339da187">buffer_node_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a76baf8b53fb554306c75049414485c5f.html#a76baf8b53fb554306c75049414485c5f">buffer_nodes_equal</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a9a4f351354fb9bbadb6b1db8f0b8a29b.html#a9a4f351354fb9bbadb6b1db8f0b8a29b">buffer_nodes_geometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a615346b614e55995fdc0c03734a1f989.html#a615346b614e55995fdc0c03734a1f989">buffer_normalize_ring_orientation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6449c63b695768b177f93c57bc08b1f8.html#a6449c63b695768b177f93c57bc08b1f8">buffer_normalize_ring_orientations</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a92eea9e5802f6ac9d58f465a7971cf56.html#a92eea9e5802f6ac9d58f465a7971cf56">buffer_offset_edge</a></td></tr>
@@ -199,7 +200,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afaa7fa9a7f48c96125d6cfad1b2d7ded.html#afaa7fa9a7f48c96125d6cfad1b2d7ded">buffer_segment_parameter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6318b9afbed53bc3a69dd51d005aa63b.html#a6318b9afbed53bc3a69dd51d005aa63b">buffer_segment_signed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a3f7c6d8e4dda605794f12d01494f6641.html#a3f7c6d8e4dda605794f12d01494f6641">buffer_segments_equal</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_ac9ede1bc4bba478b0993c644fef349cd.html#ac9ede1bc4bba478b0993c644fef349cd">buffer_select_overlay_boundary</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6d5a8c86cf4262055be7cc23cb4c23db.html#a6d5a8c86cf4262055be7cc23cb4c23db">buffer_select_overlay_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a3283bce0674a87c6da03660ef8e7760b.html#a3283bce0674a87c6da03660ef8e7760b">buffer_snap_to_curve_end</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a15757fd3e4aac04382dacf19f5429ece.html#a15757fd3e4aac04382dacf19f5429ece">buffer_split_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_abf1c73df378fc58a8573301675be1100.html#abf1c73df378fc58a8573301675be1100">buffer_split_pieces</a></td></tr>
@@ -236,8 +237,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac9ede1bc4bba478b0993c644fef349cd" name="ac9ede1bc4bba478b0993c644fef349cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac9ede1bc4bba478b0993c644fef349cd">&#9670;&#160;</a></span>buffer_select_overlay_boundary()</h2>
+<a id="a9a4f351354fb9bbadb6b1db8f0b8a29b" name="a9a4f351354fb9bbadb6b1db8f0b8a29b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a4f351354fb9bbadb6b1db8f0b8a29b">&#9670;&#160;</a></span>buffer_nodes_geometry()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -246,46 +247,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void buffer_select_overlay_boundary </td>
+          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * buffer_nodes_geometry </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>pieces_a</em>, </td>
+          <td class="paramname"><em>nodes</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom_b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>pieces_b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom_a</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4">ClipOper</a>&#160;</td>
-          <td class="paramname"><em>oper</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>result</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>boundary</em>&#160;</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -300,11 +271,14 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Select the pieces of two boundaries that bound the overlay. </p>
-<p >A piece of one boundary bounds the answer when it lies on the side of the other geometry that the operation keeps, and the operation is the whole of what tells the three apart: </p><pre class="fragment">union         exterior(A wrt B) + exterior(B wrt A)
-intersection  interior(A wrt B) + interior(B wrt A)
-difference    exterior(A wrt B) + interior(B wrt A)
-</pre><p> so nothing about the two shapes enters beyond where each piece sits. A piece lying ON the other boundary is coincident, and <a class="el" href="geo__buffer_8c_ac1f152597064707812f9174a2bf3cd64.html#ac1f152597064707812f9174a2bf3cd64" title="Resolve coincident pieces belonging to one buffer.">buffer_resolve_coincident_piece</a> places it from the side each interior occupies. One it cannot place is returned in <code>boundary</code>, which the caller reads as a pair this does not answer. </p>
+<p>Read a set of nodes as the geometry it draws. </p>
+<p >One node draws a point and several draw a multipoint, which is the shape <a class="el" href="meos__internal__geo_8h_a372676d21c3396cd08c01b6dcd5c4604.html#a372676d21c3396cd08c01b6dcd5c4604" title="Return the points of a point set that a geometry covers, or those it does not.">geo_points_covered</a> gives the points it keeps of a point set. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">nodes</td><td>Nodes, as <a class="el" href="structPOINT2D.html">POINT2D</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference identifier the answer carries </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

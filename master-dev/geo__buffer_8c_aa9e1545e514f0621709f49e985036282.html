@@ -149,6 +149,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac45c0e1ea2117e802572ac52344abd74.html#ac45c0e1ea2117e802572ac52344abd74">BUFFER_MITRE_ON_SEGMENTS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af8ddb015bb92bc1f954e5702339da187.html#af8ddb015bb92bc1f954e5702339da187">buffer_node_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a76baf8b53fb554306c75049414485c5f.html#a76baf8b53fb554306c75049414485c5f">buffer_nodes_equal</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9a4f351354fb9bbadb6b1db8f0b8a29b.html#a9a4f351354fb9bbadb6b1db8f0b8a29b">buffer_nodes_geometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a615346b614e55995fdc0c03734a1f989.html#a615346b614e55995fdc0c03734a1f989">buffer_normalize_ring_orientation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6449c63b695768b177f93c57bc08b1f8.html#a6449c63b695768b177f93c57bc08b1f8">buffer_normalize_ring_orientations</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a92eea9e5802f6ac9d58f465a7971cf56.html#a92eea9e5802f6ac9d58f465a7971cf56">buffer_offset_edge</a></td></tr>
@@ -199,7 +200,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afaa7fa9a7f48c96125d6cfad1b2d7ded.html#afaa7fa9a7f48c96125d6cfad1b2d7ded">buffer_segment_parameter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6318b9afbed53bc3a69dd51d005aa63b.html#a6318b9afbed53bc3a69dd51d005aa63b">buffer_segment_signed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a3f7c6d8e4dda605794f12d01494f6641.html#a3f7c6d8e4dda605794f12d01494f6641">buffer_segments_equal</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac9ede1bc4bba478b0993c644fef349cd.html#ac9ede1bc4bba478b0993c644fef349cd">buffer_select_overlay_boundary</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6d5a8c86cf4262055be7cc23cb4c23db.html#a6d5a8c86cf4262055be7cc23cb4c23db">buffer_select_overlay_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a3283bce0674a87c6da03660ef8e7760b.html#a3283bce0674a87c6da03660ef8e7760b">buffer_snap_to_curve_end</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a15757fd3e4aac04382dacf19f5429ece.html#a15757fd3e4aac04382dacf19f5429ece">buffer_split_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_abf1c73df378fc58a8573301675be1100.html#abf1c73df378fc58a8573301675be1100">buffer_split_pieces</a></td></tr>
@@ -283,7 +284,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Answer a Boolean operation on two areal geometries while preserving circular arcs. </p>
-<p >One mechanism answers the three operations, and the boundary of the answer is always built the same way: the two boundaries are cut at the nodes where they meet, every piece is placed inside or outside the other geometry by its own midpoint, the operation says which side it keeps (<a class="el" href="geo__buffer_8c_ac9ede1bc4bba478b0993c644fef349cd.html#ac9ede1bc4bba478b0993c644fef349cd" title="Select the pieces of two boundaries that bound the overlay.">buffer_select_overlay_boundary</a>), and the kept pieces are chained back into rings. An arc is cut into arcs of its own circle throughout, so the answer carries the circles its operands do rather than the chords a linearization would put in their place.</p>
+<p >One mechanism answers the three operations, and the boundary of the answer is always built the same way: the two boundaries are cut at the nodes where they meet, every piece is placed inside or outside the other geometry by its own midpoint, the operation says which side it keeps (<a class="el" href="geo__buffer_8c_a6d5a8c86cf4262055be7cc23cb4c23db.html#a6d5a8c86cf4262055be7cc23cb4c23db" title="Select the pieces of two boundaries that bound the overlay.">buffer_select_overlay_boundary</a>), and the kept pieces are chained back into rings. An arc is cut into arcs of its own circle throughout, so the answer carries the circles its operands do rather than the chords a linearization would put in their place.</p>
 <p >Nothing here asks how the two geometries lie relative to one another. Where their boundaries stay apart there is nothing to cut and every piece is wholly inside or wholly outside, which is the containment and the disjoint case answered by the same selection; and a geometry of several components is read piece by piece, so one component inside and another outside need no separate treatment. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">geom1,geom2</td><td>Areal geometries </td></tr>
@@ -292,7 +293,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The overlay, an EMPTY geometry where it covers nothing, or <code>NULL</code> for a pair this does not answer &ndash; a shared piece whose sides do not resolve, and a meeting that is not a crossing </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The overlay, an EMPTY geometry where it covers nothing, the NODES an intersection meets at where the two share no area, or <code>NULL</code> for a pair this does not answer &ndash; a shared piece whose sides do not resolve, a meeting that is not a crossing, and an intersection meeting along a stretch rather than at nodes </dd></dl>
 
 </div>
 </div>
