@@ -4126,3 +4126,36 @@ SELECT hashExtended(tint '1@2001-01-01', 1) = hashExtended(tint '1@2001-01-01', 
 SELECT hashExtended(tint '1@2001-01-01', 1) <> hashExtended(tint '1@2001-01-01', 2);
 
 ------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- unnest: one row per DISTINCT value, in base type order
+-------------------------------------------------------------------------------
+
+-- unnest names the distinct values of a temporal value and the time it holds
+-- each. The values are fed in unordered and with repeats, so a row set that
+-- comes back ordered, one row per value, states the order and the
+-- distinctness rather than inheriting them from the input. Only a case that
+-- reads the values can see this: a COUNT over a table cannot.
+
+-- Discrete sequence, values fed 5, 2, 9, 2
+SELECT (rec).value FROM (SELECT unnest(tint '{5@2001-01-01, 2@2001-01-02,
+  9@2001-01-03, 2@2001-01-04}') AS rec) AS t;
+
+-- The repeated value is named once, and carries BOTH of its times
+SELECT (rec).value, (rec).time FROM (SELECT unnest(tint '{5@2001-01-01,
+  2@2001-01-02, 9@2001-01-03, 2@2001-01-04}') AS rec) AS t;
+
+-- Step sequence, values fed 7, 3, 7, 1 across two composing sequences
+SELECT (rec).value FROM (SELECT unnest(tint 'Interp=Step;{[7@2001-01-01,
+  3@2001-01-02], [7@2001-01-03, 1@2001-01-04]}') AS rec) AS t;
+
+-- A temporal instant names its single value
+SELECT (rec).value FROM (SELECT unnest(tint '5@2001-01-01') AS rec) AS t;
+
+-- Float ordering is the base type's, not the textual one
+SELECT (rec).value FROM (SELECT unnest(tfloat '{10@2001-01-01, 9.5@2001-01-02,
+  10@2001-01-03, 2@2001-01-04}') AS rec) AS t;
+
+-- Text ordering likewise
+SELECT (rec).value FROM (SELECT unnest(ttext '{BBB@2001-01-01, AAA@2001-01-02,
+  BBB@2001-01-03, CCC@2001-01-04}') AS rec) AS t;
