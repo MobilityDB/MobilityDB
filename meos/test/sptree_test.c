@@ -40,6 +40,7 @@
  * asserted per configuration and operator:
  *  (i)  no false negatives: every box satisfying the operator is a candidate;
  *  (ii) no false positives: every candidate satisfies the operator.
+ * What the nearest-neighbour cursor refuses to open on is asserted separately.
  *
  * The program can be built as follows
  * @code
@@ -861,6 +862,58 @@ test_nn_stbox(void)
   sptree_free(sptree);
 }
 
+/*****************************************************************************
+ * What the nearest-neighbour cursor refuses to open on
+ *
+ * A cursor validates its query box where the box becomes a query, so that the
+ * traversal that follows may assume it, exactly as #sptree_search does. The
+ * error handler installed here reports through #meos_errno instead of ending
+ * the program, so that the refusal is read as a value rather than observed as
+ * an exit
+ *****************************************************************************/
+
+static void
+test_nn_refused(void)
+{
+  meos_initialize_noexit_error_handler();
+
+  printf("What the NN SPTree cursor refuses to open on:\n");
+
+  SPTree *sptree = sptree_create_stbox(SPTREE_QUADTREE);
+  STBox *box = stbox_in("SRID=4326;STBOX X((0,0),(1,1))");
+  STBox *other = stbox_in("SRID=3857;STBOX X((0,0),(1,1))");
+  sptree_insert(sptree, box, 0);
+
+  meos_errno_reset();
+  check("  a query of another SRID is refused",
+    sptree_nn_cursor_open(sptree, other) == NULL && meos_errno() != 0);
+
+  meos_errno_reset();
+  check("  a null index is refused",
+    sptree_nn_cursor_open(NULL, box) == NULL && meos_errno() != 0);
+
+  meos_errno_reset();
+  check("  a null query is refused",
+    sptree_nn_cursor_open(sptree, NULL) == NULL && meos_errno() != 0);
+
+  /* A refused open answers NULL, so advancing that answer must report rather
+   * than read through it */
+  meos_errno_reset();
+  check("  advancing a null cursor is refused",
+    ! sptree_nn_cursor_next(NULL, NULL, NULL) && meos_errno() != 0);
+
+  meos_errno_reset();
+  SPNNCursor *cursor = sptree_nn_cursor_open(sptree, box);
+  check("  a query of the tree's own SRID is accepted",
+    cursor != NULL && meos_errno() == 0);
+  sptree_nn_cursor_close(cursor);
+  meos_errno_reset();
+
+  free(box); free(other);
+  sptree_free(sptree);
+  return;
+}
+
 
 /*****************************************************************************
  * Selective windows
@@ -1070,6 +1123,7 @@ main(void)
   test_nn_stbox();
   test_reported_size(SPTREE_QUADTREE, "quad-tree");
   test_reported_size(SPTREE_KDTREE, "k-d tree");
+  test_nn_refused();
 
   meos_finalize();
 

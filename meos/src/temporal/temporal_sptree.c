@@ -1722,14 +1722,22 @@ spnn_heap_pop(SPNNCursor *cursor)
  * after `k` results), so no more of the tree is visited than required. The
  * query box is copied into the cursor, so the caller may free or reuse it
  * immediately. Close the cursor with #sptree_nn_cursor_close.
+ *
+ * As for #sptree_search, the query box is validated here, at the entry point,
+ * so that every distance the traversal computes can assume it.
  * @param[in] sptree The SPTree to query
- * @param[in] query The query bounding box of type @p sptree->bboxtype
- * @return A cursor to be freed with #sptree_nn_cursor_close
+ * @param[in] query The query bounding box of type @p sptree->bboxtype and of
+ * the SRID the tree holds
+ * @return A cursor to be freed with #sptree_nn_cursor_close, on error @p NULL
  */
 SPNNCursor *
 sptree_nn_cursor_open(const SPTree *sptree, const void *query)
 {
-  assert(sptree); assert(query);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(sptree, NULL); VALIDATE_NOT_NULL(query, NULL);
+  if (! ensure_valid_sptree_box(sptree, query))
+    return NULL;
+
   SPNNCursor *cursor = palloc0(sizeof(SPNNCursor));
   cursor->sptree = sptree;
   cursor->query = palloc(sptree->boxsize);
@@ -1765,12 +1773,15 @@ sptree_nn_cursor_open(const SPTree *sptree, const void *query)
  * @param[in] cursor The cursor previously opened with #sptree_nn_cursor_open
  * @param[out] id_out Receives the id of the next neighbour, or @p NULL
  * @param[out] dist_out Receives the distance of the next neighbour, or @p NULL
- * @return @p true if a neighbour was produced, @p false once exhausted
+ * @return @p true if a neighbour was produced, @p false once exhausted or on
+ * error
  */
 bool
 sptree_nn_cursor_next(SPNNCursor *cursor, int64 *id_out, double *dist_out)
 {
-  assert(cursor);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cursor, false);
+
   const SPTree *sptree = cursor->sptree;
   while (cursor->count > 0)
   {

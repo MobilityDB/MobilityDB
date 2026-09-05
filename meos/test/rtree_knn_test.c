@@ -49,6 +49,7 @@
  *        brute-force distances element by element (tie-robust);
  *  (v)   early stop: taking only the first k results matches the first k of
  *        the full drain, so a LIMIT k caller reads the true k neighbours.
+ * What the cursor refuses to open on is asserted separately.
  *
  * The program can be built as follows
  * @code
@@ -291,6 +292,57 @@ test_tbox_knn(void)
   rtree_free(rtree);
 }
 
+/*****************************************************************************
+ * What the cursor refuses to open on
+ *****************************************************************************/
+
+/* A cursor validates its query box where the box becomes a query, so that the
+ * traversal that follows may assume it, exactly as #rtree_search does. The
+ * error handler installed here reports through #meos_errno instead of ending
+ * the program, so that the refusal is read as a value rather than observed as
+ * an exit */
+static void
+test_refused(void)
+{
+  meos_initialize_noexit_error_handler();
+
+  printf("What the NN cursor refuses to open on:\n");
+
+  RTree *rtree = rtree_create_stbox();
+  STBox *box = stbox_in("SRID=4326;STBOX X((0,0),(1,1))");
+  STBox *other = stbox_in("SRID=3857;STBOX X((0,0),(1,1))");
+  rtree_insert(rtree, box, 0);
+
+  meos_errno_reset();
+  check("a query of another SRID is refused",
+    rtree_nn_cursor_open(rtree, other) == NULL && meos_errno() != 0);
+
+  meos_errno_reset();
+  check("a null index is refused",
+    rtree_nn_cursor_open(NULL, box) == NULL && meos_errno() != 0);
+
+  meos_errno_reset();
+  check("a null query is refused",
+    rtree_nn_cursor_open(rtree, NULL) == NULL && meos_errno() != 0);
+
+  /* A refused open answers NULL, so advancing that answer must report rather
+   * than read through it */
+  meos_errno_reset();
+  check("advancing a null cursor is refused",
+    ! rtree_nn_cursor_next(NULL, NULL, NULL) && meos_errno() != 0);
+
+  meos_errno_reset();
+  RTreeNNCursor *cursor = rtree_nn_cursor_open(rtree, box);
+  check("a query of the tree's own SRID is accepted",
+    cursor != NULL && meos_errno() == 0);
+  rtree_nn_cursor_close(cursor);
+  meos_errno_reset();
+
+  free(box); free(other);
+  rtree_free(rtree);
+  return;
+}
+
 int
 main(void)
 {
@@ -299,6 +351,7 @@ main(void)
 
   test_stbox_knn();
   test_tbox_knn();
+  test_refused();
 
   meos_finalize();
 
