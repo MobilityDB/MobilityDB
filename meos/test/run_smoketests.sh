@@ -69,22 +69,13 @@ for suite in "${SUITES[@]}"; do
   gcc -Wall -g -I"$MEOS_INCLUDE_DIR" -o "$bin" "$src" \
     -L"$MEOS_BUILD_DIR" -lmeos -lm
   echo "[run]   $suite"
-  # Leak-check mode is coupled to what the current base library already fixes:
-  #  - trgeometry: builds on the temporal pose and still carries unfixed leaks in
-  #    the moving-rigid-geometry surface, so it runs summary until those land; it
-  #    still surfaces crashes, invalid memory and new leaks.
-  #  - everything else (tpose, tnpoint, tgeometry, tcbuffer, ...) is leak-clean
-  #    and runs the strict full check; meos_smoketest.supp filters the
-  #    PROJ/SQLite3 SRS possibly-lost noise so it only reports genuine
-  #    MEOS/liblwgeom leaks.
-  case "$suite" in
-    trgeometry_test)
-      vg_leak="--leak-check=summary" ;;
-    *)
-      vg_leak="--leak-check=full" ;;
-  esac
+  # Every suite runs the strict full check. A suite running a weaker check than
+  # its siblings reports the same green while measuring less, which is how the
+  # moving-rigid-geometry surface kept a leak nothing reported: meos_smoketest.supp
+  # filters the PROJ/SQLite3 SRS possibly-lost noise, so what full reports is a
+  # genuine MEOS/liblwgeom leak in every suite alike.
   if ! LD_LIBRARY_PATH="$MEOS_BUILD_DIR" valgrind \
-        $vg_leak --error-exitcode=1 --quiet \
+        --leak-check=full --error-exitcode=1 --quiet \
         --suppressions="$HERE/meos_smoketest.supp" \
         "$bin" >"$bin.out" 2>"$bin.err"; then
     echo "[FAIL]  $suite — see $bin.out / $bin.err"
