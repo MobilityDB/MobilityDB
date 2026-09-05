@@ -2441,13 +2441,17 @@ datum_geog_azimuth(Datum geog1, Datum geog2)
 {
   const GSERIALIZED *g1 = DatumGetGserializedP(geog1);
   const GSERIALIZED *g2 = DatumGetGserializedP(geog2);
-  const LWGEOM *geom1 = lwgeom_from_gserialized(g1);
-  const LWGEOM *geom2 = lwgeom_from_gserialized(g2);
+  /* Deserializing ALLOCATES, and the two points are read here and held
+   * nowhere else, so this function releases them. The planar twin above
+   * reads its points straight out of the datum and has nothing to release */
+  LWGEOM *geom1 = lwgeom_from_gserialized(g1);
+  LWGEOM *geom2 = lwgeom_from_gserialized(g2);
 
   SPHEROID s;
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
   double result = lwgeom_azumith_spheroid(lwgeom_as_lwpoint(geom1),
     lwgeom_as_lwpoint(geom2), &s);
+  lwgeom_free(geom1); lwgeom_free(geom2);
   return Float8GetDatum(result);
 }
 
