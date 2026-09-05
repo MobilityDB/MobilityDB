@@ -1085,8 +1085,12 @@ geo_points_covered(const GSERIALIZED *pts, const GSERIALIZED *gs, bool covered)
   GSERIALIZED *result;
   if (nkept == 0)
   {
-    result = geo_serialize(lwpoint_as_lwgeom(lwpoint_construct_empty(srid,
-      hasz, false)));
+    /* Serializing copies, so the empty point built to be serialized is this
+     * function's to release, as the kept ones are on the two answers below */
+    LWGEOM *empty = lwpoint_as_lwgeom(lwpoint_construct_empty(srid, hasz,
+      false));
+    result = geo_serialize(empty);
+    lwgeom_free(empty);
     pfree(kept);
   }
   else if (nkept == 1)
