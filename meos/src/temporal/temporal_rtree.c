@@ -1389,6 +1389,22 @@ ensure_valid_rtree_box(const RTree *rtree, const void *box)
 }
 
 /**
+ * @brief Return true if two RTrees may be joined, report an error otherwise
+ * @details A join compares a box of one tree with a box of the other, which is
+ * the comparison #ensure_valid_rtree_box admits for a query, so the second
+ * tree's own box is what the first one is asked about. Every entry of a tree
+ * has passed that check on entry, so an overall box carries the SRID of every
+ * entry under it
+ */
+static bool
+ensure_valid_rtree_rtree(const RTree *rtree1, const RTree *rtree2)
+{
+  if (! rtree2->root)
+    return true;
+  return ensure_valid_rtree_box(rtree1, rtree2->box);
+}
+
+/**
  * @ingroup meos_temporal_box_index
  * @brief Build an RTree from all of its entries at once
  * @details Bottom-up Sort-Tile-Recursive packing. The result answers the same
@@ -1580,7 +1596,7 @@ rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op,
   VALIDATE_NOT_NULL(rtree1, INT_MAX); VALIDATE_NOT_NULL(rtree2, INT_MAX);
   VALIDATE_NOT_NULL(result, INT_MAX);
   if (! ensure_same_index_bboxtype(rtree1->bboxtype, rtree2->bboxtype) ||
-      ! ensure_index_join_op(op))
+      ! ensure_valid_rtree_rtree(rtree1, rtree2) || ! ensure_index_join_op(op))
     return INT_MAX;
 
   meos_array_reset(result);
