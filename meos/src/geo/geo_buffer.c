@@ -2382,20 +2382,29 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
  * #buffer_resolve_coincident_piece places it from the side each interior
  * occupies. One it cannot place is returned in @p boundary, which the caller
  * reads as a pair this does not answer.
- * @param[out] coincident Set when either boundary carries a piece lying ON the
- * other, so that a caller keeping no piece can tell a meeting at isolated
- * NODES from one along a whole STRETCH. A resolved coincident piece the
- * operation drops leaves neither @p result nor @p boundary anything, so it is
- * the only report of it
+ * @param[out] shared The pieces BOTH boundaries carry, each once. Two
+ * boundaries running along one another carry the same piece, so a piece only
+ * one of them holds is not a stretch they share however it classifies: two
+ * boundaries touching at a point can each report a piece there, and the two
+ * are different curves rather than one shared with itself. A caller keeping no
+ * piece reads this as the stretch the pair meets along.
+ * @param[out] coincident Set where either boundary carries a piece lying ON
+ * the other. A resolved coincident piece the operation drops leaves neither
+ * @p result nor @p boundary anything, so this is the only report of it, and it
+ * tells a caller that a pair with nothing in @p shared is one whose reported
+ * coincidence does not resolve rather than one meeting at nodes
  */
 static void
 buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
   const MeosArray *pieces_b, const LWGEOM *geom_a, ClipOper oper,
-  MeosArray *result, MeosArray *boundary, bool *coincident)
+  MeosArray *result, MeosArray *boundary, MeosArray *shared, bool *coincident)
 {
   assert(pieces_a); assert(geom_b); assert(pieces_b); assert(geom_a);
-  assert(result); assert(boundary); assert(coincident);
+  assert(result); assert(boundary); assert(shared); assert(coincident);
   *coincident = false;
+  /* The pieces each boundary reports as lying on the other, kept apart so that
+   * only what BOTH report reaches @p shared */
+  MeosArray *bnd_a = meos_array_create(sizeof(BufferPiece));
   /* The side of the other geometry each of the two boundaries contributes */
   BufferPieceLocation keep_a = (oper == CL_INTERSECTION) ?
     BUFFER_PIECE_INTERIOR : BUFFER_PIECE_EXTERIOR;
@@ -2411,6 +2420,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
       *coincident = true;
+      buffer_pieces_add_unique(bnd_a, piece);
       if (! buffer_resolve_coincident_piece(piece, geom_a, geom_b, oper,
             result))
         meos_array_add(boundary, piece);
@@ -2426,11 +2436,16 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
       *coincident = true;
+      /* A piece of B that A reports too is one curve the two run along; one
+       * only B reports is a curve of B alone, whatever put it here */
+      if (buffer_piece_array_contains(bnd_a, piece))
+        buffer_pieces_add_unique(shared, piece);
       if (! buffer_resolve_coincident_piece(piece, geom_b, geom_a, oper,
             result))
         meos_array_add(boundary, piece);
     }
   }
+  meos_array_destroy(bnd_a);
 }
 
 /*****************************************************************************
@@ -3635,6 +3650,88 @@ buffer_nodes_geometry(const MeosArray *nodes, int32_t srid)
 }
 
 /**
+ * @brief Test whether a piece draws a curve rather than a single point
+ * @details Two boundaries touching at ONE point can be reported as sharing a
+ * piece there, and such a piece turns through no angle or runs from a point to
+ * itself. What it draws is that point and no curve, which is what the point
+ * strictly inside it answers: an arc has one only where it turns. The ENDS
+ * cannot be asked instead, since an arc closing on itself draws a whole circle
+ * while carrying one point twice.
+ */
+static bool
+buffer_piece_draws_a_curve(const BufferPiece *piece)
+{
+  assert(piece);
+  POINT2D mid;
+  if (! buffer_piece_midpoint(piece, &mid))
+    return false;
+  if (piece->type == BUFFER_ARC)
+    return true;
+  return ! buffer_piece_points_equal(piece->x1, piece->y1, piece->x2,
+    piece->y2);
+}
+
+/**
+ * @brief Read the pieces two boundaries share as the geometry they draw
+ * @details One piece draws the curve it is -- a segment a line, an arc a
+ * circular string -- and several draw a multicurve, the shape this file gives
+ * a set of curves elsewhere. A piece is drawn by appending it to a compound
+ * curve, which is where the segment and the arc constructors of this file
+ * write; a compound holding one curve is that curve wearing a wrapper, so the
+ * curve is taken out and the wrapper released.
+ * @param[in] pieces Pieces both boundaries carry
+ * @param[in] srid Spatial reference identifier the answer carries
+ * @return The curve the pieces draw, or @p NULL where none of them draws one,
+ * which is two boundaries meeting at a point rather than along a stretch
+ */
+static LWGEOM *
+buffer_shared_geometry(const MeosArray *pieces, int32_t srid)
+{
+  assert(pieces);
+  uint32_t count = meos_array_count(pieces);
+  if (count == 0)
+    return NULL;
+  LWGEOM **curves = palloc(sizeof(LWGEOM *) * count);
+  uint32_t ncurves = 0;
+  for (uint32_t i = 0; i < count; i++)
+  {
+    const BufferPiece *piece = (const BufferPiece *) meos_array_get(pieces, i);
+    if (! buffer_piece_draws_a_curve(piece))
+      continue;
+    LWCOMPOUND *curve = lwcompound_construct_empty(srid, 0, 0);
+    if (! curve)
+      continue;
+    buffer_append_piece_to_curve(curve, srid, piece);
+    if (curve->ngeoms == 1)
+    {
+      curves[ncurves++] = curve->geoms[0];
+      /* The curve belongs to the answer now, so the wrapper is released
+       * holding nothing */
+      curve->ngeoms = 0;
+      lwgeom_free(lwcompound_as_lwgeom(curve));
+    }
+    else if (curve->ngeoms == 0)
+      lwgeom_free(lwcompound_as_lwgeom(curve));
+    else
+      curves[ncurves++] = lwcompound_as_lwgeom(curve);
+  }
+  if (ncurves == 0)
+  {
+    pfree(curves);
+    return NULL;
+  }
+  if (ncurves == 1)
+  {
+    LWGEOM *result = curves[0];
+    pfree(curves);
+    return result;
+  }
+  /* #lwcollection_construct keeps the array it is given */
+  return lwcollection_as_lwgeom(lwcollection_construct(MULTICURVETYPE, srid,
+    NULL, ncurves, curves));
+}
+
+/**
  * @brief Answer a Boolean operation on two areal geometries while preserving
  * circular arcs
  * @details One mechanism answers the three operations, and the boundary of the
@@ -3660,11 +3757,11 @@ buffer_nodes_geometry(const MeosArray *nodes, int32_t srid)
  * A stretch the two boundaries SHARE is bounded by the nodes at its ends, so
  * it splits into a piece of its own and is placed like any other -- by the
  * side each interior occupies rather than by a midpoint that lies on both.
- * @return The overlay, an EMPTY geometry where it covers nothing, the NODES an
- * intersection meets at where the two share no area, or @p NULL for a pair
- * this does not answer -- a shared piece whose sides do not resolve, a meeting
- * that is not a crossing, and an intersection meeting along a stretch rather
- * than at nodes
+ * @return The overlay, an EMPTY geometry where it covers nothing, what an
+ * intersection meets along where the two share no area -- the NODES where they
+ * meet at isolated points and the STRETCH of boundary they share where they
+ * meet along one -- or @p NULL for a pair this does not answer, which is a
+ * shared piece whose sides do not resolve and a meeting that is not a crossing
  */
 static LWGEOM *
 buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
@@ -3720,9 +3817,10 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   /* Select the portions of both boundaries the operation keeps */
   MeosArray *selected = meos_array_create(sizeof(BufferPiece));
   MeosArray *boundary = meos_array_create(sizeof(BufferPiece));
+  MeosArray *shared = meos_array_create(sizeof(BufferPiece));
   bool coincident;
   buffer_select_overlay_boundary(split_a, geom2, split_b, geom1, oper,
-    selected, boundary, &coincident);
+    selected, boundary, shared, &coincident);
 
   /* Two boundaries that meet only at isolated points without their interiors
    * overlapping, as two discs touching at one point do, leave every piece of
@@ -3736,6 +3834,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   {
     *touching = true;
     meos_array_destroy(selected); meos_array_destroy(boundary);
+    meos_array_destroy(shared);
     meos_array_destroy(split_a); meos_array_destroy(split_b);
     meos_array_destroy(raw_a); meos_array_destroy(raw_b);
     meos_array_destroy(intersections);
@@ -3746,6 +3845,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   if (meos_array_count(boundary) > 0)
   {
     meos_array_destroy(selected); meos_array_destroy(boundary);
+    meos_array_destroy(shared);
     meos_array_destroy(split_a); meos_array_destroy(split_b);
     meos_array_destroy(raw_a); meos_array_destroy(raw_b);
     meos_array_destroy(intersections);
@@ -3772,17 +3872,30 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
    * separates a point from a curve. Where no piece of either boundary lies ON
    * the other, the two meet at the isolated NODES collected above and those
    * nodes ARE the answer -- exactly, since each is solved on the circles the
-   * operands carry. Where a piece does lie on the other, they meet along a
-   * whole STRETCH whose ends are the nodes, so the nodes state where the
-   * meeting begins and ends and not what it draws; such a pair is left to the
-   * caller, as is a union, which reaches this at all only where both
-   * boundaries lie wholly within the other */
+   * operands carry. Where a piece does lie on the other, they meet along the
+   * whole STRETCH that piece draws, and the pieces both boundaries carry ARE
+   * that stretch -- the nodes there bound it rather than draw it, so they are
+   * the wrong answer and the pieces are the right one. Each is a piece of a
+   * boundary the operands carry, so an arc stays an arc of its own circle.
+   * A union reaches this at all only where both boundaries lie wholly within
+   * the other, which is a region rather than a meeting, so it is left to the
+   * caller */
   int32_t srid = lwgeom_get_srid(geom1);
   if (meos_array_count(selected) == 0 && crossing && oper != CL_DIFFERENCE)
   {
-    LWGEOM *meeting = (oper == CL_INTERSECTION && ! coincident) ?
-      buffer_nodes_geometry(intersections, srid) : NULL;
+    LWGEOM *meeting = NULL;
+    if (oper == CL_INTERSECTION)
+    {
+      if (meos_array_count(shared) > 0)
+        meeting = buffer_shared_geometry(shared, srid);
+      else if (! coincident)
+        meeting = buffer_nodes_geometry(intersections, srid);
+      /* A pair reported as coincident while the two boundaries carry no piece
+       * in common is left as it is: what each reports there is a curve of its
+       * own, so neither the pieces nor the nodes state what the two meet at */
+    }
     meos_array_destroy(selected); meos_array_destroy(boundary);
+    meos_array_destroy(shared);
     meos_array_destroy(split_a); meos_array_destroy(split_b);
     meos_array_destroy(raw_a); meos_array_destroy(raw_b);
     meos_array_destroy(intersections);
@@ -3802,6 +3915,7 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
     buffer_make_surfaces_from_pieces(selected, srid);
   /* Clean up and return */
   meos_array_destroy(selected); meos_array_destroy(boundary);
+  meos_array_destroy(shared);
   meos_array_destroy(split_a); meos_array_destroy(split_b);
   meos_array_destroy(raw_a); meos_array_destroy(raw_b);
   meos_array_destroy(intersections);
@@ -5216,8 +5330,10 @@ buffer_areal_operation(const LWGEOM *geom1, const LWGEOM *geom2,
  * @brief Return the intersection of two areal geometries
  * @details See #buffer_areal_operation()
  * @param[in] geom1,geom2 Geometries
- * @return The region both cover, an EMPTY geometry where they cover none in
- * common, or @p NULL for a pair this does not answer
+ * @return The region both cover; what they meet along where they share no area
+ * -- a point set where they meet at isolated points, a curve where they meet
+ * along a stretch of boundary; an EMPTY geometry where they share nothing; or
+ * @p NULL for a pair this does not answer
  */
 LWGEOM *
 meos_areal_intersection(const LWGEOM *geom1, const LWGEOM *geom2)
