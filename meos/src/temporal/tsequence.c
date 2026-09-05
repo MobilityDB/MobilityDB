@@ -1013,12 +1013,26 @@ ensure_valid_tinstarr(TInstant **instants, int count, bool merge,
   interpType interp UNUSED)
 #endif /* NPOINT */
 {
+  /* The sequence takes its temporal type from the first instant, both here
+   * and in #tsequence_make_exp1, so an array whose instants do not agree on
+   * one builds a sequence that states a type its later instants do not
+   * carry: the value of such an instant is then read as the type the
+   * sequence states wherever a reader dispatches on the sequence, and as its
+   * own where a reader dispatches on the instant, so the two disagree. The
+   * type is the frame the whole array shares, and it is stated here. */
+  MeosType temptype = instants[0]->temptype;
   for (int i = 0; i < count; i++)
   {
     if (instants[i]->subtype != TINSTANT)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
         "Input values must be temporal instants");
+      return false;
+    }
+    if (instants[i]->temptype != temptype)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Input values must be of the same temporal type");
       return false;
     }
     /* Ensure that only point geometries for temporal points */
