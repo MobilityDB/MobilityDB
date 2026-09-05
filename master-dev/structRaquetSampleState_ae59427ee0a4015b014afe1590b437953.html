@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_sample_fn</title>
+<title>MobilityDB: RaquetSampleState::has_nodata</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_33f2fb1452130a67e11bac60be192612.html">raster</a></li><li class="navelem"><a class="el" href="raster__quadbin_8h.html">raster_quadbin.h</a></li>  </ul>
+<li class="navelem"><a class="el" href="structRaquetSampleState.html">RaquetSampleState</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,32 +79,34 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_afb5c38007b0118631db9cb8e650b85c4.html#afb5c38007b0118631db9cb8e650b85c4">araster_value_sampler</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_ac70f16baad58434fabcb9cdc8a3a7782.html#ac70f16baad58434fabcb9cdc8a3a7782">eraster_value_sampler</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a26bd497d333f8ecd7436b21532fbe4b2.html#a26bd497d333f8ecd7436b21532fbe4b2">raster_at_value_sampler</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a7706fa89d3c13e8e57cd7f59d5f159c1.html#a7706fa89d3c13e8e57cd7f59d5f159c1">raster_minus_value_sampler</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_acf3f3f250d1f143ef97f65dc904c4b40.html#acf3f3f250d1f143ef97f65dc904c4b40">raster_quadbin_bounds</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_afbee819387dc775b1c13d7fdb565504c.html#afbee819387dc775b1c13d7fdb565504c">raster_quadbin_from_bounds</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_ac18e1d3cea95768bc5975eb8ede0c6e2.html#ac18e1d3cea95768bc5975eb8ede0c6e2">raster_quadbin_zoom</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raster__quadbin_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a39014e5cb0d6f4a6b2a715ce749acd8c.html#a39014e5cb0d6f4a6b2a715ce749acd8c">raster_value_sampler</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_a387eb596ae8cb9c8659fb404017f7f90.html#a387eb596ae8cb9c8659fb404017f7f90">bot_merc</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="structRaquetSampleState_ae59427ee0a4015b014afe1590b437953.html#ae59427ee0a4015b014afe1590b437953">has_nodata</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_accbf8805d0ba51527c65b6d78fff1f95.html#accbf8805d0ba51527c65b6d78fff1f95">height</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_a39660558980b907424ddced8f9b8b5ff.html#a39660558980b907424ddced8f9b8b5ff">nodata</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_a345c492b47cf0f793d74ee2012663f7b.html#a345c492b47cf0f793d74ee2012663f7b">pixels</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_ab300c0058f42bcedc21f4b61b3d82fc6.html#ab300c0058f42bcedc21f4b61b3d82fc6">pixtype</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_a48d25942fb397c32d60df9e72982769d.html#a48d25942fb397c32d60df9e72982769d">top_merc</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_afef5098fb9c4eebcfa00184ce3a71b09.html#afef5098fb9c4eebcfa00184ce3a71b09">undomainable</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_a216b0629e3bd902ef67dac7c2441c7b5.html#a216b0629e3bd902ef67dac7c2441c7b5">width</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_adbeb80e529e0cb837eed8bbf6501813b.html#adbeb80e529e0cb837eed8bbf6501813b">xmax</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_a2e6c6e2db59b2143b9df85d674fa1786.html#a2e6c6e2db59b2143b9df85d674fa1786">xmin</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_a045569154de2f82162cd573c18dac42e.html#a045569154de2f82162cd573c18dac42e">ymax</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structRaquetSampleState_aba63cc18cba69715d1748899ee5521b3.html#aba63cc18cba69715d1748899ee5521b3">ymin</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad1d2107f437db77a74b9e4ae942b1bc6" name="ad1d2107f437db77a74b9e4ae942b1bc6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1d2107f437db77a74b9e4ae942b1bc6">&#9670;&#160;</a></span>raster_sample_fn</h2>
+<a id="ae59427ee0a4015b014afe1590b437953" name="ae59427ee0a4015b014afe1590b437953"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae59427ee0a4015b014afe1590b437953">&#9670;&#160;</a></span>has_nodata</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef bool(* raster_sample_fn) (void *ctx, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *point, double *value)</td>
+          <td class="memname">bool RaquetSampleState::has_nodata</td>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Callback returning the raster pixel value at a point: return true and set <code>value</code>, or return false when the point lies outside the raster or on a nodata pixel. </p>
 
 </div>
 </div>

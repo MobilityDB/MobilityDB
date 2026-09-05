@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_value_gdal_open</title>
+<title>MobilityDB: raster_gdal_gridops</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -91,16 +91,16 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_gadbb297bae58b06d3ebba66b7c5a10f86.html#gadbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_gaf51244fc65dac809d5dab41025f0990a.html#gaf51244fc65dac809d5dab41025f0990a">raster_at_value_gdal</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_a7bbef213c064390de2540f0c6c8704b2.html#a7bbef213c064390de2540f0c6c8704b2">raster_gdal_gridops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga9efd41ca7120b99502f0e392ce5cce94.html#ga9efd41ca7120b99502f0e392ce5cce94">raster_minus_value_gdal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga53345ad5839dfb7d63ac1e0afde597fa.html#ga53345ad5839dfb7d63ac1e0afde597fa">raster_value_gdal</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_aed00e70863ee161d315e89c87ea3faed.html#aed00e70863ee161d315e89c87ea3faed">raster_value_gdal_open</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_ab87a1c152ee495b1cb908bb4a2347c07.html#ab87a1c152ee495b1cb908bb4a2347c07">raster_value_gdal_sample</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a2b57fab834e0646e868b1ff832716874.html#a2b57fab834e0646e868b1ff832716874">raster_value_gdal_sample</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aed00e70863ee161d315e89c87ea3faed" name="aed00e70863ee161d315e89c87ea3faed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed00e70863ee161d315e89c87ea3faed">&#9670;&#160;</a></span>raster_value_gdal_open()</h2>
+<a id="a7bbef213c064390de2540f0c6c8704b2" name="a7bbef213c064390de2540f0c6c8704b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7bbef213c064390de2540f0c6c8704b2">&#9670;&#160;</a></span>raster_gdal_gridops()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -109,7 +109,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool raster_value_gdal_open </td>
+          <td class="memname">static bool raster_gdal_gridops </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>path</em>, </td>
@@ -135,8 +135,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structRasterGridOps.html">RasterGridOps</a> *&#160;</td>
+          <td class="paramname"><em>ops</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -151,14 +151,14 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Open a raster file via GDAL and build the <a class="el" href="structRasterValueGdalCtx.html" title="Per-call state for raster_value_gdal_sample: the raster band to read, the inverse geotransform mappin...">RasterValueGdalCtx</a> and the extent <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> pre-filter shared by every raster_value_gdal wrapper. </p>
+<p>Open a raster file via GDAL and fill its grid descriptor, which every raster_value_gdal wrapper reads. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to a GDAL-readable raster file </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">band_num</td><td>Band number (1-based) </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">ds_out</td><td>Open GDAL dataset; the caller closes it with GDALClose </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">ctx</td><td>Sampling context, valid while <code>ds_out</code> stays open </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">box</td><td>Bounding-box pre-filter derived from the geotransform </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ops</td><td>Descriptor of the raster grid </td></tr>
   </table>
   </dd>
 </dl>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_sample_state_make</title>
+<title>MobilityDB: raster_rtcore_gridops</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,16 +89,16 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga3831135f93b2dca3f28bcc8c0599477c.html#ga3831135f93b2dca3f28bcc8c0599477c">raster_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_gaf529fffbb1332c5907d4f12e77652c6c.html#gaf529fffbb1332c5907d4f12e77652c6c">raster_minus_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gae78cb7e96c1faeb6c64e3374d186c4af.html#gae78cb7e96c1faeb6c64e3374d186c4af">raster_num_bands</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raster__rtcore_8c_a7103493a14671156eaeb22a20d388d8a.html#a7103493a14671156eaeb22a20d388d8a">raster_sample_state_make</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raster__rtcore_8c_a8d8c4e9140ee312bcae766e4f151a299.html#a8d8c4e9140ee312bcae766e4f151a299">raster_rtcore_gridops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_acddad7b88e284ca51f32c3285c2d7c94.html#acddad7b88e284ca51f32c3285c2d7c94">raster_serialize_destroy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga8b065b73bf70f32e2e1dd645f7e17f77.html#ga8b065b73bf70f32e2e1dd645f7e17f77">raster_value</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a72d6db833424d5d69e04491d9a3f537d.html#a72d6db833424d5d69e04491d9a3f537d">raster_value_sample</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a9f0b6ff376c23870805566eab5e0fa99.html#a9f0b6ff376c23870805566eab5e0fa99">raster_value_sample</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7103493a14671156eaeb22a20d388d8a" name="a7103493a14671156eaeb22a20d388d8a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7103493a14671156eaeb22a20d388d8a">&#9670;&#160;</a></span>raster_sample_state_make()</h2>
+<a id="a8d8c4e9140ee312bcae766e4f151a299" name="a8d8c4e9140ee312bcae766e4f151a299"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d8c4e9140ee312bcae766e4f151a299">&#9670;&#160;</a></span>raster_rtcore_gridops()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -107,7 +107,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool raster_sample_state_make </td>
+          <td class="memname">static bool raster_rtcore_gridops </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>traj</em>, </td>
@@ -133,8 +133,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structRasterGridOps.html">RasterGridOps</a> *&#160;</td>
+          <td class="paramname"><em>ops</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -156,7 +156,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">band</td><td>Band number (1-based) </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">state</td><td>Sampling state; on success its raster is owned by the caller, which releases it with <a class="el" href="raster__rtcore_8c_ab04b7f222fb7c11b980f4d9ef970ab5f.html#ab04b7f222fb7c11b980f4d9ef970ab5f" title="Destroy an rt_core raster together with its bands.">raster_destroy()</a> </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">box</td><td>Bounding box of the raster extent </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ops</td><td>Descriptor of the raster grid </td></tr>
   </table>
   </dd>
 </dl>
