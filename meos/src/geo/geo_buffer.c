@@ -2397,9 +2397,13 @@ buffer_resolve_coincident_piece(BufferPiece *piece, BufferLocator *owner,
 /**
  * @brief Collect all exact boundary intersection nodes into the intersection
  * array.
- * @details The existing low-level intersection routines operate on MeosArray.
- * We therefore use a temporary MeosArray for each edge pair and transfer
- * the resulting points to MeosArray.
+ * @details The existing low-level intersection routines operate on MeosArray,
+ * so the points of one edge pair are collected into a scratch array and
+ * transferred. That array is built ONCE for the whole walk and reset per pair:
+ * it holds only the points of the pair being examined, so its contents are
+ * per-pair while its storage is not, and #meos_array_create would otherwise
+ * allocate MEOS_ARRAY_INITIAL_SIZE slots and free them again for every one of
+ * the n*m pairs.
  */
 static bool
 buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
@@ -2416,6 +2420,13 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
       meos_array_destroy(a2);
     return false;
   }
+  /* The scratch array the collectors write into, reused across the walk */
+  MeosArray *points = meos_array_create(sizeof(POINT2D));
+  if (! points)
+  {
+    meos_array_destroy(a1); meos_array_destroy(a2);
+    return false;
+  }
   for (uint32_t i = 0; i < a1->count; i++)
   {
     const Edge *e1 = (const Edge *) meos_array_get(a1, i);
@@ -2426,13 +2437,9 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
       const Edge *e2 = (const Edge *) meos_array_get(a2, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
         continue;
-      /* The existing intersection collectors expect MeosArray. */
-      MeosArray *points = meos_array_create(sizeof(POINT2D));
-      if (! points)
-      {
-        meos_array_destroy(a1); meos_array_destroy(a2);
-        return false;
-      }
+      /* The existing intersection collectors expect MeosArray, and each
+       * appends to what it is given, so the pair starts from an empty one */
+      meos_array_reset(points);
 
       if (e1->etype == EDGE_POLYSEG && e2->etype == EDGE_POLYSEG)
         buffer_collect_line_line_intersections(e1, e2, points);
@@ -2450,9 +2457,9 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
         if (point)
           buffer_intersections_add(intersections, point->x, point->y);
       }
-      meos_array_destroy(points);
     }
   }
+  meos_array_destroy(points);
   meos_array_destroy(a1); meos_array_destroy(a2);
   return true;
 }
