@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: h3_buf_grow</title>
+<title>MobilityDB: tsequence_ever_in_set</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,7 +84,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_a77878c77b23f03a4d0a70d5b74af3335.html#a77878c77b23f03a4d0a70d5b74af3335">geoloop_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_a63119185f61cfbe325fa111dddc82801.html#a63119185f61cfbe325fa111dddc82801">h3_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_ae1db7370beecfe5db9b79c45b49c23b7.html#ae1db7370beecfe5db9b79c45b49c23b7">h3_buf_free</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_a1179c7984eb46c88d96dbdefb17fcfe4.html#a1179c7984eb46c88d96dbdefb17fcfe4">h3_buf_grow</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_a1179c7984eb46c88d96dbdefb17fcfe4.html#a1179c7984eb46c88d96dbdefb17fcfe4">h3_buf_grow</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_abb904abc9102e491a75bb6dbaa34a0a7.html#abb904abc9102e491a75bb6dbaa34a0a7">h3_buf_init</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_a8ea652bb2b854d4605379c5ae918da9f.html#a8ea652bb2b854d4605379c5ae918da9f">h3_buf_push</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_a7a9cf275b5689461d5f90081b627cd1a.html#a7a9cf275b5689461d5f90081b627cd1a">h3_buf_push_ring1</a></td></tr>
@@ -97,13 +97,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_ad402228f4e3b023a7daff181f8c22685.html#ad402228f4e3b023a7daff181f8c22685">point_to_cells_into</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_ae7caefc6c60600ce2c3706e7773d166a.html#ae7caefc6c60600ce2c3706e7773d166a">pointarray_to_geoloop</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_ac0742017b83d08d588cbc4e2e038378a.html#ac0742017b83d08d588cbc4e2e038378a">polygon_to_cells_into</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_aa6811a7205b37913de16aca7166791d2.html#aa6811a7205b37913de16aca7166791d2">tsequence_ever_in_set</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2h3_2h3__geo_8c_aa6811a7205b37913de16aca7166791d2.html#aa6811a7205b37913de16aca7166791d2">tsequence_ever_in_set</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a1179c7984eb46c88d96dbdefb17fcfe4" name="a1179c7984eb46c88d96dbdefb17fcfe4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1179c7984eb46c88d96dbdefb17fcfe4">&#9670;&#160;</a></span>h3_buf_grow()</h2>
+<a id="aa6811a7205b37913de16aca7166791d2" name="aa6811a7205b37913de16aca7166791d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa6811a7205b37913de16aca7166791d2">&#9670;&#160;</a></span>tsequence_ever_in_set()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -112,16 +112,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void h3_buf_grow </td>
+          <td class="memname">static bool tsequence_ever_in_set </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structh3__buf.html">h3_buf</a> *&#160;</td>
-          <td class="paramname"><em>buf</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
+          <td class="paramname"><em>seq</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>additional</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
+          <td class="paramname"><em>s</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -136,7 +136,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Ensure that an accumulator can hold <code>additional</code> further cells. </p>
+<p>Return true if any instant of a temporal sequence holds a value that a set contains. </p>
 
 </div>
 </div>
