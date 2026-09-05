@@ -3657,46 +3657,7 @@
 	<sect1>
 		<title>Raster Sampling</title>
 		<sect2>
-			<title>Sampling Operator</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Sample a raster band at each instant of a trajectory</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Raster Accessors</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Return the number of bands of a raster</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Raquet / QUADBIN Sampling</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raster_quadbins"><varname>quadbins</varname></link>: Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet"><varname>raquet</varname></link>: Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a <varname>raquet</varname> raster tile along a trajectory</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Sample an array of <varname>raquet</varname> raster tiles along a trajectory</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Raquet Serialization</title>
+			<title>Input and Output</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
@@ -3713,8 +3674,30 @@
 			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Raquet Accessors and Comparison</title>
+			<title>Constructors</title>
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="raquet"><varname>raquet</varname></link>: Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Conversions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convert a Raquet tile into a spatiotemporal box</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Accessors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Return the number of bands of a raster</para>
+				</listitem>
 				<listitem>
 					<para><link linkend="raquet_quadbin_accessor"><varname>quadbin</varname></link>: Return the QUADBIN cell of a Raquet tile</para>
 				</listitem>
@@ -3733,17 +3716,39 @@
 				<listitem>
 					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Return the pixel bytes of a Raquet tile</para>
 				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Set-Returning Functions</title>
+			<itemizedlist>
 				<listitem>
-					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convert a Raquet tile into a spatiotemporal box</para>
+					<para><link linkend="raster_quadbins"><varname>quadbins</varname></link>: Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
 				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Comparisons</title>
+			<itemizedlist>
 				<listitem>
 					<para><link linkend="raquet_comparison"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>&gt;</varname>, <varname>cmp</varname></link>: Compare two Raquet tiles</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Restriction and Predicate Operators</title>
+			<title>Raster-Specific Operations</title>
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Sample a raster band at each instant of a trajectory</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a <varname>raquet</varname> raster tile along a trajectory</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Sample an array of <varname>raquet</varname> raster tiles along a trajectory</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
+				</listitem>
 				<listitem>
 					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
 				</listitem>
