@@ -3676,7 +3676,7 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
       0, 0);
     lwgeom_out = lwcollection_as_lwgeom(empty);
     g_out = geo_serialize(lwgeom_out);
-    lwgeom_free(lwgeom_out);
+    lwgeom_free(lwgeom_out); lwgeom_free(lwgeom);
     return g_out;
   }
 
@@ -3692,6 +3692,7 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
     case POINTTYPE:
     {
       /* centroid of a point is itself */
+      lwgeom_free(lwgeom);
       return geo_copy(gs);
     }
     case MULTIPOINTTYPE:
@@ -3720,7 +3721,11 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
       lwmline_add_lwline(mline, line);
 
       lwpoint_out = geography_centroid_from_mline(mline, &s);
+      /* #lwmline_add_lwline stores the line it is given rather than copying
+       * it, so this releases the operand along with the collection holding
+       * it and the release below must not reach it a second time */
       lwmline_free(mline);
+      lwgeom = NULL;
       break;
     }
     case MULTILINETYPE:
@@ -3736,7 +3741,11 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
       LWMPOLY* mpoly = lwmpoly_construct_empty(srid, 0, 0);
       lwmpoly_add_lwpoly(mpoly, poly);
       lwpoint_out = geography_centroid_from_mpoly(mpoly, use_spheroid, &s);
+      /* #lwmpoly_add_lwpoly stores the polygon it is given rather than
+       * copying it, so this releases the operand along with the collection
+       * holding it and the release below must not reach it a second time */
       lwmpoly_free(mpoly);
+      lwgeom = NULL;
       break;
     }
     case MULTIPOLYGONTYPE:
@@ -3749,6 +3758,7 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "ST_Centroid(geography) unhandled geography type");
+      lwgeom_free(lwgeom);
       return NULL;
     }
   }
@@ -3756,7 +3766,7 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
   g_out = geo_serialize(lwgeom_out);
   /* MEOS: GEOS DOES NOT SET THE GEODETIC FLAG */
   FLAGS_SET_GEODETIC(g_out->gflags, FLAGS_GET_GEODETIC(gs->gflags));
-  lwgeom_free(lwgeom_out);
+  lwgeom_free(lwgeom_out); lwgeom_free(lwgeom);
   return g_out;
 }
 
