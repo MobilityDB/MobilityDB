@@ -2812,6 +2812,18 @@
 				<listitem>
 					<para><link linkend="tcell_frombinary"><varname>tcellFromBinary</varname>, <varname>tcellFromHexWKB</varname>, <varname>tcellFromMFJSON</varname></link>: Reconstruct a temporal cell from its binary, hexadecimal, or MF-JSON representation</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation of a Raquet tile</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Return a Raquet tile from its Well-Known Binary (WKB) representation</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Return a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -2823,6 +2835,12 @@
 				<listitem>
 					<para><link linkend="tcell_seq_const"><varname>tcellInst</varname>, <varname>tcellSeq</varname>, <varname>tcellSeqSet</varname></link>: Construct a temporal cell of a given subtype from its components</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raquet"><varname>raquet</varname></link>: Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -2833,6 +2851,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_tgeogpoint"><varname>::</varname></link>: Cast a temporal cell to a temporal geodetic or planar point of cell centroids</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convert a Raquet tile into a spatiotemporal box</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2847,6 +2868,27 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the cell identifier at a given timestamp, using step interpolation</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Return the number of bands of a raster</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_quadbin_accessor"><varname>quadbin</varname></link>: Return the QUADBIN cell of a Raquet tile</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_width"><varname>width</varname></link>: Return the width in pixels of a Raquet tile</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_height"><varname>height</varname></link>: Return the height in pixels of a Raquet tile</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Return the nodata sentinel value of a Raquet tile</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_pixtype"><varname>pixtype</varname></link>: Return the name of the pixel data type of a Raquet tile</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Return the pixel bytes of a Raquet tile</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2973,6 +3015,9 @@
 				<listitem>
 					<para><link linkend="tcell_uncompact_cells"><varname>uncompactCells</varname></link>: Uncompacted representation at the given resolution, the inverse of <varname>compactCells</varname></para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raster_quadbins"><varname>quadbins</varname></link>: Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -3002,6 +3047,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_tcomp"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Temporal comparisons</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raquet_comparison"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>&gt;</varname>, <varname>cmp</varname></link>: Compare two Raquet tiles</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3139,6 +3187,35 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_s2_cell_neighbors"><varname>s2EdgeNeighbors</varname></link>: Return the four cells sharing an edge with an S2 cell</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
+			<title>Raster-Specific Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Sample a raster band at each instant of a trajectory</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a <varname>raquet</varname> raster tile along a trajectory</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Sample an array of <varname>raquet</varname> raster tiles along a trajectory</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_minusRasterValue"><varname>minusRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_eRasterValue"><varname>eRasterValue</varname></link>: Return true if the trajectory ever samples a raster pixel value inside a float range</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_aRasterValue"><varname>aRasterValue</varname></link>: Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3649,117 +3726,6 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tpointcloud_indexes">GiST, SP-GiST, B-tree, and hash opclasses for tpcpoint, tpcpatch, and tpcbox</link></para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-	</sect1>
-
-	<sect1>
-		<title>Raster Sampling</title>
-		<sect2>
-			<title>Input and Output</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation of a Raquet tile</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Return a Raquet tile from its Well-Known Binary (WKB) representation</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Return a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Constructors</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raquet"><varname>raquet</varname></link>: Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Conversions</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convert a Raquet tile into a spatiotemporal box</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Accessors</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Return the number of bands of a raster</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_quadbin_accessor"><varname>quadbin</varname></link>: Return the QUADBIN cell of a Raquet tile</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_width"><varname>width</varname></link>: Return the width in pixels of a Raquet tile</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_height"><varname>height</varname></link>: Return the height in pixels of a Raquet tile</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Return the nodata sentinel value of a Raquet tile</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_pixtype"><varname>pixtype</varname></link>: Return the name of the pixel data type of a Raquet tile</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Return the pixel bytes of a Raquet tile</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Set-Returning Functions</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raster_quadbins"><varname>quadbins</varname></link>: Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Comparisons</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raquet_comparison"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>&gt;</varname>, <varname>cmp</varname></link>: Compare two Raquet tiles</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>Raster-Specific Operations</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Sample a raster band at each instant of a trajectory</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a <varname>raquet</varname> raster tile along a trajectory</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Sample an array of <varname>raquet</varname> raster tiles along a trajectory</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_minusRasterValue"><varname>minusRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_eRasterValue"><varname>eRasterValue</varname></link>: Return true if the trajectory ever samples a raster pixel value inside a float range</para>
-				</listitem>
-				<listitem>
-					<para><link linkend="raster_aRasterValue"><varname>aRasterValue</varname></link>: Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

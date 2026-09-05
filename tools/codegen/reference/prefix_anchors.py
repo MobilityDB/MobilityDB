@@ -86,7 +86,7 @@ RENAMES = {
     "route": "npoint",
     "getPosition": "npoint",
     "startPosition": "npoint",
-    # temporal_raster.xml — a temporal point restricted or tested against a
+    # temporal_cell_index.xml — a temporal point restricted or tested against a
     # raster
     "rasterValue": "raster",
     "rasterTileValue": "raster",
