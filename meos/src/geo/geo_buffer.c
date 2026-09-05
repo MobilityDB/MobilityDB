@@ -589,6 +589,14 @@ buffer_geometries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
           b->etype != EDGE_LINEARC && b->etype != EDGE_LINESEG)
         continue;
 
+      /* Two edges whose boxes lie apart cannot meet; the box each edge
+       * carries covers an arc's bulge as well as a segment's endpoints */
+      if (a->xmax < b->xmin - MEOS_GEOM_TOLERANCE ||
+          b->xmax < a->xmin - MEOS_GEOM_TOLERANCE ||
+          a->ymax < b->ymin - MEOS_GEOM_TOLERANCE ||
+          b->ymax < a->ymin - MEOS_GEOM_TOLERANCE)
+        continue;
+
       /* Line / line */
       if (a->etype == EDGE_LINESEG && b->etype == EDGE_LINESEG)
       {
@@ -750,6 +758,13 @@ buffer_boundaries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
     {
       const Edge *e2 = (const Edge *) meos_array_get(a2, j);
       if (! e2)
+        continue;
+      /* Two edges whose boxes lie apart cannot meet; the box each edge
+       * carries covers an arc's bulge as well as a segment's endpoints */
+      if (e1->xmax < e2->xmin - MEOS_GEOM_TOLERANCE ||
+          e2->xmax < e1->xmin - MEOS_GEOM_TOLERANCE ||
+          e1->ymax < e2->ymin - MEOS_GEOM_TOLERANCE ||
+          e2->ymax < e1->ymin - MEOS_GEOM_TOLERANCE)
         continue;
       if (buffer_edges_intersect(e1, e2))
       {
@@ -2436,6 +2451,17 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
     {
       const Edge *e2 = (const Edge *) meos_array_get(a2, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
+        continue;
+      /* Two edges whose boxes lie apart cannot meet, and the box each edge
+       * carries is EXACT for its kind: the endpoints for a segment, and for an
+       * arc #arc_set_bbox spans the endpoints together with whichever of the
+       * four cardinal extremes the arc's angular span reaches, so it covers
+       * the bulge rather than the chord. The same four comparisons stand in
+       * front of the relate engine's own edge walk in #relate_edges_meet_any */
+      if (e1->xmax < e2->xmin - MEOS_GEOM_TOLERANCE ||
+          e2->xmax < e1->xmin - MEOS_GEOM_TOLERANCE ||
+          e1->ymax < e2->ymin - MEOS_GEOM_TOLERANCE ||
+          e2->ymax < e1->ymin - MEOS_GEOM_TOLERANCE)
         continue;
       /* The existing intersection collectors expect MeosArray, and each
        * appends to what it is given, so the pair starts from an empty one */
@@ -4825,6 +4851,13 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
     {
       const Edge *e2 = (const Edge *) meos_array_get(arr, j);
       if (! e2 || ! buffer_is_boundary_edge(e2))
+        continue;
+      /* Two edges whose boxes lie apart cannot meet; the box each edge
+       * carries covers an arc's bulge as well as a segment's endpoints */
+      if (e1->xmax < e2->xmin - MEOS_GEOM_TOLERANCE ||
+          e2->xmax < e1->xmin - MEOS_GEOM_TOLERANCE ||
+          e1->ymax < e2->ymin - MEOS_GEOM_TOLERANCE ||
+          e2->ymax < e1->ymin - MEOS_GEOM_TOLERANCE)
         continue;
       MeosArray *points = meos_array_create(sizeof(POINT2D));
       buffer_collect_edge_intersections(e1, e2, points);
