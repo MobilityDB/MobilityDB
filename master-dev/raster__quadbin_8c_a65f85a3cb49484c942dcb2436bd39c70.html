@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: qb_to_xyz</title>
+<title>MobilityDB: QB_MAX_LATITUDE</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -87,10 +87,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a0a7b5b0cd2cd1d1bdad1ef53c2e3ce80.html#a0a7b5b0cd2cd1d1bdad1ef53c2e3ce80">qb_bbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a35d115e76acf2ead0cc8456e5d69490e.html#a35d115e76acf2ead0cc8456e5d69490e">QB_FOOTER</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a94cace6f35f2cf73face822859381245.html#a94cace6f35f2cf73face822859381245">QB_HEADER</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a65f85a3cb49484c942dcb2436bd39c70.html#a65f85a3cb49484c942dcb2436bd39c70">QB_MAX_LATITUDE</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raster__quadbin_8c_a65f85a3cb49484c942dcb2436bd39c70.html#a65f85a3cb49484c942dcb2436bd39c70">QB_MAX_LATITUDE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a81f432e423ffd34b3ede0513d5ec2e5f.html#a81f432e423ffd34b3ede0513d5ec2e5f">QB_MERC_MAX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a8329eb29d4f926aa190799267a359470.html#a8329eb29d4f926aa190799267a359470">QB_MODE</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raster__quadbin_8c_ab487a6d1b9612e80d66911faadab4f73.html#ab487a6d1b9612e80d66911faadab4f73">qb_to_xyz</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_ab487a6d1b9612e80d66911faadab4f73.html#ab487a6d1b9612e80d66911faadab4f73">qb_to_xyz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_acd5ef7388bb15f299377756d86aa0b0e.html#acd5ef7388bb15f299377756d86aa0b0e">QB_TRAJECTORY_MAX_ZOOM</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a5afa7907e26a5a62b3dd5f2dfd1ff9c1.html#a5afa7907e26a5a62b3dd5f2dfd1ff9c1">quadbin_cell_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a8d00815ca7bbbee22b8e9131468746ff.html#a8d00815ca7bbbee22b8e9131468746ff">quadbin_cells_add</a></td></tr>
@@ -116,54 +116,19 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab487a6d1b9612e80d66911faadab4f73" name="ab487a6d1b9612e80d66911faadab4f73"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab487a6d1b9612e80d66911faadab4f73">&#9670;&#160;</a></span>qb_to_xyz()</h2>
+<a id="a65f85a3cb49484c942dcb2436bd39c70" name="a65f85a3cb49484c942dcb2436bd39c70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a65f85a3cb49484c942dcb2436bd39c70">&#9670;&#160;</a></span>QB_MAX_LATITUDE</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void qb_to_xyz </td>
-          <td>(</td>
-          <td class="paramtype">uint64_t&#160;</td>
-          <td class="paramname"><em>cell</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t *&#160;</td>
-          <td class="paramname"><em>tx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t *&#160;</td>
-          <td class="paramname"><em>ty</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t *&#160;</td>
-          <td class="paramname"><em>tz</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
+          <td class="memname">#define QB_MAX_LATITUDE&#160;&#160;&#160;85.051129</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Morton-decode a QUADBIN cell into Web-Mercator tile coordinates. </p>
-<p >Canonical compact_bits algorithm matching CARTO quadbin-js quadbinCellToTile: extract even/odd bits, compact right (shifts 1→2→4→8→16), descale from 2^26. </p>
+<p>Latitude the Web-Mercator grid reaches, beyond which a tile has no extent. </p>
 
 </div>
 </div>
