@@ -1212,6 +1212,29 @@ int main(void)
   free(cell_text); free(cell_out); free(cell);
   meos_errno_reset();
 
+  /* A trajectory crosses cells that hold none of its instants, so the
+   * conversion densifies each segment and emits one instant per cell
+   * entered. What it emits is a property of the grid, not of the input
+   * cardinality: the same two-instant trajectory sits inside a single
+   * coarse cell and crosses three finer ones */
+  Temporal *tp = tgeompoint_in("SRID=4326;[POINT(2.30 48.85)@2001-01-01, "
+    "POINT(2.40 48.90)@2001-01-02]");
+  assert(tp != NULL);
+  Temporal *coarse = tgeompoint_to_th3index(tp, 3);
+  Temporal *fine = tgeompoint_to_th3index(tp, 6);
+  assert(coarse != NULL); assert(fine != NULL);
+  assert(meos_errno() == 0);
+  int ncoarse, nfine;
+  H3Index *vcoarse = th3index_values(coarse, &ncoarse);
+  H3Index *vfine = th3index_values(fine, &nfine);
+  assert(vcoarse != NULL); assert(vfine != NULL);
+  printf("the cells a trajectory crosses at resolutions 3 and 6: %d %d\n",
+    ncoarse, nfine);
+  assert(ncoarse == 1); assert(nfine == 3);
+  free(vcoarse); free(vfine);
+  free(coarse); free(fine); free(tp);
+  meos_errno_reset();
+
   /* A set reads its elements through that same renderer, and a cell set
    * carries no timestamp, so the three grids are stated exactly */
   Set *h3s = h3index_to_set((H3Index) 0x831c02fffffffffULL);
