@@ -1349,8 +1349,15 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
   int ntouch = touches ? (int) touches->count : 0;
   int narcs = arcs ? (int) arcs->count / 3 : 0;
   if (npieces == 0 && ntouch == 0 && narcs == 0)
-    return geo_serialize(lwline_as_lwgeom(lwline_construct_empty(srid, hasz,
-      false)));
+  {
+    /* Serializing copies, so the geometry built to be serialized is this
+     * function's to release -- as it is on every other answer below */
+    LWGEOM *empty = lwline_as_lwgeom(lwline_construct_empty(srid, hasz,
+      false));
+    GSERIALIZED *result = geo_serialize(empty);
+    lwgeom_free(empty);
+    return result;
+  }
 
   LWGEOM **lines = npieces ? palloc(sizeof(LWGEOM *) * npieces) : NULL;
   int nlines = 0;
