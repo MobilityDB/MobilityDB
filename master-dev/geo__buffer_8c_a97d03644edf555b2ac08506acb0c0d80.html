@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_areal_overlay</title>
+<title>MobilityDB: buffer_triangle_as_poly</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -99,7 +99,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2cb628ab5a458eaac1db65be3cbbff76.html#a2cb628ab5a458eaac1db65be3cbbff76">buffer_areal_contains_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a26fd3a91bf0a99fee0a411c5dbacd25b.html#a26fd3a91bf0a99fee0a411c5dbacd25b">buffer_areal_is_degenerate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a357a495dc1101c3616b54c8c033437b6.html#a357a495dc1101c3616b54c8c033437b6">buffer_areal_operation</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_aa9e1545e514f0621709f49e985036282.html#aa9e1545e514f0621709f49e985036282">buffer_areal_overlay</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa9e1545e514f0621709f49e985036282.html#aa9e1545e514f0621709f49e985036282">buffer_areal_overlay</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_acad053b8ea93e6e2274633fcf9b51a6e.html#acad053b8ea93e6e2274633fcf9b51a6e">buffer_areal_representative_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aede157af0f31441667bf7a7aa7937849.html#aede157af0f31441667bf7a7aa7937849">buffer_areal_union_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_abf85b9bce5aac6bf8fd6a7bf92930ee4.html#abf85b9bce5aac6bf8fd6a7bf92930ee4">buffer_boundaries_cross</a></td></tr>
@@ -205,7 +205,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_acaa0eb2e14a3073292098712c02fff83.html#acaa0eb2e14a3073292098712c02fff83">buffer_split_point_add</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7a9abb9d238433a85f3bfbfd50771d0c.html#a7a9abb9d238433a85f3bfbfd50771d0c">buffer_split_point_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a40132e2de969cc3e1c09e46e44ce65f2.html#a40132e2de969cc3e1c09e46e44ce65f2">buffer_split_segment</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a97d03644edf555b2ac08506acb0c0d80.html#a97d03644edf555b2ac08506acb0c0d80">buffer_triangle_as_poly</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a97d03644edf555b2ac08506acb0c0d80.html#a97d03644edf555b2ac08506acb0c0d80">buffer_triangle_as_poly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ab2b3f9b9cf5c57d7d9641d8432b1361a.html#ab2b3f9b9cf5c57d7d9641d8432b1361a">buffer_union_components</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a1371febf4b1f4683a44e5f33437514f6.html#a1371febf4b1f4683a44e5f33437514f6">buffer_union_crossing</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae155be4d88548e58a02dd16478a8c702.html#ae155be4d88548e58a02dd16478a8c702">buffer_values_equal</a></td></tr>
@@ -235,8 +235,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa9e1545e514f0621709f49e985036282" name="aa9e1545e514f0621709f49e985036282"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa9e1545e514f0621709f49e985036282">&#9670;&#160;</a></span>buffer_areal_overlay()</h2>
+<a id="a97d03644edf555b2ac08506acb0c0d80" name="a97d03644edf555b2ac08506acb0c0d80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97d03644edf555b2ac08506acb0c0d80">&#9670;&#160;</a></span>buffer_triangle_as_poly()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -245,33 +245,11 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * buffer_areal_overlay </td>
+          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * buffer_triangle_as_poly </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const <a class="el" href="structLWTRIANGLE.html">LWTRIANGLE</a> *&#160;</td>
+          <td class="paramname"><em>tri</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4">ClipOper</a>&#160;</td>
-          <td class="paramname"><em>oper</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>touching</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -281,17 +259,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Answer a Boolean operation on two areal geometries while preserving circular arcs. </p>
-<p >One mechanism answers the three operations, and the boundary of the answer is always built the same way: the two boundaries are cut at the nodes where they meet, every piece is placed inside or outside the other geometry by its own midpoint, the operation says which side it keeps (<a class="el" href="geo__buffer_8c_ac9ede1bc4bba478b0993c644fef349cd.html#ac9ede1bc4bba478b0993c644fef349cd" title="Select the pieces of two boundaries that bound the overlay.">buffer_select_overlay_boundary</a>), and the kept pieces are chained back into rings. An arc is cut into arcs of its own circle throughout, so the answer carries the circles its operands do rather than the chords a linearization would put in their place.</p>
-<p >Nothing here asks how the two geometries lie relative to one another. Where their boundaries stay apart there is nothing to cut and every piece is wholly inside or wholly outside, which is the containment and the disjoint case answered by the same selection; and a geometry of several components is read piece by piece, so one component inside and another outside need no separate treatment. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">geom1,geom2</td><td>Areal geometries </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">oper</td><td>Operation, one of <code>CL_UNION</code>, <code>CL_INTERSECTION</code> and <code>CL_DIFFERENCE</code> </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">touching</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> when the two boundaries meet without their interiors overlapping, which a union answers as two surfaces A stretch the two boundaries SHARE is bounded by the nodes at its ends, so it splits into a piece of its own and is placed like any other &ndash; by the side each interior occupies rather than by a midpoint that lies on both. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The overlay, an EMPTY geometry where it covers nothing, or <code>NULL</code> for a pair this does not answer &ndash; a shared piece whose sides do not resolve, and a meeting that is not a crossing </dd></dl>
+<p>Return a triangle as the polygon it draws. </p>
+<p >A triangle is a polygon of a single ring, so the two draw the same region &ndash; but the readers of a collection of surfaces do not take them alike. <code>lwmsurface_linearize</code> (<code>postgis/liblwgeom/lwstroke.c</code>) answers a CURVEPOLYGON and a POLYGON and has no arm for anything else, so a member of another type leaves its slot of the output array UNSET, and the collection built from that array reads whatever the allocation happened to hold. Writing the ring into a polygon loses nothing and keeps every member a type the readers answer </p>
 
 </div>
 </div>
