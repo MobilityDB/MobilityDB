@@ -3490,7 +3490,6 @@ relate_point_in_area(double x, double y, Edge **edges, int nedges)
  * for every edge of the other costs their PRODUCT. The index is built where
  * that product dwarfs the pass, and a pair small enough for the walk to be the
  * cheaper of the two keeps it */
-#define RELATE_INDEX_MIN_PAIRS 100000
 
 /**
  * @brief Return the greatest x an edge array reaches, which is how far a ray
@@ -3528,29 +3527,13 @@ relate_edges_index(Edge **edges, int nedges)
 }
 
 /**
- * @brief An edge array together with what a question about one point needs in
- * order to read only the edges that can answer it
- * @details The index is absent below the threshold, and every function taking
- * this reads the whole array in that case, so the answer never depends on
- * whether the index was built
- */
-typedef struct
-{
-  Edge **edges;   /**< Edges the array holds */
-  int nedges;     /**< Number of edges */
-  RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
-  double xmax;    /**< Greatest x the edges reach */
-  double tol;     /**< Widest tolerance any of the edges asks for */
-} RelateEdges;
-
-/**
  * @brief Fill in an edge array together with what reading it selectively needs
  * @param[out] re Structure to fill in
  * @param[in] edges,nedges The edges
  * @param[in] index True to index them, which the caller decides from the size
  * of BOTH arrays, since it is their product the index removes
  */
-static void
+void
 relate_edges_init(RelateEdges *re, Edge **edges, int nedges, bool index)
 {
   re->edges = edges;
@@ -3573,7 +3556,7 @@ relate_edges_init(RelateEdges *re, Edge **edges, int nedges, bool index)
 /**
  * @brief Free the index an edge array carries, if it carries one
  */
-static void
+void
 relate_edges_clear(RelateEdges *re)
 {
   if (re->index)
@@ -3616,7 +3599,7 @@ relate_point_on_boundary_index(double x, double y, const RelateEdges *re)
  * decides which edges are asked, and one it leaves out neither carries the
  * point nor crosses the ray cast from it
  */
-static int
+int
 relate_point_in_area_index(double x, double y, const RelateEdges *re)
 {
   if (relate_point_on_boundary_index(x, y, re))

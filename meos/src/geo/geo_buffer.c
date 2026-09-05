@@ -1278,29 +1278,39 @@ buffer_edge_normals(const Edge *edge, double *nx, double *ny)
  *
  * The extraction is LAZY -- deferred to the first point actually asked --
  * because a pair the overlay resolves without locating anything must not pay
- * for a set nobody reads
+ * for a set nobody reads. What it reads them into is the same #RelateEdges the
+ * relate engine builds, so a question big enough to be worth an index is
+ * answered out of one on the same terms, and one that is not reads the array
+ * whole exactly as before
  */
 typedef struct
 {
   const LWGEOM *geom;   /**< The geometry points are located against */
   MeosArray *arr;       /**< Its edges, NULL until the first point asks */
   Edge **edges;         /**< Pointers into @p arr, in its order */
-  int nedges;           /**< Number of edges, meaningful once @p arr is set */
+  RelateEdges re;       /**< The edges and what reading them selectively needs */
+  int npoints;          /**< Points the caller expects to locate against it */
+  bool ready;           /**< True once @p re holds the edges */
 } BufferLocator;
 
 /**
  * @brief Prepare to locate points against a geometry, reading none of it yet
  * @param[out] loc Locator to prepare
  * @param[in] geom Geometry points are located against
+ * @param[in] npoints How many points the caller expects to locate against it,
+ * which together with the edge count is what decides whether an index earns
+ * its build -- the product is the work an index removes, which is the rule
+ * #relate_edges_init states for its own two arrays
  */
 static void
-buffer_locator_make(BufferLocator *loc, const LWGEOM *geom)
+buffer_locator_make(BufferLocator *loc, const LWGEOM *geom, int npoints)
 {
   assert(loc); assert(geom);
   loc->geom = geom;
   loc->arr = NULL;
   loc->edges = NULL;
-  loc->nedges = 0;
+  loc->npoints = npoints;
+  loc->ready = false;
 }
 
 /**
@@ -1311,6 +1321,11 @@ static void
 buffer_locator_free(BufferLocator *loc)
 {
   assert(loc);
+  if (loc->ready)
+  {
+    relate_edges_clear(&loc->re);
+    loc->ready = false;
+  }
   if (loc->edges)
   {
     pfree(loc->edges);
@@ -1321,7 +1336,6 @@ buffer_locator_free(BufferLocator *loc)
     meos_array_destroy(loc->arr);
     loc->arr = NULL;
   }
-  loc->nedges = 0;
 }
 
 /**
@@ -1336,20 +1350,27 @@ static int
 buffer_locator_point(BufferLocator *loc, double x, double y)
 {
   assert(loc); assert(loc->geom);
-  if (! loc->arr)
+  if (! loc->ready)
   {
     loc->arr = geom_extract_edges(loc->geom);
-    loc->nedges = (int) loc->arr->count;
-    if (loc->nedges > 0)
+    int nedges = (int) loc->arr->count;
+    if (nedges > 0)
     {
-      loc->edges = palloc(sizeof(Edge *) * loc->nedges);
-      for (int i = 0; i < loc->nedges; i++)
+      loc->edges = palloc(sizeof(Edge *) * nedges);
+      for (int i = 0; i < nedges; i++)
         loc->edges[i] = (Edge *) meos_array_get(loc->arr, i);
     }
+    /* The index removes the product of the points asked and the edges each
+     * one would otherwise walk, so that product is what has to clear the
+     * threshold -- the same rule, on this engine's two quantities */
+    bool index = nedges > 0 &&
+      (double) loc->npoints * (double) nedges >= RELATE_INDEX_MIN_PAIRS;
+    relate_edges_init(&loc->re, loc->edges, nedges, index);
+    loc->ready = true;
   }
-  if (loc->nedges == 0)
+  if (loc->re.nedges == 0)
     return 2;
-  return relate_point_in_area(x, y, loc->edges, loc->nedges);
+  return relate_point_in_area_index(x, y, &loc->re);
 }
 
 /**
@@ -1364,7 +1385,7 @@ buffer_point_location(const LWGEOM *geom, double x, double y)
 {
   assert(geom);
   BufferLocator loc;
-  buffer_locator_make(&loc, geom);
+  buffer_locator_make(&loc, geom, 1);
   int result = buffer_locator_point(&loc, x, y);
   buffer_locator_free(&loc);
   return result;
@@ -3900,8 +3921,12 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
    * locates a point per piece against one of them and up to eight more per
    * coincident piece */
   BufferLocator loc_a, loc_b;
-  buffer_locator_make(&loc_a, geom1);
-  buffer_locator_make(&loc_b, geom2);
+  /* Each piece of one boundary asks at least one point of the other, and a
+   * coincident piece asks up to eight more of both */
+  int points_a = (int) meos_array_count(split_b);
+  int points_b = (int) meos_array_count(split_a);
+  buffer_locator_make(&loc_a, geom1, points_a);
+  buffer_locator_make(&loc_b, geom2, points_b);
   buffer_select_overlay_boundary(split_a, &loc_b, split_b, &loc_a, oper,
     selected, boundary, shared, &coincident);
   buffer_locator_free(&loc_a);
