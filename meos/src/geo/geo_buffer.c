@@ -4839,6 +4839,9 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
   /* Where the ring meets itself */
   MeosArray *nodes = meos_array_create(sizeof(POINT2D));
   MeosArray *pieces = meos_array_create(sizeof(BufferPiece));
+  /* The scratch array the collectors write into, reused across the walk: its
+   * contents belong to the pair being examined, its storage to none of them */
+  MeosArray *points = meos_array_create(sizeof(POINT2D));
   for (uint32_t i = 0; i < n; i++)
   {
     const Edge *e1 = (const Edge *) meos_array_get(arr, i);
@@ -4859,7 +4862,10 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
           e1->ymax < e2->ymin - MEOS_GEOM_TOLERANCE ||
           e2->ymax < e1->ymin - MEOS_GEOM_TOLERANCE)
         continue;
-      MeosArray *points = meos_array_create(sizeof(POINT2D));
+      /* #buffer_add_intersection_point scans up to the count to reject a
+       * duplicate before adding, so a pair must start from an empty array or
+       * a point of an earlier pair suppresses a genuine one of this pair */
+      meos_array_reset(points);
       buffer_collect_edge_intersections(e1, e2, points);
       for (int k = 0; k < meos_array_count(points); k++)
       {
@@ -4868,9 +4874,9 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
         if (p)
           buffer_intersections_add(nodes, p->x, p->y);
       }
-      meos_array_destroy(points);
     }
   }
+  meos_array_destroy(points);
   meos_array_destroy(arr);
 
   MeosArray *split = meos_array_create(sizeof(BufferPiece));
