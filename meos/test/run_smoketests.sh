@@ -58,13 +58,22 @@ fi
 mkdir -p "$HERE/build"
 
 fail=0
+ran=0
 for suite in "${SUITES[@]}"; do
   src="$HERE/$suite.c"
   bin="$HERE/build/$suite"
   if [ ! -f "$src" ]; then
-    echo "[skip] $suite: $src missing"
+    # A named suite that does not generate is a suite nobody runs, and passing
+    # over it left the run reporting "All smoke suites passed" while checking
+    # less than it names. The generation step above reads the INSTALLED
+    # headers, so a missing source means the family's header did not install --
+    # the very condition these suites exist to catch.
+    echo "[FAIL]  $suite: $src was not generated from $MEOS_INCLUDE_DIR"
+    echo "          build every family (-DALL=on) so each public header installs"
+    fail=1
     continue
   fi
+  ran=$((ran + 1))
   echo "[build] $suite"
   gcc -Wall -g -I"$MEOS_INCLUDE_DIR" -o "$bin" "$src" \
     -L"$MEOS_BUILD_DIR" -lmeos -lm
@@ -113,6 +122,20 @@ for suite in "${SUITES[@]}"; do
   fi
 done
 
+# Refusing a skip leaves DELETION as the remaining way to stop running a suite,
+# and a deleted name reports nothing anywhere: the COUNT is the only thing that
+# moves. The floor is the number of suites master runs -- six named in SUITES
+# plus each meos/test/smoke/*.json a family drops -- so removing a name or a
+# sidecar reddens instead of quietly shrinking the run. Raise it when a family
+# is added.
+floor="${MEOS_SMOKE_FLOOR:-7}"
+if [ "$ran" -lt "$floor" ]; then
+  echo
+  echo "[FAIL]  $ran smoke suite(s) ran, below the floor of $floor"
+  echo "          a name left SUITES, or a family lost its meos/test/smoke/*.json"
+  fail=1
+fi
+
 if [ "$fail" -ne 0 ]; then
   echo
   echo "One or more smoke suites failed. Inspect the .out / .err files"
@@ -121,4 +144,4 @@ if [ "$fail" -ne 0 ]; then
 fi
 
 echo
-echo "All smoke suites passed valgrind."
+echo "All $ran smoke suites passed valgrind."
