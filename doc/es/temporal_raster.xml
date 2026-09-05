@@ -107,7 +107,7 @@ SELECT raster_tileValueQuadbin(traj, band_data, width, height, quadbin, 'float32
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 quadbins(tgeompoint,zoom integer) → bigint[]
 </programlisting>
-				<para>Devuelve el conjunto de celdas QUADBIN únicas (deduplicadas) cuyas envolventes de tesela Web-Mercator contienen al menos un instante de <varname>traj</varname>. El resultado es adecuado como clave de unión en la cláusula WHERE contra una tabla Raquet. El parámetro <varname>zoom</varname> debe estar en [0, 15].</para>
+				<para>Devuelve el conjunto de celdas QUADBIN únicas que cubre la trayectoria. Una trayectoria que no afirma nada entre sus instantes cubre las teselas que los contienen; una que se mueve entre ellos cubre además las teselas que atraviesa por el camino, y el segmento se recorre a media tesela para encontrarlas, estrechándose la tesela hacia los polos como lo hace su envolvente Web-Mercator. El resultado es adecuado como clave de unión en la cláusula WHERE contra una tabla Raquet, donde una tesela que el trayecto atraviesa pero el conjunto omite es una tesela que la unión nunca lee. El parámetro <varname>zoom</varname> debe estar en [0, 15].</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Three instants spanning three tiles at zoom 3
 SELECT quadbins(tgeompoint 'SRID=4326;

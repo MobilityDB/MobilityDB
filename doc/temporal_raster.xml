@@ -107,7 +107,7 @@ SELECT raster_tileValueQuadbin(traj, band_data, width, height, quadbin, 'float32
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 quadbins(tgeompoint,zoom integer) → bigint[]
 </programlisting>
-				<para>Returns the set of unique QUADBIN cells (deduplicated) whose Web-Mercator tile envelopes contain at least one instant of <varname>traj</varname>. The result is suitable as a WHERE-clause join key against a Raquet table. <varname>zoom</varname> must be in [0, 15].</para>
+				<para>Returns the set of unique QUADBIN cells the trajectory covers. A trajectory that states nothing between its instants covers the tiles holding them; one that moves between them also covers the tiles it crosses on the way, and the segment is walked at half a tile to find them, the tile narrowing towards the poles as its Web-Mercator envelope does. The result is suitable as a WHERE-clause join key against a Raquet table, where a tile the trip crosses but the set omits is a tile the join never reads. <varname>zoom</varname> must be in [0, 15].</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Three instants spanning three tiles at zoom 3
 SELECT quadbins(tgeompoint 'SRID=4326;

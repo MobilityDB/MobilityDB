@@ -88,6 +88,9 @@
  * use; the value is the documented range of #trajectory_quadbins() */
 #define QB_TRAJECTORY_MAX_ZOOM  15
 
+/** Latitude the Web-Mercator grid reaches, beyond which a tile has no extent */
+#define QB_MAX_LATITUDE  85.051129
+
 static const uint64_t QB_B[6] = {
   UINT64_C(0x5555555555555555), UINT64_C(0x3333333333333333),
   UINT64_C(0x0F0F0F0F0F0F0F0F), UINT64_C(0x00FF00FF00FF00FF),
@@ -878,6 +881,85 @@ araster_value_sampler(const Temporal *traj,
  *****************************************************************************/
 
 /**
+ * @brief Return the lon/lat a temporal point instant holds
+ * @details The position is read, never kept, and the instant that holds it
+ * outlives the call, so it is borrowed rather than copied
+ */
+static void
+tinstant_point_coords(const TInstant *inst, double *lon, double *lat)
+{
+  const GSERIALIZED *gs =
+    (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(inst));
+  GBOX box;
+  gserialized_get_gbox_p((GSERIALIZED *) gs, &box);
+  *lon = box.xmin;
+  *lat = box.ymin;
+  return;
+}
+
+/**
+ * @brief Return the QUADBIN cell of a position at a zoom, through the
+ * slippy-tile Mercator the family decodes its tiles with
+ */
+static uint64
+quadbin_cell_at(double lon, double lat, uint32_t zoom)
+{
+  double n = (double) (UINT64_C(1) << zoom);
+  uint32_t tx = (uint32_t) floor((lon + 180.0) / 360.0 * n);
+  double merc_y = log(tan(M_PI / 4.0 + lat * M_PI / 360.0));
+  uint32_t ty = (uint32_t) floor((1.0 - merc_y / M_PI) / 2.0 * n);
+  /* Clamp to the valid tile range at this zoom */
+  uint32_t maxidx = (uint32_t) n - 1;
+  if (tx > maxidx) tx = maxidx;
+  if (ty > maxidx) ty = maxidx;
+  return xyz_to_qb(tx, ty, zoom);
+}
+
+/**
+ * @brief Add a cell to the answer unless it is already there
+ * @details The answer is a set, and a trip stays in one tile across many
+ * positions, so the walk repeats a cell far more often than it changes one
+ */
+static void
+quadbin_cells_add(uint64 *cells, int *ncells, uint64 cell)
+{
+  for (int i = 0; i < *ncells; i++)
+    if (cells[i] == cell)
+      return;
+  cells[(*ncells)++] = cell;
+  return;
+}
+
+/**
+ * @brief Return how many positions of a segment the walk reads, so that it
+ * cannot step over a tile
+ * @details A tile spans 360 / 2^zoom degrees of longitude, and covers less
+ * latitude the further it lies from the equator, by the Mercator scale factor
+ * at that latitude. The step is half the smaller of the two, the Nyquist rule
+ * #h3_sample_step_deg() walks a hexagon with.
+ */
+static int
+quadbin_walk_steps(const TInstant *inst1, const TInstant *inst2,
+  uint32_t zoom)
+{
+  double lon1, lat1, lon2, lat2;
+  tinstant_point_coords(inst1, &lon1, &lat1);
+  tinstant_point_coords(inst2, &lon2, &lat2);
+  double tile_deg = 360.0 / (double) (UINT64_C(1) << zoom);
+  double far_lat = (fabs(lat1) > fabs(lat2)) ? fabs(lat1) : fabs(lat2);
+  if (far_lat > QB_MAX_LATITUDE)
+    far_lat = QB_MAX_LATITUDE;
+  double step = tile_deg * cos(far_lat * M_PI / 180.0) / 2.0;
+  if (step <= 0.0)
+    return 1;
+  double dlon = lon2 - lon1, dlat = lat2 - lat1;
+  double length = sqrt(dlon * dlon + dlat * dlat);
+  int nsteps = (int) ceil(length / step);
+  return (nsteps < 1) ? 1 : nsteps;
+}
+
+
+/**
  * @ingroup meos_raster_base_accessor
  * @brief Return the unique QUADBIN cells at @p zoom covered by a trajectory.
  * @details Suitable for use as the WHERE-clause argument when joining against
@@ -910,43 +992,40 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
 
   int ninsts;
   const TInstant **insts = temporal_insts_p(traj, &ninsts);
+  bool densify = (MEOS_FLAGS_GET_INTERP(traj->flags) == LINEAR);
 
-  /* Upper bound: one cell per instant (usually far fewer after dedup) */
-  uint64 *cells = palloc(sizeof(uint64) * ninsts);
+  /* One cell per instant, and one per walk position of each segment when the
+   * trajectory moves between them */
+  int maxcells = ninsts;
+  if (densify)
+    for (int i = 0; i + 1 < ninsts; i++)
+      maxcells += quadbin_walk_steps(insts[i], insts[i + 1], zoom) + 1;
+  uint64 *cells = palloc(sizeof(uint64) * (size_t) maxcells);
   int ncells = 0;
-
-  double n = (double)(UINT64_C(1) << zoom);
 
   for (int i = 0; i < ninsts; i++)
   {
-    /* The point is read, never kept, and the instant that holds it outlives
-     * this call, so it is borrowed rather than copied */
-    const GSERIALIZED *pt_gs =
-      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(insts[i]));
-    GBOX pt_box;
-    gserialized_get_gbox_p(pt_gs, &pt_box);
-    double lon = pt_box.xmin;
-    double lat = pt_box.ymin;
+    double lon, lat;
+    tinstant_point_coords(insts[i], &lon, &lat);
+    quadbin_cells_add(cells, &ncells, quadbin_cell_at(lon, lat, zoom));
 
-    /* Tile indices via slippy-tile Mercator */
-    uint32_t tx = (uint32_t) floor((lon + 180.0) / 360.0 * n);
-    double lat_rad = lat * M_PI / 180.0;
-    double merc_y  = log(tan(M_PI / 4.0 + lat_rad / 2.0));
-    uint32_t ty = (uint32_t) floor((1.0 - merc_y / M_PI) / 2.0 * n);
-
-    /* Clamp to valid tile range at this zoom */
-    uint32_t maxidx = (uint32_t) n - 1;
-    if (tx > maxidx) tx = maxidx;
-    if (ty > maxidx) ty = maxidx;
-
-    uint64_t cell = xyz_to_qb(tx, ty, zoom);
-
-    /* Linear dedup (instants in a single tile cluster) */
-    bool found = false;
-    for (int j = 0; j < ncells; j++)
-      if (cells[j] == cell) { found = true; break; }
-    if (!found)
-      cells[ncells++] = cell;
+    /* A trajectory that moves between its instants passes over the tiles
+     * between them, and a join filtered on the cells it answers loses every
+     * tile the trip crosses but the list omits. The segment is therefore
+     * walked at half a tile, the step
+     * #tpointseq_densify_to_raster_value() walks a pixel at */
+    if (! densify || i + 1 >= ninsts)
+      continue;
+    double lon2, lat2;
+    tinstant_point_coords(insts[i + 1], &lon2, &lat2);
+    int nsteps = quadbin_walk_steps(insts[i], insts[i + 1], zoom);
+    for (int j = 1; j < nsteps; j++)
+    {
+      double frac = (double) j / (double) nsteps;
+      quadbin_cells_add(cells, &ncells,
+        quadbin_cell_at(lon + frac * (lon2 - lon), lat + frac * (lat2 - lat),
+          zoom));
+    }
   }
 
   pfree(insts);

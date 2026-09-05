@@ -324,6 +324,27 @@ SELECT array_length(quadbins(
   tgeompoint 'SRID=4326;{Point(-60.0 45.0)@2024-01-01,
     Point(-61.0 44.0)@2024-01-02}', 3), 1) AS num_distinct_tiles;
 
+-- A trajectory that moves between its instants covers the tiles it crosses on
+-- the way: at zoom 3 a tile spans 45 degrees of longitude, so a trip from
+-- 10E to 170E crosses four of them, and the same path sampled every 20 degrees
+-- answers the same four.
+SELECT array_length(quadbins(
+  tgeompoint 'SRID=4326;[Point(10.0 10.0)@2024-01-01,
+    Point(170.0 10.0)@2024-01-02]', 3), 1) AS num_crossed_tiles;
+
+SELECT array_length(quadbins(
+  tgeompoint 'SRID=4326;{Point(10.0 10.0)@2024-01-01, Point(30.0 10.0)@2024-01-02,
+    Point(50.0 10.0)@2024-01-03, Point(70.0 10.0)@2024-01-04,
+    Point(90.0 10.0)@2024-01-05, Point(110.0 10.0)@2024-01-06,
+    Point(130.0 10.0)@2024-01-07, Point(150.0 10.0)@2024-01-08,
+    Point(170.0 10.0)@2024-01-09}', 3), 1) AS num_sampled_tiles;
+
+-- A trajectory that states nothing between its instants covers the tiles
+-- holding them, and the two instants below sit in one tile.
+SELECT array_length(quadbins(
+  tgeompoint 'SRID=4326;{Point(10.0 10.0)@2024-01-01,
+    Point(170.0 10.0)@2024-01-02}', 3), 1) AS num_instant_tiles;
+
 -- Invalid zoom level raises an error.
 SELECT quadbins(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 16);
 
