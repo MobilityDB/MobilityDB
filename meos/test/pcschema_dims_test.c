@@ -127,11 +127,17 @@ main(void)
   {
     printf("FAILED: a schema is missing (stated %p, parsed %p)\n",
       (void *) stated, (void *) parsed);
+    if (parsed)
+      pc_schema_free(parsed);
     return 1;
   }
 
   printf("The schema stated as dimensions against the same document:\n");
   compare(stated, parsed);
+  /* The parser builds a schema this program owns, as the reparsed one below
+   * is owned and freed; meos_pc_schema answers the schema cache's own pointer
+   * and is never freed, which is why stated is not released here */
+  pc_schema_free(parsed);
   check(stated->srid == 4326, "srid");
   check(stated->pcid == 1, "pcid");
 
