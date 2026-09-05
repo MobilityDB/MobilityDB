@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Distance functions</title>
+<title>MobilityDB: stbox_nad</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -47,7 +47,6 @@ $(function() {
 /* @license-end */
 </script>
 <div id="main-nav"></div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -69,24 +68,63 @@ $(function() {
 </div>
 </div>
 
-<div class="header">
-  <div class="summary">
-<a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">Distance functions<div class="ingroups"><a class="el" href="group__meos.html">MEOS library</a> &raquo; <a class="el" href="group__meos__internal.html">Internal API</a> &raquo; <a class="el" href="group__meos__internal__geo.html">Functions for temporal geometries</a></div></div></div>
-</div><!--header-->
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="group__meos__internal__geo__dist.html">Distance functions</a></li>  </ul>
+</div>
+</div><!-- top -->
 <div class="contents">
+<table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+   <td valign="top">
+      <div class="navtab">
+        <table>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__geo__dist_gabaee01a1b997313c09c7924a858110c3.html#gabaee01a1b997313c09c7924a858110c3">stbox_nad</a></td></tr>
+        </table>
+      </div>
+   </td>
+   <td valign="top" class="mempage">
+<a id="gabaee01a1b997313c09c7924a858110c3" name="gabaee01a1b997313c09c7924a858110c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabaee01a1b997313c09c7924a858110c3">&#9670;&#160;</a></span>stbox_nad()</h2>
 
-<p>Distance functions for temporal geometries.  
-<a href="#details">More...</a></p>
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:gabaee01a1b997313c09c7924a858110c3"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__geo__dist_gabaee01a1b997313c09c7924a858110c3.html#gabaee01a1b997313c09c7924a858110c3">stbox_nad</a> (const <a class="el" href="structSTBox.html">STBox</a> *box1, const <a class="el" href="structSTBox.html">STBox</a> *box2)</td></tr>
-<tr class="memdesc:gabaee01a1b997313c09c7924a858110c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the nearest approach distance between two spatiotemporal boxes.  <a href="group__meos__internal__geo__dist_gabaee01a1b997313c09c7924a858110c3.html#gabaee01a1b997313c09c7924a858110c3">More...</a><br /></td></tr>
-<tr class="separator:gabaee01a1b997313c09c7924a858110c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double stbox_nad </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
+          <td class="paramname"><em>box1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
+          <td class="paramname"><em>box2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the nearest approach distance between two spatiotemporal boxes. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td>Spatiotemporal boxes </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>If the time frames do not intersect return infinity </dd></dl>
+<dl class="section pre"><dt>Precondition</dt><dd>The boxes are comparable, both carry a spatial extent, and they have the same spatial dimensionality </dd></dl>
+
+</div>
+</div>
+    </td>
+  </tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Distance functions for temporal geometries. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
