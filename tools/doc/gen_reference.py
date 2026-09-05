@@ -90,7 +90,7 @@ LAYOUT = [
      "parts": ["Static Circular Buffers", "Temporal Circular Buffers"]},
     {"title": "Temporal Rigid Geometries", "chapters": ["temporal_rigid_geometries.xml"]},
     {"title": "Temporal JSON", "chapters": ["temporal_jsonb.xml"]},
-    {"title": "Temporal Cell Index Types", "chapters": ["temporal_cell_index.xml"]},
+    {"title": "Temporal Tessellations", "chapters": ["temporal_cell_index.xml"]},
     {"title": "Temporal Point Clouds", "chapters": ["temporal_pointcloud.xml"],
      "parts": ["Static Types <varname>pcpoint</varname> and <varname>pcpatch</varname>",
                "Set Types <varname>pcpointset</varname> and <varname>pcpatchset</varname>",
