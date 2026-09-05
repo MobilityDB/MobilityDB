@@ -188,3 +188,45 @@ SELECT eEq(
                                                      10.5 50.5, 10.0 50.5,
                                                      10.0 50.0))', 7),
          t.th3idx) FROM t;
+
+-- The prefilter answers from the instants of every subtype, and stops at the
+-- first instant the set contains. Each subtype is asked for a hit and a miss,
+-- and the sequence forms are asked where the hit sits, so a walk that stopped
+-- at the wrong place or skipped a composing sequence is refused.
+
+-- Temporal instant
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '831c02fffffffff@2001-01-01';
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '8001fffffffffff@2001-01-01';
+
+-- Discrete sequence: the hit at the first instant, at the last, and absent
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{831c02fffffffff@2001-01-01, 8001fffffffffff@2001-01-02}';
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{8001fffffffffff@2001-01-01, 831c02fffffffff@2001-01-02}';
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{8001fffffffffff@2001-01-01, 807ffffffffffff@2001-01-02}';
+
+-- A value repeated across instants is still found, and still not invented
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{8001fffffffffff@2001-01-01, 8001fffffffffff@2001-01-02,
+                  831c00fffffffff@2001-01-03}';
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{8001fffffffffff@2001-01-01, 8001fffffffffff@2001-01-02}';
+
+-- Step sequence
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index 'Interp=Step;[8001fffffffffff@2001-01-01,
+                              831c02fffffffff@2001-01-02]';
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index 'Interp=Step;[8001fffffffffff@2001-01-01,
+                              807ffffffffffff@2001-01-02]';
+
+-- Sequence set: the hit in the first composing sequence, in the last, absent
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{[831c02fffffffff@2001-01-01], [8001fffffffffff@2001-01-02]}';
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{[8001fffffffffff@2001-01-01], [831c00fffffffff@2001-01-02]}';
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{[8001fffffffffff@2001-01-01], [807ffffffffffff@2001-01-02]}';

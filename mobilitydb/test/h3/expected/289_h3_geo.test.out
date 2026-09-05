@@ -168,3 +168,90 @@ SELECT eEq(
  f
 (1 row)
 
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '831c02fffffffff@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '8001fffffffffff@2001-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{831c02fffffffff@2001-01-01, 8001fffffffffff@2001-01-02}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{8001fffffffffff@2001-01-01, 831c02fffffffff@2001-01-02}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{8001fffffffffff@2001-01-01, 807ffffffffffff@2001-01-02}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{8001fffffffffff@2001-01-01, 8001fffffffffff@2001-01-02,
+                  831c00fffffffff@2001-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{8001fffffffffff@2001-01-01, 8001fffffffffff@2001-01-02}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index 'Interp=Step;[8001fffffffffff@2001-01-01,
+                              831c02fffffffff@2001-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index 'Interp=Step;[8001fffffffffff@2001-01-01,
+                              807ffffffffffff@2001-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{[831c02fffffffff@2001-01-01], [8001fffffffffff@2001-01-02]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{[8001fffffffffff@2001-01-01], [831c00fffffffff@2001-01-02]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{831c02fffffffff, 831c00fffffffff}' ?=
+       th3index '{[8001fffffffffff@2001-01-01], [807ffffffffffff@2001-01-02]}';
+ ?column? 
+----------
+ f
+(1 row)
+
