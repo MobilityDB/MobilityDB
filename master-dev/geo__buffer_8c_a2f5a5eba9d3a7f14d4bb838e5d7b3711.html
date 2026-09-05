@@ -283,7 +283,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Collect all exact boundary intersection nodes into the intersection array. </p>
-<p >The existing low-level intersection routines operate on <a class="el" href="structMeosArray.html" title="Structure of an expandable arrays used in particular to avoid parsing twice a MEOS value input in tex...">MeosArray</a>. We therefore use a temporary <a class="el" href="structMeosArray.html" title="Structure of an expandable arrays used in particular to avoid parsing twice a MEOS value input in tex...">MeosArray</a> for each edge pair and transfer the resulting points to <a class="el" href="structMeosArray.html" title="Structure of an expandable arrays used in particular to avoid parsing twice a MEOS value input in tex...">MeosArray</a>. </p>
+<p >The existing low-level intersection routines operate on <a class="el" href="structMeosArray.html" title="Structure of an expandable arrays used in particular to avoid parsing twice a MEOS value input in tex...">MeosArray</a>, so the points of one edge pair are collected into a scratch array and transferred. That array is built ONCE for the whole walk and reset per pair: it holds only the points of the pair being examined, so its contents are per-pair while its storage is not, and <a class="el" href="group__meos__misc_ga419b553724d9f193fce088a4a6942ab4.html#ga419b553724d9f193fce088a4a6942ab4" title="Create an expandable array.">meos_array_create</a> would otherwise allocate MEOS_ARRAY_INITIAL_SIZE slots and free them again for every one of the n*m pairs. </p>
 
 </div>
 </div>
