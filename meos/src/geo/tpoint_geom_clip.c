@@ -1069,11 +1069,18 @@ geo_points_covered(const GSERIALIZED *pts, const GSERIALIZED *gs, bool covered)
   for (int i = 0; i < count; i++)
   {
     if (geo_covers2d(gs, elems[i]) == covered)
+    {
+      /* A deserialized geometry reads its coordinates from the serialized
+       * element rather than copying them, so the element stays alive as long
+       * as it does. Gathering the kept elements at the front of the array
+       * they already occupy keeps each one reachable, to be released once the
+       * result carries its own copy of the bytes. */
+      elems[nkept] = elems[i];
       kept[nkept++] = lwgeom_from_gserialized(elems[i]);
+    }
     else
       pfree(elems[i]);
   }
-  pfree(elems);
 
   GSERIALIZED *result;
   if (nkept == 0)
@@ -1090,11 +1097,16 @@ geo_points_covered(const GSERIALIZED *pts, const GSERIALIZED *gs, bool covered)
   }
   else
   {
+    /* The collection takes the array of kept geometries, which #lwgeom_free
+     * releases together with the geometries themselves */
     LWGEOM *out = lwcollection_as_lwgeom(lwcollection_construct(MULTIPOINTTYPE,
       srid, NULL, (uint32_t) nkept, kept));
     result = geo_serialize(out);
     lwgeom_free(out);
   }
+  for (int i = 0; i < nkept; i++)
+    pfree(elems[i]);
+  pfree(elems);
   return result;
 }
 
