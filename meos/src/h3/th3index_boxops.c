@@ -75,6 +75,48 @@
  * no T dimension — caller merges the time)
  *****************************************************************************/
 
+/** Number of H3 resolutions, 0 to the finest the h3index descriptor carries */
+#define H3_RESOLUTION_COUNT  16
+
+/* The cells holding the two poles at each resolution. Which cell holds a pole
+ * is a property of the grid alone, while the box of a temporal cell value is
+ * taken once per instant, so each thread answers the question from a table it
+ * fills the first time a resolution is asked for. MEOS_TLS gives every thread
+ * its own table, so concurrent callers neither race on it nor share it. */
+static MEOS_TLS H3Index MEOS_H3_POLE_CELL[2][H3_RESOLUTION_COUNT];
+static MEOS_TLS bool MEOS_H3_POLE_CELL_SET[H3_RESOLUTION_COUNT];
+
+/**
+ * @brief Return in the last two arguments the cells holding the north and the
+ * south pole at a resolution
+ * @param[in] res H3 resolution
+ * @param[out] north,south The cell holding the respective pole, or 0 for a
+ *   resolution outside the grid or a lookup libh3 refuses
+ */
+static void
+h3index_pole_cells(int32_t res, H3Index *north, H3Index *south)
+{
+  if (res < 0 || res >= H3_RESOLUTION_COUNT)
+  {
+    *north = *south = (H3Index) 0;
+    return;
+  }
+  if (! MEOS_H3_POLE_CELL_SET[res])
+  {
+    LatLng pole;
+    pole.lng = 0.0;
+    pole.lat = degsToRads(90.0);
+    if (latLngToCell(&pole, res, &MEOS_H3_POLE_CELL[0][res]) != E_SUCCESS)
+      MEOS_H3_POLE_CELL[0][res] = (H3Index) 0;
+    pole.lat = degsToRads(-90.0);
+    if (latLngToCell(&pole, res, &MEOS_H3_POLE_CELL[1][res]) != E_SUCCESS)
+      MEOS_H3_POLE_CELL[1][res] = (H3Index) 0;
+    MEOS_H3_POLE_CELL_SET[res] = true;
+  }
+  *north = MEOS_H3_POLE_CELL[0][res];
+  *south = MEOS_H3_POLE_CELL[1][res];
+}
+
 /**
  * @brief Set the X/Y geodetic part of a spatiotemporal box from an H3 cell.
  * @param[in] cell H3 cell index (must be a valid, non-zero cell)
@@ -99,16 +141,8 @@ th3index_cell_set_stbox(H3Index cell, STBox *box)
   }
   /* A cell holding a pole reaches it and spans every longitude, which its
    * boundary vertices do not state */
-  int32_t res = getResolution(cell);
   H3Index north, south;
-  LatLng pole;
-  pole.lng = 0.0;
-  pole.lat = degsToRads(90.0);
-  if (latLngToCell(&pole, res, &north) != E_SUCCESS)
-    north = (H3Index) 0;
-  pole.lat = degsToRads(-90.0);
-  if (latLngToCell(&pole, res, &south) != E_SUCCESS)
-    south = (H3Index) 0;
+  h3index_pole_cells(getResolution(cell), &north, &south);
   double xmin, ymin, xmax, ymax;
   dggs_lonlat_boundary_set_box(lons, lats, bnd.numVerts, north == cell,
     south == cell, &xmin, &ymin, &xmax, &ymax);
