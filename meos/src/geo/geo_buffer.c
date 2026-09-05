@@ -1267,6 +1267,92 @@ buffer_edge_normals(const Edge *edge, double *nx, double *ny)
 }
 
 /**
+ * @brief The edges of one geometry, extracted once and reused by every point
+ * located against it
+ * @details Locating a point needs the whole edge set, and the overlay locates
+ * MANY points against each of its two operands: a midpoint per piece to place
+ * it, and up to eight more per coincident piece to find which side each
+ * interior lies on. Extracting per point makes that cost pieces x edges, while
+ * the answer extraction gives is the same every time. Holding it per operand
+ * makes it edges + pieces.
+ *
+ * The extraction is LAZY -- deferred to the first point actually asked --
+ * because a pair the overlay resolves without locating anything must not pay
+ * for a set nobody reads
+ */
+typedef struct
+{
+  const LWGEOM *geom;   /**< The geometry points are located against */
+  MeosArray *arr;       /**< Its edges, NULL until the first point asks */
+  Edge **edges;         /**< Pointers into @p arr, in its order */
+  int nedges;           /**< Number of edges, meaningful once @p arr is set */
+} BufferLocator;
+
+/**
+ * @brief Prepare to locate points against a geometry, reading none of it yet
+ * @param[out] loc Locator to prepare
+ * @param[in] geom Geometry points are located against
+ */
+static void
+buffer_locator_make(BufferLocator *loc, const LWGEOM *geom)
+{
+  assert(loc); assert(geom);
+  loc->geom = geom;
+  loc->arr = NULL;
+  loc->edges = NULL;
+  loc->nedges = 0;
+}
+
+/**
+ * @brief Release what a locator holds
+ * @param[in,out] loc Locator to release
+ */
+static void
+buffer_locator_free(BufferLocator *loc)
+{
+  assert(loc);
+  if (loc->edges)
+  {
+    pfree(loc->edges);
+    loc->edges = NULL;
+  }
+  if (loc->arr)
+  {
+    meos_array_destroy(loc->arr);
+    loc->arr = NULL;
+  }
+  loc->nedges = 0;
+}
+
+/**
+ * @brief Return where a point stands with respect to a locator's geometry
+ * @details 0 interior, 1 boundary, 2 exterior -- what
+ * #relate_point_in_area answers, and what a geometry holding no edge answers
+ * for every point
+ * @param[in,out] loc Locator, whose edges are read on the first call
+ * @param[in] x,y Point to locate
+ */
+static int
+buffer_locator_point(BufferLocator *loc, double x, double y)
+{
+  assert(loc); assert(loc->geom);
+  if (! loc->arr)
+  {
+    loc->arr = geom_extract_edges(loc->geom);
+    loc->nedges = (int) loc->arr->count;
+    if (loc->nedges > 0)
+    {
+      loc->edges = palloc(sizeof(Edge *) * loc->nedges);
+      for (int i = 0; i < loc->nedges; i++)
+        loc->edges[i] = (Edge *) meos_array_get(loc->arr, i);
+    }
+  }
+  if (loc->nedges == 0)
+    return 2;
+  return relate_point_in_area(x, y, loc->edges, loc->nedges);
+}
+
+/**
  * @brief Return the location of a point with respect to a buffer.
  * @return
  *   0 = interior
@@ -1277,19 +1363,10 @@ static int
 buffer_point_location(const LWGEOM *geom, double x, double y)
 {
   assert(geom);
-  MeosArray *arr = geom_extract_edges(geom);
-  int nedges = (int) arr->count;
-  if (nedges == 0)
-  {
-    meos_array_destroy(arr);
-    return 2;
-  }
-  Edge **edges = palloc(sizeof(Edge *) * nedges);
-  for (int i = 0; i < nedges; i++)
-    edges[i] = (Edge *) meos_array_get(arr, i);
-  int result = relate_point_in_area(x, y, edges, nedges);
-  /* Clean up and return */
-  pfree(edges); meos_array_destroy(arr);
+  BufferLocator loc;
+  buffer_locator_make(&loc, geom);
+  int result = buffer_locator_point(&loc, x, y);
+  buffer_locator_free(&loc);
   return result;
 }
 
@@ -2088,13 +2165,13 @@ buffer_piece_midpoint(const BufferPiece *piece, POINT2D *point)
  *   This case is retained for the later coincident-boundary handling.
  */
 static BufferPieceLocation
-buffer_classify_piece(const BufferPiece *piece, const LWGEOM *other)
+buffer_classify_piece(const BufferPiece *piece, BufferLocator *other)
 {
   assert(piece); assert(other);
   POINT2D midpoint;
   if (! buffer_piece_midpoint(piece, &midpoint))
     return BUFFER_PIECE_BOUNDARY;
-  int location = buffer_point_location(other, midpoint.x, midpoint.y);
+  int location = buffer_locator_point(other, midpoint.x, midpoint.y);
   switch (location)
   {
     case 0:
@@ -2185,7 +2262,7 @@ buffer_piece_side_points(const BufferPiece *piece, double epsilon,
  * still falls on the boundary, the offset distance is increased.
  */
 static int
-buffer_piece_interior_side(const BufferPiece *piece, const LWGEOM *geom)
+buffer_piece_interior_side(const BufferPiece *piece, BufferLocator *geom)
 {
   assert(piece); assert(geom);
   /* Start with a small displacement relative to the piece itself */
@@ -2204,8 +2281,8 @@ buffer_piece_interior_side(const BufferPiece *piece, const LWGEOM *geom)
     POINT2D left, right;
     if (! buffer_piece_side_points(piece, epsilon, &left, &right))
       return -1;
-    int left_loc = buffer_point_location(geom, left.x, left.y);
-    int right_loc = buffer_point_location(geom, right.x, right.y);
+    int left_loc = buffer_locator_point(geom, left.x, left.y);
+    int right_loc = buffer_locator_point(geom, right.x, right.y);
 
     /* buffer_point_location():
      *   0 = interior
@@ -2238,8 +2315,8 @@ buffer_piece_interior_side(const BufferPiece *piece, const LWGEOM *geom)
  *   internal to the union.
  */
 static int
-buffer_classify_coincident_piece(const BufferPiece *piece, const LWGEOM *owner,
-  const LWGEOM *other)
+buffer_classify_coincident_piece(const BufferPiece *piece, BufferLocator *owner,
+  BufferLocator *other)
 {
   assert(piece); assert(owner); assert(other);
   int owner_side = buffer_piece_interior_side(piece, owner);
@@ -2268,8 +2345,8 @@ buffer_classify_coincident_piece(const BufferPiece *piece, const LWGEOM *owner,
  * from being inserted twice when processing the second buffer.
  */
 static bool
-buffer_resolve_coincident_piece(BufferPiece *piece, const LWGEOM *owner,
-  const LWGEOM *other, ClipOper oper, MeosArray *result)
+buffer_resolve_coincident_piece(BufferPiece *piece, BufferLocator *owner,
+  BufferLocator *other, ClipOper oper, MeosArray *result)
 {
   assert(piece); assert(owner); assert(other); assert(result);
   int classification = buffer_classify_coincident_piece(piece, owner, other);
@@ -2395,11 +2472,11 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
  * coincidence does not resolve rather than one meeting at nodes
  */
 static void
-buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
-  const MeosArray *pieces_b, const LWGEOM *geom_a, ClipOper oper,
+buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
+  const MeosArray *pieces_b, BufferLocator *loc_a, ClipOper oper,
   MeosArray *result, MeosArray *boundary, MeosArray *shared, bool *coincident)
 {
-  assert(pieces_a); assert(geom_b); assert(pieces_b); assert(geom_a);
+  assert(pieces_a); assert(loc_b); assert(pieces_b); assert(loc_a);
   assert(result); assert(boundary); assert(shared); assert(coincident);
   *coincident = false;
   /* The pieces each boundary reports as lying on the other, kept apart so that
@@ -2414,14 +2491,14 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
   for (uint32_t i = 0; i < pieces_a->count; i++)
   {
     BufferPiece *piece = (BufferPiece *) meos_array_get(pieces_a, i);
-    BufferPieceLocation location = buffer_classify_piece(piece, geom_b);
+    BufferPieceLocation location = buffer_classify_piece(piece, loc_b);
     if (location == keep_a)
       meos_array_add(result, piece);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
       *coincident = true;
       buffer_pieces_add_unique(bnd_a, piece);
-      if (! buffer_resolve_coincident_piece(piece, geom_a, geom_b, oper,
+      if (! buffer_resolve_coincident_piece(piece, loc_a, loc_b, oper,
             result))
         meos_array_add(boundary, piece);
     }
@@ -2430,7 +2507,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
   for (uint32_t i = 0; i < pieces_b->count; i++)
   {
     BufferPiece *piece = (BufferPiece *) meos_array_get(pieces_b, i);
-    BufferPieceLocation location = buffer_classify_piece(piece, geom_a);
+    BufferPieceLocation location = buffer_classify_piece(piece, loc_a);
     if (location == keep_b)
       meos_array_add(result, piece);
     else if (location == BUFFER_PIECE_BOUNDARY)
@@ -2440,7 +2517,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
        * only B reports is a curve of B alone, whatever put it here */
       if (buffer_piece_array_contains(bnd_a, piece))
         buffer_pieces_add_unique(shared, piece);
-      if (! buffer_resolve_coincident_piece(piece, geom_b, geom_a, oper,
+      if (! buffer_resolve_coincident_piece(piece, loc_b, loc_a, oper,
             result))
         meos_array_add(boundary, piece);
     }
@@ -3819,8 +3896,16 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
   MeosArray *boundary = meos_array_create(sizeof(BufferPiece));
   MeosArray *shared = meos_array_create(sizeof(BufferPiece));
   bool coincident;
-  buffer_select_overlay_boundary(split_a, geom2, split_b, geom1, oper,
+  /* Each operand's edges are read at most once for the whole selection, which
+   * locates a point per piece against one of them and up to eight more per
+   * coincident piece */
+  BufferLocator loc_a, loc_b;
+  buffer_locator_make(&loc_a, geom1);
+  buffer_locator_make(&loc_b, geom2);
+  buffer_select_overlay_boundary(split_a, &loc_b, split_b, &loc_a, oper,
     selected, boundary, shared, &coincident);
+  buffer_locator_free(&loc_a);
+  buffer_locator_free(&loc_b);
 
   /* Two boundaries that meet only at isolated points without their interiors
    * overlapping, as two discs touching at one point do, leave every piece of
