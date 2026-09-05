@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s06.html" title="Entrada y salida"><link rel="next" href="ch13s08.html" title="Conversión de tipos"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_constructors"></a>Constructores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_const"></a><a class="indexterm" name="id9009"></a><p>Constructor para poses temporales con valor constante</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales y cadenas de poses"><link rel="prev" href="ch13s06.html" title="Entrada y salida"><link rel="next" href="ch13s08.html" title="Conversión de tipos"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales y cadenas de poses</th><td width="20%" align="right"> <a accesskey="n" href="ch13s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_constructors"></a>Constructores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_const"></a><a class="indexterm" name="id9003"></a><p>Constructor para poses temporales con valor constante</p><pre class="programlisting">
 tpose(pose,timestamptz) → tposeInst
 tpose(pose,tstzset) → tposeDiscSeq
 tpose(pose,tstzspan,interp text='linear') → tposeContSeq
@@ -28,7 +28,7 @@ SELECT asEWKT(tposechain(posechain 'PoseChain(Pose(Point(1 1), 0.5))',
   tstzspan '[2001-01-01, 2001-01-02]'));
 /* [PoseChain(Pose(POINT(1 1),0.5))@2001-01-01,
    PoseChain(Pose(POINT(1 1),0.5))@2001-01-02] */
-</pre></li><li class="listitem"><a name="tposeSeq"></a><a class="indexterm" name="id9016"></a><p>Constructor para poses temporales de subtipo secuencia</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposeSeq"></a><a class="indexterm" name="id9010"></a><p>Constructor para poses temporales de subtipo secuencia</p><pre class="programlisting">
 tposeSeq(tposeInst[],interp text={'step','linear'},lower_inc boolean=true,
   upper_inc boolean=true) → tposeSeq
 </pre><pre class="programlisting">
@@ -40,7 +40,7 @@ SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.2)@2001-01-01',
   'Pose(Point(1 1), 0.4)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
 /* [Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(1 1),0.4)@2001-01-02, 
    Pose(POINT(1 1),0.5)@2001-01-03] */
-</pre></li><li class="listitem"><a name="tposeSeqSet"></a><a class="indexterm" name="id9023"></a><a class="indexterm" name="id9026"></a><p>Constructor para poses temporales de subtipo conjunto de secuencias</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tposeSeqSet"></a><a class="indexterm" name="id9017"></a><a class="indexterm" name="id9020"></a><p>Constructor para poses temporales de subtipo conjunto de secuencias</p><pre class="programlisting">
 tposeSeqSet(tpose[]) → tposeSeqSet
 tposeSeqSetGaps(tposeInst[],maxt interval=NULL,maxdist float=NULL,
   interp text='linear') → tposeSeqSet
@@ -54,7 +54,7 @@ SELECT asText(tposeSeqSetGaps(ARRAY[tpose 'Pose(Point(1 1),0.1)@2001-01-01',
   'Pose(Point(1 1),0.3)@2001-01-03', 'Pose(Point(1 1),0.5)@2001-01-05'], '1 day'));
 /* {[Pose(Point(1 1),0.1)@2001-01-01], [Pose(Point(1 1),0.3)@2001-01-03], 
    [Pose(Point(1 1),0.5)@2001-01-05]} */
-</pre></li><li class="listitem"><a name="tgeompoint_tfloat_tpose"></a><a class="indexterm" name="id9033"></a><p>Construye una pose temporal 2D a partir de un punto geométrico temporal y un flotante temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeompoint_tfloat_tpose"></a><a class="indexterm" name="id9027"></a><p>Construye una pose temporal 2D a partir de un punto geométrico temporal y un flotante temporal</p><pre class="programlisting">
 tpose(tgeompoint,tfloat) → tpose
 </pre><p>El marco temporal del resultado es la intersección de los marcos temporales del punto temporal y el flotante temporal. Si no se intersecan, se devuelve un valor nulo</p><pre class="programlisting">
 SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',

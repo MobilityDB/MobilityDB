@@ -1,10 +1,10 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Aggregations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch17.html" title="Chapter 17. Temporal Point Clouds"><link rel="prev" href="ch17s07.html" title="Indexing"><link rel="next" href="ch18.html" title="Chapter 18. Raster Sampling"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Aggregations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s07.html">Prev</a> </td><th width="60%" align="center">Chapter 17. Temporal Point Clouds</th><td width="20%" align="right"> <a accesskey="n" href="ch18.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpointcloud_aggregations"></a>Aggregations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_extent"></a><a class="indexterm" name="id14562"></a><p>Bounding-box aggregate over a column of tpcpoint, tpcpatch, or tpcbox values</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Aggregations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch17.html" title="Chapter 17. Temporal Point Clouds"><link rel="prev" href="ch17s07.html" title="Indexing"><link rel="next" href="apa.html" title="Appendix A. MobilityDB Reference"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Aggregations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch17s07.html">Prev</a> </td><th width="60%" align="center">Chapter 17. Temporal Point Clouds</th><td width="20%" align="right"> <a accesskey="n" href="apa.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpointcloud_aggregations"></a>Aggregations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_extent"></a><a class="indexterm" name="id14999"></a><p>Bounding-box aggregate over a column of tpcpoint, tpcpatch, or tpcbox values</p><pre class="programlisting">
 extent({tpcpoint,tpcpatch,tpcbox}) → tpcbox
 </pre><p>Returns the smallest tpcbox containing every input. Aggregating across distinct pcids raises an error, the bbox would be uninterpretable since dimensions are pcid-relative.</p><pre class="programlisting">
 SELECT extent(v) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- TPCBOX(ZT(((1,1,1),(2,2,2)),[2001-01-01, 2001-01-02]), 1)
-</pre></li><li class="listitem"><a name="tpcpoint_tCount"></a><a class="indexterm" name="id14570"></a><a class="indexterm" name="id14573"></a><p>Temporal count and window count of overlapping rows at each timestamp</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_tCount"></a><a class="indexterm" name="id15007"></a><a class="indexterm" name="id15010"></a><p>Temporal count and window count of overlapping rows at each timestamp</p><pre class="programlisting">
 tCount({tpcpoint,tpcpatch}) → tint
 wCount({tpcpoint,tpcpatch},interval) → tint
 </pre><p>Result is a tint. All input rows must share the same temporal subtype (instant / sequence / sequence set).</p><pre class="programlisting">
@@ -15,7 +15,7 @@ SELECT wCount(v, interval '1 day') FROM (VALUES
   (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- {[1@2001-01-01, 2@2001-01-02], (1@2001-01-02, 1@2001-01-03]}
-</pre></li><li class="listitem"><a name="tpcpatch_tnpoints"></a><a class="indexterm" name="id14581"></a><p>Per-instant pcpatch point count, summed across rows</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_tnpoints"></a><a class="indexterm" name="id15018"></a><p>Per-instant pcpatch point count, summed across rows</p><pre class="programlisting">
 tnpoints(tpcpatch) → tint
 </pre><p>Distinct from <code class="varname">tCount(tpcpatch)</code>, which counts the number of patches (always 1 per instant). <code class="varname">tnpoints</code> reads as "how many points were in the cloud at time t", the natural primitive for ingest-QC and density-over-time dashboards.</p><pre class="programlisting">
 SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
@@ -23,7 +23,7 @@ SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz))) t(v);
 -- {2@2001-01-01, 2@2001-01-02}
-</pre></li><li class="listitem"><a name="tpcpatch_tdensity"></a><a class="indexterm" name="id14591"></a><p>Per-instant point density (<code class="varname">numPoints / xy-bbox-area</code>) summed across rows</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_tdensity"></a><a class="indexterm" name="id15028"></a><p>Per-instant point density (<code class="varname">numPoints / xy-bbox-area</code>) summed across rows</p><pre class="programlisting">
 tdensity(tpcpatch) → tfloat
 </pre><p>Each pcpatch carries the inline <code class="varname">PCBOUNDS</code> (xmin / xmax / ymin / ymax) so the bbox-area term is read directly, no recomputation. A 1-point or co-linear patch yields <code class="varname">+Infinity</code> for that instant; filter with <code class="varname">isfinite()</code> in downstream queries if needed.</p><pre class="programlisting">
 -- Each patch holds 2 points over a 1x1 xy-bbox.
@@ -32,7 +32,7 @@ SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz))) t(v);
 -- {2@2001-01-01, 2@2001-01-02}
-</pre></li><li class="listitem"><a name="tpcpoint_mergeAgg"></a><a class="indexterm" name="id14603"></a><a class="indexterm" name="id14606"></a><p>Combine multiple temporal values into a single one with all input instants merged in temporal order</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_mergeAgg"></a><a class="indexterm" name="id15040"></a><a class="indexterm" name="id15043"></a><p>Combine multiple temporal values into a single one with all input instants merged in temporal order</p><pre class="programlisting">
 mergeAgg(tpcpoint) → tpcpoint
 mergeAgg(tpcpatch) → tpcpatch
 </pre><p>All inputs must share the same pcid and subtype.</p><pre class="programlisting">
@@ -40,7 +40,7 @@ SELECT numInstants(mergeAgg(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- 2
-</pre></li><li class="listitem"><a name="tpcpoint_appendInstantAgg"></a><a class="indexterm" name="id14614"></a><a class="indexterm" name="id14617"></a><a class="indexterm" name="id14620"></a><a class="indexterm" name="id14623"></a><p>Streaming construction aggregates: <code class="varname">appendInstant</code> assembles instants into a sequence; <code class="varname">appendSequence</code> assembles sequences into a sequence set</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_appendInstantAgg"></a><a class="indexterm" name="id15051"></a><a class="indexterm" name="id15054"></a><a class="indexterm" name="id15057"></a><a class="indexterm" name="id15060"></a><p>Streaming construction aggregates: <code class="varname">appendInstant</code> assembles instants into a sequence; <code class="varname">appendSequence</code> assembles sequences into a sequence set</p><pre class="programlisting">
 appendInstantAgg(tpcpoint[,interp,maxt]) → tpcpoint
 appendInstantAgg(tpcpatch) → tpcpatch
 appendSequenceAgg(tpcpoint) → tpcpoint
@@ -50,4 +50,4 @@ SELECT numInstants(appendInstant(v ORDER BY startTimestamp(v))) FROM (VALUES
   (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- 2
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch18.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Indexing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 18. Raster Sampling</td></tr></table></div></body></html>
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch17s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch17.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apa.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Indexing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix A. MobilityDB Reference</td></tr></table></div></body></html>

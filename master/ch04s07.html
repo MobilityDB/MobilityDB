@@ -1,6 +1,6 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch04.html" title="Chapter 4. Temporal Types (Part 1)"><link rel="prev" href="ch04s06.html" title="Input and Output"><link rel="next" href="ch04s08.html" title="Conversions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s06.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Temporal Types (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch04s08.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_constructors"></a>Constructors</h2></div></div></div><p>
 			We give next the constructor functions for the various subtypes. Using the constructor function is frequently more convenient than writing a literal constant.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_const"></a><a class="indexterm" name="id3963"></a><p>Constructors for temporal types having a constant value</p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_const"></a><a class="indexterm" name="id3957"></a><p>Constructors for temporal types having a constant value</p><pre class="programlisting">
 ttype(base,timestamptz) → ttypeInst
 ttype(base,tstzset) → ttypeDiscSeq
 ttype(base,tstzspan,interp text='linear') → ttypeContSeq
@@ -15,7 +15,7 @@ SELECT tfloat(1.5, tstzspan '[2001-01-01, 2001-01-02]', 'step');
 SELECT tgeompoint('Point(0 0)', tstzspan '[2001-01-01, 2001-01-02]');
 SELECT tgeography('SRID=7844;Point(0 0)',
   tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}', 'step');
-</pre></li><li class="listitem"><a name="ttypeSeq"></a><a class="indexterm" name="id3975"></a><p>Constructors for temporal types of sequence subtype</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttypeSeq"></a><a class="indexterm" name="id3969"></a><p>Constructors for temporal types of sequence subtype</p><pre class="programlisting">
 ttypeSeq(ttypeInst[],interp text={'step','linear'},lowerInc boolean=true,
   upperInc boolean=true) → ttypeSeq
 </pre><p>These contructors have a first mandatory argument, which is an array of values of the corresponding instant values and additional optional arguments. The second argument states the interpolation. If the argument is not given, it is by default step for discrete base types such as integer, and linear for continuous base types such as float. An error is raised when linear interpolation is stated for temporal values with discrete base types. For continuous sequences, the third and fourth arguments are Boolean values stating, respectively, whether the left and right bounds are inclusive or exclusive. These arguments are assumed to be true by default if they are not specified.</p><pre class="programlisting">
@@ -31,7 +31,7 @@ SELECT tgeompointSeq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
   'Point(0 1)@2001-01-01 08:05:00', 'Point(1 1)@2001-01-01 08:10:00'], 'discrete');
 SELECT tgeographySeq(ARRAY[tgeography 'Point(1 1)@2001-01-01 08:00:00',
   'Point(2 2)@2001-01-01 08:05:00']);
-</pre></li><li class="listitem"><a name="ttypeSeqSet"></a><a class="indexterm" name="id3983"></a><a class="indexterm" name="id3986"></a><p>Constructors for temporal types of sequence set subtype</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttypeSeqSet"></a><a class="indexterm" name="id3977"></a><a class="indexterm" name="id3980"></a><p>Constructors for temporal types of sequence set subtype</p><pre class="programlisting">
 ttypeSeqSet(ttypeContSeq[]) → ttypeSeqSet
 ttypeSeqSetGaps(ttypeInst[],maxt interval=NULL,maxdist float=NULL,
   interp text='linear') → ttypeSeqSet

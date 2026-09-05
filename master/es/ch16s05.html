@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Teselaciones temporales"><link rel="prev" href="ch16s04.html" title="Conversión de tipos"><link rel="next" href="ch16s06.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Teselaciones temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_startValue"></a><a class="indexterm" name="id11621"></a><a class="indexterm" name="id11624"></a><a class="indexterm" name="id11627"></a><p>Devolver el primer, el último o el enésimo identificador de celda distinto de un valor temporal</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 Manual de usuario"><link rel="up" href="ch16.html" title="Capítulo 16. Teselaciones temporales"><link rel="prev" href="ch16s04.html" title="Conversión de tipos"><link rel="next" href="ch16s06.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 16. Teselaciones temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_accessors"></a>Accesores</h2></div></div></div><p><a class="link" href="ch16s05.html#raster_numBands"><code class="varname">numBands</code></a> lee el número de bandas de un <code class="varname">raster</code> de PostGIS; los accesores que siguen leen una tesela <code class="varname">raquet</code>.</p><p>Un valor <code class="varname">raquet</code> es autodescriptivo: los accesores siguientes leen la georreferenciación y la disposición que transporta, de modo que una tesela empaquetada con el constructor <a class="link" href="ch16s03.html#raquet"><code class="varname">raquet</code></a> o decodificada con <a class="link" href="ch16s03.html#raquetRead"><code class="varname">raquetRead</code></a> puede inspeccionarse sin conservar las columnas sueltas a partir de las cuales se construyó.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_startValue"></a><a class="indexterm" name="id11751"></a><a class="indexterm" name="id11754"></a><a class="indexterm" name="id11757"></a><p>Devolver el primer, el último o el enésimo identificador de celda distinto de un valor temporal</p><pre class="programlisting">
 startValue(tcell) → cell
 endValue(tcell) → cell
 valueN(tcell,integer) → cell
@@ -21,7 +21,7 @@ SELECT endValue(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
 -- 47c4
 SELECT valueN(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}', 1);
 -- 47c3c
-</pre></li><li class="listitem"><a name="tcell_getValues"></a><a class="indexterm" name="id11638"></a><p>Devolver el conjunto de identificadores de celda distintos que toma la trayectoria</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_getValues"></a><a class="indexterm" name="id11768"></a><p>Devolver el conjunto de identificadores de celda distintos que toma la trayectoria</p><pre class="programlisting">
 getValues(tcell) → cellset
 </pre><pre class="programlisting">
 SELECT getValues(th3index '831c02fffffffff@2001-01-01');
@@ -37,7 +37,7 @@ SELECT getValues(ts2cell '47c3c@2001-01-01');
 -- {"47c3c"}
 SELECT getValues(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
 -- {"47c3c", "47c4"}
-</pre></li><li class="listitem"><a name="tcell_valueAtTimestamp"></a><a class="indexterm" name="id11645"></a><p>Devolver el identificador de celda en una marca de tiempo dada, usando interpolación de pasos</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_valueAtTimestamp"></a><a class="indexterm" name="id11775"></a><p>Devolver el identificador de celda en una marca de tiempo dada, usando interpolación de pasos</p><pre class="programlisting">
 valueAtTimestamp(tcell,timestamptz) → cell
 </pre><pre class="programlisting">
 SELECT valueAtTimestamp(th3index
@@ -48,4 +48,49 @@ SELECT valueAtTimestamp(tquadbin
 -- 48a6227affffffff
 SELECT valueAtTimestamp(ts2cell '47c3c@2001-01-01', timestamptz '2001-01-01');
 -- 47c3c
+</pre></li><li class="listitem"><a name="raster_numBands"></a><a class="indexterm" name="id11782"></a><p>Devuelve el número de bandas de un ráster</p><pre class="programlisting">
+numBands(raster) → integer
+</pre><p>El número de banda que aceptan <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> y los operadores construidos sobre él va de 1 hasta este valor.</p><pre class="programlisting">
+WITH rast1 AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8 ) AS r ), rast2 AS (
+  SELECT ST_AddBand(r, '32BF'::text, 0.0::float8, NULL::float8) AS r FROM rast1 )
+SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
+  numBands((SELECT r FROM rast2)) AS num_bands_two;
+-- 1 | 2
+</pre></li><li class="listitem"><a name="raquet_quadbin_accessor"></a><a class="indexterm" name="id11792"></a><p>Devuelve la celda QUADBIN de una tesela Raquet</p><pre class="programlisting">
+quadbin(raquet) → bigint
+</pre><pre class="programlisting">
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 5193776270265024512
+</pre></li><li class="listitem"><a name="raquet_width"></a><a class="indexterm" name="id11799"></a><p>Devuelve el ancho en píxeles de una tesela Raquet</p><pre class="programlisting">
+width(raquet) → integer
+</pre><pre class="programlisting">
+SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 2
+</pre></li><li class="listitem"><a name="raquet_height"></a><a class="indexterm" name="id11806"></a><p>Devuelve el alto en píxeles de una tesela Raquet</p><pre class="programlisting">
+height(raquet) → integer
+</pre><pre class="programlisting">
+SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 2
+</pre></li><li class="listitem"><a name="raquet_nodata"></a><a class="indexterm" name="id11813"></a><p>Devuelve el valor centinela nodata de una tesela Raquet</p><pre class="programlisting">
+nodata(raquet) → float8
+</pre><pre class="programlisting">
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8', 255));
+-- 255
+-- The sentinel defaults to 0 when the constructor omits it.
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 0
+</pre></li><li class="listitem"><a name="raquet_pixtype"></a><a class="indexterm" name="id11820"></a><p>Devuelve el nombre del tipo de dato de píxel de una tesela Raquet</p><pre class="programlisting">
+pixtype(raquet) → text
+</pre><p>El nombre devuelto es el que aceptan los constructores, es decir, uno de <code class="varname">uint8</code>, <code class="varname">int8</code>, <code class="varname">uint16</code>, <code class="varname">int16</code>, <code class="varname">uint32</code>, <code class="varname">int32</code>, <code class="varname">uint64</code>, <code class="varname">int64</code>, <code class="varname">float16</code>, <code class="varname">float32</code> o <code class="varname">float64</code>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <code class="varname">type</code> de una tesela, por lo que se compara igual a ese campo tal cual.</p><pre class="programlisting">
+-- Read back the layout of a packaged tile
+SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
+-- 5193776270265024512 | 2 | 2 | uint8 | 0
+</pre></li><li class="listitem"><a name="raquet_pixels"></a><a class="indexterm" name="id11840"></a><p>Devuelve los bytes de píxeles de un mosaico Raquet</p><pre class="programlisting">
+pixels(raquet) → bytea
+</pre><p>Los bytes están en orden de fila mayor y empaquetados, <code class="varname">width</code> × <code class="varname">height</code> píxeles del tamaño de <code class="varname">pixtype</code> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</p><pre class="programlisting">
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- \x01020304
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s04.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s06.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Conversión de tipos </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Transformaciones</td></tr></table></div></body></html>

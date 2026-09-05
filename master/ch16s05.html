@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s04.html" title="Conversions"><link rel="next" href="ch16s06.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_accessors"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_startValue"></a><a class="indexterm" name="id12176"></a><a class="indexterm" name="id12179"></a><a class="indexterm" name="id12182"></a><p>Return the first, the last, or the nth distinct cell identifier of a temporal value</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s04.html" title="Conversions"><link rel="next" href="ch16s06.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_accessors"></a>Accessors</h2></div></div></div><p><a class="link" href="ch16s05.html#raster_numBands"><code class="varname">numBands</code></a> reads the band count of a PostGIS <code class="varname">raster</code>; the accessors that follow read a <code class="varname">raquet</code> tile.</p><p>A <code class="varname">raquet</code> value is self-describing: the accessors below read back the georeferencing and layout it carries, so a tile packaged with the <a class="link" href="ch16s03.html#raquet"><code class="varname">raquet</code></a> constructor or decoded with <a class="link" href="ch16s03.html#raquetRead"><code class="varname">raquetRead</code></a> can be inspected without keeping the loose columns it was built from.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_startValue"></a><a class="indexterm" name="id12305"></a><a class="indexterm" name="id12308"></a><a class="indexterm" name="id12311"></a><p>Return the first, the last, or the nth distinct cell identifier of a temporal value</p><pre class="programlisting">
 startValue(tcell) → cell
 endValue(tcell) → cell
 valueN(tcell,integer) → cell
@@ -21,7 +21,7 @@ SELECT endValue(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
 -- 47c4
 SELECT valueN(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}', 1);
 -- 47c3c
-</pre></li><li class="listitem"><a name="tcell_getValues"></a><a class="indexterm" name="id12193"></a><p>Return the set of distinct cell identifiers the trajectory takes</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_getValues"></a><a class="indexterm" name="id12322"></a><p>Return the set of distinct cell identifiers the trajectory takes</p><pre class="programlisting">
 getValues(tcell) → cellset
 </pre><pre class="programlisting">
 SELECT getValues(th3index '831c02fffffffff@2001-01-01');
@@ -37,7 +37,7 @@ SELECT getValues(ts2cell '47c3c@2001-01-01');
 -- {"47c3c"}
 SELECT getValues(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
 -- {"47c3c", "47c4"}
-</pre></li><li class="listitem"><a name="tcell_valueAtTimestamp"></a><a class="indexterm" name="id12200"></a><p>Return the cell identifier at a given timestamp, using step interpolation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_valueAtTimestamp"></a><a class="indexterm" name="id12329"></a><p>Return the cell identifier at a given timestamp, using step interpolation</p><pre class="programlisting">
 valueAtTimestamp(tcell,timestamptz) → cell
 </pre><pre class="programlisting">
 SELECT valueAtTimestamp(th3index
@@ -48,4 +48,49 @@ SELECT valueAtTimestamp(tquadbin
 -- 48a6227affffffff
 SELECT valueAtTimestamp(ts2cell '47c3c@2001-01-01', timestamptz '2001-01-01');
 -- 47c3c
+</pre></li><li class="listitem"><a name="raster_numBands"></a><a class="indexterm" name="id12336"></a><p>Return the number of bands of a raster</p><pre class="programlisting">
+numBands(raster) → integer
+</pre><p>The band number accepted by <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> and by the operators built on it ranges from 1 to this value.</p><pre class="programlisting">
+WITH rast1 AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8 ) AS r ), rast2 AS (
+  SELECT ST_AddBand(r, '32BF'::text, 0.0::float8, NULL::float8) AS r FROM rast1 )
+SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
+  numBands((SELECT r FROM rast2)) AS num_bands_two;
+-- 1 | 2
+</pre></li><li class="listitem"><a name="raquet_quadbin_accessor"></a><a class="indexterm" name="id12346"></a><p>Return the QUADBIN cell of a Raquet tile</p><pre class="programlisting">
+quadbin(raquet) → bigint
+</pre><pre class="programlisting">
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 5193776270265024512
+</pre></li><li class="listitem"><a name="raquet_width"></a><a class="indexterm" name="id12353"></a><p>Return the width in pixels of a Raquet tile</p><pre class="programlisting">
+width(raquet) → integer
+</pre><pre class="programlisting">
+SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 2
+</pre></li><li class="listitem"><a name="raquet_height"></a><a class="indexterm" name="id12360"></a><p>Return the height in pixels of a Raquet tile</p><pre class="programlisting">
+height(raquet) → integer
+</pre><pre class="programlisting">
+SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 2
+</pre></li><li class="listitem"><a name="raquet_nodata"></a><a class="indexterm" name="id12367"></a><p>Return the nodata sentinel value of a Raquet tile</p><pre class="programlisting">
+nodata(raquet) → float8
+</pre><pre class="programlisting">
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8', 255));
+-- 255
+-- The sentinel defaults to 0 when the constructor omits it.
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- 0
+</pre></li><li class="listitem"><a name="raquet_pixtype"></a><a class="indexterm" name="id12374"></a><p>Return the name of the pixel data type of a Raquet tile</p><pre class="programlisting">
+pixtype(raquet) → text
+</pre><p>The returned name is the one the constructors accept, that is, one of <code class="varname">uint8</code>, <code class="varname">int8</code>, <code class="varname">uint16</code>, <code class="varname">int16</code>, <code class="varname">uint32</code>, <code class="varname">int32</code>, <code class="varname">uint64</code>, <code class="varname">int64</code>, <code class="varname">float16</code>, <code class="varname">float32</code>, or <code class="varname">float64</code>. The constructors read the name without regard to case, so the name PostGIS raster gives a pixel type carries into them as it stands; the name returned here is the lower-case spelling the RaQuet specification gives a tile's <code class="varname">type</code> field, so it compares equal to that field as it stands.</p><pre class="programlisting">
+-- Read back the layout of a packaged tile
+SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
+-- 5193776270265024512 | 2 | 2 | uint8 | 0
+</pre></li><li class="listitem"><a name="raquet_pixels"></a><a class="indexterm" name="id12394"></a><p>Return the pixel bytes of a Raquet tile</p><pre class="programlisting">
+pixels(raquet) → bytea
+</pre><p>The bytes are row-major and packed, <code class="varname">width</code> × <code class="varname">height</code> pixels of the size of <code class="varname">pixtype</code> each, little-endian when a pixel is wider than one byte, which is the layout the constructors accept. A tile therefore round trips through its own accessors.</p><pre class="programlisting">
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- \x01020304
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Conversions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Transformations</td></tr></table></div></body></html>
