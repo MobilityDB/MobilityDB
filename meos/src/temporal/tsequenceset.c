@@ -211,9 +211,9 @@ datum_distance(Datum value1, Datum value2, MeosType type, int16 flags)
  *****************************************************************************/
 
 /**
- * @brief Ensure that all temporal sequences of the array have increasing
- * timestamp, and if they are temporal points, have the same srid and the
- * same dimensionality
+ * @brief Ensure that all temporal sequences of the array have the same
+ * temporal type and increasing timestamp, and if they are temporal points,
+ * have the same srid and the same dimensionality
  */
 bool
 ensure_valid_tseqarr(TSequence **sequences, int count)
@@ -225,12 +225,27 @@ ensure_valid_tseqarr(TSequence **sequences, int count)
       "Input sequences must be continuous");
     return false;
   }
+  /* The sequence set takes its temporal type from the first sequence, both
+   * here and in #tsequenceset_make_exp, and that type states which bounding
+   * box the set carries: #tseqarr_compute_bbox dispatches on it and then
+   * reads every sequence's box as that type. An array whose sequences do not
+   * agree on one therefore expands a box of one type with the bytes of
+   * another, and where the first sequence carries the wider box it reads past
+   * the box the later sequence owns. The type is the frame the whole array
+   * shares, and it is stated here. */
+  MeosType temptype = sequences[0]->temptype;
   for (int i = 0; i < count; i++)
   {
     if (sequences[i]->subtype != TSEQUENCE)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
         "Input values must be temporal sequences");
+      return false;
+    }
+    if (sequences[i]->temptype != temptype)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Input values must be of the same temporal type");
       return false;
     }
     if (i > 0)
