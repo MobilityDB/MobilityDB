@@ -50,24 +50,44 @@ extern void raster_quadbin_bounds(uint64 cell, double *xmin, double *ymin,
 
 extern uint32_t raster_quadbin_zoom(uint64 cell);
 
+extern double raster_sample_step(const double *gt);
+
 /**
  * @brief Callback returning the raster pixel value at a point: return true
  * and set @p value, or return false when the point lies outside the raster
  * or on a nodata pixel
  */
-typedef bool (*raster_sample_fn)(void *ctx, const GSERIALIZED *point,
+typedef bool (*raster_sample_fn)(void *ctx, double x, double y,
   double *value);
 
-extern Temporal *raster_value_sampler(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx);
+/**
+ * @brief What a raster engine tells the sampling about its grid: how to read
+ * a value, how far apart two positions of a walk over it are, and where it
+ * lies
+ * @details The descriptor plays for a raster grid the part `DggsCellOps`
+ * plays for a DGGS: the sampling names one of these instead of repeating the
+ * engine's four arguments at every entry point, and an engine fills it in one
+ * place. The PostGIS raster, a GDAL file and a Raquet tile answer the same
+ * three questions and differ only in how.
+ */
+typedef struct RasterGridOps
+{
+  raster_sample_fn sample;  /**< Value of the pixel a position falls in */
+  void *ctx;                /**< State of the engine, passed to @p sample */
+  double step;              /**< Distance between two positions of a walk */
+  STBox box;                /**< Extent of the grid, the pre-filter */
+} RasterGridOps;
+
+extern Temporal *raster_value_sampler(const Temporal *traj,
+  const RasterGridOps *ops);
 extern Temporal *raster_at_value_sampler(const Temporal *traj,
-  const STBox *box, raster_sample_fn sample, void *ctx, const Span *vspan);
+  const RasterGridOps *ops, const Span *vspan);
 extern Temporal *raster_minus_value_sampler(const Temporal *traj,
-  const STBox *box, raster_sample_fn sample, void *ctx, const Span *vspan);
-extern int eraster_value_sampler(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan);
-extern int araster_value_sampler(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan);
+  const RasterGridOps *ops, const Span *vspan);
+extern int eraster_value_sampler(const Temporal *traj,
+  const RasterGridOps *ops, const Span *vspan);
+extern int araster_value_sampler(const Temporal *traj,
+  const RasterGridOps *ops, const Span *vspan);
 
 /*****************************************************************************/
 

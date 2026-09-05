@@ -58,6 +58,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_raster.h>
+#include <meos_internal_geo.h>
 #include "temporal/temporal.h"
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
@@ -292,6 +293,106 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  *****************************************************************************/
 
 /**
+ * @brief State a Raquet tile sampling call keeps for the length of a
+ * trajectory: the pixel array, the layout its QUADBIN cell fixes, and whether
+ * a pixel held a value the sampling surface cannot carry
+ */
+typedef struct
+{
+  const uint8_t *pixels;
+  int32 width;
+  int32 height;
+  MeosPixType pixtype;
+  double nodata;
+  bool has_nodata;
+  bool undomainable;
+  double xmin, xmax, ymin, ymax;   /**< Tile bounds in lon/lat */
+  double top_merc, bot_merc;       /**< Tile bounds in Mercator metres */
+} RaquetSampleState;
+
+/**
+ * @brief Raquet sampling callback reading one pixel of a tile
+ * @details The column is linear in longitude and the row is linear in the
+ * Mercator ordinate, which is what the tile's own georeferencing states
+ */
+static bool
+raster_tile_value_sample(void *ctxp, double x, double y, double *value)
+{
+  RaquetSampleState *state = (RaquetSampleState *) ctxp;
+  if (x < state->xmin || x > state->xmax || y < state->ymin ||
+      y > state->ymax)
+    return false;
+
+  int col = (int) floor((x - state->xmin) / (state->xmax - state->xmin) *
+    state->width);
+  double merc_y = log(tan(M_PI / 4.0 + y * M_PI / 360.0));
+  int row = (int) floor((state->top_merc - merc_y) /
+    (state->top_merc - state->bot_merc) * state->height);
+  /* The half-open pixel convention of the tile: a position on the far edge
+   * belongs to the neighbouring tile */
+  if (col < 0 || col >= state->width || row < 0 || row >= state->height)
+    return false;
+
+  double pixval;
+  if (! read_pixel(state->pixels, col, row, state->width, state->pixtype,
+      &pixval))
+  {
+    state->undomainable = true;
+    return false;
+  }
+  if (state->has_nodata && pixval == state->nodata)
+    return false;
+  *value = pixval;
+  return true;
+}
+
+/**
+ * @brief Return the distance between two positions of a walk over a Raquet
+ * tile, half the smaller pixel side in the units the trajectory states
+ * @details The columns of a tile divide its longitude evenly, while its rows
+ * divide the Mercator ordinate evenly and so cover less latitude the further
+ * they lie from the equator. The step therefore reads the shorter of the two
+ * row extents, so that a walk cannot step over a pixel anywhere in the tile.
+ */
+static double
+raquet_gridops_step(const RaquetSampleState *state)
+{
+  double lon_side = (state->xmax - state->xmin) / (double) state->width;
+  double merc_side = (state->top_merc - state->bot_merc) /
+    (double) state->height;
+  /* Latitude of the Mercator ordinate one row inside each edge */
+  double top_in = 90.0 - 360.0 / M_PI *
+    atan(exp(- (state->top_merc - merc_side)));
+  double bot_in = 90.0 - 360.0 / M_PI *
+    atan(exp(- (state->bot_merc + merc_side)));
+  double lat_top = fabs(state->ymax - top_in);
+  double lat_bot = fabs(bot_in - state->ymin);
+  double lat_side = (lat_top < lat_bot) ? lat_top : lat_bot;
+  double smaller = (lon_side < lat_side) ? lon_side : lat_side;
+  return (smaller > 0.0) ? smaller / 2.0 : 0.0;
+}
+
+/**
+ * @brief Fill the grid descriptor of a Raquet tile
+ * @details Mirrors #dggs_cellops(), which answers the descriptor of a DGGS:
+ * an engine states its grid in one place, and every sampling entry point
+ * reads it from there.
+ * @param[in] state Sampling state of the tile, which the descriptor carries
+ * @param[out] ops Descriptor of the tile grid
+ */
+static void
+raquet_gridops(RaquetSampleState *state, RasterGridOps *ops)
+{
+  ops->sample = &raster_tile_value_sample;
+  ops->ctx = state;
+  ops->step = raquet_gridops_step(state);
+  memset(&ops->box, 0, sizeof(STBox));
+  ops->box.xmin = state->xmin; ops->box.xmax = state->xmax;
+  ops->box.ymin = state->ymin; ops->box.ymax = state->ymax;
+  return;
+}
+
+/**
  * @ingroup meos_raster_base_accessor
  * @brief Sample a Raquet raster chip along a tgeompoint trajectory.
  * @details The chip is identified by its QUADBIN cell, which encodes the
@@ -353,67 +454,29 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
   uint32_t tx, ty, tz;
   qb_to_xyz(quadbin, &tx, &ty, &tz);
 
-  double xmin, xmax, ymin, ymax, top_merc, bot_merc;
-  qb_bbox(tx, ty, tz, &xmin, &xmax, &ymin, &ymax, &top_merc, &bot_merc);
-  double merc_height = top_merc - bot_merc;  /* > 0 */
+  RaquetSampleState state;
+  qb_bbox(tx, ty, tz, &state.xmin, &state.xmax, &state.ymin, &state.ymax,
+    &state.top_merc, &state.bot_merc);
+  state.pixels = pixels;
+  state.width = width;
+  state.height = height;
+  state.pixtype = pixtype;
+  state.nodata = nodata;
+  state.has_nodata = has_nodata;
+  state.undomainable = false;
 
-  /* Iterate over trajectory instants */
-  int count;
-  const TInstant **insts = temporal_insts_p(traj, &count);
-  TInstant **result_insts = palloc(sizeof(TInstant *) * count);
-  int ninsts = 0;
-
-  for (int i = 0; i < count; i++)
+  RasterGridOps ops;
+  raquet_gridops(&state, &ops);
+  Temporal *result = raster_value_sampler(traj, &ops);
+  if (state.undomainable)
   {
-    /* Extract lon/lat from point geometry via GBOX (xmin==xmax for points) */
-    /* The point is read, never kept, and the instant that holds it outlives
-     * this call, so it is borrowed rather than copied */
-    const GSERIALIZED *pt_gs =
-      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(insts[i]));
-    GBOX pt_box;
-    gserialized_get_gbox_p(pt_gs, &pt_box);
-    double lon = pt_box.xmin;
-    double lat = pt_box.ymin;
-
-    /* Tile bounding-box pre-filter */
-    if (lon < xmin || lon > xmax || lat < ymin || lat > ymax)
-      continue;
-
-    /* Column: linear in longitude */
-    int col = (int) floor((lon - xmin) / (xmax - xmin) * width);
-
-    /* Row: Mercator inverse (latitude is non-linear in pixel space) */
-    double merc_y = log(tan(M_PI / 4.0 + lat * M_PI / 360.0));
-    int row = (int) floor((top_merc - merc_y) / merc_height * height);
-
-    /* Guard against floating-point edge cases at tile boundaries */
-    if (col < 0 || col >= (int) width || row < 0 || row >= (int) height)
-      continue;
-
-    double pixval;
-    if (! read_pixel(pixels, col, row, width, pixtype, &pixval))
-    {
-      /* The band holds a value the sampling surface cannot carry, so the
-       * result would stand for a number the band does not hold */
-      pfree(insts); pfree(result_insts);
-      return NULL;
-    }
-    if (has_nodata && pixval == nodata)
-      continue;
-
-    result_insts[ninsts++] =
-      tinstant_make(Float8GetDatum(pixval), T_TFLOAT, insts[i]->t);
-  }
-
-  pfree(insts);
-
-  if (ninsts == 0)
-  {
-    pfree(result_insts);
+    /* The band holds a value the sampling surface cannot carry, so the
+     * result would stand for a number the band does not hold */
+    if (result)
+      pfree(result);
     return NULL;
   }
-  return (Temporal *) tsequence_make_free(result_insts, ninsts,
-                                          true, true, DISCRETE, NORMALIZE);
+  return result;
 }
 
 /**
@@ -424,19 +487,224 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
  * through the vendored raster core, a raster file through GDAL, a Raquet
  * tile from its own pixel array.
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] box Bounding box of the raster used as a pre-filter, may be
- * @p NULL
- * @param[in] sample Callback returning the pixel value at a point
- * @param[in] ctx Opaque context passed through to the callback
+ * @param[in] ops Grid the values are read from
  * @return A temporal float, or @p NULL when no instant of @p traj falls
  * inside the raster or survives nodata filtering
  */
+/**
+ * @brief Return half the smaller side of a pixel, the distance between two
+ * positions of a walk over the raster
+ * @details The step mirrors #h3_sample_step_deg(), which walks a hexagon at
+ * half its edge: half a cell cannot step over a cell. The geotransform states
+ * the two pixel sides as vectors, so a rotated raster answers the length of
+ * its own sides rather than of their projections.
+ * @param[in] gt Geotransform of the raster
+ */
+double
+raster_sample_step(const double *gt)
+{
+  double pixel_w = hypot(gt[1], gt[4]), pixel_h = hypot(gt[2], gt[5]);
+  double smaller = (pixel_w < pixel_h) ? pixel_w : pixel_h;
+  return (smaller > 0.0) ? smaller / 2.0 : 0.0;
+}
+
+/**
+ * @brief Return the pixel value at a position, or false when the position
+ * lies outside the pre-filter box, outside the pixel grid, or on a nodata
+ * pixel
+ */
+static bool
+raster_sample_at(const STBox *box, raster_sample_fn sample, void *ctx,
+  double x, double y, double *value)
+{
+  if (box && (x < box->xmin || x > box->xmax || y < box->ymin ||
+      y > box->ymax))
+    return false;
+  return sample(ctx, x, y, value);
+}
+
+/**
+ * @brief Return the values a raster holds along a linearly interpolated
+ * sequence, as the sequences of a step temporal float
+ * @details A trajectory moving between two instants passes over the pixels
+ * between them, and their values belong to the answer as much as the values
+ * under the instants themselves. The segment is therefore walked in steps of
+ * @p step, the way #tpointseq_densify_to_th3index() walks one for a hexagon,
+ * and a value is emitted where it differs from the one before it: a pixel
+ * value holds until the trip reaches a pixel holding another, which is step
+ * interpolation. A position outside the raster or over a nodata pixel carries
+ * no value and ends the run, so a trip leaving and re-entering the raster
+ * answers one sequence per visit.
+ * @param[in] seq Trajectory sequence with linear interpolation
+ * @param[in] box Bounding box of the raster used as a pre-filter, may be NULL
+ * @param[in] sample Callback returning the pixel value at a position
+ * @param[in] ctx Opaque context passed through to the callback
+ * @param[in] step Distance between two walk positions, in the units of the
+ * trajectory
+ * @param[out] result Sequences of the answer, appended from @p nseqs
+ * @param[in,out] nseqs Number of sequences written
+ */
+static void
+tpointseq_densify_to_raster_value(const TSequence *seq, const STBox *box,
+  raster_sample_fn sample, void *ctx, double step, TSequence **result,
+  int *nseqs)
+{
+  /* An instant sequence holds one position, which the walk below cannot
+   * improve on */
+  if (seq->count == 1)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    /* The position is read, never kept, and the instant that holds it
+     * outlives this call, so it is borrowed rather than copied */
+    const POINT2D *p = GSERIALIZED_POINT2D_P(
+      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(inst)));
+    double value;
+    if (raster_sample_at(box, sample, ctx, p->x, p->y, &value))
+    {
+      TInstant **insts = palloc(sizeof(TInstant *));
+      insts[0] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
+      result[(*nseqs)++] = tsequence_make_free(insts, 1, true, true, STEP,
+        NORMALIZE);
+    }
+    return;
+  }
+
+  /* The run being built: its instants, and the value last emitted */
+  #define PUSH_INSTANT(_value, _t)                                       \
+    do {                                                                 \
+      if (ninsts >= maxinsts)                                            \
+      {                                                                  \
+        maxinsts = (maxinsts == 0) ? 8 : maxinsts * 2;                   \
+        insts = (insts == NULL) ?                                        \
+          palloc(sizeof(TInstant *) * (size_t) maxinsts) :               \
+          repalloc(insts, sizeof(TInstant *) * (size_t) maxinsts);       \
+      }                                                                  \
+      insts[ninsts++] = tinstant_make(Float8GetDatum(_value), T_TFLOAT,  \
+        (_t));                                                           \
+    } while (0)
+
+  TInstant **insts = NULL;
+  int ninsts = 0, maxinsts = 0;
+  double last_value = 0.0;
+  bool lower_inc = seq->period.lower_inc;
+
+  for (int i = 0; i + 1 < seq->count; i++)
+  {
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(
+      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(inst1)));
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(
+      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(inst2)));
+    double dx = p2->x - p1->x, dy = p2->y - p1->y;
+    double length = sqrt(dx * dx + dy * dy);
+    /* One walk position per step, and the last of them is the end of the
+     * segment, which the next segment reads as its own start */
+    int nsteps = (int) ceil(length / step);
+    if (nsteps < 1)
+      nsteps = 1;
+    bool last_segment = (i + 2 == seq->count);
+
+    for (int j = 0; j <= nsteps; j++)
+    {
+      /* The end of a segment is the start of the next one, so it is read
+       * once, with the last segment reading its own end */
+      if (j == nsteps && ! last_segment)
+        break;
+      double frac = (double) j / (double) nsteps;
+      double x = p1->x + frac * dx, y = p1->y + frac * dy;
+      TimestampTz t = (j == 0) ? inst1->t :
+        (j == nsteps) ? inst2->t :
+        inst1->t + (TimestampTz) (frac * (double) (inst2->t - inst1->t));
+
+      double value;
+      bool have = raster_sample_at(box, sample, ctx, x, y, &value);
+      if (! have)
+      {
+        /* The trip leaves the raster or reaches a nodata pixel: the value it
+         * carried holds until here, so the run closes on it and the position
+         * itself carries none */
+        if (ninsts > 0)
+        {
+          PUSH_INSTANT(last_value, t);
+          result[(*nseqs)++] = tsequence_make_free(insts, ninsts, lower_inc,
+            false, STEP, NORMALIZE);
+          insts = NULL; ninsts = maxinsts = 0;
+        }
+        lower_inc = true;
+        continue;
+      }
+      if (ninsts > 0 && value == last_value)
+        continue;   /* the pixel value still holds */
+      PUSH_INSTANT(value, t);
+      last_value = value;
+    }
+  }
+  /* The last value holds to the end of the trip, which the closing instant
+   * states: a sequence reaches no further than its last instant */
+  if (ninsts > 0)
+  {
+    const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
+    if (insts[ninsts - 1]->t < last->t)
+      PUSH_INSTANT(last_value, last->t);
+    result[(*nseqs)++] = tsequence_make_free(insts, ninsts, lower_inc,
+      seq->period.upper_inc, STEP, NORMALIZE);
+  }
+  return;
+}
+
 Temporal *
-raster_value_sampler(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx)
+raster_value_sampler(const Temporal *traj, const RasterGridOps *ops)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
+  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) ops, NULL);
+  VALIDATE_NOT_NULL((void *) ops->sample, NULL);
+  const STBox *box = &ops->box;
+  raster_sample_fn sample = ops->sample;
+  void *ctx = ops->ctx;
+  double step = ops->step;
+
+  /* A trajectory that moves between its instants passes over the pixels
+   * between them, so the walk reads those too; one that holds its position,
+   * or that states nothing between its instants, is read at the instants */
+  if (MEOS_FLAGS_GET_INTERP(traj->flags) == LINEAR && step > 0.0)
+  {
+    const TSequence **seqs;
+    int nseqs_in;
+    if (traj->subtype == TSEQUENCE)
+    {
+      seqs = palloc(sizeof(TSequence *));
+      seqs[0] = (const TSequence *) traj;
+      nseqs_in = 1;
+    }
+    else
+      seqs = temporal_sequences_p(traj, &nseqs_in);
+
+    /* Each visit to the raster answers one sequence, and a visit ends at a
+     * position the raster does not answer for */
+    int maxseqs = 0;
+    for (int i = 0; i < nseqs_in; i++)
+      maxseqs += seqs[i]->count;
+    TSequence **result_seqs = palloc(sizeof(TSequence *) *
+      (size_t) (maxseqs + nseqs_in));
+    int nseqs = 0;
+    for (int i = 0; i < nseqs_in; i++)
+      tpointseq_densify_to_raster_value(seqs[i], box, sample, ctx, step, result_seqs,
+        &nseqs);
+    pfree(seqs);
+    if (nseqs == 0)
+    {
+      pfree(result_seqs);
+      return NULL;
+    }
+    if (nseqs == 1)
+    {
+      Temporal *result = (Temporal *) result_seqs[0];
+      pfree(result_seqs);
+      return result;
+    }
+    return (Temporal *) tsequenceset_make_free(result_seqs, nseqs, NORMALIZE);
+  }
 
   /* Iterate over trajectory instants */
   int count;
@@ -447,22 +715,12 @@ raster_value_sampler(const Temporal *traj, const STBox *box,
   for (int i = 0; i < count; i++)
   {
     /* Borrowed, as above: the sampling reads the point and keeps nothing */
-    const GSERIALIZED *pt_gs =
-      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(insts[i]));
-
-    /* Bounding-box pre-filter: for a point the GBOX is degenerate */
-    if (box)
-    {
-      GBOX pt_box;
-      gserialized_get_gbox_p(pt_gs, &pt_box);
-      if (pt_box.xmin < box->xmin || pt_box.xmin > box->xmax ||
-          pt_box.ymin < box->ymin || pt_box.ymin > box->ymax)
-        continue;
-    }
+    const POINT2D *p = GSERIALIZED_POINT2D_P(
+      (const GSERIALIZED *) DatumGetPointer(tinstant_value_p(insts[i])));
 
     double pixval;
-    if (! sample(ctx, pt_gs, &pixval))
-      continue;   /* nodata pixel or geometry outside the pixel grid */
+    if (! raster_sample_at(box, sample, ctx, p->x, p->y, &pixval))
+      continue;   /* nodata pixel or position outside the pixel grid */
 
     result_insts[ninsts++] =
       tinstant_make(Float8GetDatum(pixval), T_TFLOAT, insts[i]->t);
@@ -475,8 +733,8 @@ raster_value_sampler(const Temporal *traj, const STBox *box,
     pfree(result_insts);
     return NULL;
   }
-  return (Temporal *) tsequence_make_free(result_insts, ninsts,
-                                          true, true, DISCRETE, NORMALIZE);
+  return (Temporal *) tsequence_make_free(result_insts, ninsts, true, true,
+    MEOS_FLAGS_GET_INTERP(traj->flags) == STEP ? STEP : DISCRETE, NORMALIZE);
 }
 
 /*****************************************************************************
@@ -488,7 +746,7 @@ raster_value_sampler(const Temporal *traj, const STBox *box,
  * @brief Return a trajectory restricted to the instants where the sampled
  * raster pixel value falls inside a float span
  * @details Equivalent to, with
- * @p v = #raster_value_sampler(traj, box, sample, ctx):
+ * @p v = #raster_value_sampler(traj, ops):
  * @code
  * atTime(traj, getTime(atSpan(v, vspan)))
  * @endcode
@@ -496,23 +754,20 @@ raster_value_sampler(const Temporal *traj, const STBox *box,
  * #temporal_restrict_tstzspanset, so that every caller supplying a @p sample
  * callback gets the restriction.
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] box Bounding box of the raster used as a pre-filter, may be
- * @p NULL
- * @param[in] sample Callback returning the pixel value at a point
- * @param[in] ctx Opaque context passed through to the callback
+ * @param[in] ops Grid the values are read from
  * @param[in] vspan Float value range (inclusive bounds)
  * @return A trajectory restricted to the qualifying instants, or @p NULL
  * when none qualify
  */
 Temporal *
-raster_at_value_sampler(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan)
+raster_at_value_sampler(const Temporal *traj,
+  const RasterGridOps *ops, const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
+  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) ops, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
-  Temporal *v = raster_value_sampler(traj, box, sample, ctx);
+  Temporal *v = raster_value_sampler(traj, ops);
   if (! v)
     return NULL;
   Temporal *v1 = tnumber_restrict_span(v, vspan, REST_AT);
@@ -530,28 +785,25 @@ raster_at_value_sampler(const Temporal *traj, const STBox *box,
  * @brief Return a trajectory restricted to the instants where the sampled
  * raster pixel value falls outside a float span
  * @details Equivalent to, with
- * @p v = #raster_value_sampler(traj, box, sample, ctx):
+ * @p v = #raster_value_sampler(traj, ops):
  * @code
  * atTime(traj, getTime(minusSpan(v, vspan)))
  * @endcode
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] box Bounding box of the raster used as a pre-filter, may be
- * @p NULL
- * @param[in] sample Callback returning the pixel value at a point
- * @param[in] ctx Opaque context passed through to the callback
+ * @param[in] ops Grid the values are read from
  * @param[in] vspan Float value range to exclude
  * @return A trajectory restricted to the qualifying instants, or @p NULL
  * when none qualify
  */
 Temporal *
-raster_minus_value_sampler(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan)
+raster_minus_value_sampler(const Temporal *traj,
+  const RasterGridOps *ops, const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
+  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) ops, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
-  Temporal *v = raster_value_sampler(traj, box, sample, ctx);
+  Temporal *v = raster_value_sampler(traj, ops);
   if (! v)
     return NULL;
   Temporal *v1 = tnumber_restrict_span(v, vspan, REST_MINUS);
@@ -569,23 +821,20 @@ raster_minus_value_sampler(const Temporal *traj, const STBox *box,
  * @brief Return true if a trajectory ever samples a raster pixel value
  * inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] box Bounding box of the raster used as a pre-filter, may be
- * @p NULL
- * @param[in] sample Callback returning the pixel value at a point
- * @param[in] ctx Opaque context passed through to the callback
+ * @param[in] ops Grid the values are read from
  * @param[in] vspan Float value range
  * @return 1 if the trajectory ever samples a value inside @p vspan, 0 if
  * not, and -1 on error
  */
 int
-eraster_value_sampler(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan)
+eraster_value_sampler(const Temporal *traj,
+  const RasterGridOps *ops, const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) sample, -1);
+  VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) ops, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
-  Temporal *v = raster_value_sampler(traj, box, sample, ctx);
+  Temporal *v = raster_value_sampler(traj, ops);
   if (! v)
     return 0;
   Temporal *v1 = tnumber_restrict_span(v, vspan, REST_AT);
@@ -600,23 +849,20 @@ eraster_value_sampler(const Temporal *traj, const STBox *box,
  * @brief Return true if every in-raster-extent instant of a trajectory
  * samples a pixel value inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] box Bounding box of the raster used as a pre-filter, may be
- * @p NULL
- * @param[in] sample Callback returning the pixel value at a point
- * @param[in] ctx Opaque context passed through to the callback
+ * @param[in] ops Grid the values are read from
  * @param[in] vspan Float value range
  * @return 1 if every sampled value falls inside @p vspan, 0 if not, and -1
  * on error
  */
 int
-araster_value_sampler(const Temporal *traj, const STBox *box,
-  raster_sample_fn sample, void *ctx, const Span *vspan)
+araster_value_sampler(const Temporal *traj,
+  const RasterGridOps *ops, const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) sample, -1);
+  VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) ops, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
-  Temporal *v = raster_value_sampler(traj, box, sample, ctx);
+  Temporal *v = raster_value_sampler(traj, ops);
   if (! v)
     return 0;
   Temporal *v1 = tnumber_restrict_span(v, vspan, REST_MINUS);

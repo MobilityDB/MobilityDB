@@ -34,7 +34,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
 </programlisting>
-				<para>Evaluates band <varname>band</varname> at every instant of <varname>traj</varname> with nearest-neighbour sampling, that is, the value of the pixel the position falls in. Returns an instant-set <varname>tfloat</varname> holding the instants that fall on a pixel carrying data, and <varname>NULL</varname> when no instant intersects the raster.</para>
+				<para>Reads band <varname>band</varname> along <varname>traj</varname>, taking the value of the pixel each position falls in. A trajectory that states nothing between its instants is read at its instants and answers an instant-set <varname>tfloat</varname>. A trajectory that moves between them passes over the pixels between them, so it is walked at half a pixel, the step at which a hexagonal cell index is walked, and answers a step <varname>tfloat</varname> holding each value until the trip reaches a pixel holding another. A position outside the raster or over a nodata pixel carries no value and ends the run, so a trip that leaves and re-enters the raster answers one sequence per visit, and <varname>NULL</varname> when it never meets a pixel carrying data.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (

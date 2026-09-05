@@ -133,6 +133,68 @@ WITH rast AS (
 SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r)::text AS result
 FROM rast;
 
+-- A trajectory that moves between its instants passes over the pixels between
+-- them, and their values belong to the answer: the diagonal below crosses
+-- pixel(row=2,col=2) = 50 between its two instants, and each value holds until
+-- the trip reaches a pixel holding another.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 0.5)@2001-01-03]', r)::text AS result
+FROM rast;
+
+-- The same three positions stated as an instant set say nothing between them,
+-- so the answer holds one value per instant.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
+  POINT(1.5 1.5)@2001-01-02, POINT(2.5 0.5)@2001-01-03}', r)::text AS result
+FROM rast;
+
+-- A trip crossing a nodata pixel answers one sequence per visit: the band
+-- declares -9999 as its nodata value and pixel(row=1,col=2) holds it.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999.0::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, -9999.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 2.5)@2001-01-03]', r)::text AS result
+FROM rast;
+
+-- A trip over a Raquet tile is read the same way, the tile grid being the
+-- pixels of its QUADBIN cell.
+SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;[Point(45.0 75.0)@2024-01-01,
+  Point(135.0 75.0)@2024-01-02]',
+  decode('01020304', 'hex'), 2, 2, 5193776270265024512, 'uint8', 0.0, false)::text;
+
 -- A band the raster does not have is an error, in either direction.
 WITH rast AS (
   SELECT ST_AddBand(
@@ -185,7 +247,7 @@ WITH rast AS (
 )
 SELECT asText(atRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
   POINT(1.5 1.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r,
-  floatspan '[40, 90]'))::text AS result
+  floatspan '[40, 90]'), 6)::text AS result
 FROM rast;
 
 -- minusRasterValue([40,90]): values 50 and 70 dropped, 10 kept.
@@ -203,7 +265,7 @@ WITH rast AS (
 )
 SELECT asText(minusRasterValue(
   tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01, POINT(1.5 1.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]',
-  r, floatspan '[40, 90]'))::text AS result
+  r, floatspan '[40, 90]'), 6)::text AS result
 FROM rast;
 
 -- eRasterValue([70,90]): traj2 samples 10 and 70; 70 in range → true.
