@@ -424,6 +424,7 @@ typedef struct
   int ysize;
   int has_nodata;
   double nodata;
+  double step;        /**< Distance between two positions of the walk */
 } RasterValueGdalCtx;
 
 /**
@@ -432,13 +433,11 @@ typedef struct
  * point argument varies per call
  */
 static bool
-raster_value_gdal_sample(void *ctxp, const GSERIALIZED *point, double *value)
+raster_value_gdal_sample(void *ctxp, double x, double y, double *value)
 {
   RasterValueGdalCtx *ctx = (RasterValueGdalCtx *) ctxp;
-  GBOX gbox;
-  gserialized_get_gbox_p((GSERIALIZED *) point, &gbox);
   double col_f, row_f;
-  GDALApplyGeoTransform(ctx->inv_gt, gbox.xmin, gbox.ymin, &col_f, &row_f);
+  GDALApplyGeoTransform(ctx->inv_gt, x, y, &col_f, &row_f);
   int col = (int) floor(col_f);
   int row = (int) floor(row_f);
   if (col < 0 || col >= ctx->xsize || row < 0 || row >= ctx->ysize)
@@ -456,18 +455,18 @@ raster_value_gdal_sample(void *ctxp, const GSERIALIZED *point, double *value)
 }
 
 /**
- * @brief Open a raster file via GDAL and build the #RasterValueGdalCtx and
- * the extent STBox pre-filter shared by every raster_value_gdal wrapper
+ * @brief Open a raster file via GDAL and fill its grid descriptor, which every
+ * raster_value_gdal wrapper reads
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] band_num Band number (1-based)
  * @param[out] ds_out Open GDAL dataset; the caller closes it with GDALClose
  * @param[out] ctx Sampling context, valid while @p ds_out stays open
- * @param[out] box Bounding-box pre-filter derived from the geotransform
+ * @param[out] ops Descriptor of the raster grid
  * @return true on success; on failure sets a MEOS error and returns false
  */
 static bool
-raster_value_gdal_open(const char *path, int band_num, GDALDatasetH *ds_out,
-  RasterValueGdalCtx *ctx, STBox *box)
+raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
+  RasterValueGdalCtx *ctx, RasterGridOps *ops)
 {
   GDALAllRegister();
   meos_gdal_enter();
@@ -510,6 +509,8 @@ raster_value_gdal_open(const char *path, int band_num, GDALDatasetH *ds_out,
   int has_nodata = 0;
   double nodata = GDALGetRasterNoDataValue(rb, &has_nodata);
 
+  ctx->step = raster_sample_step(gt);
+
   ctx->band = rb;
   ctx->xsize = GDALGetRasterBandXSize(rb);
   ctx->ysize = GDALGetRasterBandYSize(rb);
@@ -525,15 +526,18 @@ raster_value_gdal_open(const char *path, int band_num, GDALDatasetH *ds_out,
   GDALApplyGeoTransform(gt, xsize, 0, &xs[1], &ys[1]);
   GDALApplyGeoTransform(gt, 0, ysize, &xs[2], &ys[2]);
   GDALApplyGeoTransform(gt, xsize, ysize, &xs[3], &ys[3]);
-  memset(box, 0, sizeof(STBox));
-  box->xmin = box->xmax = xs[0];
-  box->ymin = box->ymax = ys[0];
+  ops->sample = &raster_value_gdal_sample;
+  ops->ctx = ctx;
+  ops->step = ctx->step;
+  memset(&ops->box, 0, sizeof(STBox));
+  ops->box.xmin = ops->box.xmax = xs[0];
+  ops->box.ymin = ops->box.ymax = ys[0];
   for (int i = 1; i < 4; i++)
   {
-    if (xs[i] < box->xmin) box->xmin = xs[i];
-    if (xs[i] > box->xmax) box->xmax = xs[i];
-    if (ys[i] < box->ymin) box->ymin = ys[i];
-    if (ys[i] > box->ymax) box->ymax = ys[i];
+    if (xs[i] < ops->box.xmin) ops->box.xmin = xs[i];
+    if (xs[i] > ops->box.xmax) ops->box.xmax = xs[i];
+    if (ys[i] < ops->box.ymin) ops->box.ymin = ys[i];
+    if (ys[i] > ops->box.ymax) ops->box.ymax = ys[i];
   }
 
   *ds_out = ds;
@@ -556,12 +560,11 @@ raster_value_gdal(const Temporal *traj, const char *path, int band)
 
   GDALDatasetH ds;
   RasterValueGdalCtx ctx;
-  STBox box;
-  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+  RasterGridOps ops;
+  if (! raster_gdal_gridops(path, band, &ds, &ctx, &ops))
     return NULL;
   meos_gdal_enter();
-  Temporal *result = raster_value_sampler(traj, &box, &raster_value_gdal_sample,
-    &ctx);
+  Temporal *result = raster_value_sampler(traj, &ops);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);
   return result;
@@ -586,12 +589,11 @@ raster_at_value_gdal(const Temporal *traj, const char *path, int band,
 
   GDALDatasetH ds;
   RasterValueGdalCtx ctx;
-  STBox box;
-  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+  RasterGridOps ops;
+  if (! raster_gdal_gridops(path, band, &ds, &ctx, &ops))
     return NULL;
   meos_gdal_enter();
-  Temporal *result = raster_at_value_sampler(traj, &box, &raster_value_gdal_sample,
-    &ctx, vspan);
+  Temporal *result = raster_at_value_sampler(traj, &ops, vspan);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);
   return result;
@@ -616,12 +618,11 @@ raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
 
   GDALDatasetH ds;
   RasterValueGdalCtx ctx;
-  STBox box;
-  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+  RasterGridOps ops;
+  if (! raster_gdal_gridops(path, band, &ds, &ctx, &ops))
     return NULL;
   meos_gdal_enter();
-  Temporal *result = raster_minus_value_sampler(traj, &box,
-    &raster_value_gdal_sample, &ctx, vspan);
+  Temporal *result = raster_minus_value_sampler(traj, &ops, vspan);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);
   return result;
@@ -648,12 +649,11 @@ eraster_value_gdal(const Temporal *traj, const char *path, int band,
 
   GDALDatasetH ds;
   RasterValueGdalCtx ctx;
-  STBox box;
-  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+  RasterGridOps ops;
+  if (! raster_gdal_gridops(path, band, &ds, &ctx, &ops))
     return -1;
   meos_gdal_enter();
-  int result = eraster_value_sampler(traj, &box, &raster_value_gdal_sample, &ctx,
-    vspan);
+  int result = eraster_value_sampler(traj, &ops, vspan);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);
   return result;
@@ -680,12 +680,11 @@ araster_value_gdal(const Temporal *traj, const char *path, int band,
 
   GDALDatasetH ds;
   RasterValueGdalCtx ctx;
-  STBox box;
-  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+  RasterGridOps ops;
+  if (! raster_gdal_gridops(path, band, &ds, &ctx, &ops))
     return -1;
   meos_gdal_enter();
-  int result = araster_value_sampler(traj, &box, &raster_value_gdal_sample, &ctx,
-    vspan);
+  int result = araster_value_sampler(traj, &ops, vspan);
   meos_gdal_leave();
   raquet_gdal_release(ds, NULL, NULL);
   return result;

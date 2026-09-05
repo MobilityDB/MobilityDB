@@ -283,6 +283,7 @@ typedef struct
   rt_raster raster;   /**< Raster carrying its bands */
   rt_band band;       /**< Band the pixel values are read from */
   double igt[6];      /**< Inverse geotransform of the raster */
+  double step;        /**< Distance between two positions of the walk */
 } RasterSampleState;
 
 /**
@@ -294,16 +295,12 @@ typedef struct
  * which is the contract of ::raster_sample_fn
  */
 static bool
-raster_value_sample(void *ctxp, const GSERIALIZED *point, double *value)
+raster_value_sample(void *ctxp, double x, double y, double *value)
 {
   RasterSampleState *state = (RasterSampleState *) ctxp;
-  /* The point is read, not kept: its GBOX is degenerate, so its lower corner
-   * is the point itself */
-  GBOX gbox;
-  gserialized_get_gbox_p((GSERIALIZED *) point, &gbox);
   double xr, yr;
-  if (rt_raster_geopoint_to_rasterpoint(state->raster, gbox.xmin, gbox.ymin,
-      &xr, &yr, state->igt) != ES_NONE)
+  if (rt_raster_geopoint_to_rasterpoint(state->raster, x, y, &xr, &yr,
+      state->igt) != ES_NONE)
     return false;
   int isnodata;
   if (rt_band_get_pixel_resample(state->band, xr, yr, RT_NEAREST, value,
@@ -320,12 +317,12 @@ raster_value_sample(void *ctxp, const GSERIALIZED *point, double *value)
  * @param[in] band Band number (1-based)
  * @param[out] state Sampling state; on success its raster is owned by the
  * caller, which releases it with #raster_destroy()
- * @param[out] box Bounding box of the raster extent
+ * @param[out] ops Descriptor of the raster grid
  * @return true on success; on failure sets a MEOS error and returns false
  */
 static bool
-raster_sample_state_make(const Temporal *traj, const Raster *rast, int band,
-  RasterSampleState *state, STBox *box)
+raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
+  RasterSampleState *state, RasterGridOps *ops)
 {
   /* The bands are needed, so the raster is fully deserialized. It keeps
    * pointers into `rast` without owning them, and the caller destroys it
@@ -365,6 +362,11 @@ raster_sample_state_make(const Temporal *traj, const Raster *rast, int band,
   }
   state->raster = raster;
   state->band = rtband;
+  /* Half the smaller pixel side, in the units the trajectory states its
+   * positions in, so the walk cannot step over a pixel */
+  double gt[6];
+  rt_raster_get_geotransform_matrix(raster, gt);
+  state->step = raster_sample_step(gt);
 
   /* Bounding box of the raster extent, which bears the rotation of the
    * geotransform */
@@ -376,9 +378,12 @@ raster_sample_state_make(const Temporal *traj, const Raster *rast, int band,
       "Could not compute the extent of the raster");
     return false;
   }
-  memset(box, 0, sizeof(STBox));
-  box->xmin = env.MinX; box->xmax = env.MaxX;
-  box->ymin = env.MinY; box->ymax = env.MaxY;
+  ops->sample = &raster_value_sample;
+  ops->ctx = state;
+  ops->step = state->step;
+  memset(&ops->box, 0, sizeof(STBox));
+  ops->box.xmin = env.MinX; ops->box.xmax = env.MaxX;
+  ops->box.ymin = env.MinY; ops->box.ymax = env.MaxY;
   return true;
 }
 
@@ -400,11 +405,10 @@ raster_value(const Temporal *traj, const Raster *rast, int band)
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
 
   RasterSampleState state;
-  STBox box;
-  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+  RasterGridOps ops;
+  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return NULL;
-  Temporal *result = raster_value_sampler(traj, &box, &raster_value_sample,
-    &state);
+  Temporal *result = raster_value_sampler(traj, &ops);
   raster_destroy(state.raster);
   return result;
 }
@@ -430,11 +434,10 @@ raster_at_value(const Temporal *traj, const Raster *rast, int band,
   VALIDATE_NOT_NULL(vspan, NULL);
 
   RasterSampleState state;
-  STBox box;
-  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+  RasterGridOps ops;
+  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return NULL;
-  Temporal *result = raster_at_value_sampler(traj, &box, &raster_value_sample,
-    &state, vspan);
+  Temporal *result = raster_at_value_sampler(traj, &ops, vspan);
   raster_destroy(state.raster);
   return result;
 }
@@ -460,11 +463,10 @@ raster_minus_value(const Temporal *traj, const Raster *rast, int band,
   VALIDATE_NOT_NULL(vspan, NULL);
 
   RasterSampleState state;
-  STBox box;
-  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+  RasterGridOps ops;
+  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return NULL;
-  Temporal *result = raster_minus_value_sampler(traj, &box,
-    &raster_value_sample, &state, vspan);
+  Temporal *result = raster_minus_value_sampler(traj, &ops, vspan);
   raster_destroy(state.raster);
   return result;
 }
@@ -489,11 +491,10 @@ eraster_value(const Temporal *traj, const Raster *rast, int band,
   VALIDATE_NOT_NULL(vspan, -1);
 
   RasterSampleState state;
-  STBox box;
-  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+  RasterGridOps ops;
+  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return -1;
-  int result = eraster_value_sampler(traj, &box, &raster_value_sample, &state,
-    vspan);
+  int result = eraster_value_sampler(traj, &ops, vspan);
   raster_destroy(state.raster);
   return result;
 }
@@ -518,11 +519,10 @@ araster_value(const Temporal *traj, const Raster *rast, int band,
   VALIDATE_NOT_NULL(vspan, -1);
 
   RasterSampleState state;
-  STBox box;
-  if (! raster_sample_state_make(traj, rast, band, &state, &box))
+  RasterGridOps ops;
+  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return -1;
-  int result = araster_value_sampler(traj, &box, &raster_value_sample, &state,
-    vspan);
+  int result = araster_value_sampler(traj, &ops, vspan);
   raster_destroy(state.raster);
   return result;
 }

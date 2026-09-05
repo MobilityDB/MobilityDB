@@ -283,9 +283,9 @@ int main(void)
    * the two the sampling answers */
   Raster *rast_values = raster_from_hexwkb(raster_values);
   assert(rast_values != NULL);
-  Temporal *traj_values = tgeompoint_in("SRID=4326;[POINT(0.5 2.5)@2001-01-01,"
+  Temporal *traj_values = tgeompoint_in("SRID=4326;{POINT(0.5 2.5)@2001-01-01,"
     " POINT(1.5 2.5)@2001-01-02, POINT(5.5 5.5)@2001-01-03,"
-    " POINT(0.5 0.5)@2001-01-04]");
+    " POINT(0.5 0.5)@2001-01-04}");
   assert(traj_values != NULL);
   meos_errno_reset();
   Temporal *values = raster_value(traj_values, rast_values, 1);
@@ -297,6 +297,42 @@ int main(void)
   assert(tfloat_start_value(values) == 10.0);
   assert(tfloat_end_value(values) == 70.0);
   free(values_str); free(values);
+
+  /* A trajectory that moves between its instants passes over the pixels
+   * between them: the diagonal below crosses pixel(2,2) = 50, which the
+   * answer holds until the trip reaches the pixel holding 90, and the walk
+   * that finds it is the one #tpointseq_densify_to_th3index() walks a
+   * hexagon with */
+  Temporal *traj_linear = tgeompoint_in("SRID=4326;[POINT(0.5 2.5)@2001-01-01,"
+    " POINT(2.5 0.5)@2001-01-03]");
+  assert(traj_linear != NULL);
+  meos_errno_reset();
+  Temporal *along = raster_value(traj_linear, rast_values, 1);
+  assert(along != NULL);
+  assert(meos_errno() == 0);
+  char *along_str = tfloat_out(along, 0);
+  printf("raster_value(linear trip, raster, 1): %s\n", along_str);
+  assert(strcmp(temporal_interp(along), "Step") == 0);
+  assert(temporal_num_instants(along) == 4);
+  assert(tfloat_start_value(along) == 10.0);
+  assert(tfloat_end_value(along) == 90.0);
+  /* The crossed pixel is in the answer, which sampling the instants alone
+   * cannot state */
+  int ndistinct;
+  double *distinct = tfloat_values(along, &ndistinct);
+  assert(distinct != NULL && ndistinct == 3);
+  free(distinct); free(along_str); free(along); free(traj_linear);
+
+  /* A trip crossing the nodata pixel answers one sequence per visit */
+  Temporal *traj_gap = tgeompoint_in("SRID=4326;[POINT(0.5 2.5)@2001-01-01,"
+    " POINT(2.5 2.5)@2001-01-03]");
+  assert(traj_gap != NULL);
+  Temporal *visits = raster_value(traj_gap, rast_values, 1);
+  assert(visits != NULL);
+  char *visits_str = tfloat_out(visits, 0);
+  printf("raster_value(trip across nodata): %s\n", visits_str);
+  assert(temporal_num_sequences(visits) == 2);
+  free(visits_str); free(visits); free(traj_gap);
 
   /* The restrictions and the predicates read the same values: only the
    * position sampling 70 falls inside [40, 90] */
