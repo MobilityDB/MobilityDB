@@ -1772,9 +1772,9 @@ int main(void)
     /* the disc, on its own circle */
     "CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(0 2,2 0,4 2),"
       "CIRCULARSTRING(4 2,2 4,0 2)))",
-    /* two squares meeting along an edge share no area ... */
-    "POLYGON EMPTY",
-    /* ... and neither takes any from the other */
+    /* two squares meeting along an edge share the edge they meet along ... */
+    "LINESTRING(2 0,2 2)",
+    /* ... and neither takes any area from the other */
     "POLYGON((2 2,2 0,0 0,0 2,2 2))",
   };
   for (int i = 0; i < 3; i++)
@@ -1790,6 +1790,65 @@ int main(void)
     printf("a shared boundary %d: %.58s\n", i, cwt);
     assert(strcmp(cwt, cw_exp[i]) == 0);
     free(cwt); free(cr); free(ca); free(cb);
+    meos_errno_reset();
+  }
+  /* AND A PAIR OF PLAIN POLYGONS IS ASKED THE SAME QUESTION THROUGH ANOTHER
+   * ENGINE, so the two spellings of one region have to answer alike. Where
+   * they share no area the region answer is empty and what they meet along is
+   * read off the first one's boundary: a whole edge, a part of one, or the
+   * single point two corners meet at. The rows after them are the ones this
+   * must leave alone -- a pair that meets in nothing, a pair one contains,
+   * and a pair sharing area, which never reach the question at all */
+  const char *pm_a[] = {
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "MULTIPOLYGON(((0 0,4 0,4 4,0 4,0 0)),((0 6,4 6,4 9,0 9,0 6)))",
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "POLYGON((0 0,4 0,0 4,0 0))",
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+    "POLYGON((0 0,4 0,4 4,0 4,0 0))",
+  };
+  const char *pm_b[] = {
+    "POLYGON((4 0,8 0,8 4,4 4,4 0))",
+    "POLYGON((4 1,8 1,8 3,4 3,4 1))",
+    "POLYGON((4 4,8 4,8 8,4 8,4 4))",
+    "POLYGON((4 0,8 0,8 4,4 4,4 0))",
+    "POLYGON((20 20,24 20,24 24,20 24,20 20))",
+    "POLYGON((3 3,7 3,7 7,3 7,3 3))",
+    "POLYGON((1 1,3 1,3 3,1 3,1 1))",
+    "POLYGON((2 0,6 0,6 4,2 4,2 0))",
+  };
+  const char *pm_exp[] = {
+    /* the whole edge the two squares share */
+    "LINESTRING(4 0,4 4)",
+    /* the part of that edge the shorter one reaches */
+    "LINESTRING(4 1,4 3)",
+    /* two corners meeting is one point, and a point is what it answers */
+    "POINT(4 4)",
+    /* the part a multipolygon shares is its own member's edge */
+    "LINESTRING(4 0,4 4)",
+    /* apart, so there is nothing to meet along */
+    "POLYGON EMPTY",
+    /* boxes that meet over shapes that do not is still nothing */
+    "POLYGON EMPTY",
+    /* one region inside another shares that region, which has area */
+    "POLYGON((3 3,3 1,1 1,1 3,3 3))",
+    /* and two overlapping squares share the region they overlap in */
+    "POLYGON((4 4,4 0,2 0,2 4,4 4))",
+  };
+  for (int i = 0; i < 8; i++)
+  {
+    GSERIALIZED *pa = geom_in(pm_a[i], -1);
+    GSERIALIZED *pb = geom_in(pm_b[i], -1);
+    assert(pa != NULL); assert(pb != NULL);
+    meos_errno_reset();
+    GSERIALIZED *pr2 = geom_intersection2d(pa, pb);
+    assert(pr2 != NULL);
+    char *pmt = geo_as_text(pr2, 6);
+    printf("two polygons meeting %d: %.52s\n", i, pmt);
+    assert(strcmp(pmt, pm_exp[i]) == 0);
+    free(pmt); free(pr2); free(pa); free(pb);
     meos_errno_reset();
   }
   /* WHERE THE ANSWER LEAVES TWO REGIONS TOUCHING AT ONE POINT, four piece-ends
