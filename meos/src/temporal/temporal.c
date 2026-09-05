@@ -2085,10 +2085,14 @@ temporal_set_bbox(const Temporal *temp, void *box)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the array of **pointers** to the base values of a temporal
- * value
+ * @brief Return the array of **pointers** to the **distinct** base values of a
+ * temporal value, **sorted** by base type order
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
+ * @post The output array is sorted and holds no duplicate, which each of the
+ * three subtype functions establishes: #tinstant_values_p returns a single
+ * value, and #tsequence_values_p and #tsequenceset_values_p both sort the
+ * values they collect and remove the duplicates
  * @see #temporal_values
  */
 Datum *
@@ -2120,11 +2124,13 @@ Datum *
 temporal_values(const Temporal *temp, int *count)
 {
   assert(temp); assert(count);
-  int count1;
-  Datum *values = temporal_values_p(temp, &count1);
+  /* The array arrives sorted and free of duplicates: that is the contract
+   * #temporal_values_p states and each of its three subtype functions
+   * establishes. #tnumberseq_valuespans reads the same array under the same
+   * contract, passing ORDER_NO to the span set it builds from it */
+  int newcount;
+  Datum *values = temporal_values_p(temp, &newcount);
   MeosType basetype = temptype_basetype(temp->temptype);
-  datumarr_sort(values, count1, basetype);
-  int newcount = datumarr_remove_duplicates(values, count1, basetype);
   Datum *result = palloc(sizeof(Datum) * newcount);
   for (int i = 0; i < newcount; i++)
     result[i] = datum_copy(values[i], basetype);
