@@ -194,7 +194,7 @@ h3index_cell_to_boundary(H3Index cell)
 static TInstant *
 tpointinst_to_th3index(const TInstant *inst, int32 resolution)
 {
-  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
+  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
   H3Index cell = geo_to_h3index_cell(gs, resolution);
   return tinstant_make(H3IndexGetDatum(cell), T_TH3INDEX, inst->t);
 }
@@ -241,7 +241,7 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
     for (int i = 0; i < seq->count; i++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-      const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
+      const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
       H3Index cell = geo_to_h3index_cell(gs, resolution);
       PUSH_INSTANT(cell, inst->t);
     }
@@ -259,7 +259,7 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
      * per-sample lookups below can use the cheaper raw-coordinate path. */
     {
       const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
-      const GSERIALIZED *gs0 = DatumGetGserializedP(tinstant_value(inst0));
+      const GSERIALIZED *gs0 = DatumGetGserializedP(tinstant_value_p(inst0));
       H3Index cell0 = geo_to_h3index_cell(gs0, resolution);
       PUSH_INSTANT(cell0, inst0->t);
       last_cell = cell0;
@@ -273,9 +273,9 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
       const TInstant *inst_a = TSEQUENCE_INST_N(seq, i);
       const TInstant *inst_b = TSEQUENCE_INST_N(seq, i + 1);
       const POINT2D *pa = GSERIALIZED_POINT2D_P(
-        DatumGetGserializedP(tinstant_value(inst_a)));
+        DatumGetGserializedP(tinstant_value_p(inst_a)));
       const POINT2D *pb = GSERIALIZED_POINT2D_P(
-        DatumGetGserializedP(tinstant_value(inst_b)));
+        DatumGetGserializedP(tinstant_value_p(inst_b)));
       double dx = pb->x - pa->x;
       double dy = pb->y - pa->y;
       double seg_deg = sqrt(dx * dx + dy * dy);
