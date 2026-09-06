@@ -89,8 +89,8 @@ jobs:
             found=$((found + 1))
           done
           echo "$found leak-checked test(s) ran"
-          if [ "$found" -lt "${MEOS_VALGRIND_FLOOR:-2}" ]; then
-            echo "::error::$found leak-checked test(s), below the floor of ${MEOS_VALGRIND_FLOOR:-2}"
+          if [ "$found" -lt "${MEOS_VALGRIND_FLOOR:-3}" ]; then
+            echo "::error::$found leak-checked test(s), below the floor of ${MEOS_VALGRIND_FLOOR:-3}"
             exit 1
           fi
 

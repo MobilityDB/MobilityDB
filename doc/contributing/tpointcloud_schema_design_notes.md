@@ -122,7 +122,7 @@ implementation of it. ⇒ the fields the engine derives are never assigned here:
 `pc_schema_set_dimension` inserts the name in the hash table AND recomputes every `size`,
 `byteoffset` and the width of a point, and `pc_schema_check_xyzm` resolves x/y/z/m from the names.
 
-⭐ **THE ACCEPTANCE TEST IS `meos/test/pcschema_dims_test.c`**: it states the §19.1.1 schema as rows
+⭐ **THE ACCEPTANCE TEST IS `meos/test/pcschema_dims_load_test.c`**: it states the §19.1.1 schema as rows
 and parses the same document with `pc_schema_from_xml`, then requires the two to agree field by
 field, the derived fields included, and the name hash to answer. It keeps the two paths honest as
 libpc moves.
