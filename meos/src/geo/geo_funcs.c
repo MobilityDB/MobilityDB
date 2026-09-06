@@ -3621,6 +3621,27 @@ relate_point_in_area_index(double x, double y, const RelateEdges *re)
     re->xmax) ? 0 : 2;
 }
 
+/**
+ * @brief Return whether a point is inside or outside the area an edge array
+ * bounds, for a caller that already knows the point is not on its boundary
+ * @details #relate_point_in_area_index answers ON THE BOUNDARY first, and that
+ * question is the one a tolerance decides: a point within the band of an edge
+ * reads as carried by it. A caller holding a point that PROVABLY misses the
+ * boundary gets a wrong answer from that test and only a wrong one, so this
+ * reads the even-odd parity alone -- the same parity, over the same edges, with
+ * the band that cannot apply left out
+ * @return 0 for the interior and 2 for the exterior, as #relate_point_in_area
+ * reports them
+ */
+static int
+relate_point_in_area_parity(double x, double y, const RelateEdges *re)
+{
+  if (! re->index)
+    return point_in_polygon(x, y, re->edges, re->nedges) ? 0 : 2;
+  return point_in_polygon_index(x, y, re->edges, re->nedges, re->index,
+    re->xmax) ? 0 : 2;
+}
+
 /*****************************************************************************
  * DE-9IM / ST_Relate
  *****************************************************************************/
@@ -5688,6 +5709,12 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
   int nparams = 0;
   params[nparams++] = 0.0;
   params[nparams++] = 1.0;
+  /* The stretches along which this edge RUNS ON the other boundary rather than
+   * meeting it at a point. Every other part of the edge misses that boundary
+   * entirely, which is what lets the classification below drop a tolerance */
+  double *shlo = palloc(sizeof(double) * maxparams);
+  double *shhi = palloc(sizeof(double) * maxparams);
+  int nshared = 0;
   /* The edges this one can meet are those whose box meets its own, and an index
    * answers them in the place of a pass over the whole array. A boundary of a
    * few thousand edges leaves every pair but a handful standing apart, so the
@@ -5728,6 +5755,21 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
         relate_area_add_parameter(relate_area_edge_parameter(edge, oedge->x2,
           oedge->y2), params, &nparams, maxparams);
       }
+      /* Keep the stretch itself, not only its ends: a point of the edge inside
+       * it lies ON the other boundary, and no parity test can say so */
+      if (nshared < maxparams)
+      {
+        double ta = relate_area_edge_parameter(edge, oedge->x1, oedge->y1);
+        double tb = relate_area_edge_parameter(edge, oedge->x2, oedge->y2);
+        double lo = fmax(0.0, fmin(ta, tb));
+        double hi = fmin(1.0, fmax(ta, tb));
+        if (hi > lo)
+        {
+          shlo[nshared] = lo;
+          shhi[nshared] = hi;
+          nshared++;
+        }
+      }
       continue;
     }
     for (int k = 0; k < n; k++)
@@ -5759,7 +5801,21 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
     double t = (params[i] + params[i + 1]) * 0.5;
     double x, y;
     relate_area_edge_point(edge, t, &x, &y);
-    int loc = relate_point_in_area_index(x, y, other);
+    /* Every point at which this edge meets the other boundary is one of the
+     * parameters it was split at, so the OPEN interval between two consecutive
+     * ones touches that boundary nowhere -- unless the edge runs along it,
+     * which the shared stretches record. Off those stretches the point is
+     * therefore known to miss the boundary before it is classified, and asking
+     * whether it lies ON the boundary can only answer wrongly: the midpoint is
+     * a CONSTRUCTED point, so where the interval is narrower than the band it
+     * reads as carried by an edge it provably misses, and a boundary reading
+     * takes the interval out of both BI and BE. Reading the parity alone
+     * settles it with no tolerance in the path */
+    bool on_shared = false;
+    for (int k = 0; k < nshared && ! on_shared; k++)
+      if (t >= shlo[k] && t <= shhi[k])
+        on_shared = true;
+    int loc = on_shared ? 1 : relate_point_in_area_parity(x, y, other);
     if (loc == 0)
     {
       /* Boundary(A) ∩ Interior(B) or Interior(A) ∩ Boundary(B) */
@@ -5782,6 +5838,8 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
     }
   }
   pfree(params);
+  pfree(shlo);
+  pfree(shhi);
   return;
 }
 

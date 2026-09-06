@@ -365,6 +365,46 @@ int main(void)
     assert(meos_errno() == 0);
     free(pa); free(pb);
   }
+
+  /* Where two boundaries cross, each one runs through the other's interior on
+   * one side of the crossing, so both boundary-interior cells of the matrix
+   * are a line. The engine finds those pieces by splitting a boundary edge at
+   * its crossings and classifying the midpoint of each piece -- and it asks
+   * first whether that midpoint lies ON the other boundary, which is a
+   * question a tolerance decides. A piece shorter than that band reads as
+   * carried by the very edge it provably misses, and is then counted in
+   * neither cell. The record below is a rectangle and a wide triangle whose
+   * apex dips TWO UNITS IN THE LAST PLACE below the rectangle's top edge at
+   * coordinates near 6.2e6. Its shape is deliberate: the triangle is as wide
+   * as it is tall, so the piece of the top edge lying inside it is about 32
+   * units in the last place long -- a region doubles express perfectly well,
+   * unlike the same construction with a narrow triangle, where that piece
+   * falls below one unit in the last place and no sampled point can ever land
+   * in it. Exact rational arithmetic puts a one-dimensional piece of each
+   * boundary strictly inside the other */
+  const char *cross_a =
+    "POLYGON((711277 6212855.6200000001,"
+    "711281 6212855.6200000001,"
+    "711281 6212854.6200000001,"
+    "711277 6212854.6200000001,"
+    "711277 6212855.6200000001))";
+  const char *cross_b =
+    "POLYGON((711277.97999999998 6212856.6200000001,"
+    "711279.97999999998 6212856.6200000001,"
+    "711278.97999999998 6212855.6199999982,"
+    "711277.97999999998 6212856.6200000001))";
+  char cross_patt[10] = "*1*1*****";
+  GSERIALIZED *cross_geo_a = geom_in(cross_a, -1);
+  GSERIALIZED *cross_geo_b = geom_in(cross_b, -1);
+  assert(cross_geo_a != NULL);
+  assert(cross_geo_b != NULL);
+  meos_errno_reset();
+  bool cross_cells = geom_relate_pattern(cross_geo_a, cross_geo_b, cross_patt);
+  printf("geom_relate_pattern(rectangle, crossing triangle, each boundary "
+    "inside the other): %d, errno %d\n", cross_cells, meos_errno());
+  assert(cross_cells == true);
+  assert(meos_errno() == 0);
+  free(cross_geo_a); free(cross_geo_b);
   meos_errno_reset();
 
   /* A boundary node that two pieces of a buffer meet at is computed twice,
