@@ -12,7 +12,7 @@ var searchData=
   ['wgs84_5fa_9',['WGS84_A',['../meos_2src_2pose_2pose_8c_aa09b7cbfbfc67364d373c1a238784a8f.html#aa09b7cbfbfc67364d373c1a238784a8f',1,'pose.c']]],
   ['wgs84_5fe2_10',['WGS84_E2',['../meos_2src_2pose_2pose_8c_a73ce4d1e415638d524b735e7d3a0f8d8.html#a73ce4d1e415638d524b735e7d3a0f8d8',1,'pose.c']]],
   ['wgs84_5ff_11',['WGS84_F',['../meos_2src_2pose_2pose_8c_ae90bd6b6a77238cf3358909bedb5ea9b.html#ae90bd6b6a77238cf3358909bedb5ea9b',1,'pose.c']]],
-  ['width_12',['width',['../structRaquetSampleState_a216b0629e3bd902ef67dac7c2441c7b5.html#a216b0629e3bd902ef67dac7c2441c7b5',1,'RaquetSampleState::width()'],['../structRaquet_af8cde2fe143a7a6b3ab96a3768cfdb3d.html#af8cde2fe143a7a6b3ab96a3768cfdb3d',1,'Raquet::width()']]],
+  ['width_12',['width',['../structRaquet_af8cde2fe143a7a6b3ab96a3768cfdb3d.html#af8cde2fe143a7a6b3ab96a3768cfdb3d',1,'Raquet::width()'],['../structRaquetSampleState_a216b0629e3bd902ef67dac7c2441c7b5.html#a216b0629e3bd902ef67dac7c2441c7b5',1,'RaquetSampleState::width()']]],
   ['with_5fgeom_13',['WITH_GEOM',['../trgeo_8h_aa03c2c862ea80cfefa8402842a72a3e4.html#aa03c2c862ea80cfefa8402842a72a3e4',1,'trgeo.h']]],
   ['with_5fz_14',['WITH_Z',['../meos_2include_2temporal_2temporal_8h_a62afd9d0d14c085e65b000b5bb37af76.html#a62afd9d0d14c085e65b000b5bb37af76',1,'temporal.h']]],
   ['within_15',['within',['../postgis_8h_abfb0bea6ea7bc7c7ba7b99aa67b1f038.html#abfb0bea6ea7bc7c7ba7b99aa67b1f038',1,'postgis.h']]],
@@ -35,5 +35,6 @@ var searchData=
   ['wkt_5fiso_32',['WKT_ISO',['../postgis__ext__defs_8in_8h_aa9351cce9401245ca5bdd8e86b3ea8aa.html#aa9351cce9401245ca5bdd8e86b3ea8aa',1,'postgis_ext_defs.in.h']]],
   ['wkt_5fsfsql_33',['WKT_SFSQL',['../postgis__ext__defs_8in_8h_a12b2d0c15bb1930ba8dce5da92362204.html#a12b2d0c15bb1930ba8dce5da92362204',1,'postgis_ext_defs.in.h']]],
   ['worker_34',['worker',['../threaded__geos__test_8c_a6f8707552918a45117066fc3b7a0a06f.html#a6f8707552918a45117066fc3b7a0a06f',1,'worker(void *arg):&#160;threaded_geos_test.c'],['../threaded__test_8c_a6f8707552918a45117066fc3b7a0a06f.html#a6f8707552918a45117066fc3b7a0a06f',1,'worker(void *arg):&#160;threaded_test.c']]],
-  ['worker_5farg_35',['worker_arg',['../structworker__arg.html',1,'']]]
+  ['worker_5farg_35',['worker_arg',['../structworker__arg.html',1,'']]],
+  ['woundseg_36',['WoundSeg',['../structWoundSeg.html',1,'']]]
 ];
