@@ -838,6 +838,7 @@ SELECT getResolution(cellToParent(ts2cell '47c3c@2001-01-01', 5));
 th3index(tpoint,integer) → th3index
 </programlisting>
 				<para>SRID must be 4326 for the <varname>tgeompoint</varname> overload. The constructor over a temporal point is stated for H3 alone: the QUADBIN and S2 forms are not yet implemented, and a trajectory reaches those grids through the per-instant cell of its positions.</para>
+				<para>A trajectory that states nothing between its instants yields the cells holding them; one that moves between them yields every cell it crosses on the way, since the segment is traversed cell by cell rather than sampled. Each instant of the result marks the time the trajectory entered that cell.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getResolution(th3index(tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
