@@ -1,21 +1,21 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>H3-Specific Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s20.html" title="Indexing"><link rel="next" href="ch16s22.html" title="QUADBIN-Specific Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">H3-Specific Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s20.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s22.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_h3_specific"></a>H3-Specific Operations</h2></div></div></div><p>An H3 cell is a hexagon on an icosahedron, so it has neighbours through six edges, vertices shared with them, and a base cell among the 122 the icosahedron carries. Twelve cells at each resolution are pentagons. None of that has a counterpart in a square or a spherical quadrilateral grid.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_h3_get_base_cell_number"></a><a class="indexterm" name="id13029"></a><p>Return the temporal base-cell number (0–121) of each cell in a trajectory</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>H3-Specific Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s20.html" title="Indexing"><link rel="next" href="ch16s22.html" title="QUADBIN-Specific Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">H3-Specific Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s20.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s22.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_h3_specific"></a>H3-Specific Operations</h2></div></div></div><p>An H3 cell is a hexagon on an icosahedron, so it has neighbours through six edges, vertices shared with them, and a base cell among the 122 the icosahedron carries. Twelve cells at each resolution are pentagons. None of that has a counterpart in a square or a spherical quadrilateral grid.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_h3_get_base_cell_number"></a><a class="indexterm" name="id13030"></a><p>Return the temporal base-cell number (0–121) of each cell in a trajectory</p><pre class="programlisting">
 th3GetBaseCellNumber(th3index) → tint
 </pre><pre class="programlisting">
 SELECT th3GetBaseCellNumber(th3index '831c02fffffffff@2001-01-01');
 -- 14@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_is_res_class_iii"></a><a class="indexterm" name="id13036"></a><p>Return a temporal boolean stating whether each cell has Class-III orientation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_is_res_class_iii"></a><a class="indexterm" name="id13037"></a><p>Return a temporal boolean stating whether each cell has Class-III orientation</p><pre class="programlisting">
 th3IsResClassIii(th3index) → tbool
 </pre><p>Class III alternates with resolution: odd resolutions are class III, even are class II.</p><pre class="programlisting">
 SELECT th3IsResClassIii(th3index '871fa44a8ffffff@2001-01-01');
 -- t@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_is_pentagon"></a><a class="indexterm" name="id13044"></a><p>Return a temporal boolean stating whether each cell is a pentagon</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_is_pentagon"></a><a class="indexterm" name="id13045"></a><p>Return a temporal boolean stating whether each cell is a pentagon</p><pre class="programlisting">
 th3IsPentagon(th3index) → tbool
 </pre><p>12 cells per resolution are pentagons, the remaining 110 at each base cell descend as hexagons.</p><pre class="programlisting">
 SELECT th3IsPentagon(th3index '831c00fffffffff@2001-01-01');
 -- t@2001-01-01
 SELECT th3IsPentagon(th3index '831c02fffffffff@2001-01-01');
 -- f@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_cell_to_center_child"></a><a class="indexterm" name="id13052"></a><p>Return the temporal center-child cell at the given resolution</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_center_child"></a><a class="indexterm" name="id13053"></a><p>Return the temporal center-child cell at the given resolution</p><pre class="programlisting">
 th3CellToCenterChild(th3index,integer) → th3index
 th3CellToCenterChild(th3index) → th3index
 </pre><p>The no-argument form drops to the next-finer resolution.</p><pre class="programlisting">
@@ -23,71 +23,71 @@ SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01', 8);
 -- 881fa44a81fffff@2001-01-01
 SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01');
 -- 881fa44a81fffff@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_cell_to_child_pos"></a><a class="indexterm" name="id13060"></a><p>Return the ordinal position (0-based) of each cell among the children of its parent at the given resolution</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_child_pos"></a><a class="indexterm" name="id13061"></a><p>Return the ordinal position (0-based) of each cell among the children of its parent at the given resolution</p><pre class="programlisting">
 th3CellToChildPos(th3index,integer) → tbigint
 </pre><pre class="programlisting">
 SELECT th3CellToChildPos(th3index '871fa44a8ffffff@2001-01-01', 6);
 -- 0@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_child_pos_to_cell"></a><a class="indexterm" name="id13067"></a><p>Return the temporal child cell at a given ordinal position of the given parent, at the given child resolution</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_child_pos_to_cell"></a><a class="indexterm" name="id13068"></a><p>Return the temporal child cell at a given ordinal position of the given parent, at the given child resolution</p><pre class="programlisting">
 th3ChildPosToCell(tbigint,th3index,integer) → th3index
 </pre><pre class="programlisting">
 SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01',
   8);
 -- 881fa44a81fffff@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_grid_ring"></a><a class="indexterm" name="id13074"></a><p>The cells at <span class="emphasis"><em>exactly</em></span> <code class="varname">k</code> grid steps from the origin</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_grid_ring"></a><a class="indexterm" name="id13075"></a><p>The cells at <span class="emphasis"><em>exactly</em></span> <code class="varname">k</code> grid steps from the origin</p><pre class="programlisting">
 h3GridRing(h3index,integer) → h3indexset
 </pre><p>Fails near pentagons.</p><pre class="programlisting">
 SELECT h3GridRing(h3index '871fa44a8ffffff', 1);
 /* {"871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff", "871fa44acffffff",
    "871fa44adffffff", "871fa44aeffffff"} */
-</pre></li><li class="listitem"><a name="tcell_h3_grid_path_cells"></a><a class="indexterm" name="id13084"></a><p>The inclusive path of cells between two cells of the same resolution</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_grid_path_cells"></a><a class="indexterm" name="id13085"></a><p>The inclusive path of cells between two cells of the same resolution</p><pre class="programlisting">
 h3GridPathCells(h3index,h3index) → h3indexset
 </pre><pre class="programlisting">
 SELECT h3GridPathCells(h3index '871fa44a8ffffff', h3index '871fa44b1ffffff');
 /* {"871fa4484ffffff", "871fa44a3ffffff", "871fa44a8ffffff", "871fa44aeffffff",
    "871fa44b1ffffff"} */
-</pre></li><li class="listitem"><a name="tcell_h3_origin_to_directed_edges"></a><a class="indexterm" name="id13091"></a><p>All outgoing directed edges of a cell</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_origin_to_directed_edges"></a><a class="indexterm" name="id13092"></a><p>All outgoing directed edges of a cell</p><pre class="programlisting">
 h3OriginToDirectedEdges(h3index) → h3indexset
 </pre><p>6 for a hexagon and 5 for a pentagon.</p><pre class="programlisting">
 SELECT h3OriginToDirectedEdges(h3index '871fa44a8ffffff');
 /* {"1171fa44a8ffffff", "1271fa44a8ffffff", "1371fa44a8ffffff", "1471fa44a8ffffff",
    "1571fa44a8ffffff", "1671fa44a8ffffff"} */
-</pre></li><li class="listitem"><a name="tcell_h3_cell_to_vertexes"></a><a class="indexterm" name="id13099"></a><p>All vertexes of a cell</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_vertexes"></a><a class="indexterm" name="id13100"></a><p>All vertexes of a cell</p><pre class="programlisting">
 h3CellToVertexes(h3index) → h3indexset
 </pre><p>6 for a hexagon and 5 for a pentagon.</p><pre class="programlisting">
 SELECT h3CellToVertexes(h3index '871fa44a8ffffff');
 /* {"2071fa44a8ffffff", "2171fa44a8ffffff", "2271fa44a8ffffff", "2371fa44a8ffffff",
    "2471fa44a8ffffff", "2571fa44a8ffffff"} */
-</pre></li><li class="listitem"><a name="tcell_h3_get_icosahedron_faces"></a><a class="indexterm" name="id13107"></a><p>The icosahedron face indexes (0..19) intersected by a cell</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_get_icosahedron_faces"></a><a class="indexterm" name="id13108"></a><p>The icosahedron face indexes (0..19) intersected by a cell</p><pre class="programlisting">
 h3GetIcosahedronFaces(h3index) → intset
 </pre><pre class="programlisting">
 SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 -- {6, 11}
-</pre></li><li class="listitem"><a name="tcell_h3_edge_length"></a><a class="indexterm" name="id13114"></a><p>Return the temporal length of each directed edge in a trajectory, in metres</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_edge_length"></a><a class="indexterm" name="id13115"></a><p>Return the temporal length of each directed edge in a trajectory, in metres</p><pre class="programlisting">
 th3EdgeLength(th3index) → tfloat
 </pre><pre class="programlisting">
 SELECT th3EdgeLength(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01'));
 -- 1.272084901305088@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_great_circle_distance"></a><a class="indexterm" name="id13121"></a><p>Return the temporal great-circle distance between two temporal geodetic points (not between cells)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_great_circle_distance"></a><a class="indexterm" name="id13122"></a><p>Return the temporal great-circle distance between two temporal geodetic points (not between cells)</p><pre class="programlisting">
 greatCircleDistance(tgeogpoint,tgeogpoint) → tfloat
 </pre><pre class="programlisting">
 SELECT greatCircleDistance(tgeogpoint 'Point(0 0)@2001-01-01',
   tgeogpoint 'Point(1 0)@2001-01-01');
 -- 111.19505197522943@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_are_neighbor_cells"></a><a class="indexterm" name="id13128"></a><p>Return a temporal boolean stating whether two temporal cells are grid neighbours at each instant</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_are_neighbor_cells"></a><a class="indexterm" name="id13129"></a><p>Return a temporal boolean stating whether two temporal cells are grid neighbours at each instant</p><pre class="programlisting">
 th3AreNeighborCells(th3index,th3index) → tbool
 </pre><pre class="programlisting">
 SELECT th3AreNeighborCells(th3index '880326b885fffff@2001-01-01',
   th3index '880326b88dfffff@2001-01-01');
 -- t@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_cells_to_directed_edge"></a><a class="indexterm" name="id13135"></a><p>Return a temporal directed-edge identifier from an origin/destination pair of temporal cells</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_cells_to_directed_edge"></a><a class="indexterm" name="id13136"></a><p>Return a temporal directed-edge identifier from an origin/destination pair of temporal cells</p><pre class="programlisting">
 th3CellsToDirectedEdge(th3index,th3index) → th3index
 </pre><pre class="programlisting">
 SELECT th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01');
 -- 1671fa44a8ffffff@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_is_valid_directed_edge"></a><a class="indexterm" name="id13142"></a><p>Return a temporal boolean stating at each instant whether the value is a valid H3 directed edge</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_is_valid_directed_edge"></a><a class="indexterm" name="id13143"></a><p>Return a temporal boolean stating at each instant whether the value is a valid H3 directed edge</p><pre class="programlisting">
 isValidDirectedEdge(tcell) → tbool
 </pre><p>H3 directed edges are themselves 64-bit identifiers (encoded differently from cell identifiers, <code class="varname">isValidDirectedEdge</code> distinguishes them). The MobilityDB <code class="varname">th3index</code> type carries directed edges by convention: the same type, interpreted through edge-specific accessors.</p><pre class="programlisting">
 SELECT isValidDirectedEdge(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
@@ -95,7 +95,7 @@ SELECT isValidDirectedEdge(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001
 -- t@2001-01-01
 SELECT isValidDirectedEdge(th3index '871fa44a8ffffff@2001-01-01');
 -- f@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_get_directed_edge_origin"></a><a class="indexterm" name="id13152"></a><a class="indexterm" name="id13155"></a><p>Return the temporal origin or destination cell of a temporal directed edge</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_get_directed_edge_origin"></a><a class="indexterm" name="id13153"></a><a class="indexterm" name="id13156"></a><p>Return the temporal origin or destination cell of a temporal directed edge</p><pre class="programlisting">
 th3GetDirectedEdgeOrigin(th3index) → th3index
 th3GetDirectedEdgeDestination(th3index) → th3index
 </pre><pre class="programlisting">
@@ -105,36 +105,36 @@ SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(th3index
 SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(th3index
   '871fa44a8ffffff@2001-01-01', th3index '871fa44aeffffff@2001-01-01'));
 -- 871fa44aeffffff@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_directed_edge_to_boundary"></a><a class="indexterm" name="id13162"></a><p>Return the temporal polygon boundary of each directed edge in a trajectory, as a temporal geography</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_directed_edge_to_boundary"></a><a class="indexterm" name="id13163"></a><p>Return the temporal polygon boundary of each directed edge in a trajectory, as a temporal geography</p><pre class="programlisting">
 th3DirectedEdgeToBoundary(th3index) → tgeography
 </pre><pre class="programlisting">
 SELECT ST_NPoints(getValue(th3DirectedEdgeToBoundary(
   th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
     th3index '871fa44aeffffff@2001-01-01')))::geometry);
 -- 3
-</pre></li><li class="listitem"><a name="tcell_h3_cell_to_vertex"></a><a class="indexterm" name="id13169"></a><p>Return the temporal H3 vertex at the given vertex number</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_vertex"></a><a class="indexterm" name="id13170"></a><p>Return the temporal H3 vertex at the given vertex number</p><pre class="programlisting">
 th3CellToVertex(th3index,integer) → th3index
 </pre><p>0–5 for hexagons, 0–4 for pentagons.</p><pre class="programlisting">
 SELECT th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0);
 -- 2071fa44a8ffffff@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_vertex_to_latlng"></a><a class="indexterm" name="id13177"></a><p>Return the temporal geodetic coordinates of each vertex in a trajectory</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_vertex_to_latlng"></a><a class="indexterm" name="id13178"></a><p>Return the temporal geodetic coordinates of each vertex in a trajectory</p><pre class="programlisting">
 th3VertexToPoint(th3index) → tgeogpoint
 </pre><pre class="programlisting">
 SELECT asText(th3VertexToPoint(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01',
   0)), 6);
 -- POINT(4.280027 50.807655)@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_is_valid_vertex"></a><a class="indexterm" name="id13184"></a><p>Return a temporal boolean stating at each instant whether the value is a valid H3 vertex</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_is_valid_vertex"></a><a class="indexterm" name="id13185"></a><p>Return a temporal boolean stating at each instant whether the value is a valid H3 vertex</p><pre class="programlisting">
 isValidVertex(tcell) → tbool
 </pre><pre class="programlisting">
 SELECT isValidVertex(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0));
 -- t@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_grid_distance"></a><a class="indexterm" name="id13191"></a><p>Return the temporal grid-hop distance (number of single-cell steps) between two temporal cells</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_grid_distance"></a><a class="indexterm" name="id13192"></a><p>Return the temporal grid-hop distance (number of single-cell steps) between two temporal cells</p><pre class="programlisting">
 th3GridDistance(th3index,th3index) → tbigint
 tcell &lt;-&gt; tcell → tbigint
 </pre><p>Equivalently, the <code class="varname">&lt;-&gt;</code> operator returns the same distance.</p><pre class="programlisting">
 SELECT th3index '880326b885fffff@2001-01-01' &lt;-&gt; th3index '880326b88dfffff@2001-01-01';
 -- 1@2001-01-01
-</pre></li><li class="listitem"><a name="tcell_h3_cell_to_local_ij"></a><a class="indexterm" name="id13200"></a><a class="indexterm" name="id13203"></a><p>Convert between a temporal cell and a temporal local (I, J) coordinate pair relative to an origin temporal cell</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_h3_cell_to_local_ij"></a><a class="indexterm" name="id13201"></a><a class="indexterm" name="id13204"></a><p>Convert between a temporal cell and a temporal local (I, J) coordinate pair relative to an origin temporal cell</p><pre class="programlisting">
 th3CellToLocalIj(th3index,th3index) → tgeompoint
 th3LocalIjToCell(th3index,tgeompoint) → th3index
 </pre><p>The local coordinate is exposed as a <code class="varname">tgeompoint</code> with the I axis in the <code class="varname">x</code> slot and J in <code class="varname">y</code>.</p><pre class="programlisting">
