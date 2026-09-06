@@ -148,6 +148,22 @@ SELECT eDisjoint(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(1 1)');
 
 -- Coverage
 SELECT eDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '{Point(0 0)@2001-01-01, Point(0 2)@2001-01-02}');
+
+-- An areal subject against an areal geometry, which is the shape a join over a
+-- geometry column takes, exercised at each place the answer can be decided:
+-- the bounding boxes alone, the first composing value, a later one, the second
+-- sequence of a sequence set, and no value at all
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry 'Polygon((5 5,5 6,6 6,6 5,5 5))@2001-01-01');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry 'Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-01, Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-02]');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-02]');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((2 2,2 3,3 3,3 2,2 2))@2001-01-02]');
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '{[Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((2 2,2 3,3 3,3 2,2 2))@2001-01-02],[Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-04, Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-05]}');
+
+-- A value the subject takes twice, which the relationship answers the same
+-- whether the repetition is offered to the predicate once or twice
+SELECT eDisjoint(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '{Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-02, Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-03}');
+SELECT eDisjoint(tgeometry '{Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-01, Polygon((9 9,9 10,10 10,10 9,9 9))@2001-01-02, Polygon((1 1,1 2,2 2,2 1,1 1))@2001-01-03}', geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))');
 SELECT eDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '[Point(0 0)@2001-01-01, Point(0 2)@2001-01-02]');
 SELECT eDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '{[Point(0 0)@2001-01-01, Point(0 2)@2001-01-02],[Point(0 2)@2001-01-03, Point(0 0)@2001-01-04]}');
 SELECT eDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '{Point(3 3)@2001-01-01, Point(4 4)@2001-01-02}');

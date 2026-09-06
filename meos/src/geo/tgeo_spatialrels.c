@@ -1032,6 +1032,32 @@ acovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @brief Return true if one composing value is disjoint from the geometry
+ */
+static bool
+ea_disjoint_inst(const TInstant *inst, const GSERIALIZED *gs,
+  datum_func2 func, const void *ctx)
+{
+  Datum v = tinstant_value_p(inst);
+  return ctx ? ! geo_intersects2d_ctx(DatumGetGserializedP(v), ctx) :
+    DatumGetBool(func(v, PointerGetDatum(gs)));
+}
+
+/**
+ * @brief Walk a sequence, stopping at the first instant disjoint from the
+ * geometry; return true when one was found
+ */
+static bool
+ea_disjoint_seq(const TSequence *seq, const GSERIALIZED *gs,
+  datum_func2 func, const void *ctx)
+{
+  for (int i = 0; i < seq->count; i++)
+    if (ea_disjoint_inst(TSEQUENCE_INST_N(seq, i), gs, func, ctx))
+      return true;
+  return false;
+}
+
+/**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a temporal geometry and a geometry are ever disjoint,
  * 0 if not, and -1 on error or if the geometry is empty
@@ -1101,8 +1127,6 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   }
 
   /* Temporal geometry case */
-  int count;
-  Datum *datumarr = temporal_values_p(temp, &count);
   result = 0;
   /* The planar 2D relationship indexes the edges of the geometry to resolve
    * one composing value against it. Since the geometry is the same for every
@@ -1125,19 +1149,29 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     lwgeom_free(lwgeom);
   }
   datum_func2 func = geo_disjoint_fn_geo(temp->flags, gs->gflags);
-  for (int i = 0; i < count; i++)
+  /* Walk the instants and stop at the first disjoint one, so the work is bounded
+   * by the answer rather than by the size of the temporal value */
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
   {
-    bool disjoint = ctx ?
-      ! geo_intersects2d_ctx(DatumGetGserializedP(datumarr[i]), ctx) :
-      DatumGetBool(func(datumarr[i], PointerGetDatum(gs)));
-    if (disjoint)
-    {
-      result = 1;
+    case TINSTANT:
+      result = ea_disjoint_inst((TInstant *) temp, gs, func, ctx) ? 1 : 0;
       break;
+    case TSEQUENCE:
+      result = ea_disjoint_seq((TSequence *) temp, gs, func, ctx) ? 1 : 0;
+      break;
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (TSequenceSet *) temp;
+      for (int i = 0; i < ss->count; i++)
+        if (ea_disjoint_seq(TSEQUENCESET_SEQ_N(ss, i), gs, func, ctx))
+        {
+          result = 1;
+          break;
+        }
     }
   }
   geo_edge_ctx_free(ctx);
-  pfree(datumarr);
   return result;
 }
 
