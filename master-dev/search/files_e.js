@@ -8,7 +8,7 @@ var searchData=
   ['pcpatch_5fdecompose_2eh_5',['pcpatch_decompose.h',['../pcpatch__decompose_8h.html',1,'']]],
   ['pcpoint_2ec_6',['pcpoint.c',['../pcpoint_8c.html',1,'']]],
   ['pcpoint_2eh_7',['pcpoint.h',['../pcpoint_8h.html',1,'']]],
-  ['pcschema_5fdims_5ftest_2ec_8',['pcschema_dims_test.c',['../pcschema__dims__test_8c.html',1,'']]],
+  ['pcschema_5fdims_5fload_5ftest_2ec_8',['pcschema_dims_load_test.c',['../pcschema__dims__load__test_8c.html',1,'']]],
   ['pcset_2ec_9',['pcset.c',['../pcset_8c.html',1,'']]],
   ['pcset_5fmeos_2ec_10',['pcset_meos.c',['../pcset__meos_8c.html',1,'']]],
   ['pgsql_5fcompat_2ec_11',['pgsql_compat.c',['../pgsql__compat_8c.html',1,'']]],
