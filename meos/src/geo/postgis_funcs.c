@@ -2100,6 +2100,218 @@ geo_is_planar_polygonal(const GSERIALIZED *gs)
   return (t == POLYGONTYPE || t == MULTIPOLYGONTYPE);
 }
 
+extern int ptarray_isccw(const POINTARRAY *pa);
+
+/**
+ * @brief A boundary segment carrying the direction its own surface's interior
+ * fixes, rather than the direction its ring happens to be written in
+ */
+typedef struct
+{
+  double x1, y1, x2, y2;
+} WoundSeg;
+
+/**
+ * @brief Append a ring's segments, each already running the way the canonical
+ * winding asks
+ * @details The winding only has to be KNOWN, not imposed. Walking a ring
+ * backwards when it runs the other way emits the segments a normalising
+ * rewrite would, at one sign per ring rather than a rewrite of every vertex,
+ * and without touching the caller's geometry. Canonical is an exterior ring
+ * clockwise and a hole counter-clockwise, so a ring is walked backwards
+ * exactly when #ptarray_isccw disagrees with its role
+ * @param[in] pa Ring
+ * @param[in] hole True when the ring bounds a hole
+ * @param[in,out] segs,nsegs,maxsegs Accumulator
+ */
+static void
+geo_ring_wound_segments(const POINTARRAY *pa, bool hole, WoundSeg **segs,
+  int *nsegs, int *maxsegs)
+{
+  if (! pa || pa->npoints < 2)
+    return;
+  bool reverse = ((ptarray_isccw(pa) != 0) != hole);
+  for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+  {
+    const POINT2D *p = (const POINT2D *) getPoint_internal(pa, i);
+    const POINT2D *q = (const POINT2D *) getPoint_internal(pa, i + 1);
+    if (p->x == q->x && p->y == q->y)
+      continue;
+    if (*nsegs == *maxsegs)
+    {
+      *maxsegs *= 2;
+      *segs = repalloc(*segs, sizeof(WoundSeg) * (size_t) *maxsegs);
+    }
+    WoundSeg *w = &(*segs)[(*nsegs)++];
+    if (reverse)
+    {
+      w->x1 = q->x; w->y1 = q->y; w->x2 = p->x; w->y2 = p->y;
+    }
+    else
+    {
+      w->x1 = p->x; w->y1 = p->y; w->x2 = q->x; w->y2 = q->y;
+    }
+  }
+}
+
+/**
+ * @brief Append every ring of an areal geometry, wound canonically
+ */
+static void
+geo_wound_segments(const LWGEOM *lw, WoundSeg **segs, int *nsegs,
+  int *maxsegs)
+{
+  if (! lw)
+    return;
+  if (lw->type == POLYGONTYPE)
+  {
+    const LWPOLY *poly = (const LWPOLY *) lw;
+    for (uint32_t i = 0; i < poly->nrings; i++)
+      geo_ring_wound_segments(poly->rings[i], i > 0, segs, nsegs, maxsegs);
+    return;
+  }
+  if (lw->type == MULTIPOLYGONTYPE || lw->type == COLLECTIONTYPE)
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) lw;
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+      geo_wound_segments(coll->geoms[i], segs, nsegs, maxsegs);
+  }
+}
+
+/**
+ * @brief Return the stretches two areal boundaries run along where the two
+ * surfaces TOUCH, leaving out those along which they overlap
+ * @details Where two boundaries coincide the interiors lie either on the same
+ * side, and the surfaces overlap there so the stretch bounds the region they
+ * share and the region already states it, or on opposite sides, and the
+ * surfaces touch so the stretch is what they meet along. Which side an
+ * interior lies on is the segment's direction once its ring carries the
+ * canonical winding, so the two cases are told apart by the SIGN OF A DOT
+ * PRODUCT: no point is constructed, the shared region is never consulted, and
+ * neither operand's quantisation enters
+ * @param[in] gs1,gs2 Geometries
+ */
+static GSERIALIZED *
+geom_areal_touching_stretches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  assert(gs1); assert(gs2);
+  LWGEOM *lw1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *lw2 = lw1 ? lwgeom_from_gserialized(gs2) : NULL;
+  if (! lw1 || ! lw2 || lwgeom_has_arc(lw1) || lwgeom_has_arc(lw2))
+  {
+    if (lw1) lwgeom_free(lw1);
+    if (lw2) lwgeom_free(lw2);
+    return NULL;
+  }
+
+  int n1 = 0, max1 = 256, n2 = 0, max2 = 256;
+  WoundSeg *s1 = palloc(sizeof(WoundSeg) * (size_t) max1);
+  WoundSeg *s2 = palloc(sizeof(WoundSeg) * (size_t) max2);
+  geo_wound_segments(lw1, &s1, &n1, &max1);
+  geo_wound_segments(lw2, &s2, &n2, &max2);
+  int32_t srid = gserialized_get_srid(gs1);
+  lwgeom_free(lw1); lwgeom_free(lw2);
+
+  /* Index the second array only where the PRODUCT of the two asks for it,
+   * since the product is what an index removes -- the rule and the constant
+   * the relate engine already applies at #relate_area_area and its siblings.
+   * Below it the tree costs more to build than the walk it saves */
+  RTree *index = NULL;
+  double tol2 = MEOS_GEOM_TOLERANCE;
+  if ((int64) n1 * (int64) n2 >= RELATE_INDEX_MIN_PAIRS)
+  {
+    index = rtree_create_stbox();
+    for (int j = 0; j < n2; j++)
+    {
+      const WoundSeg *b = &s2[j];
+      double t = fmax(coordinate_tolerance(b->x1, b->x2),
+        coordinate_tolerance(b->y1, b->y2));
+      if (t > tol2)
+        tol2 = t;
+      STBox box;
+      stbox_set(true, false, false, 0, fmin(b->x1, b->x2), fmax(b->x1, b->x2),
+        fmin(b->y1, b->y2), fmax(b->y1, b->y2), 0, 0, NULL, &box);
+      rtree_insert(index, &box, j);
+    }
+  }
+
+  LWGEOM **lines = palloc(sizeof(LWGEOM *) * 64);
+  int nlines = 0, maxlines = 64;
+  MeosArray *candidates = index ? meos_array_create(sizeof(int64)) : NULL;
+  for (int i = 0; i < n1; i++)
+  {
+    const WoundSeg *a = &s1[i];
+    double arx = a->x2 - a->x1, ary = a->y2 - a->y1;
+    double axmin = fmin(a->x1, a->x2), axmax = fmax(a->x1, a->x2);
+    double aymin = fmin(a->y1, a->y2), aymax = fmax(a->y1, a->y2);
+
+    /* An index query has to admit every segment the scan it replaces would,
+     * and the on-segment test reads a tolerance that grows with the size of
+     * the coordinates, so the query is padded by the widest one either side
+     * asks for */
+    int ncand = n2;
+    if (index)
+    {
+      double pad = fmax(tol2, fmax(coordinate_tolerance(a->x1, a->x2),
+        coordinate_tolerance(a->y1, a->y2)));
+      STBox query;
+      stbox_set(true, false, false, 0, axmin - pad, axmax + pad,
+        aymin - pad, aymax + pad, 0, 0, NULL, &query);
+      meos_array_reset(candidates);
+      ncand = rtree_search(index, INDEX_OVERLAPS, &query, candidates);
+    }
+
+    for (int c = 0; c < ncand; c++)
+    {
+      int j = index ? (int) *(int64 *) meos_array_get(candidates, c) : c;
+      const WoundSeg *b = &s2[j];
+      /* The boxes decide all but a handful of pairs, and the kernel is what
+       * the walk would otherwise spend its time in */
+      if (fmax(b->x1, b->x2) < axmin || fmin(b->x1, b->x2) > axmax ||
+          fmax(b->y1, b->y2) < aymin || fmin(b->y1, b->y2) > aymax)
+        continue;
+      IntersectResult r = linesegm_intersect(a->x1, a->y1, arx, ary,
+        b->x1, b->y1, b->x2, b->y2);
+      if (r.type != INTERSECT_OVERLAP)
+        continue;
+      /* The same direction puts the two interiors on the same side, so the
+       * surfaces overlap along this stretch and the region already states it */
+      double brx = b->x2 - b->x1, bry = b->y2 - b->y1;
+      if (arx * brx + ary * bry > 0)
+        continue;
+
+      POINTARRAY *pa = ptarray_construct_empty(LW_FALSE, LW_FALSE, 2);
+      POINT4D p0 = { a->x1 + arx * r.t0, a->y1 + ary * r.t0, 0.0, 0.0 };
+      POINT4D p1 = { a->x1 + arx * r.t1, a->y1 + ary * r.t1, 0.0, 0.0 };
+      ptarray_append_point(pa, &p0, LW_TRUE);
+      ptarray_append_point(pa, &p1, LW_TRUE);
+      if (nlines == maxlines)
+      {
+        maxlines *= 2;
+        lines = repalloc(lines, sizeof(LWGEOM *) * (size_t) maxlines);
+      }
+      lines[nlines++] = lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
+    }
+  }
+  if (candidates)
+    meos_array_destroy(candidates);
+  if (index)
+    rtree_free(index);
+  pfree(s1); pfree(s2);
+
+  GSERIALIZED *result = NULL;
+  if (nlines > 0)
+  {
+    LWGEOM *out = lwcollection_as_lwgeom(lwcollection_construct(MULTILINETYPE,
+      srid, NULL, (uint32_t) nlines, lines));
+    result = geo_serialize(out);
+    lwgeom_free(out);
+  }
+  else
+    pfree(lines);
+  return result;
+}
+
 /**
  * @brief Return what two areal geometries meet along where they share no area,
  * or @c NULL where they meet in nothing
@@ -2185,6 +2397,23 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       {
         pfree(result);
         return meeting;
+      }
+    }
+    /* Two surfaces can share a region AND touch along a stretch outside it,
+     * and the region states only the first half */
+    else if (result)
+    {
+      GSERIALIZED *beside = geom_areal_touching_stretches(gs1, gs2);
+      if (beside)
+      {
+        GSERIALIZED *parts[2] = { result, beside };
+        GSERIALIZED *both = geo_collect_garray(parts, 2);
+        pfree(beside);
+        if (both)
+        {
+          pfree(result);
+          return both;
+        }
       }
     }
     return result;
