@@ -2112,10 +2112,14 @@ geo_is_planar_polygonal(const GSERIALIZED *gs)
  * the interior of the second: a point of it that did would carry a
  * neighbourhood of the first one's own interior into the second's, which is
  * area they would then share. So the part of that boundary the second
- * geometry covers is exactly the part lying ON its boundary, which is what
- * the two meet along, and #geo_clip_linear_geom answers it from the segment
- * kernels over an edge index. Asking it of the first operand's boundary also
- * keeps the answer running in that operand's own direction
+ * geometry covers is exactly the part lying ON its boundary -- the two
+ * expressions denote one set -- and it is the SECOND BOUNDARY the clip is
+ * asked about, because only that one is answered by the segment kernels
+ * alone. Clipping against the second geometry as a SOLID asks additionally
+ * where a point falls relative to its interior, a question the kernels answer
+ * by locating constructed points, and the answer it gives is not always on
+ * either operand. Asking it of the first operand's boundary also keeps the
+ * answer running in that operand's own direction
  * @param[in] gs1,gs2 Geometries
  * @pre The two share no area, which is what the caller has just read
  */
@@ -2132,12 +2136,13 @@ geom_areal_meeting(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       && gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
     return NULL;
 
-  GSERIALIZED *bound = geom_boundary(gs1);
-  if (! bound)
-    return NULL;
-  GSERIALIZED *result = geo_clip_subject(bound) ?
-    geo_clip_linear_geom(bound, gs2, true) : NULL;
-  pfree(bound);
+  GSERIALIZED *bound1 = geom_boundary(gs1);
+  GSERIALIZED *bound2 = bound1 ? geom_boundary(gs2) : NULL;
+  GSERIALIZED *result = (bound1 && bound2 && geo_clip_subject(bound1) &&
+    geo_meos_supported(bound2)) ?
+    geo_clip_linear_geom(bound1, bound2, true) : NULL;
+  if (bound1) pfree(bound1);
+  if (bound2) pfree(bound2);
   /* A meeting of nothing is the empty region the caller already holds */
   if (result && geo_is_empty(result))
   {
