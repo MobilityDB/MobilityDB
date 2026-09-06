@@ -836,6 +836,7 @@ SELECT getResolution(cellToParent(ts2cell '47c3c@2001-01-01', 5));
 th3index(tpoint,integer) → th3index
 </programlisting>
 				<para>El SRID debe ser 4326 para la sobrecarga de <varname>tgeompoint</varname>. El constructor sobre un punto temporal se presenta solo para H3: las formas para QUADBIN y S2 aún no están implementadas, y una trayectoria alcanza esas cuadrículas a través de la celda por instante de sus posiciones.</para>
+				<para>Una trayectoria que no indica nada entre sus instantes produce las celdas que los contienen; una que se desplaza entre ellos produce todas las celdas que atraviesa por el camino, ya que el segmento se recorre celda a celda en lugar de muestrearse. Cada instante del resultado marca el momento en que la trayectoria entró en esa celda.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getResolution(th3index(tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
