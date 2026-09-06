@@ -49,6 +49,7 @@
  */
 
 /* C */
+#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -915,6 +916,7 @@ quadbin_cell_at(double lon, double lat, uint32_t zoom)
   return xyz_to_qb(tx, ty, zoom);
 }
 
+
 /**
  * @brief Add a cell to the answer unless it is already there
  * @details The answer is a set, and a trip stays in one tile across many
@@ -931,32 +933,115 @@ quadbin_cells_add(uint64 *cells, int *ncells, uint64 cell)
 }
 
 /**
- * @brief Return how many positions of a segment the walk reads, so that it
- * cannot step over a tile
- * @details A tile spans 360 / 2^zoom degrees of longitude, and covers less
- * latitude the further it lies from the equator, by the Mercator scale factor
- * at that latitude. The step is half the smaller of the two, the Nyquist rule
- * #h3_sample_step_deg() walks a hexagon with.
+ * @brief Return the tile column holding a longitude at a zoom
  */
-static int
-quadbin_walk_steps(const TInstant *inst1, const TInstant *inst2,
-  uint32_t zoom)
+static double
+qb_tile_x_at(double lon, double n)
 {
-  double lon1, lat1, lon2, lat2;
-  tinstant_point_coords(inst1, &lon1, &lat1);
-  tinstant_point_coords(inst2, &lon2, &lat2);
-  double tile_deg = 360.0 / (double) (UINT64_C(1) << zoom);
-  double far_lat = (fabs(lat1) > fabs(lat2)) ? fabs(lat1) : fabs(lat2);
-  if (far_lat > QB_MAX_LATITUDE)
-    far_lat = QB_MAX_LATITUDE;
-  double step = tile_deg * cos(far_lat * M_PI / 180.0) / 2.0;
-  if (step <= 0.0)
-    return 1;
-  double dlon = lon2 - lon1, dlat = lat2 - lat1;
-  double length = sqrt(dlon * dlon + dlat * dlat);
-  int nsteps = (int) ceil(length / step);
-  return (nsteps < 1) ? 1 : nsteps;
+  return (lon + 180.0) / 360.0 * n;
 }
+
+/**
+ * @brief Return the tile row holding a latitude at a zoom
+ * @details The row grows SOUTHWARD: the Mercator ordinate falls as the
+ * latitude rises, so a rising latitude walks towards row zero.
+ */
+static double
+qb_tile_y_at(double lat, double n)
+{
+  double merc = log(tan(M_PI / 4.0 + lat * M_PI / 360.0));
+  return (1.0 - merc / M_PI) / 2.0 * n;
+}
+
+/**
+ * @brief Return the latitude at which a tile row begins
+ * @details The inverse of #qb_tile_y_at(): the row boundary `k` sits at the
+ * Mercator ordinate `pi (1 - 2k/n)`, and the latitude follows from the
+ * Gudermannian. Having it in closed form is what lets the walk below jump to
+ * the crossing instead of hunting for it.
+ */
+static double
+qb_lat_at_tile_y(double y, double n)
+{
+  double merc = M_PI * (1.0 - 2.0 * y / n);
+  return (atan(exp(merc)) - M_PI / 4.0) * 360.0 / M_PI;
+}
+
+/**
+ * @brief Add every tile the segment between two positions crosses
+ * @details A grid traversal, not a sampling walk. The segment is straight in
+ * lon/lat, the tile column is linear in the longitude and the tile row is
+ * monotonic in the latitude, so the parameter at which the path leaves its
+ * current tile through either boundary is available in closed form. Stepping
+ * to the nearer of the two crossings moves to the ADJACENT tile every time,
+ * and a walk that only ever moves to a neighbour cannot pass over a tile.
+ *
+ * That is the property a sampling walk cannot have at any step: a segment
+ * clips a tile corner over an arbitrarily short chord, so for every spacing
+ * there is a chord shorter than it, and the tile holding that chord is absent
+ * from the answer. The cost is one step per tile crossed, which is the size
+ * of the answer rather than a multiple of it.
+ */
+static void
+quadbin_segment_cells_add(uint64 *cells, int *ncells, double lon1, double lat1,
+  double lon2, double lat2, uint32_t zoom)
+{
+  double n = (double) (UINT64_C(1) << zoom);
+  long maxidx = (long) n - 1;
+  /* The row is undefined beyond the Mercator limit, which is where
+   * #quadbin_cell_at() clamps too */
+  double la1 = lat1, la2 = lat2;
+  if (la1 >  QB_MAX_LATITUDE) la1 =  QB_MAX_LATITUDE;
+  if (la1 < -QB_MAX_LATITUDE) la1 = -QB_MAX_LATITUDE;
+  if (la2 >  QB_MAX_LATITUDE) la2 =  QB_MAX_LATITUDE;
+  if (la2 < -QB_MAX_LATITUDE) la2 = -QB_MAX_LATITUDE;
+
+  double x0 = qb_tile_x_at(lon1, n), y0 = qb_tile_y_at(la1, n);
+  double x1 = qb_tile_x_at(lon2, n), y1 = qb_tile_y_at(la2, n);
+  long tx = (long) floor(x0), ty = (long) floor(y0);
+  long ex = (long) floor(x1), ey = (long) floor(y1);
+  if (tx < 0) tx = 0; else if (tx > maxidx) tx = maxidx;
+  if (ty < 0) ty = 0; else if (ty > maxidx) ty = maxidx;
+  if (ex < 0) ex = 0; else if (ex > maxidx) ex = maxidx;
+  if (ey < 0) ey = 0; else if (ey > maxidx) ey = maxidx;
+  quadbin_cells_add(cells, ncells, xyz_to_qb((uint32_t) tx, (uint32_t) ty,
+    zoom));
+
+  int stepx = (ex > tx) ? 1 : ((ex < tx) ? -1 : 0);
+  int stepy = (ey > ty) ? 1 : ((ey < ty) ? -1 : 0);
+  double dlon = lon2 - lon1, dlat = la2 - la1;
+  /* The traversal visits one tile per column step and one per row step, so
+   * the bound is exact and the guard only catches a coordinate no boundary
+   * can be solved for */
+  long guard = labs(ex - tx) + labs(ey - ty) + 1;
+
+  while ((tx != ex || ty != ey) && guard-- > 0)
+  {
+    double tX = DBL_MAX, tY = DBL_MAX;
+    if (stepx != 0 && dlon != 0.0)
+    {
+      double bx = (double) ((stepx > 0) ? tx + 1 : tx);
+      tX = (bx / n * 360.0 - 180.0 - lon1) / dlon;
+    }
+    if (stepy != 0 && dlat != 0.0)
+    {
+      double by = (double) ((stepy > 0) ? ty + 1 : ty);
+      tY = (qb_lat_at_tile_y(by, n) - la1) / dlat;
+    }
+    if (tX == DBL_MAX && tY == DBL_MAX)
+      break;
+    if (tX <= tY)
+      tx += stepx;
+    else
+      ty += stepy;
+    if (tx < 0) tx = 0; else if (tx > maxidx) tx = maxidx;
+    if (ty < 0) ty = 0; else if (ty > maxidx) ty = maxidx;
+    quadbin_cells_add(cells, ncells, xyz_to_qb((uint32_t) tx, (uint32_t) ty,
+      zoom));
+  }
+}
+
+
 
 
 /**
@@ -994,12 +1079,21 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
   const TInstant **insts = temporal_insts_p(traj, &ninsts);
   bool densify = (MEOS_FLAGS_GET_INTERP(traj->flags) == LINEAR);
 
-  /* One cell per instant, and one per walk position of each segment when the
-   * trajectory moves between them */
+  /* One cell per instant, and one per tile the traversal steps through when
+   * the trajectory moves between them. A traversal crosses at most one tile
+   * per column step plus one per row step, so the bound is the grid distance
+   * between the two endpoints */
+  double nn = (double) (UINT64_C(1) << zoom);
   int maxcells = ninsts;
   if (densify)
     for (int i = 0; i + 1 < ninsts; i++)
-      maxcells += quadbin_walk_steps(insts[i], insts[i + 1], zoom) + 1;
+    {
+      double lo1, la1, lo2, la2;
+      tinstant_point_coords(insts[i], &lo1, &la1);
+      tinstant_point_coords(insts[i + 1], &lo2, &la2);
+      maxcells += (int) (fabs(qb_tile_x_at(lo2, nn) - qb_tile_x_at(lo1, nn)) +
+        fabs(qb_tile_y_at(la2, nn) - qb_tile_y_at(la1, nn))) + 3;
+    }
   uint64 *cells = palloc(sizeof(uint64) * (size_t) maxcells);
   int ncells = 0;
 
@@ -1012,20 +1106,12 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
     /* A trajectory that moves between its instants passes over the tiles
      * between them, and a join filtered on the cells it answers loses every
      * tile the trip crosses but the list omits. The segment is therefore
-     * walked at half a tile, the step
-     * #tpointseq_densify_to_raster_value() walks a pixel at */
+     * TRAVERSED tile by tile, which holds every one of them */
     if (! densify || i + 1 >= ninsts)
       continue;
     double lon2, lat2;
     tinstant_point_coords(insts[i + 1], &lon2, &lat2);
-    int nsteps = quadbin_walk_steps(insts[i], insts[i + 1], zoom);
-    for (int j = 1; j < nsteps; j++)
-    {
-      double frac = (double) j / (double) nsteps;
-      quadbin_cells_add(cells, &ncells,
-        quadbin_cell_at(lon + frac * (lon2 - lon), lat + frac * (lat2 - lat),
-          zoom));
-    }
+    quadbin_segment_cells_add(cells, &ncells, lon, lat, lon2, lat2, zoom);
   }
 
   pfree(insts);
