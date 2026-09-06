@@ -537,6 +537,34 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 /**
+ * @brief Return the relationship of one composing value against the geometry
+ */
+static int
+ea_spatialrel_inst(const TInstant *inst, const GSERIALIZED *gs,
+  datum_func2 func, bool invert)
+{
+  Datum v = tinstant_value_p(inst);
+  return invert ? func(PointerGetDatum(gs), v) : func(v, PointerGetDatum(gs));
+}
+
+/**
+ * @brief Walk a sequence, stopping at the first instant that decides the
+ * ever/always question; return true when it decided
+ */
+static bool
+ea_spatialrel_seq(const TSequence *seq, const GSERIALIZED *gs,
+  datum_func2 func, bool ever, bool invert, int *result)
+{
+  for (int i = 0; i < seq->count; i++)
+  {
+    *result = ea_spatialrel_inst(TSEQUENCE_INST_N(seq, i), gs, func, invert);
+    if ((*result && ever) || (! *result && ! ever))
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Return true if two temporal geos ever/always satisfy a spatial
  * relationship
  * @details The function applies function `func` to every composing geometry
@@ -555,26 +583,27 @@ ea_spatialrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(! gserialized_is_empty(gs)); assert(func);
-  int count;
-  Datum *datumarr = temporal_values_p(temp, &count);
+  /* Walk the instants and stop at the first decisive one, so the work is
+   * bounded by the answer rather than by the size of the temporal value */
   int result = 0;
-  for (int i = 0; i < count; i++)
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
   {
-    result = invert ?  func(PointerGetDatum(gs), datumarr[i]) :
-      func(datumarr[i], PointerGetDatum(gs));
-    if (result)
+    case TINSTANT:
+      return ea_spatialrel_inst((TInstant *) temp, gs, func, invert);
+    case TSEQUENCE:
+      ea_spatialrel_seq((TSequence *) temp, gs, func, ever, invert, &result);
+      return result;
+    default: /* TSEQUENCESET */
     {
-      if (ever)
-        break;
-    }
-    else
-    {
-      if (! ever)
-        break;
+      const TSequenceSet *ss = (TSequenceSet *) temp;
+      for (int i = 0; i < ss->count; i++)
+        if (ea_spatialrel_seq(TSEQUENCESET_SEQ_N(ss, i), gs, func, ever,
+            invert, &result))
+          return result;
+      return result;
     }
   }
-  pfree(datumarr);
-  return result;
 }
 
 /*****************************************************************************/
