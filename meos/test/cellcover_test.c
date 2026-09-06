@@ -109,7 +109,11 @@ segment_pair(char *seg, size_t segsz, char *dense, size_t densesz,
 
 /**
  * @brief Return how many cells of the dense walk the th3index cover of the
- * same segment does not hold
+ * same segment does not hold, or -1 where a conversion answers nothing
+ *
+ * A conversion that fails answers NULL, and counting that as "no cell is
+ * missing" reports a cover that was never built as a sound one, so it is
+ * carried back as its own answer rather than folded into the count.
  */
 static long
 h3_missing(const char *seg_wkt, const char *dense_wkt, int32 resolution)
@@ -117,10 +121,10 @@ h3_missing(const char *seg_wkt, const char *dense_wkt, int32 resolution)
   Temporal *dense = tgeompoint_in(dense_wkt);
   Temporal *seg = tgeompoint_in(seg_wkt);
   if (dense == NULL || seg == NULL)
-    return 0;
+    return -1;
   Temporal *tcover = tgeompoint_to_th3index(seg, resolution);
   Temporal *ttruth = tgeompoint_to_th3index(dense, resolution);
-  long missing = 0;
+  long missing = (tcover != NULL && ttruth != NULL) ? 0 : -1;
   if (tcover != NULL && ttruth != NULL)
   {
     int ncover = 0, ntruth = 0;
@@ -173,7 +177,7 @@ int main(void)
 
   for (int k = 0; k < 3; k++)
   {
-    long h3_miss = 0, qb_miss = 0;
+    long h3_miss = 0, qb_miss = 0, h3_none = 0;
     unsigned seed = 20260906u + (unsigned) k;
     /* A segment that stays inside one cell crosses no boundary and asks the
      * question of nothing, so each family draws at ITS own scale: a few cell
@@ -201,14 +205,55 @@ int main(void)
         if (fam)
           qb_miss += quadbin_missing(seg, dense, zoom);
         else
-          h3_miss += h3_missing(seg, dense, resolution);
+        {
+          long m = h3_missing(seg, dense, resolution);
+          if (m < 0)
+            h3_none++;
+          else
+            h3_miss += m;
+        }
         free(dense);
       }
     }
     printf("%-20s th3index cells missing %ld, quadbin tiles missing %ld\n",
       name[k], h3_miss, qb_miss);
-    if (h3_miss > 0 || qb_miss > 0)
+    if (h3_none > 0)
+      printf("  %ld th3index cover(s) were not built at all\n", h3_none);
+    if (h3_miss > 0 || qb_miss > 0 || h3_none > 0)
       failures++;
+  }
+
+  /* A cover states the time the path enters each cell, and a timestamp holds
+   * whole microseconds, so a segment crossing more cells than its span holds
+   * microseconds reaches two of them within one. The value must still be
+   * built: the entry ORDER is what a step sequence carries, and the cells are
+   * what a cover is for, so the two entries are separated by the smallest
+   * step the type can state rather than one of them being dropped.
+   *
+   * The case is drawn here directly, because the same coincidence arises over
+   * an ordinary span wherever a path passes near a vertex, where three cells
+   * meet -- and a draw that waits for that is a test that usually does not
+   * run. Crossing a kilometre of resolution-12 cells in five microseconds
+   * forces it every time. */
+  {
+    const char *fast = "SRID=4326;"
+      "[Point(11.300000000 55.500000000)@2020-01-01 00:00:00, "
+      "Point(11.315000000 55.500000000)@2020-01-01 00:00:00.000005]";
+    Temporal *seg = tgeompoint_in(fast);
+    Temporal *cover = (seg != NULL) ?
+      tgeompoint_to_th3index(seg, resolution) : NULL;
+    int ncells = 0;
+    H3Index *cells = (cover != NULL) ? th3index_values(cover, &ncells) : NULL;
+    printf("%-20s cells %d\n", "crossings in one us", ncells);
+    if (cover == NULL || ncells < 2)
+    {
+      printf("FAILED: a segment crossing cells faster than a microsecond "
+        "builds no cover\n");
+      failures++;
+    }
+    if (cells != NULL)
+      free(cells);
+    free(cover); free(seg);
   }
 
   if (failures > 0)
