@@ -96,6 +96,8 @@ extern GSERIALIZED *cell_boundary_to_gs(const CellBoundary *bnd);
  * = (edge_m / 2) / 111320 m-per-degree; cell lookup is a thin
  * latLngToCell wrapper that returns 0 on libh3 error. */
 extern double h3_sample_step_deg(int32 resolution);
+extern int h3_segment_cells(double lon1, double lat1, double lon2,
+  double lat2, int32 resolution, H3Index *cells, double *enter, int maxout);
 extern H3Index h3_latlng_deg_to_cell(double lat_deg, double lng_deg,
   int32 resolution);
 

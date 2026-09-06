@@ -242,6 +242,119 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
   return cell;
 }
 
+/**
+ * @brief Return where a segment leaves the cell it currently sits in
+ * @details The exit is the nearest crossing of the cell boundary strictly
+ * ahead of `tmin`, found by intersecting the segment with each boundary edge
+ * in the lon/lat plane the walk is stated in.
+ * @return the segment parameter of the exit, or a value above 1 when the
+ * segment ends inside the cell
+ */
+static double
+h3_cell_exit_param(H3Index cell, double lon1, double lat1, double dlon,
+  double dlat, double tmin)
+{
+  CellBoundary bnd;
+  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
+    return 2.0;
+  double best = 2.0;
+  for (int i = 0; i < bnd.numVerts; i++)
+  {
+    int j = (i + 1) % bnd.numVerts;
+    double ax = radsToDegs(bnd.verts[i].lng), ay = radsToDegs(bnd.verts[i].lat);
+    double bx = radsToDegs(bnd.verts[j].lng), by = radsToDegs(bnd.verts[j].lat);
+    double ex = bx - ax, ey = by - ay;
+    double den = dlon * ey - dlat * ex;
+    if (den == 0.0)
+      continue;              /* parallel to this edge */
+    double t = ((ax - lon1) * ey - (ay - lat1) * ex) / den;
+    double u = ((ax - lon1) * dlat - (ay - lat1) * dlon) / den;
+    if (t > tmin && t <= 1.0 && u >= 0.0 && u <= 1.0 && t < best)
+      best = t;
+  }
+  return best;
+}
+
+/**
+ * @brief Fill `cells` with every cell the segment crosses, and `enter` with
+ * the segment parameter at which it reaches each
+ * @details A traversal, not a sampling walk: from the cell in hand the walk
+ * leaves through its boundary, and the cell just beyond that crossing is a
+ * NEIGHBOUR of it, so no cell between the two can be passed over. A sampling
+ * walk has no such property at any spacing, because a segment clips a cell
+ * corner over an arbitrarily short chord and every spacing is longer than
+ * some chord.
+ * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] resolution H3 resolution
+ * @param[out] cells,enter Arrays of at least `maxout` entries; `enter[0]` is
+ *   always 0, the parameter of the first endpoint
+ * @param[in] maxout Capacity of both arrays
+ * @return Number of cells written, or 0 when the first lookup fails
+ */
+int
+h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
+  int32 resolution, H3Index *cells, double *enter, int maxout)
+{
+  assert(cells); assert(enter);
+  if (maxout < 1)
+    return 0;
+  H3Index cur = h3_latlng_deg_to_cell(lat1, lon1, resolution);
+  if (cur == (H3Index) 0)
+    return 0;
+  cells[0] = cur; enter[0] = 0.0;
+  int n = 1;
+
+  double dlon = lon2 - lon1, dlat = lat2 - lat1;
+  double seg = sqrt(dlon * dlon + dlat * dlat);
+  if (seg <= 0.0)
+    return n;
+  /* A nudge past the crossing lands inside the next cell without reaching
+   * the one after it: a ten-thousandth of a cell edge is far below the
+   * width of any cell and far above the rounding of the crossing itself */
+  double edge_m;
+  if (getHexagonEdgeLengthAvgM(resolution, &edge_m) != E_SUCCESS)
+    edge_m = 1000.0;
+  double nudge = (edge_m / 111320.0) * 1e-4 / seg;
+  if (nudge <= 0.0 || nudge >= 1.0)
+    nudge = 1e-9;
+
+  /* A cell is convex, so a straight segment whose far endpoint lies in the
+   * same cell as its near one never leaves it and there is no boundary to
+   * find. That is the common case wherever the positions are closer together
+   * than a cell is wide, and reading the boundary for it costs more than the
+   * whole answer is worth */
+  if (h3_latlng_deg_to_cell(lat2, lon2, resolution) == cur)
+    return n;
+
+  double t = 0.0;
+  while (n < maxout)
+  {
+    double texit = h3_cell_exit_param(cur, lon1, lat1, dlon, dlat, t);
+    if (texit > 1.0)
+      break;                 /* the segment ends inside this cell */
+    double tn = texit + nudge;
+    H3Index next = (H3Index) 0;
+    /* A nudge that lands back in the cell just left says the crossing sits
+     * within its own rounding, so widen it rather than stall */
+    for (int k = 0; k < 8 && tn < 1.0; k++)
+    {
+      next = h3_latlng_deg_to_cell(lat1 + tn * dlat, lon1 + tn * dlon,
+        resolution);
+      if (next != (H3Index) 0 && next != cur)
+        break;
+      tn += nudge * (double) (1 << k);
+      next = (H3Index) 0;
+    }
+    if (next == (H3Index) 0 || tn >= 1.0)
+      break;
+    cells[n] = next; enter[n] = texit; n++;
+    cur = next;
+    t = tn;
+  }
+  return n;
+}
+
+
 /*****************************************************************************
  * POINT — single cell.  Uses the existing geo_to_h3index_cell which has
  * the SRID guard.

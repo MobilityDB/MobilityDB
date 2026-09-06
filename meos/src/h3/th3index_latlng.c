@@ -248,10 +248,6 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
   }
   else
   {
-    double step_deg = h3_sample_step_deg(resolution);
-    if (step_deg <= 0.0)
-      step_deg = 1e-5;   /* defensive */
-
     /* Emit the first instant's cell. Routing the first lookup through
      * geo_to_h3index_cell applies the lon/lat SRID guard once for the
      * whole sequence: SRID is a type-level property uniform across every
@@ -266,8 +262,33 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
       have_last = true;
     }
 
-    /* For each segment, walk in Nyquist steps and emit cell-entry
-     * instants. */
+    /* The traversal writes one entry per cell a segment crosses, so the
+     * longest segment sizes the buffer for every one of them: a segment
+     * spans at most its own length in cell widths, and a cell is never
+     * narrower than its own edge */
+    double edge_m;
+    if (getHexagonEdgeLengthAvgM(resolution, &edge_m) != E_SUCCESS)
+      edge_m = 1000.0;
+    double half_edge_deg = (edge_m / 111320.0) / 2.0;
+    double longest = 0.0;
+    for (int i = 0; i + 1 < seq->count; i++)
+    {
+      const POINT2D *qa = GSERIALIZED_POINT2D_P(DatumGetGserializedP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, i))));
+      const POINT2D *qb = GSERIALIZED_POINT2D_P(DatumGetGserializedP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, i + 1))));
+      double ddx = qb->x - qa->x, ddy = qb->y - qa->y;
+      double d = sqrt(ddx * ddx + ddy * ddy);
+      if (d > longest)
+        longest = d;
+    }
+    int xcap = (half_edge_deg > 0.0)
+      ? (int) (longest / half_edge_deg) + 8 : 8;
+    H3Index *xcells = palloc(sizeof(H3Index) * (size_t) xcap);
+    double *xenter = palloc(sizeof(double) * (size_t) xcap);
+
+    /* For each segment, traverse the cells it crosses and emit a
+     * cell-entry instant for each. */
     for (int i = 0; i + 1 < seq->count; i++)
     {
       const TInstant *inst_a = TSEQUENCE_INST_N(seq, i);
@@ -276,42 +297,36 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
         DatumGetGserializedP(tinstant_value_p(inst_a)));
       const POINT2D *pb = GSERIALIZED_POINT2D_P(
         DatumGetGserializedP(tinstant_value_p(inst_b)));
-      double dx = pb->x - pa->x;
-      double dy = pb->y - pa->y;
-      double seg_deg = sqrt(dx * dx + dy * dy);
-      int nsamples = (int) ceil(seg_deg / step_deg);
-      if (nsamples < 1)
-        nsamples = 1;
-
-      /* Skip s=0 (already emitted as endpoint of the previous segment
-       * or as the very first instant); walk s = 1..nsamples inclusive
-       * so the last sample lands exactly on inst_b. Emit only when the
-       * cell changes. */
-      for (int s = 1; s <= nsamples; s++)
+      /* The segment is TRAVERSED cell by cell, so the result holds every
+       * cell it crosses; `enter[k]` is the parameter at which it reaches
+       * cells[k], which the timestamp is interpolated from. The first
+       * entry repeats the cell the previous segment ended in and is
+       * dropped by the same-cell test below. */
+      int nx = h3_segment_cells(pa->x, pa->y, pb->x, pb->y, resolution,
+        xcells, xenter, xcap);
+      for (int k = 0; k < nx; k++)
       {
-        double t = (double) s / (double) nsamples;
-        double lat = pa->y + t * dy;
-        double lng = pa->x + t * dx;
-        H3Index cell = h3_latlng_deg_to_cell(lat, lng, resolution);
-        if (cell == (H3Index) 0)
-          continue;
-        if (have_last && cell == last_cell && s < nsamples)
-          continue;
-        TimestampTz ts;
-        if (s == nsamples)
-          ts = inst_b->t;   /* land on the segment endpoint exactly */
-        else
-          ts = inst_a->t
-             + (TimestampTz) ((double) (inst_b->t - inst_a->t) * t);
+        H3Index cell = xcells[k];
         if (have_last && cell == last_cell)
-          continue;  /* same cell at endpoint: drop duplicate, will be
-                      * re-emitted as the first sample of the next
-                      * segment if different from then-current. */
+          continue;
+        TimestampTz ts = (k == 0) ? inst_a->t
+          : inst_a->t + (TimestampTz) ((double) (inst_b->t - inst_a->t)
+              * xenter[k]);
         PUSH_INSTANT(cell, ts);
         last_cell = cell;
         have_last = true;
       }
+      /* The endpoint's own cell closes the segment when the traversal
+       * stopped inside it */
+      H3Index endcell = h3_latlng_deg_to_cell(pb->y, pb->x, resolution);
+      if (endcell != (H3Index) 0 && ! (have_last && endcell == last_cell))
+      {
+        PUSH_INSTANT(endcell, inst_b->t);
+        last_cell = endcell;
+        have_last = true;
+      }
     }
+    pfree(xcells); pfree(xenter);
   }
 
   #undef PUSH_INSTANT
