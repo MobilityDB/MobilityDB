@@ -131,7 +131,9 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return how many cells of the dense walk the th3index cover of the same segment does not hold. </p>
+<p>Return how many cells of the dense walk the th3index cover of the same segment does not hold, or -1 where a conversion answers nothing. </p>
+<p >A conversion that fails answers NULL, and counting that as "no cell is
+missing" reports a cover that was never built as a sound one, so it is carried back as its own answer rather than folded into the count. </p>
 
 </div>
 </div>
