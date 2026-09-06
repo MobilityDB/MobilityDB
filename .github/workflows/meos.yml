@@ -185,6 +185,8 @@ jobs:
           ./sptree_load_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o index_position_test index_position_test.c -L/usr/local/lib -lmeos -lm
           ./index_position_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellcover_test cellcover_test.c -L/usr/local/lib -lmeos -lm
+          ./cellcover_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_join_test rtree_join_test.c -L/usr/local/lib -lmeos -lm
           ./rtree_join_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o sptree_join_test sptree_join_test.c -L/usr/local/lib -lmeos -lm
