@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: spnode_children</title>
+<title>MobilityDB: ensure_valid_sptree_sptree</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_abb22d6e11fd258d4ef007c6b3cac4013.html#abb22d6e11fd258d4ef007c6b3cac4013">ensure_valid_sptree_box</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a58aefa135e6677038ae6578b4dc7b17f.html#a58aefa135e6677038ae6578b4dc7b17f">ensure_valid_sptree_sptree</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__sptree_8c_a58aefa135e6677038ae6578b4dc7b17f.html#a58aefa135e6677038ae6578b4dc7b17f">ensure_valid_sptree_sptree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_aa9ba567c1edf78c48e398932c96023ae.html#aa9ba567c1edf78c48e398932c96023ae">index_op_converse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a11d5e4e09839e8ddfca58f605736ad13.html#a11d5e4e09839e8ddfca58f605736ad13">span_get_quadrant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_abced485a36a91cb7d58615b9afdcd87e.html#abced485a36a91cb7d58615b9afdcd87e">span_inner_consistent</a></td></tr>
@@ -99,7 +99,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a6bb7d40a2685cc0e76c5e727d2f9443a.html#a6bb7d40a2685cc0e76c5e727d2f9443a">SPNNEntry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a2b9b1532da07230eb2863bbd0b6b1caf.html#a2b9b1532da07230eb2863bbd0b6b1caf">spnode_build</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a45d626922a250011991a22730286680f.html#a45d626922a250011991a22730286680f">spnode_child</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__sptree_8c_a1101e8fcfaa979d85e645688beeb7773.html#a1101e8fcfaa979d85e645688beeb7773">spnode_children</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a1101e8fcfaa979d85e645688beeb7773.html#a1101e8fcfaa979d85e645688beeb7773">spnode_children</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_adc1d4f1d0b9e17b699c30b92a4a0a28d.html#adc1d4f1d0b9e17b699c30b92a4a0a28d">spnode_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a30c6c7939580f1c7f97265861325f2b3.html#a30c6c7939580f1c7f97265861325f2b3">spnode_join</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_ac95685834483a27c37abb4a6fec8b0a9.html#ac95685834483a27c37abb4a6fec8b0a9">spnode_make</a></td></tr>
@@ -152,8 +152,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a1101e8fcfaa979d85e645688beeb7773" name="a1101e8fcfaa979d85e645688beeb7773"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1101e8fcfaa979d85e645688beeb7773">&#9670;&#160;</a></span>spnode_children()</h2>
+<a id="a58aefa135e6677038ae6578b4dc7b17f" name="a58aefa135e6677038ae6578b4dc7b17f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58aefa135e6677038ae6578b4dc7b17f">&#9670;&#160;</a></span>ensure_valid_sptree_sptree()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,16 +162,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structSPNode.html">SPNode</a> ** spnode_children </td>
+          <td class="memname">static bool ensure_valid_sptree_sptree </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structSPTree.html">SPTree</a> *&#160;</td>
-          <td class="paramname"><em>sptree</em>, </td>
+          <td class="paramname"><em>sptree1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSPNode.html">SPNode</a> *&#160;</td>
-          <td class="paramname"><em>node</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structSPTree.html">SPTree</a> *&#160;</td>
+          <td class="paramname"><em>sptree2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -186,8 +186,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the child slots of a node, creating them on first use. </p>
-<p >The slots a node holds are as many as the quadrants of the space it partitions, which for an <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> is 64 at 6 dimensions and 256 at 8, while the nodes a tree ends in hold none of them. Reading the slots of a node that has no child therefore spends the whole array on nothing, so the array is created by the descent that places the first child rather than by the node. </p>
+<p>Return true if two SPTrees may be joined, report an error otherwise. </p>
+<p >A join compares a box of one tree with a box of the other, so the two trees answer the same question <a class="el" href="temporal__sptree_8c_abb22d6e11fd258d4ef007c6b3cac4013.html#abb22d6e11fd258d4ef007c6b3cac4013" title="Return true if a box may enter or query an SPTree, report an error otherwise.">ensure_valid_sptree_box</a> asks of a query. Both trees hold their centroids in the internal box type, a tpcbox tree already projected to an <code><a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a></code>, so the two SRIDs compare directly rather than through that function's projection of an incoming box </p>
 
 </div>
 </div>
