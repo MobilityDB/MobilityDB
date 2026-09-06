@@ -148,3 +148,27 @@ SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint
  t
 (1 row)
 
+SELECT numInstants(th3index(tgeompoint
+  'SRID=4326;{Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02}',
+  10));
+ numinstants 
+-------------
+           2
+(1 row)
+
+SELECT numInstants(th3index(tgeompoint
+  'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
+  10));
+ numinstants 
+-------------
+          16
+(1 row)
+
+SELECT numInstants(t) = numValues(getValues(t)) FROM (SELECT th3index(tgeompoint
+  'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
+  10) AS t) AS q;
+ ?column? 
+----------
+ t
+(1 row)
+

@@ -320,6 +320,14 @@ SELECT array_length(quadbins(
 (1 row)
 
 SELECT array_length(quadbins(
+  tgeompoint 'SRID=4326;[Point(10.0 10.0)@2024-01-01,
+    Point(40.0 40.0)@2024-01-02]', 5), 1) AS num_diagonal_tiles;
+ num_diagonal_tiles 
+--------------------
+                  7
+(1 row)
+
+SELECT array_length(quadbins(
   tgeompoint 'SRID=4326;{Point(10.0 10.0)@2024-01-01,
     Point(170.0 10.0)@2024-01-02}', 3), 1) AS num_instant_tiles;
  num_instant_tiles 

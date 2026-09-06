@@ -339,6 +339,16 @@ SELECT array_length(quadbins(
     Point(130.0 10.0)@2024-01-07, Point(150.0 10.0)@2024-01-08,
     Point(170.0 10.0)@2024-01-09}', 3), 1) AS num_sampled_tiles;
 
+-- A diagonal crossing is the case a sampled walk loses: it leaves a tile
+-- through a corner, over a chord that any step long enough to be economical
+-- steps across. At zoom 5 a tile spans 11.25 degrees of longitude, so a trip
+-- from (10,10) to (40,40) spans four tile columns and four Mercator rows, and
+-- a monotone path across a four by four span visits four plus four minus one
+-- of them.
+SELECT array_length(quadbins(
+  tgeompoint 'SRID=4326;[Point(10.0 10.0)@2024-01-01,
+    Point(40.0 40.0)@2024-01-02]', 5), 1) AS num_diagonal_tiles;
+
 -- A trajectory that states nothing between its instants covers the tiles
 -- holding them, and the two instants below sit in one tile.
 SELECT array_length(quadbins(
