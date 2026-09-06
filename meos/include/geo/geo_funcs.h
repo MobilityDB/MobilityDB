@@ -369,15 +369,27 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
   /* Collinear / parallel */
   if (fabs(rxs) < MEOS_GEOM_TOLERANCE)
   {
+    /* The two segments run in one direction; what is left to decide is
+     * whether they run along the SAME LINE or along two parallel ones. Both
+     * quantities that answer it are areas rather than lengths, and each needs
+     * a threshold in its own units:
+     * - r2 is the squared length of AB, so its bound is the SQUARE of the
+     *   tolerance. Bounded by the plain tolerance it rejects every segment
+     *   shorter than that tolerance's square root, which is 1e-6, and such a
+     *   segment then fails to overlap even an identical copy of itself.
+     * - qpxr is the cross product of AC with AB, which is the separation of
+     *   the two lines TIMES the length of AB. Bounded by the plain tolerance
+     *   it stands for a separation of tolerance/|AB|, so two lines far apart
+     *   read as one line whenever AB is short enough. Dividing by the length
+     *   puts the bound back on the separation, where it belongs. */
+    double r2 = rx * rx + ry * ry;
+    if (r2 < MEOS_GEOM_TOLERANCE * MEOS_GEOM_TOLERANCE)
+      return res;
+
     /* Is point C aligned with segment AB? */
     double qpxr = qpx * ry - qpy * rx;
     /* If qpxr != 0: parallel, if qpxr == 0: collinear */
-    if (fabs(qpxr) > MEOS_GEOM_TOLERANCE)
-      return res;
-
-    /* Collinear case */
-    double r2 = rx * rx + ry * ry;
-    if (r2 < MEOS_GEOM_TOLERANCE)
+    if (fabs(qpxr) > MEOS_GEOM_TOLERANCE * sqrt(r2))
       return res;
 
     double t0 = (qpx * rx + qpy * ry) / r2;
