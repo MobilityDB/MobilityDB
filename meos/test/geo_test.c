@@ -231,6 +231,56 @@ int main(void)
     free(self);
   }
 
+  /* Two areas whose boundaries CROSS share area, however little of it, so
+   * they do not merely touch. Every route the engine had to a two-dimensional
+   * interior meeting answers by LOCATING A POINT -- a vertex of one geometry
+   * inside the other, a point sampled along a boundary edge, an interior
+   * witness stepped off the boundary -- and each of those is classified within
+   * a band that grows with the size of the coordinates. Where the shared
+   * region is thinner than that band no such point can be placed inside it, so
+   * every route declines and the interiors read as disjoint.
+   * The record below is that case at its smallest: a rectangle, and a thin
+   * triangle above it whose apex dips TWO UNITS IN THE LAST PLACE below the
+   * rectangle's top edge, at projected coordinates near 6.2e6 where one unit
+   * in the last place is 9.3e-10. The apex lies inside the rectangle and
+   * nearer to its boundary than the on-boundary band, so it is located ON the
+   * boundary and no vertex test can answer; the shared sliver is real all the
+   * same, and exact rational arithmetic puts its area strictly above zero.
+   * Answering otherwise tells a user that two overlapping areas TOUCH, which
+   * is the opposite of the truth. A real protected-area pair fails the same
+   * way for the same reason, at a sliver 2.1 units in the last place wide */
+  const char *sliver_a =
+    "POLYGON((711278.96999999997 6212855.6200000001,"
+    "711278.98999999999 6212855.6200000001,"
+    "711278.98999999999 6212854.6200000001,"
+    "711278.96999999997 6212854.6200000001,"
+    "711278.96999999997 6212855.6200000001))";
+  const char *sliver_b =
+    "POLYGON((711278.97499999998 6212856.6200000001,"
+    "711278.98499999999 6212856.6200000001,"
+    "711278.97999999998 6212855.6199999982,"
+    "711278.97499999998 6212856.6200000001))";
+  char sliver_patt[10] = "2********";
+  GSERIALIZED *sliver_geo_a = geom_in(sliver_a, -1);
+  GSERIALIZED *sliver_geo_b = geom_in(sliver_b, -1);
+  assert(sliver_geo_a != NULL);
+  assert(sliver_geo_b != NULL);
+  meos_errno_reset();
+  bool sliver_overlaps = geom_relate_pattern(sliver_geo_a, sliver_geo_b,
+    sliver_patt);
+  printf("geom_relate_pattern(rectangle, crossing triangle, interiors meet in "
+    "area): %d, errno %d\n", sliver_overlaps, meos_errno());
+  assert(sliver_overlaps == true);
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+  bool sliver_touches = geom_touches(sliver_geo_a, sliver_geo_b);
+  printf("geom_touches(rectangle, crossing triangle): %d, errno %d\n",
+    sliver_touches, meos_errno());
+  assert(sliver_touches == false);
+  assert(meos_errno() == 0);
+  free(sliver_geo_a); free(sliver_geo_b);
+  meos_errno_reset();
+
   /* A boundary node that two pieces of a buffer meet at is computed twice,
    * once by each of them, and on projected coordinates the two results sit
    * apart by far more than a coordinate is stored to. Reading them as two

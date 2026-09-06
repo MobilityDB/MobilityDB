@@ -5424,6 +5424,60 @@ relate_area_boundary_edge(const Edge *e)
 }
 
 /**
+ * @brief Return which side of the line through two points a third lies on, or
+ * zero where the double evaluation cannot be trusted to carry the sign
+ * @details The three points are INPUT VERTICES, so the question is the sign of
+ * one determinant and needs no tolerance: a band here would not protect the
+ * answer, it would decide it. What the sign does need is a guarantee that
+ * rounding has not eaten it, and that guarantee is a FILTER rather than a
+ * band. The bound is computed FROM THE OPERANDS and decides only whether the
+ * double is trustworthy, never what the answer is -- a wrong tolerance returns
+ * a WRONG answer where a wrong filter returns NO answer, and it is that
+ * asymmetry that makes the filter safe where a band is not. It is Shewchuk's
+ * bound, written in terms of @p DBL_EPSILON so that it is arithmetic rather
+ * than a constant anyone is invited to tune
+ * @return 1 or -1 for the two sides, 0 for collinear or unable to tell
+ */
+static int
+relate_orientation(double ax, double ay, double bx, double by, double cx,
+  double cy)
+{
+  double left = (bx - ax) * (cy - ay);
+  double right = (by - ay) * (cx - ax);
+  double det = left - right;
+  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
+    (fabs(left) + fabs(right));
+  if (det > bound)
+    return 1;
+  if (det < - bound)
+    return -1;
+  return 0;
+}
+
+/**
+ * @brief Return true if two straight edges properly cross
+ * @details Proper means each edge carries the endpoints of the other STRICTLY
+ * on either side of it, so the two meet at a single point interior to both.
+ * Four determinants on the four input vertices decide it, with no point
+ * constructed and no tolerance anywhere. An endpoint that merely touches, a
+ * collinear pair, and a sign the filter declines to carry all read as NOT
+ * crossing, which leaves each of those to the routes that already answer them
+ */
+static bool
+relate_edges_cross(const Edge *e1, const Edge *e2)
+{
+  int d1 = relate_orientation(e1->x1, e1->y1, e1->x2, e1->y2, e2->x1, e2->y1);
+  int d2 = relate_orientation(e1->x1, e1->y1, e1->x2, e1->y2, e2->x2, e2->y2);
+  if (d1 == 0 || d2 == 0 || d1 == d2)
+    return false;
+  int d3 = relate_orientation(e2->x1, e2->y1, e2->x2, e2->y2, e1->x1, e1->y1);
+  if (d3 == 0)
+    return false;
+  int d4 = relate_orientation(e2->x1, e2->y1, e2->x2, e2->y2, e1->x2, e1->y2);
+  return d4 != 0 && d3 != d4;
+}
+
+/**
  * @brief Compute a point on an areal boundary edge.
  * @details 
  *   t = 0 -> first endpoint
@@ -5926,6 +5980,66 @@ relate_area_interior_point_located(const RelateEdges *self,
 }
 
 /**
+ * @brief Return true if a boundary edge of one areal geometry properly crosses
+ * a boundary edge of the other
+ * @details Where two boundaries cross transversally, the four sectors around
+ * the crossing point are the four combinations of inside and outside, so one
+ * of them lies interior to BOTH and the interiors share a two-dimensional set.
+ * The whole proof is the sign of four determinants on four INPUT VERTICES.
+ * Nothing is constructed, so nothing has to be classified within a tolerance,
+ * and that is what lets this see an overlap too thin for a sampled witness to
+ * land in: a sliver a couple of units in the last place wide is narrower than
+ * the band every point-location route reads, yet its crossing vertices are
+ * exactly the ones the determinants are taken on.
+ * Arcs are left to the other routes. The endpoints of an arc do not determine
+ * the curve between them, so four signs taken on them say nothing about
+ * whether the arcs meet
+ * @param[in] a,b Edges of the two geometries, the second read out of its index
+ * where it carries one
+ */
+static bool
+relate_area_boundaries_cross(const RelateEdges *a, const RelateEdges *b)
+{
+  for (int i = 0; i < a->nedges; i++)
+  {
+    const Edge *ea = a->edges[i];
+    if (ea->etype != EDGE_POLYSEG)
+      continue;
+    if (! b->index)
+    {
+      for (int j = 0; j < b->nedges; j++)
+      {
+        const Edge *eb = b->edges[j];
+        if (eb->etype == EDGE_POLYSEG && relate_edges_cross(ea, eb))
+          return true;
+      }
+      continue;
+    }
+    /* Two segments that cross meet at a point lying on both, so that point is
+     * in both boxes and the boxes overlap. The query therefore needs NO
+     * padding: an unpadded box already admits every crossing there is, and
+     * unlike the point-location queries the test behind it reads no tolerance
+     * that a pad would have to match */
+    STBox query;
+    stbox_set(true, false, false, 0, ea->xmin, ea->xmax, ea->ymin, ea->ymax,
+      0, 0, NULL, &query);
+    MeosArray *candidates = meos_array_create(sizeof(int64));
+    int nc = rtree_search(b->index, INDEX_OVERLAPS, &query, candidates);
+    bool result = false;
+    for (int c = 0; c < nc && ! result; c++)
+    {
+      const Edge *eb = b->edges[*(int64 *) meos_array_get(candidates, c)];
+      if (eb->etype == EDGE_POLYSEG)
+        result = relate_edges_cross(ea, eb);
+    }
+    meos_array_destroy(candidates);
+    if (result)
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Determine whether the interiors of two areal geometries
  * intersect in dimension 2.
  */
@@ -5958,12 +6072,26 @@ relate_area_interiors_intersect(const RelateEdges *a, const RelateEdges *b)
       return true;
   }
 
-  /* Finally handle coincident boundaries / complete containment
+  /* Handle coincident boundaries / complete containment
    * where every tested vertex may lie on the other boundary.
    * An interior witness of either geometry inside the other answers it */
   if (relate_area_interior_point_located(a, b, 0))
     return true;
   if (relate_area_interior_point_located(b, a, 0))
+    return true;
+
+  /* Every route above answers by LOCATING A POINT, and each one a tolerance
+   * decides: a vertex of one geometry, a point sampled along a boundary edge,
+   * an interior witness stepped off the boundary. Where the two interiors
+   * share only a sliver thinner than that tolerance, no such point can be
+   * placed inside it -- the sliver's own corners are intersection points
+   * belonging to neither vertex set, and any witness constructed within it
+   * falls inside the band of both boundaries. All of them therefore decline
+   * while the interiors do share area.
+   * A crossing of the two boundaries proves that area without locating
+   * anything, so it is asked last: it costs an index probe per boundary edge
+   * and answers only what the routes above have already given up on */
+  if (relate_area_boundaries_cross(a, b))
     return true;
   return false;
 }
