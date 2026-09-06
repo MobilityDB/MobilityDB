@@ -151,3 +151,27 @@ SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint
   ~= tgeompoint(th3index '831c02fffffffff@2001-01-01');
 
 -------------------------------------------------------------------------------
+-- A moving trajectory holds every cell it crosses
+-------------------------------------------------------------------------------
+
+-- A trajectory that states nothing between its instants holds the cells of
+-- those instants alone, so a two-instant discrete value answers at most two.
+SELECT numInstants(th3index(tgeompoint
+  'SRID=4326;{Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02}',
+  10));
+
+-- One that moves between them holds every cell along the way, and the count
+-- is the cells the segment enters rather than a function of any sampling
+-- rate. A cell is entered where the path leaves the previous one, so the
+-- answer counts boundary crossings.
+SELECT numInstants(th3index(tgeompoint
+  'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
+  10));
+
+-- The walk enters each cell once, so the instants and the distinct cells of
+-- the cover are the same in number.
+SELECT numInstants(t) = numValues(getValues(t)) FROM (SELECT th3index(tgeompoint
+  'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
+  10) AS t) AS q;
+
+-------------------------------------------------------------------------------
