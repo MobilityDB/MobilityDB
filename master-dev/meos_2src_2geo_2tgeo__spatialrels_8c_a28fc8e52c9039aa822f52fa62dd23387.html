@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: SetSetTPred</title>
+<title>MobilityDB: ea_spatialrel_inst</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -135,7 +135,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_ga96b912d27200c60427734b18882cb2b4.html#ga96b912d27200c60427734b18882cb2b4">ea_intersects_geo_tgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_ga901e177d47eaa48290a822f29037767e.html#ga901e177d47eaa48290a822f29037767e">ea_intersects_tgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_ga3359a3f4b7b4da445f4efadb1fa309e5.html#ga3359a3f4b7b4da445f4efadb1fa309e5">ea_intersects_tgeo_tgeo</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a28fc8e52c9039aa822f52fa62dd23387.html#a28fc8e52c9039aa822f52fa62dd23387">ea_spatialrel_inst</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a28fc8e52c9039aa822f52fa62dd23387.html#a28fc8e52c9039aa822f52fa62dd23387">ea_spatialrel_inst</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a333bc5467fe4c9546bcbf4c544918c55.html#a333bc5467fe4c9546bcbf4c544918c55">ea_spatialrel_seq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__rel__ever_ga802295797d1995b5cdd1fbe06718ab08.html#ga802295797d1995b5cdd1fbe06718ab08">ea_spatialrel_tgeo_tgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a3826ad2151eb9a32e9d0a9e4d36e608a.html#a3826ad2151eb9a32e9d0a9e4d36e608a">ea_spatialrel_tspatial_geo</a></td></tr>
@@ -181,7 +181,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_afd1319b5c3120de47a55d511a1258ed6.html#afd1319b5c3120de47a55d511a1258ed6">SETSET_INDEX_MIN_PAIRS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a1d69d452e091f72b7172f84538f783fd.html#a1d69d452e091f72b7172f84538f783fd">setset_t_pairs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a8f20375ebd4bd69f7d61074c42f93db2.html#a8f20375ebd4bd69f7d61074c42f93db2">SetSetEAPred</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a560a71ef46c9de1c5e0fba967ba15600.html#a560a71ef46c9de1c5e0fba967ba15600">SetSetTPred</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a560a71ef46c9de1c5e0fba967ba15600.html#a560a71ef46c9de1c5e0fba967ba15600">SetSetTPred</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a10e07161fbb9766a5ae22ec427d4ca8d.html#a10e07161fbb9766a5ae22ec427d4ca8d">spatialrel_datum_geo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_aa9c41dbb2f607fd831601ca57e610720.html#aa9c41dbb2f607fd831601ca57e610720">spatialrel_tgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__spatialrels_8c_a589d21c1052351655c0996e99aee71f6.html#a589d21c1052351655c0996e99aee71f6">spatialrel_tgeo_tgeo</a></td></tr>
@@ -198,23 +198,53 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a560a71ef46c9de1c5e0fba967ba15600" name="a560a71ef46c9de1c5e0fba967ba15600"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a560a71ef46c9de1c5e0fba967ba15600">&#9670;&#160;</a></span>SetSetTPred</h2>
+<a id="a28fc8e52c9039aa822f52fa62dd23387" name="a28fc8e52c9039aa822f52fa62dd23387"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28fc8e52c9039aa822f52fa62dd23387">&#9670;&#160;</a></span>ea_spatialrel_inst()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="meos_2src_2geo_2tgeo__spatialrels_8c_a560a71ef46c9de1c5e0fba967ba15600.html#a560a71ef46c9de1c5e0fba967ba15600">SetSetTPred</a></td>
+          <td class="memname">static int ea_spatialrel_inst </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
+          <td class="paramname"><em>inst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a>&#160;</td>
+          <td class="paramname"><em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>invert</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
-</div><div class="memdoc">
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a560a71ef46c9de1c5e0fba967ba15600ab63a5a5d6064dd267681c501be1a070a" name="a560a71ef46c9de1c5e0fba967ba15600ab63a5a5d6064dd267681c501be1a070a"></a>SS_TDWITHIN&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a560a71ef46c9de1c5e0fba967ba15600ad399bcf6e1a124aebadfbb8c3ebaa599" name="a560a71ef46c9de1c5e0fba967ba15600ad399bcf6e1a124aebadfbb8c3ebaa599"></a>SS_TINTERSECTS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a560a71ef46c9de1c5e0fba967ba15600a186890888e72838295f11e010b28832b" name="a560a71ef46c9de1c5e0fba967ba15600a186890888e72838295f11e010b28832b"></a>SS_TTOUCHES&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a560a71ef46c9de1c5e0fba967ba15600ac12f1fe3f8f53377f17058ee563cf9e9" name="a560a71ef46c9de1c5e0fba967ba15600ac12f1fe3f8f53377f17058ee563cf9e9"></a>SS_TDISJOINT&#160;</td><td class="fielddoc"></td></tr>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
 </table>
+</div><div class="memdoc">
+
+<p>Return the relationship of one composing value against the geometry. </p>
 
 </div>
 </div>
