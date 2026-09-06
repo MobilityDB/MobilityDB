@@ -221,10 +221,26 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
   int ninsts = 0;
   H3Index last_cell = (H3Index) 0;
   bool have_last = false;
+  TimestampTz last_ts = 0;
+  bool have_ts = false;
 
-  /* Helper: push (cell, ts) into the result, growing if needed. */
+  /* Helper: push (cell, ts) into the result, growing if needed.
+   *
+   * A cell's entry time is interpolated from the parameter at which the
+   * path reaches it, while a timestamp holds whole microseconds, so two
+   * crossings closer together than one microsecond round to the same
+   * instant. A path passing near a vertex, where three cells meet, leaves
+   * one cell and enters the next over such a distance. A sequence requires
+   * increasing timestamps, so the second crossing is placed one microsecond
+   * after the first: that is the smallest separation the type can state, it
+   * keeps the order the crossings occur in, and it keeps the cell. Dropping
+   * the crossing instead would omit a cell the path passes through, which is
+   * the omission the traversal exists to remove. */
   #define PUSH_INSTANT(_cell, _ts)                                    \
     do {                                                              \
+      TimestampTz ts_ = (_ts);                                        \
+      if (have_ts && ts_ <= last_ts)                                  \
+        ts_ = last_ts + 1;                                            \
       if (ninsts >= maxcount)                                         \
       {                                                               \
         maxcount = (maxcount * 2 > ninsts + 1)                        \
@@ -233,7 +249,9 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
                                       * (size_t) maxcount);           \
       }                                                               \
       instants[ninsts++] = tinstant_make(H3IndexGetDatum(_cell),      \
-                                         T_TH3INDEX, (_ts));          \
+                                         T_TH3INDEX, ts_);            \
+      last_ts = ts_;                                                  \
+      have_ts = true;                                                 \
     } while (0)
 
   if (! densify)
