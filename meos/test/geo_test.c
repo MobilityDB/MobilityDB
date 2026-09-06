@@ -281,6 +281,92 @@ int main(void)
   free(sliver_geo_a); free(sliver_geo_b);
   meos_errno_reset();
 
+  /* Two areas that share a boundary edge meet along a LINE, however short
+   * that edge is. The engine reads the shared stretch from the segment
+   * kernel, whose collinear branch first rejects a segment of no length by
+   * comparing rx*rx + ry*ry against the geometry tolerance -- a length SQUARED
+   * against a length. The threshold therefore stands at the square root of the
+   * constant, so every edge shorter than 1e-6 is treated as having no length
+   * and reports no overlap, even against an identical copy of itself. Two
+   * areas sharing such an edge are then said to meet at a POINT.
+   * The record below is that case at projected metres, with the shared edge
+   * taken from real protected-area data where it is 3.3e-9 long, beside the
+   * same construction at one unit which the engine has always read correctly */
+  const char *tiny_a =
+    "POLYGON((605623.93903347489 6235507.9605894219,"
+    "605623.93903347803 6235507.9605894228,"
+    "605624.5 6235508.5,605623.93903347489 6235507.9605894219))";
+  const char *tiny_b =
+    "POLYGON((605623.93903347489 6235507.9605894219,"
+    "605623.93903347803 6235507.9605894228,"
+    "605624.5 6235507.0,605623.93903347489 6235507.9605894219))";
+  const char *long_a = "POLYGON((0 0,1 0,0.5 1,0 0))";
+  const char *long_b = "POLYGON((0 0,1 0,0.5 -1,0 0))";
+  char meet_line[10] = "****1****";
+  const char *shared_wkt[2][2] = {{long_a, long_b}, {tiny_a, tiny_b}};
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *sa = geom_in(shared_wkt[i][0], -1);
+    GSERIALIZED *sb = geom_in(shared_wkt[i][1], -1);
+    assert(sa != NULL);
+    assert(sb != NULL);
+    meos_errno_reset();
+    bool meets_line = geom_relate_pattern(sa, sb, meet_line);
+    printf("geom_relate_pattern(two areas sharing %s edge, meet along a "
+      "line): %d, errno %d\n", i ? "a 3.3e-9" : "a one-unit", meets_line,
+      meos_errno());
+    assert(meets_line == true);
+    assert(meos_errno() == 0);
+    free(sa); free(sb);
+  }
+  meos_errno_reset();
+
+  /* Two areas whose boundaries run PARALLEL never touch, however close they
+   * come. Deciding that means asking whether the two lines are one line, and
+   * the engine answers it from the cross product of the offset between them
+   * with one of their directions -- a separation TIMES a length, bounded by a
+   * plain length. The bound therefore stands for a separation of that length
+   * divided by the segment's, so two lines far apart read as one whenever the
+   * segments are short enough, and the areas are then said to meet.
+   * The record below is a rectangle and a copy of it offset by 2e-8, both a
+   * ten-millionth across, at coordinates near 1e-7. They are disjoint, and
+   * their boundaries are 2e-8 apart -- twenty times the geometry tolerance.
+   * The same pair scaled up by 1e8 sits beside it as the control: the defect
+   * is the LENGTH of the segments and nothing else about the configuration */
+  const char *par_small_a =
+    "POLYGON((0 0,1e-07 1e-07,1.1e-07 9e-08,1e-08 -1e-08,0 0))";
+  const char *par_small_b =
+    "POLYGON((1.414213562373095e-08 -1.414213562373095e-08,"
+    "1.1414213562373095e-07 8.585786437626905e-08,"
+    "1.2414213562373095e-07 7.585786437626905e-08,"
+    "2.414213562373095e-08 -2.414213562373095e-08,"
+    "1.414213562373095e-08 -1.414213562373095e-08))";
+  const char *par_big_a =
+    "POLYGON((0 0,10 10,11 9,1 -1,0 0))";
+  const char *par_big_b =
+    "POLYGON((1.414213562373095 -1.414213562373095,"
+    "11.414213562373095 8.585786437626905,"
+    "12.414213562373095 7.585786437626905,"
+    "2.414213562373095 -2.414213562373095,"
+    "1.414213562373095 -1.414213562373095))";
+  const char *par_wkt[2][2] = {{par_big_a, par_big_b},
+                               {par_small_a, par_small_b}};
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *pa = geom_in(par_wkt[i][0], -1);
+    GSERIALIZED *pb = geom_in(par_wkt[i][1], -1);
+    assert(pa != NULL);
+    assert(pb != NULL);
+    meos_errno_reset();
+    bool par_int = geom_intersects2d(pa, pb);
+    printf("geom_intersects2d(two areas %s apart along parallel boundaries): "
+      "%d, errno %d\n", i ? "2e-8" : "2 units", par_int, meos_errno());
+    assert(par_int == false);
+    assert(meos_errno() == 0);
+    free(pa); free(pb);
+  }
+  meos_errno_reset();
+
   /* A boundary node that two pieces of a buffer meet at is computed twice,
    * once by each of them, and on projected coordinates the two results sit
    * apart by far more than a coordinate is stored to. Reading them as two
