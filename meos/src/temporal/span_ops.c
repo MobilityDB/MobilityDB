@@ -1024,8 +1024,13 @@ distance_sentinel(MeosType type)
       return Int32GetDatum(INT_MAX);
     case T_INT8:
       return Int64GetDatum(INT64_MAX);
-    default:
+    case T_FLOAT8:
+    case T_TIMESTAMPTZ:
       /* The distance between timestamptz values is expressed in seconds */
+      return Float8GetDatum(DBL_MAX);
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown base type for the distance sentinel: %s", meostype_name(type));
       return Float8GetDatum(DBL_MAX);
   }
 }
