@@ -202,7 +202,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Compute the DE-9IM intersection matrix. </p>
-<p >This is the native counterpart of PostGIS <code>ST_Relate</code> </p><dl class="section return"><dt>Returns</dt><dd>true if the geometry pair is supported, which is what <a class="el" href="meos_2src_2geo_2geo__funcs_8c_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc" title="Return true if a geometry is composed solely of the types the native implementations can extract into...">geom_meos_supported</a> answers of each geometry. A false return means the pair is outside that coverage, <b>not</b> that the geometries are unrelated, so a caller must answer it another way rather than read <code>result</code> </dd></dl>
+<p >This is the native counterpart of PostGIS <code>ST_Relate</code> </p><dl class="section return"><dt>Returns</dt><dd>true if the geometry pair is supported, which is what <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3" title="Return how far the native implementations cover a geometry.">geom_meos_coverage</a> answers 1 for each geometry. A false return means the pair is outside that coverage, <b>not</b> that the geometries are unrelated, so a caller must answer it another way rather than read <code>result</code> </dd></dl>
 
 </div>
 </div>

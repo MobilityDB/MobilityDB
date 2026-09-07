@@ -148,7 +148,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga3099e5b51bb3e5ad0dac9d16d4b625a3.html#ga3099e5b51bb3e5ad0dac9d16d4b625a3">geom_convex_hull</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc">geom_extract_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a94ea82fc593e565b37d1a662cc9171a6.html#a94ea82fc593e565b37d1a662cc9171a6">geom_extract_edges_iter</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc">geom_meos_supported</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3">geom_meos_coverage</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5a2c14d3ecdde8d9f5a0a283c56025bd.html#a5a2c14d3ecdde8d9f5a0a283c56025bd">geom_ordinates_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gaa9d084c3fa8cf531fef5aa4f18c39ae0.html#gaa9d084c3fa8cf531fef5aa4f18c39ae0">geom_oriented_envelope</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a119427aa138e27d03232d999f640d9f7.html#a119427aa138e27d03232d999f640d9f7">geom_ptarrays</a></td></tr>
@@ -381,7 +381,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the pair is covered, which is what <a class="el" href="meos_2src_2geo_2geo__funcs_8c_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc" title="Return true if a geometry is composed solely of the types the native implementations can extract into...">geom_meos_supported</a> answers of each geometry. A false return means the pair is outside that coverage, <b>not</b> that the pattern fails, so a caller must answer it another way rather than read <code>result</code> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the pair is covered, which is what <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3" title="Return how far the native implementations cover a geometry.">geom_meos_coverage</a> answers 1 for each geometry. A false return means the pair is outside that coverage, <b>not</b> that the pattern fails, so a caller must answer it another way rather than read <code>result</code> </dd></dl>
 
 </div>
 </div>

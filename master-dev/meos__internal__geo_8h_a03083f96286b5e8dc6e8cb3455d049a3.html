@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geo_meos_supported</title>
+<title>MobilityDB: geom_meos_coverage</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -98,11 +98,11 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a24d46b160155514d81ea485664a51624.html#a24d46b160155514d81ea485664a51624">geo_is_planar_areal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a8f2cba9541f7b13357d67484ff0519ec.html#a8f2cba9541f7b13357d67484ff0519ec">geo_is_planar_linear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_ac832f5e9487d9ba348234e18119e8e7a.html#ac832f5e9487d9ba348234e18119e8e7a">geo_is_point_set</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__internal__geo_8h_a592e3648de53550b53e3e3a84de79c6e.html#a592e3648de53550b53e3e3a84de79c6e">geo_meos_supported</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a95a5cd674fae6986a7e98f46684ad060.html#a95a5cd674fae6986a7e98f46684ad060">geo_meos_coverage</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a372676d21c3396cd08c01b6dcd5c4604.html#a372676d21c3396cd08c01b6dcd5c4604">geo_points_covered</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gadbd47beea3e84164ebdf0fa8b3f4c877.html#gadbd47beea3e84164ebdf0fa8b3f4c877">geo_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gad878da2a45af8ef35cf6a8107a891262.html#gad878da2a45af8ef35cf6a8107a891262">geoarr_set_stbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc">geom_meos_supported</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__internal__geo_8h_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3">geom_meos_coverage</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a5bd829496d92923aae21dfe22a841695.html#a5bd829496d92923aae21dfe22a841695">geos_get_context</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_ab03427db3697727a1db6443bd70f411d.html#ab03427db3697727a1db6443bd70f411d">GS_POINT_PTR</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_abc7f996f4ff58f62a0c691998310fa02.html#abc7f996f4ff58f62a0c691998310fa02">GSERIALIZED_POINT2D_P</a></td></tr>
@@ -222,24 +222,27 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a592e3648de53550b53e3e3a84de79c6e" name="a592e3648de53550b53e3e3a84de79c6e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a592e3648de53550b53e3e3a84de79c6e">&#9670;&#160;</a></span>geo_meos_supported()</h2>
+<a id="a03083f96286b5e8dc6e8cb3455d049a3" name="a03083f96286b5e8dc6e8cb3455d049a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03083f96286b5e8dc6e8cb3455d049a3">&#9670;&#160;</a></span>geom_meos_coverage()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool geo_meos_supported </td>
+          <td class="memname">int geom_meos_coverage </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>geom</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return true if the segment kernels answer for a geometry, read from its serialized form. </p>
-<p ><a class="el" href="meos__internal__geo_8h_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc" title="Return true if a geometry is composed solely of the types the native implementations can extract into...">geom_meos_supported</a> reads the deserialized geometry, which a caller holding only the serialized one would otherwise deserialize twice </p>
+<p>Return how far the native implementations cover a geometry. </p>
+<p >Mirrors the type dispatch of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a94ea82fc593e565b37d1a662cc9171a6.html#a94ea82fc593e565b37d1a662cc9171a6" title="Return the edges of a geometry in a dynamic array (iterator)">geom_extract_edges_iter</a>, which every native implementation of a PostGIS function reads its geometry through, so the answer holds for all of them: the clip engine, the DE-9IM matrix, the convex hull, the oriented envelope and the buffer alike.</p>
+<p >THE THIRD ANSWER IS THE POINT. A geometry the kernels do not cover and a geometry of a type this build has never heard of are different facts, and a caller can act on the second only if it is told them apart: liblwgeom numbers its types 1 to 15 today and PostGIS adds to that set, so a build meets a type its own enumeration does not name the moment it is linked against a newer liblwgeom. Answering "not covered" there states something about a type nothing here has seen.</p>
+<dl class="section return"><dt>Returns</dt><dd>1 where the kernels answer for the geometry, 0 where a type they know is one they do not answer for, and -1 where the type is not one this build enumerates at all, which is reported as an unsupported type </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Neither 0 nor -1 means unrelated: both are the absence of an answer rather than a negative one. A caller either answers such a geometry another way or reports that it is not supported. The two differ in who reports it: a 0 is the caller's to report, naming the operation it has no answer for, while a -1 is reported here, because a type this build does not enumerate is a fact about the geometry rather than about the operation </dd></dl>
 
 </div>
 </div>

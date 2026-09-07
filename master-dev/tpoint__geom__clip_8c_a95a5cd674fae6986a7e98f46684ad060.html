@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geo_meos_supported</title>
+<title>MobilityDB: geo_meos_coverage</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -103,7 +103,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a7b7e2d981f37f69354cb620c4c91444c.html#a7b7e2d981f37f69354cb620c4c91444c">geo_is_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ac832f5e9487d9ba348234e18119e8e7a.html#ac832f5e9487d9ba348234e18119e8e7a">geo_is_point_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a09ea51701421e60b9f90e72ac461904c.html#a09ea51701421e60b9f90e72ac461904c">geo_is_poly</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a592e3648de53550b53e3e3a84de79c6e.html#a592e3648de53550b53e3e3a84de79c6e">geo_meos_supported</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a95a5cd674fae6986a7e98f46684ad060.html#a95a5cd674fae6986a7e98f46684ad060">geo_meos_coverage</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a372676d21c3396cd08c01b6dcd5c4604.html#a372676d21c3396cd08c01b6dcd5c4604">geo_points_covered</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a64202e8121143ed79dd5ea7145cbe49e.html#a64202e8121143ed79dd5ea7145cbe49e">intervals</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ae32830daade474526f0521965152ef42.html#ae32830daade474526f0521965152ef42">intervals_from_arc_subject</a></td></tr>
@@ -145,14 +145,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a592e3648de53550b53e3e3a84de79c6e" name="a592e3648de53550b53e3e3a84de79c6e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a592e3648de53550b53e3e3a84de79c6e">&#9670;&#160;</a></span>geo_meos_supported()</h2>
+<a id="a95a5cd674fae6986a7e98f46684ad060" name="a95a5cd674fae6986a7e98f46684ad060"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95a5cd674fae6986a7e98f46684ad060">&#9670;&#160;</a></span>geo_meos_coverage()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool geo_meos_supported </td>
+          <td class="memname">int geo_meos_coverage </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
           <td class="paramname"><em>gs</em></td><td>)</td>
@@ -161,8 +161,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if the segment kernels answer for a geometry, read from its serialized form. </p>
-<p ><a class="el" href="meos__internal__geo_8h_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc" title="Return true if a geometry is composed solely of the types the native implementations can extract into...">geom_meos_supported</a> reads the deserialized geometry, which a caller holding only the serialized one would otherwise deserialize twice </p>
+<p>Return how far the segment kernels cover a geometry, read from its serialized form. </p>
+<p ><a class="el" href="meos__internal__geo_8h_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3" title="Return how far the native implementations cover a geometry.">geom_meos_coverage</a> reads the deserialized geometry, which a caller holding only the serialized one would otherwise deserialize twice </p><dl class="section return"><dt>Returns</dt><dd>As <a class="el" href="meos__internal__geo_8h_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3" title="Return how far the native implementations cover a geometry.">geom_meos_coverage</a> reports it: 1 covered, 0 a known type left uncovered, -1 a type this build does not enumerate </dd></dl>
 
 </div>
 </div>

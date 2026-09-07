@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geom_meos_supported</title>
+<title>MobilityDB: geom_meos_coverage</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -148,7 +148,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga3099e5b51bb3e5ad0dac9d16d4b625a3.html#ga3099e5b51bb3e5ad0dac9d16d4b625a3">geom_convex_hull</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc">geom_extract_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a94ea82fc593e565b37d1a662cc9171a6.html#a94ea82fc593e565b37d1a662cc9171a6">geom_extract_edges_iter</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc">geom_meos_supported</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3">geom_meos_coverage</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5a2c14d3ecdde8d9f5a0a283c56025bd.html#a5a2c14d3ecdde8d9f5a0a283c56025bd">geom_ordinates_at</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gaa9d084c3fa8cf531fef5aa4f18c39ae0.html#gaa9d084c3fa8cf531fef5aa4f18c39ae0">geom_oriented_envelope</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a119427aa138e27d03232d999f640d9f7.html#a119427aa138e27d03232d999f640d9f7">geom_ptarrays</a></td></tr>
@@ -334,14 +334,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac19306df3cd4c8276d0cdb104792eabc" name="ac19306df3cd4c8276d0cdb104792eabc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac19306df3cd4c8276d0cdb104792eabc">&#9670;&#160;</a></span>geom_meos_supported()</h2>
+<a id="a03083f96286b5e8dc6e8cb3455d049a3" name="a03083f96286b5e8dc6e8cb3455d049a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03083f96286b5e8dc6e8cb3455d049a3">&#9670;&#160;</a></span>geom_meos_coverage()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool geom_meos_supported </td>
+          <td class="memname">int geom_meos_coverage </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
           <td class="paramname"><em>geom</em></td><td>)</td>
@@ -350,8 +350,11 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a geometry is composed solely of the types the native implementations can extract into edges. </p>
-<p >Mirrors the type dispatch of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a94ea82fc593e565b37d1a662cc9171a6.html#a94ea82fc593e565b37d1a662cc9171a6" title="Return the edges of a geometry in a dynamic array (iterator)">geom_extract_edges_iter</a>, which every native implementation of a PostGIS function reads its geometry through, so the predicate answers for all of them: the clip engine, the DE-9IM matrix, the convex hull, the oriented envelope and the buffer alike. A geometry holding any other type, a TIN or a polyhedral surface, is uncovered and belongs to the caller, which either answers it another way or reports that it is not supported </p><dl class="section note"><dt>Note</dt><dd>Uncovered never means unrelated: a <code>false</code> is the absence of an answer, not a negative one </dd></dl>
+<p>Return how far the native implementations cover a geometry. </p>
+<p >Mirrors the type dispatch of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a94ea82fc593e565b37d1a662cc9171a6.html#a94ea82fc593e565b37d1a662cc9171a6" title="Return the edges of a geometry in a dynamic array (iterator)">geom_extract_edges_iter</a>, which every native implementation of a PostGIS function reads its geometry through, so the answer holds for all of them: the clip engine, the DE-9IM matrix, the convex hull, the oriented envelope and the buffer alike.</p>
+<p >THE THIRD ANSWER IS THE POINT. A geometry the kernels do not cover and a geometry of a type this build has never heard of are different facts, and a caller can act on the second only if it is told them apart: liblwgeom numbers its types 1 to 15 today and PostGIS adds to that set, so a build meets a type its own enumeration does not name the moment it is linked against a newer liblwgeom. Answering "not covered" there states something about a type nothing here has seen.</p>
+<dl class="section return"><dt>Returns</dt><dd>1 where the kernels answer for the geometry, 0 where a type they know is one they do not answer for, and -1 where the type is not one this build enumerates at all, which is reported as an unsupported type </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Neither 0 nor -1 means unrelated: both are the absence of an answer rather than a negative one. A caller either answers such a geometry another way or reports that it is not supported. The two differ in who reports it: a 0 is the caller's to report, naming the operation it has no answer for, while a -1 is reported here, because a type this build does not enumerate is a fact about the geometry rather than about the operation </dd></dl>
 
 </div>
 </div>

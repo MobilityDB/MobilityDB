@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geom_meos_supported</title>
+<title>MobilityDB: geo_meos_coverage</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -98,11 +98,11 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a24d46b160155514d81ea485664a51624.html#a24d46b160155514d81ea485664a51624">geo_is_planar_areal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a8f2cba9541f7b13357d67484ff0519ec.html#a8f2cba9541f7b13357d67484ff0519ec">geo_is_planar_linear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_ac832f5e9487d9ba348234e18119e8e7a.html#ac832f5e9487d9ba348234e18119e8e7a">geo_is_point_set</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a592e3648de53550b53e3e3a84de79c6e.html#a592e3648de53550b53e3e3a84de79c6e">geo_meos_supported</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__internal__geo_8h_a95a5cd674fae6986a7e98f46684ad060.html#a95a5cd674fae6986a7e98f46684ad060">geo_meos_coverage</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a372676d21c3396cd08c01b6dcd5c4604.html#a372676d21c3396cd08c01b6dcd5c4604">geo_points_covered</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gadbd47beea3e84164ebdf0fa8b3f4c877.html#gadbd47beea3e84164ebdf0fa8b3f4c877">geo_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gad878da2a45af8ef35cf6a8107a891262.html#gad878da2a45af8ef35cf6a8107a891262">geoarr_set_stbox</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__internal__geo_8h_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc">geom_meos_supported</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3">geom_meos_coverage</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a5bd829496d92923aae21dfe22a841695.html#a5bd829496d92923aae21dfe22a841695">geos_get_context</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_ab03427db3697727a1db6443bd70f411d.html#ab03427db3697727a1db6443bd70f411d">GS_POINT_PTR</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_abc7f996f4ff58f62a0c691998310fa02.html#abc7f996f4ff58f62a0c691998310fa02">GSERIALIZED_POINT2D_P</a></td></tr>
@@ -222,24 +222,24 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac19306df3cd4c8276d0cdb104792eabc" name="ac19306df3cd4c8276d0cdb104792eabc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac19306df3cd4c8276d0cdb104792eabc">&#9670;&#160;</a></span>geom_meos_supported()</h2>
+<a id="a95a5cd674fae6986a7e98f46684ad060" name="a95a5cd674fae6986a7e98f46684ad060"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95a5cd674fae6986a7e98f46684ad060">&#9670;&#160;</a></span>geo_meos_coverage()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool geom_meos_supported </td>
+          <td class="memname">int geo_meos_coverage </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a geometry is composed solely of the types the native implementations can extract into edges. </p>
-<p >Mirrors the type dispatch of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a94ea82fc593e565b37d1a662cc9171a6.html#a94ea82fc593e565b37d1a662cc9171a6" title="Return the edges of a geometry in a dynamic array (iterator)">geom_extract_edges_iter</a>, which every native implementation of a PostGIS function reads its geometry through, so the predicate answers for all of them: the clip engine, the DE-9IM matrix, the convex hull, the oriented envelope and the buffer alike. A geometry holding any other type, a TIN or a polyhedral surface, is uncovered and belongs to the caller, which either answers it another way or reports that it is not supported </p><dl class="section note"><dt>Note</dt><dd>Uncovered never means unrelated: a <code>false</code> is the absence of an answer, not a negative one </dd></dl>
+<p>Return how far the segment kernels cover a geometry, read from its serialized form. </p>
+<p ><a class="el" href="meos__internal__geo_8h_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3" title="Return how far the native implementations cover a geometry.">geom_meos_coverage</a> reads the deserialized geometry, which a caller holding only the serialized one would otherwise deserialize twice </p><dl class="section return"><dt>Returns</dt><dd>As <a class="el" href="meos__internal__geo_8h_a03083f96286b5e8dc6e8cb3455d049a3.html#a03083f96286b5e8dc6e8cb3455d049a3" title="Return how far the native implementations cover a geometry.">geom_meos_coverage</a> reports it: 1 covered, 0 a known type left uncovered, -1 a type this build does not enumerate </dd></dl>
 
 </div>
 </div>
