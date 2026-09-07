@@ -1152,7 +1152,7 @@ Span *
 tstzspan_expand(const Span *s, const Interval *interv)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(interv, NULL);
+  VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(interv, NULL);
   /* When the interval is negative, return NULL if the span resulting by
    * shifting the bounds with the interval is empty */ 
   Interval intervalzero;
@@ -1418,7 +1418,7 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
   bool haswidth)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
+  VALIDATE_NUMSPAN(s, NULL);
   if (! ensure_one_true(hasshift, haswidth) ||
       (haswidth && ! ensure_positive_datum(width, s->basetype)))
     return NULL;

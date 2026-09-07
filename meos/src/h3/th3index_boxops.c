@@ -238,7 +238,7 @@ STBox *
 h3index_tstzspan_to_stbox(H3Index cell, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
+  VALIDATE_TSTZSPAN(s, NULL);
   VALIDATE_H3INDEX_CELL(cell, NULL);
   STBox box;
   if (! h3index_set_stbox(cell, &box))
