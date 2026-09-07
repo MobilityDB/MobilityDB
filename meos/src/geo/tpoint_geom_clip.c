@@ -946,17 +946,19 @@ geo_edge_ctx_make(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Return true if the segment kernels answer for a geometry, read from
- * its serialized form
- * @details #geom_meos_supported reads the deserialized geometry, which a
+ * @brief Return how far the segment kernels cover a geometry, read from its
+ * serialized form
+ * @details #geom_meos_coverage reads the deserialized geometry, which a
  * caller holding only the serialized one would otherwise deserialize twice
+ * @return As #geom_meos_coverage reports it: 1 covered, 0 a known type left
+ * uncovered, -1 a type this build does not enumerate
  */
-bool
-geo_meos_supported(const GSERIALIZED *gs)
+int
+geo_meos_coverage(const GSERIALIZED *gs)
 {
   assert(gs);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  bool result = geom_meos_supported(geom);
+  int result = geom_meos_coverage(geom);
   lwgeom_free(geom);
   return result;
 }

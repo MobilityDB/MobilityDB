@@ -1829,7 +1829,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 
 /**
  * @brief Return the type that keeps a pair of geometries from the native engine
- * @details The native engine answers every type #geom_meos_supported() accepts,
+ * @details The native engine answers every type #geom_meos_coverage() answers 1 for,
  * which is every type the edge decomposition reaches, and a type it declines is
  * answered by nobody.
  * @param[in] geom1,geom2 Geometries the operation is asked about
@@ -1837,7 +1837,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 static uint8_t
 geo_unsupported_type(const LWGEOM *geom1, const LWGEOM *geom2)
 {
-  return geom_meos_supported(geom1) ? geom2->type : geom1->type;
+  return geom_meos_coverage(geom1) == 1 ? geom2->type : geom1->type;
 }
 
 /**
@@ -2351,7 +2351,7 @@ geom_areal_meeting(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   GSERIALIZED *bound1 = geom_boundary(gs1);
   GSERIALIZED *bound2 = bound1 ? geom_boundary(gs2) : NULL;
   GSERIALIZED *result = (bound1 && bound2 && geo_clip_subject(bound1) &&
-    geo_meos_supported(bound2)) ?
+    geo_meos_coverage(bound2) == 1) ?
     geo_clip_linear_geom(bound1, bound2, true) : NULL;
   if (bound1) pfree(bound1);
   if (bound2) pfree(bound2);
@@ -2428,9 +2428,9 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
   /* The part of a line inside the other geometry, read from the segment
    * kernels, which answer an arc of that geometry exactly */
-  if (geo_clip_subject(gs1) && geo_meos_supported(gs2))
+  if (geo_clip_subject(gs1) && geo_meos_coverage(gs2) == 1)
     return geo_clip_linear_geom(gs1, gs2, true);
-  if (geo_clip_subject(gs2) && geo_meos_supported(gs1))
+  if (geo_clip_subject(gs2) && geo_meos_coverage(gs1) == 1)
     return geo_clip_linear_geom(gs2, gs1, true);
 
   /* An areal pair the native overlay reads is answered on the circles its
@@ -2498,7 +2498,7 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   /* Difference takes the FIRST operand apart, so only its own kind decides */
   if (geo_is_point_set(gs1))
     return geo_points_covered(gs1, gs2, false);
-  if (geo_clip_subject(gs1) && geo_meos_supported(gs2))
+  if (geo_clip_subject(gs1) && geo_meos_coverage(gs2) == 1)
     return geo_clip_linear_geom(gs1, gs2, false);
 
   /* A region loses no area to a clip that covers none. A point set and a curve
@@ -3390,7 +3390,8 @@ geom_is_simple(const GSERIALIZED *gs)
   if (covered)
     return result;
 
-  /* #meos_is_simple answers every type #geom_meos_supported admits, and a
+  /* #meos_is_simple answers every type #geom_meos_coverage answers 1 for,
+   * and a
    * geodetic geometry is refused above, so a geometry reaching here carries a
    * type the engine does not read at all */
   meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,

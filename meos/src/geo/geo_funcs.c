@@ -522,23 +522,35 @@ geom_extract_edges(const LWGEOM *geom)
 }
 
 /**
- * @brief Return true if a geometry is composed solely of the types the native
- * implementations can extract into edges
+ * @brief Return how far the native implementations cover a geometry
  * @details Mirrors the type dispatch of #geom_extract_edges_iter, which every
  * native implementation of a PostGIS function reads its geometry through, so
- * the predicate answers for all of them: the clip engine, the DE-9IM matrix,
- * the convex hull, the oriented envelope and the buffer alike. A geometry
- * holding any other type, a TIN or a polyhedral surface, is uncovered and
- * belongs to the caller, which either answers it another way or reports that
- * it is not supported
- * @note Uncovered never means unrelated: a @p false is the absence of an
- * answer, not a negative one
+ * the answer holds for all of them: the clip engine, the DE-9IM matrix, the
+ * convex hull, the oriented envelope and the buffer alike.
+ *
+ * THE THIRD ANSWER IS THE POINT. A geometry the kernels do not cover and a
+ * geometry of a type this build has never heard of are different facts, and a
+ * caller can act on the second only if it is told them apart: liblwgeom
+ * numbers its types 1 to 15 today and PostGIS adds to that set, so a build
+ * meets a type its own enumeration does not name the moment it is linked
+ * against a newer liblwgeom. Answering "not covered" there states something
+ * about a type nothing here has seen.
+ *
+ * @return 1 where the kernels answer for the geometry, 0 where a type they
+ * know is one they do not answer for, and -1 where the type is not one this
+ * build enumerates at all, which is reported as an unsupported type
+ * @note Neither 0 nor -1 means unrelated: both are the absence of an answer
+ * rather than a negative one. A caller either answers such a geometry another
+ * way or reports that it is not supported. The two differ in who reports it:
+ * a 0 is the caller's to report, naming the operation it has no answer for,
+ * while a -1 is reported here, because a type this build does not enumerate
+ * is a fact about the geometry rather than about the operation
  */
-bool
-geom_meos_supported(const LWGEOM *geom)
+int
+geom_meos_coverage(const LWGEOM *geom)
 {
   if (! geom)
-    return false;
+    return -1;
   switch (geom->type)
   {
     case POINTTYPE:
@@ -549,7 +561,7 @@ geom_meos_supported(const LWGEOM *geom)
     case MULTIPOLYGONTYPE:
     case TRIANGLETYPE:
     case CIRCSTRINGTYPE:
-      return true;
+      return 1;
     case COMPOUNDTYPE:
     case MULTICURVETYPE:
     case MULTISURFACETYPE:
@@ -563,9 +575,15 @@ geom_meos_supported(const LWGEOM *geom)
        * call */
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
       for (uint32_t i = 0; i < col->ngeoms; i++)
-        if (! geom_meos_supported(col->geoms[i]))
-          return false;
-      return true;
+      {
+        /* A member carries the weaker answer outward: a member of an unknown
+         * type makes the whole collection unknown, and an uncovered one makes
+         * it uncovered */
+        int member = geom_meos_coverage(col->geoms[i]);
+        if (member != 1)
+          return member;
+      }
+      return 1;
     }
     case CURVEPOLYTYPE:
     {
@@ -575,15 +593,27 @@ geom_meos_supported(const LWGEOM *geom)
       for (uint32_t r = 0; r < cp->nrings; r++)
       {
         uint8_t rt = cp->rings[r]->type;
+        /* A ring of a type the ring dispatch does not take is a type this
+         * build knows, so the geometry is uncovered rather than unknown */
         if (rt != LINETYPE && rt != CIRCSTRINGTYPE && rt != COMPOUNDTYPE)
-          return false;
-        if (rt == COMPOUNDTYPE && ! geom_meos_supported(cp->rings[r]))
-          return false;
+          return 0;
+        if (rt == COMPOUNDTYPE)
+        {
+          int ring = geom_meos_coverage(cp->rings[r]);
+          if (ring != 1)
+            return ring;
+        }
       }
-      return true;
+      return 1;
     }
+    /* Every type liblwgeom numbers has an arm above, so this one is reached
+     * only by a type added after this code. Saying anything about it other
+     * than "unknown" would be inventing an answer, so it is reported here
+     * exactly as #geom_extract_edges_iter reports it one call deeper */
     default:
-      return false;
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported geometry type");
+      return -1;
   }
 }
 
@@ -7195,7 +7225,7 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
  * NULL where the matrix is asked for on its own
  * @param[out] result The matrix
  * @return true if the geometry pair is supported, which is what
- * #geom_meos_supported answers of each geometry
+ * #geom_meos_coverage answers 1 for each geometry
  */
 static bool
 relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
@@ -7205,7 +7235,7 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
 
   /* Every native implementation reads the same predicate: the engine answers
    * a geometry the edge decomposition reaches, and nothing else */
-  if (! geom_meos_supported(g1) || ! geom_meos_supported(g2))
+  if (geom_meos_coverage(g1) != 1 || geom_meos_coverage(g2) != 1)
     return false;
 
   MeosDE9IM m;
@@ -7245,7 +7275,7 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
  * @brief Compute the DE-9IM intersection matrix
  * @details This is the native counterpart of PostGIS @p ST_Relate
  * @return true if the geometry pair is supported, which is what
- * #geom_meos_supported answers of each geometry. A false return means the
+ * #geom_meos_coverage answers 1 for each geometry. A false return means the
  * pair is outside that coverage, @b not that the geometries are unrelated, so
  * a caller must answer it another way rather than read @p result
  */
@@ -7794,7 +7824,7 @@ relate_ctx_make(const LWGEOM *geom)
   /* The same predicate a relationship reads at its entry. Answering NULL here
    * rather than extracting keeps an uncovered geometry on the path it already
    * takes: a relationship over it reports itself uncovered and raises nothing */
-  if (! geom_meos_supported(geom))
+  if (geom_meos_coverage(geom) != 1)
     return NULL;
   struct RelateCtx *ctx = palloc(sizeof(struct RelateCtx));
   ctx->op.geom = geom;
@@ -7870,7 +7900,7 @@ meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
 
   /* Every native implementation reads the same predicate: the engine answers
    * a geometry the edge decomposition reaches, and nothing else */
-  if (! geom_meos_supported(g1) || ! geom_meos_supported(g2))
+  if (geom_meos_coverage(g1) != 1 || geom_meos_coverage(g2) != 1)
     return false;
 
   /* An empty geometry holds no point to share with another, and none of the
@@ -7897,8 +7927,8 @@ meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
  * @param[in] g1,g2 Geometries
  * @param[in] pattern DE-9IM pattern, in the alphabet #de9im_match reads
  * @param[out] result True if the geometries satisfy the pattern
- * @return True if the pair is covered, which is what #geom_meos_supported
- * answers of each geometry. A false return means the pair is outside that
+ * @return True if the pair is covered, which is what
+ * #geom_meos_coverage answers 1 for each geometry. A false return means the pair is outside that
  * coverage, @b not that the pattern fails, so a caller must answer it another
  * way rather than read @p result
  */

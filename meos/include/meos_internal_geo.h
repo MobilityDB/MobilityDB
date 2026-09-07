@@ -264,7 +264,7 @@ extern bool geo_clip_subject(const GSERIALIZED *gs);
 extern bool geo_is_planar_areal(const GSERIALIZED *gs);
 extern bool geo_every_part_bounds_area(const GSERIALIZED *gs);
 extern bool geo_is_point_set(const GSERIALIZED *gs);
-extern bool geo_meos_supported(const GSERIALIZED *gs);
+extern int geo_meos_coverage(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_points_covered(const GSERIALIZED *pts,
   const GSERIALIZED *gs, bool covered);
 extern GSERIALIZED *geo_clip_linear_geom(const GSERIALIZED *line,
@@ -279,7 +279,7 @@ extern Temporal *tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALI
 extern Temporal *tpoint_linear_dwithin_geom_ctx(const Temporal *temp, const void *ctx, double dist);
 extern Temporal *tpoint_linear_distance_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tpoint_linear_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
-extern bool geom_meos_supported(const LWGEOM *geom);
+extern int geom_meos_coverage(const LWGEOM *geom);
 
 /*****************************************************************************/
 

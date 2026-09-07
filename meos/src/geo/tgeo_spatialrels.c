@@ -1144,7 +1144,7 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
      * reaches the decomposition only for a value whose box meets the
      * geometry, and answers from the boxes alone for the values that do not */
     LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    if (geom_meos_supported(lwgeom))
+    if (geom_meos_coverage(lwgeom) == 1)
       ctx = geo_edge_ctx_make(gs);
     lwgeom_free(lwgeom);
   }
@@ -1365,7 +1365,7 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
       ! FLAGS_GET_Z(gs->gflags))
   {
     LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    bool supported = geom_meos_supported(lwgeom);
+    bool supported = geom_meos_coverage(lwgeom) == 1;
     lwgeom_free(lwgeom);
     if (supported)
     {
@@ -1913,7 +1913,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       gserialized_get_type(gs) != POINTTYPE)
   {
     LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    bool supported = geom_meos_supported(lwgeom);
+    bool supported = geom_meos_coverage(lwgeom) == 1;
     lwgeom_free(lwgeom);
     if (supported)
     {
