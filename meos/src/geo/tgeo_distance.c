@@ -1774,7 +1774,7 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! MEOS_FLAGS_GET_Z(temp->flags))
   {
     LWGEOM *geom = lwgeom_from_gserialized(gs);
-    bool native = geom->type != POINTTYPE && geom_meos_supported(geom);
+    bool native = geom->type != POINTTYPE && geom_meos_coverage(geom) == 1;
     lwgeom_free(geom);
     if (native)
       return tpoint_linear_distance_geom(temp, gs);
