@@ -408,7 +408,7 @@ datum_jsonb_delete_path(Datum jb, Datum keys, Datum count)
 Datum
 datum_jsonb_insert(Datum jb, Datum keys, Datum count, Datum newjb, Datum after)
 {
-  return PointerGetDatum(pg_jsonb_set(DatumGetJsonbP(jb),
+  return PointerGetDatum(pg_jsonb_insert(DatumGetJsonbP(jb),
     (text **) DatumGetPointer(keys), DatumGetInt32(count),
     DatumGetJsonbP(newjb), DatumGetBool(after)));
 }
