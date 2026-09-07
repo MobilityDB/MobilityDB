@@ -73,6 +73,14 @@ SELECT tjsonbInsert(tjsonb '{{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02,
 SELECT tjsonbInsert(tjsonb '[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02, {"speed": 30}@2001-01-03]', ARRAY['units'], '"km/h"'::jsonb);
 SELECT tjsonbInsert(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02, {"speed": 30}@2001-01-03],[{"geom": 30}@2001-01-04, {"speed": 30}@2001-01-05]}', ARRAY['units'], '"km/h"'::jsonb);
 
+-- The cases above add a key the object does not carry, where inserting and setting answer
+-- alike, so they cannot see which of the two runs. Inserting INTO AN ARRAY at an occupied
+-- index is the discriminating shape: setting overwrites the element there, inserting shifts
+-- it, and the `after` flag chooses the side.
+SELECT tjsonbInsert(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb);
+SELECT tjsonbInsert(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb, true);
+SELECT tjsonbSet(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], '2'::jsonb);
+
 -------------------------------------------------------------------------------
 
 SELECT tjsonbExtractPath(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-01', ARRAY['speed']);

@@ -2258,7 +2258,7 @@ TJSONB_CONFIG = dict(
                                     3: "jb1", 5: "null_handle_text1"},
         "jsonbset_delete_path":   {0: "jsonbset_obj1", 1: "path1", 2: "2"},
         "jsonbset_extract_path":  {0: "jsonbset_obj1", 1: "path1", 2: "2"},
-        "jsonbset_insert":        {0: "jsonbset_obj1", 1: "path1", 2: "2",
+        "jsonbset_insert":        {0: "jsonbset_obj1", 1: "keys_new1", 2: "1",
                                     3: "jb1"},
         "tjsonb_delete_array":    {1: "keys1", 2: "1"},
         "tjsonb_delete_path":     {1: "path1", 2: "2"},
@@ -2266,7 +2266,7 @@ TJSONB_CONFIG = dict(
         "tjsonb_exists_any":      {1: "keys1", 2: "1"},
         "tjsonb_exists_array":    {1: "keys1", 2: "1"},
         "tjsonb_extract_path":    {1: "path1", 2: "2"},
-        "tjsonb_insert":          {1: "keys1", 2: "1", 3: "jb1"},
+        "tjsonb_insert":          {1: "keys_new1", 2: "1", 3: "jb1"},
         "tjsonb_set":             {1: "keys1", 2: "1", 3: "jb1",
                                     5: "null_handle_text1"},
     },
@@ -2327,6 +2327,11 @@ TJSONB_CONFIG = dict(
   /* A path whose last element is ABSENT from jb_obj1, for the insert. */
   text *key_c1 = text_in("c");
   text *path_new1[] = { key_a1, key_c1 };
+  /* The same rule for the tjsonb and jsonbset inserts, whose subjects are
+   * tjsonb1 ({"a": …} per instant) and jsonbset_obj1 ({"a": 1}, {"b": 2}):
+   * "c" is absent from every element of both, so the insert has a key to
+   * create rather than one to refuse. */
+  text *keys_new1[] = { key_c1 };
   char *jsonbset_str1 = "{1, 2, 3}";
   text *json_doc1 = text_in("{\\"a\\": {\\"b\\": 1}}");
   Jsonb *jb_obj1 = jsonb_in("{\\"a\\": {\\"b\\": 1}}");

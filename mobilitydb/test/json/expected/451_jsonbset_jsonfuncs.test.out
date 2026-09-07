@@ -76,15 +76,15 @@ SELECT jsonbsetSet(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\":
 (1 row)
 
 SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
-   jsonbsetinsert    
----------------------
- {"{\"speed\": 10}"}
+              jsonbsetinsert              
+------------------------------------------
+ {"{\"speed\": 10, \"units\": \"km/h\"}"}
 (1 row)
 
 SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
-                      jsonbsetinsert                       
------------------------------------------------------------
- {"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}
+                                                      jsonbsetinsert                                                      
+--------------------------------------------------------------------------------------------------------------------------
+ {"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 30, \"units\": \"km/h\"}"}
 (1 row)
 
 SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
