@@ -3587,9 +3587,14 @@ relate_edges_init(RelateEdges *re, Edge **edges, int nedges, bool index)
    * is thousands of times that. The widest tolerance in the array is what
    * makes the index answer what the scan answers at every scale */
   re->tol = MEOS_GEOM_TOLERANCE;
+  re->straight = true;
   for (int i = 0; i < nedges; i++)
+  {
     if (edges[i]->tol > re->tol)
       re->tol = edges[i]->tol;
+    if (edges[i]->etype == EDGE_POLYARC)
+      re->straight = false;
+  }
   re->index = index ? relate_edges_index(edges, nedges) : NULL;
   return;
 }
@@ -5727,10 +5732,13 @@ relate_area_edge_inside_area(const Edge *edge, const RelateEdges *area)
  * @details The edge is split at every intersection with the other polygon
  * boundary. Since there is no boundary intersection inside an open
  * interval, one representative point is sufficient.
+ * @param[in] exact_ii The interiors of the two geometries have been decided
+ * exactly before this walk runs, which #relate_area_boundaries_cross does for
+ * a pair of straight boundaries and not for one carrying an arc
  */
 static void
 relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
-  MeosDE9IM *m, bool first)
+  MeosDE9IM *m, bool first, bool exact_ii)
 {
   /* Maximum number of intersections between one edge and one
    * circular/linear boundary edge is two */
@@ -5846,16 +5854,33 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
       if (t >= shlo[k] && t <= shhi[k])
         on_shared = true;
     int loc = on_shared ? 1 : relate_point_in_area_parity(x, y, other);
-    if (loc == 0)
+    /* A boundary point of A lying in the interior of B carries a whole
+     * neighbourhood of itself inside B, and every neighbourhood of a boundary
+     * point of A meets the interior of A, so the two interiors meet in a
+     * two-dimensional set. The interiors are therefore what settles this
+     * branch, and #relate_area_interiors_intersect has already answered them
+     * from the operands' own vertices before this walk runs.
+     *
+     * Reading that answer is what keeps the branch sound where the midpoint
+     * cannot: the midpoint is CONSTRUCTED from two split parameters that are
+     * themselves solved from the coordinates, so where the two boundaries run
+     * within their own rounding of one another it lands on either side of the
+     * other boundary by the residue of that arithmetic, and the parity below
+     * reports whichever side it landed on. Where the interiors provably miss,
+     * so does the boundary, whatever the midpoint reads.
+     *
+     * The interiors answer carries that weight only where it is exact, which
+     * is the straight-boundary class its crossing route reads, so a pair
+     * carrying an arc keeps the midpoint as its only source */
+    if (loc == 0 && (m->ii == 2 || ! exact_ii))
     {
       /* Boundary(A) ∩ Interior(B) or Interior(A) ∩ Boundary(B) */
       if (first)
         m->bi = 1;
       else
         m->ib = 1;
-      /* If a non-zero boundary portion of A lies inside B,
-       * then the interiors of A and B also intersect in a
-       * two-dimensional neighbourhood of that portion. */
+      /* A non-zero boundary portion of A inside B carries a neighbourhood of
+       * itself inside B, and that neighbourhood meets the interior of A */
       m->ii = 2;
     }
     else if (loc == 2)
@@ -6219,18 +6244,20 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
 
   /* Boundary(A) / Interior(B) and Interior(A) / Boundary(B) are determined by
    * splitting every boundary edge at the intersections with the other
-   * boundary. */
+   * boundary. Where both boundaries are straight the step above has settled
+   * the interiors exactly, and each portion is read against that answer */
+  bool exact_ii = re1.straight && re2.straight;
   for (int i = 0; i < n1; i++)
   {
     if (!relate_area_boundary_edge(e1[i]))
       continue;
-    relate_area_edge_intervals(e1[i], &re2, m, true);
+    relate_area_edge_intervals(e1[i], &re2, m, true, exact_ii);
   }
   for (int i = 0; i < n2; i++)
   {
     if (!relate_area_boundary_edge(e2[i]))
       continue;
-    relate_area_edge_intervals(e2[i], &re1, m, false);
+    relate_area_edge_intervals(e2[i], &re1, m, false, exact_ii);
   }
 
   /* Boundary / Boundary.
