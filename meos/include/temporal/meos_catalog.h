@@ -283,6 +283,8 @@ extern bool timespan_basetype(MeosType type);
 extern bool timespan_type(MeosType type);
 
 extern bool spanset_type(MeosType type);
+extern bool numspanset_type(MeosType type);
+extern bool ensure_numspanset_type(MeosType type);
 extern bool timespanset_type(MeosType type);
 extern bool ensure_timespanset_type(MeosType type);
 
