@@ -11,9 +11,6 @@ meos/src/pointcloud/pgsql_compat.c	meos_pc_patch_serialize	switch patch->type
 meos/src/pointcloud/tpc_boxops.c	tpointcloudinst_set_tpcbox	else T_TPCPATCH
 meos/src/rgeo/trgeo_geom_clip.c	clip_lwgeom_m1_accum	switch geom->type
 meos/src/rgeo/trgeo_geom_clip.c	clip_lwgeom_m2_accum	switch geom->type
-meos/src/temporal/span.c	span_decr_bound	switch basetype
-meos/src/temporal/span.c	span_incr_bound	switch basetype
-meos/src/temporal/span_ops.c	distance_sentinel	switch type
 meos/src/temporal/temporal_analytics.c	innovation_distance	else T_TGEOMPOINT
 mobilitydb/src/temporal/index_sortsupport.c	sortsupport_rank_bound	switch basetype
 mobilitydb/src/temporal/index_sortsupport.c	span_sort_hash	switch s->basetype

@@ -254,8 +254,15 @@ span_incr_bound(Datum lower, MeosType basetype)
     case T_DATE:
       result = DateADTGetDatum(DatumGetDateADT(lower) + 1);
       break;
-    default:
+    case T_FLOAT8:
+    case T_TIMESTAMPTZ:
+      /* A continuous type has no next value, so the bound is unchanged */
       result = lower;
+      break;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown base type for a span bound: %s", meostype_name(basetype));
+      return lower;
   }
   return result;
 }
@@ -278,8 +285,15 @@ span_decr_bound(Datum lower, MeosType basetype)
     case T_DATE:
       result = DateADTGetDatum(DatumGetDateADT(lower) - 1);
       break;
-    default:
+    case T_FLOAT8:
+    case T_TIMESTAMPTZ:
+      /* A continuous type has no previous value, so the bound is unchanged */
       result = lower;
+      break;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown base type for a span bound: %s", meostype_name(basetype));
+      return lower;
   }
   return result;
 }
