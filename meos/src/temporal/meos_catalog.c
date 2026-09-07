@@ -1126,6 +1126,29 @@ spanset_type(MeosType type)
 }
 
 /**
+ * @brief Return true if the type is a number span set type
+ */
+bool
+numspanset_type(MeosType type)
+{
+  return (type == T_DATESPANSET || type == T_FLOATSPANSET ||
+    type == T_INTSPANSET || type == T_BIGINTSPANSET);
+}
+
+/**
+ * @brief Ensure that a span set is a number span set type
+ */
+bool
+ensure_numspanset_type(MeosType type)
+{
+  if (numspanset_type(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The value must be a number span set type");
+  return false;
+}
+
+/**
  * @brief Return true if the type is a time span type
  */
 bool
