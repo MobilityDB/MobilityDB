@@ -321,6 +321,58 @@ int main(void)
   }
   meos_errno_reset();
 
+  /* Two areas lying on OPPOSITE SIDES of one line share no area, so neither
+   * interior holds a point of the other's boundary, however near the two
+   * boundaries run. Deciding that from a boundary portion means classifying a
+   * point built at the middle of it, and the portion is delimited by crossings
+   * solved from the coordinates of both edges: where the two boundaries run
+   * within their own rounding of one another, a crossing lands a fraction of a
+   * unit in the last place from the edge's own endpoint and leaves a portion
+   * shorter than the coordinates resolve. The midpoint of such a portion falls
+   * on whichever side of the other boundary the rounding puts it, and reading
+   * it as interior reports a boundary inside an area that does not reach it.
+   * The interiors settle it instead, and they are decided from the operands'
+   * own vertices before any portion is classified.
+   * The record below is that case at its smallest: a rectangle whose top edge
+   * lies along y = Y0 and one above it whose bottom edge rises ONE UNIT IN THE
+   * LAST PLACE off that line at its middle vertex, at projected coordinates
+   * near 6.2e6 where one unit in the last place is 9.3e-10. Every vertex of
+   * the first satisfies y <= Y0 and every vertex of the second y >= Y0, so the
+   * two meet at the two points where both reach the line and nowhere else --
+   * which is what makes the answer owed here a property of the construction
+   * rather than a comparison with another engine. A real protected-area pair
+   * fails the same way for the same reason */
+  const char *apart_a =
+    "POLYGON((711277 6212854.6200000001,711277 6212855.6200000001,"
+    "711279 6212855.6200000001,711281 6212855.6200000001,"
+    "711281 6212854.6200000001,711277 6212854.6200000001))";
+  const char *apart_b =
+    "POLYGON((711277 6212856.6200000001,711281 6212856.6200000001,"
+    "711281 6212855.6200000001,711279 6212855.620000001,"
+    "711277 6212855.6200000001,711277 6212856.6200000001))";
+  GSERIALIZED *apart_geo_a = geom_in(apart_a, -1);
+  GSERIALIZED *apart_geo_b = geom_in(apart_b, -1);
+  assert(apart_geo_a != NULL);
+  assert(apart_geo_b != NULL);
+  meos_errno_reset();
+  char apart_patt[10] = "F***T****";
+  bool apart_touches = geom_relate_pattern(apart_geo_a, apart_geo_b,
+    apart_patt);
+  printf("geom_relate_pattern(two areas on opposite sides of a line, they only "
+    "touch): %d, errno %d\n", apart_touches, meos_errno());
+  assert(apart_touches == true);
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+  char apart_interiors[10] = "T********";
+  bool apart_overlaps = geom_relate_pattern(apart_geo_a, apart_geo_b,
+    apart_interiors);
+  printf("geom_relate_pattern(two areas on opposite sides of a line, interiors "
+    "meet): %d, errno %d\n", apart_overlaps, meos_errno());
+  assert(apart_overlaps == false);
+  assert(meos_errno() == 0);
+  free(apart_geo_a); free(apart_geo_b);
+  meos_errno_reset();
+
   /* Two areas whose boundaries run PARALLEL never touch, however close they
    * come. Deciding that means asking whether the two lines are one line, and
    * the engine answers it from the cross product of the offset between them

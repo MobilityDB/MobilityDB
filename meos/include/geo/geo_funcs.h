@@ -233,6 +233,11 @@ typedef struct
   RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
   double xmax;    /**< Greatest x the edges reach */
   double tol;     /**< Widest tolerance any of the edges asks for */
+  bool straight;  /**< Every areal boundary edge the array holds is a segment,
+                       which is the class #relate_area_boundaries_cross reads:
+                       it solves a crossing from four given vertices, and the
+                       two endpoints of an arc do not determine the curve
+                       between them */
 } RelateEdges;
 
 extern void relate_edges_init(RelateEdges *re, Edge **edges, int nedges,
