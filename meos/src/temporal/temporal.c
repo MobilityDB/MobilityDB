@@ -2405,6 +2405,9 @@ temporal_min_inst_p(const Temporal *temp)
 TInstant *
 temporal_min_instant(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+
   return tinstant_copy(temporal_min_inst_p(temp));
 }
 
@@ -2447,6 +2450,9 @@ temporal_max_inst_p(const Temporal *temp)
 TInstant *
 temporal_max_instant(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+
   return tinstant_copy(temporal_max_inst_p(temp));
 }
 
