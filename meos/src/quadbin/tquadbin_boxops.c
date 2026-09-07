@@ -155,7 +155,7 @@ STBox *
 quadbin_tstzspan_to_stbox(Quadbin cell, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
+  VALIDATE_TSTZSPAN(s, NULL);
 
   STBox box;
   if (! quadbin_set_stbox(cell, &box))
