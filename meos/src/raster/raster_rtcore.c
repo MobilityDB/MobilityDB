@@ -98,7 +98,7 @@ raster_destroy(rt_raster raster)
  * @brief Return the serialized form of an rt_core raster, destroying the
  * raster
  * @param[in] raster Raster to serialize and destroy, may be @p NULL
- * @return On error, return @p NULL
+ * @errval NULL
  */
 static Raster *
 raster_serialize_destroy(rt_raster raster)
@@ -124,7 +124,7 @@ raster_serialize_destroy(rt_raster raster)
  * @brief Return a raster from its Well-Known Binary (WKB) representation
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
- * @return On error, return @p NULL
+ * @errval NULL
  */
 Raster *
 raster_from_wkb(const uint8_t *wkb, size_t size)
@@ -148,7 +148,7 @@ raster_from_wkb(const uint8_t *wkb, size_t size)
  * @brief Return a raster from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
  * @param[in] hexwkb HexWKB string
- * @return On error, return @p NULL
+ * @errval NULL
  */
 Raster *
 raster_from_hexwkb(const char *hexwkb)
@@ -172,7 +172,7 @@ raster_from_hexwkb(const char *hexwkb)
  * @brief Return the Well-Known Binary (WKB) representation of a raster
  * @param[in] rast Raster
  * @param[out] size_out Size of the output
- * @return On error, return @p NULL
+ * @errval NULL
  */
 uint8_t *
 raster_as_wkb(const Raster *rast, size_t *size_out)
@@ -209,7 +209,7 @@ raster_as_wkb(const Raster *rast, size_t *size_out)
  * representation of a raster
  * @param[in] rast Raster
  * @param[out] size_out Size of the output, not counting the null terminator
- * @return On error, return @p NULL
+ * @errval NULL
  */
 char *
 raster_as_hexwkb(const Raster *rast, size_t *size_out)
@@ -251,7 +251,7 @@ raster_as_hexwkb(const Raster *rast, size_t *size_out)
  * while the band count is not, so #raster_band_of() deserializes in full and
  * releases with ::raster_destroy()
  * @param[in] rast Raster
- * @return On error return @p NULL
+ * @errval NULL
  */
 static rt_raster
 raster_header(const Raster *rast)
@@ -270,8 +270,8 @@ raster_header(const Raster *rast)
  * @param[in] band Band number (1-based)
  * @param[out] raster Raster the band is read from, which the caller releases
  * with ::raster_destroy() once it is done with the band
- * @return On error return @p NULL, having released the raster and set
- * @p raster to @p NULL
+ * @errval NULL
+ * @note A failure releases the raster and sets @p raster to @p NULL
  */
 static rt_band
 raster_band_of(const Raster *rast, int band, rt_raster *raster)
@@ -309,7 +309,7 @@ raster_band_of(const Raster *rast, int band, rt_raster *raster)
  * @ingroup meos_raster_base_accessor
  * @brief Return the number of bands of a raster
  * @param[in] rast Raster
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Raster_num_bands()
  */
 int
@@ -329,7 +329,7 @@ raster_num_bands(const Raster *rast)
  * @ingroup meos_raster_base_accessor
  * @brief Return the width in pixels of a raster
  * @param[in] rast Raster
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  */
 int
 raster_width(const Raster *rast)
@@ -348,7 +348,7 @@ raster_width(const Raster *rast)
  * @ingroup meos_raster_base_accessor
  * @brief Return the height in pixels of a raster
  * @param[in] rast Raster
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  */
 int
 raster_height(const Raster *rast)
@@ -367,7 +367,7 @@ raster_height(const Raster *rast)
  * @ingroup meos_raster_base_accessor
  * @brief Return the spatial reference system identifier of a raster
  * @param[in] rast Raster
- * @return On error return @p SRID_INVALID
+ * @errval SRID_INVALID
  */
 int32_t
 raster_srid(const Raster *rast)
@@ -386,7 +386,7 @@ raster_srid(const Raster *rast)
  * @ingroup meos_raster_base_accessor
  * @brief Return the X coordinate of the upper left corner of a raster
  * @param[in] rast Raster
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note This is the origin the geotransform states, which the skew rotates
  * the grid about, so it is a corner of the extent only when both skews are
  * zero
@@ -408,7 +408,7 @@ raster_upper_left_x(const Raster *rast)
  * @ingroup meos_raster_base_accessor
  * @brief Return the Y coordinate of the upper left corner of a raster
  * @param[in] rast Raster
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note This is the origin the geotransform states, which the skew rotates
  * the grid about, so it is a corner of the extent only when both skews are
  * zero
@@ -430,7 +430,7 @@ raster_upper_left_y(const Raster *rast)
  * @ingroup meos_raster_base_accessor
  * @brief Return the pixel width of a raster, that is, the X component of its scale
  * @param[in] rast Raster
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 double
 raster_scale_x(const Raster *rast)
@@ -449,7 +449,7 @@ raster_scale_x(const Raster *rast)
  * @ingroup meos_raster_base_accessor
  * @brief Return the pixel height of a raster, that is, the Y component of its scale
  * @param[in] rast Raster
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note The value is negative for a grid whose rows run north to south,
  * which is how a raster is ordinarily written
  */
@@ -470,7 +470,7 @@ raster_scale_y(const Raster *rast)
  * @ingroup meos_raster_base_accessor
  * @brief Return the X component of the skew of a raster
  * @param[in] rast Raster
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note A raster whose two skews are zero is axis-aligned, so a reader that
  * assumes an axis-aligned grid states the assumption by testing them
  */
@@ -491,7 +491,7 @@ raster_skew_x(const Raster *rast)
  * @ingroup meos_raster_base_accessor
  * @brief Return the Y component of the skew of a raster
  * @param[in] rast Raster
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note A raster whose two skews are zero is axis-aligned, so a reader that
  * assumes an axis-aligned grid states the assumption by testing them
  */
@@ -513,7 +513,7 @@ raster_skew_y(const Raster *rast)
  * @brief Return the name of the pixel data type of a raster band
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
- * @return On error return @p NULL
+ * @errval NULL
  * @note The name returned is the one the RaQuet specification writes, which is
  * what #raquet_pixtype() answers for a tile, so a band and a tile of the same
  * type report the same name. The PostGIS spelling is read through
@@ -547,7 +547,7 @@ raster_band_pixel_type(const Raster *rast, int band)
  * @brief Return whether a raster band states a nodata value
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
- * @return On error return false
+ * @errval false
  * @note A band that states none has no pixel to exclude, so every pixel it
  * holds carries a value
  */
@@ -570,7 +570,7 @@ raster_band_has_nodata_value(const Raster *rast, int band)
  * @brief Return the nodata value of a raster band
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note A band stating no nodata value has none to return, which is an error
  * rather than a value: test it with #raster_band_has_nodata_value()
  */
@@ -604,7 +604,8 @@ raster_band_nodata_value(const Raster *rast, int band)
  * @brief Convert a raster into a spatiotemporal box
  * @param[in] rast Raster
  * @return The X/Y bounding box of the raster in its own reference system, with
- * no T dimension. On error return @p NULL
+ * no T dimension
+ * @errval NULL
  * @note The extent bears the rotation of the geotransform, so a skewed raster
  * answers the box that contains its four rotated corners rather than the one
  * the scale alone would give
@@ -857,7 +858,7 @@ raster_minus_value(const Temporal *traj, const Raster *rast, int band,
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range (inclusive bounds)
- * @return On error, return -1
+ * @errval -1
  * @csqlfn #Eraster_value()
  */
 int
@@ -885,7 +886,7 @@ eraster_value(const Temporal *traj, const Raster *rast, int band,
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range (inclusive bounds)
- * @return On error, return -1
+ * @errval -1
  * @csqlfn #Araster_value()
  */
 int

@@ -270,7 +270,7 @@ p_comma(const char **str)
 
 /**
  * @brief Input a double from the buffer
- * @return On error return false
+ * @errval false
  */
 bool
 double_parse(const char **str, double *result)
@@ -290,7 +290,7 @@ double_parse(const char **str, double *result)
 
 /**
  * @brief Parse a base value from the buffer
- * @return On error return false
+ * @errval false
  */
 bool
 basetype_parse(const char **str, MeosType basetype, char delim, Datum *result)
@@ -349,7 +349,7 @@ basetype_parse(const char **str, MeosType basetype, char delim, Datum *result)
 
 /**
  * @brief Parse a temporal box value from the buffer
- * @return On error return @p NULL
+ * @errval NULL
  */
 TBox *
 tbox_parse(const char **str)
@@ -450,7 +450,7 @@ tbox_parse(const char **str)
 
 /**
  * @brief Parse a timestamp value from the buffer
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  */
 TimestampTz
 timestamp_parse(const char **str)
@@ -476,7 +476,7 @@ timestamp_parse(const char **str)
 
 /**
  * @brief Parse a element value from the buffer
- * @return On error return false
+ * @errval false
  */
 bool
 elem_parse(const char **str, MeosType basetype, Datum *result)
@@ -514,7 +514,7 @@ elem_parse(const char **str, MeosType basetype, Datum *result)
 
 /**
  * @brief Parse a set value from the buffer
- * @return On error return @p NULL
+ * @errval NULL
  */
 Set *
 set_parse(const char **str, MeosType settype)
@@ -577,7 +577,7 @@ error:
 
 /**
  * @brief Parse a bound value from the buffer
- * @return On error return false
+ * @errval false
  */
 bool
 bound_parse(const char **str, MeosType basetype, Datum *result)
@@ -600,7 +600,7 @@ bound_parse(const char **str, MeosType basetype, Datum *result)
 
 /**
  * @brief Parse a span value from the buffer
- * @return On error return false
+ * @errval false
  */
 bool
 span_parse(const char **str, MeosType spantype, bool end, Span *span)
@@ -646,7 +646,7 @@ span_parse(const char **str, MeosType spantype, bool end, Span *span)
 
 /**
  * @brief Parse a span set value from the buffer
- * @return On error return @p NULL
+ * @errval NULL
  */
 SpanSet *
 spanset_parse(const char **str, MeosType spansettype)
@@ -692,7 +692,7 @@ error:
  * @param[in] temptype Temporal type
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no more input after the instant
- * @return On error return NULL
+ * @errval NULL
  */
 TInstant *
 tinstant_parse(const char **str, MeosType temptype, bool end)
@@ -721,7 +721,7 @@ tinstant_parse(const char **str, MeosType temptype, bool end)
  * @brief Parse a temporal discrete sequence from the buffer
  * @param[in] str Input string
  * @param[in] temptype Base type
- * @return On error return @p NULL
+ * @errval NULL
  */
 TSequence *
 tdiscseq_parse(const char **str, MeosType temptype)
@@ -771,7 +771,7 @@ error:
  * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single sequence to ensure there is
  * no more input after the sequence
- * @return New sequence, may be NULL, on error return @p NULL
+ * @errval NULL
  */
 TSequence *
 tcontseq_parse(const char **str, MeosType temptype, interpType interp,
@@ -835,7 +835,7 @@ error:
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
- * @return On error return @p NULL
+ * @errval NULL
  */
 TSequenceSet *
 tsequenceset_parse(const char **str, MeosType temptype, interpType interp)
@@ -880,7 +880,7 @@ error:
  * @brief Parse a temporal value from the buffer (dispatch function)
  * @param[in,out] str Input string, advanced past what is read
  * @param[in] temptype Temporal type
- * @return On error return @p NULL
+ * @errval NULL
  */
 Temporal *
 temporal_parse(const char **str, MeosType temptype)

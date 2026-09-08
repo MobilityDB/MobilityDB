@@ -246,7 +246,7 @@ ttextseqset_from_mfjson(json_object *mfjson)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal boolean from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -259,7 +259,7 @@ tbool_from_mfjson(const char *mfjson)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal integer from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -272,7 +272,7 @@ tint_from_mfjson(const char *mfjson)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal big integer from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -285,7 +285,7 @@ tbigint_from_mfjson(const char *mfjson)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal float from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -298,7 +298,7 @@ tfloat_from_mfjson(const char *mfjson)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal text from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *

@@ -147,7 +147,7 @@ tpcpatch_from_base_temp(const Pcpatch *pa, const Temporal *temp)
  * @ingroup meos_pointcloud_accessor
  * @brief Return the start value of a temporal pgpointcloud patch
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_value()
  */
 Pcpatch *
@@ -162,7 +162,7 @@ tpcpatch_start_value(const Temporal *temp)
  * @ingroup meos_pointcloud_accessor
  * @brief Return the end value of a temporal pgpointcloud patch
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_value()
  */
 Pcpatch *

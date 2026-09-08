@@ -306,7 +306,7 @@ pcpoint_as_hexwkb(const Pcpoint *pt)
  * @param[in] values Coordinate of each dimension, in the order the schema
  *   states the dimensions
  * @param[in] count Number of coordinates
- * @return On error return @p NULL
+ * @errval NULL
  * @note The schema is resolved through the MEOS cache, so a schema stated in
  *   SQL and one parsed from an XML document build a value alike.
  * @csqlfn #Pcpoint_make()
@@ -386,7 +386,7 @@ pcpoint_get_pcid(const Pcpoint *pt)
  * @note Hashes only the meaningful-prefix bytes — pgpointcloud's
  *   struct-tail padding is skipped because it holds uninitialized heap
  *   bytes that differ between otherwise-identical values.
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Pcpoint_hash()
  */
 uint32
@@ -424,7 +424,7 @@ pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
  * @ingroup meos_pointcloud_base_comp
  * @brief Compare two pcpoints byte-wise
  * @return -1 / 0 / 1
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @note Compares only the meaningful-prefix bytes — pgpointcloud's
  * struct-tail padding is skipped (see the padding comment above).
  * Two pcpoints that disagree only on those padding bytes now compare

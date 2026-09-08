@@ -1355,7 +1355,7 @@ minus_span_timestamptz(const Span *s, TimestampTz t)
  * @brief Return the distance between a span and an integer as a double
  * @param[in] s Span
  * @param[in] i Value
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 int
@@ -1371,7 +1371,7 @@ distance_span_int(const Span *s, int i)
  * @brief Return the distance between a span and a big integer as a double
  * @param[in] s Span
  * @param[in] i Value
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 int64
@@ -1387,7 +1387,7 @@ distance_span_bigint(const Span *s, int64 i)
  * @brief Return the distance between a span and a float
  * @param[in] s Span
  * @param[in] d Value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 double
@@ -1403,7 +1403,7 @@ distance_span_float(const Span *s, double d)
  * @brief Return the distance in days between a span and a date as a double
  * @param[in] s Span
  * @param[in] d Value
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 int
@@ -1420,7 +1420,7 @@ distance_span_date(const Span *s, DateADT d)
  * double
  * @param[in] s Span
  * @param[in] t Value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 double
@@ -1437,7 +1437,7 @@ distance_span_timestamptz(const Span *s, TimestampTz t)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two integer spans
  * @param[in] s1,s2 Spans
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Distance_span_span()
  */
 int
@@ -1452,7 +1452,7 @@ distance_intspan_intspan(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two big integer spans
  * @param[in] s1,s2 Spans
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Distance_span_span()
  */
 int64
@@ -1467,7 +1467,7 @@ distance_bigintspan_bigintspan(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two float spans
  * @param[in] s1,s2 Spans
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_span_span()
  */
 double
@@ -1482,7 +1482,7 @@ distance_floatspan_floatspan(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two date spans
  * @param[in] s1,s2 Spans
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Distance_span_span()
  */
 int
@@ -1497,7 +1497,7 @@ distance_datespan_datespan(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance in seconds between two timestamptz spans
  * @param[in] s1,s2 Spans
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_span_span()
  */
 double

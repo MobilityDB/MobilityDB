@@ -737,7 +737,7 @@ ensure_valid_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] inst Temporal geo instant
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
- * @return On error return `NULL`
+ * @errval NULL
  * @sqlop @p ::
  */
 TInstant *
@@ -769,7 +769,7 @@ tgeominst_tgeoginst(const TInstant *inst, bool oper)
  * @param[in] seq Temporal geo sequence
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
- * @return On error return `NULL`
+ * @errval NULL
  * @sqlop @p ::
  */
 TSequence *
@@ -797,7 +797,7 @@ tgeomseq_tgeogseq(const TSequence *seq, bool oper)
  * @param[in] ss Temporal point sequence set
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
- * @return On error return `NULL`
+ * @errval NULL
  * @sqlop @p ::
  */
 TSequenceSet *
@@ -824,7 +824,7 @@ tgeomseqset_tgeogseqset(const TSequenceSet *ss, bool oper)
  * @param[in] temp Temporal geo
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
- * @return On error return `NULL`
+ * @errval NULL
  * @see #tgeominst_tgeoginst
  * @see #tgeomseq_tgeogseq
  * @see #tgeomseqset_tgeogseqset
@@ -853,7 +853,7 @@ tgeom_tgeog(const Temporal *temp, bool oper)
  * @ingroup meos_geo_conversion
  * @brief Return a temporal geography from a temporal geometry
  * @param[in] temp Temporal geo
- * @return On error return `NULL`
+ * @errval NULL
  * @csqlfn #Tgeometry_to_tgeography()
  */
 Temporal *
@@ -868,7 +868,7 @@ tgeometry_to_tgeography(const Temporal *temp)
  * @ingroup meos_geo_conversion
  * @brief Return a temporal geometry from to a temporal geography
  * @param[in] temp Temporal point
- * @return On error return `NULL`
+ * @errval NULL
  * @csqlfn #Tgeography_to_tgeometry()
  */
 Temporal *
@@ -1025,7 +1025,7 @@ tgeoseqset_tpointseqset(const TSequenceSet *ss, bool oper)
  * @param[in] temp Temporal value
  * @param[in] oper True when transforming from temporal geo to temporal point,
  * false otherwise
- * @return On error return `NULL`
+ * @errval NULL
  * @see #tgeoinst_tpointinst
  * @see #tgeoseq_tpointseq
  * @see #tgeoseqset_tpointseqset
@@ -1374,7 +1374,7 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
  * @ingroup meos_geo_accessor
  * @brief Return the convex hull of a temporal geo
  * @param[in] temp Temporal geo
- * @return On error return `NULL`
+ * @errval NULL
  * @csqlfn #Tgeo_convex_hull()
  */
 GSERIALIZED *

@@ -355,7 +355,7 @@ route_exists(int64 rid)
  * @ingroup meos_npoint_base_route
  * @brief Access the ways cache to get the geometry of a route identifier
  * @param[in] rid Route identifier
- * @return On error return @p NULL
+ * @errval NULL
  */
 const GSERIALIZED *
 route_geom(int64 rid)
@@ -371,7 +371,7 @@ route_geom(int64 rid)
  * @brief Access the edge table to return the route length from the
  * corresponding route identifier
  * @param[in] rid Route identifier
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 double
 route_length(int64 rid)

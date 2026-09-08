@@ -1283,8 +1283,7 @@ distance_spanset_value(const SpanSet *ss, Datum value)
  * @brief Return the distance between a span set and a span
  * @param[in] ss Span set
  * @param[in] s Span
- * @return On error return the sentinel of the base type given by
- * #distance_sentinel()
+ * @errval #distance_sentinel()
  * @csqlfn #Distance_spanset_span()
  */
 Datum
@@ -1300,8 +1299,7 @@ distance_spanset_span(const SpanSet *ss, const Span *s)
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two span sets
  * @param[in] ss1,ss2 Span sets
- * @return On error return the sentinel of the base type given by
- * #distance_sentinel()
+ * @errval #distance_sentinel()
  * @csqlfn #Distance_spanset_spanset()
  */
 Datum

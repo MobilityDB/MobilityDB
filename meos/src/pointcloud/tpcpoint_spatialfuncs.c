@@ -223,7 +223,7 @@ eintersects_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  *   a geometry
  * @param[in] temp Temporal pointcloud value (single instant)
  * @param[in] gs Geometry
- * @return @p DBL_MAX on error (missing X/Y dimensions or NULL input)
+ * @errval DBL_MAX
  */
 double
 nad_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)

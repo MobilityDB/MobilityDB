@@ -243,7 +243,7 @@ tnpoint_out(const Temporal *temp, int maxdd)
  * @ingroup meos_npoint_inout
  * @brief Return a temporal network point from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -579,7 +579,7 @@ tgeompoint_to_tnpoint(const Temporal *temp)
  * @ingroup meos_npoint_accessor
  * @brief Return a copy of the start value of a temporal network point
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_value()
  */
 Npoint *
@@ -594,7 +594,7 @@ tnpoint_start_value(const Temporal *temp)
  * @ingroup meos_npoint_accessor
  * @brief Return a copy of the end value of a temporal network point
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_value()
  */
 Npoint *
@@ -826,7 +826,7 @@ tnpointinst_route(const TInstant *inst)
 /**
  * @ingroup meos_npoint_accessor
  * @brief Return the single route of a temporal network point
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Tnpoint_route()
  */
 int64

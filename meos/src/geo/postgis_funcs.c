@@ -871,7 +871,7 @@ geo_is_unitary(const GSERIALIZED *gs)
  *
  * Uses Euclidean 2D computation even if input is 3D.
  * @param[in] gs Geometry
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note An empty geometry encloses nothing, so its area is 0. The question has
  * an answer, and #lwgeom_area gives it
  * @note PostGIS function: @p ST_Area(PG_FUNCTION_ARGS)
@@ -900,7 +900,7 @@ geom_area(const GSERIALIZED *gs)
  *
  *  Uses Euclidean 3D/2D length depending on input dimensions.
  * @param[in] gs Geometry
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note An empty geometry draws no line, so its length is 0. The question has
  * an answer, and #lwgeom_length gives it
  * @note PostGIS function: @p LWGEOM_length_linestring(PG_FUNCTION_ARGS)
@@ -928,7 +928,7 @@ geom_length(const GSERIALIZED *gs)
  *   - perimeter(polygon) = sum of ring perimeters
  * Uses Euclidian 2D computation even if input is 3D
  * @param[in] gs Geometry
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note An empty geometry bounds no area, so its perimeter is 0. The question
  * has an answer, and #lwgeom_perimeter_2d gives it
  * @note PostGIS function: @p LWGEOM_perimeter2d_poly(PG_FUNCTION_ARGS)
@@ -1091,7 +1091,9 @@ geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @brief Return the distance between two geometries
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_Distance(PG_FUNCTION_ARGS)
- * @return On error or empty geometries return DBL_MAX
+ * @note An empty geometry has no point to measure from, so the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
  */
 double
 geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -1134,9 +1136,10 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_MaxDistance(PG_FUNCTION_ARGS)
  * @note A geometry carrying a circular arc is not supported, since the
- * underlying computation implements the maximum only for straight edges
- * @return On error, on empty geometries, or on a geometry carrying a circular
- * arc return DBL_MAX
+ * underlying computation implements the maximum only for straight edges, so
+ * the answer is DBL_MAX
+ * @note An empty geometry has no farthest point, so the answer is DBL_MAX
+ * @errval DBL_MAX
  */
 double
 geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -1160,7 +1163,9 @@ geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @brief Return the 3D distance between two geometries
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_3DDistance(PG_FUNCTION_ARGS)
- * @return On error or empty geometries return DBL_MAX
+ * @note An empty geometry has no point to measure from, so the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
  */
 double
 geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -1597,7 +1602,7 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
  * @brief Return the number of points of a geometry
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
- * @return On error return -1
+ * @errval -1
  */
 int
 geo_num_points(const GSERIALIZED *gs)
@@ -1616,7 +1621,7 @@ geo_num_points(const GSERIALIZED *gs)
  * @brief Return the number of composing geometries of a geometry
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS)
- * @return On error return -1
+ * @errval -1
  */
 int
 geo_num_geos(const GSERIALIZED *gs)
@@ -2016,7 +2021,8 @@ geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @ref geom_relate_pattern() answers whether a pattern matches it, which is
  * the question a caller holding a pattern asks; this entry answers the matrix
  * itself, which is what a caller without one needs
- * @return A newly allocated string of nine characters, @p NULL on error
+ * @return A newly allocated string of nine characters
+ * @errval NULL
  * @note PostGIS function: @p ST_Relate(geometry, geometry)
  * @csqlfn #Geom_relate()
  */
@@ -3428,7 +3434,7 @@ union_lifted(GSERIALIZED *result, GSERIALIZED **gsarr, int count)
  * the array happens to list first
  * @param[in] gsarr Array of geometries
  * @param[in] count Number of elements in the array
- * @return On error return @p NULL
+ * @errval NULL
  */
 GSERIALIZED *
 geom_array_union(GSERIALIZED **gsarr, int count)
@@ -3471,7 +3477,7 @@ geom_array_union(GSERIALIZED **gsarr, int count)
  * @brief Return the union of an array of geographies
  * @param[in] gsarr Array of geographies
  * @param[in] count Number of elements in the array
- * @return On error return @p NULL
+ * @errval NULL
  * @details The union of a set of positions is the set with its duplicates
  * removed, and two positions are the same when their coordinates are, so the
  * answer is read without measuring anything and holds on the spheroid as it
@@ -3786,7 +3792,7 @@ geog_serialize(LWGEOM *lwgeom)
 /**
  * @ingroup meos_geo_base_srid
  * @brief Return the geometry/geography transformed to an SRID
- * @return On error return @p NULL
+ * @errval NULL
  * @param[in] gs Geometry/geography
  * @param[in] srid_to Target SRID
  * @note PostGIS function: @p transform(PG_FUNCTION_ARGS)
@@ -4238,7 +4244,7 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
  * @brief Return the area of a geography in square meters
  * @param[in] gs Geography
  * @param[in] use_spheroid True when using a spheroid
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note PostGIS function: @p geography_area(PG_FUNCTION_ARGS)
  */
 double
@@ -4314,7 +4320,7 @@ geog_area(const GSERIALIZED *gs, bool use_spheroid)
  * @brief Return the perimeter of a geography in meters
  * @param[in] gs Geography
  * @param[in] use_spheroid True when using a spheroid
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note PostGIS function: @p geography_perimeter(PG_FUNCTION_ARGS)
  */
 double
@@ -4374,7 +4380,7 @@ geog_perimeter(const GSERIALIZED *gs, bool use_spheroid)
  * @brief Return double length in meters
  * @param[in] gs Geography
  * @param[in] use_spheroid True when using a spheroid
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @note PostGIS function: @p geography_length(PG_FUNCTION_ARGS)
  */
 double
@@ -4488,7 +4494,9 @@ geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @note PostGIS function: @p geography_distance_uncached(PG_FUNCTION_ARGS).
  * We set by default both @p tolerance and @p use_spheroid and initialize the
  * spheroid to WGS84
- * @return On error or empty geometries return DBL_MAX
+ * @note An empty geography has no point to measure from, so the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
  */
 double
 geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -5863,7 +5871,7 @@ geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
  * @brief Locate a point into a line
  * @param[in] gs1 Line
  * @param[in] gs2 Point
- * @return On error return -1.0
+ * @errval -1.0
  */
 double
 line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -6000,7 +6008,7 @@ line_point_n(const GSERIALIZED *gs, int n)
  * @ingroup meos_geo_base_accessor
  * @brief Return the number of points of a line
  * @param[in] gs Geometry
- * @return On error return -1
+ * @errval -1
 */
 int
 line_numpoints(const GSERIALIZED *gs)

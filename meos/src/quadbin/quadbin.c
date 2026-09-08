@@ -332,7 +332,7 @@ quadbin_cell_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
  * @brief Return the Web-Mercator tile of a quadbin cell
  * @param[in] cell Quadbin cell
  * @param[out] x,y,z Tile column, row, and zoom
- * @return On error return @p false
+ * @errval false
  * @csqlfn #Quadbin_cell_to_tile()
  */
 bool

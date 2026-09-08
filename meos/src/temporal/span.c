@@ -615,7 +615,7 @@ intspan_set_bigintspan(const Span *s1, Span *s2)
  * @ingroup meos_setspan_conversion
  * @brief Convert an integer span into a float span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  */
 Span *
 intspan_to_bigintspan(const Span *s)
@@ -647,7 +647,7 @@ bigintspan_set_intspan(const Span *s1, Span *s2)
  * @ingroup meos_setspan_conversion
  * @brief Convert a big integer span into an integer span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  */
 Span *
 bigintspan_to_intspan(const Span *s)
@@ -678,7 +678,7 @@ intspan_set_floatspan(const Span *s1, Span *s2)
  * @ingroup meos_setspan_conversion
  * @brief Convert an integer span into a float span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Intspan_to_floatspan()
  */
 Span *
@@ -711,7 +711,7 @@ bigintspan_set_floatspan(const Span *s1, Span *s2)
  * @ingroup meos_setspan_conversion
  * @brief Convert a big integer span into a float span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  */
 Span *
 bigintspan_to_floatspan(const Span *s)
@@ -743,7 +743,7 @@ floatspan_set_bigintspan(const Span *s1, Span *s2)
  * @ingroup meos_setspan_conversion
  * @brief Convert a float span into an integer span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  */
 Span *
 floatspan_to_bigintspan(const Span *s)
@@ -774,7 +774,7 @@ floatspan_set_intspan(const Span *s1, Span *s2)
  * @ingroup meos_setspan_conversion
  * @brief Convert a float span into an integer span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Floatspan_to_intspan()
  */
 Span *
@@ -809,7 +809,7 @@ datespan_set_tstzspan(const Span *s1, Span *s2)
  * @ingroup meos_setspan_conversion
  * @brief Convert a date span into a timestamptz span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Datespan_to_tstzspan()
  */
 Span *
@@ -852,7 +852,7 @@ tstzspan_set_datespan(const Span *s1, Span *s2)
  * @ingroup meos_setspan_conversion
  * @brief Convert a timestamptz span into a date span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tstzspan_to_datespan()
  */
 Span *
@@ -953,7 +953,7 @@ floatspan_round_set(const Span *s, int maxdd, Span *result)
  * number of decimal places
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Floatspan_round()
  */
 Span *
@@ -1450,7 +1450,7 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
  * @brief Return a timestamptz shifted by an interval
  * @param[in] t Timestamp
  * @param[in] interv Interval to shift the instant
- * @return On error return `DT_NOEND`
+ * @errval DT_NOEND
  * @csqlfn #Timestamptz_shift()
  */
 TimestampTz
@@ -1499,7 +1499,7 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
  * @brief Return an array of spans from the values of a set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_spans()
  */
 Span *
@@ -1521,7 +1521,7 @@ set_spans(const Set *s, int *count)
  * @param[in] s Set
  * @param[in] span_count Number of spans
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_split_n_spans()
  */
 Span *
@@ -1572,7 +1572,7 @@ set_split_n_spans(const Set *s, int span_count, int *count)
  * @param[in] s Set
  * @param[in] elems_per_span Number of elements merged into an ouput span
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_split_each_n_spans()
  */
 Span *
@@ -1647,7 +1647,7 @@ span_ne(const Span *s1, const Span *s2)
  * @brief Return -1, 0, or 1 depending on whether the first span is less than,
  * equal to, or greater than the second one
  * @param[in] s1,s2 Sets
- * @return On error return INT_MAX
+ * @errval INT_MAX
  * @note Function used for B-tree comparison
  * @csqlfn #Span_cmp()
  */
@@ -1730,7 +1730,7 @@ span_gt(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_accessor
  * @brief Return the 32-bit hash of a span
  * @param[in] s Span
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Span_hash()
  */
 uint32
@@ -1770,7 +1770,7 @@ span_hash(const Span *s)
  * @brief Return the 64-bit hash of a span using a seed
  * @param[in] s Span
  * @param[in] seed Seed
- * @return On error return @p UINT64_MAX
+ * @errval UINT64_MAX
  * @csqlfn #Span_hash_extended()
  */
 uint64

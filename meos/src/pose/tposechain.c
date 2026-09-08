@@ -253,7 +253,7 @@ tposechainseqset_in(const char *str)
  * @ingroup meos_posechain_inout
  * @brief Return a temporal pose chain from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -395,7 +395,7 @@ tposechain_to_tpose(const Temporal *temp)
  * @details The link count is the same at every instant, so one instant
  * answers for the whole value.
  * @param[in] temp Temporal pose chain
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Tposechain_num_poses()
  */
 int

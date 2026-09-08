@@ -1532,7 +1532,7 @@ minus_set_timestamptz(const Set *s, TimestampTz t)
  * @brief Return the distance between a set and an integer
  * @param[in] s Set
  * @param[in] i Value
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 int
@@ -1548,7 +1548,7 @@ distance_set_int(const Set *s, int i)
  * @brief Return the distance between a set and a big integer
  * @param[in] s Set
  * @param[in] i Value
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 int64
@@ -1564,7 +1564,7 @@ distance_set_bigint(const Set *s, int64 i)
  * @brief Return the distance between a set and a float
  * @param[in] s Set
  * @param[in] d Value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 double
@@ -1580,7 +1580,7 @@ distance_set_float(const Set *s, double d)
  * @brief Return the distance in days between a set and a date
  * @param[in] s Set
  * @param[in] d Value
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 int
@@ -1597,7 +1597,7 @@ distance_set_date(const Set *s, DateADT d)
  * double
  * @param[in] s Set
  * @param[in] t Value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 double
@@ -1614,7 +1614,7 @@ distance_set_timestamptz(const Set *s, TimestampTz t)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two integer sets
  * @param[in] s1,s2 Sets
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Distance_set_set()
  */
 int
@@ -1630,7 +1630,7 @@ distance_intset_intset(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two big integer sets
  * @param[in] s1,s2 Sets
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Distance_set_set()
  */
 int64
@@ -1646,7 +1646,7 @@ distance_bigintset_bigintset(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two float sets
  * @param[in] s1,s2 Sets
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_set_set()
  */
 double
@@ -1662,7 +1662,7 @@ distance_floatset_floatset(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance in days between two date sets
  * @param[in] s1,s2 Sets
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Distance_set_set()
  */
 int
@@ -1678,7 +1678,7 @@ distance_dateset_dateset(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance in seconds between two timestamptz sets
  * @param[in] s1,s2 Sets
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_set_set()
  */
 double

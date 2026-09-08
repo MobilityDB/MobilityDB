@@ -3049,7 +3049,8 @@ ensure_srid_known(int32_t srid)
  * @param[in] srid1,srid2 SRIDs to reconcile
  * @param[out] result Common SRID (the known one, or `SRID_UNKNOWN` if both are
  * unknown)
- * @return On error (two different known SRIDs) return false
+ * @return True when the SRIDs reconcile and the result is written
+ * @errval false
  */
 bool
 ensure_srid_reconcile(int32_t srid1, int32_t srid2, int32_t *result)

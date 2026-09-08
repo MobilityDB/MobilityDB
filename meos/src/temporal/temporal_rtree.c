@@ -1962,7 +1962,8 @@ nn_heap_pop(RTreeNNCursor *cursor)
  * @param[in] rtree The RTree to query
  * @param[in] query The query bounding box of type @p rtree->bboxtype and of
  * the SRID the tree holds
- * @return A cursor to be freed with #rtree_nn_cursor_close, on error @p NULL
+ * @return A cursor to be freed with #rtree_nn_cursor_close
+ * @errval NULL
  */
 RTreeNNCursor *
 rtree_nn_cursor_open(const RTree *rtree, const void *query)
@@ -2119,7 +2120,7 @@ node_stats(const RTreeNode *node, size_t bboxsize, int level, int *entries,
  * @ingroup meos_temporal_box_index
  * @brief Return the number of entries an RTree holds
  * @param[in] rtree The RTree
- * @return On error return -1
+ * @errval -1
  */
 int
 rtree_num_entries(const RTree *rtree)
@@ -2140,7 +2141,7 @@ rtree_num_entries(const RTree *rtree)
  * @details The nodes of the tree and the tree itself, which is what a caller
  * accounting for the memory of an index reports
  * @param[in] rtree The RTree
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  */
 int64
 rtree_mem_size(const RTree *rtree)
@@ -2161,7 +2162,7 @@ rtree_mem_size(const RTree *rtree)
  * @brief Return the number of levels an RTree holds
  * @details An empty tree has no levels and a tree whose root is a leaf has one
  * @param[in] rtree The RTree
- * @return On error return -1
+ * @errval -1
  */
 int
 rtree_height(const RTree *rtree)

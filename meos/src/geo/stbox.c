@@ -1201,7 +1201,8 @@ stbox_isgeodetic(const STBox *box)
  * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_xmin()
  */
 bool
@@ -1221,7 +1222,8 @@ stbox_xmin(const STBox *box, double *result)
  * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_xmax()
  */
 bool
@@ -1241,7 +1243,8 @@ stbox_xmax(const STBox *box, double *result)
  * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_ymin()
  */
 bool
@@ -1261,7 +1264,8 @@ stbox_ymin(const STBox *box, double *result)
  * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_ymax()
  */
 bool
@@ -1281,7 +1285,8 @@ stbox_ymax(const STBox *box, double *result)
  * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_zmin()
  */
 bool
@@ -1301,7 +1306,8 @@ stbox_zmin(const STBox *box, double *result)
  * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_zmax()
  */
 bool
@@ -1321,7 +1327,8 @@ stbox_zmax(const STBox *box, double *result)
  * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_tmin()
  */
 bool
@@ -1341,7 +1348,8 @@ stbox_tmin(const STBox *box, TimestampTz *result)
  * spatiotemporal box is inclusive
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_tmin_inc()
  */
 bool
@@ -1361,7 +1369,8 @@ stbox_tmin_inc(const STBox *box, bool *result)
  * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_tmax()
  */
 bool
@@ -1381,7 +1390,8 @@ stbox_tmax(const STBox *box, TimestampTz *result)
  * spatiotemporal box is inclusive
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Stbox_tmax_inc()
  */
 bool
@@ -1401,7 +1411,7 @@ stbox_tmax_inc(const STBox *box, bool *result)
  * @param[in] box Spatiotemporal box
  * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
  * otherwise it uses a faster spherical calculation
- * @return On error, return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Stbox_area()
  */
 double
@@ -1425,7 +1435,7 @@ stbox_area(const STBox *box, bool spheroid)
  * @ingroup meos_geo_box_accessor
  * @brief Return the volume of a 3D spatiotemporal box
  * @param[in] box Spatiotemporal box
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Stbox_volume()
  */
 double
@@ -1446,7 +1456,7 @@ stbox_volume(const STBox *box)
  * @param[in] box Spatiotemporal box
  * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
  * otherwise it uses a faster spherical calculation
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Stbox_perimeter()
  */
 double
@@ -1600,7 +1610,7 @@ stbox_get_space(const STBox *box)
  * @param[in] box Spatiotemporal box
  * @param[in] d Value for expanding
  * @param[out] result Spatiotemporal box
- * @return On error return false
+ * @errval false
  */
 bool
 stbox_expand_space_set(const STBox *box, double d, STBox *result)
@@ -2924,7 +2934,7 @@ stbox_ne(const STBox *box1, const STBox *box2)
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal
  * box is less than, equal to, or greater than the second one
  * @param[in] box1,box2 Spatiotemporal boxes
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Stbox_cmp()
  */
 int
@@ -3050,7 +3060,7 @@ stbox_gt(const STBox *box1, const STBox *box2)
  * @ingroup meos_geo_box_accessor
  * @brief Return the 32-bit hash value of a spatiotemporal box
  * @param[in] box Spatiotemporal box
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @sqlfn hash()
  * @csqlfn #Stbox_hash()
  */
@@ -3102,7 +3112,7 @@ stbox_hash(const STBox *box)
  * @brief Return the 64-bit hash of a spatiotemporal box using a seed
  * @param[in] box Spatiotemporal box
  * @param[in] seed Seed
- * @return On error return @p UINT64_MAX
+ * @errval UINT64_MAX
  * @csqlfn #Stbox_hash_extended()
  */
 uint64

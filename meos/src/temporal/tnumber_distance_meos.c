@@ -58,7 +58,7 @@
  * integer
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tdistance_tnumber_number() #Tdistance_number_tnumber()
  */
 Temporal *
@@ -74,7 +74,7 @@ tdistance_tint_int(const Temporal *temp, int i)
  * @brief Return the temporal distance between a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tdistance_tnumber_number() #Tdistance_number_tnumber()
  */
 Temporal *
@@ -95,7 +95,7 @@ tdistance_tfloat_float(const Temporal *temp, double d)
  * and a number
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @return On error return INT_MAX
+ * @errval INT_MAX
  * @csqlfn #NAD_tnumber_number() #NAD_number_tnumber()
  */
 int
@@ -112,7 +112,7 @@ nad_tint_int(const Temporal *temp, int i)
  * and a number
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #NAD_tnumber_number() #NAD_number_tnumber()
  */
 int64
@@ -129,7 +129,7 @@ nad_tbigint_bigint(const Temporal *temp, int64 i)
  * and a number
  * @param[in] temp Temporal value
  * @param[in] d Value
- * @return On error return DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #NAD_tnumber_number() #NAD_number_tnumber()
  */
 double
@@ -146,7 +146,7 @@ nad_tfloat_float(const Temporal *temp, double d)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error return INT_MAX
+ * @errval INT_MAX
  * @csqlfn #NAD_tnumber_tbox()
  */
 int
@@ -164,7 +164,7 @@ nad_tint_tbox(const Temporal *temp, const TBox *box)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #NAD_tnumber_tbox()
  */
 int64
@@ -182,7 +182,7 @@ nad_tbigint_tbox(const Temporal *temp, const TBox *box)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error return DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #NAD_tnumber_tbox()
  */
 double
@@ -198,7 +198,7 @@ nad_tfloat_tbox(const Temporal *temp, const TBox *box)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between the int temporal boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return -1
+ * @errval -1
  * @note A distance is never negative, so -1 states an error where INT_MAX
  * states that the boxes share no time
  * @csqlfn #NAD_tbox_tbox()
@@ -222,7 +222,7 @@ nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
  * @brief Return the nearest approach distance between the big integer temporal
  * boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return -1
+ * @errval -1
  * @note A distance is never negative, so -1 states an error where INT64_MAX
  * states that the boxes share no time
  * @csqlfn #NAD_tbox_tbox()
@@ -245,7 +245,7 @@ nad_tboxbigint_tboxbigint(const TBox *box1, const TBox *box2)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between the float temporal boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return -1.0
+ * @errval -1.0
  * @note A distance is never negative, so -1.0 states an error where DBL_MAX
  * states that the boxes share no time
  * @csqlfn #NAD_tbox_tbox()
@@ -267,7 +267,7 @@ nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between two temporal integers
  * @param[in] temp1,temp2 Temporal values
- * @return On error return INT_MAX
+ * @errval INT_MAX
  * @csqlfn #NAD_tnumber_tnumber()
  */
 int
@@ -283,7 +283,7 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the nearest approach distance between two temporal big
  * integers
  * @param[in] temp1,temp2 Temporal values
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #NAD_tnumber_tnumber()
  */
 int64
@@ -298,7 +298,7 @@ nad_tbigint_tbigint(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between two temporal floats
  * @param[in] temp1,temp2 Temporal values
- * @return On error return DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #NAD_tnumber_tnumber()
  */
 double

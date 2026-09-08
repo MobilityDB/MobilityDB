@@ -131,7 +131,7 @@ posechain_to_set(const PoseChain *pc)
  * @ingroup meos_posechain_set_accessor
  * @brief Return a copy of the start value of a pose chain set
  * @param[in] s Set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_start_value()
  */
 PoseChain *
@@ -146,7 +146,7 @@ posechainset_start_value(const Set *s)
  * @ingroup meos_posechain_set_accessor
  * @brief Return a copy of the end value of a pose chain set
  * @param[in] s Set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_end_value()
  */
 PoseChain *
@@ -184,7 +184,7 @@ posechainset_value_n(const Set *s, int n, PoseChain **result)
  * @brief Return the array of copies of the values of a pose chain set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 PoseChain **

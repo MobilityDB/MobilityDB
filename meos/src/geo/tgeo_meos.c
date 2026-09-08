@@ -445,7 +445,7 @@ tgeographyseqset_from_mfjson(json_object *mfjson, int32_t srid, interpType inter
  * @ingroup meos_geo_inout
  * @brief Return a temporal geometry point from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -458,7 +458,7 @@ tgeompoint_from_mfjson(const char *mfjson)
  * @ingroup meos_geo_inout
  * @brief Return a temporal geography point from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -470,7 +470,7 @@ tgeogpoint_from_mfjson(const char *mfjson)
  * @ingroup meos_geo_inout
  * @brief Return a temporal geometry from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -483,7 +483,7 @@ tgeometry_from_mfjson(const char *mfjson)
  * @ingroup meos_geo_inout
  * @brief Return a temporal geography from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -705,7 +705,7 @@ tgeo_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
  * @ingroup meos_geo_accessor
  * @brief Return a copy of the start value of a temporal geo
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_value()
  */
 GSERIALIZED *
@@ -720,7 +720,7 @@ tgeo_start_value(const Temporal *temp)
  * @ingroup meos_geo_accessor
  * @brief Return a copy of the end value of a temporal geo
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_value()
  */
 GSERIALIZED *

@@ -554,7 +554,7 @@ tbool_start_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the start value of a temporal integer
  * @param[in] temp Temporal value
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Temporal_start_value()
  */
 int
@@ -569,7 +569,7 @@ tint_start_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the start value of a temporal big integer
  * @param[in] temp Temporal value
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Temporal_start_value()
  */
 int64
@@ -584,7 +584,7 @@ tbigint_start_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the start value of a temporal float
  * @param[in] temp Temporal value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Temporal_start_value()
  */
 double
@@ -599,7 +599,7 @@ tfloat_start_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the start value of a temporal text
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_value()
  */
 text *
@@ -630,7 +630,7 @@ tbool_end_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the end value of a temporal integer
  * @param[in] temp Temporal value
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Temporal_end_value()
  */
 int
@@ -645,7 +645,7 @@ tint_end_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the end value of a temporal big integer
  * @param[in] temp Temporal value
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Temporal_end_value()
  */
 int64
@@ -660,7 +660,7 @@ tbigint_end_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the end value of a temporal float
  * @param[in] temp Temporal value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Temporal_end_value()
  */
 double
@@ -675,7 +675,7 @@ tfloat_end_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the end value of a temporal text
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_value()
  */
 text *
@@ -692,7 +692,7 @@ ttext_end_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the minimum value of a temporal integer
  * @param[in] temp Temporal value
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Temporal_min_value()
  */
 int
@@ -707,7 +707,7 @@ tint_min_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the minimum value of a temporal big integer
  * @param[in] temp Temporal value
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Temporal_min_value()
  */
 int64
@@ -722,7 +722,7 @@ tbigint_min_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the minimum value of a temporal float
  * @param[in] temp Temporal value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Temporal_min_value()
  */
 double
@@ -737,7 +737,7 @@ tfloat_min_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the minimum value of a temporal text
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_min_value()
  */
 text *
@@ -754,7 +754,7 @@ ttext_min_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the maximum value of a temporal integer
  * @param[in] temp Temporal value
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Temporal_max_value()
  */
 int
@@ -769,7 +769,7 @@ tint_max_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the maximum value of a temporal big integer
  * @param[in] temp Temporal value
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Temporal_max_value()
  */
 int64
@@ -784,7 +784,7 @@ tbigint_max_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the maximum value of a temporal float
  * @param[in] temp Temporal value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Temporal_max_value()
  */
 double
@@ -799,7 +799,7 @@ tfloat_max_value(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the maximum value of a temporal text
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_max_value()
  */
 text *

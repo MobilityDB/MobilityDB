@@ -480,8 +480,10 @@ instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
  * pure translation; any rotating segment raises FEATURE_NOT_SUPPORTED. The
  * caller has already rejected holey targets.
  *
- * @return The overlap spanset on success. On error (rotation) the MEOS error
- * handler is invoked; @p *err is set to true and NULL is returned.
+ * @return The overlap spanset, NULL when the body never overlaps the target
+ * @note A rotating segment raises through the MEOS error handler and sets
+ * @p *err, which is what tells an error apart from an absent overlap
+ * @errval NULL
  */
 static SpanSet *
 trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
@@ -1103,7 +1105,7 @@ trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
  * @brief Return the length traversed by the centroid of a temporal rigid
  * geometry
  * @param[in] temp Temporal rigid geometry
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Trgeometry_length()
  */
 double
@@ -1162,7 +1164,7 @@ trgeometry_speed(const Temporal *temp)
  * @details The shape of a rigid geometry never changes, so its angular speed
  * is the angular speed of the pose that carries it.
  * @param[in] temp Temporal rigid geometry
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Trgeometry_angular_speed()
  */
 Temporal *
@@ -1332,7 +1334,7 @@ trgeo_convex_sweep(const GSERIALIZED *a, const GSERIALIZED *b)
  * `pose_apply_geo`
  * @param[in] temp Temporal rigid geometry
  * @param[out] count Number of placements returned
- * @return On error return @p NULL
+ * @errval NULL
  */
 static GSERIALIZED **
 trgeo_placement_array(const Temporal *temp, int *count)
@@ -1406,7 +1408,7 @@ trgeo_geoms_merge(GSERIALIZED **geoms, int n_geoms, bool unary_union)
  * satisfies the relationship, always where every one does. The area the body
  * traverses spans several placements at once, so it answers neither
  * @param[in] temp Temporal rigid geometry
- * @return On error return @p NULL
+ * @errval NULL
  */
 GSERIALIZED *
 trgeo_placements(const Temporal *temp)

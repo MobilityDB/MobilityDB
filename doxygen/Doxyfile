@@ -277,7 +277,8 @@ ALIASES                = "csqlfn=@par C-SQL Function:^^" \
                          "csqlaggfn=@par C-SQL Aggregate Role:^^" \
                          "sqlfn=@par SQL Function:^^" \
                          "sqlaggfn=@par SQL Aggregate:^^" \
-                         "sqlop=@par SQL Operator:^^"
+                         "sqlop=@par SQL Operator:^^" \
+                         "errval=@return On error return"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For

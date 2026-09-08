@@ -203,7 +203,8 @@ h3index_get_resolution(H3Index cell)
  * @brief Return the parent of an H3 cell at a coarser resolution
  * @param[in] cell H3 cell
  * @param[in] parent_resolution Target resolution (<= resolution of @p cell)
- * @return The parent cell, or 0 on error
+ * @return The parent cell
+ * @errval 0
  * @csqlfn #H3index_cell_to_parent()
  */
 H3Index

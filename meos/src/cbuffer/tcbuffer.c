@@ -731,7 +731,7 @@ tcbuffer_in(const char *str)
  * @ingroup meos_cbuffer_inout
  * @brief Return a temporal circular buffer from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -1213,7 +1213,7 @@ tgeometry_to_tcbuffer(const Temporal *temp)
  * @ingroup meos_cbuffer_accessor
  * @brief Return a copy of the start value of a temporal circular buffer
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_value()
  */
 Cbuffer *
@@ -1228,7 +1228,7 @@ tcbuffer_start_value(const Temporal *temp)
  * @ingroup meos_cbuffer_accessor
  * @brief Return a copy of the end value of a temporal circular buffer
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_value()
  */
 Cbuffer *

@@ -190,7 +190,7 @@ pcpoint_to_set(const Pcpoint *pt)
  * @ingroup meos_pointcloud_set_accessor
  * @brief Return a copy of the start (smallest) value of a pcpoint set
  * @param[in] s Set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_start_value()
  */
 Pcpoint *
@@ -206,7 +206,7 @@ pcpointset_start_value(const Set *s)
  * @ingroup meos_pointcloud_set_accessor
  * @brief Return a copy of the end (largest) value of a pcpoint set
  * @param[in] s Set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_end_value()
  */
 Pcpoint *
@@ -244,7 +244,7 @@ pcpointset_value_n(const Set *s, int n, Pcpoint **result)
  * @brief Return an array of copies of the values of a pcpoint set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 Pcpoint **
@@ -474,7 +474,7 @@ pcpatch_to_set(const Pcpatch *pa)
  * @ingroup meos_pointcloud_set_accessor
  * @brief Return a copy of the start (smallest) value of a pcpatch set
  * @param[in] s Set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_start_value()
  */
 Pcpatch *
@@ -490,7 +490,7 @@ pcpatchset_start_value(const Set *s)
  * @ingroup meos_pointcloud_set_accessor
  * @brief Return a copy of the end (largest) value of a pcpatch set
  * @param[in] s Set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_end_value()
  */
 Pcpatch *
@@ -528,7 +528,7 @@ pcpatchset_value_n(const Set *s, int n, Pcpatch **result)
  * @brief Return an array of copies of the values of a pcpatch set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 Pcpatch **

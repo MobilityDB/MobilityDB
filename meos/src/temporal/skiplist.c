@@ -247,7 +247,7 @@ skiplist_search(SkipList *list, void *key, void *value)
 
 /**
  * @brief Return the position to store an additional element in the skiplist
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  */
 static int
 skiplist_alloc(SkipList *list)
@@ -431,7 +431,7 @@ skiplist_print(const SkipList *list)
  * @param[out] update Array of indices keeping the levels of the elements to
  * insert
  * @return Number of elements in the list that will be merged with the new
- * values, on error return -1
+ * values
  */
 int
 keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,

@@ -260,7 +260,7 @@ tnpointseqset_length(const TSequenceSet *ss)
  * @ingroup meos_npoint_accessor
  * @brief Length traversed by a temporal network point
  * @param[in] temp Temporal point
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Tnpoint_length()
  */
 double

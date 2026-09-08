@@ -184,7 +184,7 @@ ensure_valid_pixtype(uint8 pixtype)
  * @ingroup meos_raster_base_accessor
  * @brief Return the size in bytes of a single pixel of the given type
  * @param[in] pixtype Pixel data type
- * @return On error return 0
+ * @errval 0
  */
 size_t
 raquet_pixtype_size(MeosPixType pixtype)
@@ -196,7 +196,7 @@ raquet_pixtype_size(MeosPixType pixtype)
 /**
  * @brief Return the name the RaQuet specification gives a pixel data type
  * @param[in] pixtype Pixel data type
- * @return On error return @p NULL
+ * @errval NULL
  * @note This reads the name column of the catalog the way
  * #raquet_pixtype_size() reads its size column, so a caller holding a code
  * states the type through the one catalog rather than carrying a second
@@ -666,7 +666,7 @@ raquet_copy(const Raquet *rq)
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return the QUADBIN cell of a Raquet tile
- * @return On error return @p UINT64_MAX
+ * @errval UINT64_MAX
  * @csqlfn #Raquet_quadbin()
  */
 uint64
@@ -706,7 +706,7 @@ raquet_height(const Raquet *rq)
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return the nodata sentinel value of a Raquet tile
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Raquet_nodata()
  */
 double
@@ -721,7 +721,7 @@ raquet_nodata(const Raquet *rq)
  * @ingroup meos_raster_base_accessor
  * @brief Return the name of the pixel data type of a Raquet tile
  * @param[in] rq Raquet tile
- * @return On error return @p NULL
+ * @errval NULL
  * @note The returned name is the one the RaQuet specification writes for the
  * type, that is, one of uint8, int8, uint16, int16, uint32, int32, uint64,
  * int64, float16, float32, or float64, so it compares equal to the `type`
@@ -743,7 +743,7 @@ raquet_pixtype(const Raquet *rq)
  * @brief Return a copy of the pixel bytes of a Raquet tile
  * @param[in] rq Raquet tile
  * @param[out] size_out Number of bytes returned
- * @return On error return @p NULL
+ * @errval NULL
  * @note The bytes are row-major and packed, @p width * @p height pixels of
  * @p raquet_pixtype_size() bytes each, which is the layout the tile
  * constructors accept
@@ -817,7 +817,7 @@ raquet_to_stbox(const Raquet *rq)
  * @brief Return -1, 0, or 1 depending on whether the first Raquet tile is
  * less than, equal to, or greater than the second one
  * @param[in] rq1,rq2 Raquet tiles
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Raquet_cmp()
  */
 int
@@ -922,7 +922,7 @@ raquet_gt(const Raquet *rq1, const Raquet *rq2)
  * @brief Return the 32-bit hash of a Raquet tile
  * @param[in] rq Raquet tile
  * @csqlfn #Raquet_hash()
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  */
 uint32
 raquet_hash(const Raquet *rq)
@@ -939,7 +939,7 @@ raquet_hash(const Raquet *rq)
  * @param[in] rq Raquet tile
  * @param[in] seed Seed
  * @csqlfn #Raquet_hash_extended()
- * @return On error return @p UINT64_MAX
+ * @errval UINT64_MAX
  */
 uint64
 raquet_hash_extended(const Raquet *rq, uint64 seed)

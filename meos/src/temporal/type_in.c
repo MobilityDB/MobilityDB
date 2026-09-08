@@ -137,7 +137,7 @@ extern LWGEOM *parse_geojson(json_object *geojson, int *hasz);
  * @param[in] end True when the string must end where the value ends, which
  * the types parsing a value out of a larger string read
  * @param[out] result Value read
- * @return On error return @p false
+ * @errval false
  */
 bool
 #if CBUFFER || NPOINT || POSE
@@ -1444,7 +1444,7 @@ ensure_temptype_mfjson(const char *typestr)
  * @brief Return a temporal object from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @param[in] temptype expected temporal type
- * @return On error return @p NULL
+ * @errval NULL
  * @see #tinstant_from_mfjson()
  * @see #tsequence_from_mfjson()
  * @see #tsequenceset_from_mfjson()
@@ -3117,7 +3117,7 @@ tbox_from_hexwkb(const char *hexwkb)
  * representation
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_recv(), #Temporal_from_wkb()
  */
 Temporal *
@@ -3134,7 +3134,7 @@ temporal_from_wkb(const uint8_t *wkb, size_t size)
  * @brief Return a temporal value from its ASCII hex-encoded Extended
  * Well-Known Binary (EWKB) representation
  * @param[in] hexwkb HexWKB string
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_from_hexwkb()
  */
 Temporal *

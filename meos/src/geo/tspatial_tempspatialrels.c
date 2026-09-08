@@ -589,7 +589,7 @@ tinterrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True if the arguments should be inverted
- * @return On error return `NULL`
+ * @errval NULL
  */
 Temporal *
 tspatialrel_tspatial_base(const Temporal *temp, Datum base,
@@ -645,7 +645,7 @@ tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True if the arguments should be inverted
- * @return On error return `NULL`
+ * @errval NULL
  */
 Temporal *
 tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,

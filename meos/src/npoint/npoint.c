@@ -880,7 +880,7 @@ nsegment_to_geom(const Nsegment *ns)
 /**
  * @ingroup meos_npoint_base_conversion
  * @brief Transform a geometry into a network segment
- * @return On error return @p NULL
+ * @errval NULL
  * @param[in] gs Geometry
  * @csqlfn #Geom_to_nsegment()
  */
@@ -1079,7 +1079,7 @@ npoint_route(const Npoint *np)
  * @ingroup meos_npoint_base_accessor
  * @brief Return the position of a network point
  * @param[in] np Network point
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Npoint_position()
  */
 double
@@ -1108,7 +1108,7 @@ nsegment_route(const Nsegment *ns)
  * @ingroup meos_npoint_base_accessor
  * @brief Return the start position of a network segment
  * @param[in] ns Network segment
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Nsegment_start_position()
  */
 double
@@ -1123,7 +1123,7 @@ nsegment_start_position(const Nsegment *ns)
  * @ingroup meos_npoint_base_accessor
  * @brief Return the end position of a network segment
  * @param[in] ns Network segment
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Nsegment_end_position()
  */
 double
@@ -1203,7 +1203,7 @@ npoint_ne(const Npoint *np1, const Npoint *np2)
  * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal to, or greater than the second one
  * @param[in] np1,np2 Network points
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Npoint_cmp()
  */
 int
@@ -1309,7 +1309,7 @@ nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
  * @brief Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal to, or greater than the second one
  * @param[in] ns1,ns2 Network segments
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Nsegment_cmp()
  */
 int
@@ -1396,7 +1396,7 @@ nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
  * @ingroup meos_npoint_base_accessor
  * @brief Return the 32-bit hash value of a network point
  * @param[in] np Network point
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  */
 uint32
 npoint_hash(const Npoint *np)

@@ -1185,7 +1185,7 @@ tinterrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True if the arguments should be inverted
- * @return On error return `NULL`
+ * @errval NULL
  */
 static Temporal *
 tspatialrel_tcbuffer_cbuffer_int(const Temporal *temp, const Cbuffer *cb,
