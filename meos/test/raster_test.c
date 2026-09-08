@@ -52,6 +52,7 @@
  */
 
 #include <assert.h>
+#include <float.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,6 +129,76 @@ int main(void)
     free(hexwkb); free(wkb); free(rast); free(rast1); free(rast2);
   }
 
+  /* The shape of a raster is read from the interchange representation too, so
+   * a binding states the grid without PostGIS. The values are the ones the
+   * header above carries: a 3x3 grid of 1 degree pixels whose rows run north
+   * to south from the upper left corner (0, 3), unskewed, in EPSG:4326 */
+  meos_errno_reset();
+  Raster *shape = raster_from_hexwkb(raster_one_band);
+  assert(shape != NULL);
+  assert(raster_width(shape) == 3);
+  assert(raster_height(shape) == 3);
+  assert(raster_srid(shape) == 4326);
+  assert(raster_upper_left_x(shape) == 0.0);
+  assert(raster_upper_left_y(shape) == 3.0);
+  assert(raster_scale_x(shape) == 1.0);
+  assert(raster_scale_y(shape) == -1.0);
+  assert(raster_skew_x(shape) == 0.0);
+  assert(raster_skew_y(shape) == 0.0);
+  assert(meos_errno() == 0);
+  printf("raster shape: %dx%d at (%g, %g) scale (%g, %g) skew (%g, %g) "
+    "srid %d\n", raster_width(shape), raster_height(shape),
+    raster_upper_left_x(shape), raster_upper_left_y(shape),
+    raster_scale_x(shape), raster_scale_y(shape), raster_skew_x(shape),
+    raster_skew_y(shape), raster_srid(shape));
+
+  /* The band reports the pixel type under the name the RaQuet specification
+   * writes, which is the name a raquet tile of the same type reports, and it
+   * states no nodata value */
+  char *pixtype = raster_band_pixel_type(shape, 1);
+  assert(pixtype != NULL);
+  assert(strcmp(pixtype, "float32") == 0);
+  assert(! raster_band_has_nodata_value(shape, 1));
+  printf("raster_band_pixel_type(#1, 1): %s\n", pixtype);
+  free(pixtype);
+
+  /* The extent of an unskewed raster runs from its origin over its scaled
+   * size, and carries the reference system the raster states */
+  STBox *box = raster_to_stbox(shape);
+  assert(box != NULL);
+  double xmin, xmax;
+  assert(stbox_xmin(box, &xmin) && stbox_xmax(box, &xmax));
+  assert(xmin == 0.0 && xmax == 3.0);
+  assert(stbox_srid(box) == 4326);
+  char *box_str = stbox_out(box, 6);
+  printf("raster_to_stbox(#1): %s\n", box_str);
+  free(box_str); free(box);
+
+  /* A band declaring a nodata value reports it, which the band above does not,
+   * so the two answers cannot both come from a constant */
+  Raster *withnodata = raster_from_hexwkb(raster_values);
+  assert(withnodata != NULL);
+  assert(raster_band_has_nodata_value(withnodata, 1));
+  assert(raster_band_nodata_value(withnodata, 1) == -9999.0);
+  printf("raster_band_nodata_value(values, 1): %g\n",
+    raster_band_nodata_value(withnodata, 1));
+  assert(meos_errno() == 0);
+
+  /* A band number outside the bands the raster holds is an error, on either
+   * side, and the band numbering starts at one */
+  meos_errno_reset();
+  assert(raster_band_pixel_type(shape, 0) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_band_pixel_type(shape, 2) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_band_nodata_value(shape, 1) == DBL_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+
+  free(shape); free(withnodata);
+
   /* A null argument is rejected rather than dereferenced */
   size_t size;
   meos_errno_reset();
@@ -138,6 +209,47 @@ int main(void)
   assert(meos_errno() != 0);
   meos_errno_reset();
   assert(raster_num_bands(NULL) == INT_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_width(NULL) == INT_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_height(NULL) == INT_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  /* The sentinel here is SRID_INVALID, which the public headers do not name,
+   * so the rejection is read from meos_errno() rather than from the value */
+  (void) raster_srid(NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_upper_left_x(NULL) == DBL_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_upper_left_y(NULL) == DBL_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_scale_x(NULL) == DBL_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_scale_y(NULL) == DBL_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_skew_x(NULL) == DBL_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_skew_y(NULL) == DBL_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_band_pixel_type(NULL, 1) == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(! raster_band_has_nodata_value(NULL, 1));
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_band_nodata_value(NULL, 1) == DBL_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_to_stbox(NULL) == NULL);
   assert(meos_errno() != 0);
   meos_errno_reset();
   assert(raster_as_wkb(NULL, &size) == NULL);

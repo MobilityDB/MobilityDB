@@ -2855,6 +2855,9 @@
 				<listitem>
 					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convert a Raquet tile into a spatiotemporal box</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raster_to_stbox"><varname>stbox</varname></link>: Convert a raster into a spatiotemporal box</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

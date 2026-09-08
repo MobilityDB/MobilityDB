@@ -865,4 +865,24 @@ Raquet_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_STBOX_P(result);
 }
 
+/*****************************************************************************
+ * Raster type: conversions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_to_stbox);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Convert a raster into a spatiotemporal box
+ * @sqlfn stbox()
+ */
+Datum
+Raster_to_stbox(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  STBox *result = raster_to_stbox(rast);
+  PG_RETURN_STBOX_P(result);
+}
+
 /*****************************************************************************/
