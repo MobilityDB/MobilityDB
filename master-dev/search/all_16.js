@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['t_0',['T',['../structAIS__record_a62eeb2a8b31a5d97fe398dd820be5130.html#a62eeb2a8b31a5d97fe398dd820be5130',1,'AIS_record::T()'],['../structAIS__record_a27993334a35450baaabb927a91e44871.html#a27993334a35450baaabb927a91e44871',1,'AIS_record::T()']]],
-  ['t_1',['t',['../structDistNai_ab2dd2f68380cf6f799cd10041cafe9bd.html#ab2dd2f68380cf6f799cd10041cafe9bd',1,'DistNai::t()'],['../structSTboxGridState_a4c7177c4e1f892ffe5178c3fdfcfe518.html#a4c7177c4e1f892ffe5178c3fdfcfe518',1,'STboxGridState::t()'],['../structTInstant_a3fec915c44398549b604a38c6f59e7af.html#a3fec915c44398549b604a38c6f59e7af',1,'TInstant::t()'],['../structcfp__elem_a3768c34225da4a6077e4a3695b9928ea.html#a3768c34225da4a6077e4a3695b9928ea',1,'cfp_elem::t()'],['../structtdist__elem_ab457f8dd1502912efd7540ff7c55f464.html#ab457f8dd1502912efd7540ff7c55f464',1,'tdist_elem::t()'],['../structTboxGridState_a665587b67ef25d736c19fb82c0a7d289.html#a665587b67ef25d736c19fb82c0a7d289',1,'TboxGridState::t()']]],
+  ['t_0',['t',['../structDistNai_ab2dd2f68380cf6f799cd10041cafe9bd.html#ab2dd2f68380cf6f799cd10041cafe9bd',1,'DistNai::t()'],['../structSTboxGridState_a4c7177c4e1f892ffe5178c3fdfcfe518.html#a4c7177c4e1f892ffe5178c3fdfcfe518',1,'STboxGridState::t()'],['../structTInstant_a3fec915c44398549b604a38c6f59e7af.html#a3fec915c44398549b604a38c6f59e7af',1,'TInstant::t()'],['../structcfp__elem_a3768c34225da4a6077e4a3695b9928ea.html#a3768c34225da4a6077e4a3695b9928ea',1,'cfp_elem::t()'],['../structtdist__elem_ab457f8dd1502912efd7540ff7c55f464.html#ab457f8dd1502912efd7540ff7c55f464',1,'tdist_elem::t()'],['../structTboxGridState_a665587b67ef25d736c19fb82c0a7d289.html#a665587b67ef25d736c19fb82c0a7d289',1,'TboxGridState::t()']]],
+  ['t_1',['T',['../structAIS__record_a62eeb2a8b31a5d97fe398dd820be5130.html#a62eeb2a8b31a5d97fe398dd820be5130',1,'AIS_record::T()'],['../structAIS__record_a27993334a35450baaabb927a91e44871.html#a27993334a35450baaabb927a91e44871',1,'AIS_record::T()']]],
   ['t0_2',['t0',['../structIntersectResult_a076fd5f641e903b6d4c30e64a3244038.html#a076fd5f641e903b6d4c30e64a3244038',1,'IntersectResult::t0()'],['../structRelateInterval_a146dbccba980a8f08be5032a4db8d986.html#a146dbccba980a8f08be5032a4db8d986',1,'RelateInterval::t0()']]],
   ['t1_3',['t1',['../structIntersectResult_aa79e29f7d5a5597b3f1cf5882ec1dae0.html#aa79e29f7d5a5597b3f1cf5882ec1dae0',1,'IntersectResult::t1()'],['../structRelateInterval_adfb7acbbb74bd933bd5cd209a7b949ec.html#adfb7acbbb74bd933bd5cd209a7b949ec',1,'RelateInterval::t1()']]],
   ['t_5fbigintset_4',['T_BIGINTSET',['../meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401aad0d49a9cce0faad6440359c7c6ce50d',1,'meos_catalog.h']]],
@@ -3544,8 +3544,8 @@ var searchData=
   ['trip_5fsrid_3541',['TRIP_SRID',['../rtree__mest__example_8c_ab58229044f1df8b71fb5fc3c669fa1f3.html#ab58229044f1df8b71fb5fc3c669fa1f3',1,'rtree_mest_example.c']]],
   ['trip_5fstep_3542',['TRIP_STEP',['../rtree__mest__example_8c_a295a3a5622810de8e47e28985af661bd.html#a295a3a5622810de8e47e28985af661bd',1,'rtree_mest_example.c']]],
   ['trip_5ft_3543',['trip_t',['../structtrip__t.html',1,'']]],
-  ['tripid_3544',['tripId',['../structtrip__record_a46ac9d8e1976d6b40243993cfd9445e2.html#a46ac9d8e1976d6b40243993cfd9445e2',1,'trip_record']]],
-  ['tripid_3545',['tripid',['../structtrip__record_adf1dae58a788d1a861c9094600668306.html#adf1dae58a788d1a861c9094600668306',1,'trip_record']]],
+  ['tripid_3544',['tripid',['../structtrip__record_adf1dae58a788d1a861c9094600668306.html#adf1dae58a788d1a861c9094600668306',1,'trip_record']]],
+  ['tripid_3545',['tripId',['../structtrip__record_a46ac9d8e1976d6b40243993cfd9445e2.html#a46ac9d8e1976d6b40243993cfd9445e2',1,'trip_record']]],
   ['ts_3546',['ts',['../structTpcpatchPointsState_a7f365282eee4d3e359d829c6946929aa.html#a7f365282eee4d3e359d829c6946929aa',1,'TpcpatchPointsState']]],
   ['ts2cell_2ec_3547',['ts2cell.c',['../mobilitydb_2src_2s2cell_2ts2cell_8c.html',1,'(Global Namespace)'],['../meos_2src_2s2cell_2ts2cell_8c.html',1,'(Global Namespace)']]],
   ['ts2cell_2eh_3548',['ts2cell.h',['../ts2cell_8h.html',1,'']]],

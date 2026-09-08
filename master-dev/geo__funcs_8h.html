@@ -87,6 +87,8 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;float.h&gt;</code><br />
 <code>#include &lt;math.h&gt;</code><br />
+<code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__error_8h_source.html">meos_error.h</a>&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
@@ -162,6 +164,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a19b0fda644bce9afa2ea8f42050cc16e"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8h_a19b0fda644bce9afa2ea8f42050cc16e.html#a19b0fda644bce9afa2ea8f42050cc16e">arc_span_sweep</a> (double theta0, double theta1, bool ccw)</td></tr>
 <tr class="memdesc:a19b0fda644bce9afa2ea8f42050cc16e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return how far an angular span turns, in the sense it is traversed.  <a href="geo__funcs_8h_a19b0fda644bce9afa2ea8f42050cc16e.html#a19b0fda644bce9afa2ea8f42050cc16e">More...</a><br /></td></tr>
 <tr class="separator:a19b0fda644bce9afa2ea8f42050cc16e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5cdde88e95139192a3444f438065a213"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8h_a5cdde88e95139192a3444f438065a213.html#a5cdde88e95139192a3444f438065a213">arcarc_cross</a> (const <a class="el" href="structEdge.html">Edge</a> *a, const <a class="el" href="structEdge.html">Edge</a> *b)</td></tr>
+<tr class="memdesc:a5cdde88e95139192a3444f438065a213"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two circular arcs properly cross.  <a href="geo__funcs_8h_a5cdde88e95139192a3444f438065a213.html#a5cdde88e95139192a3444f438065a213">More...</a><br /></td></tr>
+<tr class="separator:a5cdde88e95139192a3444f438065a213"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a630c1baab285148ff0eec1e257ab7876"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8h_a630c1baab285148ff0eec1e257ab7876.html#a630c1baab285148ff0eec1e257ab7876">arcarc_intersect</a> (const <a class="el" href="structEdge.html">Edge</a> *e1, const <a class="el" href="structEdge.html">Edge</a> *e2)</td></tr>
 <tr class="memdesc:a630c1baab285148ff0eec1e257ab7876"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two circular arc edges intersect.  <a href="geo__funcs_8h_a630c1baab285148ff0eec1e257ab7876.html#a630c1baab285148ff0eec1e257ab7876">More...</a><br /></td></tr>
 <tr class="separator:a630c1baab285148ff0eec1e257ab7876"><td class="memSeparator" colspan="2">&#160;</td></tr>
