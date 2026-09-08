@@ -3,7 +3,6 @@
 # The list only shrinks: a dispatch it does not carry fails the
 # check. Name the last type like every other arm and reject what
 # remains, then regenerate with --rebaseline.
-meos/src/geo/geo_funcs.c	meos_is_simple	switch geom->type
 meos/src/geo/geo_funcs.c	relate_extract_edges	switch geom->type
 meos/src/geo/tgeo_distance.c	dist_geom_edges	switch lw->type
 meos/src/h3/h3_geo.c	lwgeom_to_cells_into	switch geom->type
