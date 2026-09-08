@@ -122,46 +122,52 @@ datum_collinear(Datum value1, Datum value2, Datum value3, MeosType basetype,
   double duration1 = (double) (t2 - t1);
   double duration2 = (double) (t3 - t1);
   double ratio = duration1 / duration2;
-  if (basetype == T_FLOAT8)
-    return float_collinear(DatumGetFloat8(value1), DatumGetFloat8(value2),
-      DatumGetFloat8(value3), ratio);
-  if (basetype == T_DOUBLE2)
-    return double2_collinear(DatumGetDouble2P(value1), DatumGetDouble2P(value2),
-      DatumGetDouble2P(value3), ratio);
-  if (geo_basetype(basetype))
+  switch (basetype)
   {
-    GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
-    bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-    bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-    return geopoint_collinear(value1, value2, value3, ratio, hasz, geodetic);
-  }
-  if (basetype == T_DOUBLE3)
-    return double3_collinear(DatumGetDouble3P(value1), DatumGetDouble3P(value2),
-      DatumGetDouble3P(value3), ratio);
-  if (basetype == T_DOUBLE4)
-    return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
-      DatumGetDouble4P(value3), ratio);
+    case T_FLOAT8:
+      return float_collinear(DatumGetFloat8(value1), DatumGetFloat8(value2),
+        DatumGetFloat8(value3), ratio);
+    case T_DOUBLE2:
+      return double2_collinear(DatumGetDouble2P(value1),
+        DatumGetDouble2P(value2), DatumGetDouble2P(value3), ratio);
+    /* The members of #geo_basetype */
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+    {
+      GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
+      bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+      bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
+      return geopoint_collinear(value1, value2, value3, ratio, hasz, geodetic);
+    }
+    case T_DOUBLE3:
+      return double3_collinear(DatumGetDouble3P(value1),
+        DatumGetDouble3P(value2), DatumGetDouble3P(value3), ratio);
+    case T_DOUBLE4:
+      return double4_collinear(DatumGetDouble4P(value1),
+        DatumGetDouble4P(value2), DatumGetDouble4P(value3), ratio);
 #if CBUFFER
-  if (basetype == T_CBUFFER)
-    return cbuffer_collinear(DatumGetCbufferP(value1), DatumGetCbufferP(value2),
-      DatumGetCbufferP(value3), ratio);
+    case T_CBUFFER:
+      return cbuffer_collinear(DatumGetCbufferP(value1),
+        DatumGetCbufferP(value2), DatumGetCbufferP(value3), ratio);
 #endif
 #if NPOINT
-  if (basetype == T_NPOINT)
-    return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
-      DatumGetNpointP(value3), ratio);
+    case T_NPOINT:
+      return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
+        DatumGetNpointP(value3), ratio);
 #endif
 #if POSE
-  if (basetype == T_POSE)
-    return pose_collinear(DatumGetPoseP(value1), DatumGetPoseP(value2),
-      DatumGetPoseP(value3), ratio);
-  if (basetype == T_POSECHAIN)
-    return posechain_collinear(DatumGetPoseChainP(value1),
-      DatumGetPoseChainP(value2), DatumGetPoseChainP(value3), ratio);
+    case T_POSE:
+      return pose_collinear(DatumGetPoseP(value1), DatumGetPoseP(value2),
+        DatumGetPoseP(value3), ratio);
+    case T_POSECHAIN:
+      return posechain_collinear(DatumGetPoseChainP(value1),
+        DatumGetPoseChainP(value2), DatumGetPoseChainP(value3), ratio);
 #endif
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown collinear function for type: %s", meostype_name(basetype));
-  return false;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown collinear function for type: %s", meostype_name(basetype));
+      return false;
+  }
 }
 
 /*****************************************************************************
@@ -211,32 +217,38 @@ floatsegm_locate(double start, double end, double value)
 long double
 datumsegm_locate(Datum value1, Datum value2, Datum value, MeosType basetype)
 {
-  if (basetype == T_FLOAT8)
-    return floatsegm_locate(DatumGetFloat8(value1), DatumGetFloat8(value2),
-      DatumGetFloat8(value));
-  if (geo_basetype(basetype))
-    return pointsegm_locate(value1, value2, value, NULL);
+  switch (basetype)
+  {
+    case T_FLOAT8:
+      return floatsegm_locate(DatumGetFloat8(value1), DatumGetFloat8(value2),
+        DatumGetFloat8(value));
+    /* The members of #geo_basetype */
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      return pointsegm_locate(value1, value2, value, NULL);
 #if CBUFFER
-  if (basetype == T_CBUFFER)
-    return cbuffersegm_locate(DatumGetCbufferP(value1),
-      DatumGetCbufferP(value2), DatumGetCbufferP(value));
+    case T_CBUFFER:
+      return cbuffersegm_locate(DatumGetCbufferP(value1),
+        DatumGetCbufferP(value2), DatumGetCbufferP(value));
 #endif
 #if NPOINT
-  if (basetype == T_NPOINT)
-    return npointsegm_locate(DatumGetNpointP(value1), DatumGetNpointP(value2),
-      DatumGetNpointP(value));
+    case T_NPOINT:
+      return npointsegm_locate(DatumGetNpointP(value1),
+        DatumGetNpointP(value2), DatumGetNpointP(value));
 #endif
 #if POSE
-  if (basetype == T_POSE)
-    return posesegm_locate(DatumGetPoseP(value1), DatumGetPoseP(value2),
-      DatumGetPoseP(value));
-  if (basetype == T_POSECHAIN)
-    return posechainsegm_locate(DatumGetPoseChainP(value1),
-      DatumGetPoseChainP(value2), DatumGetPoseChainP(value));
+    case T_POSE:
+      return posesegm_locate(DatumGetPoseP(value1), DatumGetPoseP(value2),
+        DatumGetPoseP(value));
+    case T_POSECHAIN:
+      return posechainsegm_locate(DatumGetPoseChainP(value1),
+        DatumGetPoseChainP(value2), DatumGetPoseChainP(value));
 #endif
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown locate function for type: %s", meostype_name(basetype));
-  return -1.0;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown locate function for type: %s", meostype_name(basetype));
+      return -1.0;
+  }
 }
 
 /*****************************************************************************
@@ -275,46 +287,51 @@ Datum
 datumsegm_interpolate(Datum start, Datum end, MeosType temptype,
   long double ratio)
 {
-  if (temptype == T_TFLOAT)
-    return Float8GetDatum(floatsegm_interpolate(DatumGetFloat8(start),
-      DatumGetFloat8(end), ratio));
-  if (temptype == T_TDOUBLE2)
-    return PointerGetDatum(double2segm_interpolate(DatumGetDouble2P(start),
-      DatumGetDouble2P(end), ratio));
-  if (temptype == T_TDOUBLE3)
-    return PointerGetDatum(double3segm_interpolate(DatumGetDouble3P(start),
-      DatumGetDouble3P(end), ratio));
-  if (temptype == T_TDOUBLE4)
-    return PointerGetDatum(double4segm_interpolate(DatumGetDouble4P(start),
-      DatumGetDouble4P(end), ratio));
-  else if (tpoint_type(temptype))
-    return pointsegm_interpolate(start, end, ratio);
+  switch (temptype)
+  {
+    case T_TFLOAT:
+      return Float8GetDatum(floatsegm_interpolate(DatumGetFloat8(start),
+        DatumGetFloat8(end), ratio));
+    case T_TDOUBLE2:
+      return PointerGetDatum(double2segm_interpolate(DatumGetDouble2P(start),
+        DatumGetDouble2P(end), ratio));
+    case T_TDOUBLE3:
+      return PointerGetDatum(double3segm_interpolate(DatumGetDouble3P(start),
+        DatumGetDouble3P(end), ratio));
+    case T_TDOUBLE4:
+      return PointerGetDatum(double4segm_interpolate(DatumGetDouble4P(start),
+        DatumGetDouble4P(end), ratio));
+    /* The members of #tpoint_type */
+    case T_TGEOMPOINT:
+    case T_TGEOGPOINT:
+      return pointsegm_interpolate(start, end, ratio);
 #if CBUFFER
-  else if (temptype == T_TCBUFFER)
-    return PointerGetDatum(cbuffersegm_interpolate(DatumGetCbufferP(start),
-      DatumGetCbufferP(end), ratio));
+    case T_TCBUFFER:
+      return PointerGetDatum(cbuffersegm_interpolate(DatumGetCbufferP(start),
+        DatumGetCbufferP(end), ratio));
 #endif
 #if NPOINT
-  else if (temptype == T_TNPOINT)
-    return PointerGetDatum(npointsegm_interpolate(DatumGetNpointP(start),
-      DatumGetNpointP(end), ratio));
+    case T_TNPOINT:
+      return PointerGetDatum(npointsegm_interpolate(DatumGetNpointP(start),
+        DatumGetNpointP(end), ratio));
 #endif
 #if POSE
-  else if (temptype == T_TPOSECHAIN)
-    return PointerGetDatum(posechainsegm_interpolate(
-      DatumGetPoseChainP(start), DatumGetPoseChainP(end), ratio));
-  /* Interpolating a segment is an operation of the base type, so every
-   * temporal type over the pose reaches it, the rigid geometry among them */
-  else if (temptype_basetype(temptype) == T_POSE)
-    return PointerGetDatum(posesegm_interpolate(DatumGetPoseP(start),
-      DatumGetPoseP(end), (double) ratio));
+    case T_TPOSECHAIN:
+      return PointerGetDatum(posechainsegm_interpolate(
+        DatumGetPoseChainP(start), DatumGetPoseChainP(end), ratio));
+    /* Interpolating a segment is an operation of the base type, so every
+     * temporal type whose base type is the pose reaches it, the rigid
+     * geometry among them */
+    case T_TPOSE:
+    case T_TRGEOMETRY:
+      return PointerGetDatum(posesegm_interpolate(DatumGetPoseP(start),
+        DatumGetPoseP(end), (double) ratio));
 #endif
-  else
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown interpolate function for type: %s",
-      meostype_name(temptype));
-    return PointerGetDatum(NULL);
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown interpolate function for type: %s",
+        meostype_name(temptype));
+      return PointerGetDatum(NULL);
   }
 }
 
@@ -944,21 +961,26 @@ bbox_expand(const void *box1, void *box2, MeosType temptype)
    * so the dispatch reads that and not the class the type belongs to */
   MeosType bboxtype = type_bboxtype(temptype);
   assert(bboxtype != T_UNKNOWN);
-  if (bboxtype == T_TSTZSPAN)
-    span_expand((Span *) box1, (Span *) box2);
-  else if (bboxtype == T_TBOX)
-    tbox_expand((TBox *) box1, (TBox *) box2);
-#if POINTCLOUD
-  else if (bboxtype == T_TPCBOX)
-    tpcbox_expand((TPCBox *) box1, (TPCBox *) box2);
-#endif
-  else if (bboxtype == T_STBOX)
-    stbox_expand((STBox *) box1, (STBox *) box2);
-  else
+  switch (bboxtype)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Unknown bounding box type: %s", meostype_name(bboxtype));
-    return;
+    case T_TSTZSPAN:
+      span_expand((Span *) box1, (Span *) box2);
+      break;
+    case T_TBOX:
+      tbox_expand((TBox *) box1, (TBox *) box2);
+      break;
+#if POINTCLOUD
+    case T_TPCBOX:
+      tpcbox_expand((TPCBox *) box1, (TPCBox *) box2);
+      break;
+#endif
+    case T_STBOX:
+      stbox_expand((STBox *) box1, (STBox *) box2);
+      break;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown bounding box type: %s", meostype_name(bboxtype));
+      return;
   }
   return;
 }
@@ -2734,42 +2756,55 @@ tsegment_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   /* Both segments have linear interpolation */
   int result = 0; /* Make compiler quiet */
   assert(temporal_type(temptype));
-  if (tnumber_type(temptype))
-    result = tnumbersegm_intersection(start1, end1, start2, end2, basetype,
-      lower, upper, t1, t2);
-  else if (temptype == T_TGEOMPOINT)
-    result = tgeompointsegm_intersection(start1, end1, start2, end2, lower,
-      upper, t1, t2);
-  else if (temptype == T_TGEOGPOINT)
-    result = tgeogpointsegm_intersection(start1, end1, start2, end2, lower,
-      upper, t1, t2);
+  switch (temptype)
+  {
+    /* The members of #tnumber_type */
+    case T_TINT:
+    case T_TBIGINT:
+    case T_TFLOAT:
+      result = tnumbersegm_intersection(start1, end1, start2, end2, basetype,
+        lower, upper, t1, t2);
+      break;
+    case T_TGEOMPOINT:
+      result = tgeompointsegm_intersection(start1, end1, start2, end2, lower,
+        upper, t1, t2);
+      break;
+    case T_TGEOGPOINT:
+      result = tgeogpointsegm_intersection(start1, end1, start2, end2, lower,
+        upper, t1, t2);
+      break;
 #if CBUFFER
-  else if (temptype == T_TCBUFFER)
-    result = tcbuffersegm_intersection(start1, end1, start2, end2, lower,
-      upper, t1, t2);
+    case T_TCBUFFER:
+      result = tcbuffersegm_intersection(start1, end1, start2, end2, lower,
+        upper, t1, t2);
+      break;
 #endif
 #if NPOINT
-  else if (temptype == T_TNPOINT)
-    result = tnpointsegm_intersection(start1, end1, start2, end2, lower,
-      upper, t1, t2);
+    case T_TNPOINT:
+      result = tnpointsegm_intersection(start1, end1, start2, end2, lower,
+        upper, t1, t2);
+      break;
 #endif
 #if POSE
-  /* Intersecting two segments is an operation of the base type, so every
-   * temporal type over the pose reaches it, the rigid geometry among them */
-  else if (temptype_basetype(temptype) == T_POSE)
-    result = tposesegm_intersection(start1, end1, start2, end2, lower,
-      upper, t1, t2);
-  /* A pose chain is a base type of its own, so it reaches its own kernel */
-  else if (temptype_basetype(temptype) == T_POSECHAIN)
-    result = tposechainsegm_intersection(start1, end1, start2, end2, lower,
-      upper, t1, t2);
+    /* Intersecting two segments is an operation of the base type, so every
+     * temporal type whose base type is the pose reaches it, the rigid
+     * geometry among them */
+    case T_TPOSE:
+    case T_TRGEOMETRY:
+      result = tposesegm_intersection(start1, end1, start2, end2, lower,
+        upper, t1, t2);
+      break;
+    /* A pose chain is a base type of its own, so it reaches its own kernel */
+    case T_TPOSECHAIN:
+      result = tposechainsegm_intersection(start1, end1, start2, end2, lower,
+        upper, t1, t2);
+      break;
 #endif
-  else
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown intersection function for type: %s",
-      meostype_name(temptype));
-    return -1;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown intersection function for type: %s",
+        meostype_name(temptype));
+      return -1;
   }
   return result;
 }
