@@ -2719,8 +2719,12 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
      * removes the ring entirely. The rule holds of a region, so the guard asks
      * whether EVERY part of the subject is one -- a total would let a subject
      * mixing a region with a part of no area keep the part a clip covers, and
-     * answer one point set two ways depending on how it is spelled */
-    if (geo_every_part_bounds_area(gs1))
+     * answer one point set two ways depending on how it is spelled.
+     * A subject drawing NOTHING is the other way the guard reads false, and it
+     * keeps its answer for a reason of its own rather than that rule's: a
+     * difference takes points away from the subject, and one holding none has
+     * none to lose. It is the same empty answer whichever route reaches it */
+    if (geo_is_empty(gs1) || geo_every_part_bounds_area(gs1))
       return geo_copy(gs1);
   }
 

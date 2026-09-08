@@ -563,6 +563,34 @@ int main(void)
   free(coll_geo_a); free(coll_geo_b);
   meos_errno_reset();
 
+  /* A subject drawing NOTHING has nothing for a clip to take, whatever the
+   * clip draws. The rule above answers a region unchanged where the clip is of
+   * lower dimension, and an empty subject reaches it the same way: it keeps
+   * the answer it already gives, without the overlay library being asked.
+   * The assertion holds on the previous code too, since the library answers
+   * the same empty geometry -- what it guards is that the answer stays that
+   * one once nothing is asked. A library built without GEOS is where the two
+   * separate: the previous route declines there, this one answers */
+  const char *mtsub[] = { "POLYGON EMPTY", "MULTIPOLYGON EMPTY" };
+  const char *mtclip[] = { "LINESTRING(0 0,5 5)", "POINT(1 1)" };
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+    {
+      GSERIALIZED *ms = geom_in(mtsub[i], -1);
+      GSERIALIZED *mc = geom_in(mtclip[j], -1);
+      assert(ms != NULL); assert(mc != NULL);
+      meos_errno_reset();
+      GSERIALIZED *md = geom_difference2d(ms, mc);
+      printf("an empty subject minus %s: %s, errno %d\n", mtclip[j],
+        md ? (geo_is_empty(md) ? "empty" : "NOT EMPTY") : "NULL",
+        meos_errno());
+      assert(md != NULL);
+      assert(geo_is_empty(md));
+      assert(meos_errno() == 0);
+      free(md); free(ms); free(mc);
+      meos_errno_reset();
+    }
+
   /* Two areas whose boundaries run PARALLEL never touch, however close they
    * come. Deciding that means asking whether the two lines are one line, and
    * the engine answers it from the cross product of the offset between them
