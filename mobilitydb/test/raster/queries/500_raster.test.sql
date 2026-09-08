@@ -224,6 +224,56 @@ WITH rast AS (
 SELECT rasterValue(tgeompoint 'SRID=3857;{POINT(1.5 1.5)@2001-01-01}', r)
 FROM rast;
 
+-- The sampling reads the grid the geotransform states, in whatever reference
+-- system the pair agrees on: the same raster shape in EPSG:3857 answers what it
+-- answers in EPSG:4326, so nothing in the walk assumes lon/lat.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=3857;{POINT(1.5 1.5)@2001-01-01,
+  POINT(2.5 1.5)@2001-01-02}', r)::text AS sampled_in_3857
+FROM rast;
+
+-- A skewed grid is a different grid: the same two positions fall in different
+-- pixels once the geotransform carries a skew, so this cannot pass by reading
+-- the unskewed answer. The two rows below are the refuting pair.
+WITH plain AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+), skewed AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 1.0, 0.0, 3857),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=3857;{POINT(1.5 1.5)@2001-01-01,
+    POINT(2.5 1.5)@2001-01-02}', (SELECT r FROM plain))::text AS plain_values,
+  rasterValue(tgeompoint 'SRID=3857;{POINT(1.5 1.5)@2001-01-01,
+    POINT(2.5 1.5)@2001-01-02}', (SELECT r FROM skewed))::text AS skewed_values;
+
 -------------------------------------------------------------------------------
 -- atRasterValue / minusRasterValue / eRasterValue / aRasterValue
 -------------------------------------------------------------------------------
