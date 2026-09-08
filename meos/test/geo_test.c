@@ -373,6 +373,50 @@ int main(void)
   free(apart_geo_a); free(apart_geo_b);
   meos_errno_reset();
 
+  /* The same construction with one of the two boundaries CIRCULAR. An area
+   * below the line y = 0 meets an area above it whose lower boundary is an
+   * arc through (4 0), (2 1e-9) and (0 0) -- an arc that touches the line at
+   * its two endpoints and stands above it everywhere between, so the two
+   * areas share those two points and nothing else, whatever the arithmetic
+   * reads. The answer is again a property of the construction.
+   * It is the interiors that have to settle it, and until they can be decided
+   * for a pair carrying an arc the classification of a boundary portion falls
+   * back on that portion's midpoint, which lands on either side of the arc by
+   * the residue of the arithmetic that solved the split. #relate_edges_cross
+   * decides two straight boundaries from four determinants; the quadratic
+   * that meets a line with a circle decides a straight boundary against a
+   * circular one just as exactly, which is what lets the interiors answer
+   * here. The engine used to contradict itself on this record, reporting an
+   * OVERLAP from the matrix while its own overlay answered the two points and
+   * no area at all */
+  const char *arctouch_a = "POLYGON((0 -1,0 0,2 0,4 0,4 -1,0 -1))";
+  const char *arctouch_b =
+    "CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(4 0,2 1e-9,0 0),"
+    "(0 0,0 1,4 1,4 0)))";
+  GSERIALIZED *arctouch_geo_a = geom_in(arctouch_a, -1);
+  GSERIALIZED *arctouch_geo_b = geom_in(arctouch_b, -1);
+  assert(arctouch_geo_a != NULL);
+  assert(arctouch_geo_b != NULL);
+  meos_errno_reset();
+  char arctouch_patt[10] = "F***T****";
+  bool arctouch_touches = geom_relate_pattern(arctouch_geo_a, arctouch_geo_b, arctouch_patt);
+  printf("geom_relate_pattern(an area and one bounded below by an arc that "
+    "touches it, they only touch): %d, errno %d\n", arctouch_touches,
+    meos_errno());
+  assert(arctouch_touches == true);
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+  char arctouch_interiors[10] = "T********";
+  bool arctouch_overlaps = geom_relate_pattern(arctouch_geo_a, arctouch_geo_b,
+    arctouch_interiors);
+  printf("geom_relate_pattern(an area and one bounded below by an arc that "
+    "touches it, interiors meet): %d, errno %d\n", arctouch_overlaps,
+    meos_errno());
+  assert(arctouch_overlaps == false);
+  assert(meos_errno() == 0);
+  free(arctouch_geo_a); free(arctouch_geo_b);
+  meos_errno_reset();
+
   /* Two areas whose boundaries run PARALLEL never touch, however close they
    * come. Deciding that means asking whether the two lines are one line, and
    * the engine answers it from the cross product of the offset between them
