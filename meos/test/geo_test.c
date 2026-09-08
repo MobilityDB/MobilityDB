@@ -459,6 +459,73 @@ int main(void)
   free(aatouch_geo_a); free(aatouch_geo_b);
   meos_errno_reset();
 
+  /* A line clipped by a surface reads the surface's edges out of an R-tree
+   * once there are enough of them to index, and that index only answers a
+   * query carrying the SRID its own entries carry. Where the query states a
+   * different one the search reports INT_MAX rather than a count, and a
+   * caller reading that as a count walks the result array two billion entries
+   * past its end.
+   * The record below is that case at its smallest: an arc clipped by a
+   * polygon of 200 sides, both carrying a projected SRID, which is the shape
+   * a real projected corpus takes. The answer is the SAME geometry the pair
+   * has with no SRID at all -- an SRID names the frame the coordinates are
+   * read in and cannot move the points -- so the pair carries its own oracle
+   * and needs no reference engine */
+  int32 pip_srid = 3812;
+  /* A diamond of 200 sides, walked as four straight runs of 50 so the ring
+   * needs arithmetic only: the step that compiles and runs meos/test links no
+   * math library, and a vertex placed with a trigonometric function fails it
+   * at the linker rather than in any test */
+  int pip_per_side = 50;
+  int pip_sides = 4 * pip_per_side;
+  size_t pip_cap = (size_t) pip_sides * 48 + 64;
+  char *pip_wkt = malloc(pip_cap);
+  int pip_off = snprintf(pip_wkt, pip_cap, "SRID=%d;POLYGON((", pip_srid);
+  for (int i = 0; i <= pip_sides; i++)
+  {
+    int k = i % pip_sides;
+    int side = k / pip_per_side;
+    double f = (double) (k % pip_per_side) / pip_per_side;
+    /* (100,0) -> (0,100) -> (-100,0) -> (0,-100) -> back */
+    double xs[4] = { 100.0, 0.0, -100.0, 0.0 };
+    double ys[4] = { 0.0, 100.0, 0.0, -100.0 };
+    double xe = xs[(side + 1) % 4], ye = ys[(side + 1) % 4];
+    pip_off += snprintf(pip_wkt + pip_off, pip_cap - pip_off, "%s%.9f %.9f",
+      i ? "," : "", xs[side] + f * (xe - xs[side]),
+      ys[side] + f * (ye - ys[side]));
+  }
+  snprintf(pip_wkt + pip_off, pip_cap - pip_off, "))");
+  char pip_arc[192];
+  snprintf(pip_arc, sizeof pip_arc,
+    "SRID=%d;CIRCULARSTRING(-200 0,0 20,200 0)", pip_srid);
+  GSERIALIZED *pip_poly = geom_in(pip_wkt, -1);
+  GSERIALIZED *pip_line = geom_in(pip_arc, -1);
+  assert(pip_poly != NULL);
+  assert(pip_line != NULL);
+  meos_errno_reset();
+  GSERIALIZED *pip_res = geom_intersection2d(pip_line, pip_poly);
+  printf("geom_intersection2d(an arc, a 200-sided polygon, both with an "
+    "SRID): %s, errno %d\n", pip_res ? "answered" : "NULL", meos_errno());
+  assert(pip_res != NULL);
+  assert(meos_errno() == 0);
+  /* The same pair in the unnamed frame answers the same points */
+  char *pip_res_wkt = geo_as_text(pip_res, 6);
+  char *pip_plain_wkt = pip_wkt + strlen("SRID=3812;");
+  GSERIALIZED *pip_poly0 = geom_in(pip_plain_wkt, -1);
+  GSERIALIZED *pip_line0 = geom_in("CIRCULARSTRING(-200 0,0 20,200 0)", -1);
+  GSERIALIZED *pip_res0 = geom_intersection2d(pip_line0, pip_poly0);
+  char *pip_res0_wkt = pip_res0 ? geo_as_text(pip_res0, 6) : NULL;
+  printf("  the same pair carrying no SRID answers the same points: %d\n",
+    (pip_res_wkt && pip_res0_wkt && strcmp(pip_res_wkt, pip_res0_wkt) == 0));
+  assert(pip_res_wkt && pip_res0_wkt);
+  assert(strcmp(pip_res_wkt, pip_res0_wkt) == 0);
+  assert(meos_errno() == 0);
+  free(pip_res_wkt); free(pip_res0_wkt);
+  free(pip_res); free(pip_res0);
+  free(pip_poly); free(pip_line); free(pip_poly0); free(pip_line0);
+  free(pip_wkt);
+  meos_errno_reset();
+
   /* Two areas whose boundaries run PARALLEL never touch, however close they
    * come. Deciding that means asking whether the two lines are one line, and
    * the engine answers it from the cross product of the offset between them
