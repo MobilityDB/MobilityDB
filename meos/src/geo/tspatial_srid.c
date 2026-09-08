@@ -249,7 +249,7 @@ spatialset_srid(const Set *s)
  * @brief Return a spatial set with the coordinates set to an SRID
  * @param[in] s Spatial set
  * @param[in] srid SRID
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Spatialset_set_srid()
  */
 Set *
@@ -283,7 +283,7 @@ spatialset_set_srid(const Set *s, int32_t srid)
 /**
  * @ingroup meos_internal_geo_srid
  * @brief Return the SRID of a spatiotemporal instant
- * @return On error return @p SRID_INVALID
+ * @errval SRID_INVALID
  * @param[in] inst Spatiotemporal instant
  */
 int32_t
@@ -298,7 +298,7 @@ tspatialinst_srid(const TInstant *inst)
 /**
  * @ingroup meos_geo_srid
  * @brief Return the SRID of a spatiotemporal value
- * @return On error return @p SRID_INVALID
+ * @errval SRID_INVALID
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Tspatial_srid()
  */
@@ -397,7 +397,7 @@ tspatialseqset_set_srid(TSequenceSet *ss, int32_t srid)
  * @brief Return a spatiotemporal value with the coordinates set to an SRID
  * @param[in] temp Spatiotemporal value
  * @param[in] srid SRID
- * @return On error return @p NULL
+ * @errval NULL
  * @see #tspatialinst_set_srid()
  * @see #tspatialseq_set_srid()
  * @see #tspatialseqset_set_srid()

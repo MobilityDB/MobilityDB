@@ -674,7 +674,7 @@ posechain_to_point(const PoseChain *pc)
  * @ingroup meos_posechain_base_accessor
  * @brief Return the number of links of a pose chain
  * @param[in] pc Pose chain
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Posechain_num_poses()
  */
 int
@@ -829,7 +829,7 @@ ensure_same_count_posechain(const PoseChain *pc1, const PoseChain *pc2)
  * @param[in] ratio Value in [0,1] representing the duration of the timestamps
  * associated to `start` and the result divided by the duration of the
  * timestamps associated to `start` and `end`
- * @return On error return @p NULL
+ * @errval NULL
  */
 PoseChain *
 posechainsegm_interpolate(const PoseChain *start, const PoseChain *end,
@@ -1156,7 +1156,7 @@ posechain_nsame(const PoseChain *pc1, const PoseChain *pc2)
  * @brief Return -1, 0, or 1 depending on whether the first pose chain is less
  * than, equal to, or greater than the second one
  * @param[in] pc1,pc2 Pose chains
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Posechain_cmp()
  */
 int
@@ -1255,7 +1255,7 @@ void hashlittle2(const void *key, size_t length, uint32_t *pc, uint32_t *pb);
  * @ingroup meos_posechain_base_accessor
  * @brief Return the 32-bit hash value of a pose chain
  * @param[in] pc Pose chain
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Posechain_hash()
  */
 uint32

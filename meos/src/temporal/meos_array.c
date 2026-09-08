@@ -84,7 +84,8 @@ meos_array_reset_int(MeosArray *array, bool free_elems)
  * they point to).
  * @param[in] elem_size Size of a single element in bytes, or negative for
  * variable-length pointer storage
- * @return New array on success, NULL on error
+ * @return New array
+ * @errval NULL
  */
 MeosArray *
 meos_array_create(int elem_size)
@@ -196,7 +197,8 @@ meos_array_add(MeosArray *array, void *value)
  * @param[in] array Array
  * @param[in] n Index
  * @return For fixed-size arrays, a pointer to the element in the internal
- * buffer. For varlength arrays, the stored pointer. NULL on error.
+ * buffer. For varlength arrays, the stored pointer
+ * @errval NULL
  */
 void *
 meos_array_get(const MeosArray *array, int n)

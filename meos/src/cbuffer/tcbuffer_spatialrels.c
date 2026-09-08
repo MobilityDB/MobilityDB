@@ -88,7 +88,7 @@
  * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True if the arguments should be inverted
- * @return On error return -1
+ * @errval -1
  * @pre None of the two geometries is a geometry collection
  */
 static int
@@ -141,7 +141,7 @@ spatialrel_quantifiers(varfunc func, bool *all1, bool *all2)
  * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the functions
  * @param[in] invert True if the arguments should be inverted
- * @return On error return -1
+ * @errval -1
  */
 int
 spatialrel_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2,

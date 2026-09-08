@@ -138,7 +138,8 @@ error:
  * no moreinput after the sequence
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
  * @param[in] geom Reference geometry
- * @param[out] result New sequence, may be NULL
+ * @return New sequence
+ * @errval NULL
  */
 TSequence *
 trgeoseq_cont_parse(const char **str, MeosType temptype, interpType interp,

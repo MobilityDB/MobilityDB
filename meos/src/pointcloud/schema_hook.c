@@ -196,7 +196,8 @@ pcschema_string_copy(const char *str)
  *   @p NULL for none
  * @param[in] dims Dimensions the schema states, in any order
  * @param[in] ndims Number of dimensions
- * @return A newly allocated schema, @p NULL on error
+ * @return A newly allocated schema
+ * @errval NULL
  * @note The schema is built through the constructor of the point cloud
  *   library, so the size of a dimension, the offset of a dimension within a
  *   point and the width of a point are the ones that library computes
@@ -291,7 +292,8 @@ meos_pc_schema_from_dims(uint32_t pcid, int32_t srid,
  *   @p NULL for none
  * @param[in] dims Dimensions the schema states, in any order
  * @param[in] ndims Number of dimensions
- * @return True on success, false on error
+ * @return True when the schema is registered
+ * @errval false
  * @sqlfn pointCloudSchemaRegister()
  */
 bool

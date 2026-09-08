@@ -395,7 +395,7 @@ geopose_param_number(const char *str, double *out)
  * coordinates measure a plane rather than the ellipsoid, so writing them as a
  * longitude and a latitude would assert something the value does not say. A
  * planar pose is therefore reported here rather than encoded.
- * @return On error return false
+ * @errval false
  */
 static bool
 geopose_pose_components(const Pose *pose, double *lon, double *lat, double *h,
@@ -455,7 +455,7 @@ geopose_new_double(double v, int precision)
 /**
  * @brief Read the `quaternion` member shared by the Basic-Quaternion and
  * Advanced classes.
- * @return On error return false
+ * @errval false
  */
 static bool
 geopose_quaternion_from_json(json_object *jq, double *W, double *X, double *Y,
@@ -498,7 +498,7 @@ geopose_crs_is_geographic(const char *crs)
  * A frame this module cannot place a pose in is reported rather than guessed
  * at, and so is a missing coordinate: a pose whose position defaulted to zero
  * would be accepted here and refused by every operation that followed.
- * @return On error return @p NULL
+ * @errval NULL
  */
 static Pose *
 pose_from_geopose_advanced(json_object *frame, json_object *root)
@@ -674,7 +674,7 @@ pose_from_geopose_object(json_object *root)
  * @brief Return a pose from its OGC GeoPose JSON representation
  * @param[in] json GeoPose JSON string (Basic-YPR, Basic-Quaternion or
  * Advanced)
- * @return On error return @p NULL
+ * @errval NULL
  * @details Auto-detects the conformance class from the JSON keys present:
  *
  *   - `frameSpecification`: Advanced (returns a 3D pose placed at the
@@ -733,7 +733,7 @@ static json_object *pose_to_geopose_advanced(const Pose *pose, int precision);
  * point) and by the temporal-GeoPose entry points which embed the
  * per-instant object into an envelope's @p instants array. The caller
  * owns the returned object and is responsible for releasing it.
- * @return On error return @p NULL.
+ * @errval NULL
  */
 static json_object *
 pose_to_geopose_object(const Pose *pose, int conformance, int precision)
@@ -798,7 +798,7 @@ pose_to_geopose_object(const Pose *pose, int conformance, int precision)
  * (0 = Basic-Quaternion, 1 = Basic-YPR, 2 = Advanced)
  * @param[in] precision Decimal places to keep in the JSON numbers; pass
  * a negative value to use json-c's default
- * @return On error return @p NULL
+ * @errval NULL
  * @details Every conformance class mandates a geographic outer
  * frame. Poses with SRID 0 are treated as geographic; poses with
  * non-zero non-4326 SRIDs are rejected (use WKT/WKB instead).
@@ -1140,7 +1140,7 @@ geopose_transition_model_interp(json_object *tm)
  * encoding examples of the standard.
  * @details The rotation list is ordered w, x, y, z, the order in which
  * Requirement 15 lists the components of a GeoPose quaternion.
- * @return On error return @p NULL
+ * @errval NULL
  */
 static json_object *
 geopose_inner_frame(const char *id, const GeoPoseAnchor *anchor,
@@ -1209,7 +1209,7 @@ geopose_outer_frame(const char *id, const GeoPoseAnchor *anchor,
  * puts the pose at the origin of the frame it names. Its quaternion is then
  * the orientation in that frame, unrotated, and the document carries exactly
  * what the Basic-Quaternion document of the same pose carries.
- * @return On error return @p NULL
+ * @errval NULL
  */
 static json_object *
 pose_to_geopose_advanced(const Pose *pose, int precision)
@@ -1239,7 +1239,7 @@ pose_to_geopose_advanced(const Pose *pose, int precision)
  * @details Requirements 26 and 31 make the outer frame the first frame of a
  * series, and Requirement 34 the first frame of a stream, so one instant
  * fixes the frame that every later pose is expressed against.
- * @return On error return false
+ * @errval false
  */
 static bool
 geopose_anchor_from_instant(const TInstant *inst, GeoPoseAnchor *anchor)
@@ -1313,7 +1313,7 @@ geopose_interpose_duration(const TInstant **instants, int count)
  * @param[in] regular True to emit a Regular Series, false for an Irregular
  * one
  * @param[in] precision Significant digits in the emitted numbers
- * @return On error return @p NULL
+ * @errval NULL
  */
 static json_object *
 tpose_to_geopose_series(const Temporal *temp, bool regular, int precision)
@@ -1385,7 +1385,7 @@ tpose_to_geopose_series(const Temporal *temp, bool regular, int precision)
 /**
  * @brief Return the `parameters` string of a FrameSpecification object,
  * checking that the object carries the three members the schema requires.
- * @return On error return @p NULL
+ * @errval NULL
  */
 static const char *
 geopose_frame_parameters(json_object *frame, const char *what)
@@ -1408,7 +1408,7 @@ geopose_frame_parameters(json_object *frame, const char *what)
 
 /**
  * @brief Build the outer-frame anchor from a series' `outerFrame` member.
- * @return On error return false
+ * @errval false
  */
 static bool
 geopose_anchor_from_json(json_object *root, GeoPoseAnchor *anchor)
@@ -1433,7 +1433,7 @@ geopose_anchor_from_json(json_object *root, GeoPoseAnchor *anchor)
 
 /**
  * @brief Build the pose of an inner FrameSpecification of a series.
- * @return On error return @p NULL
+ * @errval NULL
  */
 static Pose *
 geopose_pose_from_inner_frame(const GeoPoseAnchor *anchor, json_object *frame)
@@ -1466,7 +1466,7 @@ geopose_pose_from_inner_frame(const GeoPoseAnchor *anchor, json_object *frame)
  * @details A series carries no bounds inclusivity and no gaps, so it always
  * reads back as a single closed sequence, or as an instant when the series
  * holds one pose and interpolates nothing.
- * @return On error return @p NULL
+ * @errval NULL
  */
 static Temporal *
 tpose_from_geopose_series(json_object *root, json_object *elements,
@@ -1617,7 +1617,7 @@ tpose_from_geopose_series(json_object *root, json_object *elements,
  * GeoPose_Instant, that is Unix time in integer milliseconds. Every time
  * this module writes is that same kind, whichever class the document
  * belongs to.
- * @return On error return @p NULL
+ * @errval NULL
  */
 static char *
 tposeinst_as_geopose(const TInstant *inst, int conformance, int precision)
@@ -1653,7 +1653,7 @@ tposeinst_as_geopose(const TInstant *inst, int conformance, int precision)
  * @param[in] conformance Class of a single-pose document
  * (0 = Basic-Quaternion, 1 = Basic-YPR, 2 = Advanced)
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpose_as_geopose()
  */
 char *
@@ -1701,7 +1701,7 @@ tpose_as_geopose(const Temporal *temp, int conformance, int precision)
  * of the same tangent point.
  * @param[in] temp Temporal pose
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
- * @return On error return @p NULL
+ * @errval NULL
  */
 static json_object *
 geopose_stream_header_obj(const Temporal *temp, const GeoPoseAnchor *anchor,
@@ -1717,7 +1717,8 @@ geopose_stream_header_obj(const Temporal *temp, const GeoPoseAnchor *anchor,
 
 /**
  * @brief Build the `StreamElement` of one instant against an anchored outer
- * frame. Returns @p NULL on error.
+ * frame
+ * @errval NULL
  */
 static json_object *
 geopose_stream_element_obj(const GeoPoseAnchor *anchor, const TInstant *inst,
@@ -1767,7 +1768,7 @@ tpose_as_geopose_stream_header(const Temporal *temp, int precision)
  * @param[in] temp Temporal pose the stream is written from
  * @param[in] inst Instant to write
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
- * @return On error return @p NULL
+ * @errval NULL
  */
 char *
 tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
@@ -1808,7 +1809,7 @@ tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
  * does.
  * @param[in] temp Temporal pose
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpose_as_geopose_stream()
  */
 char *
@@ -1854,7 +1855,8 @@ tpose_as_geopose_stream(const Temporal *temp, int precision)
 
 /**
  * @brief Parse one element of an @p instants array (single-pose object
- * + @p validTime member) into a TInstant. Returns @p NULL on error.
+ * + @p validTime member) into a TInstant
+ * @errval NULL
  */
 static TInstant *
 tposeinst_from_geopose_object(json_object *obj)
@@ -1941,7 +1943,7 @@ tpose_parse_instants(json_object *instants_arr, TInstant ***out_instants)
  *
  * The resulting temporal pose has SRID 4326.
  * @param[in] json GeoPose JSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpose_from_geopose()
  */
 Temporal *
@@ -2148,7 +2150,7 @@ geopose_chain_link_frame(const Pose *pose, int precision)
  * parent.
  * @param[in] temp Temporal pose chain holding a single instant
  * @param[in] precision Maximum number of decimal digits
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tposechain_as_geopose()
  */
 char *
@@ -2225,7 +2227,7 @@ tposechain_as_geopose(const Temporal *temp, int precision)
  * @param[in] temparr Array of temporal pose chains, each of a single instant
  * @param[in] count Number of elements in the array
  * @param[in] precision Maximum number of decimal digits
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tposechainarr_as_geopose()
  */
 char *
@@ -2334,7 +2336,7 @@ tposechainarr_as_geopose(const Temporal **temparr, int count, int precision)
 
 /**
  * @brief Build the pose of a link read in the axes of the link before it
- * @return On error return @p NULL
+ * @errval NULL
  */
 static Pose *
 geopose_chain_link_pose(json_object *frame)
@@ -2360,7 +2362,7 @@ geopose_chain_link_pose(json_object *frame)
  * @brief Return a temporal pose chain from an OGC GeoPose Composite Chain
  * JSON document
  * @param[in] json GeoPose Chain document
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tposechain_from_geopose()
  */
 Temporal *

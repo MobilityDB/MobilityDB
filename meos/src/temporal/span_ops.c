@@ -1006,8 +1006,8 @@ minus_span_span(const Span *s1, const Span *s2)
  ******************************************************************************/
 
 /**
- * @brief Return the value returned on error by the distance functions of a
- * base type
+ * @brief Return the sentinel the distance functions of a base type answer
+ * where they compute no distance
  * @param[in] type Type of the values
  * @details The sentinel is the maximum value of the type in which the distance
  * is expressed, so that it sorts after every distance that could be computed
@@ -1039,7 +1039,7 @@ distance_sentinel(MeosType type)
  * @brief Return a distance of a base type as a double for the indexes
  * @param[in] dist Distance between two values of the base type
  * @param[in] type Base type of the values the distance was computed on
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @details The distance functions answer in the type of the distance, which
  * is the base type for the numbers, the number of days for the dates, and the
  * number of seconds for the timestamptz values. The nearest neighbor searches
@@ -1074,8 +1074,7 @@ distance_double(Datum dist, MeosType type)
  * @brief Return the distance between two values
  * @param[in] l,r Values
  * @param[in] type Type of the values
- * @return On error return the sentinel of the base type given by
- * #distance_sentinel()
+ * @errval #distance_sentinel()
  */
 Datum
 distance_value_value(Datum l, Datum r, MeosType type)
@@ -1137,8 +1136,7 @@ distance_span_value(const Span *s, Datum value)
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two spans as a double
  * @param[in] s1,s2 Spans
- * @return On error return the sentinel of the base type given by
- * #distance_sentinel()
+ * @errval #distance_sentinel()
  * @csqlfn #Distance_span_span()
  */
 Datum

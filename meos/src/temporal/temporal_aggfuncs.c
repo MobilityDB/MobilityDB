@@ -275,7 +275,8 @@ temporal_skiplist_elempos(const SkipList *list, Span *s, int cur)
  * @param[out] update Array of indices keeping the levels of the elements to
  * insert
  * @return Number of elements in the list that will be aggregated with the new
- * values, on error return -1
+ * values
+ * @errval -1
  */
 int
 temporal_skiplist_common(SkipList *list, void **values, int count,
@@ -515,7 +516,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
  * @param[in] crossings True if turning points are added in the segments
  * @param[out] result Array on which the pointers of the newly constructed
  * ranges are stored
- * @return On error return -1
+ * @errval -1
  * @note Return new sequences that must be freed by the calling function
  */
 static int

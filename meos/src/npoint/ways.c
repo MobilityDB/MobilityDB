@@ -63,7 +63,7 @@ static int32_t SRID_WAYS = SRID_INVALID;
 /**
  * @ingroup meos_npoint_base_srid
  * @brief Return the SRID of the routes in the ways table
- * @return On error return SRID_INVALID
+ * @errval SRID_INVALID
  */
 int32_t
 get_srid_ways()
@@ -135,7 +135,7 @@ route_exists(int64 rid)
  * @brief Access the edge table to return the route length from the
  * corresponding route identifier
  * @param[in] rid Route identifier
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 double
 route_length(int64 rid)
@@ -170,7 +170,7 @@ route_length(int64 rid)
  * @brief Access the edge table to get the route geometry from corresponding
  * route identifier
  * @param[in] rid Route identifier
- * @return On error return @p NULL
+ * @errval NULL
  */
 const GSERIALIZED *
 route_geom(int64 rid)

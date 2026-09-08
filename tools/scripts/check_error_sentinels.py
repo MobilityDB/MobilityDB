@@ -111,10 +111,30 @@ POINTER = re.compile(r"\*\s*$")
 FUNC_DEF = re.compile(r"^([a-z_][a-z0-9_]*)\s*\(")
 RET_TYPE = re.compile(r"^((?:const\s+)?[A-Za-z_][A-Za-z0-9_]*(?:\s*\*+)?)\s*$")
 VALIDATE = re.compile(r"\bVALIDATE_[A-Z0-9_]+\s*\([^,]+,\s*([^)]+?)\s*\)")
-# The token may be a name or a number, and a number may have a decimal point,
-# so it cannot end at the first dot: -1.0 read as -1 is a different sentinel
-DOC_RETURN = re.compile(r"@return\s+On error return\s+(?:@p\s+)?"
-                        r"(-?\d+\.\d+|-?\d+|[A-Za-z_][A-Za-z0-9_]*)")
+# The contract is an @errval tag. A tag carries ONE token, because whoever
+# reads it takes the first one and everything written after that is lost --
+# a value ending in a comma is read WITH the comma, which is the same bite
+# @sqlop takes when it names more than one operator. The vocabulary is a
+# name, a number, or a reference to the function computing the sentinel. A
+# number may have a decimal point, so a token cannot end at the first dot:
+# -1.0 read as -1 is a different sentinel.
+ERRVAL = re.compile(r"@errval\s+(.*?)\s*$")
+ERRVAL_TOKEN = re.compile(r"^(?:-?\d+\.\d+|-?\d+|[A-Za-z_][A-Za-z0-9_]*|"
+                          r"#[A-Za-z_][A-Za-z0-9_]*\(\))$")
+# The prose form the tag replaces. A contract written as prose again is
+# invisible to this check, so the check refuses it rather than passing a file
+# whose contract it can no longer see. One doc line mentions an error without
+# contracting one: a three-valued predicate states its whole return domain,
+# and -1 there is the "unknown" of that domain rather than a sentinel this
+# check governs.
+# Both boundaries, as the sibling checks anchor their keywords: the left one
+# is what keeps "approximation error" out of the match.
+PROSE = re.compile(r"\b[Oo]n error\b")
+# A predicate states its domain over two lines as readily as over one, so the
+# exemption reads the line together with the one above it.
+PROSE_EXEMPT = re.compile(r"-1\s+on error")
+DOC_RETURN = re.compile(r"@errval\s+(-?\d+\.\d+|-?\d+|[A-Za-z_][A-Za-z0-9_]*)"
+                        r"\s*$")
 
 
 def sentinel_for(rettype: str) -> str | None:
@@ -142,6 +162,18 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
     findings = []
     lines = path.read_text().splitlines()
     for i, line in enumerate(lines):
+        e = ERRVAL.search(line)
+        if e and not ERRVAL_TOKEN.match(e.group(1)):
+            findings.append((f"{rel}\t@errval\t{e.group(1)}",
+                             f"{rel}:{i + 1}: @errval takes one token, "
+                             f"not {e.group(1)!r}"))
+        prev = lines[i - 1].strip().lstrip("*").strip() if i else ""
+        if (line.lstrip().startswith("*") and PROSE.search(line) and
+                not PROSE_EXEMPT.search(f"{prev} {line.strip().lstrip('*')}")):
+            findings.append((f"{rel}\tprose\t{line.strip()}",
+                             f"{rel}:{i + 1}: state the error value as "
+                             f"@errval, not as prose"))
+    for i, line in enumerate(lines):
         m = FUNC_DEF.match(line)
         if not m or i == 0:
             continue
@@ -161,6 +193,10 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
             j -= 1
             if i - j > 40:
                 break
+        # a doxygen block is read in source order and with its continuations
+        # joined, so that a sentence wrapped over two lines still reads as one
+        doctext = " ".join(dl.strip().lstrip("*").strip() for dl in
+                           reversed(doc))
         documented = documented_raw = None
         for dl in doc:
             d = DOC_RETURN.search(dl)
@@ -176,7 +212,7 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
             body.append(lines[k])
             k += 1
         if want == "INT_MAX" and (PREDICATE.match(name) or
-                                  PREDICATE_DOC.search("\n".join(doc))):
+                                  PREDICATE_DOC.search(doctext)):
             want = "-1"
         if want == "INT_MAX" and COUNT_DOC.search("\n".join(doc)):
             want = "-1"

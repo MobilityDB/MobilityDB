@@ -278,7 +278,8 @@ TAB_SIZE               = 4
 ALIASES                = "csqlfunc=@par C-SQL Function:^^" \
                          "sqlfunc=@par SQL Function:^^" \
                          "sqlop=@par SQL Operator:^^" \
-                         "pymeosfunc=@par PyMEOS Function:^^"
+                         "pymeosfunc=@par PyMEOS Function:^^" \
+                         "errval=@return On error return"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For

@@ -59,7 +59,7 @@
  * @ingroup meos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -74,7 +74,7 @@ intspan_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -89,7 +89,7 @@ bigintspan_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return a float span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -104,7 +104,7 @@ floatspan_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return a date span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -120,7 +120,7 @@ datespan_in(const char *str)
  * @brief Return a timestamptz span from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -136,7 +136,7 @@ tstzspan_in(const char *str)
 /**
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of an integer span
- * @return On error return @p NULL
+ * @errval NULL
  * @param[in] s Span
  * @csqlfn #Span_out()
  */
@@ -152,7 +152,7 @@ intspan_out(const Span *s)
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a big integer span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Span_out()
  */
 char *
@@ -168,7 +168,7 @@ bigintspan_out(const Span *s)
  * @brief Return the Well-Known Text (WKT) representation of a float span
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
- * @return On error return @p NULL
+ * @errval NULL
   * @csqlfn #Span_out()
 */
 char *
@@ -183,7 +183,7 @@ floatspan_out(const Span *s, int maxdd)
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a date span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Span_out()
  */
 char *
@@ -198,7 +198,7 @@ datespan_out(const Span *s)
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a timestamtz span
  * @param[in] s Span
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Span_out()
  */
 char *
@@ -387,7 +387,7 @@ timestamptz_to_span(TimestampTz t)
 /**
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of an integer span
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @param[in] s Span
  * @csqlfn #Span_lower()
  */
@@ -403,7 +403,7 @@ intspan_lower(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of an integer span
  * @param[in] s Span
- * @return On error return INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Span_lower()
  */
 int64
@@ -418,7 +418,7 @@ bigintspan_lower(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of a float span
  * @param[in] s Span
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Span_lower()
  */
 double
@@ -433,7 +433,7 @@ floatspan_lower(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of a date span
  * @param[in] s Span
- * @return On error return DATEVAL_NOEND
+ * @errval DATEVAL_NOEND
  * @csqlfn #Span_lower()
  */
 DateADT
@@ -448,7 +448,7 @@ datespan_lower(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of a timestamptz span
  * @param[in] s Span
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Span_lower()
  */
 TimestampTz
@@ -465,7 +465,7 @@ tstzspan_lower(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of an integer span
  * @param[in] s Span
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Span_upper()
  */
 int
@@ -480,7 +480,7 @@ intspan_upper(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of an integer span
  * @param[in] s Span
- * @return On error return INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Span_upper()
  */
 int64
@@ -495,7 +495,7 @@ bigintspan_upper(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of a float span
  * @param[in] s Span
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Span_upper()
  */
 double
@@ -510,7 +510,7 @@ floatspan_upper(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of a date span
  * @param[in] s Span
- * @return On error return DATEVAL_NOEND
+ * @errval DATEVAL_NOEND
  * @csqlfn #Span_upper()
  */
 DateADT
@@ -525,7 +525,7 @@ datespan_upper(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of a timestamptz span
  * @param[in] s Span
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Span_upper()
  */
 TimestampTz
@@ -570,7 +570,7 @@ span_upper_inc(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the width of an integer span
  * @param[in] s Span
- * @return On error return INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Numspan_width()
  */
 int
@@ -585,7 +585,7 @@ intspan_width(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the width of a big integer span
  * @param[in] s Span
- * @return On error return INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Numspan_width()
  */
 int64
@@ -600,7 +600,7 @@ bigintspan_width(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the width of a float span
  * @param[in] s Span
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Numspan_width()
  */
 double

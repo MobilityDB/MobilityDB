@@ -231,7 +231,6 @@ set_out(const Set *s, int maxdd)
 
 /**
  * @brief Return the size of a bounding box of a temporal type
- * @return On error return SIZE_MAX
  */
 static size_t
 set_bbox_size(MeosType settype)
@@ -669,7 +668,7 @@ set_mem_size(const Set *s)
 /**
  * @ingroup meos_setspan_accessor
  * @brief Return the number of values of a set
- * @return On error return -1
+ * @errval -1
  * @param[in] s Set
  * @csqlfn #Set_num_values()
  */
@@ -1153,7 +1152,7 @@ set_ne(const Set *s1, const Set *s2)
  * @brief Return -1, 0, or 1 depending on whether the first set is less
  * than, equal to, or greater than the second one
  * @param[in] s1,s2 Sets
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @note Function used for B-tree comparison
  * @csqlfn #Set_cmp()
  */
@@ -1242,7 +1241,7 @@ set_ge(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_accessor
  * @brief Return the 32-bit hash of a set
  * @param[in] s Set
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Set_hash()
  */
 uint32

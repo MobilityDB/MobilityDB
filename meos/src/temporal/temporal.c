@@ -1863,7 +1863,7 @@ temporal_as_tsequenceset(const Temporal *temp, interpType interp)
  * @brief Return a temporal value transformed to an interpolation
  * @param[in] temp Temporal value
  * @param[in] interp Interpolation
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *
@@ -2327,7 +2327,7 @@ tnumber_avg_value(const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] n Number (1-based)
  * @param[out] result Resulting timestamp
- * @return On error return false
+ * @errval false
  */
 bool
 temporal_value_n(const Temporal *temp, int n, Datum *result)
@@ -2370,7 +2370,7 @@ temporal_value_n(const Temporal *temp, int n, Datum *result)
  * @details Function used, e.g., for computing the shortest line between two
  * temporal points from their temporal distance
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @note The function does not take into account whether the instant is at
  * an exclusive bound or not.
  */
@@ -2397,7 +2397,7 @@ temporal_min_inst_p(const Temporal *temp)
  * @brief Return a copy of the instant with minimum base value of a temporal
  * value
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @note The function does not take into account whether the instant is at
  * an exclusive bound or not.
  * @csqlfn #Temporal_min_instant()
@@ -2416,7 +2416,7 @@ temporal_min_instant(const Temporal *temp)
  * @brief Return a copy of the instant with maximum base value of a temporal
  * value
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_max_instant()
  */
 const TInstant *
@@ -2442,7 +2442,7 @@ temporal_max_inst_p(const Temporal *temp)
  * @brief Return a copy of the instant with maximum base value of a temporal
  * value
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @note The function does not take into account whether the instant is at
  * an exclusive bound or not.
  * @csqlfn #Temporal_max_instant()
@@ -2461,7 +2461,7 @@ temporal_max_instant(const Temporal *temp)
  * @brief Return the duration of a temporal value
  * @param[in] temp Temporal value
  * @param[in] boundspan True when the potential time gaps are ignored
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_duration()
  */
 Interval *
@@ -2491,7 +2491,7 @@ temporal_duration(const Temporal *temp, bool boundspan)
  * @ingroup meos_temporal_accessor
  * @brief Return the number of sequences of a temporal sequence (set)
  * @param[in] temp Temporal value
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Temporal_num_sequences()
  */
 int
@@ -2508,7 +2508,7 @@ temporal_num_sequences(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the start sequence of a temporal sequence (set)
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_sequence()
  */
 TSequence *
@@ -2533,7 +2533,7 @@ temporal_start_sequence(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the end sequence of a temporal sequence (set)
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_sequence()
  */
 TSequence *
@@ -2558,7 +2558,7 @@ temporal_end_sequence(const Temporal *temp)
  * @brief Return a copy of the n-th sequence of a temporal sequence (set)
  * @param[in] temp Temporal value
  * @param[in] n Number (1-based)
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_sequence_n()
  */
 TSequence *
@@ -2589,7 +2589,7 @@ temporal_sequence_n(const Temporal *temp, int n)
  * (set)
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_sequences()
  */
 const TSequence **
@@ -2618,7 +2618,7 @@ temporal_sequences_p(const Temporal *temp, int *count)
  * (set)
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_sequences()
  */
 TSequence **
@@ -2638,7 +2638,7 @@ temporal_sequences(const Temporal *temp, int *count)
  * @brief Return the array of segments of a temporal value
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_segments()
  */
 TSequence **
@@ -2716,7 +2716,7 @@ temporal_upper_inc(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the number of distinct instants of a temporal value
  * @param[in] temp Temporal value
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Temporal_num_instants()
  */
 int
@@ -2741,7 +2741,7 @@ temporal_num_instants(const Temporal *temp)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return a pointer to the start instant of a temporal value
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  */
 const TInstant *
 temporal_start_inst(const Temporal *temp)
@@ -2763,7 +2763,7 @@ temporal_start_inst(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the start instant of a temporal value
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_instant()
  */
 TInstant *
@@ -2780,7 +2780,7 @@ temporal_start_instant(const Temporal *temp)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return a pointer to the end instant of a temporal value
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @note This function is used for validity testing.
  */
 const TInstant *
@@ -2808,7 +2808,7 @@ temporal_end_inst(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the end instant of a temporal value
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @note This function is used for validity testing.
  * @csqlfn #Temporal_end_instant()
  */
@@ -2827,7 +2827,7 @@ temporal_end_instant(const Temporal *temp)
  * @brief Return a pointer to the n-th instant of a temporal value
  * @param[in] temp Temporal value
  * @param[in] n Number (1-based)
- * @return On error return @p NULL
+ * @errval NULL
  */
 const TInstant *
 temporal_inst_n(const Temporal *temp, int n)
@@ -2855,7 +2855,7 @@ temporal_inst_n(const Temporal *temp, int n)
  * @brief Return a copy of the n-th instant of a temporal value
  * @param[in] temp Temporal value
  * @param[in] n Number (1-based)
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_instant_n()
  */
 TInstant *
@@ -2874,7 +2874,7 @@ temporal_instant_n(const Temporal *temp, int n)
  * value
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @return On error return @p NULL
+ * @errval NULL
  */
 const TInstant **
 temporal_insts_p(const Temporal *temp, int *count)
@@ -2906,7 +2906,7 @@ temporal_insts_p(const Temporal *temp, int *count)
  * @brief Return a copy of the distinct instants of a temporal value
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_instants()
  */
 TInstant **
@@ -2924,7 +2924,7 @@ temporal_instants(const Temporal *temp, int *count)
  * @ingroup meos_temporal_accessor
  * @brief Return the number of distinct timestamps of a temporal value
  * @param[in] temp Temporal value
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Temporal_num_timestamps()
  */
 int
@@ -2949,7 +2949,7 @@ temporal_num_timestamps(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the start timestamptz of a temporal value
  * @param[in] temp Temporal value
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Temporal_start_timestamptz()
  */
 TimestampTz
@@ -2974,7 +2974,7 @@ temporal_start_timestamptz(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the end timestamptz of a temporal value
  * @param[in] temp Temporal value
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Temporal_end_timestamptz()
  */
 TimestampTz
@@ -3002,7 +3002,7 @@ temporal_end_timestamptz(const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] n Number (1-based)
  * @param[out] result Resulting timestamp
- * @return On error return false
+ * @errval false
  * @csqlfn #Temporal_timestamptz_n()
  */
 bool
@@ -3042,7 +3042,7 @@ temporal_timestamptz_n(const Temporal *temp, int n, TimestampTz *result)
  * @brief Return the array of distinct timestamps of a temporal value
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_timestamps()
  */
 TimestampTz *
@@ -3484,7 +3484,7 @@ temporal_stops(const Temporal *temp, double maxdist,
  * @ingroup meos_temporal_accessor
  * @brief Return the integral (area under the curve) of a temporal number
  * @param[in] temp Temporal value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Tnumber_integral()
  */
 double
@@ -3510,7 +3510,7 @@ tnumber_integral(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the time-weighted average of a temporal number
  * @param[in] temp Temporal value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Tnumber_twavg()
  */
 double
@@ -3806,7 +3806,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal to, or greater than the second one
  * @param[in] temp1,temp2 Temporal values
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @note Function used for B-tree comparison
  * @csqlfn #Temporal_cmp()
  */
@@ -3975,7 +3975,7 @@ tinstant_hash_extended_fold(const TInstant *inst, void *state)
  * @ingroup meos_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal value
  * @param[in] temp Temporal value
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Temporal_hash()
  *
  * The hash reads the instants the value holds, in time order, and nothing
@@ -4007,7 +4007,7 @@ temporal_hash(const Temporal *temp)
  * @brief Return the 64-bit hash value of a temporal value using a seed
  * @param[in] temp Temporal value
  * @param[in] seed Seed
- * @return On error return @p UINT64_MAX
+ * @errval UINT64_MAX
  * @csqlfn #Temporal_hash_extended()
  */
 uint64

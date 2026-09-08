@@ -145,7 +145,7 @@ tpcpoint_from_base_temp(const Pcpoint *pt, const Temporal *temp)
  * @ingroup meos_pointcloud_accessor
  * @brief Return the start value of a temporal pgpointcloud point
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_value()
  */
 Pcpoint *
@@ -160,7 +160,7 @@ tpcpoint_start_value(const Temporal *temp)
  * @ingroup meos_pointcloud_accessor
  * @brief Return the end value of a temporal pgpointcloud point
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_value()
  */
 Pcpoint *

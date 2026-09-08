@@ -277,7 +277,7 @@ pcpatch_as_hexwkb(const Pcpatch *pa)
  * @param[in] values Coordinate of each dimension of each point, one point
  *   after another, in the order the schema states the dimensions
  * @param[in] count Number of coordinates, a whole number of points
- * @return On error return @p NULL
+ * @errval NULL
  * @note The schema is resolved through the MEOS cache, so a schema stated in
  *   SQL and one parsed from an XML document build a value alike.
  * @csqlfn #Pcpatch_make_coords()
@@ -347,7 +347,7 @@ pcpatch_make_coords(uint32_t pcid, const double *values, int count)
  * @brief Return a pcpatch from an array of pcpoints
  * @param[in] points Array of points, all of the same schema
  * @param[in] count Number of points
- * @return On error return @p NULL
+ * @errval NULL
  * @note The schema is resolved through the MEOS cache, so a schema stated in
  *   SQL and one parsed from an XML document build a value alike.
  * @csqlfn #Pcpatch_make()
@@ -464,8 +464,9 @@ pcpoint_serialize(const PCPOINT *pcpt)
  * @param[in] n Number of the point, one-based: 1 is the first point and the
  * number of points of the patch the last one. A negative @p n counts from the
  * end, so that -1 is the last point and minus the number of points the first
- * @return On error, or when @p n addresses no point of the patch, return
- * @p NULL
+ * @note A @p n that addresses no point of the patch has no point to copy, so
+ * the answer is NULL
+ * @errval NULL
  * @details The indexing is the one pgPointCloud defines for @c PC_PointN,
  * which owns the type
  * @see #pcpatch_points() to obtain every point in a single call
@@ -507,7 +508,7 @@ pcpatch_point_n(const Pcpatch *pa, int n)
  * @brief Return the array of points of a pcpatch
  * @param[in] pa Point cloud patch
  * @param[out] count Number of elements of the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @details Every point carries the schema of the patch it comes from, and the
  * points are returned in the order the patch stores them, which is the order
  * #pcpatch_point_n() indexes
@@ -550,7 +551,7 @@ pcpatch_points(const Pcpatch *pa, int *count)
 /**
  * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 32-bit hash of a pcpatch
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Pcpatch_hash()
  */
 uint32
@@ -584,7 +585,7 @@ pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
  * @ingroup meos_pointcloud_base_comp
  * @brief Compare two pcpatch values byte-wise
  * @return -1 / 0 / 1
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @note Compares only the meaningful-prefix bytes — pgpointcloud's
  *   struct-tail padding is skipped so two pcpatches that disagree only
  *   on those padding bytes compare equal.

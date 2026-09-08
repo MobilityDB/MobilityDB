@@ -447,7 +447,7 @@ timestamptz_to_set(TimestampTz t)
  * @ingroup meos_setspan_accessor
  * @brief Return the start value of an integer set
  * @param[in] s Set
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Set_start_value()
  */
 int
@@ -462,7 +462,7 @@ intset_start_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the start value of a big integer set
  * @param[in] s Set
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Set_start_value()
  */
 int64
@@ -477,7 +477,7 @@ bigintset_start_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the start value of a float set
  * @param[in] s Set
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Set_start_value()
  */
 double
@@ -492,7 +492,7 @@ floatset_start_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return a copy of the start value of a text set
  * @param[in] s Set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_start_value()
  */
 text *
@@ -507,7 +507,7 @@ textset_start_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the start value of a date set
  * @param[in] s Set
- * @return On error return DATEVAL_NOEND
+ * @errval DATEVAL_NOEND
  * @csqlfn #Set_start_value()
  */
 DateADT
@@ -522,7 +522,7 @@ dateset_start_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the start value of a timestamptz set
  * @param[in] s Set
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Set_start_value()
  */
 TimestampTz
@@ -539,7 +539,7 @@ tstzset_start_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the end value of an integer set
  * @param[in] s Set
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Set_end_value()
  */
 int
@@ -554,7 +554,7 @@ intset_end_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the end value of a big integer set
  * @param[in] s Set
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Set_end_value()
  */
 int64
@@ -569,7 +569,7 @@ bigintset_end_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the end value of a float set
  * @param[in] s Set
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Set_end_value()
  */
 double
@@ -584,7 +584,7 @@ floatset_end_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return a copy of the end value of a text set
  * @param[in] s Set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_end_value()
  */
 text *
@@ -599,7 +599,7 @@ textset_end_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the end value of a date set
  * @param[in] s Set
- * @return On error return DATEVAL_NOEND
+ * @errval DATEVAL_NOEND
  * @csqlfn #Set_end_value()
  */
 DateADT
@@ -614,7 +614,7 @@ dateset_end_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the end value of a timestamptz set
  * @param[in] s Set
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Set_end_value()
  */
 TimestampTz
@@ -754,7 +754,7 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
  * @brief Return the array of values of an integer set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 int *
@@ -774,7 +774,7 @@ intset_values(const Set *s, int *count)
  * @brief Return the array of values of a big integer set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 int64 *
@@ -794,7 +794,7 @@ bigintset_values(const Set *s, int *count)
  * @brief Return the array of values of a float set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 double *
@@ -814,7 +814,7 @@ floatset_values(const Set *s, int *count)
  * @brief Return the array of copies of the values of a text set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 text **
@@ -834,7 +834,7 @@ textset_values(const Set *s, int *count)
  * @brief Return the array of values of a date set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 DateADT *
@@ -854,7 +854,7 @@ dateset_values(const Set *s, int *count)
  * @brief Return the array of values of a timestamptz set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 TimestampTz *

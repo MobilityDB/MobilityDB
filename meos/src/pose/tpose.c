@@ -247,7 +247,7 @@ tposeseqset_in(const char *str)
  * @ingroup meos_pose_inout
  * @brief Return a temporal pose from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -547,7 +547,7 @@ tpose_compose_lfinfo(LiftedFunctionInfo *lfinfo, bool linear, bool invert)
  * names; the result is the body in the frame @p frame is itself expressed in.
  * @param[in] body Temporal pose expressed in the frame the other one names
  * @param[in] frame Pose naming that frame
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpose_apply_pose()
  */
 Temporal *
@@ -567,7 +567,7 @@ tpose_compose_pose(const Temporal *body, const Pose *frame)
  * whole movement of its parent.
  * @param[in] body Pose expressed in the frame the other one names
  * @param[in] frame Temporal pose naming that frame
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Pose_apply_tpose()
  */
 Temporal *
@@ -586,7 +586,7 @@ pose_compose_tpose(const Pose *body, const Temporal *frame)
  * share.
  * @param[in] body Temporal pose expressed in the frame the other one names
  * @param[in] frame Temporal pose naming that frame
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpose_apply_tpose()
  */
 Temporal *
@@ -607,7 +607,7 @@ tpose_compose_tpose(const Temporal *body, const Temporal *frame)
  * frame in the body, so inverting a temporal pose changes the point of view
  * onto a moving object for the whole of its movement.
  * @param[in] temp Temporal pose
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpose_inverse()
  */
 Temporal *
@@ -704,7 +704,7 @@ tpose_roll(const Temporal *temp)
  * component is not part of this scalar — angular velocity has its own
  * accessor @p tpose_angular_speed.
  * @param[in] temp Temporal pose
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpose_speed()
  */
 Temporal *
@@ -786,7 +786,9 @@ tposeseqset_angular_speed(const TSequenceSet *ss)
  * by construction constant-angular-velocity over a segment so the
  * resulting tfloat is step-interpolated.
  * @param[in] temp Temporal pose with linear interpolation
- * @return On error or for an instantaneous tpose return @p NULL
+ * @note An instantaneous tpose spans no duration to turn over, so it has no
+ * angular speed and the answer is NULL
+ * @errval NULL
  * @csqlfn #Tpose_angular_speed()
  */
 Temporal *
@@ -854,7 +856,7 @@ tposeseq_apply_geo(const TSequence *seq, const GSERIALIZED *body)
  * uses for spatial trajectories.
  * @param[in] temp Temporal pose
  * @param[in] body Body-frame point
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpose_apply_geo()
  */
 Temporal *
@@ -901,7 +903,7 @@ tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body)
  * @ingroup meos_pose_accessor
  * @brief Return a copy of the start value of a temporal pose
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_value()
  */
 Pose *
@@ -916,7 +918,7 @@ tpose_start_value(const Temporal *temp)
  * @ingroup meos_pose_accessor
  * @brief Return a copy of the end value of a temporal pose
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_value()
  */
 Pose *

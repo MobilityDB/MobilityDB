@@ -360,7 +360,7 @@ datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of an integer span set
  * @param[in] ss Span set
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Spanset_lower()
  */
 int
@@ -375,7 +375,7 @@ intspanset_lower(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of an integer span set
  * @param[in] ss Span set
- * @return On error return INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Spanset_lower()
  */
 int64
@@ -390,7 +390,7 @@ bigintspanset_lower(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of a float span set
  * @param[in] ss Span set
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Spanset_lower()
  */
 double
@@ -405,7 +405,7 @@ floatspanset_lower(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of a timestamptz span set
  * @param[in] ss Span set
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Spanset_lower()
  */
 TimestampTz
@@ -420,7 +420,7 @@ tstzspanset_lower(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of a date span set
  * @param[in] ss Span set
- * @return On error return DATEVAL_NOEND
+ * @errval DATEVAL_NOEND
  * @csqlfn #Spanset_lower()
  */
 DateADT
@@ -437,7 +437,7 @@ datespanset_lower(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of an integer span set
  * @param[in] ss Span set
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Spanset_upper()
  */
 int
@@ -452,7 +452,7 @@ intspanset_upper(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of an integer span set
  * @param[in] ss Span set
- * @return On error return INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Spanset_upper()
  */
 int64
@@ -467,7 +467,7 @@ bigintspanset_upper(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of a float span set
  * @param[in] ss Span set
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Spanset_upper()
  */
 double
@@ -482,7 +482,7 @@ floatspanset_upper(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of a timestamptz span set
  * @param[in] ss Span set
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Spanset_upper()
  */
 TimestampTz
@@ -497,7 +497,7 @@ tstzspanset_upper(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of a date span set
  * @param[in] ss Span set
- * @return On error return DATEVAL_NOEND
+ * @errval DATEVAL_NOEND
  * @csqlfn #Spanset_upper()
  */
 DateADT
@@ -515,7 +515,7 @@ datespanset_upper(const SpanSet *ss)
  * @brief Return the width of an integer span set
  * @param[in] ss Span
  * @param[in] boundspan True when the potential time gaps are ignored
- * @return On error return INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Numspanset_width()
  */
 int
@@ -531,7 +531,7 @@ intspanset_width(const SpanSet *ss, bool boundspan)
  * @brief Return the width of an integer span set
  * @param[in] ss Span
  * @param[in] boundspan True when the potential time gaps are ignored
- * @return On error return INT64_MAX
+ * @errval INT64_MAX
  * @csqlfn #Numspanset_width()
  */
 int64
@@ -547,7 +547,7 @@ bigintspanset_width(const SpanSet *ss, bool boundspan)
  * @brief Return the width of a float span set
  * @param[in] ss Span
  * @param[in] boundspan True when the potential time gaps are ignored
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Numspanset_width()
  */
 double

@@ -976,7 +976,7 @@ cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2)
 /**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between two circular buffers
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_cbuffer_cbuffer()
  */
 double
@@ -1006,7 +1006,7 @@ datum_cbuffer_distance(Datum cb1, Datum cb2)
 /**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between a circular buffer and a geometry
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_cbuffer_geo() #Distance_geo_cbuffer()
  */
 double
@@ -1025,7 +1025,7 @@ distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
 /**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between a circular buffer and a spatiotemporal box
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 double
 distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
@@ -1416,7 +1416,7 @@ cbuffer_nsame(const Cbuffer *cb1, const Cbuffer *cb2)
  * @brief Return -1, 0, or 1 depending on whether the first buffer
  * is less than, equal to, or greater than the second one
  * @param[in] cb1,cb2 Circular buffers
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Cbuffer_cmp()
  */
 int
@@ -1509,7 +1509,7 @@ cbuffer_ge(const Cbuffer *cb1, const Cbuffer *cb2)
  * @ingroup meos_cbuffer_base_accessor
  * @brief Return the 32-bit hash value of a circular buffer
  * @param[in] cb Circular buffer
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Cbuffer_hash()
  */
 uint32

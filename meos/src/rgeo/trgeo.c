@@ -154,7 +154,7 @@ trgeometry_in(const char *str)
  * @ingroup meos_rgeo_inout
  * @brief Return a temporal rigid geometry from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 Temporal *
@@ -519,7 +519,7 @@ trgeometry_end_value(const Temporal *temp)
  * @param[in] temp Temporal rigid geometry
  * @param[in] n Number (1-based)
  * @param[out] result Resulting timestamp
- * @return On error return false
+ * @errval false
  * @csqlfn #Trgeometry_value_n()
  */
 bool
@@ -589,7 +589,7 @@ trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  * @ingroup meos_rgeo_accessor
  * @brief Return a copy of the start instant of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_instant()
  */
 TInstant *
@@ -609,7 +609,7 @@ trgeometry_start_instant(const Temporal *temp)
  * @ingroup meos_rgeo_accessor
  * @brief Return a copy of the end instant of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_instant()
  */
 TInstant *
@@ -630,7 +630,7 @@ trgeometry_end_instant(const Temporal *temp)
  * @brief Return a copy of the n-th instant of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] n Number (1-based)
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_instant_n()
  */
 TInstant *
@@ -673,7 +673,7 @@ trgeometry_instant_n(const Temporal *temp, int n)
  * @brief Return a copy of the distinct instants of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
  * @param[out] count Number of values in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_instants()
  */
 TInstant **
@@ -701,7 +701,7 @@ trgeometry_instants(const Temporal *temp, int *count)
  * @ingroup meos_rgeo_accessor
  * @brief Return a copy of the start sequence of a temporal sequence (set)
  * @param[in] temp Temporal rigid geometry
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_sequence()
  */
 TSequence *
@@ -725,7 +725,7 @@ trgeometry_start_sequence(const Temporal *temp)
  * @ingroup meos_rgeo_accessor
  * @brief Return a copy of the end sequence of a temporal sequence (set)
  * @param[in] temp Temporal rigid geometry
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_sequence()
  */
 TSequence *
@@ -750,7 +750,7 @@ trgeometry_end_sequence(const Temporal *temp)
  * @brief Return a copy of the n-th sequence of a temporal sequence (set)
  * @param[in] temp Temporal rigid geometry
  * @param[in] n Number (1-based)
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_sequence_n()
  */
 TSequence *
@@ -784,7 +784,7 @@ trgeometry_sequence_n(const Temporal *temp, int n)
  * (set)
  * @param[in] temp Temporal rigid geometry
  * @param[out] count Number of values in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_sequences()
  */
 TSequence **

@@ -69,7 +69,7 @@
  * @param[in] value Input value
  * @param[in] size Size of the bins
  * @param[in] origin Origin of the bins
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  */
 int
 int_get_bin(int value, int size, int origin)
@@ -121,7 +121,7 @@ int_get_bin(int value, int size, int origin)
  * @param[in] value Input value
  * @param[in] size Size of the bins
  * @param[in] origin Origin of the bins
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  */
 int64
 bigint_get_bin(int64 value, int64 size, int64 origin)
@@ -173,7 +173,7 @@ bigint_get_bin(int64 value, int64 size, int64 origin)
  * @param[in] value Input value
  * @param[in] size Size of the bins
  * @param[in] origin Origin of the bins
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 double
 float_get_bin(double value, double size, double origin)
@@ -236,7 +236,7 @@ date_bin_start(DateADT d, int32 ndays, DateADT origin)
  * @param[in] d Input date
  * @param[in] duration Interval defining the size of the bins
  * @param[in] origin Origin of the bins
- * @return On error return @p DATEVAL_NOEND
+ * @errval DATEVAL_NOEND
  */
 DateADT
 date_get_bin(DateADT d, const Interval *duration, DateADT origin)
@@ -259,7 +259,7 @@ date_get_bin(DateADT d, const Interval *duration, DateADT origin)
  * @param[in] t Input timestamp
  * @param[in] size Size of the time bins in PostgreSQL time units
  * @param[in] origin Origin of the bins
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  */
 TimestampTz
 timestamptz_bin_start(TimestampTz t, int64 size, TimestampTz origin)

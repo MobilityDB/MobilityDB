@@ -513,7 +513,7 @@ tstzspanset_to_datespanset(const SpanSet *ss)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the size in bytes of a span set
  * @param[in] ss Span set
- * @return On error return INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Spanset_mem_size()
  */
 int
@@ -598,7 +598,7 @@ spanset_upper_inc(const SpanSet *ss)
  * @brief Return the width of a span set
  * @param[in] ss Span set
  * @param[in] boundspan True when the potential time gaps are ignored
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Numspanset_width()
  */
 Datum
@@ -684,7 +684,7 @@ tstzspanset_duration(const SpanSet *ss, bool boundspan)
  * @ingroup meos_setspan_accessor
  * @brief Return the number of dates of a span set
  * @param[in] ss Span set
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Datespanset_num_dates()
  */
 int
@@ -700,7 +700,7 @@ datespanset_num_dates(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the start date of a span set
  * @param[in] ss Span set
- * @return On error return DATEVAL_NOEND
+ * @errval DATEVAL_NOEND
  * @csqlfn #Datespanset_start_date()
  */
 DateADT
@@ -716,7 +716,7 @@ datespanset_start_date(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the end date of a span set
  * @param[in] ss Span set
- * @return On error return DATEVAL_NOEND
+ * @errval DATEVAL_NOEND
  * @csqlfn #Datespanset_end_date()
  */
 DateADT
@@ -758,7 +758,7 @@ datespanset_date_n(const SpanSet *ss, int n, DateADT *result)
  * @ingroup meos_setspan_accessor
  * @brief Return the set of dates of a span set
  * @param[in] ss Span set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Datespanset_dates()
  */
 Set *
@@ -782,7 +782,7 @@ datespanset_dates(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the number of timestamps of a span set
  * @param[in] ss Span set
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Tstzspanset_num_timestamps()
  */
 int
@@ -823,7 +823,7 @@ tstzspanset_num_timestamps(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the start timestamptz of a span set
  * @param[in] ss Span set
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Tstzspanset_start_timestamptz()
  */
 TimestampTz
@@ -839,7 +839,7 @@ tstzspanset_start_timestamptz(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the end timestamptz of a span set
  * @param[in] ss Span set
- * @return On error return DT_NOEND
+ * @errval DT_NOEND
  * @csqlfn #Tstzspanset_end_timestamptz()
  */
 TimestampTz
@@ -911,7 +911,7 @@ tstzspanset_timestamptz_n(const SpanSet *ss, int n, TimestampTz *result)
  * @ingroup meos_setspan_accessor
  * @brief Return the set of timestamps of a span set
  * @param[in] ss Span set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tstzspanset_timestamps()
  */
 Set *
@@ -942,7 +942,7 @@ tstzspanset_timestamps(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the number of spans of a span set
  * @param[in] ss Span set
- * @return On error return -1
+ * @errval -1
  * @csqlfn #Spanset_num_spans()
  */
 int
@@ -957,7 +957,7 @@ spanset_num_spans(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return a copy to the the start span of a span set
  * @param[in] ss Span set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Spanset_start_span()
  */
 Span *
@@ -972,7 +972,7 @@ spanset_start_span(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return a copy of the end span of a span set
  * @param[in] ss Span set
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Spanset_end_span()
  */
 Span *
@@ -1005,7 +1005,7 @@ spanset_span_n(const SpanSet *ss, int n)
  * @brief Return an array of pointers to the spans of a span set
  * @param[in] ss Span set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  */
 const Span **
 spanset_sps(const SpanSet *ss, int *count)
@@ -1024,7 +1024,7 @@ spanset_sps(const SpanSet *ss, int *count)
  * @brief Return a C array with copies of the spans of a span set
  * @param[in] ss Span set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  */
 Span **
 spanset_spanarr(const SpanSet *ss, int *count)
@@ -1254,7 +1254,7 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
  * @brief Return the array of spans of a spanset
  * @param[in] ss Span set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Spanset_spans()
  */
 Span *
@@ -1317,8 +1317,8 @@ spanarr_sort_size(Span *spans, int count)
  * @param[in] span_count Number of spans
  * @param[out] count Number of elements in the output array
  * @return If the number of spans of the spanset is <= `span_count`, the result
- * contains one span per composing span. On error return @p NULL
- * @return On error return @p NULL
+ * contains one span per composing span
+ * @errval NULL
  * @csqlfn #Spanset_split_n_spans()
  */
 Span *
@@ -1369,7 +1369,7 @@ spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
  * @param[in] ss SpanSet
  * @param[in] elems_per_span Number of spans merged into an ouput span
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Spanset_split_each_n_spans()
  */
 Span *
@@ -1446,7 +1446,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return -1, 0, or 1 depending on whether the first span set
  * is less than, equal to, or greater than the second one
  * @param[in] ss1,ss2 Span sets
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @note Function used for B-tree comparison
  * @csqlfn #Spanset_cmp()
  */
@@ -1540,7 +1540,7 @@ spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup meos_setspan_accessor
  * @brief Return the 32-bit hash value of a span set
  * @param[in] ss Span set
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Spanset_hash()
  */
 uint32
@@ -1562,7 +1562,7 @@ spanset_hash(const SpanSet *ss)
  * @brief Return the 64-bit hash value of a span set using a seed
  * @param[in] ss Span set
  * @param[in] seed Seed
- * @return On error return @p UINT64_MAX
+ * @errval UINT64_MAX
  * @csqlfn #Spanset_hash_extended()
  */
 uint64

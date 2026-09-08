@@ -220,7 +220,7 @@ trgeoinstarr_compute_bbox(const GSERIALIZED *geom, TInstant **instants,
  * interpolation is discrete or continuous
  * @param[in] temp Temporal rigid geometry
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Trgeometry_stboxes()
  */
 STBox *
@@ -357,7 +357,7 @@ trgeo_seq_cont_split_n_iter(const TSequence *seq,
  * @param[in] temp Temporal rigid geometry
  * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Trgeometry_split_n_stboxes()
  */
 STBox *
@@ -509,7 +509,7 @@ trgeo_seq_cont_split_each_n_iter(const TSequence *seq,
  * @param[in] temp Temporal rigid geometry
  * @param[in] elems_per_box Number of input elements merged per output box
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Trgeometry_split_each_n_stboxes()
  */
 STBox *

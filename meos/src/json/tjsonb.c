@@ -177,7 +177,7 @@ tjsonbseqset_from_mfjson(json_object *mfjson)
  * @ingroup meos_json_inout
  * @brief Return a temporal JSONB from its MF-JSON representation
  * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
+ * @errval NULL
  * @see #temporal_from_mfjson()
  */
 
@@ -324,7 +324,7 @@ ttext_to_tjsonb(const Temporal *temp)
  * @ingroup meos_json_accessor
  * @brief Return the start value of a temporal JSONB
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_start_value()
  */
 Jsonb *
@@ -339,7 +339,7 @@ tjsonb_start_value(const Temporal *temp)
  * @ingroup meos_json_accessor
  * @brief Return the end value of a temporal JSONB
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_end_value()
  */
 Jsonb *

@@ -66,7 +66,7 @@
  * @param[in] func Spatial relationship function to be called
  * @param[in] numparam Number of parameters of the functions
  * @param[in] invert True if the arguments should be inverted
- * @return On error return -1
+ * @errval -1
  */
 int
 spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
@@ -107,7 +107,7 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] func Spatial relationship function to be called
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @return On error return -1
+ * @errval -1
  */
 static int
 ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,

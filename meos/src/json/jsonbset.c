@@ -136,7 +136,7 @@ jsonbset_make(const Jsonb **values, int count)
  * @ingroup meos_json_set_accessor
  * @brief Return a copy of the first value of a JSONB set
  * @param[in] s JSONB set
- * @return On error return NULL
+ * @errval NULL
  * @csqlfn #Set_start_value()
  */
 Jsonb *
@@ -152,7 +152,7 @@ jsonbset_start_value(const Set *s)
  * @ingroup meos_json_set_accessor
  * @brief Return a copy of the last value of a JSONB set
  * @param[in] s JSONB set
- * @return On error return NULL
+ * @errval NULL
  * @csqlfn #Set_end_value()
  */
 Jsonb *
@@ -191,7 +191,7 @@ jsonbset_value_n(const Set *s, int n, Jsonb **result)
  * @brief Return an array of copies of the values of a JSONB set
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Set_values()
  */
 Jsonb **

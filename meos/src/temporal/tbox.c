@@ -94,7 +94,7 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
  * TBOX T([2001-01-01, 2001-01-02]) -> only time
  * @endcode
  * where the commas are optional.
- * @return On error return @p NULL
+ * @errval NULL
  * @param[in] str String
  * @csqlfn #Tbox_in()
  */
@@ -111,7 +111,7 @@ tbox_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal box
  * @param[in] box Temporal box
  * @param[in] maxdd Maximum number of decimal digits
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tbox_out(), #Tbox_as_text()
  */
 char *
@@ -164,7 +164,7 @@ tbox_out(const TBox *box, int maxdd)
  * @brief Return a temporal box from a number span and a timestamptz span
  * @param[in] s Value span, may be `NULL`
  * @param[in] p Time span, may be `NULL`
- * @return On error return `NULL`
+ * @errval NULL
  */
 TBox *
 tbox_make(const Span *s, const Span *p)
@@ -898,7 +898,8 @@ tbox_hast(const TBox *box)
  * value span of the box instead.
  * @param[in] i Bound
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  */
 static bool
 tbox_bigint_bound_double(int64 i, double *result)
@@ -921,7 +922,8 @@ tbox_bigint_bound_double(int64 i, double *result)
  * a double
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Tbox_xmin()
  */
 bool
@@ -942,7 +944,8 @@ tbox_xmin(const TBox *box, double *result)
  * @brief Return in the last argument the minimum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  */
 bool
 tboxint_xmin(const TBox *box, int *result)
@@ -961,7 +964,8 @@ tboxint_xmin(const TBox *box, int *result)
  * @brief Return in the last argument the minimum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  */
 bool
 tboxbigint_xmin(const TBox *box, int64 *result)
@@ -980,7 +984,8 @@ tboxbigint_xmin(const TBox *box, int64 *result)
  * @brief Return in the last argument the minimum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  */
 bool
 tboxfloat_xmin(const TBox *box, double *result)
@@ -1000,7 +1005,8 @@ tboxfloat_xmin(const TBox *box, double *result)
  * box is inclusive
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Tbox_xmin_inc()
  */
 bool
@@ -1020,7 +1026,8 @@ tbox_xmin_inc(const TBox *box, bool *result)
  * a double 
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Tbox_xmax()
  */
 bool
@@ -1046,7 +1053,8 @@ tbox_xmax(const TBox *box, double *result)
  * @brief Return in the last argument the maximum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  */
 bool
 tboxint_xmax(const TBox *box, int *result)
@@ -1065,7 +1073,8 @@ tboxint_xmax(const TBox *box, int *result)
  * @brief Return in the last argument the maximum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  */
 bool
 tboxbigint_xmax(const TBox *box, int64 *result)
@@ -1084,7 +1093,8 @@ tboxbigint_xmax(const TBox *box, int64 *result)
  * @brief Return in the last argument the maximum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  */
 bool
 tboxfloat_xmax(const TBox *box, double *result)
@@ -1104,7 +1114,8 @@ tboxfloat_xmax(const TBox *box, double *result)
  * box is inclusive
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Tbox_xmax_inc()
  */
 bool
@@ -1123,7 +1134,8 @@ tbox_xmax_inc(const TBox *box, bool *result)
  * @brief Return in the last argument the minimum T value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Tbox_tmin()
  */
 bool
@@ -1144,7 +1156,8 @@ tbox_tmin(const TBox *box, TimestampTz *result)
  * box is inclusive
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Tbox_tmin_inc()
  */
 bool
@@ -1164,7 +1177,8 @@ tbox_tmin_inc(const TBox *box, bool *result)
  * @brief Return in the last argument the maximum T value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Tbox_tmax()
  */
 bool
@@ -1185,7 +1199,8 @@ tbox_tmax(const TBox *box, TimestampTz *result)
  * box is inclusive
  * @param[in] box Box
  * @param[out] result Result
- * @return On error return false, otherwise return true
+ * @return True when the value is written
+ * @errval false
  * @csqlfn #Tbox_tmax_inc()
  */
 bool
@@ -2218,7 +2233,7 @@ tbox_ne(const TBox *box1, const TBox *box2)
  * @brief Return -1, 0, or 1 depending on whether the first temporal box
  * is less than, equal to, or greater than the second one
  * @param[in] box1,box2 Temporal boxes
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @note The time dimension is compared first and then the value dimension
  * @csqlfn #Tbox_cmp()
  */
@@ -2311,7 +2326,7 @@ tbox_gt(const TBox *box1, const TBox *box2)
  * @ingroup meos_box_accessor
  * @brief Return the 32-bit hash of a temporal box
  * @param[in] box Temporal box
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Tbox_hash()
  */
 uint32
@@ -2343,7 +2358,7 @@ tbox_hash(const TBox *box)
  * @brief Return the 64-bit hash of a temporal box using a seed
  * @param[in] box Temporal box
  * @param[in] seed Seed
- * @return On error return @p UINT64_MAX
+ * @errval UINT64_MAX
  * @csqlfn #Tbox_hash_extended()
  */
 uint64

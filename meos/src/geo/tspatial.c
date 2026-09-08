@@ -98,7 +98,7 @@
 
 /**
  * @brief Return the string representation of a base value
- * @return On error return @p NULL
+ * @errval NULL
  */
 char *
 spatialbase_as_text(Datum value, MeosType type, int maxdd)
@@ -152,7 +152,7 @@ spatialbase_as_text(Datum value, MeosType type, int maxdd)
 
 /**
  * @brief Return the string representation of a base value
- * @return On error return @p NULL
+ * @errval NULL
  */
 char *
 spatialbase_as_ewkt(Datum value, MeosType type, int maxdd)
@@ -448,7 +448,7 @@ spatialset_set_stbox(const Set *s, STBox *result)
  * @details A set answers the distance of the extent that bounds it, which for
  * a spatial set is its spatiotemporal box where for a span set it is its
  * bounding span: the gaps between the elements are not boundaries of the set.
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 Datum
 distance_spatialset_value(const Set *s, Datum value)
@@ -466,7 +466,7 @@ distance_spatialset_value(const Set *s, Datum value)
  * @brief Return the distance between two spatial sets
  * @param[in] s1,s2 Spatial sets
  * @details Each set answers for the extent that bounds it, as above.
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 Datum
 distance_spatialset_spatialset(const Set *s1, const Set *s2)

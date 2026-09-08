@@ -124,7 +124,7 @@ extern bool string_escape(const char *str, int quotes, char **result);
 
 /**
  * @brief Return the string representation of a base value
- * @return On error return @p NULL
+ * @errval NULL
  */
 char *
 basetype_out(Datum value, MeosType type, int maxdd)
@@ -1220,7 +1220,7 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
  * @param[in] precision Number of decimal digits. It is only used when the base
  * type has floating point components, such as tfloat or tgeometry
  * @param[in] srs Spatial reference system, may be `NULL`
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_as_mfjson()
  */
 char *
@@ -1512,7 +1512,7 @@ h3index_to_wkb_size(uint8_t variant)
 
 /**
  * @brief Return the size of the WKB representation of a base value
- * @return On error return SIZE_MAX
+ * @errval SIZE_MAX
  */
 static size_t
 base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
@@ -1815,7 +1815,7 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 
 /**
  * @brief Return the size of the WKB representation of a value
- * @return On error return SIZE_MAX
+ * @errval SIZE_MAX
  */
 static size_t
 datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
@@ -3144,7 +3144,7 @@ temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the WKB representation of a value
- * @return On error return @p NULL
+ * @errval NULL
  */
 static uint8_t *
 datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
@@ -3308,7 +3308,7 @@ datum_as_hexwkb(Datum value, MeosType type, uint8_t variant, size_t *size)
  * caller can select the byte order from a textual value.
  * @param[in] endian Endian encoding: an empty string (machine endianness),
  * `"ndr"` (little-endian) or `"xdr"` (big-endian)
- * @return On error return 0
+ * @errval 0
  */
 uint8_t
 wkb_variant_from_endian(const char *endian)

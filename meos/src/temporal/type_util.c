@@ -543,7 +543,7 @@ datum_div(Datum l, Datum r, MeosType type)
  * @brief Return the 32-bit hash of a value
  * @param[in] d Value
  * @param[in] type Type of the value
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  */
 uint32
 datum_hash(Datum d, MeosType type)
@@ -613,7 +613,7 @@ datum_hash(Datum d, MeosType type)
  * @param[in] d Value
  * @param[in] type Type of the value
  * @param[in] seed Seed
- * @return On error return @p UINT64_MAX
+ * @errval UINT64_MAX
  */
 uint64
 datum_hash_extended(Datum d, MeosType type, uint64 seed)
@@ -703,7 +703,7 @@ datum_copy(Datum value, MeosType basetype)
 
 /**
  * @brief Return a double from a Datum value
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 double
 datum_double(Datum d, MeosType type)
@@ -1021,8 +1021,8 @@ string_escape(const char *str, int quotes, char **result)
  * values, so that the input is symmetric with the output for every binding.
  * @param[in] str Input string, which must start with a double quote
  * @param[out] result Newly allocated unescaped string
- * @return Number of input characters consumed, including both double quotes,
- * or 0 on error (unterminated quoted string)
+ * @return Number of input characters consumed, including both double quotes
+ * @errval 0
  * @note The function is derived from the PostgreSQL array input function
  */
 size_t

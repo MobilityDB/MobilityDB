@@ -2675,7 +2675,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
  * @csqlfn #NAD_tgeo_geo() #NAD_geo_tgeo()
- * @return On error return infinity
+ * @errval DBL_MAX
  */
 double
 nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -2715,7 +2715,7 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] box Spatiotemporal box/geography
  * @param[in] gs Geometry
  * @csqlfn #NAD_stbox_geo() #NAD_geo_stbox()
- * @return On error return infinity
+ * @errval DBL_MAX
  */
 double
 nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
@@ -2766,7 +2766,10 @@ stbox_nad(const STBox *box1, const STBox *box2)
  * @brief Return the nearest approach distance between two spatiotemporal
  * boxes
  * @param[in] box1,box2 Spatiotemporal boxes
- * @return On error or if the time frames do not intersect return infinity
+ * @note A nearest approach is measured over the time the operands share, so
+ * operands whose time frames do not intersect have none and the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #NAD_stbox_stbox()
  */
 double
@@ -2787,7 +2790,10 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
  * and a spatiotemporal box
  * @param[in] temp Temporal geo
  * @param[in] box Spatiotemporal box
- * @return On error or if the time frames do not intersect return infinity
+ * @note A nearest approach is measured over the time the operands share, so
+ * operands whose time frames do not intersect have none and the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #NAD_tgeo_stbox() #NAD_stbox_tgeo()
  */
 double
@@ -2837,7 +2843,10 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
  * @brief Return the nearest approach distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #NAD_tgeo_tgeo()
- * @return On error or if the time frames do not intersect return infinity
+ * @note A nearest approach is measured over the time the operands share, so
+ * operands whose time frames do not intersect have none and the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
  */
 double
 nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
@@ -3036,7 +3045,7 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the spatial-only minimum distance between two spatiotemporal
  * boxes, ignoring the time dimension entirely
  * @param[in] box1,box2 Spatiotemporal boxes
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 double
 stbox_spatial_distance(const STBox *box1, const STBox *box2)

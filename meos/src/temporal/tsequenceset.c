@@ -171,7 +171,7 @@ tseqarr_normalize(TSequence **sequences, int count, int *newcount)
  * @param[in] value1,value2 Values
  * @param[in] type Type of the values
  * @param[in] flags Flags
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 double
 datum_distance(Datum value1, Datum value2, MeosType type, int16 flags)

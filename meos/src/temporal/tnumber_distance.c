@@ -227,8 +227,9 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error or if the time frames do not overlap return the
- * sentinel of the base type given by #distance_sentinel()
+ * @return The sentinel of the base type given by #distance_sentinel() where
+ * the operands share no time, which is an answer and not an error: the
+ * external function establishes every precondition, so no path here raises
  * @csqlfn #NAD_tnumber_tbox() #NAD_tbox_tnumber()
  */
 Datum
@@ -274,8 +275,9 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
  * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between two temporal numbers
  * @param[in] temp1,temp2 Temporal boxes
- * @return On error or when the time frames do not intersect return the
- * sentinel of the base type given by #distance_sentinel()
+ * @return The sentinel of the base type given by #distance_sentinel() where
+ * the operands share no time, which is an answer and not an error: the
+ * external function establishes every precondition, so no path here raises
  */
 Datum
 nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)

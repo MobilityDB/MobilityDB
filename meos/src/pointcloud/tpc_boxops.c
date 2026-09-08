@@ -388,7 +388,10 @@ tpcbox_set_stbox(const TPCBox *src, STBox *dst)
  * @ingroup meos_pointcloud_box_dist
  * @brief Return the nearest-approach distance between two TPCBox values
  * @param[in] box1,box2 Bounding boxes
- * @return On error or if the time frames do not intersect return infinity
+ * @note A nearest approach is measured over the time the operands share, so
+ * operands whose time frames do not intersect have none and the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #NAD_tpcbox_tpcbox()
  */
 double
@@ -409,7 +412,10 @@ nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  *   value and a TPCBox
  * @param[in] temp Temporal pointcloud value
  * @param[in] box Bounding box
- * @return On error or if the time frames do not intersect return infinity
+ * @note A nearest approach is measured over the time the operands share, so
+ * operands whose time frames do not intersect have none and the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #NAD_tpointcloud_tpcbox() #NAD_tpcbox_tpointcloud()
  */
 double
@@ -427,7 +433,10 @@ nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box)
  * @brief Return the nearest-approach distance between two temporal
  *   pointcloud values
  * @param[in] temp1,temp2 Temporal pointcloud values
- * @return On error or if the time frames do not intersect return infinity
+ * @note A nearest approach is measured over the time the operands share, so
+ * operands whose time frames do not intersect have none and the answer is
+ * DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #NAD_tpointcloud_tpointcloud()
  */
 double

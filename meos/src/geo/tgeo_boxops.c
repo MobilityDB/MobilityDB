@@ -559,7 +559,7 @@ tgeoseqset_stboxes(const TSequenceSet *ss, int *count)
  * respectively, on whether the interpolation is discrete or continuous
  * @param[in] temp Temporal geo
  * @param[out] count Number of values of the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tgeo_stboxes()
  */
 STBox *
@@ -794,7 +794,7 @@ tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
  * @param[in] temp Temporal geo
  * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tgeo_split_n_stboxes()
  */
 STBox *
@@ -964,7 +964,7 @@ tgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elems_per_box,
  * @param[in] elems_per_box Number of input instants or segments merged into an
  * output box
  * @param[out] count Number of values of the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tgeo_split_each_n_stboxes()
  */
 STBox *
@@ -1168,7 +1168,7 @@ multiline_gboxes(const GSERIALIZED *gs, int *count)
  * segments of a (multi)line
  * @param[in] gs (Multi)line
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  */
 GBOX *
 geo_gboxes(const GSERIALIZED *gs, int *count)
@@ -1185,7 +1185,7 @@ geo_gboxes(const GSERIALIZED *gs, int *count)
  * (mult)linestring
  * @param[in] gs Geometry
  * @param[out] count Number of values of the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Geo_stboxes()
  */
 STBox *
@@ -1416,7 +1416,7 @@ multiline_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
  * @param[in] gs (Multi)line
  * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  */
 GBOX *
 geo_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
@@ -1602,7 +1602,8 @@ multiline_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box,
  * @param[out] count Number of boxes in the output array
  * @return If the number of segments is <= `elems_per_box`, the result contains
  * a single box. Otherwise, consecutive input segments are combined into an
- * output box in the result. On error return @p NULL
+ * output box in the result.
+ * @errval NULL
  */
 GBOX *
 geo_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box, int *count)

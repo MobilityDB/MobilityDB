@@ -1520,7 +1520,7 @@ spnode_stats(const SPTree *sptree, const SPNode *node, int level, int *entries,
  * @ingroup meos_temporal_box_index
  * @brief Return the number of entries an SPTree holds
  * @param[in] sptree The SPTree
- * @return On error return -1
+ * @errval -1
  */
 int
 sptree_num_entries(const SPTree *sptree)
@@ -1539,7 +1539,7 @@ sptree_num_entries(const SPTree *sptree)
  * @details The nodes of the tree and the tree itself, which is what a caller
  * accounting for the memory of an index reports
  * @param[in] sptree The SPTree
- * @return On error return @p INT64_MAX
+ * @errval INT64_MAX
  */
 int64
 sptree_mem_size(const SPTree *sptree)
@@ -1557,7 +1557,7 @@ sptree_mem_size(const SPTree *sptree)
  * @brief Return the number of levels an SPTree holds
  * @details An empty tree has no levels and a tree of one entry has one
  * @param[in] sptree The SPTree
- * @return On error return -1
+ * @errval -1
  */
 int
 sptree_height(const SPTree *sptree)
@@ -1752,7 +1752,8 @@ spnn_heap_pop(SPNNCursor *cursor)
  * @param[in] sptree The SPTree to query
  * @param[in] query The query bounding box of type @p sptree->bboxtype and of
  * the SRID the tree holds
- * @return A cursor to be freed with #sptree_nn_cursor_close, on error @p NULL
+ * @return A cursor to be freed with #sptree_nn_cursor_close
+ * @errval NULL
  */
 SPNNCursor *
 sptree_nn_cursor_open(const SPTree *sptree, const void *query)

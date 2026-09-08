@@ -2171,7 +2171,7 @@ tpointseqset_length(const TSequenceSet *ss)
  * @ingroup meos_geo_accessor
  * @brief Return the length traversed by a temporal point sequence (set)
  * @param[in] temp Temporal point
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Tpoint_length()
  */
 double
@@ -2193,7 +2193,7 @@ tpoint_length(const Temporal *temp)
  * @ingroup meos_geo_accessor
  * @brief Return the speed of a temporal point sequence (set)
  * @param[in] temp Temporal point
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpoint_speed()
  */
 Temporal *
@@ -2276,7 +2276,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
  * @ingroup meos_geo_accessor
  * @brief Return the cumulative length traversed by a temporal point
  * @param[in] temp Temporal point
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpoint_cumulative_length()
  */
 Temporal *
@@ -2397,7 +2397,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
  * @ingroup meos_geo_accessor
  * @brief Return the time-weighed centroid of a temporal geometry point
  * @param[in] temp Temporal point
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpoint_twcentroid()
  */
 GSERIALIZED *
@@ -2659,7 +2659,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
  * @ingroup meos_geo_accessor
  * @brief Return the temporal azimuth of a temporal geometry point
  * @param[in] temp Temporal point
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tpoint_azimuth()
  */
 Temporal *
@@ -2954,7 +2954,8 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] invert True when the result should be inverted
- * @return On empty geometry or on error return NULL
+ * @note An empty geometry has no bearing, so the answer is NULL
+ * @errval NULL
  * @csqlfn #Bearing_tpoint_point() #Bearing_point_tpoint()
  */
 Temporal *
@@ -2981,7 +2982,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
  * @ingroup meos_geo_accessor
  * @brief Return the temporal bearing between two temporal points
  * @param[in] temp1,temp2 Temporal points
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Bearing_tpoint_tpoint()
  */
 Temporal *
@@ -3106,7 +3107,7 @@ point_max_distance(const POINT2D *points, uint32_t npoints, const POINT2D *p,
  * @brief Return the points a temporal sequence with a spatial point base type
  * takes, in the order of its instants
  * @param[in] seq Temporal sequence
- * @return On error return @p NULL
+ * @errval NULL
  */
 static POINT2D *
 tspatialseq_points(const TSequence *seq)

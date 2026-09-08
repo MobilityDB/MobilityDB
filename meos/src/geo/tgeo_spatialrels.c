@@ -408,7 +408,7 @@ spatialrel_datum_geo_geo(Datum d1, Datum d2, SpatialRelOp op, double dist,
  * @param[in] invert True if the arguments should be inverted
  * @param[in] ever True for the ever semantics (any element satisfies),
  *  false for the always semantics (every element satisfies)
- * @return On error return -1
+ * @errval -1
  */
 static int
 spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
@@ -467,7 +467,7 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @param[in] param Parameter
  * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the function
- * @return On error return -1
+ * @errval -1
  * @note Since some GEOS versions do not support geometry collections, the
  * function iterates for each geometry of the collection and returns when the
  * function is true for one of them.

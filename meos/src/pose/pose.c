@@ -1343,7 +1343,7 @@ datum_pose_roll(Datum pose)
  * #pose_ypr().
  * @param[in] pose Pose
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Pose_quaternion()
  */
 double *
@@ -1382,7 +1382,7 @@ pose_quaternion(const Pose *pose, int *count)
  * are in radians, where the GeoPose JSON encoding writes them in degrees.
  * @param[in] pose Pose
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Pose_ypr()
  */
 double *
@@ -1415,7 +1415,7 @@ pose_ypr(const Pose *pose, int *count)
  * component of the (yaw, pitch, roll) ZYX intrinsic Tait-Bryan decomposition
  * of the orientation quaternion (the convention required by OGC GeoPose).
  * @param[in] pose Pose
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Pose_yaw()
  */
 double
@@ -1440,7 +1440,7 @@ pose_yaw(const Pose *pose)
  * @p asin term is clamped to @p [-1, 1] to absorb the small numeric drift
  * @p |q| - 1 that long quaternion compositions can introduce.
  * @param[in] pose Pose
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Pose_pitch()
  */
 double
@@ -1463,7 +1463,7 @@ pose_pitch(const Pose *pose)
  * @details A 2D pose has no roll and returns @p 0. A 3D pose returns the
  * roll component of the ZYX intrinsic Tait-Bryan decomposition.
  * @param[in] pose Pose
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Pose_roll()
  */
 double
@@ -1492,7 +1492,7 @@ pose_roll(const Pose *pose)
  * the small numeric drift @p |q| - 1 that long compositions can
  * introduce.
  * @param[in] pose1,pose2 Poses (must agree on dimension)
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  */
 double
 pose_angular_distance(const Pose *pose1, const Pose *pose2)
@@ -1609,7 +1609,7 @@ lwgeom_apply_pose(const Pose *pose, LWGEOM *geom)
  * one adopts the other, and the result carries the SRID they agree on.
  * @param[in] pose Pose
  * @param[in] body Body-frame geometry
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Pose_apply_geo()
  */
 GSERIALIZED *
@@ -1676,7 +1676,7 @@ datum_pose_apply_geo(Datum pose, Datum body)
  * links, so a two-link chain composes to what this returns.
  * @param[in] body Pose expressed in the frame the other one names
  * @param[in] frame Pose naming that frame
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Pose_apply_pose()
  */
 Pose *
@@ -1705,7 +1705,7 @@ pose_compose(const Pose *body, const Pose *frame)
  * @p t_BA = −R_AB^T t_AB, so composing a pose with its inverse gives the
  * identity.
  * @param[in] pose Pose
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Pose_inverse()
  */
 Pose *
@@ -2216,7 +2216,7 @@ pose_distance(Datum pose1, Datum pose2)
 /**
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between two poses
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_pose_pose()
  */
 double
@@ -2249,7 +2249,7 @@ datum_pose_distance(Datum pose1, Datum pose2)
 /**
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between a pose and a geometry
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #Distance_pose_geo() #Distance_geo_pose()
  */
 double
@@ -2268,7 +2268,7 @@ distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
 /**
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between a pose and a spatiotemporal box
- * @return On error return @p DBL_MAX
+ * @errval DBL_MAX
  * @csqlfn #NAD_pose_stbox() #NAD_stbox_pose()
  */
 double
@@ -2377,7 +2377,7 @@ pose_nsame(const Pose *pose1, const Pose *pose2)
  * @brief Return -1, 0, or 1 depending on whether the first pose
  * is less than, equal to, or greater than the second one
  * @param[in] pose1,pose2 Poses
- * @return On error return @p INT_MAX
+ * @errval INT_MAX
  * @csqlfn #Pose_cmp()
  */
 int
@@ -2477,7 +2477,7 @@ void hashlittle2(const void *key, size_t length, uint32_t *pc, uint32_t *pb);
  * @ingroup meos_pose_base_accessor
  * @brief Return the 32-bit hash value of a pose
  * @param[in] pose Pose
- * @return On error return @p UINT32_MAX
+ * @errval UINT32_MAX
  * @csqlfn #Pose_hash()
  */
 uint32

@@ -274,7 +274,8 @@ ensure_index_join_op(IndexSearchOp op)
  * @param[in] temp Temporal value to decompose
  * @param[in] maxboxes Maximum number of boxes produced for `temp`
  * @param[out] count Number of boxes in the returned array
- * @return Allocated array of `*count` bounding boxes, or @p NULL on error
+ * @return Allocated array of `*count` bounding boxes
+ * @errval NULL
  * @pre `temp` is compatible with `bboxtype` (verified by the callers)
  */
 void *
@@ -940,7 +941,7 @@ tsequenceset_spans(const TSequenceSet *ss, int *count)
  * respectively, on whether the interpolation is discrete or continuous
  * @param[in] temp Temporal value
  * @param[out] count Number of values of the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_spans()
  */
 Span *
@@ -1171,7 +1172,8 @@ tsequenceset_split_n_spans(const TSequenceSet *ss, int span_count, int *count)
  * @return If the number of instants or segments is <= `span_count`, the result
  * contains one span per instant or segment. Otherwise, consecutive instants or
  * segments are combined into a single span in the result to reach the number
- * of spans. On error return @p NULL
+ * of spans
+ * @errval NULL
  * @csqlfn #Temporal_split_n_spans()
  */
 Span *
@@ -1343,7 +1345,7 @@ tsequenceset_split_each_n_spans(const TSequenceSet *ss, int elems_per_span,
  * @return If the number of instants or segments is <= `elems_per_span`, the
  * result contains a single span. Otherwise, the number consecutive input
  * instants or segments are combined into a single output span in the result.
- * On error return @p NULL
+ * @errval NULL
  * @csqlfn #Temporal_split_each_n_spans()
  */
 Span *
@@ -1496,7 +1498,7 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int *count)
  * depends on whether the interpolation is discrete or continuous
  * @param[in] temp Temporal value
  * @param[out] count Number of elements in the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tnumber_tboxes()
  */
 TBox *
@@ -1733,7 +1735,7 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
  * @param[in] temp Temporal number
  * @param[in] box_count Number of boxes
  * @param[out] count Number of values of the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tnumber_split_n_tboxes()
  */
 TBox *
@@ -1901,7 +1903,7 @@ tnumberseqset_split_each_n_tboxes(const TSequenceSet *ss, int elems_per_box,
  * @param[in] temp Temporal number
  * @param[in] elems_per_box Number of input elements merged in an output box
  * @param[out] count Number of values of the output array
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn #Tnumber_split_each_n_tboxes()
  */
 TBox *

@@ -211,7 +211,7 @@ meos_finalize_projsrs(void)
 
 /**
  * @brief Get a PROJ structure from the PROJ cache
- * @return On error return `NULL`
+ * @errval NULL
  */
 static LWPROJ *
 GetProjectionFromPROJCache(MEOSPROJSRSCache *cache, int32_t srid_from,
