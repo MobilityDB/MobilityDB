@@ -473,4 +473,25 @@ CREATE FUNCTION stbox(raquet)
 
 CREATE CAST (raquet AS stbox) WITH FUNCTION stbox(raquet);
 
+/******************************************************************************
+ * Conversions of rasters
+ *
+ * A raster states its shape through PostGIS raster's own accessors, which this
+ * extension does not restate. The spatiotemporal box is the exception: PostGIS
+ * has no stbox, so this conversion adds the temporal layer's box to the raster
+ * a user already holds rather than re-supplying an accessor they have.
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Convert a raster into a spatiotemporal box
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION stbox(raster)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Raster_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (raster AS stbox) WITH FUNCTION stbox(raster);
+
 /*****************************************************************************/

@@ -2846,6 +2846,9 @@
 				<listitem>
 					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convierte una tesela Raquet en una caja espaciotemporal</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="raster_to_stbox"><varname>stbox</varname></link>: Convierte un ráster en una caja espaciotemporal</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>

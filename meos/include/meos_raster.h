@@ -128,10 +128,26 @@ extern char *raster_as_hexwkb(const Raster *rast, size_t *size_out);
 /* Accessor functions for PostGIS rasters */
 
 extern int raster_num_bands(const Raster *rast);
+extern int raster_width(const Raster *rast);
+extern int raster_height(const Raster *rast);
+extern int32_t raster_srid(const Raster *rast);
+extern double raster_upper_left_x(const Raster *rast);
+extern double raster_upper_left_y(const Raster *rast);
+extern double raster_scale_x(const Raster *rast);
+extern double raster_scale_y(const Raster *rast);
+extern double raster_skew_x(const Raster *rast);
+extern double raster_skew_y(const Raster *rast);
+extern char *raster_band_pixel_type(const Raster *rast, int band);
+extern bool raster_band_has_nodata_value(const Raster *rast, int band);
+extern double raster_band_nodata_value(const Raster *rast, int band);
 
 /* Conversion functions for Raquet tiles */
 
 extern STBox *raquet_to_stbox(const Raquet *rq);
+
+/* Conversion functions for PostGIS rasters */
+
+extern STBox *raster_to_stbox(const Raster *rast);
 
 /* Comparison functions for Raquet tiles */
 

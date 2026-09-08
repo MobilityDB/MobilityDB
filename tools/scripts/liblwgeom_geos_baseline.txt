@@ -12,6 +12,14 @@ meos/src/raster/raster_rtcore.c	rt_raster_geopoint_to_rasterpoint
 meos/src/raster/raster_rtcore.c	rt_raster_get_band
 meos/src/raster/raster_rtcore.c	rt_raster_get_envelope
 meos/src/raster/raster_rtcore.c	rt_raster_get_geotransform_matrix
+meos/src/raster/raster_rtcore.c	rt_raster_get_height
 meos/src/raster/raster_rtcore.c	rt_raster_get_inverse_geotransform_matrix
 meos/src/raster/raster_rtcore.c	rt_raster_get_num_bands
 meos/src/raster/raster_rtcore.c	rt_raster_get_srid
+meos/src/raster/raster_rtcore.c	rt_raster_get_width
+meos/src/raster/raster_rtcore.c	rt_raster_get_x_offset
+meos/src/raster/raster_rtcore.c	rt_raster_get_x_scale
+meos/src/raster/raster_rtcore.c	rt_raster_get_x_skew
+meos/src/raster/raster_rtcore.c	rt_raster_get_y_offset
+meos/src/raster/raster_rtcore.c	rt_raster_get_y_scale
+meos/src/raster/raster_rtcore.c	rt_raster_get_y_skew

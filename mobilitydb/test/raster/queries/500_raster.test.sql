@@ -779,4 +779,36 @@ WITH rast1 AS (
 SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
        numBands((SELECT r FROM rast2)) AS num_bands_two;
 
+-------------------------------------------------------------------------------
+-- raster conversion to stbox
+-------------------------------------------------------------------------------
+
+-- The extent of an axis-aligned raster runs from its origin over its scaled
+-- size, and the cast form agrees with the function form.
+WITH rast AS (
+  SELECT ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
+)
+SELECT stbox(r) AS box, stbox(r) = r::stbox AS cast_agrees FROM rast;
+
+-- The extent bears the rotation of the geotransform, so a skewed grid reaches
+-- past the box its scale alone would give and the two disagree.
+WITH plain AS (
+  SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
+), skewed AS (
+  SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 1.0, 0.0, 4326) AS r
+)
+SELECT stbox((SELECT r FROM plain)) AS plain_box,
+       stbox((SELECT r FROM skewed)) AS skewed_box,
+       stbox((SELECT r FROM plain)) <> stbox((SELECT r FROM skewed))
+         AS skew_moves_the_extent;
+
+-- The box states the reference system the raster is in, not a fixed one.
+SELECT stbox(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857))
+  AS box_in_3857;
+
+-- The footprint carries the stbox operators, so a raster column is searched by
+-- spatial overlap.
+SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &&
+       stbox 'SRID=4326;STBOX X((1,1),(2,2))' AS overlaps_region;
+
 /*****************************************************************************/

@@ -193,6 +193,22 @@ raquet_pixtype_size(MeosPixType pixtype)
     MEOS_PIXTYPE_CATALOG[pixtype].size : 0;
 }
 
+/**
+ * @brief Return the name the RaQuet specification gives a pixel data type
+ * @param[in] pixtype Pixel data type
+ * @return On error return @p NULL
+ * @note This reads the name column of the catalog the way
+ * #raquet_pixtype_size() reads its size column, so a caller holding a code
+ * states the type through the one catalog rather than carrying a second
+ * mapping of its own
+ */
+const char *
+raquet_pixtype_name(MeosPixType pixtype)
+{
+  return pixtype_known((uint8) pixtype) ?
+    MEOS_PIXTYPE_CATALOG[pixtype].name : NULL;
+}
+
 /*****************************************************************************
  * Pixel payload codec
  *

@@ -790,4 +790,41 @@ SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
              1 |             2
 (1 row)
 
+WITH rast AS (
+  SELECT ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
+)
+SELECT stbox(r) AS box, stbox(r) = r::stbox AS cast_agrees FROM rast;
+              box               | cast_agrees 
+--------------------------------+-------------
+ SRID=4326;STBOX X((0,0),(3,3)) | t
+(1 row)
+
+WITH plain AS (
+  SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
+), skewed AS (
+  SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 1.0, 0.0, 4326) AS r
+)
+SELECT stbox((SELECT r FROM plain)) AS plain_box,
+       stbox((SELECT r FROM skewed)) AS skewed_box,
+       stbox((SELECT r FROM plain)) <> stbox((SELECT r FROM skewed))
+         AS skew_moves_the_extent;
+           plain_box            |           skewed_box           | skew_moves_the_extent 
+--------------------------------+--------------------------------+-----------------------
+ SRID=4326;STBOX X((0,0),(2,2)) | SRID=4326;STBOX X((0,0),(4,2)) | t
+(1 row)
+
+SELECT stbox(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857))
+  AS box_in_3857;
+          box_in_3857           
+--------------------------------
+ SRID=3857;STBOX X((0,0),(2,2))
+(1 row)
+
+SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &&
+       stbox 'SRID=4326;STBOX X((1,1),(2,2))' AS overlaps_region;
+ overlaps_region 
+-----------------
+ t
+(1 row)
+
 /*****************************************************************************/

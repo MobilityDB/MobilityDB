@@ -342,6 +342,41 @@ SELECT t.tripid, r.tile FROM trips t,
   elevation_tiles r WHERE stbox(r.tile) &amp;&amp; stbox(t.trip);
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_to_stbox">
+				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
+				<para>Convierte un ráster en una caja espaciotemporal</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stbox(raster) &#8594; stbox
+</programlisting>
+				<para>Devuelve la extensión del ráster en el sistema de referencia que el propio ráster declara, sin dimensión temporal. Esta es la única forma de un <varname>raster</varname> de PostGIS que la extensión declara, porque PostGIS no tiene <varname>stbox</varname>: el ancho, el alto, la georreferenciación y las propiedades de las bandas se leen con los accesores propios de PostGIS, que aquí no se repiten. La conversión también está disponible como una conversión de tipo.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
+)
+SELECT stbox(r) AS box, stbox(r) = r::stbox AS cast_agrees FROM rast;
+-- SRID=4326;STBOX X((0,0),(3,3)) | t
+-- The box states the reference system of the raster, not a fixed one
+SELECT stbox(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857));
+-- SRID=3857;STBOX X((0,0),(2,2))
+</programlisting>
+				<para>La extensión lleva la rotación de la geotransformación, de modo que un ráster sesgado responde la caja que contiene sus cuatro esquinas rotadas y no la que daría su escala por sí sola.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH plain AS (
+  SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
+), skewed AS (
+  SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 1.0, 0.0, 4326) AS r
+)
+SELECT stbox((SELECT r FROM plain)) AS plain_box,
+  stbox((SELECT r FROM skewed)) AS skewed_box;
+-- SRID=4326;STBOX X((0,0),(2,2)) | SRID=4326;STBOX X((0,0),(4,2))
+</programlisting>
+				<para>La extensión lleva los operadores, las agregaciones y las clases de operadores de <varname>stbox</varname>, de modo que una tabla de rásteres se consulta por solapamiento espacial y se indexa sobre la conversión.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &amp;&amp;
+  stbox 'SRID=4326;STBOX X((1,1),(2,2))';
+-- t
+</programlisting>
+			</listitem>
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_accessors">
 		<title>Accesores</title>
