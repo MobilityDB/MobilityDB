@@ -233,11 +233,11 @@ typedef struct
   RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
   double xmax;    /**< Greatest x the edges reach */
   double tol;     /**< Widest tolerance any of the edges asks for */
-  bool straight;  /**< Every areal boundary edge the array holds is a segment,
-                       which is the class #relate_area_boundaries_cross reads:
-                       it solves a crossing from four given vertices, and the
-                       two endpoints of an arc do not determine the curve
-                       between them */
+  bool straight;  /**< Every areal boundary edge the array holds is a segment.
+                       #relate_area_boundaries_cross decides a crossing where
+                       an edge pair holds at most one arc, so ONE operand
+                       answering true leaves every pair of the two decided;
+                       two arcs are what it declines */
 } RelateEdges;
 
 extern void relate_edges_init(RelateEdges *re, Edge **edges, int nedges,
@@ -630,6 +630,70 @@ arc_point_parameter(const Edge *e, double x, double y)
   if (t > 1.0 && (2 * M_PI - off) < (off - sweep))
     return 0.0;
   return (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+}
+
+/**
+ * @brief Return true if a straight segment properly crosses a circular arc
+ * @details Proper means the segment passes from one side of the arc to the
+ * other at a point interior to both edges, which is for an arc what
+ * #relate_edges_cross decides for two straight edges. The quadratic
+ * #arcsegm_intersect solves is what says so, read for its DISCRIMINANT rather
+ * than for its roots alone: a line meeting a circle at a double root is a
+ * TANGENT, which touches without passing through, and only a discriminant
+ * standing clear of the rounding that function already reads it against makes
+ * the line a secant. A root strictly inside the segment and strictly inside
+ * the arc's angular span is then a crossing point interior to both edges, and
+ * the four sectors around it are the four combinations of inside and outside.
+ * Nothing is read off the arc's endpoints: the edge carries the centre, the
+ * radius and the span, so the curve between them is determined.
+ * Whatever these quantities cannot separate reads as NOT crossing, which is
+ * the same refusal the straight predicate makes and leaves the pair to the
+ * routes that already answer it
+ * @param[in] ax,ay Coordinates of the start of the straight segment
+ * @param[in] rx,ry Vector of the straight segment
+ * @param[in] e Arc edge
+ */
+static inline bool
+arcsegm_cross(double ax, double ay, double rx, double ry, const Edge *e)
+{
+  double aa = rx * rx + ry * ry;
+  /* Degenerate (zero-length) segment */
+  if (aa < MEOS_GEOM_TOLERANCE)
+    return false;
+
+  double wx = ax - e->cx, wy = ay - e->cy;
+  double bb = 2 * (wx * rx + wy * ry);
+  double cc = wx * wx + wy * wy - e->radius * e->radius;
+  double disc = bb * bb - 4 * aa * cc;
+  /* The rounding the discriminant is read against, in the form
+   * #arcsegm_intersect states and for the reason it gives there */
+  double eps = 1e-14 * (fabs(bb * bb) + fabs(4 * aa * cc) +
+    aa * (wx * wx + wy * wy + e->radius * e->radius));
+  /* A tangent line reaches the circle without passing through it */
+  if (disc <= eps)
+    return false;
+
+  double sq = sqrt(disc);
+  if (sq <= MEOS_GEOM_TOLERANCE)
+    return false;
+  for (int k = 0; k < 2; k++)
+  {
+    double t = (k == 0 ? -bb - sq : -bb + sq) / (2 * aa);
+    /* Strictly interior to the segment. A crossing at an endpoint is a touch,
+     * which the vertex routes answer and which the straight predicate refuses
+     * for the same reason */
+    if (t <= MEOS_GEOM_TOLERANCE || t >= 1 - MEOS_GEOM_TOLERANCE)
+      continue;
+    double px = ax + t * rx, py = ay + t * ry;
+    if (! arc_contains_angle(e, atan2(py - e->cy, px - e->cx)))
+      continue;
+    /* Strictly interior to the arc, for the same reason */
+    double u = arc_point_parameter(e, px, py);
+    if (u <= MEOS_GEOM_TOLERANCE || u >= 1 - MEOS_GEOM_TOLERANCE)
+      continue;
+    return true;
+  }
+  return false;
 }
 
 /**

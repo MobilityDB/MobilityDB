@@ -5534,6 +5534,34 @@ relate_edges_cross(const Edge *e1, const Edge *e2)
 }
 
 /**
+ * @brief Return true if two areal boundary edges properly cross
+ * @details Two straight edges are decided by four determinants on their own
+ * vertices (#relate_edges_cross). A straight edge against a CIRCULAR one is
+ * decided by the quadratic that meets a line with a circle (#arcsegm_cross),
+ * which is equally exact: an arc edge carries the centre, the radius and the
+ * angular span, so the curve between its endpoints is determined and nothing
+ * has to be inferred from those endpoints.
+ * TWO ARCS are left to the other routes. Two circles bring a tangency and a
+ * shared stretch of their own, and deciding those is a separate question from
+ * this one
+ */
+static bool
+relate_area_edges_cross(const Edge *e1, const Edge *e2)
+{
+  if (e1->etype == EDGE_POLYSEG)
+  {
+    if (e2->etype == EDGE_POLYSEG)
+      return relate_edges_cross(e1, e2);
+    if (e2->etype == EDGE_POLYARC)
+      return arcsegm_cross(e1->x1, e1->y1, e1->dx, e1->dy, e2);
+    return false;
+  }
+  if (e1->etype == EDGE_POLYARC && e2->etype == EDGE_POLYSEG)
+    return arcsegm_cross(e2->x1, e2->y1, e2->dx, e2->dy, e1);
+  return false;
+}
+
+/**
  * @brief Compute a point on an areal boundary edge.
  * @details 
  *   t = 0 -> first endpoint
@@ -5870,8 +5898,9 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
      * so does the boundary, whatever the midpoint reads.
      *
      * The interiors answer carries that weight only where it is exact, which
-     * is the straight-boundary class its crossing route reads, so a pair
-     * carrying an arc keeps the midpoint as its only source */
+     * is the class its crossing route reads: every pair of boundary edges
+     * across the two operands holding at most one arc. A pair whose operands
+     * BOTH carry an arc keeps the midpoint as its only source */
     if (loc == 0 && (m->ii == 2 || ! exact_ii))
     {
       /* Boundary(A) ∩ Interior(B) or Interior(A) ∩ Boundary(B) */
@@ -6104,9 +6133,11 @@ relate_area_interior_point_located(const RelateEdges *self,
  * land in: a sliver a couple of units in the last place wide is narrower than
  * the band every point-location route reads, yet its crossing vertices are
  * exactly the ones the determinants are taken on.
- * Arcs are left to the other routes. The endpoints of an arc do not determine
- * the curve between them, so four signs taken on them say nothing about
- * whether the arcs meet
+ * A CIRCULAR edge against a straight one is decided too, by the quadratic
+ * rather than by the determinants: the arc carries its centre, radius and
+ * angular span, so the curve between its endpoints is determined and the
+ * crossing is solved exactly. Only two ARCS are left to the other routes,
+ * #relate_area_edges_cross saying why
  * @param[in] a,b Edges of the two geometries, the second read out of its index
  * where it carries one
  */
@@ -6116,23 +6147,23 @@ relate_area_boundaries_cross(const RelateEdges *a, const RelateEdges *b)
   for (int i = 0; i < a->nedges; i++)
   {
     const Edge *ea = a->edges[i];
-    if (ea->etype != EDGE_POLYSEG)
-      continue;
     if (! b->index)
     {
       for (int j = 0; j < b->nedges; j++)
       {
         const Edge *eb = b->edges[j];
-        if (eb->etype == EDGE_POLYSEG && relate_edges_cross(ea, eb))
+        if (relate_area_edges_cross(ea, eb))
           return true;
       }
       continue;
     }
-    /* Two segments that cross meet at a point lying on both, so that point is
-     * in both boxes and the boxes overlap. The query therefore needs NO
-     * padding: an unpadded box already admits every crossing there is, and
-     * unlike the point-location queries the test behind it reads no tolerance
-     * that a pad would have to match */
+    /* Two edges that cross meet at a point lying on both, so that point is
+     * in both boxes and the boxes overlap -- an arc's box being tight about
+     * the curve and not merely about its endpoints. The query therefore needs
+     * NO padding: an unpadded box already admits every crossing there is, and
+     * unlike the point-location queries the tests behind it only ever REFUSE
+     * a crossing near a boundary of either edge, so none of them reaches for a
+     * point a pad would have to admit */
     STBox query;
     stbox_set(true, false, false, 0, ea->xmin, ea->xmax, ea->ymin, ea->ymax,
       0, 0, NULL, &query);
@@ -6142,8 +6173,7 @@ relate_area_boundaries_cross(const RelateEdges *a, const RelateEdges *b)
     for (int c = 0; c < nc && ! result; c++)
     {
       const Edge *eb = b->edges[*(int64 *) meos_array_get(candidates, c)];
-      if (eb->etype == EDGE_POLYSEG)
-        result = relate_edges_cross(ea, eb);
+      result = relate_area_edges_cross(ea, eb);
     }
     meos_array_destroy(candidates);
     if (result)
@@ -6244,9 +6274,13 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
 
   /* Boundary(A) / Interior(B) and Interior(A) / Boundary(B) are determined by
    * splitting every boundary edge at the intersections with the other
-   * boundary. Where both boundaries are straight the step above has settled
-   * the interiors exactly, and each portion is read against that answer */
-  bool exact_ii = re1.straight && re2.straight;
+   * boundary. Where the step above has settled the interiors exactly, each
+   * portion is read against that answer */
+  /* The crossing route decides two straight edges from four determinants and
+   * a straight edge against a circular one from the quadratic that meets a
+   * line with a circle. Only two ARCS are left to the routes that sample, so
+   * ONE operand free of arcs is enough to leave every crossing pair decided */
+  bool exact_ii = re1.straight || re2.straight;
   for (int i = 0; i < n1; i++)
   {
     if (!relate_area_boundary_edge(e1[i]))
