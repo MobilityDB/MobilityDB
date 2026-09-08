@@ -669,7 +669,7 @@ set_mem_size(const Set *s)
 /**
  * @ingroup meos_setspan_accessor
  * @brief Return the number of values of a set
- * @return On error return INT_MAX
+ * @return On error return -1
  * @param[in] s Set
  * @csqlfn #Set_num_values()
  */
@@ -677,7 +677,7 @@ int
 set_num_values(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, INT_MAX);
+  VALIDATE_NOT_NULL(s, -1);
   return s->count;
 }
 

@@ -1597,13 +1597,13 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
  * @brief Return the number of points of a geometry
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
- * @return On error return INT_MAX
+ * @return On error return -1
  */
 int
 geo_num_points(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, INT_MAX);
+  VALIDATE_NOT_NULL(gs, -1);
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   int npoints = lwgeom_count_vertices(lwgeom);
@@ -1616,13 +1616,13 @@ geo_num_points(const GSERIALIZED *gs)
  * @brief Return the number of composing geometries of a geometry
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS)
- * @return On error return INT_MAX
+ * @return On error return -1
  */
 int
 geo_num_geos(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, INT_MAX);
+  VALIDATE_NOT_NULL(gs, -1);
 
   int result = 0;
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
@@ -5780,13 +5780,13 @@ line_point_n(const GSERIALIZED *gs, int n)
  * @ingroup meos_geo_base_accessor
  * @brief Return the number of points of a line
  * @param[in] gs Geometry
- * @return On error return INT_MAX
+ * @return On error return -1
 */
 int
 line_numpoints(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, INT_MAX);
+  VALIDATE_NOT_NULL(gs, -1);
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   int count = -1;

@@ -462,9 +462,8 @@ int main(void)
   /* A line clipped by a surface reads the surface's edges out of an R-tree
    * once there are enough of them to index, and that index only answers a
    * query carrying the SRID its own entries carry. Where the query states a
-   * different one the search reports INT_MAX rather than a count, and a
-   * caller reading that as a count walks the result array two billion entries
-   * past its end.
+   * different one the search reports -1 rather than a count, which a loop
+   * bounded by the answer does not enter at all.
    * The record below is that case at its smallest: an arc clipped by a
    * polygon of 200 sides, both carrying a projected SRID, which is the shape
    * a real projected corpus takes. The answer is the SAME geometry the pair

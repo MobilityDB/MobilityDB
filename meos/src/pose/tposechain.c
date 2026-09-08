@@ -395,14 +395,14 @@ tposechain_to_tpose(const Temporal *temp)
  * @details The link count is the same at every instant, so one instant
  * answers for the whole value.
  * @param[in] temp Temporal pose chain
- * @return On error return @p INT_MAX
+ * @return On error return -1
  * @csqlfn #Tposechain_num_poses()
  */
 int
 tposechain_num_poses(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TPOSECHAIN(temp, INT_MAX);
+  VALIDATE_TPOSECHAIN(temp, -1);
   const TInstant *inst = temporal_start_inst(temp);
   return posechain_num_poses(DatumGetPoseChainP(tinstant_value_p(inst)));
 }

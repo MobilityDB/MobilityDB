@@ -1556,10 +1556,10 @@ rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
   MeosArray *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rtree, INT_MAX); VALIDATE_NOT_NULL(query, INT_MAX);
-  VALIDATE_NOT_NULL(result, INT_MAX);
+  VALIDATE_NOT_NULL(rtree, -1); VALIDATE_NOT_NULL(query, -1);
+  VALIDATE_NOT_NULL(result, -1);
   if (! ensure_valid_rtree_box(rtree, query))
-    return INT_MAX;
+    return -1;
 
   meos_array_reset(result);
   if (rtree->root)
@@ -1586,18 +1586,18 @@ rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
  * @param[out] result MeosArray of int to collect the ids (created by the caller
  * with `meos_array_create(sizeof(int64))`)
  * @return Number of qualifying pairs, half the number of collected ids, on
- * error @p INT_MAX
+ * error -1
  */
 int
 rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op,
   MeosArray *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rtree1, INT_MAX); VALIDATE_NOT_NULL(rtree2, INT_MAX);
-  VALIDATE_NOT_NULL(result, INT_MAX);
+  VALIDATE_NOT_NULL(rtree1, -1); VALIDATE_NOT_NULL(rtree2, -1);
+  VALIDATE_NOT_NULL(result, -1);
   if (! ensure_same_index_bboxtype(rtree1->bboxtype, rtree2->bboxtype) ||
       ! ensure_valid_rtree_rtree(rtree1, rtree2) || ! ensure_index_join_op(op))
-    return INT_MAX;
+    return -1;
 
   meos_array_reset(result);
   if (rtree1->root && rtree2->root)
@@ -2119,13 +2119,13 @@ node_stats(const RTreeNode *node, size_t bboxsize, int level, int *entries,
  * @ingroup meos_temporal_box_index
  * @brief Return the number of entries an RTree holds
  * @param[in] rtree The RTree
- * @return On error return @p INT_MAX
+ * @return On error return -1
  */
 int
 rtree_num_entries(const RTree *rtree)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rtree, INT_MAX);
+  VALIDATE_NOT_NULL(rtree, -1);
   if (! rtree->root)
     return 0;
   int entries = 0, height = 0;
@@ -2161,13 +2161,13 @@ rtree_mem_size(const RTree *rtree)
  * @brief Return the number of levels an RTree holds
  * @details An empty tree has no levels and a tree whose root is a leaf has one
  * @param[in] rtree The RTree
- * @return On error return @p INT_MAX
+ * @return On error return -1
  */
 int
 rtree_height(const RTree *rtree)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rtree, INT_MAX);
+  VALIDATE_NOT_NULL(rtree, -1);
   if (! rtree->root)
     return 0;
   int entries = 0, height = 0;

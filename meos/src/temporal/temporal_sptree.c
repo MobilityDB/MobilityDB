@@ -1095,10 +1095,10 @@ sptree_search(const SPTree *sptree, IndexSearchOp op, const void *query,
   MeosArray *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(sptree, INT_MAX); VALIDATE_NOT_NULL(query, INT_MAX);
-  VALIDATE_NOT_NULL(result, INT_MAX);
+  VALIDATE_NOT_NULL(sptree, -1); VALIDATE_NOT_NULL(query, -1);
+  VALIDATE_NOT_NULL(result, -1);
   if (! ensure_valid_sptree_box(sptree, query))
-    return INT_MAX;
+    return -1;
 
   /* Project the query box into the internal box type (TPCBox: STBox) */
   bboxunion proj;
@@ -1211,19 +1211,19 @@ spnode_join(const SPTree *sptree1, const SPNode *node1, const SPTree *sptree2,
  * @param[out] result MeosArray of int64 to collect the ids (created by the
  * caller with `meos_array_create(sizeof(int64))`)
  * @return Number of qualifying pairs, half the number of collected ids, on
- * error @p INT_MAX
+ * error -1
  */
 int
 sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
   MeosArray *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(sptree1, INT_MAX); VALIDATE_NOT_NULL(sptree2, INT_MAX);
-  VALIDATE_NOT_NULL(result, INT_MAX);
+  VALIDATE_NOT_NULL(sptree1, -1); VALIDATE_NOT_NULL(sptree2, -1);
+  VALIDATE_NOT_NULL(result, -1);
   if (! ensure_same_index_bboxtype(sptree1->bboxtype, sptree2->bboxtype) ||
       ! ensure_valid_sptree_sptree(sptree1, sptree2) ||
       ! ensure_index_join_op(op))
-    return INT_MAX;
+    return -1;
 
   meos_array_reset(result);
   if (sptree1->root && sptree2->root)
@@ -1520,13 +1520,13 @@ spnode_stats(const SPTree *sptree, const SPNode *node, int level, int *entries,
  * @ingroup meos_temporal_box_index
  * @brief Return the number of entries an SPTree holds
  * @param[in] sptree The SPTree
- * @return On error return @p INT_MAX
+ * @return On error return -1
  */
 int
 sptree_num_entries(const SPTree *sptree)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(sptree, INT_MAX);
+  VALIDATE_NOT_NULL(sptree, -1);
   int entries = 0, height = 0;
   int64 bytes = 0;
   spnode_stats(sptree, sptree->root, 1, &entries, &bytes, &height);
@@ -1557,13 +1557,13 @@ sptree_mem_size(const SPTree *sptree)
  * @brief Return the number of levels an SPTree holds
  * @details An empty tree has no levels and a tree of one entry has one
  * @param[in] sptree The SPTree
- * @return On error return @p INT_MAX
+ * @return On error return -1
  */
 int
 sptree_height(const SPTree *sptree)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(sptree, INT_MAX);
+  VALIDATE_NOT_NULL(sptree, -1);
   int entries = 0, height = 0;
   int64 bytes = 0;
   spnode_stats(sptree, sptree->root, 1, &entries, &bytes, &height);

@@ -208,7 +208,7 @@ int main(void)
   assert(raster_from_hexwkb(NULL) == NULL);
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(raster_num_bands(NULL) == INT_MAX);
+  assert(raster_num_bands(NULL) == -1);
   assert(meos_errno() != 0);
   meos_errno_reset();
   assert(raster_width(NULL) == INT_MAX);

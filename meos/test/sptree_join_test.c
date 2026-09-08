@@ -381,19 +381,19 @@ test_refused(void)
 
   meos_errno_reset();
   check("indexes of different bounding box types are refused",
-    sptree_join(stboxtree, tboxtree, INDEX_OVERLAPS, result) == INT_MAX &&
+    sptree_join(stboxtree, tboxtree, INDEX_OVERLAPS, result) == -1 &&
     meos_errno() != 0);
 
   /* A join prunes a pair of subtrees on the overlap of what they cover, which
    * is exactly what the entries an ordering operation pairs do not do */
   meos_errno_reset();
   check("an operation ordering a dimension is refused",
-    sptree_join(stboxtree, other, INDEX_LEFT, result) == INT_MAX &&
+    sptree_join(stboxtree, other, INDEX_LEFT, result) == -1 &&
     meos_errno() != 0);
 
   meos_errno_reset();
   check("a null index is refused",
-    sptree_join(NULL, other, INDEX_OVERLAPS, result) == INT_MAX &&
+    sptree_join(NULL, other, INDEX_OVERLAPS, result) == -1 &&
     meos_errno() != 0);
 
   /* The R-tree answers the same operations, so it refuses the same ones */
@@ -403,11 +403,11 @@ test_refused(void)
   rtree_insert(rtree2, box, 1);
   meos_errno_reset();
   check("the R-tree refuses an operation ordering a dimension",
-    rtree_join(rtree1, rtree2, INDEX_LEFT, result) == INT_MAX &&
+    rtree_join(rtree1, rtree2, INDEX_LEFT, result) == -1 &&
     meos_errno() != 0);
   meos_errno_reset();
   check("the R-tree refuses a null index",
-    rtree_join(rtree1, NULL, INDEX_OVERLAPS, result) == INT_MAX &&
+    rtree_join(rtree1, NULL, INDEX_OVERLAPS, result) == -1 &&
     meos_errno() != 0);
 
   /* A join reads a box of one index against a box of the other, which is the
@@ -430,12 +430,12 @@ test_refused(void)
 
   meos_errno_reset();
   check("indexes of different SRIDs are refused",
-    sptree_join(sp4326, sp3857, INDEX_OVERLAPS, result) == INT_MAX &&
+    sptree_join(sp4326, sp3857, INDEX_OVERLAPS, result) == -1 &&
     meos_errno() != 0);
 
   meos_errno_reset();
   check("the R-tree refuses indexes of different SRIDs",
-    rtree_join(rt4326, rt3857, INDEX_OVERLAPS, result) == INT_MAX &&
+    rtree_join(rt4326, rt3857, INDEX_OVERLAPS, result) == -1 &&
     meos_errno() != 0);
 
   /* The SRID is what the refusal reads and not the pair: the same two boxes
