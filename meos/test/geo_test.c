@@ -526,6 +526,44 @@ int main(void)
   free(pip_wkt);
   meos_errno_reset();
 
+  /* A GEOMETRYCOLLECTION is the union of its components, so what it shares
+   * with another geometry is the union of what the components share. The
+   * overlay reads it that way now, which is how the matrix has always read a
+   * collection.
+   * The record below is the case the previous route could not answer at all:
+   * a square meeting a collection whose two components OVERLAP each other.
+   * The square [2,6]x[2,6] shares [2,4]x[2,4] with the first component and
+   * [3,6]x[3,6] with the second, and those two share [3,4]x[3,4], so what it
+   * shares with the collection has area 4 + 9 - 1 = 12 and what remains of it
+   * is 16 - 12 = 4. The closed form is the oracle; the previous route answered
+   * NULL, and with errno 0, so the absence was not even reported */
+  const char *coll_subject = "POLYGON((2 2,6 2,6 6,2 6,2 2))";
+  const char *coll_clip = "GEOMETRYCOLLECTION("
+    "POLYGON((0 0,4 0,4 4,0 4,0 0)),POLYGON((3 3,8 3,8 8,3 8,3 3)))";
+  GSERIALIZED *coll_geo_a = geom_in(coll_subject, -1);
+  GSERIALIZED *coll_geo_b = geom_in(coll_clip, -1);
+  assert(coll_geo_a != NULL);
+  assert(coll_geo_b != NULL);
+  meos_errno_reset();
+  GSERIALIZED *coll_inter = geom_intersection2d(coll_geo_a, coll_geo_b);
+  printf("geom_intersection2d(a square, a collection whose parts overlap): "
+    "%s, area %.6f, errno %d\n", coll_inter ? "answered" : "NULL",
+    coll_inter ? geom_area(coll_inter) : -1.0, meos_errno());
+  assert(coll_inter != NULL);
+  assert(fabs(geom_area(coll_inter) - 12.0) < 1e-9);
+  assert(meos_errno() == 0);
+  meos_errno_reset();
+  GSERIALIZED *coll_diff = geom_difference2d(coll_geo_a, coll_geo_b);
+  printf("geom_difference2d(a square, a collection whose parts overlap): "
+    "%s, area %.6f, errno %d\n", coll_diff ? "answered" : "NULL",
+    coll_diff ? geom_area(coll_diff) : -1.0, meos_errno());
+  assert(coll_diff != NULL);
+  assert(fabs(geom_area(coll_diff) - 4.0) < 1e-9);
+  assert(meos_errno() == 0);
+  free(coll_inter); free(coll_diff);
+  free(coll_geo_a); free(coll_geo_b);
+  meos_errno_reset();
+
   /* Two areas whose boundaries run PARALLEL never touch, however close they
    * come. Deciding that means asking whether the two lines are one line, and
    * the engine answers it from the cross product of the offset between them

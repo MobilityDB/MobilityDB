@@ -2365,6 +2365,200 @@ geom_areal_meeting(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
+ * @brief Return true if a geometry is one built of parts, which the overlay
+ * can answer a part at a time
+ * @details Every one of these is an @p LWCOLLECTION under the type tag, so the
+ * parts are read the same way whichever it is. A MULTIPOLYGON and the
+ * GEOMETRYCOLLECTION holding the same members are two spellings of one point
+ * set, and answering only one of them a part at a time is what would make the
+ * two disagree
+ */
+static bool
+geo_is_multi(const GSERIALIZED *gs)
+{
+  assert(gs);
+  uint32_t type = gserialized_get_type(gs);
+  return type == MULTIPOINTTYPE || type == MULTILINETYPE ||
+    type == MULTIPOLYGONTYPE || type == MULTICURVETYPE ||
+    type == MULTISURFACETYPE || type == COLLECTIONTYPE;
+}
+
+/**
+ * @brief Return the parts of a multi-part geometry, or NULL where the geometry
+ * is not one or holds nothing
+ * @param[in] gs Geometry
+ * @param[out] count Number of parts
+ */
+static GSERIALIZED **
+geo_collection_components(const GSERIALIZED *gs, int *count)
+{
+  assert(gs); assert(count);
+  *count = 0;
+  if (! geo_is_multi(gs))
+    return NULL;
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  const LWCOLLECTION *col = (const LWCOLLECTION *) lwgeom;
+  if (col->ngeoms == 0)
+  {
+    lwgeom_free(lwgeom);
+    return NULL;
+  }
+  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * col->ngeoms);
+  for (uint32_t i = 0; i < col->ngeoms; i++)
+    result[i] = geo_serialize(col->geoms[i]);
+  *count = (int) col->ngeoms;
+  lwgeom_free(lwgeom);
+  return result;
+}
+
+/**
+ * @brief Free an array of geometries and the array itself
+ */
+static void
+geo_free_array(GSERIALIZED **gsarr, int count)
+{
+  for (int i = 0; i < count; i++)
+    if (gsarr[i])
+      pfree(gsarr[i]);
+  pfree(gsarr);
+  return;
+}
+
+/**
+ * @brief Return the union of the pieces an overlay leaves
+ * @details An empty piece contributes nothing, exactly as the empty set
+ * contributes nothing to a union, and no piece at all leaves the empty
+ * geometry rather than an absent answer.
+ * The union is the GENERAL one rather than #geom_array_mixed_union, which
+ * answers only an array SPANNING the areal boundary and returns NULL for one
+ * that stays on a single side -- an array of surfaces being exactly that
+ * @param[in] parts,nparts The pieces, of which this takes ownership
+ * @param[in] srid SRID the empty answer carries
+ */
+static GSERIALIZED *
+geo_union_parts(GSERIALIZED **parts, int nparts, int32_t srid)
+{
+  GSERIALIZED *result;
+  if (nparts == 0)
+    result = geo_serialize((LWGEOM *) lwcollection_construct_empty(
+      COLLECTIONTYPE, srid, 0, 0));
+  else if (nparts == 1)
+    result = geo_copy(parts[0]);
+  else
+    result = geom_array_union(parts, nparts);
+  geo_free_array(parts, nparts);
+  return result;
+}
+
+/**
+ * @brief Return an overlay of two geometries where one is a collection,
+ * answered from the overlays of its components, or NULL where that route does
+ * not apply
+ * @details A collection's topology is that of the UNION of its components --
+ * which is how #relate_extract_edges already reads one for the matrix -- and
+ * both overlay operations follow from that union rather than needing a kernel
+ * of their own:
+ * @code
+ *   A n (c1 u ... u cn) = (A n c1) u ... u (A n cn)
+ *   (c1 u ... u cn) \ B = (c1 \ B) u ... u (cn \ B)
+ *   A \ (c1 u ... u cn) = ((A \ c1) \ c2) ... \ cn
+ * @endcode
+ * Every per-component call re-enters the routes above, so a component the
+ * engine answers natively stays native and a nested collection is stripped one
+ * level per call. Nothing here reads a coordinate: the composition is the set
+ * identity, and the geometry is left to the kernels that already answer it.
+ * A COMPONENT THE ENGINE CANNOT ANSWER RETURNS NULL, and a composition that
+ * simply dropped it would answer a SMALLER set than the operands hold -- the
+ * silent wrong answer this route must not produce. The composition is
+ * abandoned in that case, leaving the caller to answer as it did before
+ * @param[in] gs1,gs2 Geometries
+ * @param[in] inter True for the intersection, false for the difference
+ */
+static GSERIALIZED *
+geo_collection_overlay(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  bool inter)
+{
+  assert(gs1); assert(gs2);
+  int ncomp;
+  int32_t srid = gserialized_get_srid(gs1);
+
+  if (! inter)
+  {
+    /* The difference takes its SUBJECT apart, so a collection there splits
+     * first: what each component keeps is independent of the others */
+    GSERIALIZED **comps = geo_collection_components(gs1, &ncomp);
+    if (comps)
+    {
+      GSERIALIZED **parts = palloc(sizeof(GSERIALIZED *) * ncomp);
+      int nparts = 0;
+      bool declined = false;
+      for (int i = 0; i < ncomp && ! declined; i++)
+      {
+        GSERIALIZED *part = geom_difference2d(comps[i], gs2);
+        if (! part)
+          declined = true;
+        else if (geo_is_empty(part))
+          pfree(part);
+        else
+          parts[nparts++] = part;
+      }
+      geo_free_array(comps, ncomp);
+      if (declined)
+      {
+        geo_free_array(parts, nparts);
+        return NULL;
+      }
+      return geo_union_parts(parts, nparts, srid);
+    }
+    /* A collection CLIP is removed one component at a time */
+    comps = geo_collection_components(gs2, &ncomp);
+    if (! comps)
+      return NULL;
+    GSERIALIZED *result = geo_copy(gs1);
+    for (int i = 0; i < ncomp && result; i++)
+    {
+      GSERIALIZED *next = geom_difference2d(result, comps[i]);
+      pfree(result);
+      result = next;
+    }
+    geo_free_array(comps, ncomp);
+    return result;
+  }
+
+  /* The intersection is symmetric, so whichever operand is a collection
+   * splits and the other is read whole against each component */
+  const GSERIALIZED *other = gs1;
+  GSERIALIZED **comps = geo_collection_components(gs2, &ncomp);
+  if (! comps)
+  {
+    comps = geo_collection_components(gs1, &ncomp);
+    other = gs2;
+  }
+  if (! comps)
+    return NULL;
+  GSERIALIZED **parts = palloc(sizeof(GSERIALIZED *) * ncomp);
+  int nparts = 0;
+  bool declined = false;
+  for (int i = 0; i < ncomp && ! declined; i++)
+  {
+    GSERIALIZED *part = geom_intersection2d(other, comps[i]);
+    if (! part)
+      declined = true;
+    else if (geo_is_empty(part))
+      pfree(part);
+    else
+      parts[nparts++] = part;
+  }
+  geo_free_array(comps, ncomp);
+  if (declined)
+  {
+    geo_free_array(parts, nparts);
+    return NULL;
+  }
+  return geo_union_parts(parts, nparts, srid);
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the intersection of two geometries
  * @param[in] gs1,gs2 Geometries
@@ -2451,6 +2645,17 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       return result;
   }
 
+  /* A MULTI-PART geometry is the union of its parts, so what the overlay shares
+   * of it follows from what it shares of them. This sits BELOW the routes above on
+   * purpose: a collection those already answer keeps the answer it had, and
+   * only one that would otherwise reach the library is taken apart */
+  if (geo_is_multi(gs1) || geo_is_multi(gs2))
+  {
+    GSERIALIZED *collresult = geo_collection_overlay(gs1, gs2, true);
+    if (collresult)
+      return collresult;
+  }
+
 #if GEOS
   /* Other types fall through to GEOS */
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
@@ -2535,6 +2740,17 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     lwgeom_free(geom1); lwgeom_free(geom2);
     if (result)
       return result;
+  }
+
+  /* A MULTI-PART geometry is the union of its parts, so what the overlay leaves
+   * of it follows from what it leaves of them. This sits BELOW the routes above on
+   * purpose: a collection those already answer keeps the answer it had, and
+   * only one that would otherwise reach the library is taken apart */
+  if (geo_is_multi(gs1) || geo_is_multi(gs2))
+  {
+    GSERIALIZED *collresult = geo_collection_overlay(gs1, gs2, false);
+    if (collresult)
+      return collresult;
   }
 
 #if GEOS
