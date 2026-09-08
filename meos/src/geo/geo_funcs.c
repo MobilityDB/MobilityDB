@@ -3587,13 +3587,10 @@ relate_edges_init(RelateEdges *re, Edge **edges, int nedges, bool index)
    * is thousands of times that. The widest tolerance in the array is what
    * makes the index answer what the scan answers at every scale */
   re->tol = MEOS_GEOM_TOLERANCE;
-  re->straight = true;
   for (int i = 0; i < nedges; i++)
   {
     if (edges[i]->tol > re->tol)
       re->tol = edges[i]->tol;
-    if (edges[i]->etype == EDGE_POLYARC)
-      re->straight = false;
   }
   re->index = index ? relate_edges_index(edges, nedges) : NULL;
   return;
@@ -5541,9 +5538,9 @@ relate_edges_cross(const Edge *e1, const Edge *e2)
  * which is equally exact: an arc edge carries the centre, the radius and the
  * angular span, so the curve between its endpoints is determined and nothing
  * has to be inferred from those endpoints.
- * TWO ARCS are left to the other routes. Two circles bring a tangency and a
- * shared stretch of their own, and deciding those is a separate question from
- * this one
+ * TWO CIRCULAR edges are decided by the half-chord of their supporting
+ * circles (#arcarc_cross), which vanishes exactly at a tangency, so the same
+ * question is answered for every pair of boundary edges the engine builds
  */
 static bool
 relate_area_edges_cross(const Edge *e1, const Edge *e2)
@@ -5556,8 +5553,13 @@ relate_area_edges_cross(const Edge *e1, const Edge *e2)
       return arcsegm_cross(e1->x1, e1->y1, e1->dx, e1->dy, e2);
     return false;
   }
-  if (e1->etype == EDGE_POLYARC && e2->etype == EDGE_POLYSEG)
-    return arcsegm_cross(e2->x1, e2->y1, e2->dx, e2->dy, e1);
+  if (e1->etype == EDGE_POLYARC)
+  {
+    if (e2->etype == EDGE_POLYSEG)
+      return arcsegm_cross(e2->x1, e2->y1, e2->dx, e2->dy, e1);
+    if (e2->etype == EDGE_POLYARC)
+      return arcarc_cross(e1, e2);
+  }
   return false;
 }
 
@@ -5760,13 +5762,10 @@ relate_area_edge_inside_area(const Edge *edge, const RelateEdges *area)
  * @details The edge is split at every intersection with the other polygon
  * boundary. Since there is no boundary intersection inside an open
  * interval, one representative point is sufficient.
- * @param[in] exact_ii The interiors of the two geometries have been decided
- * exactly before this walk runs, which #relate_area_boundaries_cross does for
- * a pair of straight boundaries and not for one carrying an arc
  */
 static void
 relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
-  MeosDE9IM *m, bool first, bool exact_ii)
+  MeosDE9IM *m, bool first)
 {
   /* Maximum number of intersections between one edge and one
    * circular/linear boundary edge is two */
@@ -5897,11 +5896,11 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
      * reports whichever side it landed on. Where the interiors provably miss,
      * so does the boundary, whatever the midpoint reads.
      *
-     * The interiors answer carries that weight only where it is exact, which
-     * is the class its crossing route reads: every pair of boundary edges
-     * across the two operands holding at most one arc. A pair whose operands
-     * BOTH carry an arc keeps the midpoint as its only source */
-    if (loc == 0 && (m->ii == 2 || ! exact_ii))
+     * The crossing route decides every pair of boundary edges the engine
+     * builds -- two straight ones, one of each, and two arcs -- so the
+     * interiors answer is exact for every areal pair and this branch reads it
+     * rather than the midpoint in all of them */
+    if (loc == 0 && m->ii == 2)
     {
       /* Boundary(A) ∩ Interior(B) or Interior(A) ∩ Boundary(B) */
       if (first)
@@ -6133,11 +6132,11 @@ relate_area_interior_point_located(const RelateEdges *self,
  * land in: a sliver a couple of units in the last place wide is narrower than
  * the band every point-location route reads, yet its crossing vertices are
  * exactly the ones the determinants are taken on.
- * A CIRCULAR edge against a straight one is decided too, by the quadratic
- * rather than by the determinants: the arc carries its centre, radius and
- * angular span, so the curve between its endpoints is determined and the
- * crossing is solved exactly. Only two ARCS are left to the other routes,
- * #relate_area_edges_cross saying why
+ * A CIRCULAR edge is decided too, and by the same kind of argument rather
+ * than by the determinants: an arc carries its centre, radius and angular
+ * span, so the curve between its endpoints is determined and the crossing is
+ * solved exactly, against a straight edge and against another arc alike.
+ * #relate_area_edges_cross dispatches the three cases
  * @param[in] a,b Edges of the two geometries, the second read out of its index
  * where it carries one
  */
@@ -6276,22 +6275,17 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2,
    * splitting every boundary edge at the intersections with the other
    * boundary. Where the step above has settled the interiors exactly, each
    * portion is read against that answer */
-  /* The crossing route decides two straight edges from four determinants and
-   * a straight edge against a circular one from the quadratic that meets a
-   * line with a circle. Only two ARCS are left to the routes that sample, so
-   * ONE operand free of arcs is enough to leave every crossing pair decided */
-  bool exact_ii = re1.straight || re2.straight;
   for (int i = 0; i < n1; i++)
   {
     if (!relate_area_boundary_edge(e1[i]))
       continue;
-    relate_area_edge_intervals(e1[i], &re2, m, true, exact_ii);
+    relate_area_edge_intervals(e1[i], &re2, m, true);
   }
   for (int i = 0; i < n2; i++)
   {
     if (!relate_area_boundary_edge(e2[i]))
       continue;
-    relate_area_edge_intervals(e2[i], &re1, m, false, exact_ii);
+    relate_area_edge_intervals(e2[i], &re1, m, false);
   }
 
   /* Boundary / Boundary.

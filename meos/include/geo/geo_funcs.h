@@ -45,6 +45,8 @@
 /* C */
 #include <float.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <meos_error.h>
@@ -233,11 +235,6 @@ typedef struct
   RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
   double xmax;    /**< Greatest x the edges reach */
   double tol;     /**< Widest tolerance any of the edges asks for */
-  bool straight;  /**< Every areal boundary edge the array holds is a segment.
-                       #relate_area_boundaries_cross decides a crossing where
-                       an edge pair holds at most one arc, so ONE operand
-                       answering true leaves every pair of the two decided;
-                       two arcs are what it declines */
 } RelateEdges;
 
 extern void relate_edges_init(RelateEdges *re, Edge **edges, int nedges,
@@ -690,6 +687,91 @@ arcsegm_cross(double ax, double ay, double rx, double ry, const Edge *e)
     /* Strictly interior to the arc, for the same reason */
     double u = arc_point_parameter(e, px, py);
     if (u <= MEOS_GEOM_TOLERANCE || u >= 1 - MEOS_GEOM_TOLERANCE)
+      continue;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Return true if two circular arcs properly cross
+ * @details Proper means the two curves pass through one another at a point
+ * interior to both, which is for two arcs what #relate_edges_cross decides for
+ * two straight edges and #arcsegm_cross for one of each. Two distinct circles
+ * meet in at most two points, and the HALF-CHORD of that meeting is what says
+ * whether they cross: it vanishes exactly when the circles are TANGENT, which
+ * touches without passing through, and #relate_arc_arc_points reads the same
+ * quantity against the same bound to decide it reports one point rather than
+ * two. A half-chord standing clear of that bound therefore makes the circles
+ * secant, and an intersection point strictly inside both arcs' angular spans
+ * is a crossing point interior to both edges, around which the four sectors
+ * are the four combinations of inside and outside.
+ * COINCIDENT supporting circles are NOT a crossing: two arcs of one circle
+ * either share a stretch or meet at an endpoint, and both are answered
+ * elsewhere. Whatever these quantities cannot separate reads as NOT crossing,
+ * which is the refusal the other two predicates make
+ * @param[in] a,b The two arc edges
+ */
+static inline bool
+arcarc_cross(const Edge *a, const Edge *b)
+{
+  double dx = b->cx - a->cx, dy = b->cy - a->cy;
+  double d = hypot(dx, dy);
+  /* One circle: a shared stretch or a common endpoint, never a crossing */
+  if (d <= MEOS_GEOM_TOLERANCE)
+    return false;
+  /* Separate or nested circles never meet */
+  if (d > a->radius + b->radius + MEOS_GEOM_TOLERANCE ||
+      d < fabs(a->radius - b->radius) - MEOS_GEOM_TOLERANCE)
+    return false;
+
+  double aa = (d * d + a->radius * a->radius - b->radius * b->radius) /
+    (2.0 * d);
+  double h2 = a->radius * a->radius - aa * aa;
+  /* Tangent circles touch at one point without passing through */
+  if (h2 <= 0.0)
+    return false;
+  double h = sqrt(h2);
+  if (h <= MEOS_GEOM_TOLERANCE)
+    return false;
+
+  /* HOW FAR THE CROSSING POINT ITSELF IS RESOLVED, and why a parameter margin
+   * cannot stand in for it. The half-chord comes from `r^2 - aa^2`, two
+   * quantities of size radius squared differenced down to the chord: at a
+   * radius of 2e5 each is 4e10, whose last representable bit is 8e-6, so the
+   * point slides along the chord by about that much however exactly the input
+   * names it. A test asking only that the parameter be some tiny amount
+   * inside `[0, 1]` therefore reads an ENDPOINT as an interior crossing --
+   * measured, two arcs meeting exactly at their two shared endpoints report a
+   * crossing 3.8e-6 away from one of them. The distance below is that
+   * rounding written out, in the same form #arcsegm_intersect states its own,
+   * so a candidate nearer an endpoint than the arithmetic can resolve is
+   * refused rather than believed */
+  double resolution = DBL_EPSILON *
+    (a->radius * a->radius + aa * aa) / (2.0 * h);
+  double ux = dx / d, uy = dy / d;
+  double mx = a->cx + aa * ux, my = a->cy + aa * uy;
+  for (int k = 0; k < 2; k++)
+  {
+    double px = mx + (k ? h : -h) * (-uy);
+    double py = my + (k ? h : -h) * ux;
+    /* On both arcs at all */
+    if (! arc_contains_angle(a, atan2(py - a->cy, px - a->cx)) ||
+        ! arc_contains_angle(b, atan2(py - b->cy, px - b->cx)))
+      continue;
+    /* Clear of every endpoint by more than the point is resolved to. A
+     * meeting at an endpoint is a touch, which the vertex routes answer and
+     * which the straight predicate refuses for the same reason */
+    if (hypot(px - a->x1, py - a->y1) <= resolution ||
+        hypot(px - a->x2, py - a->y2) <= resolution ||
+        hypot(px - b->x1, py - b->y1) <= resolution ||
+        hypot(px - b->x2, py - b->y2) <= resolution)
+      continue;
+    double ua = arc_point_parameter(a, px, py);
+    if (ua <= MEOS_GEOM_TOLERANCE || ua >= 1 - MEOS_GEOM_TOLERANCE)
+      continue;
+    double ub = arc_point_parameter(b, px, py);
+    if (ub <= MEOS_GEOM_TOLERANCE || ub >= 1 - MEOS_GEOM_TOLERANCE)
       continue;
     return true;
   }
