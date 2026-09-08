@@ -309,14 +309,14 @@ raster_band_of(const Raster *rast, int band, rt_raster *raster)
  * @ingroup meos_raster_base_accessor
  * @brief Return the number of bands of a raster
  * @param[in] rast Raster
- * @return On error, return -1
+ * @return On error return -1
  * @csqlfn #Raster_num_bands()
  */
 int
 raster_num_bands(const Raster *rast)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rast, INT_MAX);
+  VALIDATE_NOT_NULL(rast, -1);
   rt_raster raster = raster_header(rast);
   if (! raster)
     return -1;

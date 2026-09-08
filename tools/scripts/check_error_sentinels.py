@@ -79,6 +79,16 @@ PREDICATE_DOC = re.compile(r"@brief Return true if|@return\s+1 if")
 # says the value is not located there, which is an answer and not a failure,
 # and it is already outside the fractions it otherwise returns.
 LOCATOR = re.compile(r"locate")
+# A count answers how many of something there are, so its domain is the
+# non-negative integers and the maximum sits INSIDE it: a tree of INT_MAX
+# entries is a count, not a failure, and a caller cannot tell the two apart.
+# -1 is outside that domain, which is what the rule actually asks for -- the
+# same argument the predicates, the locators and the box distance below make.
+# The documented contract decides rather than the name, a count being spelled
+# num_bands, numpoints, num_entries and search alike. It is stated in the brief
+# for an accessor and in the return line for a search, which collects into an
+# out-parameter and answers how many it collected.
+COUNT_DOC = re.compile(r"@(?:brief|return)\s+[^\n]*\bnumber of\b", re.I)
 # A nearest approach distance between two temporal boxes answers with the
 # maximum where the boxes share no time, which is an ANSWER and not a failure.
 # The maximum is therefore inside its value domain and cannot also mean error,
@@ -158,6 +168,8 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
             k += 1
         if want == "INT_MAX" and (PREDICATE.match(name) or
                                   PREDICATE_DOC.search("\n".join(doc))):
+            want = "-1"
+        if want == "INT_MAX" and COUNT_DOC.search("\n".join(doc)):
             want = "-1"
         if want == "DBL_MAX" and LOCATOR.search(name):
             want = "-1.0"

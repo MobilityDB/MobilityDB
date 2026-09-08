@@ -1058,7 +1058,7 @@ test_reported_size(SPTreeKind kind, const char *kindname)
   int count = sptree_search(none, INDEX_OVERLAPS, query, result);
   snprintf(name, sizeof(name), "%s empty answers 0, not the error sentinel",
     kindname);
-  check(name, count == 0 && count != INT_MAX);
+  check(name, count == 0 && count != -1);
   snprintf(name, sizeof(name), "%s empty holds no entry", kindname);
   check(name, sptree_num_entries(none) == 0);
 

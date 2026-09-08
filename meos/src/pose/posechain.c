@@ -674,14 +674,14 @@ posechain_to_point(const PoseChain *pc)
  * @ingroup meos_posechain_base_accessor
  * @brief Return the number of links of a pose chain
  * @param[in] pc Pose chain
- * @return On error return @p INT_MAX
+ * @return On error return -1
  * @csqlfn #Posechain_num_poses()
  */
 int
 posechain_num_poses(const PoseChain *pc)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pc, INT_MAX);
+  VALIDATE_NOT_NULL(pc, -1);
   return pc->count;
 }
 
