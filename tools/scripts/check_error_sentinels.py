@@ -96,6 +96,15 @@ COUNT_DOC = re.compile(r"@(?:brief|return)\s+[^\n]*\bnumber of\b", re.I)
 # negative. That is what the rule actually asks for, exactly as it asks it of
 # the predicates and the locators above.
 BOX_DISTANCE = re.compile(r"^nad_tbox")
+# A comparator answers -1, 0 or 1, so its domain is those three values and the
+# maximum lies outside it. That is the same domain rule the counts, the
+# predicates and the box distance follow, landing on INT_MAX here precisely
+# because -1 is already one of the answers. What this catches is the public
+# comparator that answers INT_MAX SILENTLY: the value is in the code and in no
+# contract, so neither a reader nor a binding generator can find it, and the
+# check below reads a documented value it never finds.
+CMP = re.compile(r"_cmp$")
+PUBLIC_DOC = re.compile(r"@ingroup\s+meos_(?!internal)")
 # A pointer return: any sentinel other than NULL is wrong
 POINTER = re.compile(r"\*\s*$")
 
@@ -175,6 +184,14 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
             want = "-1.0"
         if BOX_DISTANCE.match(name):
             want = "-1.0" if want == "DBL_MAX" else "-1"
+
+        if (documented is None and want == "INT_MAX" and CMP.search(name) and
+                PUBLIC_DOC.search("\n".join(doc)) and
+                any("INT_MAX" in bl for bl in body)):
+            findings.append(
+                (f"{rel}\t{name}\tundocumented INT_MAX",
+                 f"{rel}:{i + 1}: {name}() answers INT_MAX on error and states "
+                 f"no contract: add \"@return On error return @p INT_MAX\""))
 
         validated = validated_raw = None
         for bl in body:

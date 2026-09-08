@@ -2218,6 +2218,7 @@ tbox_ne(const TBox *box1, const TBox *box2)
  * @brief Return -1, 0, or 1 depending on whether the first temporal box
  * is less than, equal to, or greater than the second one
  * @param[in] box1,box2 Temporal boxes
+ * @return On error return @p INT_MAX
  * @note The time dimension is compared first and then the value dimension
  * @csqlfn #Tbox_cmp()
  */

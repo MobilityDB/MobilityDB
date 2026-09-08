@@ -3806,6 +3806,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal to, or greater than the second one
  * @param[in] temp1,temp2 Temporal values
+ * @return On error return @p INT_MAX
  * @note Function used for B-tree comparison
  * @csqlfn #Temporal_cmp()
  */
