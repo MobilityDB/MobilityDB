@@ -238,7 +238,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8909205e900d8681f9bbda8b96428ca4.html#a8909205e900d8681f9bbda8b96428ca4">relate_area_edge_inside_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8cc68d2bd658462557d0ddbf7597f40b.html#a8cc68d2bd658462557d0ddbf7597f40b">relate_area_edge_interior_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8daf4e36cf5b91ff335547f99c3c05ad.html#a8daf4e36cf5b91ff335547f99c3c05ad">relate_area_edge_intersection</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4593a22a1aad442f6328b9d42979be88.html#a4593a22a1aad442f6328b9d42979be88">relate_area_edge_intervals</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa4df0f9c5869788208aa90fd8f2ae148.html#aa4df0f9c5869788208aa90fd8f2ae148">relate_area_edge_intervals</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6c143fd9641010c2f1db8018d535f3d2.html#a6c143fd9641010c2f1db8018d535f3d2">relate_area_edge_parameter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae5c3e0e2576b61f1ef9b883a0c5aacd4.html#ae5c3e0e2576b61f1ef9b883a0c5aacd4">relate_area_edge_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8b2fc6290f877cb04ed91fdc52d28d9c.html#a8b2fc6290f877cb04ed91fdc52d28d9c">relate_area_has_vertex_interior</a></td></tr>
@@ -334,8 +334,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4593a22a1aad442f6328b9d42979be88" name="a4593a22a1aad442f6328b9d42979be88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4593a22a1aad442f6328b9d42979be88">&#9670;&#160;</a></span>relate_area_edge_intervals()</h2>
+<a id="aa4df0f9c5869788208aa90fd8f2ae148" name="aa4df0f9c5869788208aa90fd8f2ae148"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4df0f9c5869788208aa90fd8f2ae148">&#9670;&#160;</a></span>relate_area_edge_intervals()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -365,7 +365,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>first</em>&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>exact_ii</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -381,7 +387,12 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Classify the open portions of one polygon boundary edge. </p>
-<p >The edge is split at every intersection with the other polygon boundary. Since there is no boundary intersection inside an open interval, one representative point is sufficient. </p>
+<p >The edge is split at every intersection with the other polygon boundary. Since there is no boundary intersection inside an open interval, one representative point is sufficient. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">exact_ii</td><td>The interiors of the two geometries have been decided exactly before this walk runs, which <a class="el" href="meos_2src_2geo_2geo__funcs_8c_ac79ddb3472db8a0ed4cdbc2794aedf58.html#ac79ddb3472db8a0ed4cdbc2794aedf58" title="Return true if a boundary edge of one areal geometry properly crosses a boundary edge of the other.">relate_area_boundaries_cross</a> does for a pair of straight boundaries and not for one carrying an arc </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
