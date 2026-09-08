@@ -192,8 +192,9 @@ nad_tnumber_number(const Temporal *temp, Datum value)
  * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between the temporal boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return the sentinel of the base type given by
- * #distance_sentinel()
+ * @return The sentinel of the base type given by #distance_sentinel() where the
+ * boxes share no time, which is an answer and not an error: the external
+ * function establishes every precondition, so no path here raises
  * @note Function called when using indexes for k-nearest neighbor queries for
  * temporal numbers. Therefore, it must satisfy the following conditions
  * (1) the actual distance is always greater than or equal to the estimated
@@ -205,13 +206,12 @@ nad_tnumber_number(const Temporal *temp, Datum value)
 Datum
 nad_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  /* Ensure the validity of the arguments */
+  /* The preconditions the external function tests */
   assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags));
+  assert(MEOS_FLAGS_GET_X(box2->flags));
+  assert(box1->span.spantype == box2->span.spantype);
   MeosType basetype = box1->span.basetype;
-  if (! ensure_has_X(T_TBOX, box1->flags) ||
-      ! ensure_has_X(T_TBOX, box2->flags) ||
-      ! ensure_same_span_type(&box1->span, &box2->span))
-    return distance_sentinel(basetype);
 
   /* If the boxes do not intersect in the time dimension return the sentinel */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);

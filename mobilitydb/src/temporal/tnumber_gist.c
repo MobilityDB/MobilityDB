@@ -1032,6 +1032,13 @@ tbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
    * and let the recheck sort things out in the case of leaves. Since the
    * GiST framework expects a double for the distance method, we need to
    * convert the integer distance for temporal integer boxes into a double */
+  /* The kernel states its preconditions as assertions, and this scan reaches
+   * it with no MEOS function in between. An entry the query cannot be measured
+   * against takes the same maximum as one carrying no key at all */
+  if (! ensure_valid_tbox_tbox(key, &query) ||
+      ! ensure_has_X(T_TBOX, key->flags) ||
+      ! ensure_has_X(T_TBOX, query.flags))
+    PG_RETURN_FLOAT8(DBL_MAX);
   double distance = distance_double(nad_tbox_tbox(key, &query),
     key->span.basetype);
   PG_RETURN_FLOAT8(distance);

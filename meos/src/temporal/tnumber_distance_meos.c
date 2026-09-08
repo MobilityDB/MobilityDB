@@ -198,15 +198,21 @@ nad_tfloat_tbox(const Temporal *temp, const TBox *box)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between the int temporal boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return INT_MAX
+ * @return On error return -1
+ * @note A distance is never negative, so -1 states an error where INT_MAX
+ * states that the boxes share no time
  * @csqlfn #NAD_tbox_tbox()
  */
 int
 nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, -1); VALIDATE_NOT_NULL(box2, -1);
   if (! ensure_span_isof_type(&box1->span, T_INTSPAN) ||
-      ! ensure_span_isof_type(&box2->span, T_INTSPAN))
-    return INT_MAX;
+      ! ensure_span_isof_type(&box2->span, T_INTSPAN) ||
+      ! ensure_has_X(T_TBOX, box1->flags) ||
+      ! ensure_has_X(T_TBOX, box2->flags))
+    return -1;
 
   return DatumGetInt32(nad_tbox_tbox(box1, box2));
 }
@@ -216,15 +222,21 @@ nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
  * @brief Return the nearest approach distance between the big integer temporal
  * boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return @p INT64_MAX
+ * @return On error return -1
+ * @note A distance is never negative, so -1 states an error where INT64_MAX
+ * states that the boxes share no time
  * @csqlfn #NAD_tbox_tbox()
  */
 int64
 nad_tboxbigint_tboxbigint(const TBox *box1, const TBox *box2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, -1); VALIDATE_NOT_NULL(box2, -1);
   if (! ensure_span_isof_type(&box1->span, T_BIGINTSPAN) ||
-      ! ensure_span_isof_type(&box2->span, T_BIGINTSPAN))
-    return INT64_MAX;
+      ! ensure_span_isof_type(&box2->span, T_BIGINTSPAN) ||
+      ! ensure_has_X(T_TBOX, box1->flags) ||
+      ! ensure_has_X(T_TBOX, box2->flags))
+    return -1;
 
   return DatumGetInt64(nad_tbox_tbox(box1, box2));
 }
@@ -233,15 +245,21 @@ nad_tboxbigint_tboxbigint(const TBox *box1, const TBox *box2)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between the float temporal boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return DBL_MAX
+ * @return On error return -1.0
+ * @note A distance is never negative, so -1.0 states an error where DBL_MAX
+ * states that the boxes share no time
  * @csqlfn #NAD_tbox_tbox()
  */
 double
 nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, -1.0); VALIDATE_NOT_NULL(box2, -1.0);
   if (! ensure_span_isof_type(&box1->span, T_FLOATSPAN) ||
-      ! ensure_span_isof_type(&box2->span, T_FLOATSPAN))
-    return DBL_MAX;
+      ! ensure_span_isof_type(&box2->span, T_FLOATSPAN) ||
+      ! ensure_has_X(T_TBOX, box1->flags) ||
+      ! ensure_has_X(T_TBOX, box2->flags))
+    return -1.0;
   return DatumGetFloat8(nad_tbox_tbox(box1, box2));
 }
 

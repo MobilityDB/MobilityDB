@@ -1006,3 +1006,19 @@ SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' |=| tfloat '[3@2001-01-03, 4@2001-0
          
 (1 row)
 
+SELECT tbox 'TBOXINT XT([1,5],[2001-01-01, 2001-01-02])' |=| tbox 'TBOXINT XT([10,20],[2001-01-01, 2001-01-02])';
+ ?column? 
+----------
+        5
+(1 row)
+
+SELECT tbox 'TBOXINT XT([1,5],[2001-01-01, 2001-01-02])' |=| tbox 'TBOXINT XT([10,20],[2001-02-01, 2001-02-02])';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tbox 'TBOXINT XT([1,5],[2001-01-01, 2001-01-02])' |=| tbox 'TBOXFLOAT XT([1,5],[2001-01-01, 2001-01-02])';
+ERROR:  Operation on mixed span types: intspan and floatspan
+SELECT tbox 'TBOXINT T([2001-01-01, 2001-01-02])' |=| tbox 'TBOXINT XT([10,20],[2001-01-01, 2001-01-02])';
+ERROR:  The tbox must have X dimension

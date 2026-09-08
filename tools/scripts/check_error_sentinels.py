@@ -79,6 +79,13 @@ PREDICATE_DOC = re.compile(r"@brief Return true if|@return\s+1 if")
 # says the value is not located there, which is an answer and not a failure,
 # and it is already outside the fractions it otherwise returns.
 LOCATOR = re.compile(r"locate")
+# A nearest approach distance between two temporal boxes answers with the
+# maximum where the boxes share no time, which is an ANSWER and not a failure.
+# The maximum is therefore inside its value domain and cannot also mean error,
+# so the error takes -1 -- outside the domain of a distance, which is never
+# negative. That is what the rule actually asks for, exactly as it asks it of
+# the predicates and the locators above.
+BOX_DISTANCE = re.compile(r"^nad_tbox")
 # A pointer return: any sentinel other than NULL is wrong
 POINTER = re.compile(r"\*\s*$")
 
@@ -154,6 +161,8 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
             want = "-1"
         if want == "DBL_MAX" and LOCATOR.search(name):
             want = "-1.0"
+        if BOX_DISTANCE.match(name):
+            want = "-1.0" if want == "DBL_MAX" else "-1"
 
         validated = validated_raw = None
         for bl in body:
