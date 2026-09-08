@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: intervals_from_polygons</title>
+<title>MobilityDB: rtree_query_srid</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -110,7 +110,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ae5dc04654c74c927e1495ffafebbc48b.html#ae5dc04654c74c927e1495ffafebbc48b">intervals_from_arcs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aad33a921efd64f6359ab3572ce0b4a62.html#aad33a921efd64f6359ab3572ce0b4a62">intervals_from_lines</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a484bc4db125aafa1fe0639e8e3d3ee18.html#a484bc4db125aafa1fe0639e8e3d3ee18">intervals_from_points</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a195f8a0f79f8d79816be98bc51024fe5.html#a195f8a0f79f8d79816be98bc51024fe5">intervals_from_polygons</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a52e682b383abbf4ebacb8526753ce8fc.html#a52e682b383abbf4ebacb8526753ce8fc">intervals_from_polygons</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a28baa4ca45fd25c714f9d54fbc97d78f.html#a28baa4ca45fd25c714f9d54fbc97d78f">intervals_within_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a4e1383e180418061cd253856a417b5ce.html#a4e1383e180418061cd253856a417b5ce">linear_pieces_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a8a02ef04371afb3e45d3857b5759c66e.html#a8a02ef04371afb3e45d3857b5759c66e">periods</a></td></tr>
@@ -119,13 +119,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a04527486496c6e6a7ac440dd770d054b.html#a04527486496c6e6a7ac440dd770d054b">point_geom_dist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a42eb5b0c915dfc50f4aa4bbe51a2924d.html#a42eb5b0c915dfc50f4aa4bbe51a2924d">point_geom_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a510f8313bd5310b2fdacef6db43e7ebe.html#a510f8313bd5310b2fdacef6db43e7ebe">point_in_polygon</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a99eaf08deb874d38b4868083adad8c5c.html#a99eaf08deb874d38b4868083adad8c5c">point_in_polygon_impl</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a7abf91c849b295acbd8567f156772650.html#a7abf91c849b295acbd8567f156772650">point_in_polygon_impl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80">point_in_polygon_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ff43940422a934e45e40eb3a8c13806.html#a2ff43940422a934e45e40eb3a8c13806">point_inter_points_lines</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a81fecab8510a75f4ddf23c95f5c98eea.html#a81fecab8510a75f4ddf23c95f5c98eea">point_on_poly_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ada9806d45a2318f54240b6b7d54105dc.html#ada9806d45a2318f54240b6b7d54105dc">point_on_segment_pts</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a69d51ea8bc5f58caaf352b093c159eb5.html#a69d51ea8bc5f58caaf352b093c159eb5">point_seg_dist2</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_abc1554629b609538e5923536e313ca91.html#abc1554629b609538e5923536e313ca91">RTREE_MIN_NUMBER_ELEMS</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a2fe31d44b37e0ed4c3bd219e8fee1df8.html#a2fe31d44b37e0ed4c3bd219e8fee1df8">rtree_query_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a1641bd3a1bc3520a3b1c82ca53d32952.html#a1641bd3a1bc3520a3b1c82ca53d32952">rtree_results</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ac6081bf7caa5bd5060681b1cae13ba32.html#ac6081bf7caa5bd5060681b1cae13ba32">segment_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aed195d063358fd239b0e1a224471688f.html#aed195d063358fd239b0e1a224471688f">segment_within_closure</a></td></tr>
@@ -145,8 +146,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a195f8a0f79f8d79816be98bc51024fe5" name="a195f8a0f79f8d79816be98bc51024fe5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a195f8a0f79f8d79816be98bc51024fe5">&#9670;&#160;</a></span>intervals_from_polygons()</h2>
+<a id="a2fe31d44b37e0ed4c3bd219e8fee1df8" name="a2fe31d44b37e0ed4c3bd219e8fee1df8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2fe31d44b37e0ed4c3bd219e8fee1df8">&#9670;&#160;</a></span>rtree_query_srid()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -155,80 +156,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void intervals_from_polygons </td>
+          <td class="memname">static int32_t rtree_query_srid </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
-          <td class="paramname"><em>edges</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nedges</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
-          <td class="paramname"><em>all_edges</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>all_nedges</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
-          <td class="paramname"><em>rtree</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>rtree</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>xmax</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Compute the intersection intervals of a trajectory segment with an array of polygon edges. </p>
-<p >The ray-casting cannot use the edges filtered by the segment box, since an edge outside it still crosses the ray and the even-odd containment test would break. It is given the full array and its own R-tree query instead, the +x ray of <a class="el" href="tpoint__geom__clip_8c_a99eaf08deb874d38b4868083adad8c5c.html#a99eaf08deb874d38b4868083adad8c5c" title="Return true if a point is located in a polygon.">point_in_polygon_impl</a>, which excludes only the edges that lie left of the point or off the ray's height and so is identical to the full scan </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>R-tree over <code>all_edges</code>, or NULL to scan them all </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid,xmax</td><td>SRID and geometry bounding-box maximum abscissa, used to query <code>rtree</code> </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Return the SRID an index answers for, which is the one its own entries carry. </p>
+<p >A query box is admitted by <a class="el" href="group__meos__temporal__box__index_ga5aa659c83ca888f10910a85254c67b85.html#ga5aa659c83ca888f10910a85254c67b85" title="Search an RTree with a bounding box, collecting matching IDs into a MeosArray.">rtree_search</a> only where its SRID matches the tree's, so reading the SRID off the TREE is what keeps a query from disagreeing with the index it reads. A caller cannot always know the value &ndash; <a class="el" href="tpoint__geom__clip_8c_ab327b40c26d14d11965dcc9f409cce80.html#ab327b40c26d14d11965dcc9f409cce80" title="Return true if a point is located in a polygon, reading the edges the ray from it can meet out of an ...">point_in_polygon_index</a> is handed a tree it did not build &ndash; and a caller that guesses wrong gets INT_MAX back rather than a count. An empty tree admits any query, so its SRID is immaterial </p>
 
 </div>
 </div>

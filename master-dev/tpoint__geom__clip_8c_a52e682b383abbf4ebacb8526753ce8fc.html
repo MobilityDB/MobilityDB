@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpointseq_clip_edges</title>
+<title>MobilityDB: intervals_from_polygons</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -110,7 +110,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ae5dc04654c74c927e1495ffafebbc48b.html#ae5dc04654c74c927e1495ffafebbc48b">intervals_from_arcs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aad33a921efd64f6359ab3572ce0b4a62.html#aad33a921efd64f6359ab3572ce0b4a62">intervals_from_lines</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a484bc4db125aafa1fe0639e8e3d3ee18.html#a484bc4db125aafa1fe0639e8e3d3ee18">intervals_from_points</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a52e682b383abbf4ebacb8526753ce8fc.html#a52e682b383abbf4ebacb8526753ce8fc">intervals_from_polygons</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a52e682b383abbf4ebacb8526753ce8fc.html#a52e682b383abbf4ebacb8526753ce8fc">intervals_from_polygons</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a28baa4ca45fd25c714f9d54fbc97d78f.html#a28baa4ca45fd25c714f9d54fbc97d78f">intervals_within_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a4e1383e180418061cd253856a417b5ce.html#a4e1383e180418061cd253856a417b5ce">linear_pieces_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a8a02ef04371afb3e45d3857b5759c66e.html#a8a02ef04371afb3e45d3857b5759c66e">periods</a></td></tr>
@@ -138,7 +138,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2e5c31431abef5680ea455d38975ed2e.html#a2e5c31431abef5680ea455d38975ed2e">tpoint_linear_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a12a15f46c11be3526a9800168bce8404.html#a12a15f46c11be3526a9800168bce8404">tpointinst_clip_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a80214bedf03b709d5505989c8f3b9740.html#a80214bedf03b709d5505989c8f3b9740">tpointinst_dwithin_edges</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_ad3c060dc438204e00fb5bea766ccc131.html#ad3c060dc438204e00fb5bea766ccc131">tpointseq_clip_edges</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ad3c060dc438204e00fb5bea766ccc131.html#ad3c060dc438204e00fb5bea766ccc131">tpointseq_clip_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_acfec6fbdd91ec11d37563805d030d36e.html#acfec6fbdd91ec11d37563805d030d36e">tpointseq_distance_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a5e67f13e9d30477301027857f473834f.html#a5e67f13e9d30477301027857f473834f">tpointseq_dwithin_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a40a534201d675d1f2f30be3b38b90959.html#a40a534201d675d1f2f30be3b38b90959">within_roots_from_edge</a></td></tr>
@@ -146,8 +146,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad3c060dc438204e00fb5bea766ccc131" name="ad3c060dc438204e00fb5bea766ccc131"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad3c060dc438204e00fb5bea766ccc131">&#9670;&#160;</a></span>tpointseq_clip_edges()</h2>
+<a id="a52e682b383abbf4ebacb8526753ce8fc" name="a52e682b383abbf4ebacb8526753ce8fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52e682b383abbf4ebacb8526753ce8fc">&#9670;&#160;</a></span>intervals_from_polygons()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -156,10 +156,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void tpointseq_clip_edges </td>
+          <td class="memname">static void intervals_from_polygons </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em>, </td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -176,14 +182,20 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
-          <td class="paramname"><em>rtree</em>, </td>
+          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
+          <td class="paramname"><em>all_edges</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
-          <td class="paramname"><em>cand_edges</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>all_nedges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
+          <td class="paramname"><em>rtree</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -204,14 +216,11 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Clip a 2D/3D trajectory with linear interpolation with respect to a geometry. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Compute the intersection intervals of a trajectory segment with an array of polygon edges. </p>
+<p >The ray-casting cannot use the edges filtered by the segment box, since an edge outside it still crosses the ray and the even-odd containment test would break. It is given the full array and its own R-tree query instead, the +x ray of <a class="el" href="tpoint__geom__clip_8c_a7abf91c849b295acbd8567f156772650.html#a7abf91c849b295acbd8567f156772650" title="Return true if a point is located in a polygon.">point_in_polygon_impl</a>, which excludes only the edges that lie left of the point or off the ray's height and so is identical to the full scan </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> sequence </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">edges</td><td>Array of geometry edges </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nedges</td><td>Number of edges in the array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>R-tree for the edges, may be <code>NULL</code> if no index is used </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">cand_edges</td><td><a class="el" href="structEdge.html" title="Structure keeping a geometry edge.">Edge</a> array buffer of size <code>nedges</code> for storing the result of an R-tree look up, may be <code>NULL</code> if no index is used </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>R-tree over <code>all_edges</code>, or NULL to scan them all </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xmax</td><td>Geometry bounding-box maximum abscissa, which bounds the ray </td></tr>
   </table>
   </dd>
 </dl>
