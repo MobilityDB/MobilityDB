@@ -700,8 +700,16 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       Datum value = scankey->sk_argument;
       MeosType type = oid_meostype(scankey->sk_subtype);
       tnumber_spgist_get_tbox(value, type, &box);
-      distances[i] = distance_double(nad_tbox_tbox(&box, key),
-        key->span.basetype);
+      /* The kernel states its preconditions as assertions, and this scan
+       * reaches it with no MEOS function in between. An entry the order by
+       * cannot be measured against sorts after every measurable one */
+      if (! ensure_valid_tbox_tbox(&box, key) ||
+          ! ensure_has_X(T_TBOX, box.flags) ||
+          ! ensure_has_X(T_TBOX, key->flags))
+        distances[i] = DBL_MAX;
+      else
+        distances[i] = distance_double(nad_tbox_tbox(&box, key),
+          key->span.basetype);
     }
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;

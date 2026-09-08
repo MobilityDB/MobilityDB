@@ -225,4 +225,13 @@ SELECT tfloat '[1@2001-01-01, 2@2001-01-02]'::tbox |=| tfloat '[3@2001-01-03, 4@
 SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' |=| tfloat '[3@2001-01-03, 4@2001-01-04]'::tbox;
 SELECT tfloat '[1@2001-01-01, 2@2001-01-02]' |=| tfloat '[3@2001-01-03, 4@2001-01-04]';
 
+-- The maximum of the type says the boxes share no time, so a rejected pair
+-- must be told apart from it rather than answered with the same value
+SELECT tbox 'TBOXINT XT([1,5],[2001-01-01, 2001-01-02])' |=| tbox 'TBOXINT XT([10,20],[2001-01-01, 2001-01-02])';
+-- NULL
+SELECT tbox 'TBOXINT XT([1,5],[2001-01-01, 2001-01-02])' |=| tbox 'TBOXINT XT([10,20],[2001-02-01, 2001-02-02])';
+-- ERROR
+SELECT tbox 'TBOXINT XT([1,5],[2001-01-01, 2001-01-02])' |=| tbox 'TBOXFLOAT XT([1,5],[2001-01-01, 2001-01-02])';
+SELECT tbox 'TBOXINT T([2001-01-01, 2001-01-02])' |=| tbox 'TBOXINT XT([10,20],[2001-01-01, 2001-01-02])';
+
 -------------------------------------------------------------------------------
