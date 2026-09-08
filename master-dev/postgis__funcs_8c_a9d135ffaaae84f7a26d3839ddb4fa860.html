@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geog_from_lwgeom</title>
+<title>MobilityDB: geo_is_multi</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -108,7 +108,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga46d7c4be05f01aa9b0b8a0ae4092fb0f.html#ga46d7c4be05f01aa9b0b8a0ae4092fb0f">geo_from_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga8d5149137ee7f32cd1ca22021695ba91.html#ga8d5149137ee7f32cd1ca22021695ba91">geo_geo_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga36b44c06b6e056c323ee9ef25183599c.html#ga36b44c06b6e056c323ee9ef25183599c">geo_is_empty</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a9d135ffaaae84f7a26d3839ddb4fa860.html#a9d135ffaaae84f7a26d3839ddb4fa860">geo_is_multi</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a9d135ffaaae84f7a26d3839ddb4fa860.html#a9d135ffaaae84f7a26d3839ddb4fa860">geo_is_multi</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a7e04478db6a9558ce916d66224513069.html#a7e04478db6a9558ce916d66224513069">geo_is_planar_polygonal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga4aace7a0e85d0b27910e9263ce09dc9f.html#ga4aace7a0e85d0b27910e9263ce09dc9f">geo_is_unitary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga54012101cfc886480899eba81abd152a.html#ga54012101cfc886480899eba81abd152a">geo_makeline_garray</a></td></tr>
@@ -134,7 +134,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__dist_ga35d1d28657e234a6e5ccde66094ac174.html#ga35d1d28657e234a6e5ccde66094ac174">geog_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gad02c83b0140d8fdca6503018a19c9fc9.html#gad02c83b0140d8fdca6503018a19c9fc9">geog_dwithin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga4b2cb53e5a800db38b00bd835f10348d.html#ga4b2cb53e5a800db38b00bd835f10348d">geog_from_hexewkb</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a5f273a410a08d17bdfe5978e7cd8c225.html#a5f273a410a08d17bdfe5978e7cd8c225">geog_from_lwgeom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a5f273a410a08d17bdfe5978e7cd8c225.html#a5f273a410a08d17bdfe5978e7cd8c225">geog_from_lwgeom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga41dc1d3f899a20f992944a6f2b1adbe0.html#ga41dc1d3f899a20f992944a6f2b1adbe0">geog_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga2d318481a308c8a7f92709c21480118f.html#ga2d318481a308c8a7f92709c21480118f">geog_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gaad3e0b48756848a3b2780b449e4e9ccf.html#gaad3e0b48756848a3b2780b449e4e9ccf">geog_length</a></td></tr>
@@ -229,35 +229,32 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a5f273a410a08d17bdfe5978e7cd8c225" name="a5f273a410a08d17bdfe5978e7cd8c225"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f273a410a08d17bdfe5978e7cd8c225">&#9670;&#160;</a></span>geog_from_lwgeom()</h2>
+<a id="a9d135ffaaae84f7a26d3839ddb4fa860" name="a9d135ffaaae84f7a26d3839ddb4fa860"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d135ffaaae84f7a26d3839ddb4fa860">&#9670;&#160;</a></span>geo_is_multi()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geog_from_lwgeom </td>
+          <td class="memname">static bool geo_is_multi </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>lwgeom</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">int32&#160;</td>
-          <td class="paramname"><em>typmod</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return a geography from a <a class="el" href="structLWGEOM.html">LWGEOM</a>. </p>
-<dl class="section note"><dt>Note</dt><dd>Function derived from GSERIALIZED* gserialized_geography_from_lwgeom(LWGEOM *lwgeom,
-  int32 geog_typmod) </dd></dl>
+<p>Return true if a geometry is one built of parts, which the overlay can answer a part at a time. </p>
+<p >Every one of these is an <code><a class="el" href="structLWCOLLECTION.html">LWCOLLECTION</a></code> under the type tag, so the parts are read the same way whichever it is. A MULTIPOLYGON and the GEOMETRYCOLLECTION holding the same members are two spellings of one point set, and answering only one of them a part at a time is what would make the two disagree </p>
 
 </div>
 </div>

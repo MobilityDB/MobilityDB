@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geog_from_lwgeom</title>
+<title>MobilityDB: geo_union_parts</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -125,7 +125,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__srid_ga79345a6611dc257f1d62bca7b9a77f3b.html#ga79345a6611dc257f1d62bca7b9a77f3b">geo_transform</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__srid_ga25903ac0a112aeac0321d9dd270ecb28.html#ga25903ac0a112aeac0321d9dd270ecb28">geo_transform_pipeline</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gadae62576fac32cf2a1ab666dd5792e8f.html#gadae62576fac32cf2a1ab666dd5792e8f">geo_typename</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_af5473b1810a2b8d9e97ed87551b443a7.html#af5473b1810a2b8d9e97ed87551b443a7">geo_union_parts</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_af5473b1810a2b8d9e97ed87551b443a7.html#af5473b1810a2b8d9e97ed87551b443a7">geo_union_parts</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a534d4c89efd1d0c7d65be9af756d4c1e.html#a534d4c89efd1d0c7d65be9af756d4c1e">geo_unsupported_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ab910eddb2897d3ec94bc432a38c6463a.html#ab910eddb2897d3ec94bc432a38c6463a">geo_wound_segments</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga523b91b48ef9af6cd35a8dd81b361673.html#ga523b91b48ef9af6cd35a8dd81b361673">geog_area</a></td></tr>
@@ -134,7 +134,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__dist_ga35d1d28657e234a6e5ccde66094ac174.html#ga35d1d28657e234a6e5ccde66094ac174">geog_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gad02c83b0140d8fdca6503018a19c9fc9.html#gad02c83b0140d8fdca6503018a19c9fc9">geog_dwithin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga4b2cb53e5a800db38b00bd835f10348d.html#ga4b2cb53e5a800db38b00bd835f10348d">geog_from_hexewkb</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a5f273a410a08d17bdfe5978e7cd8c225.html#a5f273a410a08d17bdfe5978e7cd8c225">geog_from_lwgeom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a5f273a410a08d17bdfe5978e7cd8c225.html#a5f273a410a08d17bdfe5978e7cd8c225">geog_from_lwgeom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga41dc1d3f899a20f992944a6f2b1adbe0.html#ga41dc1d3f899a20f992944a6f2b1adbe0">geog_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga2d318481a308c8a7f92709c21480118f.html#ga2d318481a308c8a7f92709c21480118f">geog_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_gaad3e0b48756848a3b2780b449e4e9ccf.html#gaad3e0b48756848a3b2780b449e4e9ccf">geog_length</a></td></tr>
@@ -229,23 +229,32 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a5f273a410a08d17bdfe5978e7cd8c225" name="a5f273a410a08d17bdfe5978e7cd8c225"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f273a410a08d17bdfe5978e7cd8c225">&#9670;&#160;</a></span>geog_from_lwgeom()</h2>
+<a id="af5473b1810a2b8d9e97ed87551b443a7" name="af5473b1810a2b8d9e97ed87551b443a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5473b1810a2b8d9e97ed87551b443a7">&#9670;&#160;</a></span>geo_union_parts()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geog_from_lwgeom </td>
+          <td class="memname">static <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geo_union_parts </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>lwgeom</em>, </td>
+          <td class="paramtype"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
+          <td class="paramname"><em>parts</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int32&#160;</td>
-          <td class="paramname"><em>typmod</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nparts</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -253,11 +262,21 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return a geography from a <a class="el" href="structLWGEOM.html">LWGEOM</a>. </p>
-<dl class="section note"><dt>Note</dt><dd>Function derived from GSERIALIZED* gserialized_geography_from_lwgeom(LWGEOM *lwgeom,
-  int32 geog_typmod) </dd></dl>
+<p>Return the union of the pieces an overlay leaves. </p>
+<p >An empty piece contributes nothing, exactly as the empty set contributes nothing to a union, and no piece at all leaves the empty geometry rather than an absent answer. The union is the GENERAL one rather than <a class="el" href="postgis__funcs_8c_abc68fa34e1f1115500a254ed714005b0.html#abc68fa34e1f1115500a254ed714005b0" title="Return the union of an array of geometries whose members fall on both sides of the areal boundary.">geom_array_mixed_union</a>, which answers only an array SPANNING the areal boundary and returns NULL for one that stays on a single side &ndash; an array of surfaces being exactly that </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">parts,nparts</td><td>The pieces, of which this takes ownership </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID the empty answer carries </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
