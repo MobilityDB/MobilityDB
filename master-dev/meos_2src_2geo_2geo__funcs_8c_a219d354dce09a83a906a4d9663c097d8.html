@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: relate_area_edge_intervals</title>
+<title>MobilityDB: relate_area_edges_cross</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -238,10 +238,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8909205e900d8681f9bbda8b96428ca4.html#a8909205e900d8681f9bbda8b96428ca4">relate_area_edge_inside_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8cc68d2bd658462557d0ddbf7597f40b.html#a8cc68d2bd658462557d0ddbf7597f40b">relate_area_edge_interior_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8daf4e36cf5b91ff335547f99c3c05ad.html#a8daf4e36cf5b91ff335547f99c3c05ad">relate_area_edge_intersection</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa4df0f9c5869788208aa90fd8f2ae148.html#aa4df0f9c5869788208aa90fd8f2ae148">relate_area_edge_intervals</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa4df0f9c5869788208aa90fd8f2ae148.html#aa4df0f9c5869788208aa90fd8f2ae148">relate_area_edge_intervals</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6c143fd9641010c2f1db8018d535f3d2.html#a6c143fd9641010c2f1db8018d535f3d2">relate_area_edge_parameter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae5c3e0e2576b61f1ef9b883a0c5aacd4.html#ae5c3e0e2576b61f1ef9b883a0c5aacd4">relate_area_edge_point</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a219d354dce09a83a906a4d9663c097d8.html#a219d354dce09a83a906a4d9663c097d8">relate_area_edges_cross</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a219d354dce09a83a906a4d9663c097d8.html#a219d354dce09a83a906a4d9663c097d8">relate_area_edges_cross</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8b2fc6290f877cb04ed91fdc52d28d9c.html#a8b2fc6290f877cb04ed91fdc52d28d9c">relate_area_has_vertex_interior</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aced718268fde118cf0bc2bf6dfa6a440.html#aced718268fde118cf0bc2bf6dfa6a440">relate_area_interior_point_located</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac8c24e9250f11e8d58ab89cf0c58065b.html#ac8c24e9250f11e8d58ab89cf0c58065b">relate_area_interiors_intersect</a></td></tr>
@@ -335,8 +335,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa4df0f9c5869788208aa90fd8f2ae148" name="aa4df0f9c5869788208aa90fd8f2ae148"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa4df0f9c5869788208aa90fd8f2ae148">&#9670;&#160;</a></span>relate_area_edge_intervals()</h2>
+<a id="a219d354dce09a83a906a4d9663c097d8" name="a219d354dce09a83a906a4d9663c097d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a219d354dce09a83a906a4d9663c097d8">&#9670;&#160;</a></span>relate_area_edges_cross()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -345,34 +345,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void relate_area_edge_intervals </td>
+          <td class="memname">static bool relate_area_edges_cross </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
-          <td class="paramname"><em>edge</em>, </td>
+          <td class="paramname"><em>e1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structRelateEdges.html">RelateEdges</a> *&#160;</td>
-          <td class="paramname"><em>other</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMeosDE9IM.html">MeosDE9IM</a> *&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>first</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>exact_ii</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
+          <td class="paramname"><em>e2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -387,13 +369,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Classify the open portions of one polygon boundary edge. </p>
-<p >The edge is split at every intersection with the other polygon boundary. Since there is no boundary intersection inside an open interval, one representative point is sufficient. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">exact_ii</td><td>The interiors of the two geometries have been decided exactly before this walk runs, which <a class="el" href="meos_2src_2geo_2geo__funcs_8c_ac79ddb3472db8a0ed4cdbc2794aedf58.html#ac79ddb3472db8a0ed4cdbc2794aedf58" title="Return true if a boundary edge of one areal geometry properly crosses a boundary edge of the other.">relate_area_boundaries_cross</a> does for a pair of straight boundaries and not for one carrying an arc </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Return true if two areal boundary edges properly cross. </p>
+<p >Two straight edges are decided by four determinants on their own vertices (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_aeb8c3cccf2549b2054fc66df216f61ae.html#aeb8c3cccf2549b2054fc66df216f61ae" title="Return true if two straight edges properly cross.">relate_edges_cross</a>). A straight edge against a CIRCULAR one is decided by the quadratic that meets a line with a circle (<a class="el" href="geo__funcs_8h_a680e64fe53b8129dc82befe29b114d24.html#a680e64fe53b8129dc82befe29b114d24" title="Return true if a straight segment properly crosses a circular arc.">arcsegm_cross</a>), which is equally exact: an arc edge carries the centre, the radius and the angular span, so the curve between its endpoints is determined and nothing has to be inferred from those endpoints. TWO ARCS are left to the other routes. Two circles bring a tangency and a shared stretch of their own, and deciding those is a separate question from this one </p>
 
 </div>
 </div>

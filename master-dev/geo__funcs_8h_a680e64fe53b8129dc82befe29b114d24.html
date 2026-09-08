@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: closest_point2d_on_segment_ratio</title>
+<title>MobilityDB: arcsegm_cross</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,11 +89,11 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a19b0fda644bce9afa2ea8f42050cc16e.html#a19b0fda644bce9afa2ea8f42050cc16e">arc_span_sweep</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a630c1baab285148ff0eec1e257ab7876.html#a630c1baab285148ff0eec1e257ab7876">arcarc_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af1a2c874e33b7d1c58d560670942596e.html#af1a2c874e33b7d1c58d560670942596e">arcarc_intersect_points</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a680e64fe53b8129dc82befe29b114d24.html#a680e64fe53b8129dc82befe29b114d24">arcsegm_cross</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a680e64fe53b8129dc82befe29b114d24.html#a680e64fe53b8129dc82befe29b114d24">arcsegm_cross</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8432e7a27960bfe3c706b0e688d3dc8a.html#a8432e7a27960bfe3c706b0e688d3dc8a">arcsegm_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a29b3d5684039030d4bf4802d9fa2005a.html#a29b3d5684039030d4bf4802d9fa2005a">build_edge_rtree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a9e3ee55e0b148d82098c9f8899917bdc.html#a9e3ee55e0b148d82098c9f8899917bdc">circle_type</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a7421ea3ef74a6c7d49fa89567c7382f4.html#a7421ea3ef74a6c7d49fa89567c7382f4">closest_point2d_on_segment_ratio</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a7421ea3ef74a6c7d49fa89567c7382f4.html#a7421ea3ef74a6c7d49fa89567c7382f4">closest_point2d_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af03bf902980a6c21f0c87c493c0fcbdc.html#af03bf902980a6c21f0c87c493c0fcbdc">closest_point3dz_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b">coordinate_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a54d5ce3f27777cbbd4be4ea56f34ef5f.html#a54d5ce3f27777cbbd4be4ea56f34ef5f">de9im_match</a></td></tr>
@@ -170,35 +170,44 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7421ea3ef74a6c7d49fa89567c7382f4" name="a7421ea3ef74a6c7d49fa89567c7382f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7421ea3ef74a6c7d49fa89567c7382f4">&#9670;&#160;</a></span>closest_point2d_on_segment_ratio()</h2>
+<a id="a680e64fe53b8129dc82befe29b114d24" name="a680e64fe53b8129dc82befe29b114d24"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a680e64fe53b8129dc82befe29b114d24">&#9670;&#160;</a></span>arcsegm_cross()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">long double closest_point2d_on_segment_ratio </td>
+          <td class="memname">static bool arcsegm_cross </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
-          <td class="paramname"><em>p</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>ax</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>ay</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
-          <td class="paramname"><em>B</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rx</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
-          <td class="paramname"><em>closest</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>ry</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
+          <td class="paramname"><em>e</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -206,10 +215,22 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return a long double between 0 and 1 representing the location of the closest point on the 2D segment to the given point, as a fraction of total segment length. </p>
-<dl class="section note"><dt>Note</dt><dd>Function derived from the PostGIS function <code>closest_point_on_segment</code> </dd></dl>
+<p>Return true if a straight segment properly crosses a circular arc. </p>
+<p >Proper means the segment passes from one side of the arc to the other at a point interior to both edges, which is for an arc what <a class="el" href="meos_2src_2geo_2geo__funcs_8c_aeb8c3cccf2549b2054fc66df216f61ae.html#aeb8c3cccf2549b2054fc66df216f61ae" title="Return true if two straight edges properly cross.">relate_edges_cross</a> decides for two straight edges. The quadratic <a class="el" href="geo__funcs_8h_a8432e7a27960bfe3c706b0e688d3dc8a.html#a8432e7a27960bfe3c706b0e688d3dc8a" title="Return the trajectory parameters at which a trajectory segment intersects an arc edge.">arcsegm_intersect</a> solves is what says so, read for its DISCRIMINANT rather than for its roots alone: a line meeting a circle at a double root is a TANGENT, which touches without passing through, and only a discriminant standing clear of the rounding that function already reads it against makes the line a secant. A root strictly inside the segment and strictly inside the arc's angular span is then a crossing point interior to both edges, and the four sectors around it are the four combinations of inside and outside. Nothing is read off the arc's endpoints: the edge carries the centre, the radius and the span, so the curve between them is determined. Whatever these quantities cannot separate reads as NOT crossing, which is the same refusal the straight predicate makes and leaves the pair to the routes that already answer it </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ax,ay</td><td>Coordinates of the start of the straight segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rx,ry</td><td>Vector of the straight segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">e</td><td>Arc edge </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
