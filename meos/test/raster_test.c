@@ -768,6 +768,52 @@ int main(void)
   /* Releasing an empty answer is not an error */
   geomval_arr_free(NULL, 0);
 
+  /* What the band amounts to, read in one pass. Excluding nodata the eight
+   * values are 10, 30, 40, 50, 60, 70, 80 and 90, so every statistic follows
+   * in closed form: they sum to 430 and average 53.75, the smallest is 10 and
+   * the largest 90 */
+  meos_errno_reset();
+  BandStats *st = raster_summary_stats(rast_values, 1, true);
+  assert(st != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_summary_stats(raster, 1, true): count %u, sum %f, mean %f, "
+    "stddev %f, min %f, max %f\n", st->count, st->sum, st->mean, st->stddev,
+    st->min, st->max);
+  assert(st->count == 8);
+  assert(st->sum == 430.0);
+  assert(st->mean == 53.75);
+  assert(st->min == 10.0);
+  assert(st->max == 90.0);
+  /* The deviations square to 4987.5, so the population standard deviation is
+   * sqrt(4987.5/8) = 24.96873, and the sample one would be sqrt(4987.5/7) =
+   * 26.69270. The band is read whole rather than sampled, so it is the first,
+   * and the bound below separates the two conventions rather than merely
+   * bracketing a number */
+  assert(st->stddev > 24.96 && st->stddev < 24.98);
+  free(st);
+
+  /* Counting the nodata pixel counts the value it holds, -9999, so the count
+   * rises by one and the sum and the minimum move to it */
+  meos_errno_reset();
+  BandStats *st_all = raster_summary_stats(rast_values, 1, false);
+  assert(st_all != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_summary_stats(raster, 1, false): count %u, sum %f, min %f, "
+    "max %f\n", st_all->count, st_all->sum, st_all->min, st_all->max);
+  assert(st_all->count == 9);
+  assert(st_all->sum == 430.0 - 9999.0);
+  assert(st_all->min == -9999.0);
+  assert(st_all->max == 90.0);
+  free(st_all);
+
+  /* A band the raster does not have is an error, and a null argument is
+   * rejected rather than dereferenced */
+  meos_errno_reset();
+  assert(raster_summary_stats(rast_values, 0, true) == NULL);
+  assert(raster_summary_stats(rast_values, 2, true) == NULL);
+  assert(raster_summary_stats(NULL, 1, true) == NULL);
+  assert(meos_errno() != 0);
+
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 
   meos_finalize();
