@@ -110,6 +110,15 @@ SELECT aCovers(
 -- eDisjoint / aDisjoint
 -------------------------------------------------------------------------------
 
+-- An empty geometry is a valid operand whose point set is empty, so every
+-- relationship over it has the answer the library gives: disjoint true and
+-- the rest false
+SELECT eDisjoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+SELECT eIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+SELECT eCovers(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+SELECT eTouches(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+SELECT aDisjoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+
 SELECT eDisjoint(
   geometry 'Polygon((10 10,11 10,11 11,10 11,10 10))',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');

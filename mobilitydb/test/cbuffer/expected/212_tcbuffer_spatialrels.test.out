@@ -1090,3 +1090,45 @@ SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),5)@2001-01-01', geometry 'CircularSt
  t
 (1 row)
 
+SELECT eDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+ econtains 
+-----------
+ f
+(1 row)
+
+SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+ etouches 
+----------
+ f
+(1 row)
+
+SELECT eDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', geometry 'Polygon empty');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', geometry 'Polygon empty');
+ eintersects 
+-------------
+ f
+(1 row)
+
