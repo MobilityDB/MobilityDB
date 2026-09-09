@@ -639,7 +639,7 @@ raster_clip_callback(rt_iterator_arg arg, void *userarg __attribute__((unused)),
  * against a raster it already shares a grid with, and never on its own
  * @param[in] raster Deserialized subject stating the grid
  * @param[in] gs Geometry to burn
- * @return On error return @p NULL
+ * @errval NULL
  */
 static rt_raster
 raster_geo_mask(rt_raster raster, const GSERIALIZED *gs)
@@ -704,7 +704,7 @@ raster_geo_mask(rt_raster raster, const GSERIALIZED *gs)
  * @param[in] gs Geometry to clip it to
  * @param[in] crop True to reduce the result to the extent the raster and the
  * geometry share
- * @return On error return @p NULL
+ * @errval NULL
  * @csqlfn None, the host answers this operation on its own raster type
  */
 Raster *
