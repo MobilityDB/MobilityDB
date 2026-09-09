@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Raster</title>
+<title>MobilityDB: raster_rescale</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -113,7 +113,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__conversion_ga9583f4ac71701f0e6cdbebda57e49b68.html#ga9583f4ac71701f0e6cdbebda57e49b68">raquet_to_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gad1d550458722f56daf1b8a64ec557062.html#gad1d550458722f56daf1b8a64ec557062">raquet_width</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga03638f058878a307b0b9b0d389d81bd0.html#ga03638f058878a307b0b9b0d389d81bd0">raster_as_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga0dc253d86dbd6f10ee23d91d50f13370.html#ga0dc253d86dbd6f10ee23d91d50f13370">raster_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga642d42b0914643d9b7bd6962db1bffb7.html#ga642d42b0914643d9b7bd6962db1bffb7">raster_at_value</a></td></tr>
@@ -128,7 +128,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_gaf529fffbb1332c5907d4f12e77652c6c.html#gaf529fffbb1332c5907d4f12e77652c6c">raster_minus_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga9efd41ca7120b99502f0e392ce5cce94.html#ga9efd41ca7120b99502f0e392ce5cce94">raster_minus_value_gdal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gae78cb7e96c1faeb6c64e3374d186c4af.html#gae78cb7e96c1faeb6c64e3374d186c4af">raster_num_bands</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_afd2cec94ee537a558d6d41e88b060a7d.html#afd2cec94ee537a558d6d41e88b060a7d">raster_rescale</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_afd2cec94ee537a558d6d41e88b060a7d.html#afd2cec94ee537a558d6d41e88b060a7d">raster_rescale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga6ead48a103acba95933c8e9d67c3f006.html#ga6ead48a103acba95933c8e9d67c3f006">raster_scale_x</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga093c5fa346a0f27f6d0dfba0fc35efd5.html#ga093c5fa346a0f27f6d0dfba0fc35efd5">raster_scale_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga6a333bdf2bed49d5b6bfb13b2a611fc7.html#ga6a333bdf2bed49d5b6bfb13b2a611fc7">raster_skew_x</a></td></tr>
@@ -149,17 +149,61 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a26e9c4944333ddf47d33cd090c782e00" name="a26e9c4944333ddf47d33cd090c782e00"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26e9c4944333ddf47d33cd090c782e00">&#9670;&#160;</a></span>Raster</h2>
+<a id="afd2cec94ee537a558d6d41e88b060a7d" name="afd2cec94ee537a558d6d41e88b060a7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd2cec94ee537a558d6d41e88b060a7d">&#9670;&#160;</a></span>raster_rescale()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef struct <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a></td>
+          <td class="memname"><a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> * raster_rescale </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td>
+          <td class="paramname"><em>rast</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>scale_x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>scale_y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>algorithm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>max_err</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return a raster resampled to another pixel size. </p>
+<p >The result keeps the reference system and the upper left corner of the subject and states its coverage on a grid of the pixel size asked for, so a coarser scale reads fewer pixels over the same ground </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster to resample </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">scale_x,scale_y</td><td>Pixel size in the units of the raster's own reference system, the Y component being negative for a north-up grid as the geotransform states it </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">algorithm</td><td>Name of the resampling algorithm, NULL for nearest neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read without regard to case </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">max_err</td><td>Error in input pixels the warp may commit, 0 for an exact calculation </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn None, the host answers this operation on its own raster type </dd></dl>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_destroy</title>
+<title>MobilityDB: raster_resample_alg</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -91,7 +91,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gae9e4478b6716501cdfac80b7cc95e439.html#gae9e4478b6716501cdfac80b7cc95e439">raster_band_pixel_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_ace7d3b6fac16e35ff1a9bb742eca60a4.html#ace7d3b6fac16e35ff1a9bb742eca60a4">raster_clip</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a81ac4659ffc38a7613673fc512550367.html#a81ac4659ffc38a7613673fc512550367">raster_clip_callback</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raster__rtcore_8c_ab04b7f222fb7c11b980f4d9ef970ab5f.html#ab04b7f222fb7c11b980f4d9ef970ab5f">raster_destroy</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_ab04b7f222fb7c11b980f4d9ef970ab5f.html#ab04b7f222fb7c11b980f4d9ef970ab5f">raster_destroy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga9b5d1de0f561b8c12fce98f51a0bef7a.html#ga9b5d1de0f561b8c12fce98f51a0bef7a">raster_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga3831135f93b2dca3f28bcc8c0599477c.html#ga3831135f93b2dca3f28bcc8c0599477c">raster_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a5da1212be2eeafb2db3f6a553e5e1dd0.html#a5da1212be2eeafb2db3f6a553e5e1dd0">raster_geo_mask</a></td></tr>
@@ -99,7 +99,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga8dba23789c37f0ae8f0b8121f5e0ca9a.html#ga8dba23789c37f0ae8f0b8121f5e0ca9a">raster_height</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_gaf529fffbb1332c5907d4f12e77652c6c.html#gaf529fffbb1332c5907d4f12e77652c6c">raster_minus_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gae78cb7e96c1faeb6c64e3374d186c4af.html#gae78cb7e96c1faeb6c64e3374d186c4af">raster_num_bands</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a500f47ef3c31844535b0842b1ebf94ba.html#a500f47ef3c31844535b0842b1ebf94ba">raster_resample_alg</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raster__rtcore_8c_a500f47ef3c31844535b0842b1ebf94ba.html#a500f47ef3c31844535b0842b1ebf94ba">raster_resample_alg</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_afd2cec94ee537a558d6d41e88b060a7d.html#afd2cec94ee537a558d6d41e88b060a7d">raster_rescale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a8d8c4e9140ee312bcae766e4f151a299.html#a8d8c4e9140ee312bcae766e4f151a299">raster_rtcore_gridops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga6ead48a103acba95933c8e9d67c3f006.html#ga6ead48a103acba95933c8e9d67c3f006">raster_scale_x</a></td></tr>
@@ -121,8 +121,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab04b7f222fb7c11b980f4d9ef970ab5f" name="ab04b7f222fb7c11b980f4d9ef970ab5f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab04b7f222fb7c11b980f4d9ef970ab5f">&#9670;&#160;</a></span>raster_destroy()</h2>
+<a id="a500f47ef3c31844535b0842b1ebf94ba" name="a500f47ef3c31844535b0842b1ebf94ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a500f47ef3c31844535b0842b1ebf94ba">&#9670;&#160;</a></span>raster_resample_alg()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -131,11 +131,21 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void raster_destroy </td>
+          <td class="memname">static bool raster_resample_alg </td>
           <td>(</td>
-          <td class="paramtype">rt_raster&#160;</td>
-          <td class="paramname"><em>raster</em></td><td>)</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>algorithm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">GDALResampleAlg *&#160;</td>
+          <td class="paramname"><em>alg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -145,13 +155,15 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Destroy an rt_core raster together with its bands. </p>
-<p >rt_raster_destroy() releases the band registry but not the bands it points to, which the caller of a function producing them owns. The raster must carry its bands, that is, it must come from rt_raster_from_wkb(), rt_raster_from_hexwkb(), or a full rt_raster_deserialize(): after a header-only deserialization the registry is empty while the band count is not, and rt_raster_get_band() reads the registry without testing it </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the resampling algorithm a name states. </p>
+<p >The rt_core mapper answers nearest neighbour for a name it does not know, which turns a misspelt algorithm into a silent resampling by another one. The name is therefore tested against the set first and an unknown one raises, since a resampling is an answer and not a preference </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">raster</td><td>Raster </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">algorithm</td><td>Name of the algorithm, read without regard to case </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">alg</td><td>The algorithm the name states </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>True where the name states one of the algorithms </dd></dl>
 
 </div>
 </div>

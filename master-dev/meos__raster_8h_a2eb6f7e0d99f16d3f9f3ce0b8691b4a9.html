@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Raster</title>
+<title>MobilityDB: raster_transform</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -113,7 +113,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__conversion_ga9583f4ac71701f0e6cdbebda57e49b68.html#ga9583f4ac71701f0e6cdbebda57e49b68">raquet_to_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gad1d550458722f56daf1b8a64ec557062.html#gad1d550458722f56daf1b8a64ec557062">raquet_width</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga03638f058878a307b0b9b0d389d81bd0.html#ga03638f058878a307b0b9b0d389d81bd0">raster_as_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga0dc253d86dbd6f10ee23d91d50f13370.html#ga0dc253d86dbd6f10ee23d91d50f13370">raster_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga642d42b0914643d9b7bd6962db1bffb7.html#ga642d42b0914643d9b7bd6962db1bffb7">raster_at_value</a></td></tr>
@@ -138,7 +138,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga47799b6d30d305d68a07f44f719a62a2.html#ga47799b6d30d305d68a07f44f719a62a2">raster_tile_value_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gab5df545295142b446f3bf3a00c4ae170.html#gab5df545295142b446f3bf3a00c4ae170">raster_tile_value_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__conversion_ga98a584c5fe33b7350935f267ac7704dd.html#ga98a584c5fe33b7350935f267ac7704dd">raster_to_stbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_a2eb6f7e0d99f16d3f9f3ce0b8691b4a9.html#a2eb6f7e0d99f16d3f9f3ce0b8691b4a9">raster_transform</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_a2eb6f7e0d99f16d3f9f3ce0b8691b4a9.html#a2eb6f7e0d99f16d3f9f3ce0b8691b4a9">raster_transform</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gadfbc83f15b1994a9a8495d53de23c575.html#gadfbc83f15b1994a9a8495d53de23c575">raster_upper_left_x</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga2375659ab043ed481860a90c41182bb2.html#ga2375659ab043ed481860a90c41182bb2">raster_upper_left_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga8b065b73bf70f32e2e1dd645f7e17f77.html#ga8b065b73bf70f32e2e1dd645f7e17f77">raster_value</a></td></tr>
@@ -149,17 +149,55 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a26e9c4944333ddf47d33cd090c782e00" name="a26e9c4944333ddf47d33cd090c782e00"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26e9c4944333ddf47d33cd090c782e00">&#9670;&#160;</a></span>Raster</h2>
+<a id="a2eb6f7e0d99f16d3f9f3ce0b8691b4a9" name="a2eb6f7e0d99f16d3f9f3ce0b8691b4a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2eb6f7e0d99f16d3f9f3ce0b8691b4a9">&#9670;&#160;</a></span>raster_transform()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef struct <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a></td>
+          <td class="memname"><a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> * raster_transform </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td>
+          <td class="paramname"><em>rast</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>algorithm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>max_err</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return a raster stated in another spatial reference system. </p>
+<p >Every band is carried into the target system and resampled onto the grid the reprojection implies, so the result states the same coverage read through another system rather than the same pixels relabelled </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster to reproject </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Target spatial reference system identifier </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">algorithm</td><td>Name of the resampling algorithm, NULL for nearest neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read without regard to case </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">max_err</td><td>Error in input pixels the warp may commit, 0 for an exact calculation </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn None, the host answers this operation on its own raster type </dd></dl>
 
 </div>
 </div>
