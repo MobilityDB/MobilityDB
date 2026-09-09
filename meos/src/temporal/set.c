@@ -375,6 +375,15 @@ set_make_exp(const Datum *values, int count, int maxcount, MeosType basetype,
   // TODO Should we bypass the tests on tnpoint ?
   if (spatial_basetype(basetype) && basetype != T_NPOINT)
   {
+    /* The first element supplies the SRID and the flags every other element
+     * is compared against, so the loop below starts at the second one. Its
+     * own emptiness is a property of that element alone and is tested here:
+     * an empty geometry has no bounding box, so #geoarr_set_stbox seeds the
+     * set's stored box from #geo_set_stbox answering false and leaves that
+     * box unwritten */
+    if (geo_basetype(basetype) &&
+        ! ensure_not_empty(DatumGetGserializedP(values[0])))
+      return NULL;
     /* Ensure the spatial validity of the elements */
     int32_t srid = spatial_srid(values[0], basetype);
     int16 flags = spatial_flags(values[0], basetype);
