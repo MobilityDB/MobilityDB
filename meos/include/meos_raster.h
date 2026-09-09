@@ -118,6 +118,17 @@ extern uint64 raquet_hash_extended(const Raquet *rq, uint64 seed);
 
 typedef struct Raster Raster;
 
+/**
+ * @brief A polygon of a raster band together with the value its pixels share
+ * @details The shape PostGIS states as its @p geomval composite type: a group
+ * of pixels carrying one value, and that value
+ */
+typedef struct
+{
+  GSERIALIZED *geom;  /**< Polygon covering a group of pixels */
+  double val;         /**< The value those pixels share */
+} GeomVal;
+
 /* Input and output functions for PostGIS rasters */
 
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
@@ -149,6 +160,9 @@ extern Raster *raster_transform(const Raster *rast, int32_t srid,
   const char *algorithm, double max_err);
 extern Raster *raster_rescale(const Raster *rast, double scale_x,
   double scale_y, const char *algorithm, double max_err);
+extern GeomVal *raster_dump_as_polygons(const Raster *rast, int band,
+  bool exclude_nodata, int *count);
+extern void geomval_arr_free(GeomVal *gvarr, int count);
 
 /* Conversion functions for Raquet tiles */
 

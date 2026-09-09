@@ -707,6 +707,67 @@ int main(void)
   assert(raster_rescale(NULL, 0.5, -0.5, NULL, 0.0) == NULL);
   assert(meos_errno() != 0);
 
+  /* Reading a band as polygons states the same band as the regions its values
+   * cover. The 3x3 band holds eight distinct values and one nodata pixel, and
+   * no two neighbouring pixels share a value, so every pixel is a region of
+   * its own: eight polygons excluding the nodata pixel, nine including it */
+  int npolys = 0;
+  meos_errno_reset();
+  GeomVal *polys = raster_dump_as_polygons(rast_values, 1, true, &npolys);
+  assert(polys != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_dump_as_polygons(raster, 1, true): %d polygon(s)\n", npolys);
+  assert(npolys == 8);
+
+  /* Each polygon carries the reference system of the raster, so it can be
+   * compared with the trajectories the coverage is read along, and each
+   * covers exactly the one pixel whose value it states */
+  double total = 0.0;
+  bool seen_10 = false;
+  for (int i = 0; i < npolys; i++)
+  {
+    assert(polys[i].geom != NULL);
+    assert(geo_srid(polys[i].geom) == 4326);
+    /* A pixel of one degree by one degree covers an area of 1 */
+    assert(geom_area(polys[i].geom) > 0.999 &&
+      geom_area(polys[i].geom) < 1.001);
+    total += polys[i].val;
+    if (polys[i].val == 10.0)
+      seen_10 = true;
+  }
+  /* The eight values the band states, the nodata pixel excluded */
+  printf("raster_dump_as_polygons(raster, 1, true) values sum to %f\n", total);
+  assert(total == 10.0 + 30.0 + 40.0 + 50.0 + 60.0 + 70.0 + 80.0 + 90.0);
+  assert(seen_10);
+  geomval_arr_free(polys, npolys);
+
+  /* Keeping the nodata pixel gives it a region of its own, so the count rises
+   * by exactly one */
+  meos_errno_reset();
+  int npolys_all = 0;
+  GeomVal *polys_all = raster_dump_as_polygons(rast_values, 1, false,
+    &npolys_all);
+  assert(polys_all != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_dump_as_polygons(raster, 1, false): %d polygon(s)\n",
+    npolys_all);
+  assert(npolys_all == npolys + 1);
+  geomval_arr_free(polys_all, npolys_all);
+
+  /* A band the raster does not have is an error, as it is for every other
+   * accessor of this family, and a null argument is rejected */
+  meos_errno_reset();
+  int nbad = -1;
+  assert(raster_dump_as_polygons(rast_values, 0, true, &nbad) == NULL);
+  assert(nbad == 0);
+  assert(raster_dump_as_polygons(rast_values, 2, true, &nbad) == NULL);
+  assert(raster_dump_as_polygons(NULL, 1, true, &nbad) == NULL);
+  assert(raster_dump_as_polygons(rast_values, 1, true, NULL) == NULL);
+  assert(meos_errno() != 0);
+
+  /* Releasing an empty answer is not an error */
+  geomval_arr_free(NULL, 0);
+
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 
   meos_finalize();

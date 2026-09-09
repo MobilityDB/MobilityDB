@@ -1034,6 +1034,115 @@ raster_rescale(const Raster *rast, double scale_x, double scale_y,
     max_err);
 }
 
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Release an array of polygons and the values they carry
+ * @param[in] gvarr Array answered by #raster_dump_as_polygons()
+ * @param[in] count Number of elements it holds
+ * @note Each polygon is released with it, so a caller keeping one copies it
+ * first
+ */
+void
+geomval_arr_free(GeomVal *gvarr, int count)
+{
+  if (! gvarr)
+    return;
+  for (int i = 0; i < count; i++)
+    if (gvarr[i].geom)
+      pfree(gvarr[i].geom);
+  pfree(gvarr);
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return the polygons of a raster band, one for each group of pixels
+ * carrying the same value
+ * @details A band states a value per pixel; this states the same band as the
+ * regions those values cover, so a coverage becomes geometry a spatial
+ * operation can read. Each polygon carries the reference system of the raster,
+ * as every spatial value this family derives from a raster does, so it can be
+ * compared with the trajectories the coverage is read along
+ * @param[in] rast Raster to read
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the pixels the band states as nodata
+ * out of the answer, false to give them a region of their own
+ * @param[out] count Number of polygons answered
+ * @return An array the caller releases with #geomval_arr_free(), or NULL where
+ * the band covers nothing, in which case @p count is 0 and no error is stated
+ * @errval NULL
+ * @csqlfn None, the host answers this operation on its own raster type
+ */
+GeomVal *
+raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
+  int *count)
+{
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+
+  /* The bands are read, so the subject is deserialized in full */
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+
+  /* A band the raster does not have is an error here, as it is for every other
+   * accessor of this family, rather than the empty set PostGIS answers */
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  if (band < 1 || band > numbands)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster has no band %d, it has %d", band, numbands);
+    return NULL;
+  }
+
+  int32_t srid = (int32_t) rt_raster_get_srid(raster);
+
+  /* A band that is entirely nodata covers nothing, which is an answer */
+  rt_band rtband = rt_raster_get_band(raster, (uint32_t) (band - 1));
+  if (rtband && rt_band_get_isnodata_flag(rtband))
+  {
+    raster_destroy(raster);
+    return NULL;
+  }
+
+  int nelems = 0;
+  rt_geomval geomval = rt_raster_gdal_polygonize(raster, band - 1,
+    exclude_nodata ? 1 : 0, &nelems);
+  raster_destroy(raster);
+  if (! geomval)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read band %d of the raster as polygons", band);
+    return NULL;
+  }
+  if (nelems < 1)
+  {
+    pfree(geomval);
+    return NULL;
+  }
+
+  /* Each polygon arrives as plain WKB and states no reference system of its
+   * own, so it is given the one the raster states, which is the system its
+   * coordinates are already in */
+  GeomVal *result = palloc0(sizeof(GeomVal) * (size_t) nelems);
+  for (int i = 0; i < nelems; i++)
+  {
+    LWGEOM *geom = lwpoly_as_lwgeom(geomval[i].geom);
+    lwgeom_set_srid(geom, srid);
+    result[i].geom = geo_serialize(geom);
+    result[i].val = geomval[i].val;
+    lwgeom_free(geom);
+  }
+  pfree(geomval);
+
+  *count = nelems;
+  return result;
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/
