@@ -54,6 +54,7 @@
 #include "librtcore.h"
 
 /* C */
+#include <ctype.h>
 #include <string.h>
 /* MEOS */
 #include <meos.h>
@@ -599,6 +600,10 @@ raster_band_nodata_value(const Raster *rast, int band)
  * Processing functions
  *****************************************************************************/
 
+/* Length of the longest reference system name the warp writes, EPSG: and a
+ * signed 32 bit code */
+#define MAX_SRS_LEN 32
+
 /**
  * @brief Iterator callback keeping a pixel of the subject where the mask
  * covers it
@@ -809,6 +814,224 @@ raster_clip(const Raster *rast, const GSERIALIZED *gs, bool crop)
   raster_destroy(raster);
   rt_raster_set_srid(result, srid);
   return raster_serialize_destroy(result);
+}
+
+/**
+ * @brief Return the resampling algorithm a name states
+ * @details The rt_core mapper answers nearest neighbour for a name it does not
+ * know, which turns a misspelt algorithm into a silent resampling by another
+ * one. The name is therefore tested against the set first and an unknown one
+ * raises, since a resampling is an answer and not a preference
+ * @param[in] algorithm Name of the algorithm, read without regard to case
+ * @param[out] alg The algorithm the name states
+ * @return True where the name states one of the algorithms
+ */
+static bool
+raster_resample_alg(const char *algorithm, GDALResampleAlg *alg)
+{
+  static const char *names[] = {"NEARESTNEIGHBOUR", "NEARESTNEIGHBOR",
+    "BILINEAR", "CUBIC", "CUBICSPLINE", "LANCZOS", "MAX", "MIN"};
+  size_t len = strlen(algorithm);
+  char *name = palloc(len + 1);
+  for (size_t i = 0; i < len; i++)
+    name[i] = (char) toupper((unsigned char) algorithm[i]);
+  name[len] = '\0';
+
+  bool found = false;
+  for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); i++)
+  {
+    if (strcmp(name, names[i]) == 0)
+    {
+      found = true;
+      break;
+    }
+  }
+  if (found)
+    *alg = rt_util_gdal_resample_alg(name);
+  pfree(name);
+  return found;
+}
+
+/**
+ * @brief Return the spatial reference system of an SRID as a string GDAL reads
+ * @details The system is named by its authority and code rather than described
+ * by a projection string, which is the first of the three forms PostGIS itself
+ * offers GDAL for a raster and the one rt_core writes in its own calls. GDAL
+ * resolves it against the PROJ database the raster family already requires, so
+ * no catalog of this build's own is read and the answer is the same whether
+ * MEOS stands alone or runs inside PostgreSQL.
+ *
+ * A code GDAL cannot resolve is refused by the caller rather than guessed at:
+ * a raster carried into a reference system that is not the one asked for is a
+ * wrong answer, and an error is not
+ * @param[in] srid Spatial reference system identifier
+ * @errval NULL
+ * @note The string is the caller's to release with #pfree()
+ */
+static char *
+raster_srs_text(int32_t srid)
+{
+  char *result = palloc(MAX_SRS_LEN);
+  snprintf(result, MAX_SRS_LEN, "EPSG:%d", srid);
+  if (! rt_util_gdal_supported_sr(result))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL cannot resolve the spatial reference system EPSG:%d", srid);
+    pfree(result);
+    return NULL;
+  }
+  return result;
+}
+
+/**
+ * @brief Return a raster warped into another reference system, another pixel
+ * size, or both
+ * @details The two are one operation: the warp states the result in the target
+ * system and samples the subject into the grid the scale asks for, so a call
+ * asking only for a system keeps the pixel size the reprojection implies, and
+ * a call asking only for a scale regrids the subject where it stands. A target
+ * equal to the subject's own system is not a reprojection, and the reference
+ * strings are then left unstated, which is what rt_core reads as a regridding
+ * @param[in] rast Raster to warp
+ * @param[in] srid Target reference system, or the subject's own to keep it
+ * @param[in] scale_x,scale_y Pixel size in the units of the target system, or
+ * NULL to let the warp choose it
+ * @param[in] algorithm Name of the resampling algorithm
+ * @param[in] max_err Error in input pixels the warp may commit, 0 for none
+ * @errval NULL
+ */
+static Raster *
+raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
+  const char *algorithm, double max_err)
+{
+  GDALResampleAlg alg = GRA_NearestNeighbour;
+  if (algorithm && ! raster_resample_alg(algorithm, &alg))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown resampling algorithm: %s", algorithm);
+    return NULL;
+  }
+  if (max_err < 0.0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The error a warp may commit cannot be negative: %f", max_err);
+    return NULL;
+  }
+
+  int32_t src_srid = raster_srid(rast);
+  /* A subject standing in no reference system cannot be carried into one */
+  if (src_srid == SRID_UNKNOWN && srid != src_srid)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster states no SRID to reproject from");
+    return NULL;
+  }
+
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+
+  /* The reference systems are read only where the warp reprojects: a warp
+   * within one system states neither, which is how rt_core is told that the
+   * grid alone moves */
+  char *src_srs = NULL, *dst_srs = NULL;
+  if (srid != src_srid)
+  {
+    src_srs = raster_srs_text(src_srid);
+    if (! src_srs)
+    {
+      raster_destroy(raster);
+      return NULL;
+    }
+    dst_srs = raster_srs_text(srid);
+    if (! dst_srs)
+    {
+      pfree(src_srs); raster_destroy(raster);
+      return NULL;
+    }
+  }
+
+  rt_raster result = rt_raster_gdal_warp(raster, src_srs, dst_srs, scale_x,
+    scale_y, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, alg, max_err);
+  if (src_srs) pfree(src_srs);
+  if (dst_srs) pfree(dst_srs);
+  raster_destroy(raster);
+  if (! result)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Could not warp the raster");
+    return NULL;
+  }
+  rt_raster_set_srid(result, srid);
+  return raster_serialize_destroy(result);
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return a raster stated in another spatial reference system
+ * @details Every band is carried into the target system and resampled onto the
+ * grid the reprojection implies, so the result states the same coverage read
+ * through another system rather than the same pixels relabelled
+ * @param[in] rast Raster to reproject
+ * @param[in] srid Target spatial reference system identifier
+ * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
+ * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
+ * Max and Min, read without regard to case
+ * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
+ * calculation
+ * @errval NULL
+ * @csqlfn None, the host answers this operation on its own raster type
+ */
+Raster *
+raster_transform(const Raster *rast, int32_t srid, const char *algorithm,
+  double max_err)
+{
+  VALIDATE_NOT_NULL(rast, NULL);
+  if (srid == SRID_UNKNOWN)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The target of a reprojection cannot be an unknown SRID");
+    return NULL;
+  }
+  return raster_warp(rast, srid, NULL, NULL, algorithm, max_err);
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return a raster resampled to another pixel size
+ * @details The result keeps the reference system and the upper left corner of
+ * the subject and states its coverage on a grid of the pixel size asked for,
+ * so a coarser scale reads fewer pixels over the same ground
+ * @param[in] rast Raster to resample
+ * @param[in] scale_x,scale_y Pixel size in the units of the raster's own
+ * reference system, the Y component being negative for a north-up grid as the
+ * geotransform states it
+ * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
+ * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
+ * Max and Min, read without regard to case
+ * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
+ * calculation
+ * @errval NULL
+ * @csqlfn None, the host answers this operation on its own raster type
+ */
+Raster *
+raster_rescale(const Raster *rast, double scale_x, double scale_y,
+  const char *algorithm, double max_err)
+{
+  VALIDATE_NOT_NULL(rast, NULL);
+  /* A pixel of no width or no height covers no ground, so the grid it would
+   * state has no cell to carry a value */
+  if (scale_x == 0.0 || scale_y == 0.0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The pixel size of a rescaled raster cannot be zero");
+    return NULL;
+  }
+  return raster_warp(rast, raster_srid(rast), &scale_x, &scale_y, algorithm,
+    max_err);
 }
 
 /*****************************************************************************

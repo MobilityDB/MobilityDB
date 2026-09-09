@@ -594,6 +594,119 @@ int main(void)
   free(region_3857); free(region); free(whole); free(cropped);
   free(traj_kept);
 
+  /* Reprojection carries the coverage into another reference system rather
+   * than relabelling the same pixels. Web Mercator states a position in
+   * metres, so the pixel of one degree becomes a pixel of some 10^5 metres,
+   * and the meridian of longitude 0 stands at x = 0 in both systems. */
+  meos_errno_reset();
+  Raster *merc = raster_transform(rast_values, 3857, NULL, 0.0);
+  assert(merc != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_transform(raster, 3857): srid %d, %dx%d, scale (%f, %f), "
+    "upper left (%f, %f)\n", raster_srid(merc), raster_width(merc),
+    raster_height(merc), raster_scale_x(merc), raster_scale_y(merc),
+    raster_upper_left_x(merc), raster_upper_left_y(merc));
+  assert(raster_srid(merc) == 3857);
+  assert(raster_num_bands(merc) == 1);
+  /* The units are those of the target system, not of the source */
+  assert(raster_scale_x(merc) > 1000.0);
+  assert(raster_upper_left_x(merc) > -1e-6 &&
+    raster_upper_left_x(merc) < 1e-6);
+  assert(raster_upper_left_y(merc) > 0.0);
+
+  /* The DATA moves with the grid, which the header alone cannot show. The
+   * oracle is the result's own geotransform rather than a projection formula:
+   * both systems are north up, so the upper left pixel of the result covers
+   * the ground the upper left pixel of the subject covers, and reading the
+   * centre of that pixel must answer what that ground answered before */
+  char traj_merc_str[256];
+  snprintf(traj_merc_str, sizeof(traj_merc_str),
+    "SRID=3857;{POINT(%.6f %.6f)@2001-01-01}",
+    raster_upper_left_x(merc) + raster_scale_x(merc) / 2.0,
+    raster_upper_left_y(merc) + raster_scale_y(merc) / 2.0);
+  Temporal *traj_merc = tgeompoint_in(traj_merc_str);
+  assert(traj_merc != NULL);
+  meos_errno_reset();
+  Temporal *merc_val = raster_value(traj_merc, merc, 1);
+  assert(merc_val != NULL);
+  assert(meos_errno() == 0);
+  char *merc_val_str = tfloat_out(merc_val, 0);
+  printf("raster_transform(raster, 3857) sampled at the centre of its upper "
+    "left pixel: %s\n", merc_val_str);
+  assert(temporal_num_instants(merc_val) == 1);
+  assert(tfloat_start_value(merc_val) == 10.0);
+  free(merc_val_str); free(merc_val);
+  free(traj_merc); free(merc);
+
+  /* Rescaling states the same coverage on a grid of the pixel size asked for,
+   * keeping the reference system and the upper left corner. Halving the pixel
+   * splits each of the nine into four, so the 3x3 of one degree becomes a 6x6
+   * of half a degree over the same ground */
+  meos_errno_reset();
+  Raster *finer = raster_rescale(rast_values, 0.5, -0.5, NULL, 0.0);
+  assert(finer != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_rescale(raster, 0.5, -0.5): %dx%d, scale (%f, %f), "
+    "upper left (%f, %f)\n", raster_width(finer), raster_height(finer),
+    raster_scale_x(finer), raster_scale_y(finer),
+    raster_upper_left_x(finer), raster_upper_left_y(finer));
+  assert(raster_srid(finer) == 4326);
+  assert(raster_num_bands(finer) == 1);
+  assert(raster_width(finer) == 6);
+  assert(raster_height(finer) == 6);
+  assert(raster_scale_x(finer) == 0.5);
+  assert(raster_scale_y(finer) == -0.5);
+  assert(raster_upper_left_x(finer) == 0.0);
+  assert(raster_upper_left_y(finer) == 3.0);
+
+  /* Each quarter of the pixel that held 10 holds 10, which is what a nearest
+   * neighbour resampling onto a finer grid means */
+  Temporal *traj_finer = tgeompoint_in("SRID=4326;{POINT(0.25 2.75)@2001-01-01,"
+    " POINT(0.75 2.75)@2001-01-02, POINT(0.25 2.25)@2001-01-03,"
+    " POINT(0.75 2.25)@2001-01-04}");
+  assert(traj_finer != NULL);
+  meos_errno_reset();
+  Temporal *finer_val = raster_value(traj_finer, finer, 1);
+  assert(finer_val != NULL);
+  assert(meos_errno() == 0);
+  char *finer_str = tfloat_out(finer_val, 0);
+  printf("raster_rescale(raster, 0.5, -0.5) sampled over the quarters of the "
+    "pixel holding 10: %s\n", finer_str);
+  assert(temporal_num_instants(finer_val) == 4);
+  assert(tfloat_start_value(finer_val) == 10.0);
+  assert(tfloat_end_value(finer_val) == 10.0);
+  free(finer_str); free(finer_val); free(traj_finer); free(finer);
+
+  /* The algorithm is read without regard to case, and a name the set does not
+   * hold raises rather than resampling by another algorithm than the one
+   * asked for */
+  meos_errno_reset();
+  Raster *bilinear = raster_rescale(rast_values, 0.5, -0.5, "BiLiNeAr", 0.0);
+  assert(bilinear != NULL);
+  assert(meos_errno() == 0);
+  assert(raster_width(bilinear) == 6);
+  free(bilinear);
+
+  meos_errno_reset();
+  assert(raster_rescale(rast_values, 0.5, -0.5, "Quadratic", 0.0) == NULL);
+  assert(meos_errno() != 0);
+
+  /* A reprojection states where it goes, a rescaling states a pixel that
+   * covers ground, and a warp commits no negative error */
+  meos_errno_reset();
+  /* 0 is the unknown SRID; the public surface publishes no name for it */
+  assert(raster_transform(rast_values, 0, NULL, 0.0) == NULL);
+  assert(raster_rescale(rast_values, 0.0, -0.5, NULL, 0.0) == NULL);
+  assert(raster_rescale(rast_values, 0.5, 0.0, NULL, 0.0) == NULL);
+  assert(raster_transform(rast_values, 3857, NULL, -1.0) == NULL);
+  assert(meos_errno() != 0);
+
+  /* A null argument is rejected rather than dereferenced */
+  meos_errno_reset();
+  assert(raster_transform(NULL, 3857, NULL, 0.0) == NULL);
+  assert(raster_rescale(NULL, 0.5, -0.5, NULL, 0.0) == NULL);
+  assert(meos_errno() != 0);
+
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 
   meos_finalize();

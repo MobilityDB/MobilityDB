@@ -145,6 +145,10 @@ extern double raster_band_nodata_value(const Raster *rast, int band);
 
 extern Raster *raster_clip(const Raster *rast, const GSERIALIZED *gs,
   bool crop);
+extern Raster *raster_transform(const Raster *rast, int32_t srid,
+  const char *algorithm, double max_err);
+extern Raster *raster_rescale(const Raster *rast, double scale_x,
+  double scale_y, const char *algorithm, double max_err);
 
 /* Conversion functions for Raquet tiles */
 
