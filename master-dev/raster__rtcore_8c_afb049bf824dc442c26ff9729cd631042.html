@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_value_sample</title>
+<title>MobilityDB: raster_dump_as_polygons</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -93,7 +93,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_ace7d3b6fac16e35ff1a9bb742eca60a4.html#ace7d3b6fac16e35ff1a9bb742eca60a4">raster_clip</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a81ac4659ffc38a7613673fc512550367.html#a81ac4659ffc38a7613673fc512550367">raster_clip_callback</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_ab04b7f222fb7c11b980f4d9ef970ab5f.html#ab04b7f222fb7c11b980f4d9ef970ab5f">raster_destroy</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_afb049bf824dc442c26ff9729cd631042.html#afb049bf824dc442c26ff9729cd631042">raster_dump_as_polygons</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raster__rtcore_8c_afb049bf824dc442c26ff9729cd631042.html#afb049bf824dc442c26ff9729cd631042">raster_dump_as_polygons</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga9b5d1de0f561b8c12fce98f51a0bef7a.html#ga9b5d1de0f561b8c12fce98f51a0bef7a">raster_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga3831135f93b2dca3f28bcc8c0599477c.html#ga3831135f93b2dca3f28bcc8c0599477c">raster_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a5da1212be2eeafb2db3f6a553e5e1dd0.html#a5da1212be2eeafb2db3f6a553e5e1dd0">raster_geo_mask</a></td></tr>
@@ -116,45 +116,42 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gadfbc83f15b1994a9a8495d53de23c575.html#gadfbc83f15b1994a9a8495d53de23c575">raster_upper_left_x</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga2375659ab043ed481860a90c41182bb2.html#ga2375659ab043ed481860a90c41182bb2">raster_upper_left_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga8b065b73bf70f32e2e1dd645f7e17f77.html#ga8b065b73bf70f32e2e1dd645f7e17f77">raster_value</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raster__rtcore_8c_a9f0b6ff376c23870805566eab5e0fa99.html#a9f0b6ff376c23870805566eab5e0fa99">raster_value_sample</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a9f0b6ff376c23870805566eab5e0fa99.html#a9f0b6ff376c23870805566eab5e0fa99">raster_value_sample</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_ad465a503b6e1477ebd35c1f42e369e6d.html#ad465a503b6e1477ebd35c1f42e369e6d">raster_warp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga1252044dfe5684c39c6f1bb429981810.html#ga1252044dfe5684c39c6f1bb429981810">raster_width</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9f0b6ff376c23870805566eab5e0fa99" name="a9f0b6ff376c23870805566eab5e0fa99"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f0b6ff376c23870805566eab5e0fa99">&#9670;&#160;</a></span>raster_value_sample()</h2>
+<a id="afb049bf824dc442c26ff9729cd631042" name="afb049bf824dc442c26ff9729cd631042"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb049bf824dc442c26ff9729cd631042">&#9670;&#160;</a></span>raster_dump_as_polygons()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool raster_value_sample </td>
+          <td class="memname"><a class="el" href="structGeomVal.html">GeomVal</a> * raster_dump_as_polygons </td>
           <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>ctxp</em>, </td>
+          <td class="paramtype">const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td>
+          <td class="paramname"><em>rast</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>band</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>exclude_nodata</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>value</em>&#160;</td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -162,15 +159,21 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Raster sampling callback reading one pixel of a PostGIS raster through the vendored raster core. </p>
-<p >The point is converted to raster coordinates with the inverse geotransform and read with nearest-neighbour resampling. A point outside the pixel grid and a nodata pixel alike answer that there is no value, which is the contract of <a class="el" href="raster__quadbin_8h_a213ed2e8e0e869aef637d127b08f7bc8.html#a213ed2e8e0e869aef637d127b08f7bc8" title="Callback returning the raster pixel value at a point: return true and set value, or return false when...">raster_sample_fn</a> </p>
+<p>Return the polygons of a raster band, one for each group of pixels carrying the same value. </p>
+<p >A band states a value per pixel; this states the same band as the regions those values cover, so a coverage becomes geometry a spatial operation can read. Each polygon carries the reference system of the raster, as every spatial value this family derives from a raster does, so it can be compared with the trajectories the coverage is read along </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster to read </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">band</td><td>Number of the band, starting at 1 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exclude_nodata</td><td>True to leave the pixels the band states as nodata out of the answer, false to give them a region of their own </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of polygons answered </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An array the caller releases with <a class="el" href="raster__rtcore_8c_a7cf2d5e941505e4f432314b9a3efcb8e.html#a7cf2d5e941505e4f432314b9a3efcb8e" title="Release an array of polygons and the values they carry.">geomval_arr_free()</a>, or NULL where the band covers nothing, in which case <code>count</code> is 0 and no error is stated </dd>
+<dd>
+On error return NULL @csqlfn None, the host answers this operation on its own raster type </dd></dl>
 
 </div>
 </div>

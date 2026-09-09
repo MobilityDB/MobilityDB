@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_clip</title>
+<title>MobilityDB: raster_dump_as_polygons</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -122,8 +122,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gaa8cc7e218bc39a42258168aa6824b9d5.html#gaa8cc7e218bc39a42258168aa6824b9d5">raster_band_has_nodata_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga261d7ff58594cb36497c26dad732a003.html#ga261d7ff58594cb36497c26dad732a003">raster_band_nodata_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gae9e4478b6716501cdfac80b7cc95e439.html#gae9e4478b6716501cdfac80b7cc95e439">raster_band_pixel_type</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_ace7d3b6fac16e35ff1a9bb742eca60a4.html#ace7d3b6fac16e35ff1a9bb742eca60a4">raster_clip</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_afb049bf824dc442c26ff9729cd631042.html#afb049bf824dc442c26ff9729cd631042">raster_dump_as_polygons</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_ace7d3b6fac16e35ff1a9bb742eca60a4.html#ace7d3b6fac16e35ff1a9bb742eca60a4">raster_clip</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_afb049bf824dc442c26ff9729cd631042.html#afb049bf824dc442c26ff9729cd631042">raster_dump_as_polygons</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga9b5d1de0f561b8c12fce98f51a0bef7a.html#ga9b5d1de0f561b8c12fce98f51a0bef7a">raster_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga3831135f93b2dca3f28bcc8c0599477c.html#ga3831135f93b2dca3f28bcc8c0599477c">raster_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga8dba23789c37f0ae8f0b8121f5e0ca9a.html#ga8dba23789c37f0ae8f0b8121f5e0ca9a">raster_height</a></td></tr>
@@ -151,14 +151,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ace7d3b6fac16e35ff1a9bb742eca60a4" name="ace7d3b6fac16e35ff1a9bb742eca60a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace7d3b6fac16e35ff1a9bb742eca60a4">&#9670;&#160;</a></span>raster_clip()</h2>
+<a id="afb049bf824dc442c26ff9729cd631042" name="afb049bf824dc442c26ff9729cd631042"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb049bf824dc442c26ff9729cd631042">&#9670;&#160;</a></span>raster_dump_as_polygons()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> * raster_clip </td>
+          <td class="memname"><a class="el" href="structGeomVal.html">GeomVal</a> * raster_dump_as_polygons </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td>
           <td class="paramname"><em>rast</em>, </td>
@@ -166,14 +166,20 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>band</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>crop</em>&#160;</td>
+          <td class="paramname"><em>exclude_nodata</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -183,16 +189,19 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a raster keeping the pixels of another that a geometry covers. </p>
-<p >Every band of the subject is read in turn against a mask the geometry is burnt into. A pixel the geometry does not cover answers nodata. When <code>crop</code> is true the result carries the extent the two share, and otherwise it carries the extent of the subject </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the polygons of a raster band, one for each group of pixels carrying the same value. </p>
+<p >A band states a value per pixel; this states the same band as the regions those values cover, so a coverage becomes geometry a spatial operation can read. Each polygon carries the reference system of the raster, as every spatial value this family derives from a raster does, so it can be compared with the trajectories the coverage is read along </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster to clip </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry to clip it to </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">crop</td><td>True to reduce the result to the extent the raster and the geometry share </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster to read </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">band</td><td>Number of the band, starting at 1 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exclude_nodata</td><td>True to leave the pixels the band states as nodata out of the answer, false to give them a region of their own </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of polygons answered </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn None, the host answers this operation on its own raster type </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>An array the caller releases with <a class="el" href="raster__rtcore_8c_a7cf2d5e941505e4f432314b9a3efcb8e.html#a7cf2d5e941505e4f432314b9a3efcb8e" title="Release an array of polygons and the values they carry.">geomval_arr_free()</a>, or NULL where the band covers nothing, in which case <code>count</code> is 0 and no error is stated </dd>
+<dd>
+On error return NULL @csqlfn None, the host answers this operation on its own raster type </dd></dl>
 
 </div>
 </div>

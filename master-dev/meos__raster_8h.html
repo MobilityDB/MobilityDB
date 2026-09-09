@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
@@ -91,6 +92,12 @@ $(function() {
 </div>
 <p><a href="meos__raster_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structGeomVal.html">GeomVal</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A polygon of a raster band together with the value its pixels share.  <a href="structGeomVal.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:a82bc18d6228bd1c7229a47fd763cd791"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structRaquet.html">Raquet</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__raster_8h_a82bc18d6228bd1c7229a47fd763cd791.html#a82bc18d6228bd1c7229a47fd763cd791">Raquet</a></td></tr>
@@ -133,6 +140,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gac15a181d296799256a56519f1f0fbe01"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster_gac15a181d296799256a56519f1f0fbe01.html#gac15a181d296799256a56519f1f0fbe01">eraster_value_gdal</a> (const <a class="el" href="structTemporal.html">Temporal</a> *traj, const char *path, int band, const <a class="el" href="structSpan.html">Span</a> *vspan)</td></tr>
 <tr class="memdesc:gac15a181d296799256a56519f1f0fbe01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a trajectory ever samples a raster pixel value, read through GDAL, inside a float span.  <a href="group__meos__raster_gac15a181d296799256a56519f1f0fbe01.html#gac15a181d296799256a56519f1f0fbe01">More...</a><br /></td></tr>
 <tr class="separator:gac15a181d296799256a56519f1f0fbe01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cf2d5e941505e4f432314b9a3efcb8e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__raster_8h_a7cf2d5e941505e4f432314b9a3efcb8e.html#a7cf2d5e941505e4f432314b9a3efcb8e">geomval_arr_free</a> (<a class="el" href="structGeomVal.html">GeomVal</a> *gvarr, int count)</td></tr>
+<tr class="memdesc:a7cf2d5e941505e4f432314b9a3efcb8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release an array of polygons and the values they carry.  <a href="meos__raster_8h_a7cf2d5e941505e4f432314b9a3efcb8e.html#a7cf2d5e941505e4f432314b9a3efcb8e">More...</a><br /></td></tr>
+<tr class="separator:a7cf2d5e941505e4f432314b9a3efcb8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9e953cb1db5f8340ca864740dc1f9716"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__inout_ga9e953cb1db5f8340ca864740dc1f9716.html#ga9e953cb1db5f8340ca864740dc1f9716">raquet_as_hexwkb</a> (const <a class="el" href="structRaquet.html">Raquet</a> *rq, uint8_t variant, size_t *size_out)</td></tr>
 <tr class="memdesc:ga9e953cb1db5f8340ca864740dc1f9716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the ASCII hex-encoded Well-Known Binary (HexWKB) representation of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile.  <a href="group__meos__raster__base__inout_ga9e953cb1db5f8340ca864740dc1f9716.html#ga9e953cb1db5f8340ca864740dc1f9716">More...</a><br /></td></tr>
 <tr class="separator:ga9e953cb1db5f8340ca864740dc1f9716"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -241,6 +251,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ace7d3b6fac16e35ff1a9bb742eca60a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__raster_8h_ace7d3b6fac16e35ff1a9bb742eca60a4.html#ace7d3b6fac16e35ff1a9bb742eca60a4">raster_clip</a> (const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *rast, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, bool crop)</td></tr>
 <tr class="memdesc:ace7d3b6fac16e35ff1a9bb742eca60a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a raster keeping the pixels of another that a geometry covers.  <a href="meos__raster_8h_ace7d3b6fac16e35ff1a9bb742eca60a4.html#ace7d3b6fac16e35ff1a9bb742eca60a4">More...</a><br /></td></tr>
 <tr class="separator:ace7d3b6fac16e35ff1a9bb742eca60a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb049bf824dc442c26ff9729cd631042"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGeomVal.html">GeomVal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__raster_8h_afb049bf824dc442c26ff9729cd631042.html#afb049bf824dc442c26ff9729cd631042">raster_dump_as_polygons</a> (const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *rast, int band, bool exclude_nodata, int *count)</td></tr>
+<tr class="memdesc:afb049bf824dc442c26ff9729cd631042"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the polygons of a raster band, one for each group of pixels carrying the same value.  <a href="meos__raster_8h_afb049bf824dc442c26ff9729cd631042.html#afb049bf824dc442c26ff9729cd631042">More...</a><br /></td></tr>
+<tr class="separator:afb049bf824dc442c26ff9729cd631042"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9b5d1de0f561b8c12fce98f51a0bef7a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__inout_ga9b5d1de0f561b8c12fce98f51a0bef7a.html#ga9b5d1de0f561b8c12fce98f51a0bef7a">raster_from_hexwkb</a> (const char *hexwkb)</td></tr>
 <tr class="memdesc:ga9b5d1de0f561b8c12fce98f51a0bef7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a raster from its ASCII hex-encoded Well-Known Binary (HexWKB) representation.  <a href="group__meos__raster__base__inout_ga9b5d1de0f561b8c12fce98f51a0bef7a.html#ga9b5d1de0f561b8c12fce98f51a0bef7a">More...</a><br /></td></tr>
 <tr class="separator:ga9b5d1de0f561b8c12fce98f51a0bef7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
