@@ -102,6 +102,10 @@ typedef struct
   double theta1;
   double theta2;
   bool ccw;
+  /* Set where, IN THE DIRECTION THIS PIECE IS STORED IN, the answer lies to
+   * its left. The selection knows it and the chaining walk needs it: see
+   * #buffer_add_selected_piece() */
+  bool answer_left;
 } BufferPiece;
 
 /**
@@ -2537,6 +2541,39 @@ buffer_collect_boundary_intersections(const LWGEOM *geom1, const LWGEOM *geom2,
  * tells a caller that a pair with nothing in @p shared is one whose reported
  * coincidence does not resolve rather than one meeting at nodes
  */
+/**
+ * @brief Add a selected piece, recording which side of it the answer lies on
+ * @details THE CHAINING WALK NEEDS ONE FRAME AND THE PIECES DO NOT CARRY ONE.
+ * A piece arrives in the direction its OWN geometry happens to be written in,
+ * and the two operands are written independently, so a walk crossing from one
+ * boundary to the other reverses the side the answer sits on halfway round.
+ * Where exactly two piece-ends meet that costs nothing, because there is no
+ * choice to make. At a node FOUR of them share it decides the answer, and no
+ * ordering rule alone can be right in both frames at once.
+ * Near a piece the answer coincides with the piece's OWN geometry on one side,
+ * and which side is #buffer_piece_interior_side(). The exception is a piece of
+ * the SUBTRACTED geometry in a difference: what the subtrahend encloses is
+ * exactly what the answer does not, so there the answer is on the other side.
+ * THE PIECE IS STORED AS IT ARRIVES. Reversing it here answers the same
+ * question and rotates the start vertex of every ring assembled from it, which
+ * is a spelling change across the whole surface for a defect living at pinch
+ * nodes alone.
+ * A side that cannot be read leaves the flag false, and the walk falls back on
+ * the ordering by itself, which is what it has to go on today.
+ */
+static void
+buffer_add_selected_piece(MeosArray *result, const BufferPiece *piece,
+  BufferLocator *own, bool inverted)
+{
+  assert(result); assert(piece); assert(own);
+  BufferPiece kept = *piece;
+  int side = buffer_piece_interior_side(&kept, own);
+  /* 0 = the geometry's interior lies LEFT of the piece, 1 = RIGHT */
+  kept.answer_left = (side == 0 || side == 1) ?
+    ((side == 0) != inverted) : false;
+  meos_array_add(result, &kept);
+}
+
 static void
 buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
   const MeosArray *pieces_b, BufferLocator *loc_a, ClipOper oper,
@@ -2559,7 +2596,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     BufferPiece *piece = (BufferPiece *) meos_array_get(pieces_a, i);
     BufferPieceLocation location = buffer_classify_piece(piece, loc_b);
     if (location == keep_a)
-      meos_array_add(result, piece);
+      buffer_add_selected_piece(result, piece, loc_a, false);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
       *coincident = true;
@@ -2575,7 +2612,7 @@ buffer_select_overlay_boundary(const MeosArray *pieces_a, BufferLocator *loc_b,
     BufferPiece *piece = (BufferPiece *) meos_array_get(pieces_b, i);
     BufferPieceLocation location = buffer_classify_piece(piece, loc_a);
     if (location == keep_b)
-      meos_array_add(result, piece);
+      buffer_add_selected_piece(result, piece, loc_b, oper == CL_DIFFERENCE);
     else if (location == BUFFER_PIECE_BOUNDARY)
     {
       *coincident = true;
@@ -2763,12 +2800,17 @@ buffer_piece_end_direction(const BufferPiece *piece, bool at_start,
  */
 static int
 buffer_find_connected_piece(const MeosArray *pieces, const bool *used,
-  POINT2D point, double from_dx, double from_dy, bool *reverse)
+  POINT2D point, double from_dx, double from_dy, bool want_left, bool *reverse)
 {
   assert(pieces); assert(used); assert(reverse);
   int best = -1;
   bool best_reverse = false;
   double best_turn = 0.0;
+  /* A candidate KEEPING THE ANSWER ON THE SIDE THIS RING IS TRACING IT ON is
+   * preferred over one crossing to the other side, and the ordering below then
+   * chooses among those. Only a node several pieces share offers both, so this
+   * decides exactly the case the ordering cannot */
+  bool have_framed = false;
   bool have_direction = (from_dx != 0.0 || from_dy != 0.0);
   for (uint32_t i = 0; i < pieces->count; i++)
   {
@@ -2784,6 +2826,17 @@ buffer_find_connected_piece(const MeosArray *pieces, const bool *used,
       rev = true;
     else
       continue;
+    /* Traversing a piece backwards puts the answer on its other side */
+    bool framed = (piece->answer_left != rev) == want_left;
+    if (have_framed && ! framed)
+      continue;
+    if (framed && ! have_framed)
+    {
+      /* The first candidate holding the frame discards every earlier one */
+      have_framed = true;
+      best = -1;
+      best_turn = 0.0;
+    }
     /* The first piece of a ring, and a node with one candidate, need no turn */
     if (! have_direction)
     {
@@ -2855,6 +2908,10 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, bool *used,
   if (! curve)
     return NULL;
   BufferPiece oriented = *first;
+  /* The ring takes its first piece as it stands, so THAT piece fixes the side
+   * this ring keeps the answer on. Reading the frame off the ring rather than
+   * imposing one leaves every start vertex where it was */
+  bool want_left = oriented.answer_left;
   buffer_append_piece_to_curve(curve, srid, &oriented);
   meos_array_add(ordered, &oriented);
   used[start_index] = true;
@@ -2870,7 +2927,7 @@ buffer_chain_ring_with_pieces(const MeosArray *pieces, bool *used,
   {
     bool reverse = false;
     int index = buffer_find_connected_piece(pieces, used, current, -from_dx,
-      -from_dy, &reverse);
+      -from_dy, want_left, &reverse);
     if (index < 0)
     {
       lwgeom_free(lwcompound_as_lwgeom(curve));
