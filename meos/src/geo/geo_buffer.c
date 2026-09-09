@@ -3994,12 +3994,22 @@ buffer_areal_overlay(const LWGEOM *geom1, const LWGEOM *geom2, ClipOper oper,
 
   /* Two boundaries that meet only at isolated points without their interiors
    * overlapping, as two discs touching at one point do, leave every piece of
-   * both boundaries on the union boundary. There is nothing to dissolve, and
-   * chaining rings that meet at a single node does not produce a surface, so
+   * both boundaries on the union boundary. There is nothing to dissolve, so
    * the pair is left to the caller as two surfaces. Boundaries that never meet
    * keep every piece for a union too, and that is an answer rather than a
-   * refusal, so the question is only asked where they do */
-  if (crossing && meos_array_count(selected) ==
+   * refusal, so the question is only asked where they do.
+   * IT IS THE UNION'S QUESTION AND ONLY THE UNION ASKS IT. What the flag
+   * reports is that the pair does not MERGE into one surface.
+   * #buffer_union_crossing() is the only site that passes CL_UNION, every
+   * reader of the flag reaches here through it, and #buffer_union_components()
+   * is what acts on it -- keeping the two components apart rather than
+   * declining the whole union. #buffer_areal_operation() discards the flag and
+   * is only ever called with CL_INTERSECTION or CL_DIFFERENCE, so refusing
+   * those here spends an answer they both have: keeping every piece of both
+   * boundaries is exactly what a DIFFERENCE does where the clip lies inside
+   * the subject, and what an INTERSECTION does where the subject lies inside
+   * the clip */
+  if (crossing && oper == CL_UNION && meos_array_count(selected) ==
       meos_array_count(split_a) + meos_array_count(split_b))
   {
     *touching = true;

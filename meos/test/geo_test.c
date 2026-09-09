@@ -1960,6 +1960,64 @@ int main(void)
   free(tan_gi); free(tan_gk); free(tan_ga); free(tan_gb);
   meos_errno_reset();
 
+  /* KEEPING EVERY PIECE OF BOTH BOUNDARIES IS AN ANSWER, NOT A REFUSAL, FOR
+   * EVERY OPERATION BUT THE UNION. A pair whose boundaries meet without their
+   * interiors overlapping leaves every piece of both on the union boundary,
+   * and the union reports that as "these do not merge into one surface" -- a
+   * report only the union asks for. The other two operations have an answer
+   * there and it is the ordinary one: a disc inscribed in a square, touching
+   * it at all four side midpoints, is INSIDE it, so the square keeps the four
+   * lobes around it and the two share the disc.
+   * The closed form is what makes this checkable: the disc has area 4*pi and
+   * the square 16, so what is kept is exactly 16 - 4*pi. That figure cannot be
+   * read from geom_area(), which linearizes a curve polygon, so the assertion
+   * here is the PARTITION identity -- both terms pass through the same
+   * measure, so the stroking cancels -- plus the arcs surviving as arcs, which
+   * is what says the answer was assembled rather than approximated */
+  GSERIALIZED *insq_a = geom_in("POLYGON((0 0,4 0,4 4,0 4,0 0))", -1);
+  GSERIALIZED *insq_b = geom_in(
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))", -1);
+  assert(insq_a != NULL); assert(insq_b != NULL);
+  meos_errno_reset();
+  GSERIALIZED *insq_i = geom_intersection2d(insq_a, insq_b);
+  GSERIALIZED *insq_k = geom_difference2d(insq_a, insq_b);
+  assert(insq_i != NULL); assert(insq_k != NULL);
+  assert(meos_errno() == 0);
+  double insq_whole = geom_area(insq_a);
+  double insq_parts = geom_area(insq_i) + geom_area(insq_k);
+  printf("an inscribed disc partitions its square: %.9f against %.9f\n",
+    insq_parts, insq_whole);
+  assert(fabs(insq_parts - insq_whole) < 1e-9);
+  /* What the pair shares is the disc itself, so the meet keeps its arcs and
+   * the four lobes kept around it keep theirs */
+  char *insq_wi = geo_as_text(insq_i, 6);
+  char *insq_wk = geo_as_text(insq_k, 6);
+  printf("an inscribed disc shares: %s\n", insq_wi);
+  printf("an inscribed disc leaves: %s\n", insq_wk);
+  assert(strstr(insq_wi, "CIRCULARSTRING") != NULL);
+  assert(strstr(insq_wk, "CIRCULARSTRING") != NULL);
+  free(insq_wi); free(insq_wk);
+  free(insq_i); free(insq_k); free(insq_a); free(insq_b);
+  meos_errno_reset();
+
+  /* AND THE UNION STILL REPORTS THE TOUCH. Two discs meeting at one point do
+   * not merge, and what they share is that point rather than a region of no
+   * area -- a region answer cannot state a meeting */
+  GSERIALIZED *tdisc_a = geom_in(
+    "CURVEPOLYGON(CIRCULARSTRING(0 1,1 2,2 1,1 0,0 1))", -1);
+  GSERIALIZED *tdisc_b = geom_in(
+    "CURVEPOLYGON(CIRCULARSTRING(2 1,3 2,4 1,3 0,2 1))", -1);
+  assert(tdisc_a != NULL); assert(tdisc_b != NULL);
+  meos_errno_reset();
+  GSERIALIZED *tdisc_i = geom_intersection2d(tdisc_a, tdisc_b);
+  assert(tdisc_i != NULL);
+  char *tdisc_w = geo_as_text(tdisc_i, 6);
+  printf("two discs touching share: %s\n", tdisc_w);
+  assert(strcmp(tdisc_w, "POINT(2 1)") == 0);
+  free(tdisc_w);
+  free(tdisc_i); free(tdisc_a); free(tdisc_b);
+  meos_errno_reset();
+
   /* WHAT THE REFUSAL IS STILL FOR. A collection is a region only when every
    * member draws one, and one holding a point and a line draws neither, so it
    * reaches the route that reads the type. WHICH of the two answers that route
