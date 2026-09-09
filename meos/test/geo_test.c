@@ -2479,6 +2479,35 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* A clip enclosing no point is more apart from a line than a clip that
+   * merely keeps away from it, so it shares nothing with the line and takes
+   * nothing from it. The pair that keeps apart is the oracle the engine
+   * already carries: it answers the empty geometry for what the two share and
+   * the whole line for what the line keeps, and a clip drawing nothing gets
+   * the same pair of answers for the same reason. Reading it as an absent
+   * answer instead is what an errno of 0 beside a NULL says nobody meant */
+  const char *ec_line = "LINESTRING(-1 2,9 2)";
+  const char *ec_clips[] = { "POLYGON EMPTY", "MULTIPOLYGON EMPTY",
+    "LINESTRING EMPTY", "MULTILINESTRING EMPTY" };
+  for (int i = 0; i < 4; i++)
+  {
+    GSERIALIZED *ecl = geom_in(ec_line, -1);
+    GSERIALIZED *ecc = geom_in(ec_clips[i], -1);
+    assert(ecl != NULL); assert(ecc != NULL);
+    meos_errno_reset();
+    GSERIALIZED *ecshared = geom_intersection2d(ecl, ecc);
+    GSERIALIZED *eckept = geom_difference2d(ecl, ecc);
+    assert(ecshared != NULL); assert(eckept != NULL);
+    assert(geo_is_empty(ecshared));
+    assert(! geo_is_empty(eckept));
+    assert(geom_length(eckept) > 0);
+    printf("a line against %s: shares nothing, keeps a length of %.6f, "
+      "errno %d\n", ec_clips[i], geom_length(eckept), meos_errno());
+    assert(meos_errno() == 0);
+    free(ecshared); free(eckept); free(ecl); free(ecc);
+    meos_errno_reset();
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 
