@@ -1917,6 +1917,49 @@ int main(void)
     free(pa); free(pb);
     meos_errno_reset();
   }
+  /* WHERE TWO BOUNDARIES ARE TANGENT the walk that welds the answer's rings
+   * meets a node FOUR piece-ends share, and two of them leave it in the very
+   * direction the walk arrived in: the arc's tangent there equals the
+   * segment's. Those two are no turn at all and must be the LAST the walk
+   * considers, or it crosses to the other boundary and closes ONE ring that
+   * visits the node twice instead of the several that are really there.
+   * The disc below is inscribed in the square and touches it at all four side
+   * midpoints, and the small square meets the disc tangentially as well, so
+   * the pair asks the question five times over.
+   * What the answer must satisfy is that the two overlays PARTITION the
+   * subject: what the pair shares and what the subject keeps cover between
+   * them exactly the area the subject covers, with nothing counted twice by a
+   * ring that crosses itself. The identity is what an area that STROKES can
+   * still decide -- both terms pass through the same measure, so the stroking
+   * cancels -- and it is therefore an assertion about the RINGS rather than
+   * about the exactness of either area. The exactness is witnessed elsewhere:
+   * the answer here reads 2.748776129 under an arc-exact measure, against the
+   * same figure from exact circle-segment Boolean operations */
+  const char *tan_a = "POLYHEDRALSURFACE(((0 0,4 0,4 4,0 4,0 0)))";
+  const char *tan_b = "MULTISURFACE(CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,"
+    "2 0,0 2)),((3 3,4 3,4 4,3 4,3 3)))";
+  GSERIALIZED *tan_ga = geom_in(tan_a, -1);
+  GSERIALIZED *tan_gb = geom_in(tan_b, -1);
+  assert(tan_ga != NULL); assert(tan_gb != NULL);
+  meos_errno_reset();
+  GSERIALIZED *tan_gi = geom_intersection2d(tan_ga, tan_gb);
+  GSERIALIZED *tan_gk = geom_difference2d(tan_ga, tan_gb);
+  assert(tan_gi != NULL); assert(tan_gk != NULL);
+  assert(meos_errno() == 0);
+  double tan_whole = geom_area(tan_ga);
+  double tan_parts = geom_area(tan_gi) + geom_area(tan_gk);
+  printf("a tangent pair partitions its subject: %.9f against %.9f\n",
+    tan_parts, tan_whole);
+  assert(fabs(tan_parts - tan_whole) < 1e-9);
+  /* Each lobe the square keeps is a region of its own, and the arcs bounding
+   * them are kept as arcs rather than as a drawing of them */
+  char *tan_gw = geo_as_text(tan_gk, 6);
+  printf("a tangent pair keeps: %s\n", tan_gw);
+  assert(strstr(tan_gw, "CIRCULARSTRING") != NULL);
+  free(tan_gw);
+  free(tan_gi); free(tan_gk); free(tan_ga); free(tan_gb);
+  meos_errno_reset();
+
   /* WHAT THE REFUSAL IS STILL FOR. A collection is a region only when every
    * member draws one, and one holding a point and a line draws neither, so it
    * reaches the route that reads the type. WHICH of the two answers that route

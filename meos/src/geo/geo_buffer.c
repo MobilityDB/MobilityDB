@@ -2812,8 +2812,15 @@ buffer_find_connected_piece(const MeosArray *pieces, const bool *used,
     /* Read the turn as a full circle so that the FIRST piece round from the
      * direction the walk came back along is the smallest, which is the one
      * that keeps the walk on the face it is tracing rather than crossing to
-     * the other side of the node */
-    if (turn <= 0.0)
+     * the other side of the node.
+     * A piece leaving in the direction the walk arrived in makes no turn at
+     * all, and is therefore the LAST one round rather than the first. That is
+     * what two boundaries TANGENT at the node offer, since the arc's tangent
+     * there equals the segment's, so the turn sits exactly on the 0 / 2*pi
+     * boundary and the side round-off puts it on would otherwise decide it.
+     * Both directions are unit, so the tolerance the engine reads a
+     * coordinate at settles the boundary for either sign */
+    if (turn <= MEOS_GEOM_TOLERANCE)
       turn += 2.0 * M_PI;
     if (best < 0 || turn < best_turn)
     {
