@@ -596,6 +596,222 @@ raster_band_nodata_value(const Raster *rast, int band)
 }
 
 /*****************************************************************************
+ * Processing functions
+ *****************************************************************************/
+
+/**
+ * @brief Iterator callback keeping a pixel of the subject where the mask
+ * covers it
+ * @details The iterator is set with a neighbourhood of a single pixel, so the
+ * value of each input stands at @p [0][0]. Raster 0 is the band being clipped
+ * and raster 1 is the mask the geometry is burnt into: a pixel the mask does
+ * not cover, and a pixel the subject states as nodata, alike answer nodata
+ */
+static int
+raster_clip_callback(rt_iterator_arg arg, void *userarg __attribute__((unused)),
+  double *value, int *nodata)
+{
+  /* The mask covers the pixel only where it carries a value of its own */
+  if (arg->nodata[1][0][0] || arg->values[1][0][0] == 0.0)
+  {
+    *value = 0.0;
+    *nodata = 1;
+    return 1;
+  }
+  /* The subject decides the pixel wherever the mask covers it */
+  if (arg->nodata[0][0][0])
+  {
+    *value = 0.0;
+    *nodata = 1;
+    return 1;
+  }
+  *value = arg->values[0][0][0];
+  *nodata = 0;
+  return 1;
+}
+
+/**
+ * @brief Return the mask a geometry burns into the grid of a raster
+ * @details The mask carries one band of a single covering value on the grid
+ * the subject states, so that every pixel of the two answers the same cell.
+ * The rasterizer accepts a null spatial reference system and leaves the
+ * projection of its result unset, which is what the mask needs: it is read
+ * against a raster it already shares a grid with, and never on its own
+ * @param[in] raster Deserialized subject stating the grid
+ * @param[in] gs Geometry to burn
+ * @return On error return @p NULL
+ */
+static rt_raster
+raster_geo_mask(rt_raster raster, const GSERIALIZED *gs)
+{
+  LWGEOM *geom = lwgeom_from_gserialized((GSERIALIZED *) gs);
+  if (! geom)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read the geometry to clip with");
+    return NULL;
+  }
+  /* The rasterizer reads plain OGC WKB, which carries no SRID of its own */
+  lwvarlena_t *wkb = lwgeom_to_wkb_varlena(geom, WKB_SFSQL);
+  lwgeom_free(geom);
+  if (! wkb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read the geometry to clip with");
+    return NULL;
+  }
+
+  /* One band of an unsigned byte, initially empty, carrying 1 where the
+   * geometry covers a pixel */
+  rt_pixtype pixtype = PT_8BUI;
+  double init = 0.0;
+  double value = 1.0;
+  double nodata = 0.0;
+  uint8_t hasnodata = 1;
+  double scale_x = rt_raster_get_x_scale(raster);
+  double scale_y = rt_raster_get_y_scale(raster);
+  double ul_x = rt_raster_get_x_offset(raster);
+  double ul_y = rt_raster_get_y_offset(raster);
+  double skew_x = rt_raster_get_x_skew(raster);
+  double skew_y = rt_raster_get_y_skew(raster);
+
+  rt_raster result = rt_raster_gdal_rasterize(
+    (const unsigned char *) wkb->data, (uint32_t) (LWSIZE_GET(wkb->size) -
+      LWVARHDRSZ), NULL, 1, &pixtype, &init, &value, &nodata, &hasnodata,
+    NULL, NULL, &scale_x, &scale_y, &ul_x, &ul_y, NULL, NULL, &skew_x,
+    &skew_y, NULL);
+  lwfree(wkb);
+  if (! result)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not burn the geometry into the grid of the raster");
+    return NULL;
+  }
+  /* The mask shares the grid of the subject, so it shares its reference
+   * system as well */
+  rt_raster_set_srid(result, rt_raster_get_srid(raster));
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return a raster keeping the pixels of another that a geometry covers
+ * @details Every band of the subject is read in turn against a mask the
+ * geometry is burnt into. A pixel the geometry does not cover answers nodata.
+ * When @p crop is true the result carries the extent the two share, and
+ * otherwise it carries the extent of the subject
+ * @param[in] rast Raster to clip
+ * @param[in] gs Geometry to clip it to
+ * @param[in] crop True to reduce the result to the extent the raster and the
+ * geometry share
+ * @return On error return @p NULL
+ * @csqlfn None, the host answers this operation on its own raster type
+ */
+Raster *
+raster_clip(const Raster *rast, const GSERIALIZED *gs, bool crop)
+{
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(gs, NULL);
+
+  /* A raster and a geometry of different reference systems state positions
+   * that cannot be compared */
+  int32_t srid = raster_srid(rast);
+  if (srid != gserialized_get_srid(gs))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Operation on mixed SRID");
+    return NULL;
+  }
+
+  /* The bands are read, so the subject is deserialized in full */
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  if (numbands < 1)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster carries no band to clip");
+    return NULL;
+  }
+
+  rt_raster mask = raster_geo_mask(raster, gs);
+  if (! mask)
+  {
+    raster_destroy(raster);
+    return NULL;
+  }
+
+  /* The result states the extent the two share, or that of the subject */
+  rt_extenttype extent = crop ? ET_INTERSECTION : ET_FIRST;
+  rt_raster result = NULL;
+  for (int i = 0; i < numbands; i++)
+  {
+    rt_band band = rt_raster_get_band(raster, (uint32_t) i);
+    if (! band)
+    {
+      raster_destroy(mask); raster_destroy(raster);
+      if (result) raster_destroy(result);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Could not read band %d of the raster", i + 1);
+      return NULL;
+    }
+    /* A band keeps its own pixel type and nodata value across the clip */
+    rt_pixtype pixtype = rt_band_get_pixtype(band);
+    int hasnodata = rt_band_get_hasnodata_flag(band);
+    double nodataval = 0.0;
+    if (hasnodata)
+      rt_band_get_nodata(band, &nodataval);
+
+    struct rt_iterator_t itrset[2];
+    itrset[0].raster = raster;
+    itrset[0].nband = (uint16_t) i;
+    itrset[0].nbnodata = 1;
+    itrset[1].raster = mask;
+    itrset[1].nband = 0;
+    itrset[1].nbnodata = 1;
+
+    rt_raster banded = NULL;
+    if (rt_raster_iterator(itrset, 2, extent, NULL, pixtype,
+        (uint8_t) hasnodata, nodataval, 0, 0, NULL, NULL,
+        raster_clip_callback, &banded) != ES_NONE || ! banded)
+    {
+      raster_destroy(mask); raster_destroy(raster);
+      if (result) raster_destroy(result);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Could not clip band %d of the raster", i + 1);
+      return NULL;
+    }
+
+    if (! result)
+      /* The first band states the grid every later one is added to */
+      result = banded;
+    else
+    {
+      rt_band addband = rt_raster_get_band(banded, 0);
+      if (! addband || rt_raster_add_band(result, addband, i) < 0)
+      {
+        raster_destroy(banded); raster_destroy(mask); raster_destroy(raster);
+        raster_destroy(result);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Could not add band %d to the clipped raster", i + 1);
+        return NULL;
+      }
+      /* The band is held by the result now, so only its carrier is released */
+      rt_raster_destroy(banded);
+    }
+  }
+
+  raster_destroy(mask);
+  raster_destroy(raster);
+  rt_raster_set_srid(result, srid);
+  return raster_serialize_destroy(result);
+}
+
+/*****************************************************************************
  * Conversion functions
  *****************************************************************************/
 
