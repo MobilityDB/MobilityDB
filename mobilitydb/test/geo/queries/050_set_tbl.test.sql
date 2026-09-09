@@ -81,6 +81,13 @@ SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 SELECT memSize(setUnion(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
 SELECT memSize(setUnion(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
 
+/* Errors */
+-- An empty geometry has no bounding box, so it is refused in every position,
+-- the first one included
+SELECT geomset '{"Polygon empty", "Point(4 5)"}';
+SELECT geomset '{"Point(1 1)", "Polygon empty"}';
+SELECT geogset '{"Polygon empty", "Point(4 5)"}';
+
 -------------------------------------------------------------------------------
 -- Cast
 

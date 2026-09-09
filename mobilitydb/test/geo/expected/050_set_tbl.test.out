@@ -140,6 +140,21 @@ SELECT memSize(setUnion(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST
     4856
 (1 row)
 
+/* Errors */
+-- An empty geometry has no bounding box, so it is refused in every position,
+-- the first one included
+SELECT geomset '{"Polygon empty", "Point(4 5)"}';
+ERROR:  Only non-empty geometries accepted
+LINE 4: SELECT geomset '{"Polygon empty", "Point(4 5)"}';
+                       ^
+SELECT geomset '{"Point(1 1)", "Polygon empty"}';
+ERROR:  Only non-empty geometries accepted
+LINE 1: SELECT geomset '{"Point(1 1)", "Polygon empty"}';
+                       ^
+SELECT geogset '{"Polygon empty", "Point(4 5)"}';
+ERROR:  Only non-empty geometries accepted
+LINE 1: SELECT geogset '{"Polygon empty", "Point(4 5)"}';
+                       ^
 SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
  max 
 -----
