@@ -264,6 +264,10 @@ SELECT round(distance, 6) FROM test;
 WITH test AS (
   SELECT temp |=| geography 'Point(1 1)' AS distance FROM tbl_tgeogpoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
+-- An empty geometry has no bounding box for the index to read
+WITH test AS (
+  SELECT temp |=| geometry 'Polygon empty' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX tbl_tgeompoint3D_rtree_idx;
 
@@ -294,6 +298,10 @@ WITH test AS (
 SELECT round(distance, 6) FROM test;
 WITH test AS (
   SELECT temp |=| geography 'Point(1 1)' AS distance FROM tbl_tgeogpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+-- An empty geometry has no bounding box for the index to read
+WITH test AS (
+  SELECT temp |=| geometry 'Polygon empty' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeompoint3D_quadtree_idx;

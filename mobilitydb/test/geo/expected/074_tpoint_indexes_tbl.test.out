@@ -905,6 +905,16 @@ SELECT round(distance, 6) FROM test;
  3784781.353772
 (3 rows)
 
+WITH test AS (
+  SELECT temp |=| geometry 'Polygon empty' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+ round 
+-------
+      
+      
+      
+(3 rows)
+
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX
 DROP INDEX tbl_tgeompoint3D_rtree_idx;
@@ -977,6 +987,16 @@ SELECT round(distance, 6) FROM test;
  3768425.182236
  3768425.182236
  3784781.353772
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| geometry 'Polygon empty' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+ round 
+-------
+      
+      
+      
 (3 rows)
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
