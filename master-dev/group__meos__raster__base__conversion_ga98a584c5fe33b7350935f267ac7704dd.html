@@ -108,7 +108,9 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The X/Y bounding box of the raster in its own reference system, with no T dimension. On error return <code>NULL</code> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The X/Y bounding box of the raster in its own reference system, with no T dimension </dd>
+<dd>
+On error return NULL </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>The extent bears the rotation of the geotransform, so a skewed raster answers the box that contains its four rotated corners rather than the one the scale alone would give @csqlfn <a class="el" href="group__mobilitydb__raster_gaeb4d29d21b393dc2c0358c6ddbfb10be.html#gaeb4d29d21b393dc2c0358c6ddbfb10be" title="Convert a raster into a spatiotemporal box @sqlfn stbox()">Raster_to_stbox()</a> </dd></dl>
 
 </div>

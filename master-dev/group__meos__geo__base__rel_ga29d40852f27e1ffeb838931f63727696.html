@@ -130,7 +130,9 @@ $(function() {
   </table>
   </dd>
 </dl>
-<p>The matrix is the native one, so a circular arc is met on its own circle rather than on the chords a linearization would put in its place. <a class="el" href="group__meos__geo__base__rel_ga03c25b0533ce2ec1c3676d3a31a52834.html#ga03c25b0533ce2ec1c3676d3a31a52834">geom_relate_pattern()</a> answers whether a pattern matches it, which is the question a caller holding a pattern asks; this entry answers the matrix itself, which is what a caller without one needs </p><dl class="section return"><dt>Returns</dt><dd>A newly allocated string of nine characters, <code>NULL</code> on error </dd></dl>
+<p>The matrix is the native one, so a circular arc is met on its own circle rather than on the chords a linearization would put in its place. <a class="el" href="group__meos__geo__base__rel_ga03c25b0533ce2ec1c3676d3a31a52834.html#ga03c25b0533ce2ec1c3676d3a31a52834">geom_relate_pattern()</a> answers whether a pattern matches it, which is the question a caller holding a pattern asks; this entry answers the matrix itself, which is what a caller without one needs </p><dl class="section return"><dt>Returns</dt><dd>A newly allocated string of nine characters </dd>
+<dd>
+On error return NULL </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_Relate(geometry, geometry)</code> @csqlfn <a class="el" href="mobilitydb_2src_2geo_2geo__funcs_8c_ac8b5dda642e036c62916084135a9e5ec.html#ac8b5dda642e036c62916084135a9e5ec" title="Return the DE-9IM intersection matrix of two geometries @sqlfn relate()">Geom_relate()</a> </dd></dl>
 
 </div>

@@ -184,7 +184,9 @@ $(function() {
 
 <p>Compute the timestamps at which a trgeometry body overlaps a target geometry, returning a tstzspanset (or NULL if no overlap). </p>
 <p >Iterates the trgeometry instants. Each linear segment is required to be a pure translation; any rotating segment raises FEATURE_NOT_SUPPORTED. The caller has already rejected holey targets.</p>
-<dl class="section return"><dt>Returns</dt><dd>The overlap spanset on success. On error (rotation) the MEOS error handler is invoked; <code>*err</code> is set to true and NULL is returned. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The overlap spanset, NULL when the body never overlaps the target </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>A rotating segment raises through the MEOS error handler and sets <code>*err</code>, which is what tells an error apart from an absent overlap </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL </dd></dl>
 
 </div>
 </div>

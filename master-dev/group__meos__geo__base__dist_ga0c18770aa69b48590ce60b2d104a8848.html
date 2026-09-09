@@ -122,8 +122,10 @@ $(function() {
 </dl>
 <dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_MaxDistance(PG_FUNCTION_ARGS)</code> </dd>
 <dd>
-A geometry carrying a circular arc is not supported, since the underlying computation implements the maximum only for straight edges </dd></dl>
-<dl class="section return"><dt>Returns</dt><dd>On error, on empty geometries, or on a geometry carrying a circular arc return DBL_MAX </dd></dl>
+A geometry carrying a circular arc is not supported, since the underlying computation implements the maximum only for straight edges, so the answer is DBL_MAX </dd>
+<dd>
+An empty geometry has no farthest point, so the answer is DBL_MAX </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return DBL_MAX </dd></dl>
 
 </div>
 </div>

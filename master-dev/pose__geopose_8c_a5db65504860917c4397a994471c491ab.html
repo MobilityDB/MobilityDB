@@ -192,7 +192,7 @@ $(function() {
 
 <p>Build a pose from a parsed Advanced-class GeoPose JSON object. </p>
 <p >An Advanced document names its outer frame explicitly and has no <code>position</code> member, so the pose is placed by the frame: it sits at the tangent point the frame's <code>parameters</code> give. Requirement 9 leaves those parameters free-form and the standard registers no authority or id, so what is read here is what this module writes, which is also what the encoding examples of the standard use.</p>
-<p >A frame this module cannot place a pose in is reported rather than guessed at, and so is a missing coordinate: a pose whose position defaulted to zero would be accepted here and refused by every operation that followed. </p><dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
+<p >A frame this module cannot place a pose in is reported rather than guessed at, and so is a missing coordinate: a pose whose position defaulted to zero would be accepted here and refused by every operation that followed. </p><dl class="section return"><dt>Returns</dt><dd>On error return NULL </dd></dl>
 
 </div>
 </div>

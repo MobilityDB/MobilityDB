@@ -114,7 +114,8 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error or for an instantaneous tpose return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__pose__accessor_ga594538248ac5839e28fe1a2888210731.html#ga594538248ac5839e28fe1a2888210731" title="Return the angular speed of a temporal pose (radians per unit time) as a step-interpolated temporal f...">Tpose_angular_speed()</a> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>An instantaneous tpose spans no duration to turn over, so it has no angular speed and the answer is NULL </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__pose__accessor_ga594538248ac5839e28fe1a2888210731.html#ga594538248ac5839e28fe1a2888210731" title="Return the angular speed of a temporal pose (radians per unit time) as a step-interpolated temporal f...">Tpose_angular_speed()</a> </dd></dl>
 
 </div>
 </div>
