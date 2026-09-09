@@ -1628,6 +1628,26 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
   bool inside)
 {
   assert(line); assert(gs);
+
+  /* A clip enclosing no point shares nothing with the line and takes nothing
+   * from it, which is what the line already answers for a clip it merely
+   * keeps apart from: the part inside is empty and the part outside is the
+   * whole line. The kernels read a clip through its edges and a geometry
+   * drawing nothing has none, so the edge context declines it -- an absent
+   * context is a clip nothing can be asked OF, not an absent answer */
+  if (gserialized_is_empty(gs))
+  {
+    if (! inside)
+      return geo_copy(line);
+    /* Serializing copies, so the geometry built to be serialized is this
+     * function's to release */
+    LWGEOM *empty = lwline_as_lwgeom(lwline_construct_empty(
+      gserialized_get_srid(line), FLAGS_GET_Z(line->gflags), false));
+    GSERIALIZED *result = geo_serialize(empty);
+    lwgeom_free(empty);
+    return result;
+  }
+
   GeoEdgeCtx *ctx = (GeoEdgeCtx *) geo_edge_ctx_make(gs);
   if (! ctx)
     return NULL;
