@@ -1143,6 +1143,90 @@ raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
   return result;
 }
 
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return what the pixels of a raster band amount to
+ * @details The band is read ONCE and answers one value carrying every
+ * statistic, rather than a function per statistic each of which would rescan
+ * it. Every pixel is read: rt_core samples a band only when asked for a
+ * fraction below one, and this asks for all of them, so the answer is exact
+ * rather than estimated
+ * @param[in] rast Raster to read
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the pixels the band states as nodata
+ * out of the statistics, false to count them as the values they hold
+ * @return The statistics, which the caller releases with @p free(), or NULL
+ * where the band states no pixel to count, in which case no error is stated
+ * @errval NULL
+ * @csqlfn None, the host answers this operation on its own raster type
+ */
+BandStats *
+raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
+{
+  VALIDATE_NOT_NULL(rast, NULL);
+
+  /* The band values are read, so the subject is deserialized in full */
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+
+  /* A band the raster does not have is an error here, as it is for every
+   * other accessor of this family */
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  if (band < 1 || band > numbands)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster has no band %d, it has %d", band, numbands);
+    return NULL;
+  }
+
+  rt_band rtband = rt_raster_get_band(raster, (uint32_t) (band - 1));
+  if (! rtband)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read band %d of the raster", band);
+    return NULL;
+  }
+
+  /* A sample of one is every pixel: rt_core reads the whole band unless it is
+   * asked for a fraction strictly between zero and one. The values themselves
+   * are not wanted, only what they amount to, and no coverage is accumulated
+   * across rasters, so the three coverage accumulators are unstated */
+  rt_bandstats stats = rt_band_get_summary_stats(rtband,
+    exclude_nodata ? 1 : 0, 1.0, 0, NULL, NULL, NULL);
+  raster_destroy(raster);
+  if (! stats)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not summarize band %d of the raster", band);
+    return NULL;
+  }
+
+  /* A band whose every pixel is nodata states no value to summarize, which is
+   * an answer rather than an error; the statistics of no pixels have no mean */
+  if (stats->count < 1)
+  {
+    pfree(stats);
+    return NULL;
+  }
+
+  BandStats *result = palloc0(sizeof(BandStats));
+  result->count = stats->count;
+  result->sum = stats->sum;
+  result->mean = stats->mean;
+  result->stddev = stats->stddev;
+  result->min = stats->min;
+  result->max = stats->max;
+  pfree(stats);
+  return result;
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/

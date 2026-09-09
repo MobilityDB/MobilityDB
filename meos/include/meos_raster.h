@@ -129,6 +129,22 @@ typedef struct
   double val;         /**< The value those pixels share */
 } GeomVal;
 
+/**
+ * @brief What a raster band's pixels amount to, taken in one pass
+ * @details The shape PostGIS states as the record of its @p ST_SummaryStats:
+ * how many pixels the band states a value for, and what those values sum to,
+ * average, spread and reach
+ */
+typedef struct
+{
+  uint32_t count;  /**< Number of pixels the statistics are taken over */
+  double sum;      /**< Sum of their values */
+  double mean;     /**< Mean of their values */
+  double stddev;   /**< Standard deviation of their values */
+  double min;      /**< Smallest of their values */
+  double max;      /**< Largest of their values */
+} BandStats;
+
 /* Input and output functions for PostGIS rasters */
 
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
@@ -162,6 +178,8 @@ extern Raster *raster_rescale(const Raster *rast, double scale_x,
   double scale_y, const char *algorithm, double max_err);
 extern GeomVal *raster_dump_as_polygons(const Raster *rast, int band,
   bool exclude_nodata, int *count);
+extern BandStats *raster_summary_stats(const Raster *rast, int band,
+  bool exclude_nodata);
 extern void geomval_arr_free(GeomVal *gvarr, int count);
 
 /* Conversion functions for Raquet tiles */
