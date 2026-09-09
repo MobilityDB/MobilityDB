@@ -827,6 +827,10 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     if (type == T_TPCBOX)
       out->recheck = true;
 #endif /* POINTCLOUD */
+    /* The query can be an empty geometry, for which
+     * #tspatial_spgist_get_stbox writes nothing, so the box is zeroed before
+     * each call rather than carrying the stack or the previous key */
+    memset(&box, 0, sizeof(STBox));
     tspatial_spgist_get_stbox(value, type, &box);
     result = stbox_index_leaf_consistent(key, &box, strategy);
 
@@ -847,7 +851,19 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       const ScanKeyData *scankey = &in->orderbys[i];
       Datum value = scankey->sk_argument;
       MeosType type = oid_meostype(scankey->sk_subtype);
+      memset(&box, 0, sizeof(STBox));
       tspatial_spgist_get_stbox(value, type, &box);
+      /* An entry the order by cannot be measured against sorts after every
+       * measurable one. The test reads the flag rather than calling
+       * #ensure_has_X, which raises: an empty geometry is a valid operand
+       * here, so it answers a distance rather than an error, which is what
+       * #distance_stbox_nodebox answers at an inner node of this same index
+       * and #stbox_gist_distance under a GiST one */
+      if (! MEOS_FLAGS_GET_X(box.flags))
+      {
+        distances[i] = DBL_MAX;
+        continue;
+      }
       /* A leaf key is a bounding box the executor rechecks, so what it
        * reports is lowered to stay under the operator's own distance */
       distances[i] = stbox_index_distance_bound(nad_stbox_stbox(&box, key),
