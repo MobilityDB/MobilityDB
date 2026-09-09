@@ -2438,6 +2438,44 @@ int main(void)
   free(pzw); free(pz); free(pz_a); free(pz_b);
   meos_errno_reset();
 
+  /* THE SAME PINCH WITH THE OTHER OPERAND CURVED, which is what says the walk
+   * reads the side from the answer rather than from the direction an operand
+   * happens to be written in. The triangle's apex (2 4) sits EXACTLY on the
+   * circle, so four piece-ends meet there again -- but the disc arrives as
+   * arcs carrying their own sense while the square above arrives as segments,
+   * and a walk taking each piece as written keeps the answer on one side for
+   * one operand and on the other for the other.
+   * The disc is partitioned by the triangle, so what the two overlays cover
+   * between them is the disc, and each keeps its arcs.
+   * THE IDENTITY IS ONLY APPROXIMATE HERE AND THE REASON IS THE MEASURE, not
+   * the answer: geom_area() strokes each PART separately, and the chords it
+   * lays across two half-arcs are not the chords it lays across the whole
+   * circle, so the two sides differ by about 2.3e-05 where the subject itself
+   * carries the arcs. Under an area that integrates the arcs the two sides are
+   * 6.909180872 and 5.657189742, summing to 4*pi exactly. What discriminates
+   * here is therefore the ARCS SURVIVING, which the fall-through cannot do;
+   * the sum is a sanity bound on top of it */
+  GSERIALIZED *cz_a = geom_in(
+    "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))", -1);
+  GSERIALIZED *cz_b = geom_in("TRIANGLE((0 0,4 0,2 4,0 0))", -1);
+  assert(cz_a != NULL); assert(cz_b != NULL);
+  meos_errno_reset();
+  GSERIALIZED *cz_i = geom_intersection2d(cz_a, cz_b);
+  GSERIALIZED *cz_k = geom_difference2d(cz_a, cz_b);
+  assert(cz_i != NULL); assert(cz_k != NULL);
+  assert(meos_errno() == 0);
+  double cz_whole = geom_area(cz_a);
+  double cz_parts = geom_area(cz_i) + geom_area(cz_k);
+  printf("a curved pinch partitions its disc: %.9f against %.9f\n", cz_parts,
+    cz_whole);
+  assert(fabs(cz_parts - cz_whole) < 1e-4 * cz_whole);
+  char *cz_w = geo_as_text(cz_k, 6);
+  printf("a curved pinch keeps: %.60s\n", cz_w);
+  assert(strstr(cz_w, "CIRCULARSTRING") != NULL);
+  free(cz_w);
+  free(cz_i); free(cz_k); free(cz_a); free(cz_b);
+  meos_errno_reset();
+
   /* A REGION WHOLLY INSIDE ANOTHER LEAVES NOTHING BEHIND, and it leaves
    * nothing behind whether or not the two boundaries touch on the way: what
    * they share along the touch is of no area, and a difference of regions does
