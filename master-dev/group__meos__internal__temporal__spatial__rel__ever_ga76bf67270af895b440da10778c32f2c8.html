@@ -116,7 +116,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 if a temporal point ever/always touches a geometry, 0 if not, and -1 on error or if the geometry is empty. </p>
+<p>Return 1 if a temporal point ever/always touches a geometry, 0 if not, and -1 on error. </p>
 <ul>
 <li>A temporal point <em>ever</em> touches a geometry if (a) the trajectory of the temporal point intersects the boundary of the geometry when the latter is not empty, or (b) the boundary of the trajectory of the temporal point intersects the geometry when the former is not empty</li>
 <li>A temporal point <em>always</em> touches a geometry if the restriction of the temporal point to the complement of the boundary of the geometry (that is, MINUS) is empty. Note that when the two boundaries are empty, the trajectory of the point and the geometry are both (multi)points and the result is false. <dl class="params"><dt>Parameters</dt><dd>
