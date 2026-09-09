@@ -141,6 +141,11 @@ extern char *raster_band_pixel_type(const Raster *rast, int band);
 extern bool raster_band_has_nodata_value(const Raster *rast, int band);
 extern double raster_band_nodata_value(const Raster *rast, int band);
 
+/* Processing functions for PostGIS rasters */
+
+extern Raster *raster_clip(const Raster *rast, const GSERIALIZED *gs,
+  bool crop);
+
 /* Conversion functions for Raquet tiles */
 
 extern STBox *raquet_to_stbox(const Raquet *rq);

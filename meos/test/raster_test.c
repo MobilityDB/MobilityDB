@@ -516,6 +516,84 @@ int main(void)
   assert(araster_value(traj_values, rast_values, 1, NULL) == -1);
   assert(meos_errno() != 0);
 
+  /* Clipping keeps the pixels a geometry covers and no others. The region
+   * below spans x in [0,2] and y in [1,3], so it covers the two left columns
+   * of the two upper rows: pixel(1,1) = 10 and pixel(2,2) = 50 stand inside
+   * it, while pixel(3,1) = 70 and the right column stand outside */
+  GSERIALIZED *region = geom_in("SRID=4326;POLYGON((0 1,2 1,2 3,0 3,0 1))",
+    -1);
+  assert(region != NULL);
+
+  /* Cropping reduces the result to the extent the two share, which is two
+   * pixels by two on the grid the subject states */
+  meos_errno_reset();
+  Raster *cropped = raster_clip(rast_values, region, true);
+  assert(cropped != NULL);
+  assert(meos_errno() == 0);
+  assert(raster_width(cropped) == 2);
+  assert(raster_height(cropped) == 2);
+  assert(raster_srid(cropped) == 4326);
+  assert(raster_upper_left_x(cropped) == 0.0);
+  assert(raster_upper_left_y(cropped) == 3.0);
+  assert(raster_num_bands(cropped) == 1);
+
+  /* The pixels the region covers answer what they answered before the clip */
+  Temporal *traj_kept = tgeompoint_in("SRID=4326;{POINT(0.5 2.5)@2001-01-01,"
+    " POINT(1.5 1.5)@2001-01-02}");
+  assert(traj_kept != NULL);
+  meos_errno_reset();
+  Temporal *kept = raster_value(traj_kept, cropped, 1);
+  assert(kept != NULL);
+  assert(meos_errno() == 0);
+  assert(temporal_num_instants(kept) == 2);
+  assert(tfloat_start_value(kept) == 10.0);
+  assert(tfloat_end_value(kept) == 50.0);
+  free(kept);
+
+  /* Without cropping the result keeps the extent of the subject, so the clip
+   * shows in the pixels rather than in the grid. This is the case a mask that
+   * covered everything would pass and a mask that covered nothing would fail:
+   * pixel(1,1) = 10 stands inside the region and answers, while
+   * pixel(3,1) = 70 stands outside it and answers nothing */
+  meos_errno_reset();
+  Raster *whole = raster_clip(rast_values, region, false);
+  assert(whole != NULL);
+  assert(meos_errno() == 0);
+  assert(raster_width(whole) == 3);
+  assert(raster_height(whole) == 3);
+  assert(raster_upper_left_x(whole) == 0.0);
+  assert(raster_upper_left_y(whole) == 3.0);
+
+  meos_errno_reset();
+  Temporal *masked = raster_value(traj_values, whole, 1);
+  assert(masked != NULL);
+  assert(meos_errno() == 0);
+  char *masked_str = tfloat_out(masked, 0);
+  printf("raster_clip(raster, region, false) sampled: %s\n", masked_str);
+  /* The unclipped raster answers this trajectory at two instants, 10 and 70;
+   * the clip removes the second, so a single instant remains */
+  assert(temporal_num_instants(masked) == 1);
+  assert(tfloat_start_value(masked) == 10.0);
+  free(masked_str); free(masked);
+
+  /* A geometry in another reference system states its positions in different
+   * units, which is an error and not an empty answer */
+  GSERIALIZED *region_3857 = geom_in("SRID=3857;POLYGON((0 1,2 1,2 3,0 3,0 1))",
+    -1);
+  assert(region_3857 != NULL);
+  meos_errno_reset();
+  assert(raster_clip(rast_values, region_3857, true) == NULL);
+  assert(meos_errno() != 0);
+
+  /* A null argument is rejected rather than dereferenced */
+  meos_errno_reset();
+  assert(raster_clip(NULL, region, true) == NULL);
+  assert(raster_clip(rast_values, NULL, true) == NULL);
+  assert(meos_errno() != 0);
+
+  free(region_3857); free(region); free(whole); free(cropped);
+  free(traj_kept);
+
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 
   meos_finalize();
