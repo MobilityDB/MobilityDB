@@ -415,7 +415,7 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   SpatialRelOp op, bool invert, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tgeo_geo(temp, gs) )
     return -1;
 
   int16 flags1 = temp->flags;
@@ -582,7 +582,7 @@ ea_spatialrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
   datum_func2 func, bool ever, bool invert)
 {
   /* Ensure the validity of the arguments */
-  assert(temp); assert(gs); assert(! gserialized_is_empty(gs)); assert(func);
+  assert(temp); assert(gs); assert(func);
   /* Walk the instants and stop at the first decisive one, so the work is
    * bounded by the answer rather than by the size of the temporal value */
   int result = 0;
@@ -681,7 +681,7 @@ ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @brief Return 1 if a temporal geometry ever/always contains a geo, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @details
  * - A temporal geometry *ever* contains a geometry if the traversed area of
  *   the temporal geometry and the geometry intersect only in their interior,
@@ -703,7 +703,7 @@ ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ev
   bool invert)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tgeo_geo(temp, gs) ||
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
@@ -717,7 +717,7 @@ ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ev
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever/always contains a geo, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  */
 inline int
 ea_contains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
@@ -728,7 +728,7 @@ ea_contains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever/always contains a geo, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  */
 inline int
 ea_contains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
@@ -739,7 +739,7 @@ ea_contains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry ever contains a temporal geo, 0 if not, and
- * -1 on error or if the geometry is empty
+ * -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal geo
  * @csqlfn #Econtains_geo_tgeo()
@@ -753,7 +753,7 @@ econtains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry always contains a temporal geo,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal geo
  * @csqlfn #Acontains_geo_tgeo()
@@ -767,7 +767,7 @@ acontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever contains a geo, 0 if not, and
- * -1 on error or if the geometry is empty
+ * -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Econtains_tgeo_geo()
@@ -781,7 +781,7 @@ econtains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry always contains a temporal geo,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Acontains_tgeo_geo()
@@ -850,7 +850,7 @@ acontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @brief Return 1 if a temporal geometry ever/always covers a geo, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @details
  * - A temporal geometry *ever* covers a geometry if there is an instant in
  *   which the temporal geometry and the geometry satisfy the relationship.
@@ -871,7 +871,7 @@ ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever
   bool invert)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tgeo_geo(temp, gs) ||
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
@@ -900,7 +900,7 @@ ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever/always covers a geo, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  */
 inline int
 ea_covers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
@@ -911,7 +911,7 @@ ea_covers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever/always covers a geo, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  */
 inline int
 ea_covers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
@@ -922,7 +922,7 @@ ea_covers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry ever covers a temporal geo, 0 if not, and
- * -1 on error or if the geometry is empty
+ * -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal geo
  * @csqlfn #Ecovers_geo_tgeo()
@@ -936,7 +936,7 @@ ecovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry always covers a temporal geo,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal geo
  * @csqlfn #Acovers_geo_tgeo()
@@ -950,7 +950,7 @@ acovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever covers a geo, 0 if not, and
- * -1 on error or if the geometry is empty
+ * -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Ecovers_tgeo_geo()
@@ -964,7 +964,7 @@ ecovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry always covers a temporal geo,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Acovers_tgeo_geo()
@@ -1060,7 +1060,7 @@ ea_disjoint_seq(const TSequence *seq, const GSERIALIZED *gs,
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a temporal geometry and a geometry are ever disjoint,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @details
  * - A temporal point is *ever* disjoint with a geometry if the trajectory
  *   of the temporal point is NOT covered by the geometry
@@ -1078,7 +1078,7 @@ int
 ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tgeo_geo(temp, gs) )
     return -1;
 
   /* tdisjoint is the negation of tintersects = tdwithin with zero
@@ -1114,8 +1114,10 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   {
     STBox box_temp, box_geom;
     tspatial_set_stbox(temp, &box_temp);
-    geo_set_stbox(gs, &box_geom);
-    if (! overlaps_stbox_stbox(&box_geom, &box_temp))
+    /* An empty geometry has no bounding box, so the prefilter cannot decide
+     * and the relationship below answers it */
+    if (geo_set_stbox(gs, &box_geom) &&
+        ! overlaps_stbox_stbox(&box_geom, &box_temp))
       return 1;
   }
 
@@ -1135,7 +1137,10 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * directly would do. The condition selecting the context is the one
    * #geo_disjoint_fn_geo uses to select the planar 2D relationship */
   void *ctx = NULL;
-  if (! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+  /* The clip engine reads the edges of the geometry, and an empty geometry has
+   * none, so the paths below answer it */
+  if (! gserialized_is_empty(gs) &&
+      ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
       ! (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)))
   {
     /* Only a geometry the clip engine decomposes into edges gets a context.
@@ -1178,7 +1183,7 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a temporal geometry and a geometry are ever disjoint,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  */
 inline int
 ea_disjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
@@ -1189,7 +1194,7 @@ ea_disjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry and a geometry are ever disjoint,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Edisjoint_tgeo_geo()
@@ -1203,7 +1208,7 @@ edisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry and a geometry are always disjoint,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Adisjoint_tgeo_geo()
@@ -1217,7 +1222,7 @@ adisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geometry are ever disjoint,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Edisjoint_geo_tgeo()
@@ -1231,7 +1236,7 @@ edisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geometry are always disjoint,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Adisjoint_geo_tgeo()
@@ -1297,7 +1302,7 @@ adisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever/always intersects a geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @details
  * - A temporal geometry *ever* intersects a geometry if the traversed area or
  *   the trajectory of the temporal geometry and the geometry intersect
@@ -1313,7 +1318,7 @@ int
 ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tgeo_geo(temp, gs) )
     return -1;
 
   /* tintersects is tdwithin with zero distance (cf. static
@@ -1343,8 +1348,10 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   {
     STBox box_temp, box_geom;
     tspatial_set_stbox(temp, &box_temp);
-    geo_set_stbox(gs, &box_geom);
-    if (! overlaps_stbox_stbox(&box_geom, &box_temp))
+    /* An empty geometry has no bounding box, so the prefilter cannot decide
+     * and the relationship below answers it */
+    if (geo_set_stbox(gs, &box_geom) &&
+        ! overlaps_stbox_stbox(&box_geom, &box_temp))
       return 0;
   }
 
@@ -1360,7 +1367,10 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * #nad_tgeo_geo resolves the exact minimum, so at a zero distance it walks
    * every segment the clip engine walks once. A geometry with a Z dimension
    * keeps the path below, whose relationship is the 3D one. */
-  if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
+  /* The clip engine reads the edges of the geometry, and an empty geometry has
+   * none, so the paths below answer it */
+  if (! gserialized_is_empty(gs) &&
+      temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
       MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR &&
       ! FLAGS_GET_Z(gs->gflags))
   {
@@ -1382,7 +1392,7 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a geometry intersects a temporal geometry, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  */
 inline int
 ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
@@ -1393,7 +1403,7 @@ ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever intersects a temporal
- * geometry, 0 if not, and -1 on error or if the geometry is empty
+ * geometry, 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Eintersects_tgeo_geo()
@@ -1407,7 +1417,7 @@ eintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry always intersects a temporal
- * geometry, 0 if not, and -1 on error or if the geometry is empty
+ * geometry, 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Aintersects_tgeo_geo()
@@ -1421,7 +1431,7 @@ aintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geometry ever intersect,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Eintersects_geo_tgeo()
@@ -1435,7 +1445,7 @@ eintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geometry always intersect,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Aintersects_geo_tgeo()
@@ -1502,7 +1512,7 @@ aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point ever/always touches a geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @details
  * - A temporal point *ever* touches a geometry if (a) the trajectory of the
  *   temporal point intersects the boundary of the geometry when the latter
@@ -1522,17 +1532,17 @@ int
 ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tpoint_geo(temp, gs) ||
       /* The validity function ensures that both have the same geodetic flag */
       ! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
 
-  /* Bounding box test */
+  /* Bounding box test. An empty geometry has no bounding box, so the prefilter
+   * cannot decide and the relationship below answers it */
   STBox box1, box2;
   tspatial_set_stbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
+  if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
   /* Touching requires the two to reach a distance of exactly zero, so a
@@ -1590,7 +1600,7 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point ever touches a geometry, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @csqlfn #Etouches_tpoint_geo()
@@ -1604,7 +1614,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point always touches a geometry, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @csqlfn #Atouches_tpoint_geo()
@@ -1618,7 +1628,7 @@ atouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal point ever touch, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal point
  * @csqlfn #Etouches_geo_tpoint()
@@ -1632,7 +1642,7 @@ etouches_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal point always touch, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal point
  * @csqlfn #Atouches_geo_tpoint()
@@ -1648,7 +1658,7 @@ atouches_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever/always touches a geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @details
  * - A temporal geometry *ever* touches a geometry if the there is an instant
  *   in which they satisfy the relationship
@@ -1663,17 +1673,17 @@ int
 ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tgeo_geo(temp, gs) ||
       /* The validity function ensures that both have the same geodetic flag */
       ! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
 
-  /* Bounding box test */
+  /* Bounding box test. An empty geometry has no bounding box, so the prefilter
+   * cannot decide and the relationship below answers it */
   STBox box1, box2;
   tspatial_set_stbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
+  if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
   return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, ever,
@@ -1683,7 +1693,7 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever touches a geometry, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Etouches_tgeo_geo()
@@ -1697,7 +1707,7 @@ etouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry always touches a geometry, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Atouches_tgeo_geo()
@@ -1711,7 +1721,7 @@ atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geometry ever touch, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Etouches_geo_tgeo()
@@ -1725,7 +1735,7 @@ etouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geometry always touch, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @csqlfn #Atouches_geo_tgeo()
@@ -1808,7 +1818,7 @@ atouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_internal_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geo are ever within the
- * given distance, 0 if not, -1 on error or if the geometry is empty
+ * given distance, 0 if not, -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -1820,7 +1830,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tgeo_geo(temp, gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
@@ -1864,13 +1874,17 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   {
     STBox box_temp, box_geom, box_geom_exp;
     tspatial_set_stbox(temp, &box_temp);
-    geo_set_stbox(gs, &box_geom);
-    stbox_expand_space_set(&box_geom, dist, &box_geom_exp);
-    bool pass = ever
-      ? overlaps_stbox_stbox(&box_geom_exp, &box_temp)
-      : contains_stbox_stbox(&box_geom_exp, &box_temp);
-    if (! pass)
-      return 0;
+    /* An empty geometry has no bounding box, so the prefilter cannot decide
+     * and the relationship below answers it */
+    if (geo_set_stbox(gs, &box_geom))
+    {
+      stbox_expand_space_set(&box_geom, dist, &box_geom_exp);
+      bool pass = ever
+        ? overlaps_stbox_stbox(&box_geom_exp, &box_temp)
+        : contains_stbox_stbox(&box_geom_exp, &box_temp);
+      if (! pass)
+        return 0;
+    }
   }
 
   /* The ever quantifier is the running minimum of the distance: a temporal geo
@@ -1905,7 +1919,10 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * relationships are defined in terms of ea_dwithin(., ., 0.0); the
    * POINT-vs-POINT and unsupported cases also fall through to the paths
    * below. */
-  if (dist > 0.0 && temp->temptype == T_TGEOMPOINT &&
+  /* The clip engine reads the edges of the geometry, and an empty geometry has
+   * none, so the paths below answer it */
+  if (dist > 0.0 && ! gserialized_is_empty(gs) &&
+      temp->temptype == T_TGEOMPOINT &&
       temp->subtype != TINSTANT && 
       MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR &&
       ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
@@ -1945,7 +1962,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geo are ever within the
- * given distance, 0 if not, -1 on error or if the geometry is empty
+ * given distance, 0 if not, -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -1960,7 +1977,7 @@ edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geo are always within a
- * distance, 0 if not, -1 on error or if the geometry is empty
+ * distance, 0 if not, -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -1975,7 +1992,7 @@ adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geo are ever within the
- * given distance, 0 if not, -1 on error or if the geometry is empty
+ * given distance, 0 if not, -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -1990,7 +2007,7 @@ edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geo are always within a
- * distance, 0 if not, -1 on error or if the geometry is empty
+ * distance, 0 if not, -1 on error
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] dist Distance

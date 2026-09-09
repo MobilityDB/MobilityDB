@@ -94,8 +94,10 @@
 static int
 spatialrel_geo_geo_simple(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   Datum param, varfunc func, int numparam, bool invert)
-{  /* Call the GEOS function when the geometries are not collections */
-  assert(geo_is_unitary(gs1)); assert(geo_is_unitary(gs2));
+{  /* Call the GEOS function when the geometries are not collections. An empty
+    * geometry has no members to iterate, so it reaches here as it is */
+  assert(geo_is_unitary(gs1) || gserialized_is_empty(gs1));
+  assert(geo_is_unitary(gs2) || gserialized_is_empty(gs2));
   Datum geo1 = PointerGetDatum(gs1);
   Datum geo2 = PointerGetDatum(gs2);
   bool res;
@@ -147,6 +149,14 @@ int
 spatialrel_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   Datum param, varfunc func, int numparam, bool invert)
 {
+  /* An empty geometry decomposes into no elements, and a quantifier over none
+   * of them answers vacuously: the universally quantified argument of covers,
+   * contains and disjoint reads true where the point set is empty. The
+   * relationship is asked of the geometries themselves instead, which is where
+   * the library answers the empty point set */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+    return spatialrel_geo_geo_simple(gs1, gs2, param, func, numparam, invert);
+
   /* Extract the elements of the arguments, if they are collections */
   int count1, count2;
   GSERIALIZED **elems1 = geo_extract_elements(gs1, &count1);
@@ -341,13 +351,17 @@ ea_spatialrel_tcbufferinst_geo(const TInstant *inst, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool invert)
 {
   assert(inst); assert(gs); assert(inst->temptype == T_TCBUFFER);
+  /* An empty geometry has no bounding box, so the box test below cannot decide
+   * and the relationship answers it; the zeroed box makes that test read the
+   * absence rather than the stack */
   STBox gbox;
-  geo_set_stbox(gs, &gbox);
+  memset(&gbox, 0, sizeof(STBox));
+  bool hasbox = geo_set_stbox(gs, &gbox);
   double ixmin, iymin, ixmax, iymax;
   tcbufferinst_xybox(inst, &ixmin, &iymin, &ixmax, &iymax);
   int decided;
-  if (tcbuffer_geo_box_decided(func, param, numparam, ixmin, iymin, ixmax,
-      iymax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax, &decided))
+  if (hasbox && tcbuffer_geo_box_decided(func, param, numparam, ixmin, iymin,
+      ixmax, iymax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax, &decided))
     return decided;
   const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
   /* The containment of a geometry by the disc is read from the distances of
@@ -390,16 +404,21 @@ ea_spatialrel_tcbufferseq_discstep_geo(const TSequence *seq,
   assert(seq); assert(gs); assert(seq->temptype == T_TCBUFFER);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE ||
     MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
+  /* An empty geometry has no bounding box, so the box test below cannot decide
+   * and the relationship answers it; the zeroed box makes that test read the
+   * absence rather than the stack */
   STBox gbox;
-  geo_set_stbox(gs, &gbox);
+  memset(&gbox, 0, sizeof(STBox));
+  bool hasbox = geo_set_stbox(gs, &gbox);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     double ixmin, iymin, ixmax, iymax;
     tcbufferinst_xybox(inst, &ixmin, &iymin, &ixmax, &iymax);
     int result;
-    if (! tcbuffer_geo_box_decided(func, param, numparam, ixmin, iymin,
-        ixmax, iymax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax, &result))
+    if (! hasbox || ! tcbuffer_geo_box_decided(func, param, numparam, ixmin,
+        iymin, ixmax, iymax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax,
+        &result))
     {
       const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
       GSERIALIZED *trav = cbuffer_to_geom(cb);
@@ -441,8 +460,12 @@ ea_spatialrel_tcbufferseq_linear_geo(const TSequence *seq,
 
   /* General case (segment from the first instant to each later instant,
    * matching the exact baseline traversal) */
+  /* An empty geometry has no bounding box, so the box test below cannot decide
+   * and the relationship answers it; the zeroed box makes that test read the
+   * absence rather than the stack */
   STBox gbox;
-  geo_set_stbox(gs, &gbox);
+  memset(&gbox, 0, sizeof(STBox));
+  bool hasbox = geo_set_stbox(gs, &gbox);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   double b1xmin, b1ymin, b1xmax, b1ymax;
   tcbufferinst_xybox(inst1, &b1xmin, &b1ymin, &b1xmax, &b1ymax);
@@ -456,8 +479,9 @@ ea_spatialrel_tcbufferseq_linear_geo(const TSequence *seq,
     double sxmin = fmin(b1xmin, b2xmin), symin = fmin(b1ymin, b2ymin);
     double sxmax = fmax(b1xmax, b2xmax), symax = fmax(b1ymax, b2ymax);
     int result;
-    if (! tcbuffer_geo_box_decided(func, param, numparam, sxmin, symin,
-        sxmax, symax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax, &result))
+    if (! hasbox || ! tcbuffer_geo_box_decided(func, param, numparam, sxmin,
+        symin, sxmax, symax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax,
+        &result))
     {
       GSERIALIZED *trav = tcbuffersegm_traversed_area(inst1, inst2);
       result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
@@ -545,7 +569,7 @@ ea_spatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool ever, bool invert)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) )
     return -1;
 
   /* Bounding box test. When the whole value box and the geometry box do
@@ -556,9 +580,9 @@ ea_spatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   {
     STBox box1, box2;
     tspatial_set_stbox(temp, &box1);
-    /* Non-empty geometries have a bounding box */
-    geo_set_stbox(gs, &box2);
-    if (! overlaps_stbox_stbox(&box1, &box2))
+    /* An empty geometry has no bounding box, so the prefilter cannot decide
+     * and the relationship below answers it */
+    if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
       return (func == (varfunc) (&datum_geom_disjoint2d)) ? 1 : 0;
   }
 
@@ -655,7 +679,7 @@ ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a geometry ever/always contains a temporal circular
- * buffer, 0 if not, and -1 on error or if the geometry is empty
+ * buffer, 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -678,7 +702,7 @@ ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a geometry always contains a temporal circular buffer,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @note The function tests whether the traversed area is contained in the
@@ -696,7 +720,7 @@ acontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always contains a
- * geometry, 0 if not, and -1 on error or if the geometry is empty
+ * geometry, 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -718,7 +742,7 @@ ea_contains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever contains a geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @note The function tests whether the traversed area is contained in the
@@ -734,7 +758,7 @@ econtains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer always contains a geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @note The function tests whether the traversed area is contained in the
@@ -888,7 +912,7 @@ acontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a geometry ever/always covers a temporal circular buffer
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -910,7 +934,7 @@ ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a geometry ever covers a temporal circular buffer,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @note The function tests whether the traversed area is covered in the
@@ -926,7 +950,7 @@ ecovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a geometry always covers a temporal circular buffer,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @note The function tests whether the traversed area is covered in the
@@ -944,7 +968,7 @@ acovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always covers a
- * geometry, 0 if not, and -1 on error or if the geometry is empty
+ * geometry, 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -962,7 +986,7 @@ ea_covers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever covers a geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @note The function tests whether the traversed area is covered in the
@@ -978,7 +1002,7 @@ ecovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer always covers a geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @note The function tests whether the traversed area is covered in the
@@ -1134,7 +1158,7 @@ acovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry are ever
- * disjoint,0 if not, and -1 on error or if the geometry is empty
+ * disjoint,0 if not, and -1 on error
  * @details The always semantics reduce exactly to the native nearest-approach
  * distance: aDisjoint(temp, gs) ⟺ ¬eIntersects(temp, gs) ⟺
  * min_t dist(disk(t), gs) > 0. The ever semantics are computed from the
@@ -1151,7 +1175,7 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) )
     return -1;
 
   /* Bounding box test: a moving disk whose radius-aware bounding box is
@@ -1161,8 +1185,9 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
    * the native coverage scan below for far-away pairs in a spatial join. */
   STBox box1, box2;
   tspatial_set_stbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
+  /* An empty geometry has no bounding box, so the prefilter cannot decide and
+   * the relationship below answers it */
+  if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
     return 1;
   if (! ever)
     return nad_tcbuffer_geo(temp, gs) > 0.0 ? 1 : 0;
@@ -1176,7 +1201,7 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry are ever
- * disjoint,0 if not, and -1 on error or if the geometry is empty
+ * disjoint,0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1192,7 +1217,7 @@ ea_disjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry are ever
- * disjoint, 0 if not, and -1 on error or if the geometry is empty
+ * disjoint, 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @csqlfn #Edisjoint_tcbuffer_geo()
@@ -1206,7 +1231,7 @@ edisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry are always
- * disjoint,0 if not, and -1 on error or if the geometry is empty
+ * disjoint,0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @note aDisjoint(a, b) is equivalent to NOT eIntersects(a, b)
@@ -1367,7 +1392,7 @@ adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always intersects a
- * geometry, 0 if not, and -1 on error or if the geometry is empty
+ * geometry, 0 if not, and -1 on error
  * @details The ever semantics reduce exactly to the native nearest-approach
  * distance: eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. The always
  * semantics are the complement of ever disjoint: aIntersects(temp, gs) ⟺
@@ -1385,7 +1410,7 @@ ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) )
     return -1;
 
   /* Bounding box test: a moving disk whose radius-aware bounding box is
@@ -1394,8 +1419,9 @@ ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
    * nearest-approach distance below for far-away pairs in a spatial join. */
   STBox box1, box2;
   tspatial_set_stbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
+  /* An empty geometry has no bounding box, so the prefilter cannot decide and
+   * the relationship below answers it */
+  if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
     return 0;
   if (ever)
     return nad_tcbuffer_geo(temp, gs) <= 0.0 ? 1 : 0;
@@ -1409,7 +1435,7 @@ ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry intersect
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1425,7 +1451,7 @@ ea_intersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a geometry and a temporal circular buffer ever intersect,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @csqlfn #Eintersects_tcbuffer_geo()
@@ -1439,7 +1465,7 @@ eintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a geometry and a temporal circular buffer always
- * intersect, 0 if not, and -1 on error or if the geometry is empty
+ * intersect, 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @note aIntersects(tcbuffer, geo) is equivalent to NOT eDisjoint(tcbuffer, geo)
@@ -1585,7 +1611,7 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry ever touch,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @details Touching is a contact of the two whose interiors stay disjoint. A
  * disc of a strictly positive radius carries an interior, and the paths below
  * read the disjointness from the position of its centre with respect to the
@@ -1602,7 +1628,7 @@ int
 ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) )
     return -1;
 
   /* A value composed of discs of a zero radius is a temporal point, whose
@@ -1623,8 +1649,9 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * below for the common case of far-away pairs in a spatial join. */
   STBox box1, box2;
   tspatial_set_stbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
+  /* An empty geometry has no bounding box, so the prefilter cannot decide and
+   * the relationship below answers it */
+  if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
   /* Touch requires the temporal value and the geometry to be at distance zero,
@@ -1657,7 +1684,7 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry ever touch, 0
- * if not, and -1 on error or if the geometry is empty
+ * if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1672,7 +1699,7 @@ ea_touches_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever touches a geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @csqlfn #Etouches_tcbuffer_geo()
@@ -1686,7 +1713,7 @@ etouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer always touches a geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @csqlfn #Atouches_tcbuffer_geo()
@@ -1827,7 +1854,7 @@ atouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_internal_cbuffer_spatial_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry are ever/always
- * within the given distance, 0 if not, -1 on error or if the geometry is empty
+ * within the given distance, 0 if not, -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -1840,7 +1867,7 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   double dist, bool ever, bool invert)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tcbuffer_geo(temp, gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
@@ -1852,11 +1879,14 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
    * by construction, so no geodetic branch is needed. */
   STBox box_temp, box_geo, box_geo_exp;
   tspatial_set_stbox(temp, &box_temp);
-  geo_set_stbox(gs, &box_geo);
-  stbox_expand_space_set(&box_geo, dist, &box_geo_exp);
-  bool pass = overlaps_stbox_stbox(&box_temp, &box_geo_exp);
-  if (! pass)
-    return 0;
+  /* An empty geometry has no bounding box, so the prefilter cannot decide and
+   * the relationship below answers it */
+  if (geo_set_stbox(gs, &box_geo))
+  {
+    stbox_expand_space_set(&box_geo, dist, &box_geo_exp);
+    if (! overlaps_stbox_stbox(&box_temp, &box_geo_exp))
+      return 0;
+  }
 
   /* The always semantics are refuted by a single unit that stays farther than
    * the distance from the geometry, which the centre-against-radius test reads
@@ -1894,7 +1924,7 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a geometry and a temporal circular buffer are ever within
- * the given distance, 0 if not, -1 on error or if the geometry is empty
+ * the given distance, 0 if not, -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -1909,7 +1939,7 @@ edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if a geometry and a temporal circular buffer are always
- * within a distance, 0 if not, -1 on error or if the geometry is empty
+ * within a distance, 0 if not, -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] dist Distance

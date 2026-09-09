@@ -73,7 +73,7 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool invert)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeo_geo(temp, gs) )
     return -1;
 
   assert(numparam == 2 || numparam == 3);
@@ -96,8 +96,7 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
 
 /**
  * @brief Return 1 if the poses of a temporal rigid geometry and a geometry
- * ever/always satisfy a spatial relationship, 0 if not, and -1 on error or if
- * the geometry is empty
+ * ever/always satisfy a spatial relationship, 0 if not, and -1 on error
  * @details The placements are the reference geometry at each of the poses the
  * value takes, so the relationship is asked of each of them: the ever
  * semantics hold where one pose satisfies it, the always semantics where
@@ -114,7 +113,7 @@ ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
   datum_func2 func, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeo_geo(temp, gs) )
     return -1;
 
   GSERIALIZED *places = trgeo_placements(temp);
@@ -146,7 +145,7 @@ ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
 
 /**
  * @brief Return 1 if a geometry ever contains a temporal rigid geometry, 0 if
- * not, and -1 on error or if the geometry is empty
+ * not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -160,7 +159,7 @@ int
 ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeo_geo(temp, gs) )
     return -1;
   GSERIALIZED *places = trgeo_placements(temp);
   bool result = ever ? geom_relate_pattern(gs, places, "T********") :
@@ -172,7 +171,7 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a geometry ever contains a temporal rigid geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @note The function tests whether the placements are contained in the
@@ -190,7 +189,7 @@ econtains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a geometry always contains a temporal rigid geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @note The function tests whether the placements are contained in the
@@ -235,7 +234,7 @@ ea_contains_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 int
 ea_contains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeo_geo(temp, gs) )
     return -1;
   GSERIALIZED *places = trgeo_placements(temp);
   bool result = ever ? geom_relate_pattern(places, gs, "T********") :
@@ -250,7 +249,7 @@ ea_contains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 
 /**
  * @brief Return 1 if a geometry ever covers a temporal geometry, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -264,7 +263,7 @@ int
 ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeo_geo(temp, gs) )
     return -1;
   GSERIALIZED *places = trgeo_placements(temp);
   bool result = ever ? geom_relate_pattern(gs, places, "T********") :
@@ -276,7 +275,7 @@ ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a geometry ever covers a temporal geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
  * @note The function tests whether the placements are covered in the
@@ -294,7 +293,7 @@ ecovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a geometry always covers a temporal geometry,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
  * @note The function tests whether the placements are covered in the
@@ -313,7 +312,7 @@ acovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 
 /**
  * @brief Return 1 if a geometry ever covers a temporal geometry, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -332,7 +331,7 @@ ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a geometry ever covers a temporal geometry, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
  * @note The function tests whether the placements cover the geometry
@@ -349,7 +348,7 @@ ecovers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a temporal geometry always covers a geometry, 0 if not,
- * and -1 on error or if the geometry is empty
+ * and -1 on error
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
  * @note The function tests whether the placements cover the geometry
@@ -388,7 +387,7 @@ ea_covers_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 
 /**
  * @brief Return 1 if a temporal rigid geometry and a geometry are ever
- * disjoint,0 if not, and -1 on error or if the geometry is empty
+ * disjoint,0 if not, and -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -397,7 +396,7 @@ int
 ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeo_geo(temp, gs) )
     return -1;
   if (ever)
     return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_disjoint2d,
@@ -408,7 +407,7 @@ ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a temporal rigid geometry and a geometry are ever
- * disjoint, 0 if not, and -1 on error or if the geometry is empty
+ * disjoint, 0 if not, and -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @csqlfn #Edisjoint_trgeometry_geo()
@@ -422,7 +421,7 @@ edisjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a temporal rigid geometry and a geometry are always
- * disjoint,0 if not, and -1 on error or if the geometry is empty
+ * disjoint,0 if not, and -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @note aDisjoint(a, b) is equivalent to NOT eIntersects(a, b)
@@ -436,7 +435,7 @@ adisjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @brief Return 1 if a geometry and a temporal rigid geometry are ever or
- * always disjoint, 0 if not, and -1 on error or if the geometry is empty
+ * always disjoint, 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -502,7 +501,7 @@ adisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 ea_intersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeo_geo(temp, gs) )
     return -1;
   return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_intersects2d,
     ever);
@@ -511,7 +510,7 @@ ea_intersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a geometry and a temporal rigid geometry ever intersect,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @csqlfn #Eintersects_trgeometry_geo()
@@ -525,7 +524,7 @@ eintersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a geometry and a temporal rigid geometry always
- * intersect, 0 if not, and -1 on error or if the geometry is empty
+ * intersect, 0 if not, and -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @note aIntersects(trgeo, gs) is equivalent to NOT eDisjoint(trgeo, gs)
@@ -539,7 +538,7 @@ aintersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @brief Return 1 if a geometry and a temporal rigid geometry are ever or
- * always intersecting, 0 if not, and -1 on error or if the geometry is empty
+ * always intersecting, 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -597,7 +596,7 @@ aintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a temporal rigid geometry and a geometry ever touch, 0
- * if not, and -1 on error or if the geometry is empty
+ * if not, and -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @csqlfn #Etouches_trgeometry_geo()
@@ -611,7 +610,7 @@ etouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a temporal rigid geometry and a geometry always touch,
- * 0 if not, and -1 on error or if the geometry is empty
+ * 0 if not, and -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @csqlfn #Atouches_trgeometry_geo()
@@ -624,7 +623,7 @@ atouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @brief Return 1 if a temporal rigid geometry and a geometry ever/always
- * touch, 0 if not, and -1 on error or if the geometry is empty
+ * touch, 0 if not, and -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -637,7 +636,7 @@ ea_touches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 
 /**
  * @brief Return 1 if a geometry and a temporal rigid geometry ever/always
- * touch, 0 if not, and -1 on error or if the geometry is empty
+ * touch, 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -674,7 +673,7 @@ ea_touches_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a geometry and a temporal rigid geometry are ever within
- * the given distance, 0 if not, -1 on error or if the geometry is empty
+ * the given distance, 0 if not, -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -684,7 +683,7 @@ int
 edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_trgeo_geo(temp, gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
   return spatialrel_trgeo_trav_geo(temp, gs, Float8GetDatum(dist),
@@ -694,7 +693,7 @@ edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if a geometry and a temporal rigid geometry are always
- * within a distance, 0 if not, -1 on error or if the geometry is empty
+ * within a distance, 0 if not, -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -704,7 +703,7 @@ int
 adwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_trgeo_geo(temp, gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
@@ -718,7 +717,7 @@ adwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist
 
 /**
  * @brief Return 1 if a temporal rigid geometry and a geometry are ever or
- * always within a distance, 0 if not, -1 on error or if the geometry is empty
+ * always within a distance, 0 if not, -1 on error
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] dist Distance

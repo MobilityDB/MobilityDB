@@ -387,4 +387,15 @@ SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2001-01-01', geometry 'Linestri
 -- A geometry carrying a circular arc keeps the path that renders the disc
 SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),5)@2001-01-01', geometry 'CircularString(1 0, 0 1, -1 0)');
 
+-- An empty geometry is a valid operand whose point set is empty, so every
+-- relationship over it has the answer the library gives: disjoint true and
+-- the rest false
+SELECT eDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+SELECT eTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', geometry 'Polygon empty');
+SELECT eDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', geometry 'Polygon empty');
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', geometry 'Polygon empty');
+
 -------------------------------------------------------------------------------
