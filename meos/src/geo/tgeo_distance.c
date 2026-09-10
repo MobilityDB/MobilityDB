@@ -2733,6 +2733,8 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
   return result;
 }
 
+static double stbox_spatial_dist(const STBox *box1, const STBox *box2);
+
 /**
  * @ingroup meos_internal_geo_dist
  * @brief Return the nearest approach distance between two spatiotemporal
@@ -2758,7 +2760,7 @@ stbox_nad(const STBox *box1, const STBox *box2)
 
   /* The nearest approach distance is the spatial-only distance between the
    * boxes (time already tested above) */
-  return stbox_spatial_distance(box1, box2);
+  return stbox_spatial_dist(box1, box2);
 }
 
 /**
@@ -3041,17 +3043,18 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_dist
  * @brief Return the spatial-only minimum distance between two spatiotemporal
  * boxes, ignoring the time dimension entirely
  * @param[in] box1,box2 Spatiotemporal boxes
- * @errval DBL_MAX
+ * @pre The boxes are comparable and both carry a spatial extent
  */
-double
-stbox_spatial_distance(const STBox *box1, const STBox *box2)
+static double
+stbox_spatial_dist(const STBox *box1, const STBox *box2)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, DBL_MAX); VALIDATE_NOT_NULL(box2, DBL_MAX);
+  assert(box1); assert(box2);
+  assert(ensure_valid_stbox_stbox(box1, box2));
+  assert(ensure_has_X(T_STBOX, box1->flags));
+  assert(ensure_has_X(T_STBOX, box2->flags));
 
   /* Spatial extents overlap → exact minimum is 0 (some pair of points
    * inside the joined extent has zero distance). Every spatial axis must be
@@ -3092,6 +3095,24 @@ stbox_spatial_distance(const STBox *box1, const STBox *box2)
   pfree(DatumGetPointer(g1));
   pfree(DatumGetPointer(g2));
   return result;
+}
+
+/**
+ * @ingroup meos_geo_dist
+ * @brief Return the spatial-only minimum distance between two spatiotemporal
+ * boxes, ignoring the time dimension entirely
+ * @param[in] box1,box2 Spatiotemporal boxes
+ * @errval DBL_MAX
+ */
+double
+stbox_spatial_distance(const STBox *box1, const STBox *box2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags))
+    return DBL_MAX;
+  return stbox_spatial_dist(box1, box2);
 }
 
 /*****************************************************************************
@@ -3362,7 +3383,7 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
        * distance, so for geodetic inputs every pair gets a zero lower bound,
        * disabling the ordering short-circuit so that all pairs are tested */
       pairs[k].bd = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags) ? 0.0 :
-        stbox_spatial_distance(&bb1[i], &bb2[j]);
+        stbox_spatial_dist(&bb1[i], &bb2[j]);
       k++;
     }
   qsort(pairs, npairs, sizeof(TgeoarrPair), tgeoarr_pair_cmp);
