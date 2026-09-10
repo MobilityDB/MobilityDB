@@ -1006,6 +1006,25 @@ SELECT stops(tgeogpoint '[Point(0 60)@2001-01-01,
   Point(0.0179664 60)@2001-01-02, Point(0.0089832 60.0077795)@2001-01-03]',
   900.0, '1 day');
 
+-- A stop that begins at the first instant takes the lower bound of the
+-- sequence, and one that ends at the last instant its upper bound. The first
+-- stay reaches the 2 days only by counting from its excluded first instant,
+-- since the span (t1, t3] lasts t3 - t1.
+SELECT asText(stops(tgeompoint '(Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
+  Point(8 0)@2001-01-03, Point(900 0)@2001-01-04]', 154.0, '2 days'));
+SELECT asText(stops(tgeompoint '[Point(900 0)@2001-01-01, Point(0 0)@2001-01-02,
+  Point(5 0)@2001-01-03, Point(8 0)@2001-01-04)', 154.0, '2 days'));
+SELECT asText(stops(tgeompoint '(Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
+  Point(8 0)@2001-01-03)', 154.0, '2 days'));
+-- A stop inside the sequence keeps both of its bounds
+SELECT asText(stops(tgeompoint '(Point(900 0)@2001-01-01, Point(0 0)@2001-01-02,
+  Point(5 0)@2001-01-03, Point(8 0)@2001-01-04, Point(900 0)@2001-01-05)',
+  154.0, '2 days'));
+-- Each sequence of a sequence set gives its own bounds to its stops
+SELECT asText(stops(tgeompoint '{(Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
+  Point(8 0)@2001-01-03), [Point(900 0)@2001-01-05, Point(0 0)@2001-01-06,
+  Point(5 0)@2001-01-07, Point(8 0)@2001-01-08)}', 154.0, '2 days'));
+
 -------------------------------------------------------------------------------
 -- Ever/always comparison functions
 -------------------------------------------------------------------------------

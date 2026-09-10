@@ -229,10 +229,10 @@ SELECT shiftScaleValue(tfloat '{[1@2001-01-01,2@2001-01-02],[3@2001-01-03,4@2001
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 stops(tfloat,maxdist float=0.0,minduration interval='0 minutes') → tfloat
 </programlisting>
-				<para>Si <varname>maxDist</varname> no se especifica, el valor 0.0 se asume por defecto y por lo tanto, la functión extrae los segmentos constantes del flotante temporal.</para>
+				<para>Si <varname>maxDist</varname> no se especifica, el valor 0.0 se asume por defecto y por lo tanto, la functión extrae los segmentos constantes del flotante temporal. Una parada que comienza en el primer instante de una secuencia incluye ese instante solo si la secuencia lo incluye, y lo mismo vale para una parada que termina en su último instante.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-02, 2@2001-01-03]');
--- {[1@2001-01-01, 1@2001-01-02)}
+-- {[1@2001-01-01, 1@2001-01-02]}
 SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-02, 2@2001-01-03]', 0.0, '2 days');
 -- NULL
 </programlisting>
