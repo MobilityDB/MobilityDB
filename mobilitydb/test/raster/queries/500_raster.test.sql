@@ -605,6 +605,36 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
        = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
 
 -------------------------------------------------------------------------------
+-- raster (Hex)WKB round trip
+--
+-- A raster round-trips through its Well-Known Binary in either byte order,
+-- with bands of one, two, four and eight bytes a pixel, and PostGIS reads the
+-- big-endian form back to the same raster.
+-------------------------------------------------------------------------------
+
+WITH rast AS (
+  SELECT ST_AddBand(ST_AddBand(ST_AddBand(ST_AddBand(
+    ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.5, 0.25, 3857),
+    '8BUI'::text, 200::float8, 255::float8),
+    '16BSI'::text, 258::float8, -9999::float8),
+    '32BF'::text, 1.5::float8, NULL::float8),
+    '64BF'::text, 1e10::float8, -1.5::float8) AS r)
+SELECT rasterFromBinary(asBinary(r, 'XDR')) = r AS xdr,
+  rasterFromBinary(asBinary(r, 'NDR')) = r AS ndr,
+  rasterFromHexWKB(asHexWKB(r, 'XDR')) = r AS hex_xdr,
+  rasterFromHexWKB(asHexWKB(r)) = r AS hex_native,
+  ST_RastFromWKB(asBinary(r, 'XDR')) = r AS postgis_reads_xdr,
+  asBinary(r) = ST_AsBinary(r) AND asHexWKB(r) = ST_AsHexWKB(r)
+    AS native_as_postgis,
+  get_byte(asBinary(r, 'NDR'), 0) AS ndr_first_byte,
+  get_byte(asBinary(r, 'XDR'), 0) AS xdr_first_byte,
+  asBinary(r, 'XDR') <> asBinary(r, 'NDR') AS orders_differ
+FROM rast;
+
+-- A string shorter than the raster it states is refused, not read past its end.
+SELECT rasterFromHexWKB('0100');
+
+-------------------------------------------------------------------------------
 -- raquet accessors
 -------------------------------------------------------------------------------
 

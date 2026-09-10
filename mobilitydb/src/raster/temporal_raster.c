@@ -453,6 +453,91 @@ Raster_band_nodata_value(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Well-Known Binary representations of a raster
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_from_wkb);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster from its Well-Known Binary (WKB) representation
+ * @sqlfn rasterFromBinary()
+ */
+Datum
+Raster_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  Raster *result = raster_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_from_hexwkb);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @sqlfn rasterFromHexWKB()
+ */
+Datum
+Raster_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  Raster *result = raster_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_wkb);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the Well-Known Binary (WKB) representation of a raster
+ * @sqlfn asBinary()
+ */
+Datum
+Raster_as_wkb(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  uint8_t variant = get_endian_variant(PG_GETARG_TEXT_P(1));
+  size_t wkb_size;
+  uint8_t *wkb = raster_as_wkb(rast, variant, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Raster_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_as_hexwkb);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a raster
+ * @sqlfn asHexWKB()
+ */
+Datum
+Raster_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  uint8_t variant = get_endian_variant(PG_GETARG_TEXT_P(1));
+  size_t hexwkb_size;
+  char *hexwkb = raster_as_hexwkb(rast, variant, &hexwkb_size);
+  text *result = cstring_to_text(hexwkb);
+  pfree(hexwkb);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
  * raster_reclass
  *****************************************************************************/
 

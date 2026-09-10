@@ -247,7 +247,7 @@ point in pure SQL (§6, `320_tnpoint_spatialrels`).
 
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |
 |---|---|---|---|
-| Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, both full coverage (`--gaps`: `io_families` 20/20, `representation_families` 20/20): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **14 entries** (temporal, geo, tpoint, cbuffer, npoint, pose, posechain, rgeo, h3, quadbin, s2cell, pointcloud, pointcloud_patch, json). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **19 entries**: the same 14 temporal families plus the five base-value entries `npoint_base`, `pose_base`, `posechain_base`, `cbuffer_base`, `raquet_base`, whose representations belong to the base type rather than to its temporal type |
+| Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, both full coverage (`--gaps`: `io_families` 20/20, `representation_families` 20/20): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **14 entries** (temporal, geo, tpoint, cbuffer, npoint, pose, posechain, rgeo, h3, quadbin, s2cell, pointcloud, pointcloud_patch, json). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **20 entries**: the same 14 temporal families plus the six base-value entries `npoint_base`, `pose_base`, `posechain_base`, `cbuffer_base`, `raquet_base`, `raster_base`, whose representations belong to the base type rather than to its temporal type |
 | Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **14 entries** all `reference: true` (temporal, cbuffer, geo, h3, json, npoint, pose, posechain, quadbin, rgeo, s2cell, tpcpatch, tpcpoint, tpoint). The pose entry also names `tpose(tgeompoint, tfloat)` in an `fns:` block, the one constructor of the axis a template does not shape |
 | Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **9 entries** (temporal, cbuffer, h3, json, npoint, pose, quadbin, rgeo, s2cell) — `--gaps`: `conversion_families` 16/20, missing tposechain, tgeography, tpcpoint, tpcpatch. `geo`/`tpoint` have no dedicated entry: their conversion surface is already named as the RETURNS/argument type of other families' declarations (e.g. rgeo's `tgeometry(trgeometry)`) |
 | Accessors | `temporal_` | ✓ **GEN** | `accessors.sql.tmpl` multi-base renderer from base `022_temporal.in.sql` — the value/time/generic set for ALL families (§4c); per-family value shape = manifest `types:` tokens. A few interleaved/positional accessors stay hand per family |
@@ -480,10 +480,11 @@ EWKT/EWKB are **TSpatial<T>-level**, the `E` = carries the SRID
 `endian text DEFAULT ''` on `asBinary`/`asHexWKB`.
 
 Governed by `templates/representations.sql.tmpl` + `representation_families`,
-**19 entries** all `reference: true` — the 14 families of `io_families` above
+**20 entries** all `reference: true` — the 14 families of `io_families` above
 (temporal, cbuffer, geo, h3, json, npoint, pointcloud, pointcloud_patch, pose,
-posechain, quadbin, rgeo, s2cell, tpoint) plus the five base-value entries
-`cbuffer_base`, `npoint_base`, `pose_base`, `posechain_base`, `raquet_base`.
+posechain, quadbin, rgeo, s2cell, tpoint) plus the six base-value entries
+`cbuffer_base`, `npoint_base`, `pose_base`, `posechain_base`, `raquet_base`,
+`raster_base`.
 
 ⛔ An ENTRY COUNT is a hand-written total that no `--gaps` figure covers, so it is a
 different class from the `N/M` coverage ratios beside it: a family joining an axis moves

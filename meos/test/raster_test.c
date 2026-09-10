@@ -108,7 +108,7 @@ int main(void)
 
     /* The HexWKB output is read back into a raster with the same bands */
     size_t hexwkb_size;
-    char *hexwkb = raster_as_hexwkb(rast, &hexwkb_size);
+    char *hexwkb = raster_as_hexwkb(rast, 0, &hexwkb_size);
     assert(hexwkb != NULL);
     assert(hexwkb_size == strlen(hexwkb));
     Raster *rast1 = raster_from_hexwkb(hexwkb);
@@ -118,13 +118,34 @@ int main(void)
     /* The binary output round trips likewise, and the two representations
      * encode the same bytes */
     size_t wkb_size;
-    uint8_t *wkb = raster_as_wkb(rast, &wkb_size);
+    uint8_t *wkb = raster_as_wkb(rast, 0, &wkb_size);
     assert(wkb != NULL);
     assert(wkb_size * 2 == hexwkb_size);
     Raster *rast2 = raster_from_wkb(wkb, wkb_size);
     assert(rast2 != NULL);
     assert(raster_num_bands(rast2) == nbands);
     assert(meos_errno() == 0);
+
+    /* Either byte order round trips, and the first byte states the one asked
+     * for. The other order rewrites every field, so the two representations
+     * differ beyond their first byte while reading back the same raster */
+    size_t ndr_size, xdr_size, back_size;
+    uint8_t *ndr = raster_as_wkb(rast, WKB_NDR, &ndr_size);
+    uint8_t *xdr = raster_as_wkb(rast, WKB_XDR, &xdr_size);
+    assert(ndr != NULL && xdr != NULL && ndr_size == xdr_size);
+    assert(ndr[0] == 1 && xdr[0] == 0);
+    assert(memcmp(ndr + 1, xdr + 1, ndr_size - 1) != 0);
+    Raster *rast3 = raster_from_wkb(xdr, xdr_size);
+    assert(rast3 != NULL && raster_num_bands(rast3) == nbands);
+    uint8_t *back = raster_as_wkb(rast3, WKB_NDR, &back_size);
+    assert(back != NULL && back_size == ndr_size);
+    assert(memcmp(back, ndr, ndr_size) == 0);
+    char *xdrhex = raster_as_hexwkb(rast, WKB_XDR, &hexwkb_size);
+    assert(xdrhex != NULL && strncmp(xdrhex, "00", 2) == 0);
+    assert(meos_errno() == 0);
+    printf("raster_as_wkb(#%d): %zu bytes in either byte order\n", i + 1,
+      ndr_size);
+    free(ndr); free(xdr); free(back); free(xdrhex); free(rast3);
 
     free(hexwkb); free(wkb); free(rast); free(rast1); free(rast2);
   }
@@ -257,10 +278,10 @@ int main(void)
   assert(raster_to_stbox(NULL) == NULL);
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(raster_as_wkb(NULL, &size) == NULL);
+  assert(raster_as_wkb(NULL, 0, &size) == NULL);
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(raster_as_hexwkb(NULL, &size) == NULL);
+  assert(raster_as_hexwkb(NULL, 0, &size) == NULL);
   assert(meos_errno() != 0);
 
   /* A raster is read against the length it is given, so every truncation of a
@@ -269,7 +290,7 @@ int main(void)
   size_t wkb_size;
   Raster *rast = raster_from_hexwkb(raster_one_band);
   assert(rast != NULL);
-  uint8_t *wkb = raster_as_wkb(rast, &wkb_size);
+  uint8_t *wkb = raster_as_wkb(rast, 0, &wkb_size);
   assert(wkb != NULL);
   for (size_t trunc = 0; trunc < wkb_size; trunc++)
   {

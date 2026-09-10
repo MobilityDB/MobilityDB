@@ -302,9 +302,10 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Ensure that a string represents a valid endian flag
+ * @brief Return the WKB output variant an endian argument names, raising an
+ * error for a string naming no byte order
  */
-static uint8_t
+uint8_t
 get_endian_variant(const text *txt)
 {
   char *endian = text_to_cstring(txt);

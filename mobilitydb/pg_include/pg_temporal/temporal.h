@@ -198,6 +198,7 @@ extern interpType input_interp_string(FunctionCallInfo fcinfo, int argno);
 extern Temporal *temporal_recv(StringInfo buf);
 extern void temporal_write(const Temporal *temp, StringInfo buf);
 
+extern uint8_t get_endian_variant(const text *txt);
 extern bytea *Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, MeosType type,
   bool extended);
 extern text *Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value,

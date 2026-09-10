@@ -2804,16 +2804,16 @@
 					<para><link linkend="tcell_frombinary"><varname>tcellFromBinary</varname>, <varname>tcellFromHexWKB</varname>, <varname>tcellFromMFJSON</varname></link>: Reconstruir una celda temporal a partir de su representación binaria, hexadecimal o MF-JSON</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (WKB) de una tesela Raquet</para>
+					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (WKB) de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB) de una tesela Raquet</para>
+					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB) de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Devuelve una tesela Raquet a partir de su representación binaria conocida (WKB)</para>
+					<para><link linkend="raquetFromBinary"><varname>rasterFromBinary</varname>, <varname>raquetFromBinary</varname></link>: Devuelve un ráster o una tesela Raquet a partir de su representación binaria conocida (WKB)</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Devuelve una tesela Raquet a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="raquetFromHexWKB"><varname>rasterFromHexWKB</varname>, <varname>raquetFromHexWKB</varname></link>: Devuelve un ráster o una tesela Raquet a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

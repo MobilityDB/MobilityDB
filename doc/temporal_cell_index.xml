@@ -81,7 +81,7 @@
 		<title>Input and Output</title>
 		<para>A temporal cell value is entered using the standard temporal syntax with the underlying 64-bit cell identifier. The input parser accepts the canonical hexadecimal form each grid publishes — the form the H3 CLI and <varname>h3_cell_to_string</varname> emit, and the form the CARTO reference implementation reads — with an optional <varname>0x</varname> prefix, in either letter case, and at most 16 significant digits. Hexadecimal is idiomatic in all three ecosystems and is what the output function emits, so every example below uses it. The value must also denote something its grid indexes: for H3 a cell, a directed edge or a vertex, so that a well-formed hexadecimal literal such as <varname>12345</varname>, which is none of the three, is rejected rather than stored as a value with no location. For reference, the hexadecimal <varname>480fffffffffffff</varname> used in the examples is the QUADBIN resolution-0 world cell, equal to the decimal <varname>5192650370358181887</varname>.</para>
 
-		<para>The functions <varname>asBinary</varname> and <varname>asHexWKB</varname> serialize a <varname>raquet</varname> value, and <link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link> and <link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link> reconstruct it. A tile carries its pixels and its QUADBIN georeferencing in one value, so it round-trips through a portable byte string with no spatial extension involved, and the hexadecimal form lets a tile column round-trip through a text-based <varname>COPY</varname>. Both output functions accept an optional endianness argument, <varname>NDR</varname> for little-endian or <varname>XDR</varname> for big-endian, defaulting to the endianness of the server.</para>
+		<para>The functions <varname>asBinary</varname> and <varname>asHexWKB</varname> serialize a <varname>raster</varname> or a <varname>raquet</varname> value, and <link linkend="raquetFromBinary"><varname>rasterFromBinary</varname></link>, <link linkend="raquetFromHexWKB"><varname>rasterFromHexWKB</varname></link>, <link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link> and <link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link> reconstruct it. A raster is written in the form PostGIS raster writes, so a raster column round-trips between PostgreSQL and any program reading that form. A tile carries its pixels and its QUADBIN georeferencing in one value, so it round-trips through a portable byte string with no spatial extension involved, and the hexadecimal form lets a tile column round-trip through a text-based <varname>COPY</varname>. Both output functions accept an optional endianness argument, <varname>NDR</varname> for little-endian or <varname>XDR</varname> for big-endian, defaulting to the endianness of the server.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tcell_in_out">
@@ -147,45 +147,62 @@ SELECT ts2cellFromHexWKB(asHexWKB(ts2cell '47c3c@2001-01-01'));
 
 			<listitem xml:id="raquet_asBinary">
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
-				<para>Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
+				<para>Return the Well-Known Binary (WKB) representation of a raster or a Raquet tile</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asBinary(raquet,endian text='') → bytea
+asBinary({raster,raquet},endian text='') → bytea
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326)));
+-- 61
+SELECT get_byte(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+  'XDR'), 0);
+-- 0
 SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));
 -- 31
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquet_asHexWKB">
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
-				<para>Return the Hexadecimal Well-Known Binary (HexWKB) representation of a Raquet tile</para>
+				<para>Return the Hexadecimal Well-Known Binary (HexWKB) representation of a raster or a Raquet tile</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asHexWKB(raquet,endian text='') → text
+asHexWKB({raster,raquet},endian text='') → text
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(asHexWKB(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326)));
+-- 122
 SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));
 -- 62
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquetFromBinary">
+				<indexterm significance="normal"><primary><varname>rasterFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>raquetFromBinary</varname></primary></indexterm>
-				<para>Return a Raquet tile from its Well-Known Binary (WKB) representation</para>
+				<para>Return a raster or a Raquet tile from its Well-Known Binary (WKB) representation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterFromBinary(bytea) → raster
 raquetFromBinary(bytea) → raquet
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT rasterFromBinary(asBinary(r, 'XDR')) = r
+FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
+-- true
 SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
   'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 -- true
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquetFromHexWKB">
+				<indexterm significance="normal"><primary><varname>rasterFromHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>raquetFromHexWKB</varname></primary></indexterm>
-				<para>Return a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				<para>Return a raster or a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterFromHexWKB(text) → raster
 raquetFromHexWKB(text) → raquet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT rasterFromHexWKB(asHexWKB(r, 'XDR')) = r
+FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
+-- true
 SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
   'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 -- true
