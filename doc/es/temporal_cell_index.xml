@@ -2035,6 +2035,53 @@ FROM rast;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_transform">
+				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+				<para>Devuelve un ráster expresado en otro sistema de referencia espacial</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+transform(raster,srid integer,algorithm text='NearestNeighbour',
+  maxerr float8=0.125) → raster
+</programlisting>
+				<para>Cada banda se lleva al sistema de destino y se remuestrea sobre la malla que implica la reproyección, mediante la misma deformación de GDAL que <varname>ST_Transform</varname> de PostGIS, de modo que el resultado expresa la misma cobertura leída a través de otro sistema. El algoritmo es uno de <varname>NearestNeighbour</varname>, <varname>Bilinear</varname>, <varname>Cubic</varname>, <varname>CubicSpline</varname>, <varname>Lanczos</varname>, <varname>Max</varname> y <varname>Min</varname>, nombrado sin distinguir mayúsculas de minúsculas, y <varname>maxerr</varname> es el error en píxeles de entrada que la deformación puede cometer, 0 para un cálculo exacto.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, -9999::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT ST_SRID(transform(r, 3857)) AS srid, ST_Width(transform(r, 3857)) AS width,
+  ST_Height(transform(r, 3857)) AS height
+FROM rast;
+-- 3857 | 3 | 3
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_rescale">
+				<indexterm significance="normal"><primary><varname>rescale</varname></primary></indexterm>
+				<para>Devuelve un ráster remuestreado a otro tamaño de píxel</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rescale(raster,scalex float8,scaley float8,algorithm text='NearestNeighbour',
+  maxerr float8=0.125) → raster
+</programlisting>
+				<para>El resultado conserva el sistema de referencia y la esquina superior izquierda del ráster y expresa su cobertura sobre una malla del tamaño de píxel pedido, mediante la misma deformación de GDAL que <varname>ST_Rescale</varname> de PostGIS, de modo que una escala más gruesa lee menos píxeles sobre el mismo terreno. Las escalas están en las unidades del sistema de referencia del ráster, y el algoritmo y el error son los de <link linkend="raster_transform"><varname>transform</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, -9999::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT ST_Width(rescale(r, 0.5, -0.5)) AS width,
+  ST_Height(rescale(r, 0.5, -0.5)) AS height,
+  ST_ScaleX(rescale(r, 0.5, -0.5)) AS scalex
+FROM rast;
+-- 6 | 6 | 0.5
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>

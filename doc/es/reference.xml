@@ -3197,6 +3197,12 @@
 					<para><link linkend="raster_clip"><varname>clip</varname></link>: Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_transform"><varname>transform</varname></link>: Devuelve un ráster expresado en otro sistema de referencia espacial</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rescale"><varname>rescale</varname></link>: Devuelve un ráster remuestreado a otro tamaño de píxel</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
 				</listitem>
 				<listitem>
