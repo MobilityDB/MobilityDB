@@ -2082,6 +2082,26 @@ FROM rast;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_summaryStats">
+				<indexterm significance="normal"><primary><varname>summaryStats</varname></primary></indexterm>
+				<para>Devuelve las estadísticas de los píxeles de una banda de ráster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+summaryStats(raster,band integer=1,excludeNodata boolean=true) → summarystats
+</programlisting>
+				<para>La banda se lee una sola vez y devuelve el registro <varname>summarystats</varname> de PostGIS que devuelve <varname>ST_SummaryStats</varname>: el número de píxeles contados, y la suma, la media, la desviación estándar, el mínimo y el máximo de sus valores. Se leen todos los píxeles, por lo que la respuesta es exacta y no muestreada; los píxeles que la banda declara como nodata quedan fuera salvo que <varname>excludeNodata</varname> sea falso, y una banda sin ningún píxel que contar devuelve un recuento de cero y ninguna estadística.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, -9999::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT (summaryStats(r)).* FROM rast;
+-- 9 | 450 | 50 | 25.81988897471611 | 10 | 90
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>

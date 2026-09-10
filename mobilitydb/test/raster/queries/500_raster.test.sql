@@ -970,6 +970,44 @@ WITH rast AS (
 SELECT transform(r, 0) FROM rast;
 
 -------------------------------------------------------------------------------
+-- summaryStats
+-------------------------------------------------------------------------------
+
+-- What a band's pixels amount to, taken in one pass, is the record PostGIS's
+-- ST_SummaryStats answers: with the nodata pixel in the centre left out, and
+-- counted as the value it holds.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,-9999,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT (s).count, (s).sum, (s).mean, round((s).stddev::numeric, 6) AS stddev,
+  (s).min, (s).max, as_postgis, all_pixels_as_postgis
+FROM (SELECT summaryStats(r) AS s,
+    summaryStats(r) = ST_SummaryStats(r) AS as_postgis,
+    summaryStats(r, 1, false) = ST_SummaryStats(r, 1, false)
+      AS all_pixels_as_postgis
+  FROM rast) t;
+
+-- A band whose every pixel is nodata, beside what ST_SummaryStats answers for
+-- it, and a band the raster does not have.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, -9999::float8, -9999::float8) AS r
+)
+SELECT summaryStats(r) AS stats, ST_SummaryStats(r) AS postgis_stats FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT summaryStats(r, 2) FROM rast;
+
+-------------------------------------------------------------------------------
 -- raster conversion to stbox
 -------------------------------------------------------------------------------
 
