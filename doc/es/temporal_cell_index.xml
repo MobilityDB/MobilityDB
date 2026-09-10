@@ -2102,6 +2102,29 @@ SELECT (summaryStats(r)).* FROM rast;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_dumpAsPolygons">
+				<indexterm significance="normal"><primary><varname>dumpAsPolygons</varname></primary></indexterm>
+				<para>Devuelve los polígonos de una banda de ráster, uno por cada grupo de píxeles que comparten un valor &SRF;
+</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+dumpAsPolygons(raster,band integer=1,excludeNodata boolean=true) → {geomval}
+</programlisting>
+				<para>Una banda declara un valor por píxel, y esta función declara la misma banda como las regiones que cubren esos valores, devolviendo los registros <varname>geomval</varname> de PostGIS que devuelve <varname>ST_DumpAsPolygons</varname>. Cada polígono lleva el sistema de referencia del ráster, donde <varname>ST_DumpAsPolygons</varname> no declara ninguno, de modo que puede compararse con las trayectorias a lo largo de las cuales se lee la cobertura. Los píxeles que la banda declara como nodata quedan fuera salvo que <varname>excludeNodata</varname> sea falso, una banda cuyos píxeles son todos nodata no cubre nada y no devuelve ninguna fila, y una banda que el ráster no tiene genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Classify a 3x3 synthetic elevation raster, then read each class as a region
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, -9999::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT val, ST_AsText(geom)
+FROM rast, dumpAsPolygons(reclass(r, 1, '0-50:1, [50-100]:2', '8BUI', 0))
+ORDER BY val;
+-- 1 | POLYGON((0 3,0 1,1 1,1 2,3 2,3 3,0 3))
+-- 2 | POLYGON((1 2,1 1,0 1,0 0,3 0,3 2,1 2))
+</programlisting>
+			</listitem>
 			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>

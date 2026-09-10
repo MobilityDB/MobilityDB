@@ -2105,6 +2105,29 @@ SELECT (summaryStats(r)).* FROM rast;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_dumpAsPolygons">
+				<indexterm significance="normal"><primary><varname>dumpAsPolygons</varname></primary></indexterm>
+				<para>Return the polygons of a raster band, one for each group of pixels sharing a value &SRF;
+</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+dumpAsPolygons(raster,band integer=1,excludeNodata boolean=true) → {geomval}
+</programlisting>
+				<para>A band states a value per pixel, and this states the same band as the regions those values cover, answering the PostGIS <varname>geomval</varname> records that <varname>ST_DumpAsPolygons</varname> answers. Each polygon carries the reference system of the raster, where <varname>ST_DumpAsPolygons</varname> states none, so it can be compared with the trajectories the coverage is read along. The pixels the band states as nodata are left out unless <varname>excludeNodata</varname> is false, a band whose every pixel is nodata covers nothing and answers no row, and a band the raster does not have raises an error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Classify a 3x3 synthetic elevation raster, then read each class as a region
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, -9999::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT val, ST_AsText(geom)
+FROM rast, dumpAsPolygons(reclass(r, 1, '0-50:1, [50-100]:2', '8BUI', 0))
+ORDER BY val;
+-- 1 | POLYGON((0 3,0 1,1 1,1 2,3 2,3 3,0 3))
+-- 2 | POLYGON((1 2,1 1,0 1,0 0,3 0,3 2,1 2))
+</programlisting>
+			</listitem>
 			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Sample a <varname>raquet</varname> raster tile along a trajectory</para>
