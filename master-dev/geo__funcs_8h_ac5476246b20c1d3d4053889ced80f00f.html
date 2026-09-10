@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos_oriented_envelope</title>
+<title>MobilityDB: cross_product_sign</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -97,7 +97,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a7421ea3ef74a6c7d49fa89567c7382f4.html#a7421ea3ef74a6c7d49fa89567c7382f4">closest_point2d_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af03bf902980a6c21f0c87c493c0fcbdc.html#af03bf902980a6c21f0c87c493c0fcbdc">closest_point3dz_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b">coordinate_tolerance</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac5476246b20c1d3d4053889ced80f00f.html#ac5476246b20c1d3d4053889ced80f00f">cross_product_sign</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_ac5476246b20c1d3d4053889ced80f00f.html#ac5476246b20c1d3d4053889ced80f00f">cross_product_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a54d5ce3f27777cbbd4be4ea56f34ef5f.html#a54d5ce3f27777cbbd4be4ea56f34ef5f">de9im_match</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af4428992fd22684ae6c47800270ee44f.html#af4428992fd22684ae6c47800270ee44f">edge_set_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4">EdgeType</a></td></tr>
@@ -145,7 +145,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a38854768ea292512f58c42c2456c7816.html#a38854768ea292512f58c42c2456c7816">meos_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__spatial_ga12d98e1853cbfe6acd4f7c515ca5e32c.html#ga12d98e1853cbfe6acd4f7c515ca5e32c">meos_lift_ordinates</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__spatial_ga52c41fa0570f10cf6bb6fe06cf166f84.html#ga52c41fa0570f10cf6bb6fe06cf166f84">meos_linear_union</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a78778cbf1e8fa22bdf5127d123fa9581.html#a78778cbf1e8fa22bdf5127d123fa9581">meos_oriented_envelope</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a78778cbf1e8fa22bdf5127d123fa9581.html#a78778cbf1e8fa22bdf5127d123fa9581">meos_oriented_envelope</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a26c9915acdbe188b513aa2cb7d525362.html#a26c9915acdbe188b513aa2cb7d525362">meos_relate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a5b730401413ce3196bcf928b1aefd042.html#a5b730401413ce3196bcf928b1aefd042">meos_relate_pattern</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a747c0d17bba35d32a18939573d9a9ad8.html#a747c0d17bba35d32a18939573d9a9ad8">meos_spatialrel</a></td></tr>
@@ -172,25 +172,61 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a78778cbf1e8fa22bdf5127d123fa9581" name="a78778cbf1e8fa22bdf5127d123fa9581"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a78778cbf1e8fa22bdf5127d123fa9581">&#9670;&#160;</a></span>meos_oriented_envelope()</h2>
+<a id="ac5476246b20c1d3d4053889ced80f00f" name="ac5476246b20c1d3d4053889ced80f00f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac5476246b20c1d3d4053889ced80f00f">&#9670;&#160;</a></span>cross_product_sign()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structLWGEOM.html">LWGEOM</a> * meos_oriented_envelope </td>
+          <td class="memname">static int cross_product_sign </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom</em></td><td>)</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>ry</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>sx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>sy</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return the oriented envelop (a.k.a. </p>
-<p >minimum-area rotated rectangle) of a geometry</p>
-<p >Works directly on the exact circular arcs represented by the <a class="el" href="structEdge.html" title="Structure keeping a geometry edge.">Edge</a> structure. </p>
+<p>Return the sign of the cross product of two vectors, or zero where the double evaluation cannot be trusted to carry it. </p>
+<p >The vectors are differences of INPUT coordinates, each rounded once, so the question is the sign of one determinant and needs no tolerance: a band here would not protect the answer, it would decide it. What the sign does need is a guarantee that rounding has not eaten it, and that guarantee is a FILTER rather than a band. The bound is computed FROM THE OPERANDS and decides only whether the double is trustworthy, never what the answer is. It is Shewchuk's bound for a determinant of two such products, written in terms of <code>DBL_EPSILON</code> so that it is arithmetic rather than a constant anyone is invited to tune </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rx,ry</td><td>First vector </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sx,sy</td><td>Second vector </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>1 or -1 for the two turns, 0 for parallel or unable to tell </dd></dl>
 
 </div>
 </div>
