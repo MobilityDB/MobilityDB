@@ -10,12 +10,13 @@ var searchData=
   ['length_7',['length',['../structways__record_a7895c888ec914b53955f88580246546d.html#a7895c888ec914b53955f88580246546d',1,'ways_record::length()'],['../structEdge_ae3ea80ea41b7a8072d456af9110dc6d5.html#ae3ea80ea41b7a8072d456af9110dc6d5',1,'Edge::length()'],['../structSkipList_a759dd64aa3d40a4fd80b34e9f12ac60d.html#a759dd64aa3d40a4fd80b34e9f12ac60d',1,'SkipList::length()'],['../structstruct__WaysCacheEntry_a2afbe8e1018dd7c02f398856471c4f68.html#a2afbe8e1018dd7c02f398856471c4f68',1,'struct_WaysCacheEntry::length()']]],
   ['level_8',['level',['../structSPNNEntry_a0033c0739d95d2e0815a3dfb18e71fde.html#a0033c0739d95d2e0815a3dfb18e71fde',1,'SPNNEntry']]],
   ['live_5fbytes_9',['live_bytes',['../allocator__test_8c_ab859d3dc12e4fb9bbc0a3a071ebd0c1e.html#ab859d3dc12e4fb9bbc0a3a071ebd0c1e',1,'allocator_test.c']]],
-  ['lon_5frad_10',['lon_rad',['../structGeoPoseAnchor_aadbc9ec11a00e6ddc5e27883c8bd49d3.html#aadbc9ec11a00e6ddc5e27883c8bd49d3',1,'GeoPoseAnchor']]],
-  ['longitude_11',['Longitude',['../structAIS__record_a85cd70cf599decace65851b81f63d754.html#a85cd70cf599decace65851b81f63d754',1,'AIS_record']]],
-  ['lower_12',['lower',['../structSpanBound_a6fc43cc5379be49d3e97951f1d19abb7.html#a6fc43cc5379be49d3e97951f1d19abb7',1,'SpanBound::lower()'],['../structSplitInterval_a21b9c48e7e94f969c122e59ec1598383.html#a21b9c48e7e94f969c122e59ec1598383',1,'SplitInterval::lower()'],['../structSpanBounds_a607ea96cb5105c34f5ce685dc1c9eed6.html#a607ea96cb5105c34f5ce685dc1c9eed6',1,'SpanBounds::lower()'],['../structSpan_a61dcdea68683d7f175d209213679f80a.html#a61dcdea68683d7f175d209213679f80a',1,'Span::lower()']]],
-  ['lower_5finc_13',['lower_inc',['../structSpan_a7b3ac2ef42df1a701aa61d9e87969901.html#a7b3ac2ef42df1a701aa61d9e87969901',1,'Span']]],
-  ['lt_5fopr_14',['lt_opr',['../structTemporalAnalyzeExtraData_a046ad9f4f8186e56a705be44d9e519b8.html#a046ad9f4f8186e56a705be44d9e519b8',1,'TemporalAnalyzeExtraData']]],
-  ['ltype_15',['ltype',['../structoid__meosoper__entry_af2cec1c573a595bb4c54871137deb09b.html#af2cec1c573a595bb4c54871137deb09b',1,'oid_meosoper_entry']]],
-  ['lwgeom_5fgeos_5ferrmsg_16',['lwgeom_geos_errmsg',['../geo__lwgeom__none_8c_a7fa8717833d532dba044ec561a1f8a99.html#a7fa8717833d532dba044ec561a1f8a99',1,'geo_lwgeom_none.c']]],
-  ['lwtype_17',['lwtype',['../structwkb__parse__state_a7df2c151b1c2f9459823390410d58b82.html#a7df2c151b1c2f9459823390410d58b82',1,'wkb_parse_state']]]
+  ['lo_10',['lo',['../structLinearStretch_ad946a3166212fcab0088b083e894b455.html#ad946a3166212fcab0088b083e894b455',1,'LinearStretch']]],
+  ['lon_5frad_11',['lon_rad',['../structGeoPoseAnchor_aadbc9ec11a00e6ddc5e27883c8bd49d3.html#aadbc9ec11a00e6ddc5e27883c8bd49d3',1,'GeoPoseAnchor']]],
+  ['longitude_12',['Longitude',['../structAIS__record_a85cd70cf599decace65851b81f63d754.html#a85cd70cf599decace65851b81f63d754',1,'AIS_record']]],
+  ['lower_13',['lower',['../structSpan_a61dcdea68683d7f175d209213679f80a.html#a61dcdea68683d7f175d209213679f80a',1,'Span::lower()'],['../structSpanBound_a6fc43cc5379be49d3e97951f1d19abb7.html#a6fc43cc5379be49d3e97951f1d19abb7',1,'SpanBound::lower()'],['../structSplitInterval_a21b9c48e7e94f969c122e59ec1598383.html#a21b9c48e7e94f969c122e59ec1598383',1,'SplitInterval::lower()'],['../structSpanBounds_a607ea96cb5105c34f5ce685dc1c9eed6.html#a607ea96cb5105c34f5ce685dc1c9eed6',1,'SpanBounds::lower()']]],
+  ['lower_5finc_14',['lower_inc',['../structSpan_a7b3ac2ef42df1a701aa61d9e87969901.html#a7b3ac2ef42df1a701aa61d9e87969901',1,'Span']]],
+  ['lt_5fopr_15',['lt_opr',['../structTemporalAnalyzeExtraData_a046ad9f4f8186e56a705be44d9e519b8.html#a046ad9f4f8186e56a705be44d9e519b8',1,'TemporalAnalyzeExtraData']]],
+  ['ltype_16',['ltype',['../structoid__meosoper__entry_af2cec1c573a595bb4c54871137deb09b.html#af2cec1c573a595bb4c54871137deb09b',1,'oid_meosoper_entry']]],
+  ['lwgeom_5fgeos_5ferrmsg_17',['lwgeom_geos_errmsg',['../geo__lwgeom__none_8c_a7fa8717833d532dba044ec561a1f8a99.html#a7fa8717833d532dba044ec561a1f8a99',1,'geo_lwgeom_none.c']]],
+  ['lwtype_18',['lwtype',['../structwkb__parse__state_a7df2c151b1c2f9459823390410d58b82.html#a7df2c151b1c2f9459823390410d58b82',1,'wkb_parse_state']]]
 ];
