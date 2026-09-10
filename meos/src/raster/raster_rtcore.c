@@ -117,6 +117,13 @@ raster_serialize_destroy(rt_raster raster)
     meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Could not serialize raster");
     return NULL;
   }
+  /* The serialized form opens with its own length, which is where the varlena
+   * header stands, and rt_core writes that length as a plain number. A reader
+   * that takes it as a varlena header -- which is every reader on the
+   * PostgreSQL side -- needs it encoded as one, so it is stamped here, where
+   * the form is produced, rather than by each caller. Without it a raster this
+   * function answers reads as a band of no width and no height. */
+  SET_VARSIZE(result, ((struct rt_raster_serialized_t *) result)->size);
   return result;
 }
 
@@ -1225,6 +1232,406 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
   result->max = stats->max;
   pfree(stats);
   return result;
+}
+
+/**
+ * @brief Remove every space from a string, in place
+ * @details The grammar below is stated without regard to spacing, so the
+ * expression is closed up before it is read rather than each reader skipping
+ * whitespace of its own
+ */
+static char *
+reclass_removespaces(char *str)
+{
+  char *w = str;
+  for (char *r = str; *r; r++)
+    if (! isspace((unsigned char) *r))
+      *w++ = *r;
+  *w = '\0';
+  return str;
+}
+
+/**
+ * @brief Split a string on one separator character, the way the grammar reads
+ * @details EMPTY PIECES ARE SKIPPED, which is load bearing rather than
+ * incidental: PostGIS splits with @p strtok, so a run of separators counts as
+ * one and a leading separator opens no empty piece. That is what lets a range
+ * of negative bounds be read at all -- `-9999--1` states two pieces, `9999`
+ * and `1`, whose signs are restored afterwards from the text they came from,
+ * where a split keeping empties would state four and be refused as malformed
+ * @param[in] str String to split
+ * @param[in] sep Separator character
+ * @param[out] n Number of pieces
+ * @return An array of pieces, each and the array itself the caller's to free
+ */
+static char **
+reclass_strsplit(const char *str, char sep, int *n)
+{
+  /* An upper bound on the pieces: one more than the separators */
+  int cap = 1;
+  for (const char *p = str; *p; p++)
+    if (*p == sep)
+      cap++;
+  char **result = palloc(sizeof(char *) * (size_t) cap);
+
+  int k = 0;
+  const char *p = str;
+  while (*p)
+  {
+    while (*p == sep)
+      p++;
+    if (! *p)
+      break;
+    const char *start = p;
+    while (*p && *p != sep)
+      p++;
+    size_t len = (size_t) (p - start);
+    result[k] = palloc(len + 1);
+    memcpy(result[k], start, len);
+    result[k][len] = '\0';
+    k++;
+  }
+  /* A string holding nothing but separators states one empty piece, as the
+   * splitter this follows does for an empty string */
+  if (! k)
+  {
+    result[0] = palloc(1);
+    result[0][0] = '\0';
+    k = 1;
+  }
+  *n = k;
+  return result;
+}
+
+/**
+ * @brief Release the pieces of a split and the array holding them
+ */
+static void
+reclass_strsplit_free(char **pieces, int n)
+{
+  for (int i = 0; i < n; i++)
+    pfree(pieces[i]);
+  pfree(pieces);
+}
+
+/**
+ * @brief Remove any of a set of characters from both ends of a string
+ */
+static void
+reclass_chartrim(char *str, const char *chars)
+{
+  size_t len = strlen(str);
+  size_t start = 0;
+  while (start < len && strchr(chars, str[start]))
+    start++;
+  while (len > start && strchr(chars, str[len - 1]))
+    len--;
+  memmove(str, str + start, len - start);
+  str[len - start] = '\0';
+}
+
+/**
+ * @brief Return the LAST occurrence of one string within another
+ */
+static const char *
+reclass_strrstr(const char *haystack, const char *needle)
+{
+  size_t nlen = strlen(needle);
+  if (! nlen)
+    return haystack;
+  const char *found = NULL;
+  for (const char *p = haystack; (p = strstr(p, needle)) != NULL; p++)
+    found = p;
+  return found;
+}
+
+/**
+ * @brief Read a reclassification expression into the ranges it states
+ * @details THE GRAMMAR IS POSTGIS'S, NOT INVENTED HERE. An expression is a
+ * comma separated list of mappings; each mapping is a source range, a colon,
+ * and a destination range; each range is one value or two around a dash. A
+ * bracket states how an end is bounded: on the low end `(` excludes the value
+ * and `)` or `]` marks the range as reaching beyond it, while on the high end
+ * `]` includes the value and `(` or `[` marks it as reaching beyond. A dash
+ * belonging to a negative number is told from the separating dash by what
+ * stands before it, which is why the pieces are matched back against the text
+ * they came from
+ * @param[in] expr Expression, already closed up of spaces
+ * @param[out] count Number of ranges read
+ * @errval NULL
+ */
+static rt_reclassexpr *
+reclass_parse(const char *expr, int *count)
+{
+  int comma_n;
+  char **comma_set = reclass_strsplit(expr, ',', &comma_n);
+  if (comma_n < 1)
+  {
+    reclass_strsplit_free(comma_set, comma_n);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The reclassification expression states no mapping: %s", expr);
+    return NULL;
+  }
+
+  rt_reclassexpr *exprset = palloc0(sizeof(rt_reclassexpr) * (size_t) comma_n);
+  int j = 0;
+  bool failed = false;
+
+  for (int a = 0; a < comma_n && ! failed; a++)
+  {
+    int colon_n;
+    char **colon_set = reclass_strsplit(comma_set[a], ':', &colon_n);
+    if (colon_n != 2)
+    {
+      reclass_strsplit_free(colon_set, colon_n);
+      failed = true;
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "A mapping states a source and a destination around one colon: %s",
+        comma_set[a]);
+      break;
+    }
+
+    exprset[j] = palloc0(sizeof(struct rt_reclassexpr_t));
+    for (int b = 0; b < colon_n && ! failed; b++)
+    {
+      int dash_n;
+      char **dash_set = reclass_strsplit(colon_set[b], '-', &dash_n);
+
+      /* A bracket standing alone before the first value belongs to it: the
+       * low end of `(-9999-100` splits as "(", "9999", "100" and the bracket
+       * has to be given back to the number it bounds */
+      if (dash_n > 1 && strlen(dash_set[0]) == 1 &&
+          strchr("()[]", dash_set[0][0]))
+      {
+        size_t len = strlen(dash_set[1]) + 2;
+        char *glued = palloc(len);
+        snprintf(glued, len, "%s%s", dash_set[0], dash_set[1]);
+        pfree(dash_set[0]); pfree(dash_set[1]);
+        dash_set[1] = glued;
+        for (int t = 1; t < dash_n; t++)
+          dash_set[t - 1] = dash_set[t];
+        dash_n--;
+      }
+
+      if (dash_n < 1 || dash_n > 2)
+      {
+        /* This break leaves the enclosing loop, so its release is not reached
+         * and the pieces are freed here */
+        reclass_strsplit_free(dash_set, dash_n);
+        failed = true;
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "A range states one value or two around a dash: %s", colon_set[b]);
+        break;
+      }
+
+      for (int c = 0; c < dash_n && ! failed; c++)
+      {
+        /* How this end is bounded, read from the bracket that marks it. The
+         * low end and the high end read the same characters differently */
+        int exc_val = 0, inc_val = 1;
+        if (dash_n != 1)
+        {
+          if (c < 1)
+          {
+            if (strchr(dash_set[c], ')') || strchr(dash_set[c], ']'))
+            {
+              exc_val = 1; inc_val = 1;
+            }
+            else if (strchr(dash_set[c], '('))
+              inc_val = 0;
+            else
+              inc_val = 1;
+          }
+          else
+          {
+            if (strrchr(dash_set[c], '(') || strrchr(dash_set[c], '['))
+            {
+              exc_val = 1; inc_val = 0;
+            }
+            else if (strrchr(dash_set[c], ']'))
+              inc_val = 1;
+            else
+              inc_val = 0;
+          }
+        }
+
+        reclass_chartrim(dash_set[c], "()[]");
+
+        char *end = NULL;
+        errno = 0;
+        double val = strtod(dash_set[c], &end);
+        if (errno != 0 || end == dash_set[c])
+        {
+          /* The pieces are released once, where this loop ends: freeing them
+           * here as well would release them twice, since breaking leaves the
+           * enclosing loop's own release still to come */
+          failed = true;
+          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            "A range bound is not a number: %s", colon_set[b]);
+          break;
+        }
+
+        /* The split consumed the dash of a negative number along with the one
+         * that separates the bounds, so the sign is read back from the text
+         * the piece came from: a dash before it that itself opens the string,
+         * or follows another dash or an opening bracket, is a sign */
+        const char *at = (c < 1) ? strstr(colon_set[b], dash_set[c]) :
+          reclass_strrstr(colon_set[b], dash_set[c]);
+        if (at && at != colon_set[b] && *(at - 1) == '-' &&
+            (((at - 1) == colon_set[b]) || *(at - 2) == '-' ||
+             *(at - 2) == '[' || *(at - 2) == '('))
+          val *= -1.0;
+
+        if (b < 1)
+        {
+          if (dash_n == 1)
+          {
+            exprset[j]->src.exc_min = exprset[j]->src.exc_max = exc_val;
+            exprset[j]->src.inc_min = exprset[j]->src.inc_max = inc_val;
+            exprset[j]->src.min = exprset[j]->src.max = val;
+          }
+          else if (c < 1)
+          {
+            exprset[j]->src.exc_min = exc_val;
+            exprset[j]->src.inc_min = inc_val;
+            exprset[j]->src.min = val;
+          }
+          else
+          {
+            exprset[j]->src.exc_max = exc_val;
+            exprset[j]->src.inc_max = inc_val;
+            exprset[j]->src.max = val;
+          }
+        }
+        else
+        {
+          if (dash_n == 1)
+            exprset[j]->dst.min = exprset[j]->dst.max = val;
+          else if (c < 1)
+            exprset[j]->dst.min = val;
+          else
+            exprset[j]->dst.max = val;
+        }
+      }
+      reclass_strsplit_free(dash_set, dash_n);
+    }
+    reclass_strsplit_free(colon_set, colon_n);
+    if (! failed)
+      j++;
+  }
+  reclass_strsplit_free(comma_set, comma_n);
+
+  if (failed)
+  {
+    for (int k = 0; k <= j && k < comma_n; k++)
+      if (exprset[k])
+        pfree(exprset[k]);
+    pfree(exprset);
+    return NULL;
+  }
+
+  *count = j;
+  return exprset;
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return a raster whose band states the classes an expression maps its
+ * values onto
+ * @details The values of a band are read as the ranges an expression names and
+ * written as the ranges it maps them to, so a coverage of measurements becomes
+ * a coverage of classes that a trajectory can be read against. The grammar is
+ * PostGIS's: a comma separated list of mappings, each a source range and a
+ * destination range around a colon, each range one value or two around a dash,
+ * with brackets stating how an end is bounded
+ * @param[in] rast Raster to reclassify
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] expr Expression, such as `0-100:1, 101-200:2, 201-300:3`
+ * @param[in] pixeltype Name of the pixel type of the resulting band
+ * @param[in] has_nodata True where the resulting band states a nodata value
+ * @param[in] nodataval That value, read only where @p has_nodata is true
+ * @errval NULL
+ * @csqlfn #Raster_reclass()
+ */
+Raster *
+raster_reclass(const Raster *rast, int band, const char *expr,
+  const char *pixeltype, bool has_nodata, double nodataval)
+{
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(expr, NULL);
+  VALIDATE_NOT_NULL(pixeltype, NULL);
+
+  rt_pixtype pixtype = rt_pixtype_index_from_name(pixeltype);
+  if (pixtype == PT_END)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown pixel type: %s", pixeltype);
+    return NULL;
+  }
+
+  /* The band values are read and written, so the subject is deserialized in
+   * full */
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  if (band < 1 || band > numbands)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster has no band %d, it has %d", band, numbands);
+    return NULL;
+  }
+
+  char *clean = pstrdup(expr);
+  reclass_removespaces(clean);
+  int nexpr = 0;
+  rt_reclassexpr *exprset = reclass_parse(clean, &nexpr);
+  pfree(clean);
+  if (! exprset)
+  {
+    raster_destroy(raster);
+    return NULL;
+  }
+  if (nexpr < 1)
+  {
+    pfree(exprset); raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The reclassification expression states no mapping: %s", expr);
+    return NULL;
+  }
+
+  rt_band rtband = rt_raster_get_band(raster, (uint32_t) (band - 1));
+  rt_band newband = rtband ? rt_band_reclass(rtband, pixtype,
+    has_nodata ? 1 : 0, nodataval, exprset, (uint32_t) nexpr) : NULL;
+  for (int k = 0; k < nexpr; k++)
+    pfree(exprset[k]);
+  pfree(exprset);
+  if (! newband)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not reclassify band %d of the raster", band);
+    return NULL;
+  }
+
+  /* The reclassified band stands where the one it was read from stood, so the
+   * result keeps the grid and every other band of the subject */
+  rt_band oldband = rt_raster_replace_band(raster, newband,
+    (uint32_t) (band - 1));
+  if (! oldband)
+  {
+    rt_band_destroy(newband); raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not put the reclassified band %d back", band);
+    return NULL;
+  }
+  rt_band_destroy(oldband);
+  return raster_serialize_destroy(raster);
 }
 
 /*****************************************************************************

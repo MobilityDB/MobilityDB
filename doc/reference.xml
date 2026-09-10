@@ -3200,6 +3200,9 @@
 					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Sample a raster band at each instant of a trajectory</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Return a raster whose band holds the classes an expression maps its values to</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a <varname>raquet</varname> raster tile along a trajectory</para>
 				</listitem>
 				<listitem>

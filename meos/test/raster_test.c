@@ -814,6 +814,120 @@ int main(void)
   assert(raster_summary_stats(NULL, 1, true) == NULL);
   assert(meos_errno() != 0);
 
+  /* Reclassifying maps the values of a band onto the classes an expression
+   * names. The band holds 10, 30, 40, 50, 60, 70, 80 and 90 outside its
+   * nodata pixel.
+   * A RANGE WRITTEN PLAINLY IS HALF OPEN AT THE TOP: 0-50 states 0 included
+   * and 50 EXCLUDED, since the high end is inclusive only where a closing
+   * bracket says so. So 10, 30 and 40 take class 1, 60, 70, 80 and 90 take
+   * class 2, and 50 falls in NEITHER range and is left unmapped. The summary
+   * of the result is the oracle: seven pixels carrying three 1s and four 2s,
+   * which sum to 11 */
+  meos_errno_reset();
+  Raster *rc = raster_reclass(rast_values, 1, "0-50:1, 51-100:2", "32BF",
+    true, -9999.0);
+  assert(rc != NULL);
+  assert(meos_errno() == 0);
+  BandStats *rcst = raster_summary_stats(rc, 1, true);
+  assert(rcst != NULL);
+  printf("raster_reclass(raster, 1, \"0-50:1, 51-100:2\"): count %u, sum %f, "
+    "min %f, max %f\n", rcst->count, rcst->sum, rcst->min, rcst->max);
+  assert(rcst->count == 7);
+  assert(rcst->sum == 3.0 * 1.0 + 4.0 * 2.0);
+  assert(rcst->min == 1.0);
+  assert(rcst->max == 2.0);
+  free(rcst);
+
+  /* The grid and the reference system are those of the subject: only the
+   * values of the band move */
+  assert(raster_width(rc) == 3);
+  assert(raster_height(rc) == 3);
+  assert(raster_srid(rc) == 4326);
+  assert(raster_upper_left_x(rc) == 0.0);
+  assert(raster_upper_left_y(rc) == 3.0);
+
+  /* The pixel holding 10 is in the first class and the one holding 90 in the
+   * second, read where they stand rather than in aggregate */
+  Temporal *traj_rc = tgeompoint_in("SRID=4326;{POINT(0.5 2.5)@2001-01-01,"
+    " POINT(2.5 0.5)@2001-01-02}");
+  assert(traj_rc != NULL);
+  Temporal *rc_val = raster_value(traj_rc, rc, 1);
+  assert(rc_val != NULL);
+  char *rc_str = tfloat_out(rc_val, 0);
+  printf("raster_reclass sampled at the 10 pixel and the 90 pixel: %s\n",
+    rc_str);
+  assert(tfloat_start_value(rc_val) == 1.0);
+  assert(tfloat_end_value(rc_val) == 2.0);
+  free(rc_str); free(rc_val); free(traj_rc); free(rc);
+
+  /* A CLOSING BRACKET IS WHAT INCLUDES THE HIGH BOUND, and writing one brings
+   * the value the plain form dropped back in: [50-100] takes 50, so every one
+   * of the eight values is mapped and the pixel holding 50 reads class 2.
+   * Three 1s and five 2s sum to 13 over eight pixels, against the seven and
+   * the 11 above -- the difference IS the bracket */
+  meos_errno_reset();
+  Raster *rb = raster_reclass(rast_values, 1, "[0-50):1, [50-100]:2", "32BF",
+    true, -9999.0);
+  assert(rb != NULL);
+  assert(meos_errno() == 0);
+  BandStats *rbst = raster_summary_stats(rb, 1, true);
+  assert(rbst != NULL);
+  printf("raster_reclass(\"[0-50):1, [50-100]:2\"): count %u, sum %f\n",
+    rbst->count, rbst->sum);
+  assert(rbst->count == 8);
+  assert(rbst->sum == 3.0 * 1.0 + 5.0 * 2.0);
+  free(rbst);
+  Temporal *traj_50 = tgeompoint_in("SRID=4326;{POINT(1.5 1.5)@2001-01-01}");
+  assert(traj_50 != NULL);
+  Temporal *v50 = raster_value(traj_50, rb, 1);
+  assert(v50 != NULL);
+  printf("raster_reclass(\"[0-50):1, [50-100]:2\") at the 50 pixel: %f\n",
+    tfloat_start_value(v50));
+  assert(tfloat_start_value(v50) == 2.0);
+  free(v50); free(traj_50);
+
+  /* Its neighbour holding 40 stands inside [0-50) and takes class 1, which is
+   * what says the first range is read at all rather than everything falling
+   * through to the second */
+  Temporal *traj_40 = tgeompoint_in("SRID=4326;{POINT(0.5 1.5)@2001-01-01}");
+  assert(traj_40 != NULL);
+  Temporal *v40 = raster_value(traj_40, rb, 1);
+  assert(v40 != NULL);
+  assert(tfloat_start_value(v40) == 1.0);
+  free(v40); free(traj_40); free(rb);
+
+  /* A RANGE OF NEGATIVE BOUNDS PARSES, which is the case the splitting turns
+   * on: -9999--1 states two bounds, not four empty pieces. Counting the nodata
+   * pixel as the value it holds puts it in that range, so the nine pixels read
+   * one 7 and eight 8s, summing to 71 */
+  meos_errno_reset();
+  Raster *rn = raster_reclass(rast_values, 1, "-9999--1:7, 0-1000:8", "32BF",
+    false, 0.0);
+  assert(rn != NULL);
+  assert(meos_errno() == 0);
+  BandStats *rnst = raster_summary_stats(rn, 1, false);
+  assert(rnst != NULL);
+  printf("raster_reclass(\"-9999--1:7, 0-1000:8\"): count %u, sum %f, min %f, "
+    "max %f\n", rnst->count, rnst->sum, rnst->min, rnst->max);
+  assert(rnst->count == 9);
+  assert(rnst->sum == 7.0 + 8.0 * 8.0);
+  assert(rnst->min == 7.0);
+  assert(rnst->max == 8.0);
+  free(rnst); free(rn);
+
+  /* A malformed expression raises rather than answering the subject unchanged,
+   * which is what PostGIS does: a mapping needs its colon, a range needs
+   * numbers for bounds, and the pixel type has to be one the catalog names */
+  meos_errno_reset();
+  assert(raster_reclass(rast_values, 1, "0-50", "32BF", true, 0.0) == NULL);
+  assert(raster_reclass(rast_values, 1, "0-50:x", "32BF", true, 0.0) == NULL);
+  assert(raster_reclass(rast_values, 1, "0-50:1", "99XX", true, 0.0) == NULL);
+  assert(raster_reclass(rast_values, 0, "0-50:1", "32BF", true, 0.0) == NULL);
+  assert(raster_reclass(NULL, 1, "0-50:1", "32BF", true, 0.0) == NULL);
+  assert(raster_reclass(rast_values, 1, NULL, "32BF", true, 0.0) == NULL);
+  assert(raster_reclass(rast_values, 1, "0-50:1", NULL, true, 0.0) == NULL);
+  assert(meos_errno() != 0);
+
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 
   meos_finalize();

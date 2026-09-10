@@ -830,6 +830,55 @@ SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
        numBands((SELECT r FROM rast2)) AS num_bands_two;
 
 -------------------------------------------------------------------------------
+-- reclass
+-------------------------------------------------------------------------------
+
+-- A band of values becomes a band of classes. The 3x3 band below holds
+-- 10, 20, 30 / 40, 50, 60 / 70, 80, 90, and a range written plainly is HALF
+-- OPEN AT THE TOP: 0-50 takes 10, 20, 30 and 40 but NOT 50, which falls in
+-- neither range and is left unmapped.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT (s).count AS n, (s).sum AS total, (s).min AS lo, (s).max AS hi
+FROM (SELECT ST_SummaryStats(reclass(r, 1, '0-50:1, 51-100:2', '32BF', -9999))
+  AS s FROM rast) t;
+
+-- A closing bracket includes the high bound, so [50-100] takes the 50 the
+-- plain form dropped and every pixel is mapped.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT (s).count AS n, (s).sum AS total
+FROM (SELECT ST_SummaryStats(
+  reclass(r, 1, '[0-50):1, [50-100]:2', '32BF', -9999)) AS s FROM rast) t;
+
+-- A band the raster does not have, and an expression stating no mapping, are
+-- both errors.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT reclass(r, 2, '0-50:1', '32BF') FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT reclass(r, 1, '0-50', '32BF') FROM rast;
+
+-------------------------------------------------------------------------------
 -- raster conversion to stbox
 -------------------------------------------------------------------------------
 

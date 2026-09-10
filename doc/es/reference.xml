@@ -3191,6 +3191,9 @@
 					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Muestrea una banda de ráster en cada instante de una trayectoria</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
 				</listitem>
 				<listitem>

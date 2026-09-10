@@ -180,6 +180,8 @@ extern GeomVal *raster_dump_as_polygons(const Raster *rast, int band,
   bool exclude_nodata, int *count);
 extern BandStats *raster_summary_stats(const Raster *rast, int band,
   bool exclude_nodata);
+extern Raster *raster_reclass(const Raster *rast, int band, const char *expr,
+  const char *pixeltype, bool has_nodata, double nodataval);
 extern void geomval_arr_free(GeomVal *gvarr, int count);
 
 /* Conversion functions for Raquet tiles */

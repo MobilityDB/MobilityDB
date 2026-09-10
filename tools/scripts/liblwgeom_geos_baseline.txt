@@ -26,4 +26,5 @@ meos/src/raster/raster_rtcore.c	rt_raster_get_x_skew
 meos/src/raster/raster_rtcore.c	rt_raster_get_y_offset
 meos/src/raster/raster_rtcore.c	rt_raster_get_y_scale
 meos/src/raster/raster_rtcore.c	rt_raster_get_y_skew
+meos/src/raster/raster_rtcore.c	rt_raster_replace_band
 meos/src/raster/raster_rtcore.c	rt_raster_set_srid

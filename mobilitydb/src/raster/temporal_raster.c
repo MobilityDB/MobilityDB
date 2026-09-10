@@ -225,6 +225,50 @@ Raster_num_bands(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * raster_reclass
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_reclass(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_reclass);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster whose band states the classes an expression maps its
+ * values onto
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] expr Reclassification expression
+ * @param[in] pixeltype Name of the pixel type of the resulting band
+ * @param[in] nodataval Nodata value of the resulting band, absent where the
+ * band states none
+ * @sqlfn reclass()
+ */
+Datum
+Raster_reclass(PG_FUNCTION_ARGS)
+{
+  /* The function is not STRICT, so every argument is tested: only the nodata
+   * value is optional, and the others reaching the kernel unread would be a
+   * wild pointer rather than an error */
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2) ||
+      PG_ARGISNULL(3))
+    PG_RETURN_NULL();
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int band = PG_GETARG_INT32(1);
+  char *expr = text_to_cstring(PG_GETARG_TEXT_P(2));
+  char *pixeltype = text_to_cstring(PG_GETARG_TEXT_P(3));
+  /* A nodata value the caller leaves out is no value at all, which is what
+   * the resulting band states rather than a zero standing in for it */
+  bool has_nodata = ! PG_ARGISNULL(4);
+  double nodataval = has_nodata ? PG_GETARG_FLOAT8(4) : 0.0;
+  Raster *result = raster_reclass(rast, band, expr, pixeltype, has_nodata,
+    nodataval);
+  pfree(expr); pfree(pixeltype);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * raster_tile_value_quadbin
  *****************************************************************************/
 
