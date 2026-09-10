@@ -67,5 +67,7 @@ var searchData=
   ['statistic_5fslot_5f2d_64',['STATISTIC_SLOT_2D',['../tspatial__selfuncs_8h_af59fad6b13b99e3ec4bef3d0c6573f74.html#af59fad6b13b99e3ec4bef3d0c6573f74',1,'STATISTIC_SLOT_2D():&#160;tspatial_selfuncs.h'],['../tspatial__analyze_8c_af59fad6b13b99e3ec4bef3d0c6573f74.html#af59fad6b13b99e3ec4bef3d0c6573f74',1,'STATISTIC_SLOT_2D():&#160;tspatial_analyze.c']]],
   ['statistic_5fslot_5fnd_65',['STATISTIC_SLOT_ND',['../tspatial__selfuncs_8h_a2dfd0b3ae6ca901426dda92118cde53a.html#a2dfd0b3ae6ca901426dda92118cde53a',1,'STATISTIC_SLOT_ND():&#160;tspatial_selfuncs.h'],['../tspatial__analyze_8c_a2dfd0b3ae6ca901426dda92118cde53a.html#a2dfd0b3ae6ca901426dda92118cde53a',1,'STATISTIC_SLOT_ND():&#160;tspatial_analyze.c']]],
   ['stboxpgetdatum_66',['STboxPGetDatum',['../stbox_8h_a7af3ef677bf8e92f4a5fdb3dc8bab334.html#a7af3ef677bf8e92f4a5fdb3dc8bab334',1,'stbox.h']]],
-  ['stroke_5fsegs_5fper_5fquad_67',['STROKE_SEGS_PER_QUAD',['../geo__op__diff_8c_acfdc26635f2cd93bea9cbf18b53372a6.html#acfdc26635f2cd93bea9cbf18b53372a6',1,'geo_op_diff.c']]]
+  ['stops_5fgeod_5fmargin_67',['STOPS_GEOD_MARGIN',['../tpoint__spatialfuncs_8c_ac655a6bf1f3871114006c6261e6c6f79.html#ac655a6bf1f3871114006c6261e6c6f79',1,'tpoint_spatialfuncs.c']]],
+  ['stops_5frel_5fmargin_68',['STOPS_REL_MARGIN',['../tpoint__spatialfuncs_8c_aac867c17343a0410f2a0debb442fd7f3.html#aac867c17343a0410f2a0debb442fd7f3',1,'tpoint_spatialfuncs.c']]],
+  ['stroke_5fsegs_5fper_5fquad_69',['STROKE_SEGS_PER_QUAD',['../geo__op__diff_8c_acfdc26635f2cd93bea9cbf18b53372a6.html#acfdc26635f2cd93bea9cbf18b53372a6',1,'geo_op_diff.c']]]
 ];

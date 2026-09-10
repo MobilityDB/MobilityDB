@@ -34,10 +34,11 @@ var searchData=
   ['stbox_31',['STBox',['../structSTBox.html',1,'']]],
   ['stboxgridstate_32',['STboxGridState',['../structSTboxGridState.html',1,'']]],
   ['stboxnode_33',['STboxNode',['../structSTboxNode.html',1,'']]],
-  ['strctx_34',['STRCtx',['../structSTRCtx.html',1,'']]],
-  ['stritem_35',['STRItem',['../structSTRItem.html',1,'']]],
-  ['struct_5fmeosprojsrscache_36',['struct_MEOSPROJSRSCache',['../structstruct__MEOSPROJSRSCache.html',1,'']]],
-  ['struct_5fprojsrscacheitem_37',['struct_PROJSRSCacheItem',['../structstruct__PROJSRSCacheItem.html',1,'']]],
-  ['struct_5fwayscache_38',['struct_WaysCache',['../structstruct__WaysCache.html',1,'']]],
-  ['struct_5fwayscacheentry_39',['struct_WaysCacheEntry',['../structstruct__WaysCacheEntry.html',1,'']]]
+  ['stopwindow_34',['StopWindow',['../structStopWindow.html',1,'']]],
+  ['strctx_35',['STRCtx',['../structSTRCtx.html',1,'']]],
+  ['stritem_36',['STRItem',['../structSTRItem.html',1,'']]],
+  ['struct_5fmeosprojsrscache_37',['struct_MEOSPROJSRSCache',['../structstruct__MEOSPROJSRSCache.html',1,'']]],
+  ['struct_5fprojsrscacheitem_38',['struct_PROJSRSCacheItem',['../structstruct__PROJSRSCacheItem.html',1,'']]],
+  ['struct_5fwayscache_39',['struct_WaysCache',['../structstruct__WaysCache.html',1,'']]],
+  ['struct_5fwayscacheentry_40',['struct_WaysCacheEntry',['../structstruct__WaysCacheEntry.html',1,'']]]
 ];
