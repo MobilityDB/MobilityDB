@@ -87,6 +87,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_adb9d27f24894ed2c9193f79fc2cc4304.html#adb9d27f24894ed2c9193f79fc2cc4304">buffer_add_round_cap</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9e63e71fc700b7d70f43be637966901b.html#a9e63e71fc700b7d70f43be637966901b">buffer_add_round_join</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a453b2cdec0ade699629309797172ccca.html#a453b2cdec0ade699629309797172ccca">buffer_add_segment</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a4b0280d5559ae0320c1620f7db9ab9ae.html#a4b0280d5559ae0320c1620f7db9ab9ae">buffer_add_selected_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7d8f05fffcfbed963c07d70582f303ce.html#a7d8f05fffcfbed963c07d70582f303ce">buffer_append_piece_to_curve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a849f1de6185ba1ddad1a932f844ee38b.html#a849f1de6185ba1ddad1a932f844ee38b">buffer_append_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a920ab0d54fa9324951fe8dda02ee5115.html#a920ab0d54fa9324951fe8dda02ee5115">buffer_arc_parameter</a></td></tr>
@@ -134,7 +135,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a67e9c405456e942a99f14de8b6e7b2b1.html#a67e9c405456e942a99f14de8b6e7b2b1">buffer_edge_tangent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afb829c58a0ed0b2d792c0b95225dd8fd.html#afb829c58a0ed0b2d792c0b95225dd8fd">buffer_edges_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad08c2034b71f879d650b89bf4f3b0493.html#ad08c2034b71f879d650b89bf4f3b0493">buffer_edges_reversed</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afb1083c794eb8283b626e1fdbe70ac4b.html#afb1083c794eb8283b626e1fdbe70ac4b">buffer_find_connected_piece</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a854b896e774295b3860ca182dc7c5575.html#a854b896e774295b3860ca182dc7c5575">buffer_find_connected_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af2ddd6487ff89fbaa1c64a07b913d952.html#af2ddd6487ff89fbaa1c64a07b913d952">buffer_geometries_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aadc34fa9f9207b5411027c3836bfaec4.html#aadc34fa9f9207b5411027c3836bfaec4">buffer_intersections_add</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a08831621623bf9d8db97ee4f46b04c3f.html#a08831621623bf9d8db97ee4f46b04c3f">buffer_is_areal_geometry</a></td></tr>
@@ -316,18 +317,6 @@ $(function() {
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Select the pieces of two boundaries that bound the overlay. </p>
-<p >A piece of one boundary bounds the answer when it lies on the side of the other geometry that the operation keeps, and the operation is the whole of what tells the three apart: </p><pre class="fragment">union         exterior(A wrt B) + exterior(B wrt A)
-intersection  interior(A wrt B) + interior(B wrt A)
-difference    exterior(A wrt B) + interior(B wrt A)
-</pre><p> so nothing about the two shapes enters beyond where each piece sits. A piece lying ON the other boundary is coincident, and <a class="el" href="geo__buffer_8c_a0d9a29d4a8399a5f6e3dbc240951624a.html#a0d9a29d4a8399a5f6e3dbc240951624a" title="Resolve coincident pieces belonging to one buffer.">buffer_resolve_coincident_piece</a> places it from the side each interior occupies. One it cannot place is returned in <code>boundary</code>, which the caller reads as a pair this does not answer. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">shared</td><td>The pieces BOTH boundaries carry, each once. Two boundaries running along one another carry the same piece, so a piece only one of them holds is not a stretch they share however it classifies: two boundaries touching at a point can each report a piece there, and the two are different curves rather than one shared with itself. A caller keeping no piece reads this as the stretch the pair meets along. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">coincident</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> where either boundary carries a piece lying ON the other. A resolved coincident piece the operation drops leaves neither <code>result</code> nor <code>boundary</code> anything, so this is the only report of it, and it tells a caller that a pair with nothing in <code>shared</code> is one whose reported coincidence does not resolve rather than one meeting at nodes </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_find_connected_piece</title>
+<title>MobilityDB: buffer_add_selected_piece</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -87,6 +87,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_adb9d27f24894ed2c9193f79fc2cc4304.html#adb9d27f24894ed2c9193f79fc2cc4304">buffer_add_round_cap</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9e63e71fc700b7d70f43be637966901b.html#a9e63e71fc700b7d70f43be637966901b">buffer_add_round_join</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a453b2cdec0ade699629309797172ccca.html#a453b2cdec0ade699629309797172ccca">buffer_add_segment</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a4b0280d5559ae0320c1620f7db9ab9ae.html#a4b0280d5559ae0320c1620f7db9ab9ae">buffer_add_selected_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7d8f05fffcfbed963c07d70582f303ce.html#a7d8f05fffcfbed963c07d70582f303ce">buffer_append_piece_to_curve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a849f1de6185ba1ddad1a932f844ee38b.html#a849f1de6185ba1ddad1a932f844ee38b">buffer_append_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a920ab0d54fa9324951fe8dda02ee5115.html#a920ab0d54fa9324951fe8dda02ee5115">buffer_arc_parameter</a></td></tr>
@@ -134,7 +135,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a67e9c405456e942a99f14de8b6e7b2b1.html#a67e9c405456e942a99f14de8b6e7b2b1">buffer_edge_tangent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afb829c58a0ed0b2d792c0b95225dd8fd.html#afb829c58a0ed0b2d792c0b95225dd8fd">buffer_edges_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad08c2034b71f879d650b89bf4f3b0493.html#ad08c2034b71f879d650b89bf4f3b0493">buffer_edges_reversed</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_afb1083c794eb8283b626e1fdbe70ac4b.html#afb1083c794eb8283b626e1fdbe70ac4b">buffer_find_connected_piece</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a854b896e774295b3860ca182dc7c5575.html#a854b896e774295b3860ca182dc7c5575">buffer_find_connected_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af2ddd6487ff89fbaa1c64a07b913d952.html#af2ddd6487ff89fbaa1c64a07b913d952">buffer_geometries_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aadc34fa9f9207b5411027c3836bfaec4.html#aadc34fa9f9207b5411027c3836bfaec4">buffer_intersections_add</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a08831621623bf9d8db97ee4f46b04c3f.html#a08831621623bf9d8db97ee4f46b04c3f">buffer_is_areal_geometry</a></td></tr>
@@ -241,8 +242,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="afb1083c794eb8283b626e1fdbe70ac4b" name="afb1083c794eb8283b626e1fdbe70ac4b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb1083c794eb8283b626e1fdbe70ac4b">&#9670;&#160;</a></span>buffer_find_connected_piece()</h2>
+<a id="a4b0280d5559ae0320c1620f7db9ab9ae" name="a4b0280d5559ae0320c1620f7db9ab9ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b0280d5559ae0320c1620f7db9ab9ae">&#9670;&#160;</a></span>buffer_add_selected_piece()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -251,40 +252,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static int buffer_find_connected_piece </td>
+          <td class="memname">static void buffer_add_selected_piece </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>pieces</em>, </td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>result</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const bool *&#160;</td>
-          <td class="paramname"><em>used</em>, </td>
+          <td class="paramtype">const <a class="el" href="structBufferPiece.html">BufferPiece</a> *&#160;</td>
+          <td class="paramname"><em>piece</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structPOINT2D.html">POINT2D</a>&#160;</td>
-          <td class="paramname"><em>point</em>, </td>
+          <td class="paramtype"><a class="el" href="structBufferLocator.html">BufferLocator</a> *&#160;</td>
+          <td class="paramname"><em>own</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>from_dx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>from_dy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>reverse</em>&#160;</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>inverted</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -299,17 +288,19 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the piece a boundary continues into at a node, and whether it is traversed in reverse. </p>
-<p >WHERE MORE THAN TWO PIECE-ENDS MEET AT ONE NODE the boundary pinches &ndash; two regions of the answer touch there at a single point &ndash; and which piece the walk takes decides whether it closes the two rings that are really there or ONE ring that visits the node twice. The ring is chosen by turning as sharply as the node allows, clockwise from the direction the walk arrives in, which is the traversal that keeps each face of the boundary to itself. A node where exactly two ends meet has one candidate and the rule does not arise </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Select the pieces of two boundaries that bound the overlay. </p>
+<p >A piece of one boundary bounds the answer when it lies on the side of the other geometry that the operation keeps, and the operation is the whole of what tells the three apart: </p><pre class="fragment">union         exterior(A wrt B) + exterior(B wrt A)
+intersection  interior(A wrt B) + interior(B wrt A)
+difference    exterior(A wrt B) + interior(B wrt A)
+</pre><p> so nothing about the two shapes enters beyond where each piece sits. A piece lying ON the other boundary is coincident, and <a class="el" href="geo__buffer_8c_a0d9a29d4a8399a5f6e3dbc240951624a.html#a0d9a29d4a8399a5f6e3dbc240951624a" title="Resolve coincident pieces belonging to one buffer.">buffer_resolve_coincident_piece</a> places it from the side each interior occupies. One it cannot place is returned in <code>boundary</code>, which the caller reads as a pair this does not answer. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pieces</td><td>Boundary pieces </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">used</td><td>Which of them the walk has taken </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">point</td><td>The node the walk stands on </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">from_dx,from_dy</td><td>The direction the walk arrived in, zero for the first piece of a ring, which has no direction to turn from </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">reverse</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> when the piece is traversed from its end </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">shared</td><td>The pieces BOTH boundaries carry, each once. Two boundaries running along one another carry the same piece, so a piece only one of them holds is not a stretch they share however it classifies: two boundaries touching at a point can each report a piece there, and the two are different curves rather than one shared with itself. A caller keeping no piece reads this as the stretch the pair meets along. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">coincident</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> where either boundary carries a piece lying ON the other. A resolved coincident piece the operation drops leaves neither <code>result</code> nor <code>boundary</code> anything, so this is the only report of it, and it tells a caller that a pair with nothing in <code>shared</code> is one whose reported coincidence does not resolve rather than one meeting at nodes</td></tr>
   </table>
   </dd>
 </dl>
+<p>Add a selected piece, recording which side of it the answer lies on</p>
+<p >THE CHAINING WALK NEEDS ONE FRAME AND THE PIECES DO NOT CARRY ONE. A piece arrives in the direction its OWN geometry happens to be written in, and the two operands are written independently, so a walk crossing from one boundary to the other reverses the side the answer sits on halfway round. Where exactly two piece-ends meet that costs nothing, because there is no choice to make. At a node FOUR of them share it decides the answer, and no ordering rule alone can be right in both frames at once. Near a piece the answer coincides with the piece's OWN geometry on one side, and which side is <a class="el" href="geo__buffer_8c_a8864dc93623285a6f12b755ae097a698.html#a8864dc93623285a6f12b755ae097a698" title="Determine which side of a boundary piece is inside a geometry.">buffer_piece_interior_side()</a>. The exception is a piece of the SUBTRACTED geometry in a difference: what the subtrahend encloses is exactly what the answer does not, so there the answer is on the other side. THE PIECE IS STORED AS IT ARRIVES. Reversing it here answers the same question and rotates the start vertex of every ring assembled from it, which is a spelling change across the whole surface for a defect living at pinch nodes alone. A side that cannot be read leaves the flag false, and the walk falls back on the ordering by itself, which is what it has to go on today. </p>
 
 </div>
 </div>

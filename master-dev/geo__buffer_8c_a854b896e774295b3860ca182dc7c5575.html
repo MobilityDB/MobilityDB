@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: BufferPieceType</title>
+<title>MobilityDB: buffer_find_connected_piece</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -135,7 +135,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a67e9c405456e942a99f14de8b6e7b2b1.html#a67e9c405456e942a99f14de8b6e7b2b1">buffer_edge_tangent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afb829c58a0ed0b2d792c0b95225dd8fd.html#afb829c58a0ed0b2d792c0b95225dd8fd">buffer_edges_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad08c2034b71f879d650b89bf4f3b0493.html#ad08c2034b71f879d650b89bf4f3b0493">buffer_edges_reversed</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a854b896e774295b3860ca182dc7c5575.html#a854b896e774295b3860ca182dc7c5575">buffer_find_connected_piece</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a854b896e774295b3860ca182dc7c5575.html#a854b896e774295b3860ca182dc7c5575">buffer_find_connected_piece</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af2ddd6487ff89fbaa1c64a07b913d952.html#af2ddd6487ff89fbaa1c64a07b913d952">buffer_geometries_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aadc34fa9f9207b5411027c3836bfaec4.html#aadc34fa9f9207b5411027c3836bfaec4">buffer_intersections_add</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a08831621623bf9d8db97ee4f46b04c3f.html#a08831621623bf9d8db97ee4f46b04c3f">buffer_is_areal_geometry</a></td></tr>
@@ -217,7 +217,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a1371febf4b1f4683a44e5f33437514f6.html#a1371febf4b1f4683a44e5f33437514f6">buffer_union_crossing</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae155be4d88548e58a02dd16478a8c702.html#ae155be4d88548e58a02dd16478a8c702">buffer_values_equal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac2cce919c2834205535f719912df8c41.html#ac2cce919c2834205535f719912df8c41">BufferPieceLocation</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a7f025bd3c76bf034a46da377863da7c0.html#a7f025bd3c76bf034a46da377863da7c0">BufferPieceType</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7f025bd3c76bf034a46da377863da7c0.html#a7f025bd3c76bf034a46da377863da7c0">BufferPieceType</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a86f08a9480ea92952cca8145ef3d4251.html#a86f08a9480ea92952cca8145ef3d4251">EndCapStyle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gae9d3f52595fdecd5d065416bf56d15c5.html#gae9d3f52595fdecd5d065416bf56d15c5">geom_buffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a4ae807b1d30d2a3c375f0616740e8b3c.html#a4ae807b1d30d2a3c375f0616740e8b3c">JoinStyle</a></td></tr>
@@ -242,23 +242,81 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7f025bd3c76bf034a46da377863da7c0" name="a7f025bd3c76bf034a46da377863da7c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7f025bd3c76bf034a46da377863da7c0">&#9670;&#160;</a></span>BufferPieceType</h2>
+<a id="a854b896e774295b3860ca182dc7c5575" name="a854b896e774295b3860ca182dc7c5575"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a854b896e774295b3860ca182dc7c5575">&#9670;&#160;</a></span>buffer_find_connected_piece()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="geo__buffer_8c_a7f025bd3c76bf034a46da377863da7c0.html#a7f025bd3c76bf034a46da377863da7c0">BufferPieceType</a></td>
+          <td class="memname">static int buffer_find_connected_piece </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>pieces</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool *&#160;</td>
+          <td class="paramname"><em>used</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structPOINT2D.html">POINT2D</a>&#160;</td>
+          <td class="paramname"><em>point</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>from_dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>from_dy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>want_left</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool *&#160;</td>
+          <td class="paramname"><em>reverse</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Type of a buffer boundary piece. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a7f025bd3c76bf034a46da377863da7c0a4a99111d37e265c6f92178fd004db3bb" name="a7f025bd3c76bf034a46da377863da7c0a4a99111d37e265c6f92178fd004db3bb"></a>BUFFER_SEGMENT&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a7f025bd3c76bf034a46da377863da7c0aa1e6d7dc5dd5eab37f172d3d69e92c29" name="a7f025bd3c76bf034a46da377863da7c0aa1e6d7dc5dd5eab37f172d3d69e92c29"></a>BUFFER_ARC&#160;</td><td class="fielddoc"></td></tr>
-</table>
+<p>Return the piece a boundary continues into at a node, and whether it is traversed in reverse. </p>
+<p >WHERE MORE THAN TWO PIECE-ENDS MEET AT ONE NODE the boundary pinches &ndash; two regions of the answer touch there at a single point &ndash; and which piece the walk takes decides whether it closes the two rings that are really there or ONE ring that visits the node twice. The ring is chosen by turning as sharply as the node allows, clockwise from the direction the walk arrives in, which is the traversal that keeps each face of the boundary to itself. A node where exactly two ends meet has one candidate and the rule does not arise </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pieces</td><td>Boundary pieces </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">used</td><td>Which of them the walk has taken </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">point</td><td>The node the walk stands on </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">from_dx,from_dy</td><td>The direction the walk arrived in, zero for the first piece of a ring, which has no direction to turn from </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">reverse</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> when the piece is traversed from its end </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
