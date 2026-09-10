@@ -843,6 +843,52 @@ SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
 (1 row)
 
 WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT (s).count AS n, (s).sum AS total, (s).min AS lo, (s).max AS hi
+FROM (SELECT ST_SummaryStats(reclass(r, 1, '0-50:1, 51-100:2', '32BF', -9999))
+  AS s FROM rast) t;
+ n | total | lo | hi 
+---+-------+----+----
+ 8 |    12 |  1 |  2
+(1 row)
+
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT (s).count AS n, (s).sum AS total
+FROM (SELECT ST_SummaryStats(
+  reclass(r, 1, '[0-50):1, [50-100]:2', '32BF', -9999)) AS s FROM rast) t;
+ n | total 
+---+-------
+ 9 |    14
+(1 row)
+
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT reclass(r, 2, '0-50:1', '32BF') FROM rast;
+ERROR:  The raster has no band 2, it has 1
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT reclass(r, 1, '0-50', '32BF') FROM rast;
+ERROR:  A mapping states a source and a destination around one colon: 0-50
+WITH rast AS (
   SELECT ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
 )
 SELECT stbox(r) AS box, stbox(r) = r::stbox AS cast_agrees FROM rast;

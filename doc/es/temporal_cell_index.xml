@@ -1978,6 +1978,39 @@ WHERE atSpan(rasterValue(trip, elev), floatspan '[200, 9999]') IS NOT NULL;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_reclass">
+				<indexterm significance="normal"><primary><varname>reclass</varname></primary></indexterm>
+				<para>Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+reclass(raster,band integer,expr text,pixeltype text,nodata float8=NULL) → raster
+</programlisting>
+				<para>La expresión sigue la gramática de <varname>ST_Reclass</varname> de PostGIS: una lista de asignaciones separadas por comas, cada una un rango de origen y un destino separados por dos puntos, siendo un rango un valor o dos separados por un guion. Un rango escrito sin corchetes incluye su extremo inferior y excluye el superior, mientras que <varname>(</varname> excluye el extremo inferior y <varname>]</varname> incluye el superior, de modo que <varname>0-50</varname> deja 50 sin asignar mientras que <varname>[50-100]</varname> lo toma. Un píxel que ningún rango toma contiene el valor nodata de la banda resultante, o cero cuando la banda no declara ninguno. Esa banda tiene el tipo de píxel <varname>pixeltype</varname>, con el nombre que le da PostGIS raster, como <varname>8BUI</varname>, y no declara valor nodata cuando se omite <varname>nodata</varname>. El ráster conserva su malla y sus demás bandas, de modo que las clases pueden leerse a lo largo de una trayectoria con <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT ST_DumpValues(reclass(r, 1, '0-50:1, 51-100:2', '8BUI', 0), 1) AS plain,
+  ST_DumpValues(reclass(r, 1, '0-50:1, [50-100]:2', '8BUI', 0), 1) AS bracket
+FROM rast;
+-- {{1,1,1},{1,NULL,2},{2,2,2}} | {{1,1,1},{1,2,2},{2,2,2}}
+-- Read the classes along a trajectory
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
+  POINT(1.5 1.5)@2001-01-02, POINT(2.5 0.5)@2001-01-03}',
+  reclass(r, 1, '0-50:1, [50-100]:2', '8BUI', 0))::text FROM rast;
+-- {1@2001-01-01, 2@2001-01-02, 2@2001-01-03}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>

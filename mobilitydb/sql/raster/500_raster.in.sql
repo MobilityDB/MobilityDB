@@ -334,6 +334,14 @@ CREATE FUNCTION numBands(raster)
   AS 'MODULE_PATHNAME', 'Raster_num_bands'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/* Not STRICT: a nodata value left out states that the resulting band carries
+ * none, which is a different answer from a band whose nodata value is zero */
+CREATE FUNCTION reclass(raster, integer, text, text,
+    float8 DEFAULT NULL)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_reclass'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 /******************************************************************************
  * Accessors for raquet tiles
  *****************************************************************************/
