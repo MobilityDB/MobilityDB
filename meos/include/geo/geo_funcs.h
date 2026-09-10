@@ -336,6 +336,37 @@ extern bool *pointarr_find_splits(const POINT2D **points, int npoints,
  *****************************************************************************/
 
 /**
+ * @brief Return the sign of the cross product of two vectors, or zero where
+ * the double evaluation cannot be trusted to carry it
+ * @details The vectors are differences of INPUT coordinates, each rounded
+ * once, so the question is the sign of one determinant and needs no
+ * tolerance: a band here would not protect the answer, it would decide it.
+ * What the sign does need is a guarantee that rounding has not eaten it, and
+ * that guarantee is a FILTER rather than a band. The bound is computed FROM
+ * THE OPERANDS and decides only whether the double is trustworthy, never what
+ * the answer is. It is Shewchuk's bound for a determinant of two such
+ * products, written in terms of @p DBL_EPSILON so that it is arithmetic
+ * rather than a constant anyone is invited to tune
+ * @param[in] rx,ry First vector
+ * @param[in] sx,sy Second vector
+ * @return 1 or -1 for the two turns, 0 for parallel or unable to tell
+ */
+static inline int
+cross_product_sign(double rx, double ry, double sx, double sy)
+{
+  double left = rx * sy;
+  double right = ry * sx;
+  double det = left - right;
+  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
+    (fabs(left) + fabs(right));
+  if (det > bound)
+    return 1;
+  if (det < - bound)
+    return -1;
+  return 0;
+}
+
+/**
  * @brief Return the intersection value obtained by computing the intersection 
  * of a line segment defined by two 2D points intersects an edge
  * @details Possible result values
@@ -365,11 +396,16 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
   /* Where is the start of the second segment relative to the first? */
   double qpx = cx - ax, qpy = cy - ay;
 
-  /* Are the two segments parallel?  */
+  /* Are the two segments parallel? The directions are differences of input
+   * coordinates, so the answer is the sign of their cross product, an area
+   * whose scale is the product of the two lengths: two GPS steps of 1e-6
+   * leaving one vertex in different directions carry a cross product near
+   * 1e-12 and a sign the filter still carries. The segments are parallel
+   * only where it cannot (#cross_product_sign) */
   double rxs = rx * sy - ry * sx;
 
   /* Collinear / parallel */
-  if (fabs(rxs) < MEOS_GEOM_TOLERANCE)
+  if (cross_product_sign(rx, ry, sx, sy) == 0)
   {
     /* The two segments run in one direction; what is left to decide is
      * whether they run along the SAME LINE or along two parallel ones. Both
