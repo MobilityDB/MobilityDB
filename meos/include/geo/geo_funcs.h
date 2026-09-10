@@ -159,6 +159,8 @@ extern bool meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2,
 extern bool meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
   bool *result);
 extern bool relate_is_areal(const LWGEOM *geom);
+extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy);
 
 /* The edges of one geometry, kept so that several relationships asked about it
  * read them once. A relationship extracts the edges of both its operands, and
@@ -336,104 +338,152 @@ extern bool *pointarr_find_splits(const POINT2D **points, int npoints,
  *****************************************************************************/
 
 /**
+ * @brief Return the sign of the cross product of the vectors B - A and D - C
+ * @details The operands are coordinates of input vertices, and every double is
+ * an exact rational, so the sign has one answer. A filter gives it where the
+ * double evaluation carries it: Shewchuk's bound on the rounding of a
+ * difference of two products of rounded differences, computed from the
+ * operands. Two products both zero need no more: a rounded difference is zero
+ * only where the two coordinates are equal, so each product has a zero
+ * factor. Where the filter cannot tell otherwise, #cross_product_sign_exact
+ * decides the same cross product exactly. With C = A the sign is the side of
+ * the line AB that D lies on
+ * @note Exact where no product of coordinate differences overflows or
+ * underflows
+ * @return 1 or -1 for the two turns, 0 exactly where the vectors are parallel
+ */
+static inline int
+cross_product_sign(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  double left = (bx - ax) * (dy - cy);
+  double right = (by - ay) * (dx - cx);
+  double det = left - right;
+  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
+    (fabs(left) + fabs(right));
+  if (det > bound)
+    return 1;
+  if (det < - bound)
+    return -1;
+  if (left == 0.0 && right == 0.0)
+    return 0;
+  return cross_product_sign_exact(ax, ay, bx, by, cx, cy, dx, dy);
+}
+
+/**
+ * @brief Return the position along the segment AB of a point of its line, 0
+ * at A and 1 at B
+ * @details The two ends read exactly 0 and 1; any other point reads its
+ * projection on the segment, clamped to it
+ * @param[in] ax,ay,bx,by Coordinates of the ends of the segment
+ * @param[in] r2 Squared length of the segment, not zero
+ * @param[in] px,py Coordinates of the point
+ */
+static inline double
+linesegm_param(double ax, double ay, double bx, double by, double r2,
+  double px, double py)
+{
+  if (px == ax && py == ay)
+    return 0.0;
+  if (px == bx && py == by)
+    return 1.0;
+  double t = ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / r2;
+  return (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+}
+
+/**
  * @brief Return the intersection value obtained by computing the intersection 
  * of a line segment defined by two 2D points intersects an edge
- * @details Possible result values
+ * @details The verdict is decided on the four endpoints and is exact: whether
+ * the two directions are parallel, whether the segments lie on one line and
+ * whether each end lies on the line of the other segment are signs of cross
+ * products of coordinate differences (#cross_product_sign), and along one
+ * line the stretch the two share runs between positions compared exactly.
  * - No intersection: INTERSECT_NONE -> t0 and t1 undefined
- * - Single point: INTERSECT_POINT -> t1 in [0,1], t1 ignored
- * - Overlap segment: INTERSECT_OVERLAP -> t0 <= t1 in [0,1]
- * Invariants:
- * - 0 <= t0 <= 1
- * - 0 <= t1 <= 1
- * - t0 <= t1
- * - Overlap must satisfy: t1 - t0 > MEOS_GEOM_TOLERANCE
- * @param[in] ax,ay Coordinates of the first point defining the first segment
- * @param[in] rx,ry Vector AB
+ * - Single point: INTERSECT_POINT -> t0 in [0,1], t1 ignored
+ * - Overlap segment: INTERSECT_OVERLAP -> t0 < t1 in [0,1]
+ * The parameters are positions along the first segment, 0 at its start and 1
+ * at its end, and read exactly 0 or 1 where the meeting is one of its ends.
+ * A first segment of no length meets nothing
+ * @param[in] ax,ay,bx,by Coordinates of the points defining the first segment
  * @param[in] cx,cy,dx,dy Coordinates of the points defining the second segment
- * @note To avoid recomputing vector AB in EVERY call to the functions,
- * we pass the vector instead of the second point b computed as follows
- * @code
- * double rx = bx - ax, ry = by - ay;
- * @endcode
  */
 static inline IntersectResult
-linesegm_intersect(double ax, double ay, double rx, double ry,
+linesegm_intersect(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy)
 {
   IntersectResult res = {INTERSECT_NONE, 0, 0};
-  double sx = dx - cx, sy = dy - cy; /* vector CD */
-  /* Where is the start of the second segment relative to the first? */
-  double qpx = cx - ax, qpy = cy - ay;
+  if (ax == bx && ay == by)
+    return res;
+  double rx = bx - ax, ry = by - ay;
+  double r2 = rx * rx + ry * ry;
+  /* The sides of the line of the first segment the ends of the second lie on.
+   * On one side, the segments cannot meet. Both on it, the second segment lies
+   * on the line of the first. Otherwise the two cross products these are the
+   * signs of differ, and their difference is the cross product of the two
+   * directions, so the directions cross */
+  int oc = cross_product_sign(ax, ay, bx, by, ax, ay, cx, cy);
+  int od = cross_product_sign(ax, ay, bx, by, ax, ay, dx, dy);
+  if ((oc > 0 && od > 0) || (oc < 0 && od < 0))
+    return res;
 
-  /* Are the two segments parallel?  */
-  double rxs = rx * sy - ry * sx;
-
-  /* Collinear / parallel */
-  if (fabs(rxs) < MEOS_GEOM_TOLERANCE)
+  if (oc == 0 && od == 0)
   {
-    /* The two segments run in one direction; what is left to decide is
-     * whether they run along the SAME LINE or along two parallel ones. Both
-     * quantities that answer it are areas rather than lengths, and each needs
-     * a threshold in its own units:
-     * - r2 is the squared length of AB, so its bound is the SQUARE of the
-     *   tolerance. Bounded by the plain tolerance it rejects every segment
-     *   shorter than that tolerance's square root, which is 1e-6, and such a
-     *   segment then fails to overlap even an identical copy of itself.
-     * - qpxr is the cross product of AC with AB, which is the separation of
-     *   the two lines TIMES the length of AB. Bounded by the plain tolerance
-     *   it stands for a separation of tolerance/|AB|, so two lines far apart
-     *   read as one line whenever AB is short enough. Dividing by the length
-     *   puts the bound back on the separation, where it belongs. */
-    double r2 = rx * rx + ry * ry;
-    if (r2 < MEOS_GEOM_TOLERANCE * MEOS_GEOM_TOLERANCE)
+    /* One line: the shared stretch runs between the positions of the ends
+     * along it, read off the coordinate the first segment advances most in
+     * and oriented to grow from its start to its end, so the order of two
+     * positions is the order of two input coordinates */
+    bool alongx = fabs(rx) >= fabs(ry);
+    double sgn = ((alongx ? rx : ry) > 0.0) ? 1.0 : -1.0;
+    double pa = sgn * (alongx ? ax : ay), pb = sgn * (alongx ? bx : by);
+    double pc = sgn * (alongx ? cx : cy), pd = sgn * (alongx ? dx : dy);
+    bool cfirst = pc <= pd;
+    double plo = cfirst ? pc : pd, phi = cfirst ? pd : pc;
+    double lox = cfirst ? cx : dx, loy = cfirst ? cy : dy;
+    double hix = cfirst ? dx : cx, hiy = cfirst ? dy : cy;
+    if (plo < pa)
+    {
+      plo = pa; lox = ax; loy = ay;
+    }
+    if (phi > pb)
+    {
+      phi = pb; hix = bx; hiy = by;
+    }
+    if (plo > phi)
       return res;
-
-    /* Is point C aligned with segment AB? */
-    double qpxr = qpx * ry - qpy * rx;
-    /* If qpxr != 0: parallel, if qpxr == 0: collinear */
-    if (fabs(qpxr) > MEOS_GEOM_TOLERANCE * sqrt(r2))
-      return res;
-
-    double t0 = (qpx * rx + qpy * ry) / r2;
-    double t1 = t0 + (sx * rx + sy * ry) / r2;
-
-    /* Order t0 < t1 */
-    if (t0 > t1) { double tmp = t0; t0 = t1; t1 = tmp; }
-    /* No intersection */
-    if (t1 < 0 || t0 > 1)
-      return res;
-
-    /* Clamp values */
-    if (t0 < 0) t0 = 0;
-    if (t1 > 1) t1 = 1;
-
-    if (fabs(t1 - t0) < MEOS_GEOM_TOLERANCE)
+    res.t0 = linesegm_param(ax, ay, bx, by, r2, lox, loy);
+    if (plo == phi)
     {
       res.type = INTERSECT_POINT;
-      res.t0 = t0;
       return res;
     }
-
     res.type = INTERSECT_OVERLAP;
-    res.t0 = t0;
-    res.t1 = t1;
+    res.t1 = linesegm_param(ax, ay, bx, by, r2, hix, hiy);
     return res;
   }
 
-  /* Proper intersection */
-  double t = (qpx * sy - qpy * sx) / rxs;
-  double u = (qpx * ry - qpy * rx) / rxs;
-
-  if (t < -MEOS_GEOM_TOLERANCE || t > 1 + MEOS_GEOM_TOLERANCE ||
-      u < -MEOS_GEOM_TOLERANCE || u > 1 + MEOS_GEOM_TOLERANCE)
+  /* Crossing directions: the segments meet where the first does not lie
+   * wholly on one side of the line of the second either */
+  int oa = cross_product_sign(cx, cy, dx, dy, cx, cy, ax, ay);
+  int ob = cross_product_sign(cx, cy, dx, dy, cx, cy, bx, by);
+  if ((oa > 0 && ob > 0) || (oa < 0 && ob < 0))
     return res;
-
-  /* Clamp values */
-  if (fabs(t) < MEOS_GEOM_TOLERANCE) t = 0;
-  if (fabs(t - 1) < MEOS_GEOM_TOLERANCE) t = 1;
-
   res.type = INTERSECT_POINT;
-  res.t0 = t;
+  if (oa == 0)
+    res.t0 = 0.0;
+  else if (ob == 0)
+    res.t0 = 1.0;
+  else if (oc == 0)
+    res.t0 = linesegm_param(ax, ay, bx, by, r2, cx, cy);
+  else if (od == 0)
+    res.t0 = linesegm_param(ax, ay, bx, by, r2, dx, dy);
+  else
+  {
+    /* A crossing interior to both, whose position is a quotient */
+    double sx = dx - cx, sy = dy - cy;
+    double t = ((cx - ax) * sy - (cy - ay) * sx) / (rx * sy - ry * sx);
+    res.t0 = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+  }
   return res;
 }
 

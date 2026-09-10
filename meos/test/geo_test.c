@@ -321,6 +321,36 @@ int main(void)
   }
   meos_errno_reset();
 
+  /* Two GPS steps of about 1e-6 in degrees leaving one vertex in different
+   * directions share that vertex and nothing else: they intersect, and their
+   * interiors do not meet. Both pairs are real AIS steps: in the first the two
+   * start at one vertex, in the second the end of one is the start of the
+   * other */
+  struct { const char *a, *b; } gpssteps[] = {
+    { "LINESTRING(11.198253 55.211805,11.198252 55.211803)",
+      "LINESTRING(11.198253 55.211805,11.19825 55.2118)" },
+    { "LINESTRING(11.198253 55.211805,11.198252 55.211803)",
+      "LINESTRING(11.19825 55.2118,11.198253 55.211805)" },
+  };
+  for (size_t i = 0; i < sizeof(gpssteps) / sizeof(gpssteps[0]); i++)
+  {
+    GSERIALIZED *ga = geom_in(gpssteps[i].a, -1);
+    GSERIALIZED *gb = geom_in(gpssteps[i].b, -1);
+    assert(ga != NULL);
+    assert(gb != NULL);
+    meos_errno_reset();
+    char *gm = geom_relate(ga, gb);
+    bool gi = geom_intersects(ga, gb);
+    printf("geom_relate(%s, %s): %s, intersects %d, errno %d\n",
+      gpssteps[i].a, gpssteps[i].b, gm ? gm : "(NULL)", gi, meos_errno());
+    assert(gm != NULL);
+    assert(strcmp(gm, "FF1F00102") == 0);
+    assert(gi == true);
+    assert(meos_errno() == 0);
+    free(gm); free(ga); free(gb);
+  }
+  meos_errno_reset();
+
   /* Two areas lying on OPPOSITE SIDES of one line share no area, so neither
    * interior holds a point of the other's boundary, however near the two
    * boundaries run. Deciding that from a boundary portion means classifying a
