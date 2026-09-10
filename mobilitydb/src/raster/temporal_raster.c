@@ -415,6 +415,66 @@ Raster_summary_stats(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * raster_dump_as_polygons
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_dump_as_polygons(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_dump_as_polygons);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the polygons of a raster band, one for each group of pixels
+ * carrying the same value
+ * @details Set-returning function emitting one PostGIS geomval record per
+ * polygon, as ST_DumpAsPolygons emits them
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the pixels the band states as nodata
+ * out
+ * @sqlfn dumpAsPolygons()
+ */
+Datum
+Raster_dump_as_polygons(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+
+  if (SRF_IS_FIRSTCALL())
+  {
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* The polygons are kept across the calls, so they are computed in the
+     * context that outlives them */
+    MemoryContext oldctx = MemoryContextSwitchTo(
+      funcctx->multi_call_memory_ctx);
+    Datum rast_datum = PG_GETARG_DATUM(0);
+    Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+    int band = PG_GETARG_INT32(1);
+    bool exclude_nodata = PG_GETARG_BOOL(2);
+    int count = 0;
+    funcctx->user_fctx = (void *) raster_dump_as_polygons(rast, band,
+      exclude_nodata, &count);
+    funcctx->max_calls = count;
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldctx);
+  }
+
+  funcctx = SRF_PERCALL_SETUP();
+  GeomVal *gvarr = (GeomVal *) funcctx->user_fctx;
+  if (funcctx->call_cntr >= funcctx->max_calls)
+  {
+    geomval_arr_free(gvarr, funcctx->max_calls);
+    SRF_RETURN_DONE(funcctx);
+  }
+
+  const GeomVal *gv = &gvarr[funcctx->call_cntr];
+  Datum values[2];
+  bool isnull[2] = {false, false};
+  values[0] = PointerGetDatum(gv->geom);
+  values[1] = Float8GetDatum(gv->val);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
+}
+
+/*****************************************************************************
  * raster_tile_value_quadbin
  *****************************************************************************/
 

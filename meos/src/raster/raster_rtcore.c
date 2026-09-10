@@ -1077,7 +1077,7 @@ geomval_arr_free(GeomVal *gvarr, int count)
  * @return An array the caller releases with #geomval_arr_free(), or NULL where
  * the band covers nothing, in which case @p count is 0 and no error is stated
  * @errval NULL
- * @csqlfn None, the host answers this operation on its own raster type
+ * @csqlfn #Raster_dump_as_polygons()
  */
 GeomVal *
 raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
@@ -1126,9 +1126,11 @@ raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
       "Could not read band %d of the raster as polygons", band);
     return NULL;
   }
+  /* The raster core allocates the array with its own allocator, not the one
+   * MEOS answers from, so it is released through the raster core as well */
   if (nelems < 1)
   {
-    pfree(geomval);
+    rtdealloc(geomval);
     return NULL;
   }
 
@@ -1144,7 +1146,7 @@ raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
     result[i].val = geomval[i].val;
     lwgeom_free(geom);
   }
-  pfree(geomval);
+  rtdealloc(geomval);
 
   *count = nelems;
   return result;

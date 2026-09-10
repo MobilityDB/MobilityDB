@@ -3206,6 +3206,9 @@
 					<para><link linkend="raster_summaryStats"><varname>summaryStats</varname></link>: Devuelve las estadísticas de los píxeles de una banda de ráster</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>: Devuelve los polígonos de una banda de ráster, uno por cada grupo de píxeles que comparten un valor &SRF;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
 				</listitem>
 				<listitem>

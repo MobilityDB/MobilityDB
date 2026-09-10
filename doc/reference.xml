@@ -3215,6 +3215,9 @@
 					<para><link linkend="raster_summaryStats"><varname>summaryStats</varname></link>: Return the statistics of the pixels of a raster band</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>: Return the polygons of a raster band, one for each group of pixels sharing a value &SRF;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a <varname>raquet</varname> raster tile along a trajectory</para>
 				</listitem>
 				<listitem>

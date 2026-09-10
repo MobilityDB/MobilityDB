@@ -396,6 +396,20 @@ CREATE FUNCTION summaryStats(raster, integer DEFAULT 1, boolean DEFAULT true)
   AS 'MODULE_PATHNAME', 'Raster_summary_stats'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the polygons of a raster band, one for each group of pixels
+ * carrying the same value
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the pixels the band states as nodata
+ * out
+ */
+CREATE FUNCTION dumpAsPolygons(raster, integer DEFAULT 1, boolean DEFAULT true)
+  RETURNS SETOF geomval
+  AS 'MODULE_PATHNAME', 'Raster_dump_as_polygons'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Accessors for raquet tiles
  *****************************************************************************/

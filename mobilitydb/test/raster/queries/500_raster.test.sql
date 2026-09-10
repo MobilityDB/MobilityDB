@@ -1008,6 +1008,62 @@ WITH rast AS (
 SELECT summaryStats(r, 2) FROM rast;
 
 -------------------------------------------------------------------------------
+-- dumpAsPolygons
+-------------------------------------------------------------------------------
+
+-- A band states a value per pixel; its polygons state the regions those values
+-- cover, one per group of pixels sharing a value, as PostGIS's
+-- ST_DumpAsPolygons answers them. The band holds three regions and a nodata
+-- pixel. Each polygon carries the reference system of the raster where
+-- ST_DumpAsPolygons states none, so the comparison sets it on PostGIS's
+-- answer, and a full join shows a region either answer lacks.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[1,1,2], ARRAY[1,2,2], ARRAY[3,3,-9999]]::float8[][]
+  ) AS r
+), ours AS (
+  SELECT (d).val, (d).geom FROM (SELECT dumpAsPolygons(r) AS d FROM rast) t
+), pg AS (
+  SELECT (d).val, ST_SetSRID((d).geom, 4326) AS geom
+  FROM (SELECT ST_DumpAsPolygons(r) AS d FROM rast) t
+)
+SELECT o.val, ST_SRID(o.geom) AS srid, ST_Area(o.geom) AS area,
+  ST_Equals(o.geom, p.geom) AS as_postgis
+FROM ours o FULL JOIN pg p ON o.val = p.val
+ORDER BY o.val;
+
+-- With the nodata pixels counted, the nodata pixel is a region of its own, as
+-- ST_DumpAsPolygons counts it; a band whose every pixel is nodata covers
+-- nothing, which both answer with no polygon.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[1,1,2], ARRAY[1,2,2], ARRAY[3,3,-9999]]::float8[][]
+  ) AS r
+), empty AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, -9999::float8, -9999::float8) AS r
+)
+SELECT (SELECT count(*) FROM rast, dumpAsPolygons(r, 1, false)) AS regions,
+  (SELECT count(*) FROM rast, ST_DumpAsPolygons(r, 1, false)) AS postgis_regions,
+  (SELECT count(*) FROM empty, dumpAsPolygons(r)) AS empty_regions,
+  (SELECT count(*) FROM empty, ST_DumpAsPolygons(r)) AS postgis_empty_regions;
+
+-- A band the raster does not have is an error.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT count(*) FROM rast, dumpAsPolygons(r, 2);
+
+-------------------------------------------------------------------------------
 -- raster conversion to stbox
 -------------------------------------------------------------------------------
 
