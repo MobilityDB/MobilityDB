@@ -1,0 +1,13 @@
+SELECT ST_Width(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326));
+ st_width 
+----------
+        3
+(1 row)
+
+SELECT numBands(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0,
+  0.0, 4326), '32BF'::text, 0.0::float8, NULL::float8));
+ numbands 
+----------
+        1
+(1 row)
+
