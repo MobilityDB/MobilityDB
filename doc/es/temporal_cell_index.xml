@@ -384,7 +384,7 @@ SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &amp
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_accessors">
 		<title>Accesores</title>
-		<para><link linkend="raster_numBands"><varname>numBands</varname></link>, <link linkend="raster_SRID"><varname>SRID</varname></link> y los accesores de la esquina, la escala y la inclinación leen la malla de un <varname>raster</varname> de PostGIS; <link linkend="raquet_width"><varname>width</varname></link> y <link linkend="raquet_height"><varname>height</varname></link> leen por igual un ráster y una tesela <varname>raquet</varname>, y los demás accesores leen una tesela <varname>raquet</varname>.</para>
+		<para><link linkend="raster_numBands"><varname>numBands</varname></link>, <link linkend="raster_SRID"><varname>SRID</varname></link> y los accesores de la esquina, la escala y la inclinación leen la malla de un <varname>raster</varname> de PostGIS; <link linkend="raquet_width"><varname>width</varname></link>, <link linkend="raquet_height"><varname>height</varname></link> y los accesores de banda leen por igual un ráster y una tesela <varname>raquet</varname>, y los demás accesores leen una tesela <varname>raquet</varname>.</para>
 
 		<para>Un valor <varname>raquet</varname> es autodescriptivo: los accesores siguientes leen la georreferenciación y la disposición que transporta, de modo que una tesela empaquetada con el constructor <link linkend="raquet"><varname>raquet</varname></link> o decodificada con <link linkend="raquetRead"><varname>raquetRead</varname></link> puede inspeccionarse sin conservar las columnas sueltas a partir de las cuales se construyó.</para>
 
@@ -574,32 +574,58 @@ SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
-			<listitem xml:id="raquet_nodata">
-				<indexterm significance="normal"><primary><varname>nodata</varname></primary></indexterm>
-				<para>Devuelve el valor centinela nodata de una tesela Raquet</para>
+			<listitem xml:id="raster_bandPixelType">
+				<indexterm significance="normal"><primary><varname>bandPixelType</varname></primary></indexterm>
+				<para>Devuelve el nombre del tipo de dato de píxel de una banda de un ráster o de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-nodata(raquet) → float8
+bandPixelType(raster,band integer=1) → text
+bandPixelType(raquet) → text
 </programlisting>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8', 255));
--- 255
--- The sentinel defaults to 0 when the constructor omits it.
-SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- 0
+				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela, tanto para una banda de PostGIS como para una tesela, de modo que una banda y una tesela del mismo tipo informan el mismo nombre.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'));
+-- int16
+-- Read back the layout of a packaged tile
+SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile)
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
+-- 5193776270265024512 | 2 | 2 | uint8
 </programlisting>
 			</listitem>
-			<listitem xml:id="raquet_pixtype">
-				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
-				<para>Devuelve el nombre del tipo de dato de píxel de una tesela Raquet</para>
+			<listitem xml:id="raster_bandHasNoDataValue">
+				<indexterm significance="normal"><primary><varname>bandHasNoDataValue</varname></primary></indexterm>
+				<para>Devuelve si una banda de un ráster o una tesela Raquet establece un valor nodata</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-pixtype(raquet) → text
+bandHasNoDataValue(raster,band integer=1) → boolean
+bandHasNoDataValue(raquet) → boolean
 </programlisting>
-				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela, por lo que se compara igual a ese campo tal cual.</para>
+				<para>Una banda que no establece ninguno no tiene píxel que excluir, de modo que cada píxel que contiene lleva un valor.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Read back the layout of a packaged tile
-SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
--- 5193776270265024512 | 2 | 2 | uint8 | 0
+SELECT bandHasNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
+  0::float8, -9999::float8));
+-- true
+SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'uint8'));
+-- false
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_bandNoDataValue">
+				<indexterm significance="normal"><primary><varname>bandNoDataValue</varname></primary></indexterm>
+				<para>Devuelve el valor nodata de una banda de un ráster o de una tesela Raquet</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+bandNoDataValue(raster,band integer=1) → float8
+bandNoDataValue(raquet) → float8
+</programlisting>
+				<para>Una banda que no establece ningún valor nodata devuelve <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT bandNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
+  0::float8, -9999::float8));
+-- -9999
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8',
+  255));
+-- 255
+-- A tile built without a nodata value states none
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- NULL
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquet_pixels">
@@ -608,7 +634,7 @@ FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS 
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 pixels(raquet) → bytea
 </programlisting>
-				<para>Los bytes están en orden de fila mayor y empaquetados, <varname>width</varname> × <varname>height</varname> píxeles del tamaño de <varname>pixtype</varname> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</para>
+				<para>Los bytes están en orden de fila mayor y empaquetados, <varname>width</varname> × <varname>height</varname> píxeles del tamaño de <link linkend="raster_bandPixelType"><varname>bandPixelType</varname></link> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- \x01020304

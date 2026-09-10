@@ -108,8 +108,9 @@ extern Raquet *raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbi
 extern uint64 raquet_quadbin(const Raquet *rq);
 extern int raquet_width(const Raquet *rq);
 extern int raquet_height(const Raquet *rq);
-extern double raquet_nodata(const Raquet *rq);
-extern char *raquet_pixtype(const Raquet *rq);
+extern char *raquet_band_pixel_type(const Raquet *rq);
+extern bool raquet_band_has_nodata_value(const Raquet *rq);
+extern bool raquet_band_nodata_value(const Raquet *rq, double *result);
 extern uint8_t *raquet_pixels(const Raquet *rq, size_t *size_out);
 extern uint32 raquet_hash(const Raquet *rq);
 extern uint64 raquet_hash_extended(const Raquet *rq, uint64 seed);
@@ -166,7 +167,8 @@ extern double raster_skew_x(const Raster *rast);
 extern double raster_skew_y(const Raster *rast);
 extern char *raster_band_pixel_type(const Raster *rast, int band);
 extern bool raster_band_has_nodata_value(const Raster *rast, int band);
-extern double raster_band_nodata_value(const Raster *rast, int band);
+extern bool raster_band_nodata_value(const Raster *rast, int band,
+  double *result);
 
 /* Processing functions for PostGIS rasters */
 

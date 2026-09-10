@@ -20,7 +20,7 @@ SELECT COUNT(DISTINCT width(tile)), COUNT(DISTINCT height(tile)) FROM tbl_raquet
      1 |     1
 (1 row)
 
-SELECT COUNT(DISTINCT pixtype(tile)) FROM tbl_raquet;
+SELECT COUNT(DISTINCT bandPixelType(tile)) FROM tbl_raquet;
  count 
 -------
      1

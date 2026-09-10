@@ -179,9 +179,10 @@ int main(void)
   Raster *withnodata = raster_from_hexwkb(raster_values);
   assert(withnodata != NULL);
   assert(raster_band_has_nodata_value(withnodata, 1));
-  assert(raster_band_nodata_value(withnodata, 1) == -9999.0);
-  printf("raster_band_nodata_value(values, 1): %g\n",
-    raster_band_nodata_value(withnodata, 1));
+  double nodata = 0.0;
+  assert(raster_band_nodata_value(withnodata, 1, &nodata));
+  assert(nodata == -9999.0);
+  printf("raster_band_nodata_value(values, 1): %g\n", nodata);
   assert(meos_errno() == 0);
 
   /* A band number outside the bands the raster holds is an error, on either
@@ -192,9 +193,13 @@ int main(void)
   meos_errno_reset();
   assert(raster_band_pixel_type(shape, 2) == NULL);
   assert(meos_errno() != 0);
+  /* A band stating no nodata value answers false with no error and leaves the
+   * result where it stands, as a box without X answers its xmin */
   meos_errno_reset();
-  assert(raster_band_nodata_value(shape, 1) == DBL_MAX);
-  assert(meos_errno() != 0);
+  nodata = 0.0;
+  assert(! raster_band_nodata_value(shape, 1, &nodata));
+  assert(nodata == 0.0);
+  assert(meos_errno() == 0);
   meos_errno_reset();
 
   free(shape); free(withnodata);
@@ -246,7 +251,7 @@ int main(void)
   assert(! raster_band_has_nodata_value(NULL, 1));
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(raster_band_nodata_value(NULL, 1) == DBL_MAX);
+  assert(! raster_band_nodata_value(NULL, 1, &nodata));
   assert(meos_errno() != 0);
   meos_errno_reset();
   assert(raster_to_stbox(NULL) == NULL);

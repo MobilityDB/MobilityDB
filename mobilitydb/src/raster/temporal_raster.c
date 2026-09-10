@@ -387,6 +387,72 @@ Raster_skew_y(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Bands of a raster
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_band_pixel_type(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_band_pixel_type);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the name of the pixel data type of a raster band
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @sqlfn bandPixelType()
+ */
+Datum
+Raster_band_pixel_type(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int band = PG_GETARG_INT32(1);
+  char *str = raster_band_pixel_type(rast, band);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Raster_band_has_nodata_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_band_has_nodata_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return whether a raster band states a nodata value
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @sqlfn bandHasNoDataValue()
+ */
+Datum
+Raster_band_has_nodata_value(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int band = PG_GETARG_INT32(1);
+  bool result = raster_band_has_nodata_value(rast, band);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raster_band_nodata_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_band_nodata_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the nodata value of a raster band, or NULL when the band
+ * states none
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @sqlfn bandNoDataValue()
+ */
+Datum
+Raster_band_nodata_value(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int band = PG_GETARG_INT32(1);
+  double result;
+  if (! raster_band_nodata_value(rast, band, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************
  * raster_reclass
  *****************************************************************************/
 
@@ -1030,38 +1096,58 @@ Raquet_height(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(result);
 }
 
-PGDLLEXPORT Datum Raquet_nodata(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Raquet_nodata);
+PGDLLEXPORT Datum Raquet_band_pixel_type(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_band_pixel_type);
 /**
  * @ingroup mobilitydb_raster
- * @brief Return the nodata sentinel value of a Raquet tile
- * @sqlfn nodata()
+ * @brief Return the name of the pixel data type of the band of a Raquet tile
+ * @sqlfn bandPixelType()
  */
 Datum
-Raquet_nodata(PG_FUNCTION_ARGS)
+Raquet_band_pixel_type(PG_FUNCTION_ARGS)
 {
   Raquet *rq = PG_GETARG_RAQUET_P(0);
-  double result = raquet_nodata(rq);
-  PG_FREE_IF_COPY(rq, 0);
-  PG_RETURN_FLOAT8(result);
-}
-
-PGDLLEXPORT Datum Raquet_pixtype(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Raquet_pixtype);
-/**
- * @ingroup mobilitydb_raster
- * @brief Return the name of the pixel data type of a Raquet tile
- * @sqlfn pixtype()
- */
-Datum
-Raquet_pixtype(PG_FUNCTION_ARGS)
-{
-  Raquet *rq = PG_GETARG_RAQUET_P(0);
-  char *str = raquet_pixtype(rq);
+  char *str = raquet_band_pixel_type(rq);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(rq, 0);
   PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Raquet_band_has_nodata_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_band_has_nodata_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return whether the band of a Raquet tile states a nodata value
+ * @sqlfn bandHasNoDataValue()
+ */
+Datum
+Raquet_band_has_nodata_value(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  bool result = raquet_band_has_nodata_value(rq);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raquet_band_nodata_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_band_nodata_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the nodata value of the band of a Raquet tile, or NULL when
+ * the band states none
+ * @sqlfn bandNoDataValue()
+ */
+Datum
+Raquet_band_nodata_value(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  double result;
+  bool found = raquet_band_nodata_value(rq, &result);
+  PG_FREE_IF_COPY(rq, 0);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 PGDLLEXPORT Datum Raquet_pixels(PG_FUNCTION_ARGS);

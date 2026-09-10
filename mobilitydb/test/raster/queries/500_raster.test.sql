@@ -610,25 +610,25 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 
 -- The accessors read back the georeferencing and layout the tile carries, so a
 -- packaged tile needs none of the loose columns it was built from.
-SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
+SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile), bandNoDataValue(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
         'UINT8') AS tile) t;
 
--- Every pixel type name round-trips through the constructor and pixtype.
-SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'INT16')),
-       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'INT32')),
-       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT32')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+-- Every pixel type name round-trips through the constructor and bandPixelType.
+SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')),
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'INT16')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'INT32')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT32')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          'FLOAT64')),
-       pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'INT8')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT16')),
-       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT32')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+       bandPixelType(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'INT8')),
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT16')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT32')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          'INT64')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          'UINT64')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT16'));
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT16'));
 
 -- The pixel size of a type is the one the specification gives it, so a band of
 -- one pixel is exactly as many bytes wide.
@@ -642,9 +642,9 @@ SELECT raquet('\x0102030405060708'::bytea, 2, 1, 5193776270265024512::bigint,
 -- The pixel type name is read without regard to case, so the lower-case
 -- spelling the RaQuet specification gives a tile's type field is accepted as
 -- it stands. The name reported back keeps the documented upper case.
-SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
   'uint8'));
-SELECT pixtype(raquet('\x0102030405060708'::bytea, 2, 1,
+SELECT bandPixelType(raquet('\x0102030405060708'::bytea, 2, 1,
   5193776270265024512::bigint, 'float32'));
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint8')
        = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
@@ -652,17 +652,17 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint8')
 -- A pixel type is also accepted under the name PostGIS raster gives it, so the
 -- band type an ST_BandPixelType call reports passes into the constructor as it
 -- stands. The tile reports the name of the RaQuet specification.
-SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, '8BUI')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BSI')),
-       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, '32BF')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, '8BUI')),
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BSI')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, '32BF')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          '64BF')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BF')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BF')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          '64BSI'));
 
 -- The band type of a PostGIS raster carries into the constructor unchanged.
-SELECT pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint,
+SELECT bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint,
   ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '32BF'), 1)));
 
 -- The two spellings name the same tile.
@@ -671,24 +671,33 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '8BUI')
 
 -- A PostGIS pixel type bounded to less than a byte names a uint8 band, since
 -- PostGIS stores one a byte a pixel.
-SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '1BB')),
-       pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '2BUI')),
-       pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI'));
+SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '1BB')),
+       bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '2BUI')),
+       bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI'));
 
 -- The bound is the only thing such a name adds, so the tile is the uint8 one.
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI')
        = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint8');
 
 -- A band type ST_BandPixelType reports for such a type carries in as it stands.
-SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
   ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '4BUI'), 1)));
 
 -- An unknown name is still rejected, whatever its case.
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint12');
 
--- The nodata sentinel supplied to the constructor is the one reported back.
-SELECT nodata(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
-  -9999.0));
+-- The nodata value supplied to the constructor is the one reported back.
+SELECT bandHasNoDataValue(tile), bandNoDataValue(tile)
+FROM (SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
+  -9999.0) AS tile) t;
+
+-- A tile built without a nodata value states none, so its nodata value is NULL
+-- rather than a number, and the constructor given that NULL rebuilds the tile.
+SELECT bandHasNoDataValue(tile), bandNoDataValue(tile),
+  raquet(pixels(tile), width(tile), height(tile), quadbin(tile),
+    bandPixelType(tile), bandNoDataValue(tile)) = tile AS round_trips
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+        'UINT8') AS tile) t;
 
 -- The pixel bytes are returned in the layout the constructor accepts, so a
 -- tile rebuilt from its own accessors equals the tile it came from.
@@ -696,7 +705,7 @@ SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
   'UINT8'));
 
 SELECT raquet(pixels(tile), width(tile), height(tile), quadbin(tile),
-         pixtype(tile), nodata(tile)) = tile AS round_trips
+         bandPixelType(tile), bandNoDataValue(tile)) = tile AS round_trips
 FROM (SELECT raquet('\x0102030405060708'::bytea, 2, 2,
         5193776270265024512::bigint, 'INT16', -9999.0) AS tile) t;
 
@@ -848,6 +857,38 @@ SELECT width(r), height(r), SRID(r), upperLeftX(r), upperLeftY(r), scaleX(r),
   scaleY(r) = ST_ScaleY(r) AND skewX(r) = ST_SkewX(r) AND
   skewY(r) = ST_SkewY(r) AS as_postgis
 FROM rast;
+
+-------------------------------------------------------------------------------
+-- Bands of a raster
+-------------------------------------------------------------------------------
+
+-- A band reports its pixel type under the name the RaQuet specification gives
+-- it, the name a raquet tile of that type reports, and its nodata value as
+-- PostGIS reports it: the value the band states, and NULL for a band stating
+-- none.
+WITH rast(r) AS (VALUES
+  (ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8)),
+  (ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '16BSI'::text, 0.0::float8, -9999::float8)))
+SELECT bandPixelType(r), ST_BandPixelType(r) AS postgis_name,
+  bandHasNoDataValue(r), bandNoDataValue(r),
+  bandNoDataValue(r) IS NOT DISTINCT FROM ST_BandNoDataValue(r) AS as_postgis
+FROM rast;
+
+-- The band is named by its number, so the second band of a raster answers for
+-- itself, and a band the raster does not have is an error.
+WITH rast AS (
+  SELECT ST_AddBand(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '32BF'::text, 0.0::float8, NULL::float8),
+    '8BUI'::text, 0::float8, 255::float8) AS r)
+SELECT bandPixelType(r, 2), bandHasNoDataValue(r, 2), bandNoDataValue(r, 2)
+FROM rast;
+
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8) AS r)
+SELECT bandNoDataValue(r, 2) FROM rast;
 
 -------------------------------------------------------------------------------
 -- reclass

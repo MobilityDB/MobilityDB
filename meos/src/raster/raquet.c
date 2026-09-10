@@ -76,7 +76,7 @@
  */
 typedef struct
 {
-  const char *name;   /**< Name the constructors accept and #raquet_pixtype() returns */
+  const char *name;   /**< Name the constructors accept and #raquet_band_pixel_type() returns */
   const char *pgname; /**< Name PostGIS raster gives the type, also accepted */
   size_t size;        /**< Size in bytes of a single pixel */
 } pixtype_catalog_struct;
@@ -435,9 +435,9 @@ raquet_pixels_from_host(uint8 *pixels, size_t count, MeosPixType pixtype)
  * @ingroup meos_raster_base_accessor
  * @brief Return the pixel data type corresponding to a name
  * @param[in] str Pixel type name: uint8, int8, uint16, int16, uint32, int32, uint64, int64, float16, float32, or float64
- * @note This is the parser counterpart of #raquet_pixtype()
+ * @note This is the parser counterpart of #raquet_band_pixel_type()
  * @note The name is read without regard to case, so a name written either way
- * carries into the constructors. The name #raquet_pixtype() returns is the one
+ * carries into the constructors. The name #raquet_band_pixel_type() returns is the one
  * the RaQuet specification writes, in lower case, so it compares equal to the
  * `type` field of the tile a file holds
  * @note The name PostGIS raster gives a pixel type is accepted for the same
@@ -705,37 +705,60 @@ raquet_height(const Raquet *rq)
 
 /**
  * @ingroup meos_raster_base_accessor
- * @brief Return the nodata sentinel value of a Raquet tile
- * @errval DBL_MAX
- * @csqlfn #Raquet_nodata()
- */
-double
-raquet_nodata(const Raquet *rq)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq, DBL_MAX);
-  return rq->nodata;
-}
-
-/**
- * @ingroup meos_raster_base_accessor
- * @brief Return the name of the pixel data type of a Raquet tile
+ * @brief Return the name of the pixel data type of the band of a Raquet tile
  * @param[in] rq Raquet tile
  * @errval NULL
  * @note The returned name is the one the RaQuet specification writes for the
  * type, that is, one of uint8, int8, uint16, int16, uint32, int32, uint64,
  * int64, float16, float32, or float64, so it compares equal to the `type`
  * field of the tile a RaQuet file holds
- * @csqlfn #Raquet_pixtype()
+ * @csqlfn #Raquet_band_pixel_type()
  */
 char *
-raquet_pixtype(const Raquet *rq)
+raquet_band_pixel_type(const Raquet *rq)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, NULL);
   if (! ensure_valid_pixtype(rq->pixtype))
     return NULL;
   return pstrdup(MEOS_PIXTYPE_CATALOG[rq->pixtype].name);
+}
+
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return whether the band of a Raquet tile states a nodata value
+ * @param[in] rq Raquet tile
+ * @errval false
+ * @csqlfn #Raquet_band_has_nodata_value()
+ */
+bool
+raquet_band_has_nodata_value(const Raquet *rq)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq, false);
+  return rq->has_nodata;
+}
+
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return in the last argument the nodata value of the band of a Raquet
+ * tile
+ * @param[in] rq Raquet tile
+ * @param[out] result Result
+ * @return True when the value is written, false when the band states no
+ * nodata value
+ * @errval false
+ * @csqlfn #Raquet_band_nodata_value()
+ */
+bool
+raquet_band_nodata_value(const Raquet *rq, double *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq, false); VALIDATE_NOT_NULL(result, false);
+  if (! rq->has_nodata)
+    return false;
+  *result = rq->nodata;
+  return true;
 }
 
 /**

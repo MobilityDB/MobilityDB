@@ -2888,10 +2888,13 @@
 					<para><link linkend="raquet_height"><varname>height</varname></link>: Devuelve el alto en píxeles de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Devuelve el valor centinela nodata de una tesela Raquet</para>
+					<para><link linkend="raster_bandPixelType"><varname>bandPixelType</varname></link>: Devuelve el nombre del tipo de dato de píxel de una banda de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_pixtype"><varname>pixtype</varname></link>: Devuelve el nombre del tipo de dato de píxel de una tesela Raquet</para>
+					<para><link linkend="raster_bandHasNoDataValue"><varname>bandHasNoDataValue</varname></link>: Devuelve si una banda de un ráster o una tesela Raquet establece un valor nodata</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_bandNoDataValue"><varname>bandNoDataValue</varname></link>: Devuelve el valor nodata de una banda de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Devuelve los bytes de píxeles de un mosaico Raquet</para>

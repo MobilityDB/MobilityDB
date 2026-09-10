@@ -562,31 +562,31 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
  t
 (1 row)
 
-SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
+SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile), bandNoDataValue(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
         'UINT8') AS tile) t;
-       quadbin       | width | height | pixtype | nodata 
----------------------+-------+--------+---------+--------
- 5193776270265024512 |     2 |      2 | uint8   |      0
+       quadbin       | width | height | bandpixeltype | bandnodatavalue 
+---------------------+-------+--------+---------------+-----------------
+ 5193776270265024512 |     2 |      2 | uint8         |                
 (1 row)
 
-SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'INT16')),
-       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'INT32')),
-       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT32')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')),
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'INT16')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'INT32')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT32')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          'FLOAT64')),
-       pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'INT8')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT16')),
-       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT32')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+       bandPixelType(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'INT8')),
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT16')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT32')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          'INT64')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          'UINT64')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT16'));
- pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype 
----------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------
- uint8   | int16   | int32   | float32 | float64 | int8    | uint16  | uint32  | int64   | uint64  | float16
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT16'));
+ bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype 
+---------------+---------------+---------------+---------------+---------------+---------------+---------------+---------------+---------------+---------------+---------------
+ uint8         | int16         | int32         | float32       | float64       | int8          | uint16        | uint32        | int64         | uint64        | float16
 (1 row)
 
 SELECT raquet('\x0102030405060708'::bytea, 2, 1, 5193776270265024512::bigint,
@@ -600,17 +600,17 @@ SELECT raquet('\x0102030405060708'::bytea, 2, 1, 5193776270265024512::bigint,
  t                 | t               | t
 (1 row)
 
-SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
   'uint8'));
- pixtype 
----------
+ bandpixeltype 
+---------------
  uint8
 (1 row)
 
-SELECT pixtype(raquet('\x0102030405060708'::bytea, 2, 1,
+SELECT bandPixelType(raquet('\x0102030405060708'::bytea, 2, 1,
   5193776270265024512::bigint, 'float32'));
- pixtype 
----------
+ bandpixeltype 
+---------------
  float32
 (1 row)
 
@@ -621,23 +621,23 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint8')
  t
 (1 row)
 
-SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, '8BUI')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BSI')),
-       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, '32BF')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+SELECT bandPixelType(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, '8BUI')),
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BSI')),
+       bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, '32BF')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          '64BF')),
-       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BF')),
-       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+       bandPixelType(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BF')),
+       bandPixelType(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          '64BSI'));
- pixtype | pixtype | pixtype | pixtype | pixtype | pixtype 
----------+---------+---------+---------+---------+---------
- uint8   | int16   | float32 | float64 | float16 | int64
+ bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype | bandpixeltype 
+---------------+---------------+---------------+---------------+---------------+---------------
+ uint8         | int16         | float32       | float64       | float16       | int64
 (1 row)
 
-SELECT pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint,
+SELECT bandPixelType(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint,
   ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '32BF'), 1)));
- pixtype 
----------
+ bandpixeltype 
+---------------
  float32
 (1 row)
 
@@ -648,12 +648,12 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '8BUI')
  t
 (1 row)
 
-SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '1BB')),
-       pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '2BUI')),
-       pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI'));
- pixtype | pixtype | pixtype 
----------+---------+---------
- uint8   | uint8   | uint8
+SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '1BB')),
+       bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '2BUI')),
+       bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI'));
+ bandpixeltype | bandpixeltype | bandpixeltype 
+---------------+---------------+---------------
+ uint8         | uint8         | uint8
 (1 row)
 
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI')
@@ -663,20 +663,31 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI')
  t
 (1 row)
 
-SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+SELECT bandPixelType(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
   ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '4BUI'), 1)));
- pixtype 
----------
+ bandpixeltype 
+---------------
  uint8
 (1 row)
 
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint12');
 ERROR:  Unknown pixel type "uint12": use uint8, int16, int32, float32, float64, int8, uint16, uint32, int64, uint64, or float16, or the name PostGIS raster gives one of them
-SELECT nodata(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
-  -9999.0));
- nodata 
---------
-  -9999
+SELECT bandHasNoDataValue(tile), bandNoDataValue(tile)
+FROM (SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
+  -9999.0) AS tile) t;
+ bandhasnodatavalue | bandnodatavalue 
+--------------------+-----------------
+ t                  |           -9999
+(1 row)
+
+SELECT bandHasNoDataValue(tile), bandNoDataValue(tile),
+  raquet(pixels(tile), width(tile), height(tile), quadbin(tile),
+    bandPixelType(tile), bandNoDataValue(tile)) = tile AS round_trips
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+        'UINT8') AS tile) t;
+ bandhasnodatavalue | bandnodatavalue | round_trips 
+--------------------+-----------------+-------------
+ f                  |                 | t
 (1 row)
 
 SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
@@ -687,7 +698,7 @@ SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
 (1 row)
 
 SELECT raquet(pixels(tile), width(tile), height(tile), quadbin(tile),
-         pixtype(tile), nodata(tile)) = tile AS round_trips
+         bandPixelType(tile), bandNoDataValue(tile)) = tile AS round_trips
 FROM (SELECT raquet('\x0102030405060708'::bytea, 2, 2,
         5193776270265024512::bigint, 'INT16', -9999.0) AS tile) t;
  round_trips 
@@ -860,6 +871,37 @@ FROM rast;
      3 |      2 | 3857 |         10 |         20 |    1.5 |     -2 |   0.5 |  0.25 | t
 (2 rows)
 
+WITH rast(r) AS (VALUES
+  (ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8)),
+  (ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '16BSI'::text, 0.0::float8, -9999::float8)))
+SELECT bandPixelType(r), ST_BandPixelType(r) AS postgis_name,
+  bandHasNoDataValue(r), bandNoDataValue(r),
+  bandNoDataValue(r) IS NOT DISTINCT FROM ST_BandNoDataValue(r) AS as_postgis
+FROM rast;
+ bandpixeltype | postgis_name | bandhasnodatavalue | bandnodatavalue | as_postgis 
+---------------+--------------+--------------------+-----------------+------------
+ float32       | 32BF         | f                  |                 | t
+ int16         | 16BSI        | t                  |           -9999 | t
+(2 rows)
+
+WITH rast AS (
+  SELECT ST_AddBand(ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0,
+    0.0, 0.0, 4326), '32BF'::text, 0.0::float8, NULL::float8),
+    '8BUI'::text, 0::float8, 255::float8) AS r)
+SELECT bandPixelType(r, 2), bandHasNoDataValue(r, 2), bandNoDataValue(r, 2)
+FROM rast;
+ bandpixeltype | bandhasnodatavalue | bandnodatavalue 
+---------------+--------------------+-----------------
+ uint8         | t                  |             255
+(1 row)
+
+WITH rast AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, NULL::float8) AS r)
+SELECT bandNoDataValue(r, 2) FROM rast;
+ERROR:  Raster has no band 2, it has 1
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
