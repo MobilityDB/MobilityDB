@@ -1165,7 +1165,7 @@ raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
  * @return The statistics, which the caller releases with @p free(), or NULL
  * where the band states no pixel to count, in which case no error is stated
  * @errval NULL
- * @csqlfn None, the host answers this operation on its own raster type
+ * @csqlfn #Raster_summary_stats()
  */
 BandStats *
 raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
@@ -1215,11 +1215,15 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
     return NULL;
   }
 
+  /* The statistics are allocated by the raster core, so its own deallocator
+   * releases them: in the extension build that allocator is not PostgreSQL's,
+   * and pfree() on them raises "pfree called with invalid pointer" */
+
   /* A band whose every pixel is nodata states no value to summarize, which is
    * an answer rather than an error; the statistics of no pixels have no mean */
   if (stats->count < 1)
   {
-    pfree(stats);
+    rtdealloc(stats);
     return NULL;
   }
 
@@ -1230,7 +1234,7 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
   result->stddev = stats->stddev;
   result->min = stats->min;
   result->max = stats->max;
-  pfree(stats);
+  rtdealloc(stats);
   return result;
 }
 

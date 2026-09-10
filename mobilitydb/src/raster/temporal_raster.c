@@ -40,6 +40,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
+#include <funcapi.h>
+#include <access/htup_details.h>
 #include <utils/array.h>
 /* MEOS */
 #include <meos.h>
@@ -353,6 +355,63 @@ Raster_rescale(PG_FUNCTION_ARGS)
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * raster_summary_stats
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_summary_stats(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_summary_stats);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return what the pixels of a raster band amount to
+ * @details The record is built as the PostGIS RASTER_summaryStats builds it,
+ * so the SQL function answers the summarystats record ST_SummaryStats answers
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the pixels the band states as nodata
+ * out of the statistics
+ * @sqlfn summaryStats()
+ */
+Datum
+Raster_summary_stats(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int band = PG_GETARG_INT32(1);
+  bool exclude_nodata = PG_GETARG_BOOL(2);
+  TupleDesc tupdesc;
+  if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+      errmsg("function returning record called in context "
+             "that cannot accept type record")));
+  tupdesc = BlessTupleDesc(tupdesc);
+
+  BandStats *stats = raster_summary_stats(rast, band, exclude_nodata);
+  Datum values[6];
+  bool isnull[6] = {false, false, false, false, false, false};
+  /* An error in MEOS never returns here, so a missing result is a band with no
+   * pixel to count: the record PostGIS answers for it counts none and states
+   * no statistic, rather than being no record at all */
+  if (! stats)
+  {
+    values[0] = Int64GetDatum(0);
+    for (int i = 1; i < 6; i++)
+      isnull[i] = true;
+  }
+  else
+  {
+    values[0] = Int64GetDatum(stats->count);
+    values[1] = Float8GetDatum(stats->sum);
+    values[2] = Float8GetDatum(stats->mean);
+    values[3] = Float8GetDatum(stats->stddev);
+    values[4] = Float8GetDatum(stats->min);
+    values[5] = Float8GetDatum(stats->max);
+    pfree(stats);
+  }
+  HeapTuple tuple = heap_form_tuple(tupdesc, values, isnull);
+  PG_RETURN_DATUM(HeapTupleGetDatum(tuple));
 }
 
 /*****************************************************************************

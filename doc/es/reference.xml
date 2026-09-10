@@ -3203,6 +3203,9 @@
 					<para><link linkend="raster_rescale"><varname>rescale</varname></link>: Devuelve un ráster remuestreado a otro tamaño de píxel</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_summaryStats"><varname>summaryStats</varname></link>: Devuelve las estadísticas de los píxeles de una banda de ráster</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
 				</listitem>
 				<listitem>

@@ -383,6 +383,19 @@ CREATE FUNCTION rescale(raster, float8, float8,
   AS 'MODULE_PATHNAME', 'Raster_rescale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return what the pixels of a raster band amount to
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the pixels the band states as nodata
+ * out of the statistics
+ */
+CREATE FUNCTION summaryStats(raster, integer DEFAULT 1, boolean DEFAULT true)
+  RETURNS summarystats
+  AS 'MODULE_PATHNAME', 'Raster_summary_stats'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Accessors for raquet tiles
  *****************************************************************************/
