@@ -334,8 +334,20 @@ CREATE FUNCTION numBands(raster)
   AS 'MODULE_PATHNAME', 'Raster_num_bands'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Not STRICT: a nodata value left out states that the resulting band carries
- * none, which is a different answer from a band whose nodata value is zero */
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster whose band states the classes an expression maps its
+ * values onto
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] expr Reclassification expression
+ * @param[in] pixeltype Name of the pixel type of the resulting band
+ * @param[in] nodataval Nodata value of the resulting band, absent where the
+ * band states none
+ * @note Not STRICT: a nodata value left out states that the resulting band
+ * carries none, which is a different answer from a band whose nodata value is
+ * zero
+ */
 CREATE FUNCTION reclass(raster, integer, text, text,
     float8 DEFAULT NULL)
   RETURNS raster
