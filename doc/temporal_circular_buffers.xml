@@ -798,7 +798,7 @@ SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-0
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 stops(tcbuffer,maxdist float=0.0,minduration interval='0 minutes') → tcbuffer
 </programlisting>
-				<para>The size of the area is the greatest distance between two centres of the subsequence, as stated for a temporal point in <link linkend="tgeo_stops"><varname>stops</varname></link>.</para>
+				<para>The size of the area is the greatest distance between two centres of the subsequence, and a stop that begins or ends at the first or last instant of a sequence includes that instant only if the sequence does, as stated for a temporal point in <link linkend="tgeo_stops"><varname>stops</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(stops(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(2 2), 0.5)@2001-01-03,

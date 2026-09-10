@@ -3294,7 +3294,10 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
       TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
       for (int i = 0; i < end - start; ++i)
         instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
-      result[nseqs++] = tsequence_make(instants, end - start, true, true,
+      /* A stop found here ends before the last instant, so only its lower
+       * bound can be that of the sequence */
+      bool lower_inc = (start == 0) ? seq->period.lower_inc : true;
+      result[nseqs++] = tsequence_make(instants, end - start, lower_inc, true,
         LINEAR, NORMALIZE_NO);
       start = end;
     }
@@ -3308,8 +3311,11 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
     for (int i = 0; i < end - start; ++i)
       instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
-    result[nseqs++] = tsequence_make(instants, end - start, true, true, LINEAR,
-      NORMALIZE_NO);
+    /* The last stop ends at the last instant and takes the upper bound of the
+     * sequence, and also its lower bound when it begins at the first one */
+    bool lower_inc = (start == 0) ? seq->period.lower_inc : true;
+    result[nseqs++] = tsequence_make(instants, end - start, lower_inc,
+      seq->period.upper_inc, LINEAR, NORMALIZE_NO);
   }
   return nseqs;
 }

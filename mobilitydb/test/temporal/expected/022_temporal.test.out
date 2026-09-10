@@ -8149,6 +8149,18 @@ SELECT segmentMaxDuration(tfloat '1.5@2001-01-01', '1 day');
 ERROR:  Input must be a temporal sequence (set) with continuous interpolation
 SELECT segmentMaxDuration(tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}', '1 day');
 ERROR:  Input must be a temporal sequence (set) with continuous interpolation
+SELECT stops(tfloat '(1@2001-01-01, 1.8@2001-01-02, 2@2001-01-03, 10@2001-01-04]', 1.5, '2 days');
+                                                stops                                                 
+------------------------------------------------------------------------------------------------------
+ {(1@Mon Jan 01 00:00:00 2001 PST, 1.8@Tue Jan 02 00:00:00 2001 PST, 2@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT stops(tfloat '[10@2001-01-01, 1@2001-01-02, 1.8@2001-01-03, 2@2001-01-04)', 1.5, '2 days');
+                                                stops                                                 
+------------------------------------------------------------------------------------------------------
+ {[1@Tue Jan 02 00:00:00 2001 PST, 1.8@Wed Jan 03 00:00:00 2001 PST, 2@Thu Jan 04 00:00:00 2001 PST)}
+(1 row)
+
 SELECT atValue(tbool 't@2001-01-01', true);
             atvalue             
 --------------------------------
