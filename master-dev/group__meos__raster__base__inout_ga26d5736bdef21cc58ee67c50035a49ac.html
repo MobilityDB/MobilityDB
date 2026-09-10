@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_as_hexwkb</title>
+<title>MobilityDB: raster_as_wkb</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,25 +85,31 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga0647666a122e7b91a45a7059a48f7ec2.html#ga0647666a122e7b91a45a7059a48f7ec2">raquet_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga610f52c8d6441183a60a051ae4bc55bb.html#ga610f52c8d6441183a60a051ae4bc55bb">raquet_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_gac203849245423dc1db6a22f7086eeb9f.html#gac203849245423dc1db6a22f7086eeb9f">raquet_out</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__inout_ga03638f058878a307b0b9b0d389d81bd0.html#ga03638f058878a307b0b9b0d389d81bd0">raster_as_hexwkb</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga0dc253d86dbd6f10ee23d91d50f13370.html#ga0dc253d86dbd6f10ee23d91d50f13370">raster_as_wkb</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_gac2a318054cba048ee0f4d0826724c0e6.html#gac2a318054cba048ee0f4d0826724c0e6">raster_as_hexwkb</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__inout_ga26d5736bdef21cc58ee67c50035a49ac.html#ga26d5736bdef21cc58ee67c50035a49ac">raster_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga9b5d1de0f561b8c12fce98f51a0bef7a.html#ga9b5d1de0f561b8c12fce98f51a0bef7a">raster_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga3831135f93b2dca3f28bcc8c0599477c.html#ga3831135f93b2dca3f28bcc8c0599477c">raster_from_wkb</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga03638f058878a307b0b9b0d389d81bd0" name="ga03638f058878a307b0b9b0d389d81bd0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga03638f058878a307b0b9b0d389d81bd0">&#9670;&#160;</a></span>raster_as_hexwkb()</h2>
+<a id="ga26d5736bdef21cc58ee67c50035a49ac" name="ga26d5736bdef21cc58ee67c50035a49ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga26d5736bdef21cc58ee67c50035a49ac">&#9670;&#160;</a></span>raster_as_wkb()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char * raster_as_hexwkb </td>
+          <td class="memname">uint8_t * raster_as_wkb </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td>
           <td class="paramname"><em>rast</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>variant</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -119,15 +125,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the ASCII hex-encoded Well-Known Binary (HexWKB) representation of a raster. </p>
+<p>Return the Well-Known Binary (WKB) representation of a raster. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">size_out</td><td>Size of the output, not counting the null terminator </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">variant</td><td>Output variant, whose WKB_NDR or WKB_XDR flag names the byte order, the order of the machine when it names neither </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">size_out</td><td>Size of the output </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return NULL </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL @csqlfn <a class="el" href="group__mobilitydb__raster_ga1a82708c1cac81c81d91b47c7902053c.html#ga1a82708c1cac81c81d91b47c7902053c" title="Return the Well-Known Binary (WKB) representation of a raster @sqlfn asBinary()">Raster_as_wkb()</a> </dd></dl>
 
 </div>
 </div>
