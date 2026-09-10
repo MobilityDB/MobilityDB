@@ -334,6 +334,102 @@ CREATE FUNCTION numBands(raster)
   AS 'MODULE_PATHNAME', 'Raster_num_bands'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************
+ * Shape of a raster
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the width in pixels of a raster
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION width(raster)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raster_width'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the height in pixels of a raster
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION height(raster)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raster_height'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the spatial reference system identifier of a raster
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION SRID(raster)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raster_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the X coordinate of the upper left corner of a raster
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION upperLeftX(raster)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Raster_upper_left_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the Y coordinate of the upper left corner of a raster
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION upperLeftY(raster)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Raster_upper_left_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the pixel width of a raster, that is, the X component of its
+ * scale
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION scaleX(raster)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Raster_scale_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the pixel height of a raster, that is, the Y component of its
+ * scale
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION scaleY(raster)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Raster_scale_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the X component of the skew of a raster
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION skewX(raster)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Raster_skew_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the Y component of the skew of a raster
+ * @param[in] rast Raster
+ */
+CREATE FUNCTION skewY(raster)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Raster_skew_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /**
  * @ingroup mobilitydb_raster
  * @brief Return a raster whose band states the classes an expression maps its
@@ -564,10 +660,8 @@ CREATE CAST (raquet AS stbox) WITH FUNCTION stbox(raquet);
 /******************************************************************************
  * Conversions of rasters
  *
- * A raster states its shape through PostGIS raster's own accessors, which this
- * extension does not restate. The spatiotemporal box is the exception: PostGIS
- * has no stbox, so this conversion adds the temporal layer's box to the raster
- * a user already holds rather than re-supplying an accessor they have.
+ * PostGIS has no stbox, so this conversion adds the temporal layer's box to
+ * the raster a user already holds.
  *****************************************************************************/
 
 /**

@@ -2867,13 +2867,25 @@
 					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Devuelve el número de bandas de un ráster</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_SRID"><varname>SRID</varname></link>: Devuelve el identificador del sistema de referencia espacial de un ráster</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_upperLeftX"><varname>upperLeftX</varname>, <varname>upperLeftY</varname></link>: Devuelve la coordenada X o Y de la esquina superior izquierda de un ráster</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_scaleX"><varname>scaleX</varname>, <varname>scaleY</varname></link>: Devuelve el ancho o el alto de píxel de un ráster, es decir, la componente X o Y de su escala</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_skewX"><varname>skewX</varname>, <varname>skewY</varname></link>: Devuelve la componente X o Y de la inclinación de un ráster</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raquet_quadbin_accessor"><varname>quadbin</varname></link>: Devuelve la celda QUADBIN de una tesela Raquet</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_width"><varname>width</varname></link>: Devuelve el ancho en píxeles de una tesela Raquet</para>
+					<para><link linkend="raquet_width"><varname>width</varname></link>: Devuelve el ancho en píxeles de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_height"><varname>height</varname></link>: Devuelve el alto en píxeles de una tesela Raquet</para>
+					<para><link linkend="raquet_height"><varname>height</varname></link>: Devuelve el alto en píxeles de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Devuelve el valor centinela nodata de una tesela Raquet</para>

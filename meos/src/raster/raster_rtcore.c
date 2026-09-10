@@ -338,6 +338,7 @@ raster_num_bands(const Raster *rast)
  * @brief Return the width in pixels of a raster
  * @param[in] rast Raster
  * @errval INT_MAX
+ * @csqlfn #Raster_width()
  */
 int
 raster_width(const Raster *rast)
@@ -357,6 +358,7 @@ raster_width(const Raster *rast)
  * @brief Return the height in pixels of a raster
  * @param[in] rast Raster
  * @errval INT_MAX
+ * @csqlfn #Raster_height()
  */
 int
 raster_height(const Raster *rast)
@@ -376,6 +378,7 @@ raster_height(const Raster *rast)
  * @brief Return the spatial reference system identifier of a raster
  * @param[in] rast Raster
  * @errval SRID_INVALID
+ * @csqlfn #Raster_srid()
  */
 int32_t
 raster_srid(const Raster *rast)
@@ -398,6 +401,7 @@ raster_srid(const Raster *rast)
  * @note This is the origin the geotransform states, which the skew rotates
  * the grid about, so it is a corner of the extent only when both skews are
  * zero
+ * @csqlfn #Raster_upper_left_x()
  */
 double
 raster_upper_left_x(const Raster *rast)
@@ -420,6 +424,7 @@ raster_upper_left_x(const Raster *rast)
  * @note This is the origin the geotransform states, which the skew rotates
  * the grid about, so it is a corner of the extent only when both skews are
  * zero
+ * @csqlfn #Raster_upper_left_y()
  */
 double
 raster_upper_left_y(const Raster *rast)
@@ -439,6 +444,7 @@ raster_upper_left_y(const Raster *rast)
  * @brief Return the pixel width of a raster, that is, the X component of its scale
  * @param[in] rast Raster
  * @errval DBL_MAX
+ * @csqlfn #Raster_scale_x()
  */
 double
 raster_scale_x(const Raster *rast)
@@ -460,6 +466,7 @@ raster_scale_x(const Raster *rast)
  * @errval DBL_MAX
  * @note The value is negative for a grid whose rows run north to south,
  * which is how a raster is ordinarily written
+ * @csqlfn #Raster_scale_y()
  */
 double
 raster_scale_y(const Raster *rast)
@@ -481,6 +488,7 @@ raster_scale_y(const Raster *rast)
  * @errval DBL_MAX
  * @note A raster whose two skews are zero is axis-aligned, so a reader that
  * assumes an axis-aligned grid states the assumption by testing them
+ * @csqlfn #Raster_skew_x()
  */
 double
 raster_skew_x(const Raster *rast)
@@ -502,6 +510,7 @@ raster_skew_x(const Raster *rast)
  * @errval DBL_MAX
  * @note A raster whose two skews are zero is axis-aligned, so a reader that
  * assumes an axis-aligned grid states the assumption by testing them
+ * @csqlfn #Raster_skew_y()
  */
 double
 raster_skew_y(const Raster *rast)
