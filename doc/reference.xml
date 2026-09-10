@@ -2813,16 +2813,16 @@
 					<para><link linkend="tcell_frombinary"><varname>tcellFromBinary</varname>, <varname>tcellFromHexWKB</varname>, <varname>tcellFromMFJSON</varname></link>: Reconstruct a temporal cell from its binary, hexadecimal, or MF-JSON representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
+					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation of a raster or a Raquet tile</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation of a Raquet tile</para>
+					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation of a raster or a Raquet tile</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Return a Raquet tile from its Well-Known Binary (WKB) representation</para>
+					<para><link linkend="raquetFromBinary"><varname>rasterFromBinary</varname>, <varname>raquetFromBinary</varname></link>: Return a raster or a Raquet tile from its Well-Known Binary (WKB) representation</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Return a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="raquetFromHexWKB"><varname>rasterFromHexWKB</varname>, <varname>raquetFromHexWKB</varname></link>: Return a raster or a Raquet tile from its Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

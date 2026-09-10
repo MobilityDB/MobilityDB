@@ -81,7 +81,7 @@
 		<title>Entrada y salida</title>
 		<para>Un valor de celda temporal se introduce utilizando la sintaxis temporal estándar con el identificador de celda de 64 bits subyacente. El analizador de entrada acepta la forma hexadecimal canónica que publica cada cuadrícula — la forma que emiten la CLI de H3 y <varname>h3_cell_to_string</varname>, y la forma que lee la implementación de referencia de CARTO — con un prefijo <varname>0x</varname> opcional, en cualquiera de las dos cajas de letra y con 16 dígitos significativos como máximo. El hexadecimal es idiomático en los tres ecosistemas y es lo que emite la función de salida, de modo que todos los ejemplos siguientes lo usan. El valor debe además denotar algo que su cuadrícula indexe: para H3 una celda, una arista dirigida o un vértice, de modo que un literal hexadecimal bien formado como <varname>12345</varname>, que no es ninguno de los tres, se rechaza en lugar de almacenarse como un valor sin ubicación. Como referencia, el hexadecimal <varname>480fffffffffffff</varname> usado en los ejemplos es la celda mundial QUADBIN de resolución 0, igual al decimal <varname>5192650370358181887</varname>.</para>
 
-		<para>Las funciones <varname>asBinary</varname> y <varname>asHexWKB</varname> serializan un valor <varname>raquet</varname>, y <link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link> y <link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link> lo reconstruyen. Una tesela lleva sus píxeles y su georreferenciación QUADBIN en un único valor, de modo que hace un viaje de ida y vuelta a través de una cadena de bytes portable sin intervención de ninguna extensión espacial, y la forma hexadecimal permite que una columna de teselas haga ese viaje mediante un <varname>COPY</varname> basado en texto. Ambas funciones de salida aceptan un argumento opcional de ordenación de bytes, <varname>NDR</varname> para little-endian o <varname>XDR</varname> para big-endian, cuyo valor predeterminado es la ordenación del servidor.</para>
+		<para>Las funciones <varname>asBinary</varname> y <varname>asHexWKB</varname> serializan un valor <varname>raster</varname> o <varname>raquet</varname>, y <link linkend="raquetFromBinary"><varname>rasterFromBinary</varname></link>, <link linkend="raquetFromHexWKB"><varname>rasterFromHexWKB</varname></link>, <link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link> y <link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link> lo reconstruyen. Un ráster se escribe en la forma que escribe el ráster de PostGIS, de modo que una columna de rásteres hace un viaje de ida y vuelta entre PostgreSQL y cualquier programa que lea esa forma. Una tesela lleva sus píxeles y su georreferenciación QUADBIN en un único valor, de modo que hace un viaje de ida y vuelta a través de una cadena de bytes portable sin intervención de ninguna extensión espacial, y la forma hexadecimal permite que una columna de teselas haga ese viaje mediante un <varname>COPY</varname> basado en texto. Ambas funciones de salida aceptan un argumento opcional de ordenación de bytes, <varname>NDR</varname> para little-endian o <varname>XDR</varname> para big-endian, cuyo valor predeterminado es la ordenación del servidor.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tcell_in_out">
@@ -147,45 +147,62 @@ SELECT ts2cellFromHexWKB(asHexWKB(ts2cell '47c3c@2001-01-01'));
 
 			<listitem xml:id="raquet_asBinary">
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
-				<para>Devuelve la representación binaria conocida (WKB) de una tesela Raquet</para>
+				<para>Devuelve la representación binaria conocida (WKB) de un ráster o de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asBinary(raquet,endian text='') → bytea
+asBinary({raster,raquet},endian text='') → bytea
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326)));
+-- 61
+SELECT get_byte(asBinary(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+  'XDR'), 0);
+-- 0
 SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));
 -- 31
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquet_asHexWKB">
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
-				<para>Devuelve la representación hexadecimal binaria conocida (HexWKB) de una tesela Raquet</para>
+				<para>Devuelve la representación hexadecimal binaria conocida (HexWKB) de un ráster o de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asHexWKB(raquet,endian text='') → text
+asHexWKB({raster,raquet},endian text='') → text
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(asHexWKB(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326)));
+-- 122
 SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')));
 -- 62
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquetFromBinary">
+				<indexterm significance="normal"><primary><varname>rasterFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>raquetFromBinary</varname></primary></indexterm>
-				<para>Devuelve una tesela Raquet a partir de su representación binaria conocida (WKB)</para>
+				<para>Devuelve un ráster o una tesela Raquet a partir de su representación binaria conocida (WKB)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterFromBinary(bytea) → raster
 raquetFromBinary(bytea) → raquet
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT rasterFromBinary(asBinary(r, 'XDR')) = r
+FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
+-- true
 SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
   'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 -- true
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquetFromHexWKB">
+				<indexterm significance="normal"><primary><varname>rasterFromHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>raquetFromHexWKB</varname></primary></indexterm>
-				<para>Devuelve una tesela Raquet a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
+				<para>Devuelve un ráster o una tesela Raquet a partir de su representación hexadecimal binaria conocida (HexWKB)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterFromHexWKB(text) → raster
 raquetFromHexWKB(text) → raquet
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT rasterFromHexWKB(asHexWKB(r, 'XDR')) = r
+FROM (SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r) t;
+-- true
 SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
   'uint8'))) = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 -- true

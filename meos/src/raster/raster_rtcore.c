@@ -52,6 +52,7 @@
 #endif
 
 #include "librtcore.h"
+#include "rt_serialize.h"
 
 /* C */
 #include <ctype.h>
@@ -133,6 +134,7 @@ raster_serialize_destroy(rt_raster raster)
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
  * @errval NULL
+ * @csqlfn #Raster_from_wkb()
  */
 Raster *
 raster_from_wkb(const uint8_t *wkb, size_t size)
@@ -157,6 +159,7 @@ raster_from_wkb(const uint8_t *wkb, size_t size)
  * (HexWKB) representation
  * @param[in] hexwkb HexWKB string
  * @errval NULL
+ * @csqlfn #Raster_from_hexwkb()
  */
 Raster *
 raster_from_hexwkb(const char *hexwkb)
@@ -176,17 +179,133 @@ raster_from_hexwkb(const char *hexwkb)
 }
 
 /**
- * @ingroup meos_raster_base_inout
- * @brief Return the Well-Known Binary (WKB) representation of a raster
+ * @brief Return true when a Well-Known Binary variant asks for the
+ * little-endian byte order, the order of the machine when it names neither
+ * order or both, as #datum_as_wkb() reads it
+ * @param[in] variant Output variant
+ */
+static bool
+raster_wkb_little_endian(uint8_t variant)
+{
+  bool ndr = (variant & WKB_NDR) != 0;
+  bool xdr = (variant & WKB_XDR) != 0;
+  if (ndr != xdr)
+    return ndr;
+  return ! MEOS_IS_BIG_ENDIAN;
+}
+
+/**
+ * @brief Reverse in place the bytes of a value
+ * @param[in,out] ptr First byte of the value
+ * @param[in] size Number of bytes of the value
+ */
+static void
+raster_wkb_flip(uint8_t *ptr, size_t size)
+{
+  for (size_t i = 0, j = size - 1; i < j; i++, j--)
+  {
+    uint8_t b = ptr[i];
+    ptr[i] = ptr[j];
+    ptr[j] = b;
+  }
+}
+
+/**
+ * @brief Return the unsigned 16-bit integer at a position of a Well-Known
+ * Binary representation, read in the byte order the representation states
+ * @param[in] ptr First byte of the integer
+ * @param[in] little True when the representation is little-endian
+ */
+static uint16_t
+raster_wkb_uint16(const uint8_t *ptr, bool little)
+{
+  return little ? (uint16_t) (ptr[0] | (ptr[1] << 8)) :
+    (uint16_t) ((ptr[0] << 8) | ptr[1]);
+}
+
+/**
+ * @brief Rewrite in place the Well-Known Binary representation of a raster
+ * from the byte order it states into the other one
+ * @details The layout is the one rt_raster_to_wkb() writes: the byte order,
+ * a header of fixed-width fields, and for each band a byte stating its pixel
+ * type and flags, a nodata value as wide as a pixel, and either its pixels or,
+ * for a band stored outside the database, a band number and a path, which are
+ * bytes rather than numbers
+ * @param[in,out] wkb Well-Known Binary representation
+ * @param[in] size Size of the representation
+ * @return False when the representation ends before the layout it states
+ */
+static bool
+raster_wkb_swap(uint8_t *wkb, size_t size)
+{
+  /* Byte order, version, number of bands, the six numbers of the
+   * geotransform, SRID, width and height */
+  static const size_t header[] = {1, 2, 2, 8, 8, 8, 8, 8, 8, 4, 2, 2};
+  const size_t nheader = sizeof(header) / sizeof(header[0]);
+  size_t hsize = 0;
+  for (size_t i = 0; i < nheader; i++)
+    hsize += header[i];
+  if (size < hsize)
+    return false;
+  bool little = (wkb[0] != 0);
+  uint16_t nbands = raster_wkb_uint16(wkb + 3, little);
+  uint16_t width = raster_wkb_uint16(wkb + hsize - 4, little);
+  uint16_t height = raster_wkb_uint16(wkb + hsize - 2, little);
+  wkb[0] = little ? 0 : 1;
+  size_t pos = header[0];
+  for (size_t i = 1; i < nheader; i++)
+  {
+    raster_wkb_flip(wkb + pos, header[i]);
+    pos += header[i];
+  }
+  size_t npixels = (size_t) width * height;
+  for (uint16_t b = 0; b < nbands; b++)
+  {
+    if (pos >= size)
+      return false;
+    uint8_t flags = wkb[pos++];
+    int pixbytes = rt_pixtype_size((rt_pixtype) BANDTYPE_PIXTYPE(flags));
+    if (pixbytes < 1 || size - pos < (size_t) pixbytes)
+      return false;
+    raster_wkb_flip(wkb + pos, (size_t) pixbytes);
+    pos += (size_t) pixbytes;
+    if (BANDTYPE_IS_OFFDB(flags))
+    {
+      /* The band number is one byte and the path a null-terminated string */
+      if (pos >= size)
+        return false;
+      pos++;
+      const uint8_t *nul = memchr(wkb + pos, '\0', size - pos);
+      if (! nul)
+        return false;
+      pos = (size_t) (nul - wkb) + 1;
+    }
+    else
+    {
+      if ((size - pos) / (size_t) pixbytes < npixels)
+        return false;
+      if (pixbytes > 1)
+      {
+        for (size_t k = 0; k < npixels; k++)
+          raster_wkb_flip(wkb + pos + k * (size_t) pixbytes, (size_t) pixbytes);
+      }
+      pos += npixels * (size_t) pixbytes;
+    }
+  }
+  return pos == size;
+}
+
+/**
+ * @brief Return the Well-Known Binary representation of a raster in the byte
+ * order a variant asks for
  * @param[in] rast Raster
+ * @param[in] variant Output variant
  * @param[out] size_out Size of the output
  * @errval NULL
  */
-uint8_t *
-raster_as_wkb(const Raster *rast, size_t *size_out)
+static uint8_t *
+raster_wkb(const Raster *rast, uint8_t variant, size_t *size_out)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   /* The bands are needed, so the raster is fully deserialized. It keeps
    * pointers into `rast` without owning them, and is destroyed below before
    * `rast` is handed back to the caller */
@@ -198,13 +317,28 @@ raster_as_wkb(const Raster *rast, size_t *size_out)
     return NULL;
   }
   uint32_t wkb_size;
-  uint8_t *result = rt_raster_to_wkb(raster, 0, &wkb_size);
+  uint8_t *wkb = rt_raster_to_wkb(raster, 0, &wkb_size);
   raster_destroy(raster);
-  if (! result)
+  if (! wkb)
   {
     meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Could not output the Well-Known Binary (WKB) representation of a "
       "raster");
+    return NULL;
+  }
+  /* rt_core writes the byte order of the machine in memory it allocates
+   * itself, so the bytes move to memory the caller releases as it releases
+   * any other result, in the byte order asked for */
+  uint8_t *result = palloc(wkb_size);
+  memcpy(result, wkb, wkb_size);
+  rtdealloc(wkb);
+  if (raster_wkb_little_endian(variant) != (result[0] != 0) &&
+      ! raster_wkb_swap(result, (size_t) wkb_size))
+  {
+    pfree(result);
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Could not output the Well-Known Binary (WKB) representation of a "
+      "raster in the byte order asked for");
     return NULL;
   }
   *size_out = (size_t) wkb_size;
@@ -213,35 +347,52 @@ raster_as_wkb(const Raster *rast, size_t *size_out)
 
 /**
  * @ingroup meos_raster_base_inout
- * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
- * representation of a raster
+ * @brief Return the Well-Known Binary (WKB) representation of a raster
  * @param[in] rast Raster
- * @param[out] size_out Size of the output, not counting the null terminator
+ * @param[in] variant Output variant, whose WKB_NDR or WKB_XDR flag names the
+ * byte order, the order of the machine when it names neither
+ * @param[out] size_out Size of the output
  * @errval NULL
+ * @csqlfn #Raster_as_wkb()
  */
-char *
-raster_as_hexwkb(const Raster *rast, size_t *size_out)
+uint8_t *
+raster_as_wkb(const Raster *rast, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(size_out, NULL);
-  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
-  if (! raster)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Could not deserialize raster");
+  return raster_wkb(rast, variant, size_out);
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a raster
+ * @param[in] rast Raster
+ * @param[in] variant Output variant, whose WKB_NDR or WKB_XDR flag names the
+ * byte order, the order of the machine when it names neither
+ * @param[out] size_out Size of the output, not counting the null terminator
+ * @errval NULL
+ * @csqlfn #Raster_as_hexwkb()
+ */
+char *
+raster_as_hexwkb(const Raster *rast, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  size_t wkb_size;
+  uint8_t *wkb = raster_wkb(rast, variant, &wkb_size);
+  if (! wkb)
     return NULL;
-  }
-  uint32_t hexwkb_size;
-  char *result = rt_raster_to_hexwkb(raster, 0, &hexwkb_size);
-  raster_destroy(raster);
-  if (! result)
+  static const char hexchr[] = "0123456789ABCDEF";
+  char *result = palloc(2 * wkb_size + 1);
+  for (size_t i = 0; i < wkb_size; i++)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
-      "Could not output the ASCII hex-encoded Well-Known Binary (HexWKB) "
-      "representation of a raster");
-    return NULL;
+    result[2 * i] = hexchr[wkb[i] >> 4];
+    result[2 * i + 1] = hexchr[wkb[i] & 0x0F];
   }
-  *size_out = (size_t) hexwkb_size;
+  result[2 * wkb_size] = '\0';
+  pfree(wkb);
+  *size_out = 2 * wkb_size;
   return result;
 }
 

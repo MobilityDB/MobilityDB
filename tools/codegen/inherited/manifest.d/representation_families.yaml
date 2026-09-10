@@ -639,3 +639,22 @@ representation_families:
     - FromHexWKB
     - asBinary
     - asHexWKB
+- family: raster_base
+  file: mobilitydb/sql/raster/500_raster.in.sql
+  reference: true
+  begin: "\n * Well-Known Binary representations of a raster\n"
+  end: "\n * @brief Return a raster whose band states the classes an expression maps its\n"
+  temps:
+  - temp: raster
+  syms:
+    FromBinary: Raster_from_wkb
+    FromHexWKB: Raster_from_hexwkb
+    asBinary: Raster_as_wkb
+    asHexWKB: Raster_as_hexwkb
+  blocks:
+  - lit: "/******************************************************************************\n * Well-Known Binary representations of a raster\n *\n * A raster round-trips through the Well-Known Binary PostGIS writes for it,\n * in the byte order asked for, so a binding reads and writes the rasters of a\n * PostGIS column with no PostgreSQL in between.\n ******************************************************************************/"
+  - ops:
+    - FromBinary
+    - FromHexWKB
+    - asBinary
+    - asHexWKB

@@ -150,8 +150,8 @@ typedef struct
 
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
 extern Raster *raster_from_hexwkb(const char *hexwkb);
-extern uint8_t *raster_as_wkb(const Raster *rast, size_t *size_out);
-extern char *raster_as_hexwkb(const Raster *rast, size_t *size_out);
+extern uint8_t *raster_as_wkb(const Raster *rast, uint8_t variant, size_t *size_out);
+extern char *raster_as_hexwkb(const Raster *rast, uint8_t variant, size_t *size_out);
 
 /* Accessor functions for PostGIS rasters */
 

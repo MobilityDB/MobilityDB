@@ -468,6 +468,38 @@ CREATE FUNCTION bandNoDataValue(raster, integer DEFAULT 1)
   AS 'MODULE_PATHNAME', 'Raster_band_nodata_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-REPRESENTATIONS-BEGIN raster_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
+/******************************************************************************
+ * Well-Known Binary representations of a raster
+ *
+ * A raster round-trips through the Well-Known Binary PostGIS writes for it,
+ * in the byte order asked for, so a binding reads and writes the rasters of a
+ * PostGIS column with no PostgreSQL in between.
+ ******************************************************************************/
+
+CREATE FUNCTION rasterFromBinary(bytea)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rasterFromHexWKB(text)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(raster, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(raster, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Raster_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END raster_base
+
 /**
  * @ingroup mobilitydb_raster
  * @brief Return a raster whose band states the classes an expression maps its
