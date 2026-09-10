@@ -36,4 +36,28 @@ SELECT extent(stbox(tile)) FROM elevation_tiles;
 -- Tiles a trajectory passes through, at whatever zoom levels the table holds
 SELECT t.tripid, r.tile FROM trips t,
   elevation_tiles r WHERE stbox(r.tile) &amp;&amp; stbox(t.trip);
+</pre></li><li class="listitem"><a name="raster_to_stbox"></a><a class="indexterm" name="id11737"></a><p>Convierte un ráster en una caja espaciotemporal</p><pre class="programlisting">
+stbox(raster) → stbox
+</pre><p>Devuelve la extensión del ráster en el sistema de referencia que el propio ráster declara, sin dimensión temporal. Esta es la única forma de un <code class="varname">raster</code> de PostGIS que la extensión declara, porque PostGIS no tiene <code class="varname">stbox</code>: el ancho, el alto, la georreferenciación y las propiedades de las bandas se leen con los accesores propios de PostGIS, que aquí no se repiten. La conversión también está disponible como una conversión de tipo.</p><pre class="programlisting">
+WITH rast AS (
+  SELECT ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
+)
+SELECT stbox(r) AS box, stbox(r) = r::stbox AS cast_agrees FROM rast;
+-- SRID=4326;STBOX X((0,0),(3,3)) | t
+-- The box states the reference system of the raster, not a fixed one
+SELECT stbox(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857));
+-- SRID=3857;STBOX X((0,0),(2,2))
+</pre><p>La extensión lleva la rotación de la geotransformación, de modo que un ráster sesgado responde la caja que contiene sus cuatro esquinas rotadas y no la que daría su escala por sí sola.</p><pre class="programlisting">
+WITH plain AS (
+  SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326) AS r
+), skewed AS (
+  SELECT ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 1.0, 0.0, 4326) AS r
+)
+SELECT stbox((SELECT r FROM plain)) AS plain_box,
+  stbox((SELECT r FROM skewed)) AS skewed_box;
+-- SRID=4326;STBOX X((0,0),(2,2)) | SRID=4326;STBOX X((0,0),(4,2))
+</pre><p>La extensión lleva los operadores, las agregaciones y las clases de operadores de <code class="varname">stbox</code>, de modo que una tabla de rásteres se consulta por solapamiento espacial y se indexa sobre la conversión.</p><pre class="programlisting">
+SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &amp;&amp;
+  stbox 'SRID=4326;STBOX X((1,1),(2,2))';
+-- t
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Constructores </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Accesores</td></tr></table></div></body></html>
