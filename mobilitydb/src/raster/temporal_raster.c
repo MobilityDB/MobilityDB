@@ -52,6 +52,7 @@
 #include "raster/raquet.h"    /* Raquet, PG_GETARG_RAQUET_P, raquet_pixtype_size */
 #include "raster/raster_quadbin.h"
 /* MobilityDB */
+#include "pg_geo/postgis.h"   /* PG_GETARG_GSERIALIZED_P */
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h" /* raquetarr_extract */
 #include "pg_raster/temporal_raster.h"
@@ -263,6 +264,34 @@ Raster_reclass(PG_FUNCTION_ARGS)
   Raster *result = raster_reclass(rast, band, expr, pixeltype, has_nodata,
     nodataval);
   pfree(expr); pfree(pixeltype);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * raster_clip
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_clip(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_clip);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster keeping the pixels of another that a geometry covers
+ * @param[in] rast Raster
+ * @param[in] geom Geometry, in the reference system of the raster
+ * @param[in] crop True to reduce the result to the extent the two share
+ * @sqlfn clip()
+ */
+Datum
+Raster_clip(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  bool crop = PG_GETARG_BOOL(2);
+  Raster *result = raster_clip(rast, gs, crop);
+  PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
