@@ -384,7 +384,7 @@ SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &amp
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_accessors">
 		<title>Accesores</title>
-		<para><link linkend="raster_numBands"><varname>numBands</varname></link> lee el número de bandas de un <varname>raster</varname> de PostGIS; los accesores que siguen leen una tesela <varname>raquet</varname>.</para>
+		<para><link linkend="raster_numBands"><varname>numBands</varname></link>, <link linkend="raster_SRID"><varname>SRID</varname></link> y los accesores de la esquina, la escala y la inclinación leen la malla de un <varname>raster</varname> de PostGIS; <link linkend="raquet_width"><varname>width</varname></link> y <link linkend="raquet_height"><varname>height</varname></link> leen por igual un ráster y una tesela <varname>raquet</varname>, y los demás accesores leen una tesela <varname>raquet</varname>.</para>
 
 		<para>Un valor <varname>raquet</varname> es autodescriptivo: los accesores siguientes leen la georreferenciación y la disposición que transporta, de modo que una tesela empaquetada con el constructor <link linkend="raquet"><varname>raquet</varname></link> o decodificada con <link linkend="raquetRead"><varname>raquetRead</varname></link> puede inspeccionarse sin conservar las columnas sueltas a partir de las cuales se construyó.</para>
 
@@ -481,6 +481,62 @@ SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
 -- 1 | 2
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_SRID">
+				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+				<para>Devuelve el identificador del sistema de referencia espacial de un ráster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+SRID(raster) → integer
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857));
+-- 3857
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_upperLeftX">
+				<indexterm significance="normal"><primary><varname>upperLeftX</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>upperLeftY</varname></primary></indexterm>
+				<para>Devuelve la coordenada X o Y de la esquina superior izquierda de un ráster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+upperLeftX(raster) → float8
+upperLeftY(raster) → float8
+</programlisting>
+				<para>La esquina es el origen que establece la geotransformación, alrededor del cual la inclinación gira la malla, de modo que es una esquina de la extensión solo cuando ambas inclinaciones son cero.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT upperLeftX(r), upperLeftY(r)
+FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS r) t;
+-- 10 | 20
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_scaleX">
+				<indexterm significance="normal"><primary><varname>scaleX</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>scaleY</varname></primary></indexterm>
+				<para>Devuelve el ancho o el alto de píxel de un ráster, es decir, la componente X o Y de su escala</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+scaleX(raster) → float8
+scaleY(raster) → float8
+</programlisting>
+				<para>El alto de píxel es negativo para una malla cuyas filas van de norte a sur, que es como se escribe habitualmente un ráster.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT scaleX(r), scaleY(r)
+FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS r) t;
+-- 1.5 | -2
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_skewX">
+				<indexterm significance="normal"><primary><varname>skewX</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>skewY</varname></primary></indexterm>
+				<para>Devuelve la componente X o Y de la inclinación de un ráster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+skewX(raster) → float8
+skewY(raster) → float8
+</programlisting>
+				<para>Un ráster cuyas dos inclinaciones son cero está alineado con los ejes.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT skewX(r), skewY(r)
+FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS r) t;
+-- 0.5 | 0.25
+</programlisting>
+			</listitem>
 			<listitem xml:id="raquet_quadbin_accessor">
 				<indexterm significance="normal"><primary><varname>quadbin</varname></primary></indexterm>
 				<para>Devuelve la celda QUADBIN de una tesela Raquet</para>
@@ -494,22 +550,26 @@ SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 			</listitem>
 			<listitem xml:id="raquet_width">
 				<indexterm significance="normal"><primary><varname>width</varname></primary></indexterm>
-				<para>Devuelve el ancho en píxeles de una tesela Raquet</para>
+				<para>Devuelve el ancho en píxeles de un ráster o de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-width(raquet) → integer
+width({raster,raquet}) → integer
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT width(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
+-- 3
 SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquet_height">
 				<indexterm significance="normal"><primary><varname>height</varname></primary></indexterm>
-				<para>Devuelve el alto en píxeles de una tesela Raquet</para>
+				<para>Devuelve el alto en píxeles de un ráster o de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-height(raquet) → integer
+height({raster,raquet}) → integer
 </programlisting>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT height(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
+-- 2
 SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
 </programlisting>

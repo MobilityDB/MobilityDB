@@ -830,6 +830,26 @@ SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
        numBands((SELECT r FROM rast2)) AS num_bands_two;
 
 -------------------------------------------------------------------------------
+-- Shape of a raster
+-------------------------------------------------------------------------------
+
+-- The shape of a raster is the one PostGIS reads from the same grid: a banded
+-- raster in EPSG:4326, and a band-free one in EPSG:3857 whose grid is skewed,
+-- so no two of its nine numbers coincide.
+WITH rast(r) AS (VALUES
+  (ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8)),
+  (ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857)))
+SELECT width(r), height(r), SRID(r), upperLeftX(r), upperLeftY(r), scaleX(r),
+  scaleY(r), skewX(r), skewY(r),
+  width(r) = ST_Width(r) AND height(r) = ST_Height(r) AND
+  SRID(r) = ST_SRID(r) AND upperLeftX(r) = ST_UpperLeftX(r) AND
+  upperLeftY(r) = ST_UpperLeftY(r) AND scaleX(r) = ST_ScaleX(r) AND
+  scaleY(r) = ST_ScaleY(r) AND skewX(r) = ST_SkewX(r) AND
+  skewY(r) = ST_SkewY(r) AS as_postgis
+FROM rast;
+
+-------------------------------------------------------------------------------
 -- reclass
 -------------------------------------------------------------------------------
 

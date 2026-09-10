@@ -228,6 +228,165 @@ Raster_num_bands(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Shape of a raster
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_width(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_width);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the width in pixels of a raster
+ * @param[in] rast Raster
+ * @sqlfn width()
+ */
+Datum
+Raster_width(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int result = raster_width(rast);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Raster_height(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_height);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the height in pixels of a raster
+ * @param[in] rast Raster
+ * @sqlfn height()
+ */
+Datum
+Raster_height(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int result = raster_height(rast);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Raster_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_srid);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the spatial reference system identifier of a raster
+ * @param[in] rast Raster
+ * @sqlfn SRID()
+ */
+Datum
+Raster_srid(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int32_t result = raster_srid(rast);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Raster_upper_left_x(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_upper_left_x);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the X coordinate of the upper left corner of a raster
+ * @param[in] rast Raster
+ * @sqlfn upperLeftX()
+ */
+Datum
+Raster_upper_left_x(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  double result = raster_upper_left_x(rast);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Raster_upper_left_y(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_upper_left_y);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the Y coordinate of the upper left corner of a raster
+ * @param[in] rast Raster
+ * @sqlfn upperLeftY()
+ */
+Datum
+Raster_upper_left_y(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  double result = raster_upper_left_y(rast);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Raster_scale_x(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_scale_x);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the pixel width of a raster, that is, the X component of its
+ * scale
+ * @param[in] rast Raster
+ * @sqlfn scaleX()
+ */
+Datum
+Raster_scale_x(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  double result = raster_scale_x(rast);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Raster_scale_y(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_scale_y);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the pixel height of a raster, that is, the Y component of its
+ * scale
+ * @param[in] rast Raster
+ * @sqlfn scaleY()
+ */
+Datum
+Raster_scale_y(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  double result = raster_scale_y(rast);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Raster_skew_x(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_skew_x);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the X component of the skew of a raster
+ * @param[in] rast Raster
+ * @sqlfn skewX()
+ */
+Datum
+Raster_skew_x(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  double result = raster_skew_x(rast);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Raster_skew_y(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_skew_y);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the Y component of the skew of a raster
+ * @param[in] rast Raster
+ * @sqlfn skewY()
+ */
+Datum
+Raster_skew_y(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  double result = raster_skew_y(rast);
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************
  * raster_reclass
  *****************************************************************************/
 

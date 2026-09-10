@@ -2876,13 +2876,25 @@
 					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Return the number of bands of a raster</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_SRID"><varname>SRID</varname></link>: Return the spatial reference system identifier of a raster</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_upperLeftX"><varname>upperLeftX</varname>, <varname>upperLeftY</varname></link>: Return the X or the Y coordinate of the upper left corner of a raster</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_scaleX"><varname>scaleX</varname>, <varname>scaleY</varname></link>: Return the pixel width or the pixel height of a raster, that is, the X or the Y component of its scale</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_skewX"><varname>skewX</varname>, <varname>skewY</varname></link>: Return the X or the Y component of the skew of a raster</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raquet_quadbin_accessor"><varname>quadbin</varname></link>: Return the QUADBIN cell of a Raquet tile</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_width"><varname>width</varname></link>: Return the width in pixels of a Raquet tile</para>
+					<para><link linkend="raquet_width"><varname>width</varname></link>: Return the width in pixels of a raster or a Raquet tile</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_height"><varname>height</varname></link>: Return the height in pixels of a Raquet tile</para>
+					<para><link linkend="raquet_height"><varname>height</varname></link>: Return the height in pixels of a raster or a Raquet tile</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Return the nodata sentinel value of a Raquet tile</para>
