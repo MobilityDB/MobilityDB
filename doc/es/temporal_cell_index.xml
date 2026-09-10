@@ -1962,7 +1962,8 @@ WITH rast AS (
     [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
 SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
   POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r)::text FROM rast;
--- {10@2001-01-01, 30@2001-01-02, 70@2001-01-03}
+-- Interp=Step;[10@2001-01-01, 20@2001-01-01 06:00:00, 30@2001-01-01 18:00:00,
+--   50@2001-01-02 08:00:00, 70@2001-01-02 20:00:00, 70@2001-01-03]
 </programlisting>
 				<para>Aplicado a un conjunto de datos de trayectorias con un ráster de elevación del terreno:</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
