@@ -28,18 +28,20 @@ runs:
     - name: Drop the package sources the build does not read
       shell: bash
       run: |
-        # The runner image ships Microsoft's azure-cli and prod repositories, and
-        # every package this project installs comes from the Ubuntu archives, so
-        # those two repositories answer for nothing here. They do fail: from the
-        # Azure runners they return `403  Forbidden`, which makes `apt-get update`
-        # exit 100 and fails a step that asked only for Ubuntu packages.
+        # The runner image ships Microsoft's azure-cli and prod repositories and
+        # Google's Chrome repository, and every package this project installs
+        # comes from the Ubuntu archives, so those repositories answer for
+        # nothing here. They do fail: from the Azure runners Microsoft's return
+        # `403  Forbidden`, and a fetch of Google's package index can fail its
+        # hash check. Either makes `apt-get update` exit 100 and fails a step
+        # that asked only for Ubuntu packages.
         #
-        # Retries and timeouts above cannot reach that failure — a 403 is an
-        # immediate, unchanging answer, so every retry repeats it. Removing the
+        # Retries and timeouts above do not reach these failures — a job that
+        # meets one carries both settings and still exits 100. Removing the
         # sources is what removes the dependency; apt then reports on exactly the
         # repositories the build reads, and a genuine Ubuntu archive failure still
         # fails the step.
-        sources=$(grep -rl 'packages\.microsoft\.com' \
+        sources=$(grep -rlE 'packages\.microsoft\.com|dl\.google\.com' \
           /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null || true)
         if [ -n "$sources" ]; then
           echo "$sources" | while IFS= read -r source; do
