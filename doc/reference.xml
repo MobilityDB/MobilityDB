@@ -3206,6 +3206,12 @@
 					<para><link linkend="raster_clip"><varname>clip</varname></link>: Return a raster keeping the pixels of another that a geometry covers</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_transform"><varname>transform</varname></link>: Return a raster stated in another spatial reference system</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_rescale"><varname>rescale</varname></link>: Return a raster resampled to another pixel size</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a <varname>raquet</varname> raster tile along a trajectory</para>
 				</listitem>
 				<listitem>

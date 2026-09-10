@@ -915,6 +915,61 @@ SELECT clip(r, ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 3857))
 FROM rast;
 
 -------------------------------------------------------------------------------
+-- transform and rescale
+-------------------------------------------------------------------------------
+
+-- A raster carried into another reference system states the same coverage
+-- read through that system. PostGIS's ST_Transform is the oracle, on the grid
+-- and on the values alike, for the default nearest neighbour and for bilinear
+-- resampling named without regard to case.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT ST_SRID(transform(r, 3857)) AS srid,
+  ST_MetaData(transform(r, 3857)) = ST_MetaData(ST_Transform(r, 3857))
+    AS grid_as_postgis,
+  ST_DumpValues(transform(r, 3857), 1) = ST_DumpValues(ST_Transform(r, 3857), 1)
+    AS values_as_postgis,
+  ST_DumpValues(transform(r, 3857, 'bilinear'), 1) =
+    ST_DumpValues(ST_Transform(r, 3857, 'Bilinear'), 1) AS bilinear_as_postgis
+FROM rast;
+
+-- Halving the pixel size doubles the width and the height. ST_Rescale is the
+-- oracle, for a Y scale stated negative as the geotransform states it and
+-- positive as PostGIS users write it.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT ST_Width(rescale(r, 0.5, -0.5)) AS w, ST_Height(rescale(r, 0.5, -0.5)) AS h,
+  ST_MetaData(rescale(r, 0.5, -0.5)) = ST_MetaData(ST_Rescale(r, 0.5, -0.5))
+    AS north_up_grid_as_postgis,
+  ST_DumpValues(rescale(r, 0.5, -0.5), 1) =
+    ST_DumpValues(ST_Rescale(r, 0.5, -0.5), 1) AS north_up_values_as_postgis,
+  ST_MetaData(rescale(r, 0.5, 0.5)) = ST_MetaData(ST_Rescale(r, 0.5, 0.5))
+    AS positive_grid_as_postgis,
+  ST_DumpValues(rescale(r, 0.5, 0.5), 1) =
+    ST_DumpValues(ST_Rescale(r, 0.5, 0.5), 1) AS positive_values_as_postgis
+FROM rast;
+
+-- A reprojection needs a target system.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT transform(r, 0) FROM rast;
+
+-------------------------------------------------------------------------------
 -- raster conversion to stbox
 -------------------------------------------------------------------------------
 

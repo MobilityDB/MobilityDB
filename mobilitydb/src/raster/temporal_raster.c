@@ -298,6 +298,64 @@ Raster_clip(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * raster_transform, raster_rescale
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_transform);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster stated in another spatial reference system
+ * @param[in] rast Raster
+ * @param[in] srid Target spatial reference system identifier
+ * @param[in] algorithm Name of the resampling algorithm
+ * @param[in] maxerr Error in input pixels the warp may commit
+ * @sqlfn transform()
+ */
+Datum
+Raster_transform(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int32_t srid = PG_GETARG_INT32(1);
+  char *algorithm = text_to_cstring(PG_GETARG_TEXT_P(2));
+  double maxerr = PG_GETARG_FLOAT8(3);
+  Raster *result = raster_transform(rast, srid, algorithm, maxerr);
+  pfree(algorithm);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_rescale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_rescale);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster resampled to another pixel size
+ * @param[in] rast Raster
+ * @param[in] scalex,scaley Pixel size in the units of the raster's reference
+ * system
+ * @param[in] algorithm Name of the resampling algorithm
+ * @param[in] maxerr Error in input pixels the warp may commit
+ * @sqlfn rescale()
+ */
+Datum
+Raster_rescale(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  double scalex = PG_GETARG_FLOAT8(1);
+  double scaley = PG_GETARG_FLOAT8(2);
+  char *algorithm = text_to_cstring(PG_GETARG_TEXT_P(3));
+  double maxerr = PG_GETARG_FLOAT8(4);
+  Raster *result = raster_rescale(rast, scalex, scaley, algorithm, maxerr);
+  pfree(algorithm);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * raster_tile_value_quadbin
  *****************************************************************************/
 

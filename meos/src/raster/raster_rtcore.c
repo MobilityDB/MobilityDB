@@ -990,7 +990,7 @@ raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @errval NULL
- * @csqlfn None, the host answers this operation on its own raster type
+ * @csqlfn #Raster_transform()
  */
 Raster *
 raster_transform(const Raster *rast, int32_t srid, const char *algorithm,
@@ -1022,7 +1022,7 @@ raster_transform(const Raster *rast, int32_t srid, const char *algorithm,
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @errval NULL
- * @csqlfn None, the host answers this operation on its own raster type
+ * @csqlfn #Raster_rescale()
  */
 Raster *
 raster_rescale(const Raster *rast, double scale_x, double scale_y,

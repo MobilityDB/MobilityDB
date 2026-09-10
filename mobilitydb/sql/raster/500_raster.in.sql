@@ -354,6 +354,35 @@ CREATE FUNCTION clip(raster, geometry, boolean DEFAULT true)
   AS 'MODULE_PATHNAME', 'Raster_clip'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster stated in another spatial reference system
+ * @param[in] rast Raster
+ * @param[in] srid Target spatial reference system identifier
+ * @param[in] algorithm Name of the resampling algorithm
+ * @param[in] maxerr Error in input pixels the warp may commit
+ */
+CREATE FUNCTION transform(raster, integer, text DEFAULT 'NearestNeighbour',
+    float8 DEFAULT 0.125)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster resampled to another pixel size
+ * @param[in] rast Raster
+ * @param[in] scalex,scaley Pixel size in the units of the raster's reference
+ * system
+ * @param[in] algorithm Name of the resampling algorithm
+ * @param[in] maxerr Error in input pixels the warp may commit
+ */
+CREATE FUNCTION rescale(raster, float8, float8,
+    text DEFAULT 'NearestNeighbour', float8 DEFAULT 0.125)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_rescale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Accessors for raquet tiles
  *****************************************************************************/
