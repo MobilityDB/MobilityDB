@@ -2897,10 +2897,13 @@
 					<para><link linkend="raquet_height"><varname>height</varname></link>: Return the height in pixels of a raster or a Raquet tile</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Return the nodata sentinel value of a Raquet tile</para>
+					<para><link linkend="raster_bandPixelType"><varname>bandPixelType</varname></link>: Return the name of the pixel data type of a raster band or of a Raquet tile</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_pixtype"><varname>pixtype</varname></link>: Return the name of the pixel data type of a Raquet tile</para>
+					<para><link linkend="raster_bandHasNoDataValue"><varname>bandHasNoDataValue</varname></link>: Return whether a raster band or a Raquet tile states a nodata value</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_bandNoDataValue"><varname>bandNoDataValue</varname></link>: Return the nodata value of a raster band or of a Raquet tile</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Return the pixel bytes of a Raquet tile</para>

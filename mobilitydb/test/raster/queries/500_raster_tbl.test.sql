@@ -42,7 +42,7 @@ SET datestyle = 'ISO, MDY';
 SELECT COUNT(*) FROM tbl_raquet;
 SELECT COUNT(*) FROM tbl_raquet WHERE tile IS NULL;
 SELECT COUNT(DISTINCT width(tile)), COUNT(DISTINCT height(tile)) FROM tbl_raquet;
-SELECT COUNT(DISTINCT pixtype(tile)) FROM tbl_raquet;
+SELECT COUNT(DISTINCT bandPixelType(tile)) FROM tbl_raquet;
 
 -------------------------------------------------------------------------------
 -- Input/output round-trip

@@ -532,10 +532,11 @@ raster_skew_y(const Raster *rast)
  * @param[in] band Band number (1-based)
  * @errval NULL
  * @note The name returned is the one the RaQuet specification writes, which is
- * what #raquet_pixtype() answers for a tile, so a band and a tile of the same
- * type report the same name. The PostGIS spelling is read through
+ * what #raquet_band_pixel_type() answers for a tile, so a band and a tile of
+ * the same type report the same name. The PostGIS spelling is read through
  * #raquet_pixtype_from_string(), so the one catalog states both vocabularies
  * and `1BB`, `2BUI` and `4BUI` report the `uint8` their bytes already are
+ * @csqlfn #Raster_band_pixel_type()
  */
 char *
 raster_band_pixel_type(const Raster *rast, int band)
@@ -567,6 +568,7 @@ raster_band_pixel_type(const Raster *rast, int band)
  * @errval false
  * @note A band that states none has no pixel to exclude, so every pixel it
  * holds carries a value
+ * @csqlfn #Raster_band_has_nodata_value()
  */
 bool
 raster_band_has_nodata_value(const Raster *rast, int band)
@@ -584,32 +586,31 @@ raster_band_has_nodata_value(const Raster *rast, int band)
 
 /**
  * @ingroup meos_raster_base_accessor
- * @brief Return the nodata value of a raster band
+ * @brief Return in the last argument the nodata value of a raster band
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
- * @errval DBL_MAX
- * @note A band stating no nodata value has none to return, which is an error
- * rather than a value: test it with #raster_band_has_nodata_value()
+ * @param[out] result Result
+ * @return True when the value is written, false when the band states no
+ * nodata value
+ * @errval false
+ * @csqlfn #Raster_band_nodata_value()
  */
-double
-raster_band_nodata_value(const Raster *rast, int band)
+bool
+raster_band_nodata_value(const Raster *rast, int band, double *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rast, DBL_MAX);
+  VALIDATE_NOT_NULL(rast, false); VALIDATE_NOT_NULL(result, false);
   rt_raster raster;
   rt_band rtband = raster_band_of(rast, band, &raster);
   if (! rtband)
-    return DBL_MAX;
-  double result;
-  rt_errorstate state = rt_band_get_nodata(rtband, &result);
+    return false;
+  /* rt_band_get_nodata() reports an error for a band stating no nodata value,
+   * which is an answer here rather than an error, so the flag is read first */
+  bool found = (rt_band_get_hasnodata_flag(rtband) != 0);
+  if (found)
+    rt_band_get_nodata(rtband, result);
   raster_destroy(raster);
-  if (state != ES_NONE)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Band %d of the raster states no nodata value", band);
-    return DBL_MAX;
-  }
-  return result;
+  return found;
 }
 
 /*****************************************************************************

@@ -384,7 +384,7 @@ SELECT stbox(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)) &amp
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_accessors">
 		<title>Accessors</title>
-		<para><link linkend="raster_numBands"><varname>numBands</varname></link>, <link linkend="raster_SRID"><varname>SRID</varname></link> and the corner, scale and skew accessors read the grid of a PostGIS <varname>raster</varname>; <link linkend="raquet_width"><varname>width</varname></link> and <link linkend="raquet_height"><varname>height</varname></link> read a raster and a <varname>raquet</varname> tile alike, and the other accessors read a <varname>raquet</varname> tile.</para>
+		<para><link linkend="raster_numBands"><varname>numBands</varname></link>, <link linkend="raster_SRID"><varname>SRID</varname></link> and the corner, scale and skew accessors read the grid of a PostGIS <varname>raster</varname>; <link linkend="raquet_width"><varname>width</varname></link>, <link linkend="raquet_height"><varname>height</varname></link> and the band accessors read a raster and a <varname>raquet</varname> tile alike, and the other accessors read a <varname>raquet</varname> tile.</para>
 
 		<para>A <varname>raquet</varname> value is self-describing: the accessors below read back the georeferencing and layout it carries, so a tile packaged with the <link linkend="raquet"><varname>raquet</varname></link> constructor or decoded with <link linkend="raquetRead"><varname>raquetRead</varname></link> can be inspected without keeping the loose columns it was built from.</para>
 
@@ -574,32 +574,58 @@ SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
-			<listitem xml:id="raquet_nodata">
-				<indexterm significance="normal"><primary><varname>nodata</varname></primary></indexterm>
-				<para>Return the nodata sentinel value of a Raquet tile</para>
+			<listitem xml:id="raster_bandPixelType">
+				<indexterm significance="normal"><primary><varname>bandPixelType</varname></primary></indexterm>
+				<para>Return the name of the pixel data type of a raster band or of a Raquet tile</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-nodata(raquet) → float8
+bandPixelType(raster,band integer=1) → text
+bandPixelType(raquet) → text
 </programlisting>
-							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8', 255));
--- 255
--- The sentinel defaults to 0 when the constructor omits it.
-SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
--- 0
+				<para>The returned name is the one the constructors accept, that is, one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>. The constructors read the name without regard to case, so the name PostGIS raster gives a pixel type carries into them as it stands; the name returned here is the lower-case spelling the RaQuet specification gives a tile's <varname>type</varname> field, for a PostGIS band as for a tile, so a band and a tile of the same type report the same name.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'));
+-- int16
+-- Read back the layout of a packaged tile
+SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile)
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
+-- 5193776270265024512 | 2 | 2 | uint8
 </programlisting>
 			</listitem>
-			<listitem xml:id="raquet_pixtype">
-				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
-				<para>Return the name of the pixel data type of a Raquet tile</para>
+			<listitem xml:id="raster_bandHasNoDataValue">
+				<indexterm significance="normal"><primary><varname>bandHasNoDataValue</varname></primary></indexterm>
+				<para>Return whether a raster band or a Raquet tile states a nodata value</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-pixtype(raquet) → text
+bandHasNoDataValue(raster,band integer=1) → boolean
+bandHasNoDataValue(raquet) → boolean
 </programlisting>
-				<para>The returned name is the one the constructors accept, that is, one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>. The constructors read the name without regard to case, so the name PostGIS raster gives a pixel type carries into them as it stands; the name returned here is the lower-case spelling the RaQuet specification gives a tile's <varname>type</varname> field, so it compares equal to that field as it stands.</para>
+				<para>A band that states none has no pixel to exclude, so every pixel it holds carries a value.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Read back the layout of a packaged tile
-SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
--- 5193776270265024512 | 2 | 2 | uint8 | 0
+SELECT bandHasNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
+  0::float8, -9999::float8));
+-- true
+SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'uint8'));
+-- false
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_bandNoDataValue">
+				<indexterm significance="normal"><primary><varname>bandNoDataValue</varname></primary></indexterm>
+				<para>Return the nodata value of a raster band or of a Raquet tile</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+bandNoDataValue(raster,band integer=1) → float8
+bandNoDataValue(raquet) → float8
+</programlisting>
+				<para>A band that states no nodata value answers <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT bandNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'::text,
+  0::float8, -9999::float8));
+-- -9999
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8',
+  255));
+-- 255
+-- A tile built without a nodata value states none
+SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- NULL
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquet_pixels">
@@ -608,7 +634,7 @@ FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS 
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 pixels(raquet) → bytea
 </programlisting>
-				<para>The bytes are row-major and packed, <varname>width</varname> × <varname>height</varname> pixels of the size of <varname>pixtype</varname> each, little-endian when a pixel is wider than one byte, which is the layout the constructors accept. A tile therefore round trips through its own accessors.</para>
+				<para>The bytes are row-major and packed, <varname>width</varname> × <varname>height</varname> pixels of the size of <link linkend="raster_bandPixelType"><varname>bandPixelType</varname></link> each, little-endian when a pixel is wider than one byte, which is the layout the constructors accept. A tile therefore round trips through its own accessors.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- \x01020304

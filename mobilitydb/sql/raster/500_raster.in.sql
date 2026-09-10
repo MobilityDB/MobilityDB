@@ -430,6 +430,44 @@ CREATE FUNCTION skewY(raster)
   AS 'MODULE_PATHNAME', 'Raster_skew_y'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************
+ * Bands of a raster
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the name of the pixel data type of a raster band
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ */
+CREATE FUNCTION bandPixelType(raster, integer DEFAULT 1)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Raster_band_pixel_type'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return whether a raster band states a nodata value
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ */
+CREATE FUNCTION bandHasNoDataValue(raster, integer DEFAULT 1)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raster_band_has_nodata_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the nodata value of a raster band, or NULL when the band
+ * states none
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ */
+CREATE FUNCTION bandNoDataValue(raster, integer DEFAULT 1)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Raster_band_nodata_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /**
  * @ingroup mobilitydb_raster
  * @brief Return a raster whose band states the classes an expression maps its
@@ -534,13 +572,17 @@ CREATE FUNCTION height(raquet)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Raquet_height'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nodata(raquet)
-  RETURNS float8
-  AS 'MODULE_PATHNAME', 'Raquet_nodata'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION pixtype(raquet)
+CREATE FUNCTION bandPixelType(raquet)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Raquet_pixtype'
+  AS 'MODULE_PATHNAME', 'Raquet_band_pixel_type'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bandHasNoDataValue(raquet)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raquet_band_has_nodata_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bandNoDataValue(raquet)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Raquet_band_nodata_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION pixels(raquet)
   RETURNS bytea
