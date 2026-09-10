@@ -8082,39 +8082,246 @@ linear_union_transpose(const char matrix[10], char result[10])
 }
 
 /**
- * @brief Return the sub-segment an edge draws between two of its parameters
+ * @brief Split the difference of two doubles into its rounded value and the
+ * error of that rounding, which together are the difference exactly
+ */
+static inline void
+linear_union_two_diff(double a, double b, double *x, double *y)
+{
+  *x = a - b;
+  double bv = a - *x;
+  double av = *x + bv;
+  *y = (a - av) + (bv - b);
+}
+
+/**
+ * @brief Split the product of two doubles into its rounded value and the
+ * error of that rounding, which together are the product exactly
+ * @note Exact where the product neither overflows nor underflows
+ */
+static inline void
+linear_union_two_product(double a, double b, double *x, double *y)
+{
+  *x = a * b;
+  *y = fma(a, b, - *x);
+}
+
+/**
+ * @brief Add a double to an expansion, a sum of doubles that do not overlap,
+ * held in increasing order of magnitude, and return its new length
+ * @details The sum is exact, and a zero component is dropped, so the last
+ * component carries the sign of the whole expansion
+ */
+static int
+linear_union_grow_expansion(int elen, const double *e, double b, double *h)
+{
+  double q = b;
+  int hlen = 0;
+  for (int i = 0; i < elen; i++)
+  {
+    double sum = q + e[i];
+    double bv = sum - q;
+    double av = sum - bv;
+    double err = (q - av) + (e[i] - bv);
+    q = sum;
+    if (err != 0.0)
+      h[hlen++] = err;
+  }
+  if (q != 0.0 || hlen == 0)
+    h[hlen++] = q;
+  return hlen;
+}
+
+/**
+ * @brief Return which side of the line through two points a third lies on
+ * @details The filtered sign of #relate_orientation answers where the double
+ * evaluation carries the sign. Where it cannot tell, the same determinant
+ * @p (bx - ax) * (cy - ay) - (by - ay) * (cx - ax) is summed exactly: each
+ * difference is its rounded value plus the error of the rounding, each
+ * product of two such terms is its rounded value plus its error, and the
+ * sixteen terms are added into an expansion, whose last component carries
+ * the sign of the exact determinant of the input doubles
+ * @return 1 or -1 for the two sides, 0 exactly where the three are collinear
+ */
+static int
+linear_union_orientation(double ax, double ay, double bx, double by,
+  double cx, double cy)
+{
+  int sign = relate_orientation(ax, ay, bx, by, cx, cy);
+  if (sign != 0)
+    return sign;
+  double d[4], t[4];
+  linear_union_two_diff(bx, ax, &d[0], &t[0]);
+  linear_union_two_diff(cy, ay, &d[1], &t[1]);
+  linear_union_two_diff(by, ay, &d[2], &t[2]);
+  linear_union_two_diff(cx, ax, &d[3], &t[3]);
+  /* (d0 + t0) (d1 + t1) - (d2 + t2) (d3 + t3), term by term */
+  const double lf[2] = {d[0], t[0]}, lg[2] = {d[1], t[1]};
+  const double rf[2] = {d[2], t[2]}, rg[2] = {d[3], t[3]};
+  double e[32], h[32];
+  int elen = 0;
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+    {
+      double x, y;
+      linear_union_two_product(lf[i], lg[j], &x, &y);
+      elen = linear_union_grow_expansion(elen, e, x, h);
+      memcpy(e, h, sizeof(double) * (size_t) elen);
+      elen = linear_union_grow_expansion(elen, e, y, h);
+      memcpy(e, h, sizeof(double) * (size_t) elen);
+      linear_union_two_product(rf[i], rg[j], &x, &y);
+      elen = linear_union_grow_expansion(elen, e, - x, h);
+      memcpy(e, h, sizeof(double) * (size_t) elen);
+      elen = linear_union_grow_expansion(elen, e, - y, h);
+      memcpy(e, h, sizeof(double) * (size_t) elen);
+    }
+  double top = e[elen - 1];
+  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
+}
+
+/**
+ * @brief A stretch of an edge that another edge covers
+ * @details Both ends are INPUT VERTICES lying on the edge -- an end of the
+ * covering edge, or an end of the covered one where the cover runs past it --
+ * so a piece cut between two of them is drawn with coordinates the input
+ * carries, never with a point constructed at a parameter
+ */
+typedef struct
+{
+  double lo;         /**< Position of the start along the edge */
+  double hi;         /**< Position of the end along the edge */
+  POINT2D plo;       /**< Vertex at the start */
+  POINT2D phi;       /**< Vertex at the end */
+} LinearStretch;
+
+/**
+ * @brief Return the position of a point along the line an edge spans
+ * @details Points lying on that line are ordered along it by the coordinate
+ * the edge advances most in, oriented to grow from the start of the edge to
+ * its end. That is the parameter of the point on the edge up to an increasing
+ * affine map, read off the coordinate itself: comparing two positions
+ * compares two input coordinates, so the order is exact where a parameter
+ * computed as @p (p - start) . d / |d|^2 would be a rounding of it
+ */
+static inline double
+linear_union_position(const Edge *edge, double x, double y)
+{
+  if (fabs(edge->dx) >= fabs(edge->dy))
+    return (edge->dx > 0.0) ? x : -x;
+  return (edge->dy > 0.0) ? y : -y;
+}
+
+/**
+ * @brief Return true if another edge covers a stretch of an edge, and that
+ * stretch in the last argument
+ * @details The other edge shares more than a point with the edge only where
+ * both its ends lie on the line the edge spans, a question on four input
+ * vertices that two exact determinant signs answer
+ * (#linear_union_orientation). The stretch is then the span of the other
+ * edge's ends clipped to the edge's own, compared by their position along it
+ * (#linear_union_position). A pair meeting at a point leaves the edge whole
+ */
+static bool
+linear_union_cover(const Edge *b, const Edge *a, LinearStretch *s)
+{
+  assert(b); assert(a); assert(s);
+  if (linear_union_orientation(b->x1, b->y1, b->x2, b->y2, a->x1, a->y1) != 0 ||
+      linear_union_orientation(b->x1, b->y1, b->x2, b->y2, a->x2, a->y2) != 0)
+    return false;
+  double pa1 = linear_union_position(b, a->x1, a->y1);
+  double pa2 = linear_union_position(b, a->x2, a->y2);
+  bool forward = pa1 <= pa2;
+  s->lo = forward ? pa1 : pa2;
+  s->hi = forward ? pa2 : pa1;
+  s->plo.x = forward ? a->x1 : a->x2; s->plo.y = forward ? a->y1 : a->y2;
+  s->phi.x = forward ? a->x2 : a->x1; s->phi.y = forward ? a->y2 : a->y1;
+  double pb1 = linear_union_position(b, b->x1, b->y1);
+  double pb2 = linear_union_position(b, b->x2, b->y2);
+  if (s->lo < pb1)
+  {
+    s->lo = pb1; s->plo.x = b->x1; s->plo.y = b->y1;
+  }
+  if (s->hi > pb2)
+  {
+    s->hi = pb2; s->phi.x = b->x2; s->phi.y = b->y2;
+  }
+  return s->lo < s->hi;
+}
+
+/**
+ * @brief Return the segment joining two input vertices
  */
 static LWGEOM *
-linear_union_subsegment(const Edge *edge, double t0, double t1, int32_t srid)
+linear_union_piece(const POINT2D *p1, const POINT2D *p2, int32_t srid)
 {
-  assert(edge);
+  assert(p1); assert(p2);
   POINTARRAY *pa = ptarray_construct_empty(0, 0, 2);
   POINT4D p;
   memset(&p, 0, sizeof(POINT4D));
-  /* An end of the edge is written as the edge writes it: @p x1 + 1.0 * dx is
-   * not @p x2 in floating point, and a piece spanning the whole edge has to
-   * reproduce the coordinates it was read from rather than a rounding of them */
-  if (t0 <= 0.0)
-  {
-    p.x = edge->x1; p.y = edge->y1;
-  }
-  else
-  {
-    p.x = edge->x1 + t0 * edge->dx;
-    p.y = edge->y1 + t0 * edge->dy;
-  }
+  p.x = p1->x; p.y = p1->y;
   ptarray_append_point(pa, &p, LW_TRUE);
-  if (t1 >= 1.0)
-  {
-    p.x = edge->x2; p.y = edge->y2;
-  }
-  else
-  {
-    p.x = edge->x1 + t1 * edge->dx;
-    p.y = edge->y1 + t1 * edge->dy;
-  }
+  p.x = p2->x; p.y = p2->y;
   ptarray_append_point(pa, &p, LW_TRUE);
   return lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
+}
+
+/**
+ * @brief Add to an array the pieces of an edge that no edge of a set covers
+ * @details The stretches the set covers are read in the order the edge is
+ * walked, and a piece runs from where one stretch ends to where the next one
+ * starts. Every end is an input vertex compared by position, so two
+ * stretches meeting at a shared vertex leave nothing between them and an edge
+ * of any length keeps what is uncovered of it, however short. An edge of zero
+ * length draws a point, which a line already walks, and adds no piece
+ * @param[in] b Edge
+ * @param[in] edges,count Edges that may cover it
+ * @param[out] cover Room for @p count stretches
+ * @param[out] pieces Array the pieces are appended to, with room for
+ * @p count + 1 of them
+ * @param[in] srid Spatial reference identifier
+ * @return Number of pieces added
+ */
+static int
+linear_union_uncovered(const Edge *b, const MeosArray *edges, int count,
+  LinearStretch *cover, LWGEOM **pieces, int32_t srid)
+{
+  assert(b); assert(edges); assert(cover); assert(pieces);
+  if (b->dx == 0.0 && b->dy == 0.0)
+    return 0;
+  int ncover = 0;
+  for (int j = 0; j < count; j++)
+  {
+    LinearStretch s;
+    if (! linear_union_cover(b, (const Edge *) meos_array_get(edges, j), &s))
+      continue;
+    int q = ncover - 1;
+    while (q >= 0 && cover[q].lo > s.lo)
+    {
+      cover[q + 1] = cover[q];
+      q--;
+    }
+    cover[q + 1] = s;
+    ncover++;
+  }
+  int npieces = 0;
+  POINT2D cur = { b->x1, b->y1 };
+  double pcur = linear_union_position(b, b->x1, b->y1);
+  for (int p = 0; p < ncover; p++)
+  {
+    if (cover[p].lo > pcur)
+      pieces[npieces++] = linear_union_piece(&cur, &cover[p].plo, srid);
+    if (cover[p].hi > pcur)
+    {
+      pcur = cover[p].hi;
+      cur = cover[p].phi;
+    }
+  }
+  if (linear_union_position(b, b->x2, b->y2) > pcur)
+  {
+    POINT2D end = { b->x2, b->y2 };
+    pieces[npieces++] = linear_union_piece(&cur, &end, srid);
+  }
+  return npieces;
 }
 
 /**
@@ -8133,15 +8340,16 @@ linear_union_straight(const MeosArray *edges)
 }
 
 /**
- * @brief Return true if two points are the same to what their coordinates
- * resolve
+ * @brief Return true if two points are the same point
+ * @details Every end of a piece is an input vertex, copied as the input
+ * holds it, so two ends are the same point exactly where their coordinates
+ * are equal: two distinct doubles are two distinct points, however near
  */
 static bool
 linear_union_same_point(const POINT2D *p1, const POINT2D *p2)
 {
   assert(p1); assert(p2);
-  return fabs(p1->x - p2->x) <= coordinate_tolerance(p1->x, p2->x) &&
-    fabs(p1->y - p2->y) <= coordinate_tolerance(p1->y, p2->y);
+  return p1->x == p2->x && p1->y == p2->y;
 }
 
 /**
@@ -8322,53 +8530,12 @@ linear_union_merge(const LWGEOM *geom1, const LWGEOM *geom2)
    * first does not cover, so at most one piece more than the overlaps it
    * carries */
   LWGEOM **pieces = palloc(sizeof(LWGEOM *) * (size_t) (n2 * (n1 + 1) + 1));
+  LinearStretch *cover = palloc(sizeof(LinearStretch) * (size_t) (n1 + 1));
   int npieces = 0;
-  double *lo = palloc(sizeof(double) * (size_t) (n1 + 1));
-  double *hi = palloc(sizeof(double) * (size_t) (n1 + 1));
-
   for (int j = 0; j < n2; j++)
-  {
-    const Edge *b = (const Edge *) meos_array_get(e2, j);
-    int nover = 0;
-    for (int i = 0; i < n1; i++)
-    {
-      const Edge *a = (const Edge *) meos_array_get(e1, i);
-      IntersectResult r = linesegm_intersect(b->x1, b->y1, b->dx, b->dy,
-        a->x1, a->y1, a->x2, a->y2);
-      /* A pair meeting at a point leaves the segment whole; only a shared
-       * stretch removes anything from it */
-      if (r.type != INTERSECT_OVERLAP)
-        continue;
-      lo[nover] = (r.t0 < r.t1) ? r.t0 : r.t1;
-      hi[nover] = (r.t0 < r.t1) ? r.t1 : r.t0;
-      nover++;
-    }
-    /* The overlaps read in the order the segment is walked */
-    for (int p = 1; p < nover; p++)
-    {
-      double l = lo[p], h = hi[p];
-      int q = p - 1;
-      while (q >= 0 && lo[q] > l)
-      {
-        lo[q + 1] = lo[q]; hi[q + 1] = hi[q]; q--;
-      }
-      lo[q + 1] = l; hi[q + 1] = h;
-    }
-    /* A piece shorter than what the segment's own coordinates resolve is not
-     * linework, it is the rounding of the parameter that produced it */
-    double mint = (b->length > 0.0) ? b->tol / b->length : 1.0;
-    double cur = 0.0;
-    for (int p = 0; p < nover; p++)
-    {
-      if (lo[p] > cur + mint)
-        pieces[npieces++] = linear_union_subsegment(b, cur, lo[p], srid);
-      if (hi[p] > cur)
-        cur = hi[p];
-    }
-    if (1.0 > cur + mint)
-      pieces[npieces++] = linear_union_subsegment(b, cur, 1.0, srid);
-  }
-  pfree(lo); pfree(hi);
+    npieces += linear_union_uncovered((const Edge *) meos_array_get(e2, j),
+      e1, n1, cover, &pieces[npieces], srid);
+  pfree(cover);
   meos_array_destroy(e1); meos_array_destroy(e2);
 
   /* The first curve seeds the sewing, so the pieces attach to it in the order
@@ -8434,47 +8601,12 @@ linear_union_dissolve(const LWGEOM *geom, LWGEOM ***curves)
   int32_t srid = lwgeom_get_srid(geom);
 
   LWGEOM **pieces = palloc(sizeof(LWGEOM *) * (size_t) (nedges * nedges + 1));
+  LinearStretch *cover = palloc(sizeof(LinearStretch) * (size_t) (nedges + 1));
   int npieces = 0;
-  double *lo = palloc(sizeof(double) * (size_t) (nedges + 1));
-  double *hi = palloc(sizeof(double) * (size_t) (nedges + 1));
   for (int i = 0; i < nedges; i++)
-  {
-    const Edge *b = (const Edge *) meos_array_get(edges, i);
-    int nover = 0;
-    for (int j = 0; j < i; j++)
-    {
-      const Edge *a = (const Edge *) meos_array_get(edges, j);
-      IntersectResult r = linesegm_intersect(b->x1, b->y1, b->dx, b->dy,
-        a->x1, a->y1, a->x2, a->y2);
-      if (r.type != INTERSECT_OVERLAP)
-        continue;
-      lo[nover] = (r.t0 < r.t1) ? r.t0 : r.t1;
-      hi[nover] = (r.t0 < r.t1) ? r.t1 : r.t0;
-      nover++;
-    }
-    for (int p = 1; p < nover; p++)
-    {
-      double l = lo[p], h = hi[p];
-      int q = p - 1;
-      while (q >= 0 && lo[q] > l)
-      {
-        lo[q + 1] = lo[q]; hi[q + 1] = hi[q]; q--;
-      }
-      lo[q + 1] = l; hi[q + 1] = h;
-    }
-    double mint = (b->length > 0.0) ? b->tol / b->length : 1.0;
-    double cur = 0.0;
-    for (int p = 0; p < nover; p++)
-    {
-      if (lo[p] > cur + mint)
-        pieces[npieces++] = linear_union_subsegment(b, cur, lo[p], srid);
-      if (hi[p] > cur)
-        cur = hi[p];
-    }
-    if (1.0 > cur + mint)
-      pieces[npieces++] = linear_union_subsegment(b, cur, 1.0, srid);
-  }
-  pfree(lo); pfree(hi);
+    npieces += linear_union_uncovered((const Edge *) meos_array_get(edges, i),
+      edges, i, cover, &pieces[npieces], srid);
+  pfree(cover);
   meos_array_destroy(edges);
 
   int ncurves = linear_union_chain_all(pieces, npieces, srid, curves);

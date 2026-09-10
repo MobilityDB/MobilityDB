@@ -1568,6 +1568,86 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* An edge shorter than the square root of the coordinate tolerance, about
+   * 1e-6, is an edge like any other: a vessel at anchor reports steps of that
+   * size in degrees, and the union keeps them. The far point makes the line
+   * one member of an array, so the union reads it through the dissolve of a
+   * single line. A stretch the line walks twice is still counted once, which
+   * the second case asserts. In the third, a step walks straight back over
+   * the first and the last leaves in another direction: the doubled step
+   * counts once and the last one is kept, where a band on the cross product
+   * reads it as running along the first. The fourth doubles back in its
+   * decimal text only: in binary the third vertex lies off the line of the
+   * first two, so the two steps share no stretch and both are kept */
+  struct { const char *line, *result; } shortcases[] = {
+    { "LINESTRING(12.272392 57.058987,12.272393 57.058987,12.272393 57.05899)",
+      "GEOMETRYCOLLECTION(POINT(-170 -80),LINESTRING(12.272392 57.058987,"
+      "12.272393 57.058987,12.272393 57.05899))" },
+    { "LINESTRING(0 0,0.000003 0,0.000001 0)",
+      "GEOMETRYCOLLECTION(POINT(-170 -80),LINESTRING(0 0,0.000003 0))" },
+    { "LINESTRING(11.198253 55.211805,11.19825 55.2118,11.198253 55.211805,"
+      "11.198252 55.211803)",
+      "GEOMETRYCOLLECTION(POINT(-170 -80),LINESTRING(11.19825 55.2118,"
+      "11.198253 55.211805,11.198252 55.211803))" },
+    { "LINESTRING(9.241645 57.790927,9.242395 57.790767,9.24127 57.791007)",
+      "GEOMETRYCOLLECTION(POINT(-170 -80),LINESTRING(9.241645 57.790927,"
+      "9.242395 57.790767,9.24127 57.791007))" },
+  };
+  GSERIALIZED *farpt = geom_in("POINT(-170 -80)", -1);
+  assert(farpt != NULL);
+  for (size_t i = 0; i < sizeof(shortcases) / sizeof(shortcases[0]); i++)
+  {
+    GSERIALIZED *sl = geom_in(shortcases[i].line, -1);
+    assert(sl != NULL);
+    GSERIALIZED *slarr[2] = {sl, farpt};
+    meos_errno_reset();
+    GSERIALIZED *slu = geom_array_union(slarr, 2);
+    assert(slu != NULL);
+    assert(meos_errno() == 0);
+    char *slwkt = geo_as_text(slu, 6);
+    assert(slwkt != NULL);
+    printf("%s with a far point: %s\n", shortcases[i].line, slwkt);
+    assert(strcmp(slwkt, shortcases[i].result) == 0);
+    free(sl); free(slu); free(slwkt);
+    meos_errno_reset();
+  }
+  /* The first vertex of this line lies off the line of its second edge by
+   * less than the rounding of the determinant that decides it, so the
+   * filtered sign cannot tell. The exact determinant is not zero: the two
+   * edges share only their common vertex, and the union walks the whole line */
+  GSERIALIZED *fz = geom_in("LINESTRING(0 0,9007199254740990 9007199254740988,"
+    "4503599627370495 4503599627370495)", -1);
+  assert(fz != NULL);
+  GSERIALIZED *fzarr[2] = {fz, farpt};
+  meos_errno_reset();
+  GSERIALIZED *fzu = geom_array_union(fzarr, 2);
+  assert(fzu != NULL);
+  assert(meos_errno() == 0);
+  printf("union of a line whose sign the filter cannot tell: length %.17g of "
+    "%.17g\n", geom_length(fzu), geom_length(fz));
+  assert(geom_length(fzu) == geom_length(fz));
+  free(fz); free(fzu);
+  meos_errno_reset();
+  /* The fourth vertex of this line lies 5e-13 from the first, a distinct
+   * point: the last edge walks back over that stretch of the first, and the
+   * pieces the union keeps are sewn at the vertices they share exactly */
+  GSERIALIZED *sw = geom_in("LINESTRING(0 0,1e-9 0,1e-9 1e-9,5e-13 0,-1e-9 0)",
+    -1);
+  assert(sw != NULL);
+  GSERIALIZED *swarr[2] = {sw, farpt};
+  meos_errno_reset();
+  GSERIALIZED *swu = geom_array_union(swarr, 2);
+  assert(swu != NULL);
+  assert(meos_errno() == 0);
+  char *swwkt = geo_as_text(swu, 15);
+  assert(swwkt != NULL);
+  printf("union of a line with two vertices 5e-13 apart: %s\n", swwkt);
+  assert(strcmp(swwkt, "GEOMETRYCOLLECTION(POINT(-170 -80),LINESTRING(5e-13 0,"
+    "1e-9 1e-9,1e-9 0,0 0,-1e-9 0))") == 0);
+  free(sw); free(swu); free(swwkt);
+  meos_errno_reset();
+  free(farpt);
+
   /* An arc is a curve, and the lift along it is read by ANGLE rather than by
    * the chord joining its ends. These two discs are mirror images about the
    * line through the points where they cross, and each carries elevations
