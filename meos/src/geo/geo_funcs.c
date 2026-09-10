@@ -5496,7 +5496,16 @@ static int
 relate_orientation(double ax, double ay, double bx, double by, double cx,
   double cy)
 {
-  return cross_product_sign(bx - ax, by - ay, cx - ax, cy - ay);
+  double left = (bx - ax) * (cy - ay);
+  double right = (by - ay) * (cx - ax);
+  double det = left - right;
+  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
+    (fabs(left) + fabs(right));
+  if (det > bound)
+    return 1;
+  if (det < - bound)
+    return -1;
+  return 0;
 }
 
 /**
