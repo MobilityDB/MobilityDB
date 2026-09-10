@@ -51,6 +51,10 @@
 
 	<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> es un formato ráster nativo en la nube que almacena teselas ráster como filas en un archivo Apache Parquet. Cada fila contiene los bytes de píxel de una tesela Web-Mercator junto con su identificador de celda <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink>, un entero de 64 bits que codifica el nivel de zoom y las coordenadas x/y intercaladas mediante Morton. No se requieren metadatos espaciales adicionales: el rectángulo delimitador y el mapeo de píxel a coordenadas quedan completamente determinados por el valor QUADBIN.</para>
 
+	<para>Los dos se distinguen en lo que lleva un valor. Un valor <varname>raquet</varname> contiene sus píxeles y su celda QUADBIN en un único valor, de modo que su extensión y su rejilla de píxeles se derivan de la celda y responde únicamente a la rejilla Web-Mercator. Un <varname>raster</varname> de PostGIS declara un sistema de referencia espacial arbitrario y una georreferenciación afín arbitraria, y es el que toman las funciones de procesamiento de <xref linkend="tcell_raster_specific"/>: <link linkend="raster_clip"><varname>clip</varname></link>, <link linkend="raster_transform"><varname>transform</varname></link>, <link linkend="raster_rescale"><varname>rescale</varname></link>, <link linkend="raster_reclass"><varname>reclass</varname></link>, <link linkend="raster_summaryStats"><varname>summaryStats</varname></link> y <link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>. MEOS calcula ambos, de modo que ninguno necesita PostgreSQL para evaluarse.</para>
+
+	<para>Una cobertura multiespectral se lee banda por banda en ambas vías. La especificación RaQuet otorga a cada banda de una tesela una columna propia, <varname>band_1</varname>, <varname>band_2</varname> y así sucesivamente, por lo que tal cobertura es un conjunto de teselas de una sola banda que comparten una celda QUADBIN y <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> muestrea la banda que recibe, mientras que en la vía <varname>raster</varname> de PostGIS el argumento <varname>band</varname> la nombra. Lo que un valor <varname>raquet</varname> no transporta es la disposición entrelazada que la especificación ofrece para imágenes RGB, que empaqueta las bandas de una tesela en una única columna comprimida en JPEG o WebP.</para>
+
 	<sect1 xml:id="tcell_notation">
 		<title>Notación</title>
 		<para>La mayoría de las funciones y operadores para tipos temporales descritos en los capítulos anteriores pueden aplicarse a los tipos de índices de celdas temporales. Por lo tanto, en las signaturas de las funciones, la notación <varname>base</varname> representa una <varname>cell</varname> y la notación <varname>ttype</varname> representa también un <varname>tcell</varname>. Para evitar redundancia, presentamos a continuación únicamente las funciones y los operadores específicos de los tipos de índices de celdas.</para>
@@ -2253,19 +2257,4 @@ sudo make install
 		<para>Para incluir el ráster en la compilación de cobertura de CI junto con otras familias opcionales, añada <varname>-DRASTER=ON</varname> a la invocación de cmake en <filename>.github/workflows/pgversion.yml</filename>.</para>
 	</sect1>
 
-	<sect1 xml:id="raster_roadmap">
-		<title>Hoja de Ruta de Producción</title>
-
-		<para>Las dos vías descritas en este capítulo sirven propósitos distintos y ambas se mantienen. La vía <varname>raquet</varname> es un tipo de valor MEOS autocontenido: transporta sus píxeles y su georreferenciación QUADBIN en un único valor y no necesita PostgreSQL para evaluarse, por lo que está disponible en todos los enlaces de lenguaje derivados de MEOS. La vía <varname>raster</varname> de PostGIS ofrece el procesamiento ráster mucho más rico de la extensión <varname>postgis_raster</varname>, álgebra de mapas, estadísticas, remuestreo, recorte, conversión a polígonos, únicamente dentro de PostgreSQL.</para>
-
-		<para>Ninguna vía reemplaza a la otra. El trabajo sobre la vía <varname>raquet</varname> amplía lo que una tesela nativa de la nube puede hacer a lo largo de una trayectoria; no pretende reimplementar el procesamiento ráster.</para>
-
-		<para>Una cobertura multiespectral se lee banda por banda en ambas vías. La especificación RaQuet otorga a cada banda de una tesela una columna propia, <varname>band_1</varname>, <varname>band_2</varname> y así sucesivamente, por lo que tal cobertura es un conjunto de teselas de una sola banda que comparten una celda QUADBIN y <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> muestrea la banda que recibe, mientras que en la vía <varname>raster</varname> de PostGIS el argumento <varname>band</varname> la nombra. Lo que un valor <varname>raquet</varname> no transporta es la disposición entrelazada que la especificación ofrece para imágenes RGB, que empaqueta las bandas de una tesela en una única columna comprimida en JPEG o WebP.</para>
-
-		<para>Las extensiones siguientes requieren un modelo de datos ráster general, es decir, sistemas de referencia espacial arbitrarios y georreferenciación afín arbitraria. La extensión y la rejilla de píxeles de un valor <varname>raquet</varname> se derivan de su celda QUADBIN, por lo que quedan fuera de ese modelo y siguen disponibles a través de la vía <varname>raster</varname> de PostGIS:</para>
-		<itemizedlist>
-			<listitem><para><emphasis>Sistemas de referencia espacial arbitrarios</emphasis>, teselas fuera de la rejilla Web-Mercator y reproyección entre sistemas de referencia.</para></listitem>
-			<listitem><para><emphasis>Procesamiento ráster</emphasis>, álgebra de mapas, estadísticas de resumen, remuestreo y conversión a polígonos, junto con el recorte de una tesela a una región, como la extensión que un conjunto de trayectorias visita durante un intervalo de tiempo.</para></listitem>
-		</itemizedlist>
-	</sect1>
 </chapter>
