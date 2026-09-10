@@ -102,7 +102,12 @@ BOX_DISTANCE = re.compile(r"^nad_tbox")
 # because -1 is already one of the answers. What this catches is the public
 # comparator that answers INT_MAX SILENTLY: the value is in the code and in no
 # contract, so neither a reader nor a binding generator can find it, and the
-# check below reads a documented value it never finds.
+# check below reads a documented value it never finds. A comparator whose body
+# has no failing path states no error value, and the body test below is what
+# lets it through: h3index_cmp, meos_h3index_cmp, quadbin_cmp, s2cell_cmp,
+# int32_cmp and int64_cmp take their operands by value, validate nothing and
+# answer -1, 0 or 1 for every pair, so an INT_MAX in their contract would
+# promise a value they never produce.
 CMP = re.compile(r"_cmp$")
 PUBLIC_DOC = re.compile(r"@ingroup\s+meos_(?!internal)")
 # A pointer return: any sentinel other than NULL is wrong
