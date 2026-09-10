@@ -879,6 +879,42 @@ WITH rast AS (
 SELECT reclass(r, 1, '0-50', '32BF') FROM rast;
 
 -------------------------------------------------------------------------------
+-- clip
+-------------------------------------------------------------------------------
+
+-- A raster keeps the pixels a geometry covers, the others answering nodata.
+-- The polygon's edges fall on pixel edges and cover the upper left 2x2 pixels
+-- of the band holding 10, 20, 30 / 40, 50, 60 / 70, 80, 90, so the answer is
+-- unambiguous; PostGIS's ST_Clip is the oracle, with and without cropping.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+), g AS (
+  SELECT ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326) AS g
+)
+SELECT ST_DumpValues(clip(r, g), 1) AS cropped,
+  ST_DumpValues(clip(r, g, false), 1) AS kept_extent,
+  ST_DumpValues(clip(r, g), 1) = ST_DumpValues(ST_Clip(r, g), 1)
+    AS cropped_as_postgis,
+  ST_DumpValues(clip(r, g, false), 1) = ST_DumpValues(ST_Clip(r, g, false), 1)
+    AS kept_as_postgis
+FROM rast, g;
+
+-- A geometry in another reference system is refused rather than read as if
+-- its coordinates were the raster's.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT clip(r, ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 3857))
+FROM rast;
+
+-------------------------------------------------------------------------------
 -- raster conversion to stbox
 -------------------------------------------------------------------------------
 

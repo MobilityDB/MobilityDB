@@ -717,7 +717,7 @@ raster_geo_mask(rt_raster raster, const GSERIALIZED *gs)
  * @param[in] crop True to reduce the result to the extent the raster and the
  * geometry share
  * @errval NULL
- * @csqlfn None, the host answers this operation on its own raster type
+ * @csqlfn #Raster_clip()
  */
 Raster *
 raster_clip(const Raster *rast, const GSERIALIZED *gs, bool crop)

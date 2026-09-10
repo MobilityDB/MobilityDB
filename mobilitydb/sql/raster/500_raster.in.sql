@@ -342,6 +342,18 @@ CREATE FUNCTION reclass(raster, integer, text, text,
   AS 'MODULE_PATHNAME', 'Raster_reclass'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster keeping the pixels of another that a geometry covers
+ * @param[in] rast Raster
+ * @param[in] geom Geometry, in the reference system of the raster
+ * @param[in] crop True to reduce the result to the extent the two share
+ */
+CREATE FUNCTION clip(raster, geometry, boolean DEFAULT true)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_clip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Accessors for raquet tiles
  *****************************************************************************/

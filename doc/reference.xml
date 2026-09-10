@@ -3203,6 +3203,9 @@
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Return a raster whose band holds the classes an expression maps its values to</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_clip"><varname>clip</varname></link>: Return a raster keeping the pixels of another that a geometry covers</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a <varname>raquet</varname> raster tile along a trajectory</para>
 				</listitem>
 				<listitem>
