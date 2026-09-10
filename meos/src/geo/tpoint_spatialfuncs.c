@@ -3047,35 +3047,6 @@ points_distance(const POINT2D *p1, const POINT2D *p2, bool geodetic)
 }
 
 /**
- * @brief Return the diameter of a set of points, the greatest distance between
- * two of them
- * @details The diameter is the size of the region the points occupy, which is
- * what #tfloatseq_stops_iter() reads for a temporal float as the difference
- * between the greatest and the least value it takes. It is the same quantity
- * here, measured between two points instead of two numbers, and it is realized
- * by two of the points themselves rather than by a figure built around them
- * @param[in] points Points
- * @param[in] npoints Number of points
- * @param[in] geodetic True when the coordinates are geodetic, in which case
- * every distance is read on the spheroid
- * @note The computation is always done in 2D
- */
-static double
-points_diameter(const POINT2D *points, uint32_t npoints, bool geodetic)
-{
-  assert(points);
-  double result = 0.0;
-  for (uint32_t i = 0; i + 1 < npoints; i++)
-    for (uint32_t j = i + 1; j < npoints; j++)
-    {
-      double d = points_distance(&points[i], &points[j], geodetic);
-      if (d > result)
-        result = d;
-    }
-  return result;
-}
-
-/**
  * @brief Return the greatest distance between a point and a set of points
  * @details A set grows by one point at a time as long as the window it
  * measures keeps its start, and the diameter of the enlarged set is the
@@ -3142,6 +3113,123 @@ tspatialseq_points(const TSequence *seq)
   return result;
 }
 
+/* Margin, relative to the maximum distance, by which the bound on the diameter
+ * of a stop window stays below it to decide alone: it covers the rounding of
+ * the two distances the bound adds */
+#define STOPS_REL_MARGIN 1.0e-9
+/* Margin, in meters, covering in addition the accuracy of a distance read on
+ * the spheroid */
+#define STOPS_GEOD_MARGIN 1.0e-2
+
+/**
+ * @brief Distances read for the window of instants a stop is sought in
+ * @details The window runs over the points of the sequence from a start to an
+ * end. Its diameter, the greatest distance between two of its points, is
+ * bounded by the distances from its first point, the anchor: the greatest of
+ * them is itself the distance between two points of the window, and by the
+ * triangle inequality no two points are farther apart than the sum of the two
+ * greatest. Each reading is kept with the window it was made for, so that a
+ * window keeping its start extends it by the instants it reaches
+ */
+typedef struct
+{
+  const POINT2D *points; /**< Points of the sequence */
+  bool geodetic;         /**< True when distances are read on the spheroid */
+  double maxdist;        /**< Greatest diameter of a stop */
+  double margin;         /**< Margin by which a bound stays below @p maxdist */
+  int reach_start;       /**< Anchor the reaches are read from */
+  int reach_end;         /**< Last point the reaches account for */
+  double reach1;         /**< Greatest distance from the anchor */
+  double reach2;         /**< Second greatest distance from the anchor */
+  int diam_start;        /**< First point the diameter accounts for */
+  int diam_end;          /**< Last point the diameter accounts for */
+  double diameter;       /**< Greatest distance between two points */
+} StopWindow;
+
+/**
+ * @brief Extend the two greatest distances from the anchor of a stop window
+ * to its end
+ * @param[in,out] win Stop window
+ * @param[in] start,end Indexes of the first and last points of the window
+ */
+static void
+stopwindow_reach(StopWindow *win, int start, int end)
+{
+  if (win->reach_start != start)
+  {
+    win->reach_start = win->reach_end = start;
+    win->reach1 = win->reach2 = 0.0;
+  }
+  for (int i = win->reach_end + 1; i <= end; i++)
+  {
+    double d = points_distance(&win->points[start], &win->points[i],
+      win->geodetic);
+    if (d > win->reach1)
+    {
+      win->reach2 = win->reach1;
+      win->reach1 = d;
+    }
+    else if (d > win->reach2)
+      win->reach2 = d;
+  }
+  win->reach_end = end;
+}
+
+/**
+ * @brief Extend the diameter of a stop window to its end, reading every pair
+ * of its points
+ * @details The diameter of a window enlarged by one point is the greater of
+ * the diameter it had and the greatest distance the added point reaches: a
+ * pair not involving the added point is one the diameter already answers for
+ * @param[in,out] win Stop window
+ * @param[in] start,end Indexes of the first and last points of the window
+ */
+static void
+stopwindow_diameter(StopWindow *win, int start, int end)
+{
+  if (win->diam_start != start)
+  {
+    win->diam_start = win->diam_end = start;
+    win->diameter = 0.0;
+  }
+  for (int i = win->diam_end + 1; i <= end; i++)
+  {
+    double d = point_max_distance(win->points + start, (uint32_t) (i - start),
+      &win->points[i], win->geodetic);
+    if (d > win->diameter)
+      win->diameter = d;
+  }
+  win->diam_end = end;
+}
+
+/**
+ * @brief Return true when the diameter of a stop window does not exceed the
+ * maximum distance
+ * @details Two points farther apart than the maximum distance settle the
+ * answer, which a single distance shows for an object on the move. The sum of
+ * the two greatest distances from the anchor settles it when it stays below
+ * the maximum distance by the margin, which it does for an object at rest.
+ * Only a window between the two bounds reads every pair of its points, so the
+ * answer is always the one the pairs give
+ * @param[in,out] win Stop window
+ * @param[in] start,end Indexes of the first and last points of the window
+ */
+static bool
+stopwindow_within(StopWindow *win, int start, int end)
+{
+  if ((win->reach_start != start || win->reach_end != end - 1) &&
+      points_distance(&win->points[start], &win->points[end], win->geodetic) >
+        win->maxdist)
+    return false;
+  stopwindow_reach(win, start, end);
+  if (win->reach1 > win->maxdist)
+    return false;
+  if (win->reach1 + win->reach2 <= win->maxdist - win->margin)
+    return true;
+  stopwindow_diameter(win, start, end);
+  return win->diameter <= win->maxdist;
+}
+
 /**
  * @brief Return the subsequences where the temporal value stays within an area
  * with a given maximum size for at least the specified duration
@@ -3165,18 +3253,26 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     );
 
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
-  /* The points the sequence takes, read once: the window the rectangle is
-   * computed for is the slice of them the two indexes below delimit */
+  /* The points the sequence takes, read once: the window is the slice of them
+   * the two indexes below delimit */
   POINT2D *points = tspatialseq_points(seq);
   if (! points)
     return 0;
 
+  StopWindow win;
+  win.points = points;
+  win.geodetic = geodetic;
+  win.maxdist = maxdist;
+  win.margin = maxdist * STOPS_REL_MARGIN +
+    (geodetic ? STOPS_GEOD_MARGIN : 0.0);
+  win.reach_start = win.reach_end = -1;
+  win.reach1 = win.reach2 = 0.0;
+  win.diam_start = win.diam_end = -1;
+  win.diameter = 0.0;
+
   const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
   int end, start = 0, nseqs = 0;
   bool is_stopped = false, previously_stopped = false;
-  /* The diameter of the window, and the start it was read for */
-  double diameter = 0.0;
-  int diameter_start = 0;
 
   for (end = 0; end < seq->count; ++end)
   {
@@ -3190,20 +3286,7 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     if (end - start == 0)
       continue;
 
-    /* A window that keeps its start grows by the instant just reached, and its
-     * diameter grows with it; one that slid is a different set of points */
-    if (start != diameter_start)
-      diameter = points_diameter(points + start, (uint32_t) (end - start + 1),
-        geodetic);
-    else
-    {
-      double reach = point_max_distance(points + start,
-        (uint32_t) (end - start), &points[end], geodetic);
-      if (reach > diameter)
-        diameter = reach;
-    }
-    diameter_start = start;
-    is_stopped = diameter <= maxdist;
+    is_stopped = stopwindow_within(&win, start, end);
     inst2 = TSEQUENCE_INST_N(seq, end - 1);
     if (! is_stopped && previously_stopped &&
       (int64)(inst2->t - inst1->t) >= mintunits) /* Found a stop */
@@ -3214,8 +3297,6 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
       result[nseqs++] = tsequence_make(instants, end - start, true, true,
         LINEAR, NORMALIZE_NO);
       start = end;
-      diameter = 0.0;
-      diameter_start = end;
     }
     previously_stopped = is_stopped;
   }
