@@ -2276,7 +2276,7 @@ geom_areal_touching_stretches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       if (fmax(b->x1, b->x2) < axmin || fmin(b->x1, b->x2) > axmax ||
           fmax(b->y1, b->y2) < aymin || fmin(b->y1, b->y2) > aymax)
         continue;
-      IntersectResult r = linesegm_intersect(a->x1, a->y1, arx, ary,
+      IntersectResult r = linesegm_intersect(a->x1, a->y1, a->x2, a->y2,
         b->x1, b->y1, b->x2, b->y2);
       if (r.type != INTERSECT_OVERLAP)
         continue;

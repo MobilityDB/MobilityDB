@@ -559,6 +559,103 @@ buffer_curvepoly_add_ring(LWCURVEPOLY *poly, LWCOMPOUND *ring)
  *****************************************************************************/
 
 /**
+ * @brief Return where two segments of a buffer meet, the first given by its
+ * start and its direction
+ * @details The buffer asks this of its own edges, offsets it computes from
+ * the input and whose ends are rounded, so the verdict is taken within
+ * tolerances rather than exactly: two offsets that share a corner meet at
+ * one point even where their rounded ends do not exactly coincide.
+ * #linesegm_intersect decides the same question exactly, on input vertices.
+ * - No intersection: INTERSECT_NONE -> t0 and t1 undefined
+ * - Single point: INTERSECT_POINT -> t0 in [0,1], t1 ignored
+ * - Overlap segment: INTERSECT_OVERLAP -> t0 < t1 in [0,1], apart by at
+ *   least MEOS_GEOM_TOLERANCE
+ * @param[in] ax,ay Coordinates of the start of the first segment
+ * @param[in] rx,ry Vector from the start to the end of the first segment
+ * @param[in] cx,cy,dx,dy Coordinates of the ends of the second segment
+ */
+static inline IntersectResult
+buffer_linesegm_intersect(double ax, double ay, double rx, double ry,
+  double cx, double cy, double dx, double dy)
+{
+  IntersectResult res = {INTERSECT_NONE, 0, 0};
+  double sx = dx - cx, sy = dy - cy; /* vector CD */
+  /* Where is the start of the second segment relative to the first? */
+  double qpx = cx - ax, qpy = cy - ay;
+
+  /* Are the two segments parallel?  */
+  double rxs = rx * sy - ry * sx;
+
+  /* Collinear / parallel */
+  if (fabs(rxs) < MEOS_GEOM_TOLERANCE)
+  {
+    /* The two segments run in one direction; what is left to decide is
+     * whether they run along the SAME LINE or along two parallel ones. Both
+     * quantities that answer it are areas rather than lengths, and each needs
+     * a threshold in its own units:
+     * - r2 is the squared length of AB, so its bound is the SQUARE of the
+     *   tolerance. Bounded by the plain tolerance it rejects every segment
+     *   shorter than that tolerance's square root, which is 1e-6, and such a
+     *   segment then fails to overlap even an identical copy of itself.
+     * - qpxr is the cross product of AC with AB, which is the separation of
+     *   the two lines TIMES the length of AB. Bounded by the plain tolerance
+     *   it stands for a separation of tolerance/|AB|, so two lines far apart
+     *   read as one line whenever AB is short enough. Dividing by the length
+     *   puts the bound back on the separation, where it belongs. */
+    double r2 = rx * rx + ry * ry;
+    if (r2 < MEOS_GEOM_TOLERANCE * MEOS_GEOM_TOLERANCE)
+      return res;
+
+    /* Is point C aligned with segment AB? */
+    double qpxr = qpx * ry - qpy * rx;
+    /* If qpxr != 0: parallel, if qpxr == 0: collinear */
+    if (fabs(qpxr) > MEOS_GEOM_TOLERANCE * sqrt(r2))
+      return res;
+
+    double t0 = (qpx * rx + qpy * ry) / r2;
+    double t1 = t0 + (sx * rx + sy * ry) / r2;
+
+    /* Order t0 < t1 */
+    if (t0 > t1) { double tmp = t0; t0 = t1; t1 = tmp; }
+    /* No intersection */
+    if (t1 < 0 || t0 > 1)
+      return res;
+
+    /* Clamp values */
+    if (t0 < 0) t0 = 0;
+    if (t1 > 1) t1 = 1;
+
+    if (fabs(t1 - t0) < MEOS_GEOM_TOLERANCE)
+    {
+      res.type = INTERSECT_POINT;
+      res.t0 = t0;
+      return res;
+    }
+
+    res.type = INTERSECT_OVERLAP;
+    res.t0 = t0;
+    res.t1 = t1;
+    return res;
+  }
+
+  /* Proper intersection */
+  double t = (qpx * sy - qpy * sx) / rxs;
+  double u = (qpx * ry - qpy * rx) / rxs;
+
+  if (t < -MEOS_GEOM_TOLERANCE || t > 1 + MEOS_GEOM_TOLERANCE ||
+      u < -MEOS_GEOM_TOLERANCE || u > 1 + MEOS_GEOM_TOLERANCE)
+    return res;
+
+  /* Clamp values */
+  if (fabs(t) < MEOS_GEOM_TOLERANCE) t = 0;
+  if (fabs(t - 1) < MEOS_GEOM_TOLERANCE) t = 1;
+
+  res.type = INTERSECT_POINT;
+  res.t0 = t;
+  return res;
+}
+
+/**
  * @brief Return true if two buffer geometries have overlapping interiors.
  * @details This is used to determine whether individual line buffers can
  * be returned independently or whether an overlay/union operation is needed.
@@ -609,8 +706,8 @@ buffer_geometries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
       /* Line / line */
       if (a->etype == EDGE_LINESEG && b->etype == EDGE_LINESEG)
       {
-        IntersectResult r = linesegm_intersect(a->x1, a->y1, a->dx, a->dy,
-          b->x1, b->y1, b->x2, b->y2);
+        IntersectResult r = buffer_linesegm_intersect(a->x1, a->y1,
+          a->dx, a->dy, b->x1, b->y1, b->x2, b->y2);
         if (r.type != INTERSECT_NONE)
         {
           result = true;
@@ -657,8 +754,8 @@ buffer_geometries_intersect(const LWGEOM *geom1, const LWGEOM *geom2)
        * EDGE_POLYSEG and curved boundaries as EDGE_POLYARC. */
       else if (a->etype == EDGE_POLYSEG && b->etype == EDGE_POLYSEG)
       {
-        IntersectResult r = linesegm_intersect(a->x1, a->y1, a->dx, a->dy,
-          b->x1, b->y1, b->x2, b->y2);
+        IntersectResult r = buffer_linesegm_intersect(a->x1, a->y1,
+          a->dx, a->dy, b->x1, b->y1, b->x2, b->y2);
         if (r.type != INTERSECT_NONE)
         {
           result = true;
@@ -717,8 +814,8 @@ buffer_edges_intersect(const Edge *e1, const Edge *e2)
   /* Line / Line */
   if (e1->etype == EDGE_POLYSEG && e2->etype == EDGE_POLYSEG)
   {
-    IntersectResult r = linesegm_intersect(e1->x1, e1->y1, e1->dx, e1->dy,
-      e2->x1, e2->y1, e2->x2, e2->y2);
+    IntersectResult r = buffer_linesegm_intersect(e1->x1, e1->y1,
+      e1->dx, e1->dy, e2->x1, e2->y1, e2->x2, e2->y2);
     return r.type != INTERSECT_NONE;
   }
 
@@ -1062,8 +1159,8 @@ buffer_boundary_intersection(const Edge *e1, const Edge *e2)
   /* Straight segment / straight segment */
   if (e1->etype == EDGE_POLYSEG && e2->etype == EDGE_POLYSEG)
   {
-    IntersectResult result = linesegm_intersect(e1->x1, e1->y1, e1->dx, e1->dy,
-      e2->x1, e2->y1, e2->x2, e2->y2);
+    IntersectResult result = buffer_linesegm_intersect(e1->x1, e1->y1,
+      e1->dx, e1->dy, e2->x1, e2->y1, e2->x2, e2->y2);
     if (result.type == INTERSECT_OVERLAP)
       return 1;
     if (result.type == INTERSECT_POINT)
@@ -1591,8 +1688,8 @@ buffer_collect_line_line_intersections(const Edge *e1, const Edge *e2,
   MeosArray *points)
 {
   assert(e1); assert(e2); assert(points);
-  IntersectResult result = linesegm_intersect(e1->x1, e1->y1, e1->dx, e1->dy,
-    e2->x1, e2->y1, e2->x2, e2->y2);
+  IntersectResult result = buffer_linesegm_intersect(e1->x1, e1->y1,
+    e1->dx, e1->dy, e2->x1, e2->y1, e2->x2, e2->y2);
   if (result.type == INTERSECT_POINT)
   {
     double x = e1->x1 + result.t0 * e1->dx;

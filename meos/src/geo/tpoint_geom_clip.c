@@ -352,9 +352,6 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
   const double seg_xmax = Max(ax, bx);
   const double seg_ymin = Min(ay, by);
   const double seg_ymax = Max(ay, by);
-  /* Segment vector */
-  const double rx = bx - ax;  
-  const double ry = by - ay;  
 
   bool has_intersection = false;
   Span in;
@@ -373,7 +370,7 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
       continue;
 
     /* Compute the intersection */
-    IntersectResult r = linesegm_intersect(ax, ay, rx, ry,
+    IntersectResult r = linesegm_intersect(ax, ay, bx, by,
       e->x1, e->y1, e->x2, e->y2);
     /* If there is no intersection  */
     if (r.type == INTERSECT_NONE)
@@ -572,7 +569,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
     if (e->etype == EDGE_POLYSEG)
     {
       /* Compute the crossing with the straight boundary segment */
-      IntersectResult r = linesegm_intersect(ax, ay, rx, ry,
+      IntersectResult r = linesegm_intersect(ax, ay, bx, by,
         e->x1, e->y1, e->x2, e->y2);
       if (r.type == INTERSECT_POINT)
       {
@@ -1865,7 +1862,7 @@ edge_intersect(const Edge *e1, const Edge *e2)
     double out[2];
     return arcsegm_intersect(e1->x1, e1->y1, e1->dx, e1->dy, e2, out) > 0;
   }
-  IntersectResult r = linesegm_intersect(e1->x1, e1->y1, e1->dx, e1->dy,
+  IntersectResult r = linesegm_intersect(e1->x1, e1->y1, e1->x2, e1->y2,
     e2->x1, e2->y1, e2->x2, e2->y2);
   return r.type != INTERSECT_NONE;
 }
@@ -2071,7 +2068,7 @@ segment_within_closure(const Edge *e, Edge **aedges, int na, bool has_area)
     }
     else
     {
-      IntersectResult r = linesegm_intersect(e->x1, e->y1, e->dx, e->dy,
+      IntersectResult r = linesegm_intersect(e->x1, e->y1, e->x2, e->y2,
         ea->x1, ea->y1, ea->x2, ea->y2);
       if (r.type == INTERSECT_POINT)
         ts[nt++] = r.t0;

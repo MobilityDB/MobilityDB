@@ -637,6 +637,130 @@ build_edge_rtree(const Edge *edges, int nedges, int32_t srid)
 }
 
 /*****************************************************************************
+ * The sign of a cross product where the filter cannot tell
+ *****************************************************************************/
+
+/**
+ * @brief Split the difference of two doubles into its rounded value and the
+ * error of that rounding, which together are the difference exactly
+ */
+static inline void
+two_diff(double a, double b, double *x, double *y)
+{
+  *x = a - b;
+  double bv = a - *x;
+  double av = *x + bv;
+  *y = (a - av) + (bv - b);
+}
+
+/**
+ * @brief Split the product of two doubles into its rounded value and the
+ * error of that rounding, which together are the product exactly
+ * @note Exact where the product neither overflows nor underflows
+ */
+static inline void
+two_product(double a, double b, double *x, double *y)
+{
+  *x = a * b;
+  *y = fma(a, b, - *x);
+}
+
+/**
+ * @brief Add a double to an expansion, a sum of doubles that do not overlap,
+ * held in increasing order of magnitude, and return its new length
+ * @details The sum is exact, and a zero component is dropped, so the last
+ * component carries the sign of the whole expansion
+ */
+static inline int
+grow_expansion(int elen, const double *e, double b, double *h)
+{
+  double q = b;
+  int hlen = 0;
+  for (int i = 0; i < elen; i++)
+  {
+    double sum = q + e[i];
+    double bv = sum - q;
+    double av = sum - bv;
+    double err = (q - av) + (e[i] - bv);
+    q = sum;
+    if (err != 0.0)
+      h[hlen++] = err;
+  }
+  if (q != 0.0 || hlen == 0)
+    h[hlen++] = q;
+  return hlen;
+}
+
+/**
+ * @brief Return the sign of the cross product of the vectors B - A and D - C,
+ * decided exactly
+ * @details Each difference is its rounded value plus the error of the
+ * rounding. Where the four differences are exact, which the calls the filter
+ * of #cross_product_sign cannot sign mostly are, the cross product is a
+ * difference of two products of doubles: rounding is monotone, so two rounded
+ * products that differ order as the exact ones do, and two that are equal
+ * leave the sign to the difference of their rounding errors, which are exact.
+ * Otherwise each product of two terms is its rounded value plus its error,
+ * and the sixteen terms are added into an expansion whose last component
+ * carries the sign; a term with a zero factor adds nothing and is skipped.
+ * #cross_product_sign calls it where its filter cannot tell, which keeps this
+ * out of every call the filter decides
+ * @note Exact where no product of coordinate differences overflows or
+ * underflows
+ * @return 1 or -1 for the two turns, 0 exactly where the vectors are parallel
+ */
+int
+cross_product_sign_exact(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy)
+{
+  double d[4], t[4];
+  two_diff(bx, ax, &d[0], &t[0]);
+  two_diff(dy, cy, &d[1], &t[1]);
+  two_diff(by, ay, &d[2], &t[2]);
+  two_diff(dx, cx, &d[3], &t[3]);
+  if (t[0] == 0.0 && t[1] == 0.0 && t[2] == 0.0 && t[3] == 0.0)
+  {
+    double l = d[0] * d[1], r = d[2] * d[3];
+    if (l != r)
+      return (l > r) ? 1 : -1;
+    double err = fma(d[0], d[1], - l) - fma(d[2], d[3], - r);
+    return (err > 0.0) ? 1 : ((err < 0.0) ? -1 : 0);
+  }
+  /* (d0 + t0) (d1 + t1) - (d2 + t2) (d3 + t3), term by term */
+  const double lf[2] = {d[0], t[0]}, lg[2] = {d[1], t[1]};
+  const double rf[2] = {d[2], t[2]}, rg[2] = {d[3], t[3]};
+  double buf1[32], buf2[32];
+  double *e = buf1, *h = buf2, *swap;
+  int elen = 0;
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+    {
+      double x, y;
+      if (lf[i] != 0.0 && lg[j] != 0.0)
+      {
+        two_product(lf[i], lg[j], &x, &y);
+        elen = grow_expansion(elen, e, x, h);
+        swap = e; e = h; h = swap;
+        elen = grow_expansion(elen, e, y, h);
+        swap = e; e = h; h = swap;
+      }
+      if (rf[i] != 0.0 && rg[j] != 0.0)
+      {
+        two_product(rf[i], rg[j], &x, &y);
+        elen = grow_expansion(elen, e, - x, h);
+        swap = e; e = h; h = swap;
+        elen = grow_expansion(elen, e, - y, h);
+        swap = e; e = h; h = swap;
+      }
+    }
+  /* Every term with a zero factor: the cross product is zero */
+  if (elen == 0)
+    return 0;
+  double top = e[elen - 1];
+  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
+}
+
+/*****************************************************************************
  * Functions computing the intersection of two segments derived from PostGIS
  * The seg2d_intersection function is a modified version of the PostGIS
  * lw_segment_intersects function and also returns the intersection point
@@ -4374,7 +4498,7 @@ relate_linear_edges_overlap(const Edge *a, const Edge *b, double *t0,
 {
   if (a->etype == EDGE_LINESEG && b->etype == EDGE_LINESEG)
   {
-    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->dx, a->dy,
+    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->x2, a->y2,
         b->x1, b->y1, b->x2, b->y2);
     if (r.type != INTERSECT_OVERLAP)
       return false;
@@ -4697,8 +4821,8 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
   /* Line / Poly */
   if (line->etype == EDGE_LINESEG && boundary->etype == EDGE_POLYSEG)
   {
-    IntersectResult r =  linesegm_intersect(line->x1, line->y1, line->dx,
-      line->dy, boundary->x1, boundary->y1, boundary->x2, boundary->y2);
+    IntersectResult r =  linesegm_intersect(line->x1, line->y1, line->x2,
+      line->y2, boundary->x1, boundary->y1, boundary->x2, boundary->y2);
     if (r.type == INTERSECT_NONE)
       return;
     if (r.type == INTERSECT_OVERLAP)
@@ -5063,7 +5187,7 @@ relate_linear_edge_points(const Edge *a, const Edge *b, POINT2D *out)
   int count = 0;
   if (a->etype == EDGE_LINESEG && b->etype == EDGE_LINESEG)
   {
-    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->dx, a->dy,
+    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->x2, a->y2,
       b->x1, b->y1, b->x2, b->y2);
     if (r.type == INTERSECT_POINT)
     {
@@ -5674,7 +5798,7 @@ relate_area_edge_intersection(const Edge *a, const Edge *b, double ix[2],
   /* Line / Line */
   if (a->etype == EDGE_POLYSEG && b->etype == EDGE_POLYSEG)
   {
-    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->dx, a->dy,
+    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->x2, a->y2,
       b->x1, b->y1, b->x2, b->y2);
     if (r.type == INTERSECT_NONE)
       return 0;
@@ -7424,7 +7548,7 @@ relate_edges_meet(const Edge *a, const Edge *b)
     EDGE_LINEARC : EDGE_LINESEG;
   if (ea.etype == EDGE_LINESEG && eb.etype == EDGE_LINESEG)
   {
-    IntersectResult r = linesegm_intersect(ea.x1, ea.y1, ea.dx, ea.dy,
+    IntersectResult r = linesegm_intersect(ea.x1, ea.y1, ea.x2, ea.y2,
       eb.x1, eb.y1, eb.x2, eb.y2);
     return r.type != INTERSECT_NONE;
   }
@@ -8082,104 +8206,6 @@ linear_union_transpose(const char matrix[10], char result[10])
 }
 
 /**
- * @brief Split the difference of two doubles into its rounded value and the
- * error of that rounding, which together are the difference exactly
- */
-static inline void
-linear_union_two_diff(double a, double b, double *x, double *y)
-{
-  *x = a - b;
-  double bv = a - *x;
-  double av = *x + bv;
-  *y = (a - av) + (bv - b);
-}
-
-/**
- * @brief Split the product of two doubles into its rounded value and the
- * error of that rounding, which together are the product exactly
- * @note Exact where the product neither overflows nor underflows
- */
-static inline void
-linear_union_two_product(double a, double b, double *x, double *y)
-{
-  *x = a * b;
-  *y = fma(a, b, - *x);
-}
-
-/**
- * @brief Add a double to an expansion, a sum of doubles that do not overlap,
- * held in increasing order of magnitude, and return its new length
- * @details The sum is exact, and a zero component is dropped, so the last
- * component carries the sign of the whole expansion
- */
-static int
-linear_union_grow_expansion(int elen, const double *e, double b, double *h)
-{
-  double q = b;
-  int hlen = 0;
-  for (int i = 0; i < elen; i++)
-  {
-    double sum = q + e[i];
-    double bv = sum - q;
-    double av = sum - bv;
-    double err = (q - av) + (e[i] - bv);
-    q = sum;
-    if (err != 0.0)
-      h[hlen++] = err;
-  }
-  if (q != 0.0 || hlen == 0)
-    h[hlen++] = q;
-  return hlen;
-}
-
-/**
- * @brief Return which side of the line through two points a third lies on
- * @details The filtered sign of #relate_orientation answers where the double
- * evaluation carries the sign. Where it cannot tell, the same determinant
- * @p (bx - ax) * (cy - ay) - (by - ay) * (cx - ax) is summed exactly: each
- * difference is its rounded value plus the error of the rounding, each
- * product of two such terms is its rounded value plus its error, and the
- * sixteen terms are added into an expansion, whose last component carries
- * the sign of the exact determinant of the input doubles
- * @return 1 or -1 for the two sides, 0 exactly where the three are collinear
- */
-static int
-linear_union_orientation(double ax, double ay, double bx, double by,
-  double cx, double cy)
-{
-  int sign = relate_orientation(ax, ay, bx, by, cx, cy);
-  if (sign != 0)
-    return sign;
-  double d[4], t[4];
-  linear_union_two_diff(bx, ax, &d[0], &t[0]);
-  linear_union_two_diff(cy, ay, &d[1], &t[1]);
-  linear_union_two_diff(by, ay, &d[2], &t[2]);
-  linear_union_two_diff(cx, ax, &d[3], &t[3]);
-  /* (d0 + t0) (d1 + t1) - (d2 + t2) (d3 + t3), term by term */
-  const double lf[2] = {d[0], t[0]}, lg[2] = {d[1], t[1]};
-  const double rf[2] = {d[2], t[2]}, rg[2] = {d[3], t[3]};
-  double e[32], h[32];
-  int elen = 0;
-  for (int i = 0; i < 2; i++)
-    for (int j = 0; j < 2; j++)
-    {
-      double x, y;
-      linear_union_two_product(lf[i], lg[j], &x, &y);
-      elen = linear_union_grow_expansion(elen, e, x, h);
-      memcpy(e, h, sizeof(double) * (size_t) elen);
-      elen = linear_union_grow_expansion(elen, e, y, h);
-      memcpy(e, h, sizeof(double) * (size_t) elen);
-      linear_union_two_product(rf[i], rg[j], &x, &y);
-      elen = linear_union_grow_expansion(elen, e, - x, h);
-      memcpy(e, h, sizeof(double) * (size_t) elen);
-      elen = linear_union_grow_expansion(elen, e, - y, h);
-      memcpy(e, h, sizeof(double) * (size_t) elen);
-    }
-  double top = e[elen - 1];
-  return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
-}
-
-/**
  * @brief A stretch of an edge that another edge covers
  * @details Both ends are INPUT VERTICES lying on the edge -- an end of the
  * covering edge, or an end of the covered one where the cover runs past it --
@@ -8216,17 +8242,19 @@ linear_union_position(const Edge *edge, double x, double y)
  * stretch in the last argument
  * @details The other edge shares more than a point with the edge only where
  * both its ends lie on the line the edge spans, a question on four input
- * vertices that two exact determinant signs answer
- * (#linear_union_orientation). The stretch is then the span of the other
- * edge's ends clipped to the edge's own, compared by their position along it
- * (#linear_union_position). A pair meeting at a point leaves the edge whole
+ * vertices that two exact determinant signs answer (#cross_product_sign).
+ * The stretch is then the span of the other edge's ends clipped to the
+ * edge's own, compared by their position along it (#linear_union_position).
+ * A pair meeting at a point leaves the edge whole
  */
 static bool
 linear_union_cover(const Edge *b, const Edge *a, LinearStretch *s)
 {
   assert(b); assert(a); assert(s);
-  if (linear_union_orientation(b->x1, b->y1, b->x2, b->y2, a->x1, a->y1) != 0 ||
-      linear_union_orientation(b->x1, b->y1, b->x2, b->y2, a->x2, a->y2) != 0)
+  if (cross_product_sign(b->x1, b->y1, b->x2, b->y2, b->x1, b->y1,
+        a->x1, a->y1) != 0 ||
+      cross_product_sign(b->x1, b->y1, b->x2, b->y2, b->x1, b->y1,
+        a->x2, a->y2) != 0)
     return false;
   double pa1 = linear_union_position(b, a->x1, a->y1);
   double pa2 = linear_union_position(b, a->x2, a->y2);
