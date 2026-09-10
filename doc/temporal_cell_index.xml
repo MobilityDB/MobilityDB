@@ -2161,8 +2161,8 @@ WITH rast AS (
     ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
     [40.0::float4, 50.0::float4, 60.0::float4],
     [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
-SELECT ST_SRID(transform(r, 3857)) AS srid, ST_Width(transform(r, 3857)) AS width,
-  ST_Height(transform(r, 3857)) AS height
+SELECT SRID(transform(r, 3857)) AS srid, width(transform(r, 3857)) AS width,
+  height(transform(r, 3857)) AS height
 FROM rast;
 -- 3857 | 3 | 3
 </programlisting>
@@ -2184,9 +2184,9 @@ WITH rast AS (
     ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
     [40.0::float4, 50.0::float4, 60.0::float4],
     [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
-SELECT ST_Width(rescale(r, 0.5, -0.5)) AS width,
-  ST_Height(rescale(r, 0.5, -0.5)) AS height,
-  ST_ScaleX(rescale(r, 0.5, -0.5)) AS scalex
+SELECT width(rescale(r, 0.5, -0.5)) AS width,
+  height(rescale(r, 0.5, -0.5)) AS height,
+  scaleX(rescale(r, 0.5, -0.5)) AS scalex
 FROM rast;
 -- 6 | 6 | 0.5
 </programlisting>
