@@ -184,8 +184,20 @@ if(POINTCLOUD)
   # export but libpc needs — stringbuffer_release_string and stringbuffer_append
   # (PostGIS provides the latter only as a header static-inline). One definition
   # each, so no linker hack is required on any platform.
-  list(APPEND POINTCLOUD_LIBPC_SRCS
+  #
+  # The shim is an object library of its own so that its symbols can be hidden
+  # from the shared library's dynamic table without hiding libpc's, which MEOS
+  # consumers call directly. librttopo.so, which PostgreSQL co-loads through
+  # postgis_raster's GDAL, also exports stringbuffer_append, so an exported
+  # definition would be open to the ELF interposition that
+  # postgis/liblwgeom/CMakeLists.txt describes.
+  add_library(pointcloud_libpc_shim OBJECT
     ${CMAKE_CURRENT_SOURCE_DIR}/pc_stringbuffer_shim.c)
+  set_target_properties(pointcloud_libpc_shim PROPERTIES
+    C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE ON)
+  target_include_directories(pointcloud_libpc_shim PRIVATE
+    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib)
+  target_compile_options(pointcloud_libpc_shim PRIVATE "-w")
   # Compile libpc once as an object library, then assemble the archive from it —
   # SIBLING-FROM postgis/CMakeLists.txt (liblwgeom/ryu/librtcore OBJECT libraries
   # collected into POSTGIS_OBJECTS, then `add_library(postgis STATIC …)`). The
@@ -207,7 +219,8 @@ if(POINTCLOUD)
   # other vendored libraries (liblwgeom, ryu, libpgcommon).
   target_compile_options(pointcloud_libpc_objects PRIVATE "-w")
 
-  add_library(pointcloud_libpc STATIC $<TARGET_OBJECTS:pointcloud_libpc_objects>)
+  add_library(pointcloud_libpc STATIC $<TARGET_OBJECTS:pointcloud_libpc_objects>
+    $<TARGET_OBJECTS:pointcloud_libpc_shim>)
   set_target_properties(pointcloud_libpc PROPERTIES
     POSITION_INDEPENDENT_CODE ON OUTPUT_NAME pc)
   target_link_libraries(pointcloud_libpc PUBLIC LibXml2::LibXml2 ZLIB::ZLIB)
