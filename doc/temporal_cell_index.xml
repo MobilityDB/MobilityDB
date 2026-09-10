@@ -51,6 +51,10 @@
 
 	<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> is a cloud-native raster format that stores raster tiles as rows in an Apache Parquet file. Each row holds the pixel bytes for one Web-Mercator tile together with its <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink> cell identifier, a 64-bit integer that encodes the tile's zoom level and Morton-interleaved x/y coordinates. No separate spatial metadata is required: the bounding box and pixel-to-coordinate mapping are fully determined by the QUADBIN value.</para>
 
+	<para>The two differ in what a value carries. A <varname>raquet</varname> value holds its pixels and its QUADBIN cell in one value, so its extent and its pixel grid follow from the cell and it answers the Web-Mercator grid alone. A PostGIS <varname>raster</varname> states an arbitrary spatial reference system and an arbitrary affine georeferencing, and it is the one the processing functions of <xref linkend="tcell_raster_specific"/> take: <link linkend="raster_clip"><varname>clip</varname></link>, <link linkend="raster_transform"><varname>transform</varname></link>, <link linkend="raster_rescale"><varname>rescale</varname></link>, <link linkend="raster_reclass"><varname>reclass</varname></link>, <link linkend="raster_summaryStats"><varname>summaryStats</varname></link> and <link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>. MEOS computes both, so neither needs PostgreSQL to evaluate.</para>
+
+	<para>A multi-spectral coverage is read band by band on either path. The RaQuet specification gives each band of a tile a column of its own, <varname>band_1</varname>, <varname>band_2</varname> and so on, so such a coverage is a set of single-band tiles sharing one QUADBIN cell and <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> samples the band it is given, while on the PostGIS <varname>raster</varname> path the <varname>band</varname> argument names it. What a <varname>raquet</varname> value does not carry is the interleaved layout the specification offers for RGB imagery, which packs the bands of a tile into a single JPEG- or WebP-compressed column.</para>
+
 	<sect1 xml:id="tcell_notation">
 		<title>Notation</title>
 		<para>Most functions and operators for temporal types described in the previous chapters can be applied to temporal cell index types. Therefore, in the signatures of the functions, the notation <varname>base</varname> represents a <varname>cell</varname> and the notation <varname>ttype</varname> also represents a <varname>tcell</varname>. To avoid redundancy, we present next only the functions and operators specific to the cell index types.</para>
@@ -2256,19 +2260,4 @@ sudo make install
 		<para>To include raster in the CI coverage build alongside other optional families, add <varname>-DRASTER=ON</varname> to the cmake invocation in <filename>.github/workflows/pgversion.yml</filename>.</para>
 	</sect1>
 
-	<sect1 xml:id="raster_roadmap">
-		<title>Production Roadmap</title>
-
-		<para>The two paths described in this chapter serve different purposes and are both maintained. The <varname>raquet</varname> path is a self-contained MEOS value type: it carries its pixels and its QUADBIN georeferencing in a single value and needs no PostgreSQL to evaluate, so it is available to every language binding derived from MEOS. The PostGIS <varname>raster</varname> path offers the far richer raster processing of the <varname>postgis_raster</varname> extension, map algebra, statistics, resampling, clipping, conversion to polygons, inside PostgreSQL only.</para>
-
-		<para>Neither path replaces the other. Work on the <varname>raquet</varname> path extends what a cloud-native tile can do along a trajectory; it is not an attempt to reimplement raster processing.</para>
-
-		<para>A multi-spectral coverage is read band by band on either path. The RaQuet specification gives each band of a tile a column of its own, <varname>band_1</varname>, <varname>band_2</varname> and so on, so such a coverage is a set of single-band tiles sharing one QUADBIN cell and <link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link> samples the band it is given, while on the PostGIS <varname>raster</varname> path the <varname>band</varname> argument names it. What a <varname>raquet</varname> value does not carry is the interleaved layout the specification offers for RGB imagery, which packs the bands of a tile into a single JPEG- or WebP-compressed column.</para>
-
-		<para>The extensions below require a general raster data model, that is, arbitrary spatial reference systems and arbitrary affine georeferencing. The extent and the pixel grid of a <varname>raquet</varname> value follow from its QUADBIN cell, so these lie outside that model and remain available through the PostGIS <varname>raster</varname> path:</para>
-		<itemizedlist>
-			<listitem><para><emphasis>Arbitrary spatial reference systems</emphasis>, tiles outside the Web-Mercator grid, and reprojection between reference systems.</para></listitem>
-			<listitem><para><emphasis>Raster processing</emphasis>, map algebra, summary statistics, resampling, and conversion to polygons, together with clipping a tile to a region, such as the extent a set of trajectories visits over a time interval.</para></listitem>
-		</itemizedlist>
-	</sect1>
 </chapter>
