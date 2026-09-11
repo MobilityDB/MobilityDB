@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: linesegm_intersect</title>
+<title>MobilityDB: cross_product_sign_exact</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -97,6 +97,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a7421ea3ef74a6c7d49fa89567c7382f4.html#a7421ea3ef74a6c7d49fa89567c7382f4">closest_point2d_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af03bf902980a6c21f0c87c493c0fcbdc.html#af03bf902980a6c21f0c87c493c0fcbdc">closest_point3dz_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b">coordinate_tolerance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393">cross_product_sign</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_af7aa6df0ab605f3926301b439af379de.html#af7aa6df0ab605f3926301b439af379de">cross_product_sign_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a54d5ce3f27777cbbd4be4ea56f34ef5f.html#a54d5ce3f27777cbbd4be4ea56f34ef5f">de9im_match</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af4428992fd22684ae6c47800270ee44f.html#af4428992fd22684ae6c47800270ee44f">edge_set_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4">EdgeType</a></td></tr>
@@ -132,7 +134,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac97cd2d4e9f389366d8e9454b96ff9ed.html#ac97cd2d4e9f389366d8e9454b96ff9ed">geopoint_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aec0cdbf6de4fde6de67870382b739149.html#aec0cdbf6de4fde6de67870382b739149">geopoint_same</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120c">IntersectType</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_ac97ccd804c59e373ff793135cef0191b.html#ac97ccd804c59e373ff793135cef0191b">linesegm_intersect</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8f027e7f6fed84bad331b1a24de1fa54.html#a8f027e7f6fed84bad331b1a24de1fa54">linesegm_intersect</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a432549bd59fd6c29b13b12e4a4b9f24d.html#a432549bd59fd6c29b13b12e4a4b9f24d">linesegm_param</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e">lwcircle_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a68271a26cf0484985212bc9986358f63.html#a68271a26cf0484985212bc9986358f63">lwpointarr_make_trajectory</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8ddc88e891374e0d420e2bfc9318fa2c.html#a8ddc88e891374e0d420e2bfc9318fa2c">lwpointarr_remove_duplicates</a></td></tr>
@@ -171,17 +174,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac97ccd804c59e373ff793135cef0191b" name="ac97ccd804c59e373ff793135cef0191b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac97ccd804c59e373ff793135cef0191b">&#9670;&#160;</a></span>linesegm_intersect()</h2>
+<a id="af7aa6df0ab605f3926301b439af379de" name="af7aa6df0ab605f3926301b439af379de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7aa6df0ab605f3926301b439af379de">&#9670;&#160;</a></span>cross_product_sign_exact()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structIntersectResult.html">IntersectResult</a> linesegm_intersect </td>
+          <td class="memname">int cross_product_sign_exact </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>ax</em>, </td>
@@ -196,13 +196,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>rx</em>, </td>
+          <td class="paramname"><em>bx</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ry</em>, </td>
+          <td class="paramname"><em>by</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -234,33 +234,11 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Return the intersection value obtained by computing the intersection of a line segment defined by two 2D points intersects an edge. </p>
-<p >Possible result values</p><ul>
-<li>No intersection: INTERSECT_NONE -&gt; t0 and t1 undefined</li>
-<li>Single point: INTERSECT_POINT -&gt; t1 in [0,1], t1 ignored</li>
-<li>Overlap segment: INTERSECT_OVERLAP -&gt; t0 &lt;= t1 in [0,1] Invariants:</li>
-<li>0 &lt;= t0 &lt;= 1</li>
-<li>0 &lt;= t1 &lt;= 1</li>
-<li>t0 &lt;= t1</li>
-<li>Overlap must satisfy: t1 - t0 &gt; MEOS_GEOM_TOLERANCE <dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ax,ay</td><td>Coordinates of the first point defining the first segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rx,ry</td><td>Vector AB </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">cx,cy,dx,dy</td><td>Coordinates of the points defining the second segment </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section note"><dt>Note</dt><dd>To avoid recomputing vector AB in EVERY call to the functions, we pass the vector instead of the second point b computed as follows <div class="fragment"><div class="line"><span class="keywordtype">double</span> rx = bx - ax, ry = by - ay;</div>
-</div><!-- fragment --> </dd></dl>
-</li>
-</ul>
+<p>Return the sign of the cross product of the vectors B - A and D - C, decided exactly. </p>
+<p >Each difference is its rounded value plus the error of the rounding. Where the four differences are exact, which the calls the filter of <a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a> cannot sign mostly are, the cross product is a difference of two products of doubles: rounding is monotone, so two rounded products that differ order as the exact ones do, and two that are equal leave the sign to the difference of their rounding errors, which are exact. Otherwise each product of two terms is its rounded value plus its error, and the sixteen terms are added into an expansion whose last component carries the sign; a term with a zero factor adds nothing and is skipped. <a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a> calls it where its filter cannot tell, which keeps this out of every call the filter decides </p><dl class="section note"><dt>Note</dt><dd>Exact where no product of coordinate differences overflows or underflows </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>1 or -1 for the two turns, 0 exactly where the vectors are parallel </dd></dl>
 
 </div>
 </div>
