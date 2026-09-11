@@ -348,11 +348,40 @@ buffer_add_arc(LWCOMPOUND *curve, int32_t srid, double cx, double cy,
     buffer_snap_to_curve_end(curve, &first);
     snapped = &first;
   }
+  /* How far each piece bulges from its chord */
+  double half = sin(delta * 0.25);
+  double bulge = 2.0 * radius * half * half;
   for (int i = 0; i < count; i++)
   {
     double a0 = ccw ? start_angle + delta * i : start_angle - delta * i;
-    double a1 = ccw ? start_angle + delta * (i + 1) : 
+    double a1 = ccw ? start_angle + delta * (i + 1) :
       start_angle - delta * (i + 1);
+    /* A piece bulging from its chord by no more than the rounding of the
+     * coordinates it is written at is that chord: every point of the arc lies
+     * within the rounding of it, while three rounded points name the circle of
+     * such an arc no better than they name a line, and read as a circle of
+     * another radius */
+    POINT2D p0, p1;
+    if (i == 0 && snapped)
+      p0 = *snapped;
+    else
+    {
+      p0.x = cx + radius * cos(a0);
+      p0.y = cy + radius * sin(a0);
+    }
+    if (i == count - 1 && end)
+      p1 = *end;
+    else
+    {
+      p1.x = cx + radius * cos(a1);
+      p1.y = cy + radius * sin(a1);
+    }
+    if (bulge <= fmax(coordinate_tolerance(p0.x, p1.x),
+          coordinate_tolerance(p0.y, p1.y)))
+    {
+      buffer_add_segment(curve, srid, p0, p1);
+      continue;
+    }
     LWCIRCSTRING *arc = buffer_make_arc(srid, cx, cy, radius, a0, a1, ccw,
       i == 0 ? snapped : NULL, i == count - 1 ? end : NULL);
     if (arc &&
@@ -418,7 +447,30 @@ buffer_add_mitre_join(LWCOMPOUND *curve, int32_t srid, POINT2D vertex,
 }
 
 /**
+ * @brief Return true if the two ends of a join are one point
+ * @details The ends of a join are the offsets of one vertex along the normals
+ * of the two edges meeting there, each constructed and rounded to the
+ * coordinates it is written at. Where the edges turn by less than that rounding
+ * resolves, the two ends lie within it of each other and the join between them
+ * has no extent the coordinates can carry: written as an arc, its three rounded
+ * points name a circle of another radius altogether, and written as a segment
+ * it is a sliver whose direction is the rounding. The two pieces it would join
+ * meet at one point instead.
+ */
+static bool
+buffer_join_is_point(POINT2D p1, POINT2D p2)
+{
+  double tol = fmax(coordinate_tolerance(p1.x, p2.x),
+    coordinate_tolerance(p1.y, p2.y));
+  return hypot(p2.x - p1.x, p2.y - p1.y) <= tol;
+}
+
+/**
  * @brief Add a join between two offset segments
+ * @details A join whose ends are one point (#buffer_join_is_point) adds
+ * nothing, and the piece after it starts from the point the curve ends at
+ * (#buffer_snap_to_curve_end), so the two pieces share that joint rather than
+ * each placing it where its own arithmetic rounds to
  */
 static void
 buffer_add_join(LWCOMPOUND *curve, int32_t srid, POINT2D vertex, POINT2D p1,
@@ -426,6 +478,8 @@ buffer_add_join(LWCOMPOUND *curve, int32_t srid, POINT2D vertex, POINT2D p1,
   bool outer)
 {
   assert(curve);
+  if (buffer_join_is_point(p1, p2))
+    return;
   /* The inner side of a turn is always joined by the intersection
    * of the two offset lines */
   if (! outer)
