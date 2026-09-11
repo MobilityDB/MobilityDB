@@ -95,8 +95,20 @@ text(tcell) → text
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index '831c02fffffffff@2001-01-01';
 -- 831c02fffffffff@2001-01-01
+SELECT th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]';
+-- [831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]
+SELECT th3index '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]}';
+-- {[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]}
+SELECT tquadbin '48a6227affffffff@2001-01-01';
+-- 48a6227affffffff@2001-01-01
 SELECT tquadbin '[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]';
 -- [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]
+SELECT tquadbin '{[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]}';
+-- {[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]}
+SELECT ts2cell '47c3c@2001-01-01';
+-- 47c3c@2001-01-01
+SELECT ts2cell '[47c3c@2001-01-01, 47c4@2001-01-02]';
+-- [47c3c@2001-01-01, 47c4@2001-01-02]
 SELECT ts2cell '{[47c3c@2001-01-01, 47c4@2001-01-02]}';
 -- {[47c3c@2001-01-01, 47c4@2001-01-02]}
 </programlisting>
@@ -450,9 +462,8 @@ getValues(tcell) → cellset
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getValues(th3index '831c02fffffffff@2001-01-01');
 -- {"831c02fffffffff"}
-SELECT getValues(th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02,
-    880326b885fffff@2001-01-03]');
--- {"831c00fffffffff", "831c02fffffffff", "880326b885fffff"}
+SELECT getValues(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
+-- {"831c00fffffffff", "831c02fffffffff"}
 SELECT getValues(tquadbin '48a6227affffffff@2001-01-01');
 -- {"48a6227affffffff"}
 SELECT getValues(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}');
@@ -477,7 +488,8 @@ SELECT valueAtTimestamp(th3index
 SELECT valueAtTimestamp(tquadbin
   '[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-05]', '2001-01-03');
 -- 48a6227affffffff
-SELECT valueAtTimestamp(ts2cell '47c3c@2001-01-01', timestamptz '2001-01-01');
+SELECT valueAtTimestamp(ts2cell
+  '[47c3c@2001-01-01, 47c4@2001-01-05]', '2001-01-03');
 -- 47c3c
 </programlisting>
 			</listitem>
@@ -702,9 +714,21 @@ appendSequence(tcell,tcellSeq) &#8594; tcell
 SELECT asText(appendInstant(th3index '831c02fffffffff@2001-01-01',
   th3index '831c00fffffffff@2001-01-02'));
 -- [831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]
+SELECT asText(appendSequence(th3index '[831c02fffffffff@2001-01-01]',
+  th3index '[831c00fffffffff@2001-01-02]'));
+-- {[831c02fffffffff@2001-01-01], [831c00fffffffff@2001-01-02]}
+SELECT asText(appendInstant(tquadbin '48a6227affffffff@2001-01-01',
+  tquadbin '485623ffffffffff@2001-01-02'));
+-- [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]
 SELECT asText(appendSequence(tquadbin '[48a6227affffffff@2001-01-01]',
   tquadbin '[485623ffffffffff@2001-01-02]'));
 -- {[48a6227affffffff@2001-01-01], [485623ffffffffff@2001-01-02]}
+SELECT asText(appendInstant(ts2cell '47c3c@2001-01-01',
+  ts2cell '47c4@2001-01-02'));
+-- [47c3c@2001-01-01, 47c4@2001-01-02]
+SELECT asText(appendSequence(ts2cell '[47c3c@2001-01-01]',
+  ts2cell '[47c4@2001-01-02]'));
+-- {[47c3c@2001-01-01], [47c4@2001-01-02]}
 </programlisting>
 			</listitem>
 
@@ -716,12 +740,24 @@ merge(tcell,tcell) &#8594; tcell
 merge(tcell[]) &#8594; tcell
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(merge(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-03]',
-  ts2cell '[47c3c@2001-01-03, 47c4@2001-01-05]'));
--- [47c3c@2001-01-01, 47c4@2001-01-05]
+SELECT asText(merge(th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-03]',
+  th3index '[831c02fffffffff@2001-01-03, 831c00fffffffff@2001-01-05]'));
+-- [831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]
 SELECT asText(merge(ARRAY[th3index '831c02fffffffff@2001-01-01',
   th3index '831c00fffffffff@2001-01-03']));
 -- {831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-03}
+SELECT asText(merge(tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-03]',
+  tquadbin '[48a6227affffffff@2001-01-03, 485623ffffffffff@2001-01-05]'));
+-- [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-05]
+SELECT asText(merge(ARRAY[tquadbin '48a6227affffffff@2001-01-01',
+  tquadbin '485623ffffffffff@2001-01-03']));
+-- {48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-03}
+SELECT asText(merge(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-03]',
+  ts2cell '[47c3c@2001-01-03, 47c4@2001-01-05]'));
+-- [47c3c@2001-01-01, 47c4@2001-01-05]
+SELECT asText(merge(ARRAY[ts2cell '47c3c@2001-01-01',
+  ts2cell '47c4@2001-01-03']));
+-- {47c3c@2001-01-01, 47c4@2001-01-03}
 </programlisting>
 			</listitem>
 
@@ -738,8 +774,9 @@ SELECT setInterp(th3index '{871fa4418ffffff@2001-01-01,
 SELECT setInterp(tquadbin '{48a6227affffffff@2001-01-01,
   485623ffffffffff@2001-01-02}', 'step');
 -- {[48a6227affffffff@2001-01-01], [485623ffffffffff@2001-01-02]}
-SELECT setInterp(ts2cell '{47c3c@2001-01-01}', 'step');
--- [47c3c@2001-01-01]
+SELECT setInterp(ts2cell '{47c3c@2001-01-01,
+  47c4@2001-01-02}', 'step');
+-- {[47c3c@2001-01-01], [47c4@2001-01-02]}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -765,8 +802,10 @@ SELECT insert(tquadbin '[48a6227affffffff@2001-01-01,
   485623ffffffffff@2001-01-04]');
 /* [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-03,
    485623ffffffffff@2001-01-04] */
-SELECT insert(ts2cell '47c3c@2001-01-01', ts2cell '47c4@2001-01-02');
--- {47c3c@2001-01-01, 47c4@2001-01-02}
+SELECT insert(ts2cell '[47c3c@2001-01-01,
+  47c3c@2001-01-02]', ts2cell '[47c4@2001-01-03,
+  47c4@2001-01-04]');
+-- [47c3c@2001-01-01, 47c4@2001-01-03, 47c4@2001-01-04]
 </programlisting>
 			</listitem>
 
@@ -783,8 +822,9 @@ SELECT deleteTime(th3index '[871fa4418ffffff@2001-01-01,
 SELECT deleteTime(tquadbin '[48a6227affffffff@2001-01-01,
   48a6227affffffff@2001-01-04]', tstzspan '[2001-01-02, 2001-01-03]');
 -- [48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-04]
-SELECT deleteTime(ts2cell '47c3c@2001-01-01', tstzspan '[2001-01-02, 2001-01-03]');
--- 47c3c@2001-01-01
+SELECT deleteTime(ts2cell '[47c3c@2001-01-01,
+  47c3c@2001-01-04]', tstzspan '[2001-01-02, 2001-01-03]');
+-- [47c3c@2001-01-01, 47c3c@2001-01-04]
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -811,8 +851,9 @@ SELECT atValue(th3index '{871fa4418ffffff@2001-01-01,
 SELECT atValue(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}',
   quadbin '48a6227affffffff');
 -- {48a6227affffffff@2001-01-01}
-SELECT atValue(ts2cell '47c3c@2001-01-01', s2cell '47c3c');
--- 47c3c@2001-01-01
+SELECT atValue(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}',
+  s2cell '47c3c');
+-- {47c3c@2001-01-01}
 </programlisting>
 			</listitem>
 
@@ -831,8 +872,9 @@ SELECT atTime(th3index '[871fa4418ffffff@2001-01-01,
 SELECT atTime(tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-04]',
   tstzspan '[2001-01-02, 2001-01-03]');
 -- [48a6227affffffff@2001-01-02, 48a6227affffffff@2001-01-03]
-SELECT atTime(ts2cell '47c3c@2001-01-01', tstzspan '[2001-01-01, 2001-01-02]');
--- 47c3c@2001-01-01
+SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
+  tstzspan '[2001-01-02, 2001-01-03]');
+-- [47c3c@2001-01-02, 47c3c@2001-01-03]
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -908,8 +950,12 @@ SELECT getResolution(h3index '831c02fffffffff');
 -- 3
 SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
 -- 3@2001-01-01
+SELECT getResolution(quadbin '48a6227affffffff');
+-- 10
 SELECT getResolution(tquadbin '48a6227affffffff@2001-01-01');
 -- 10@2001-01-01
+SELECT getResolution(s2cell '47c3c');
+-- 7
 SELECT getResolution(ts2cell '47c3c@2001-01-01');
 -- 7@2001-01-01
 </programlisting>
@@ -926,14 +972,18 @@ isValidCell(tcell) → tbool
 				<para>A value is a valid cell when its bit pattern denotes something its grid indexes: for QUADBIN, tile coordinates within the bounds of the resolution the identifier states; for H3, a base cell and digit sequence the icosahedron carries; for S2, a face and a Hilbert position at a level between 0 and 30.</para>
 				<para>Only H3 can be asked the question of a value that answers <varname>false</varname>: its input function admits any bit pattern and leaves the verdict to this function, while the QUADBIN and the S2 input functions reject a pattern that indexes nothing, so <varname>tquadbin '0'</varname> and <varname>ts2cell '0'</varname> raise an error before the call is made.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT isValidCell(quadbin '48a6227affffffff');
+SELECT isValidCell(h3index '831c02fffffffff');
 -- t
 SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
 -- t@2001-01-01
 SELECT isValidCell(th3index '0@2001-01-01');
 -- f@2001-01-01
+SELECT isValidCell(quadbin '48a6227affffffff');
+-- t
 SELECT isValidCell(tquadbin '48a6227affffffff@2001-01-01');
 -- t@2001-01-01
+SELECT isValidCell(s2cell '47c3c');
+-- t
 SELECT isValidCell(ts2cell '47c3c@2001-01-01');
 -- t@2001-01-01
 </programlisting>
@@ -955,13 +1005,17 @@ cellToParent(tcell) → tcell
 </programlisting>
 				<para>Return the ancestor of a cell at the given coarser resolution. The static form takes a single <varname>cell</varname>; the temporal form returns the ancestor of each cell in a trajectory. The no-argument form drops to the next-coarser resolution.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT cellToParent(h3index '8a2a1072b59ffff', 5);
--- 852a1073fffffff
+SELECT getResolution(cellToParent(h3index '8a2a1072b59ffff', 5));
+-- 5
 SELECT getResolution(cellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
 -- 5@2001-01-01
+SELECT getResolution(cellToParent(quadbin '48a6227affffffff', 5));
+-- 5
 SELECT getResolution(cellToParent(tquadbin
   '48a6227affffffff@2001-01-01', 5));
 -- 5@2001-01-01
+SELECT getResolution(cellToParent(s2cell '47c3c', 5));
+-- 5
 SELECT getResolution(cellToParent(ts2cell '47c3c@2001-01-01', 5));
 -- 5@2001-01-01
 </programlisting>
@@ -1008,8 +1062,12 @@ SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
 SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
+SELECT ST_AsText(cellToPoint(quadbin '48a6227affffffff'), 6);
+-- POINT(4.394531 50.847573)
 SELECT asText(cellToPoint(tquadbin '48a6227affffffff@2001-01-01'), 6);
 -- POINT(4.394531 50.847573)@2001-01-01
+SELECT ST_AsText(cellToPoint(s2cell '47c3c'), 6);
+-- POINT(4.222019 50.936164)
 SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 -- POINT(4.222019 50.936164)@2001-01-01
 </programlisting>
@@ -1065,10 +1123,24 @@ expandSpace(tcell,float) &#8594; stbox
 </programlisting>
 				<para>The box is the geodetic envelope of the cell boundaries together with the trajectory's time period, so it is the key both index operator classes of the indexing section store.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(stbox(th3index '871fa44a8ffffff@2001-01-01'), 6);
+/* SRID=4326;GEODSTBOX XT(((4.280027,50.79295),(4.314775,50.815648)),
+   [2001-01-01, 2001-01-01]) */
+SELECT round(expandSpace(th3index '871fa44a8ffffff@2001-01-01', 1), 6);
+/* SRID=4326;GEODSTBOX XT(((3.280027,49.79295),(5.314775,51.815648)),
+   [2001-01-01, 2001-01-01]) */
 SELECT round(stbox(tquadbin '48a6227affffffff@2001-01-01'), 6);
--- SRID=4326;STBOX XT(((4.21875,50.736455),(4.570313,50.958427)),[2001-01-01, 2001-01-01])
+/* SRID=4326;STBOX XT(((4.21875,50.736455),(4.570313,50.958427)),
+   [2001-01-01, 2001-01-01]) */
 SELECT round(expandSpace(tquadbin '48a6227affffffff@2001-01-01', 1), 6);
--- SRID=4326;STBOX XT(((3.21875,49.736455),(5.570313,51.958427)),[2001-01-01, 2001-01-01])
+/* SRID=4326;STBOX XT(((3.21875,49.736455),(5.570313,51.958427)),
+   [2001-01-01, 2001-01-01]) */
+SELECT round(stbox(ts2cell '47c3c@2001-01-01'), 6);
+/* SRID=4326;GEODSTBOX XT(((3.780069,50.590023),(4.676786,51.283168)),
+   [2001-01-01, 2001-01-01]) */
+SELECT round(expandSpace(ts2cell '47c3c@2001-01-01', 1), 6);
+/* SRID=4326;GEODSTBOX XT(((2.780069,49.590023),(5.676786,52.283168)),
+   [2001-01-01, 2001-01-01]) */
 </programlisting>
 			</listitem>
 
@@ -1138,9 +1210,9 @@ SELECT tquadbin '485623ffffffffff@2001-01-01' &lt;&lt;# tquadbin '48b6227abfffff
 -- t
 SELECT tquadbin '485623ffffffffff@2001-01-01' #&gt;&gt; tquadbin '48b6227abfffffff@2001-01-05';
 -- f
-SELECT ts2cell '47c3c@2001-01-01' &lt;&lt;# ts2cell '47c3c@2001-01-05';
+SELECT ts2cell '47c3c@2001-01-01' &lt;&lt;# ts2cell '47c4@2001-01-05';
 -- t
-SELECT ts2cell '47c3c@2001-01-01' #&gt;&gt; ts2cell '47c3c@2001-01-05';
+SELECT ts2cell '47c3c@2001-01-01' #&gt;&gt; ts2cell '47c4@2001-01-05';
 -- f
 </programlisting>
 			</listitem>
@@ -1304,10 +1376,10 @@ SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
   4.2 50.9,4.2 50.7))', th3index '871fa4418ffffff@2001-01-01');
 -- t
 SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
-  4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
+  4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
 -- t
 SELECT eIntersects(geometry 'SRID=4326;Polygon((4.2 50.7,4.5 50.7,4.5 50.9,
-  4.2 50.9,4.2 50.7))', tquadbin '48a6227affffffff@2001-01-01');
+  4.2 50.9,4.2 50.7))', ts2cell '47c3c@2001-01-01');
 -- t
 </programlisting>
 			</listitem>
@@ -1367,8 +1439,8 @@ tcell {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tcell → boolean
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index '831c02fffffffff@2001-01-01' = th3index '831c02fffffffff@2001-01-01';
 -- t
-SELECT tquadbin '48a6227affffffff@2001-01-01' &lt; tquadbin '485623ffffffffff@2001-01-01';
--- f
+SELECT tquadbin '48a6227affffffff@2001-01-01' = tquadbin '48a6227affffffff@2001-01-01';
+-- t
 SELECT ts2cell '47c3c@2001-01-01' = ts2cell '47c3c@2001-01-01';
 -- t
 </programlisting>
@@ -1389,9 +1461,10 @@ SELECT th3index '[831c02fffffffff@2001-01-01,
   880326b885fffff@2001-01-05]' ?= h3index '880326b885fffff';
 -- t
 SELECT tquadbin '[48a6227affffffff@2001-01-01,
-  485623ffffffffff@2001-01-05]' %= quadbin '485623ffffffffff';
--- f
-SELECT ts2cell '47c3c@2001-01-01' ?= s2cell '47c3c';
+  485623ffffffffff@2001-01-05]' ?= quadbin '485623ffffffffff';
+-- t
+SELECT ts2cell '[47c3c@2001-01-01,
+  47c4@2001-01-05]' ?= s2cell '47c4';
 -- t
 </programlisting>
 		</listitem>
@@ -1407,7 +1480,7 @@ SELECT ts2cell '47c3c@2001-01-01' ?= s2cell '47c3c';
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index '831c02fffffffff@2001-01-01' #= h3index '831c02fffffffff';
 -- t@2001-01-01
-SELECT tquadbin '48a6227affffffff@2001-01-01' #&lt;&gt; quadbin '485623ffffffffff';
+SELECT tquadbin '48a6227affffffff@2001-01-01' #= quadbin '48a6227affffffff';
 -- t@2001-01-01
 SELECT ts2cell '47c3c@2001-01-01' #= s2cell '47c3c';
 -- t@2001-01-01
@@ -1449,13 +1522,8 @@ SELECT DISTINCT tile FROM elevation_tiles;
 tCount(tcell) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH Temp(temp) AS (
-  SELECT th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-03)' UNION
-  SELECT th3index '[831c00fffffffff@2001-01-02, 831c00fffffffff@2001-01-04)' UNION
-  SELECT th3index '[871fa44a8ffffff@2001-01-03, 871fa44a8ffffff@2001-01-05)' )
-SELECT tCount(Temp)
-FROM Temp;
--- {[1@2001-01-01, 2@2001-01-02, 1@2001-01-04, 1@2001-01-05)}
+SELECT tCount(temp) FROM (VALUES (th3index '831c02fffffffff@2001-01-01')) AS t(temp);
+-- {1@2001-01-01}
 SELECT tCount(temp) FROM (VALUES (tquadbin '48a6227affffffff@2001-01-01')) AS t(temp);
 -- {1@2001-01-01}
 SELECT tCount(temp) FROM (VALUES (ts2cell '47c3c@2001-01-01')) AS t(temp);
@@ -1470,13 +1538,9 @@ SELECT tCount(temp) FROM (VALUES (ts2cell '47c3c@2001-01-01')) AS t(temp);
 wCount(tcell) → {tintSeq,tintSeqSet}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH Temp(temp) AS (
-  SELECT th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-03)' UNION
-  SELECT th3index '[831c00fffffffff@2001-01-02, 831c00fffffffff@2001-01-04)' UNION
-  SELECT th3index '[871fa44a8ffffff@2001-01-03, 871fa44a8ffffff@2001-01-05)' )
-SELECT wCount(Temp, interval '1 day')
-FROM Temp;
--- {[1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 2@2001-01-04, 1@2001-01-05, 1@2001-01-06)}
+SELECT wCount(temp, interval '1 day') FROM (VALUES
+  (th3index '831c02fffffffff@2001-01-01')) AS t(temp);
+-- {[1@2001-01-01, 1@2001-01-02]}
 SELECT wCount(temp, interval '1 day') FROM (VALUES
   (tquadbin '48a6227affffffff@2001-01-01')) AS t(temp);
 -- {[1@2001-01-01, 1@2001-01-02]}
