@@ -1394,6 +1394,50 @@ WITH rast AS (
 )
 SELECT transform(r, 0) FROM rast;
 
+-- A pixel size stated for the result fixes its grid, as ST_Transform reads it,
+-- and a raster to align to hands over its reference system, its pixel size,
+-- its grid origin and its skew, so every pixel of the result coincides with a
+-- pixel of its grid. PostGIS's ST_Transform is the oracle for both.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+), grid AS (
+  SELECT ST_MakeEmptyRaster(1, 1, 50000.0, 350000.0, 100000.0, -100000.0,
+    0.0, 0.0, 3857) AS a
+), pair AS (
+  SELECT r, a,
+    transform(r, 3857, 'NearestNeighbour'::text, 0.125::float8,
+      150000.0::float8, -150000.0::float8) AS scaled,
+    ST_Transform(r, 3857, 'NearestNeighbour'::text, 0.125::float8,
+      150000.0::float8, -150000.0::float8) AS pg_scaled,
+    transform(r, a) AS aligned,
+    ST_Transform(r, a) AS pg_aligned
+  FROM rast, grid
+)
+SELECT ST_ScaleX(scaled) AS scalex, ST_ScaleY(scaled) AS scaley,
+  ST_MetaData(scaled) = ST_MetaData(pg_scaled) AS scaled_grid_as_postgis,
+  ST_DumpValues(scaled, 1) = ST_DumpValues(pg_scaled, 1)
+    AS scaled_values_as_postgis,
+  ST_UpperLeftX(aligned) AS aligned_ulx, ST_UpperLeftY(aligned) AS aligned_uly,
+  ST_ScaleX(aligned) AS aligned_scalex,
+  ST_MetaData(aligned) = ST_MetaData(pg_aligned) AS aligned_grid_as_postgis,
+  ST_DumpValues(aligned, 1) = ST_DumpValues(pg_aligned, 1)
+    AS aligned_values_as_postgis
+FROM pair;
+
+-- A raster to align to standing in no reference system states no target.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT transform(r, ST_MakeEmptyRaster(1, 1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0))
+FROM rast;
+
 -------------------------------------------------------------------------------
 -- summaryStats
 -------------------------------------------------------------------------------

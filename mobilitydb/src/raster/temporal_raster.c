@@ -906,6 +906,8 @@ PG_FUNCTION_INFO_V1(Raster_transform);
  * @param[in] srid Target spatial reference system identifier
  * @param[in] algorithm Name of the resampling algorithm
  * @param[in] maxerr Error in input pixels the warp may commit
+ * @param[in] scalex,scaley Pixel size of the result, 0 to let the warp derive
+ * it
  * @sqlfn transform()
  */
 Datum
@@ -916,7 +918,35 @@ Raster_transform(PG_FUNCTION_ARGS)
   int32_t srid = PG_GETARG_INT32(1);
   char *algorithm = text_to_cstring(PG_GETARG_TEXT_P(2));
   double maxerr = PG_GETARG_FLOAT8(3);
-  Raster *result = raster_transform(rast, srid, algorithm, maxerr);
+  double scalex = PG_GETARG_FLOAT8(4);
+  double scaley = PG_GETARG_FLOAT8(5);
+  Raster *result = raster_transform(rast, srid, algorithm, maxerr, scalex,
+    scaley);
+  pfree(algorithm);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_transform_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_transform_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster stated on the grid of another raster
+ * @param[in] rast Raster
+ * @param[in] alignto Raster whose grid the result lies on
+ * @param[in] algorithm Name of the resampling algorithm
+ * @param[in] maxerr Error in input pixels the warp may commit
+ * @sqlfn transform()
+ */
+Datum
+Raster_transform_raster(PG_FUNCTION_ARGS)
+{
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  Raster *alignto = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  char *algorithm = text_to_cstring(PG_GETARG_TEXT_P(2));
+  double maxerr = PG_GETARG_FLOAT8(3);
+  Raster *result = raster_transform_raster(rast, alignto, algorithm, maxerr);
   pfree(algorithm);
   if (! result)
     PG_RETURN_NULL();
