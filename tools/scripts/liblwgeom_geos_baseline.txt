@@ -11,10 +11,8 @@ meos/src/raster/raster_rtcore.c	rt_raster_add_band
 meos/src/raster/raster_rtcore.c	rt_raster_destroy
 meos/src/raster/raster_rtcore.c	rt_raster_gdal_polygonize
 meos/src/raster/raster_rtcore.c	rt_raster_gdal_rasterize
-meos/src/raster/raster_rtcore.c	rt_raster_geopoint_to_rasterpoint
 meos/src/raster/raster_rtcore.c	rt_raster_get_band
 meos/src/raster/raster_rtcore.c	rt_raster_get_envelope
-meos/src/raster/raster_rtcore.c	rt_raster_get_geotransform_matrix
 meos/src/raster/raster_rtcore.c	rt_raster_get_height
 meos/src/raster/raster_rtcore.c	rt_raster_get_inverse_geotransform_matrix
 meos/src/raster/raster_rtcore.c	rt_raster_get_num_bands
