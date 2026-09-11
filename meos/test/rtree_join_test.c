@@ -181,13 +181,16 @@ test_stbox_join(IndexSearchOp op, const char *opname, int count1, int count2,
       }
 
   /* Answer of the join */
-  MeosArray *result = meos_array_create(sizeof(int64));
+  MeosArray *result = index_result_create();
   int npairs = rtree_join(rtree1, rtree2, op, result);
   int *found = malloc((size_t) (npairs ? npairs : 1) * 2 * sizeof(int));
   for (int k = 0; k < npairs; k++)
   {
-    found[2 * k] = *(int64 *) meos_array_get(result, 2 * k);
-    found[2 * k + 1] = *(int64 *) meos_array_get(result, 2 * k + 1);
+    int64 id1, id2;
+    index_result_id(result, 2 * k, &id1);
+    index_result_id(result, 2 * k + 1, &id2);
+    found[2 * k] = (int) id1;
+    found[2 * k + 1] = (int) id2;
   }
 
   char name[128];
@@ -253,7 +256,7 @@ test_stbox_join(IndexSearchOp op, const char *opname, int count1, int count2,
 static void
 test_degenerate(void)
 {
-  MeosArray *result = meos_array_create(sizeof(int64));
+  MeosArray *result = index_result_create();
 
   /* An index with no box joins to nothing */
   RTree *empty1 = rtree_create_stbox();
@@ -284,9 +287,10 @@ test_degenerate(void)
   rtree_insert(near, nearbox, 7);
   int n = rtree_join(filled, near, INDEX_OVERLAPS, result);
   check("a single overlapping pair is reported once", n == 1);
+  int64 id1, id2;
   check("the reported ids are the inserted ones", n == 1 &&
-    *(int64 *) meos_array_get(result, 0) == 0 &&
-    *(int64 *) meos_array_get(result, 1) == 7);
+    index_result_id(result, 0, &id1) && id1 == 0 &&
+    index_result_id(result, 1, &id2) && id2 == 7);
 
   /* Boxes overlapping in space but not in time are not reported, since an
    * STBox pair must overlap in every dimension the two boxes share */

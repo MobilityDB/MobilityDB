@@ -143,12 +143,12 @@ make_tbox(int vlo, int vspan)
 static int64 *
 search_sorted(const SPTree *sptree, const TBox *query, int *count)
 {
-  MeosArray *result = meos_array_create(sizeof(int64));
+  MeosArray *result = index_result_create();
   sptree_search(sptree, INDEX_OVERLAPS, query, result);
   *count = meos_array_count(result);
   int64 *ids = malloc(sizeof(int64) * (size_t) (*count ? *count : 1));
   for (int i = 0; i < *count; i++)
-    ids[i] = *(int64 *) meos_array_get(result, i);
+    index_result_id(result, i, &ids[i]);
   qsort(ids, (size_t) *count, sizeof(int64), cmp_int64);
   meos_array_destroy(result);
   return ids;
@@ -401,12 +401,12 @@ test_stbox(SPTreeKind kind, const char *kindname)
       x, y, x + 60, y + 60);
     STBox *query = stbox_in(buf);
 
-    MeosArray *result = meos_array_create(sizeof(int64));
+    MeosArray *result = index_result_create();
     sptree_search(loaded, INDEX_OVERLAPS, query, result);
     int ngot = meos_array_count(result);
     int64 *got = malloc(sizeof(int64) * (size_t) (ngot ? ngot : 1));
     for (int i = 0; i < ngot; i++)
-      got[i] = *(int64 *) meos_array_get(result, i);
+      index_result_id(result, i, &got[i]);
     qsort(got, (size_t) ngot, sizeof(int64), cmp_int64);
     meos_array_destroy(result);
 

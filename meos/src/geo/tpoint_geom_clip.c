@@ -141,7 +141,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
     for (int i = 0; i < n && ! shared; i++)
     {
       const Edge *restrict e = rtree ?
-        edges[*(int64 *) meos_array_get(rtree_results, i)] : edges[i];
+        edges[INDEX_RESULT_ID_N(rtree_results, i)] : edges[i];
 
       /* Only polygon boundary edges bound a region. Point, line, and
        * standalone (1D) arc edges are ignored by the even-odd containment
@@ -258,7 +258,7 @@ point_in_polygon_index(double x, double y, Edge **edges, int nedges,
    * context otherwise owns. A caller outside that context finds it empty, and
    * an empty one is what the search would read through */
   if (rtree && ! rtree_results)
-    rtree_results = meos_array_create(sizeof(int64));
+    rtree_results = index_result_create();
   return point_in_polygon_impl(x, y, edges, nedges, rtree, xmax);
 }
 
@@ -735,7 +735,7 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
 
     /* Convert the result of an R-tree look up into an edge pointer array */
     for (int j = 0; j < cand_nedges; j++)
-      cand_edges[j] = edges[*(int64 *) meos_array_get(rtree_results, j)];
+      cand_edges[j] = edges[INDEX_RESULT_ID_N(rtree_results, j)];
     sel_edges = cand_edges;
     sel_nedges = cand_nedges;
   }
@@ -813,7 +813,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
 
       /* Convert the result of an R-tree look up into an edge pointer array */
       for (int j = 0; j < cand_nedges; j++)
-        cand_edges[j] = edges[*(int64 *) meos_array_get(rtree_results, j)];
+        cand_edges[j] = edges[INDEX_RESULT_ID_N(rtree_results, j)];
       sel_edges = cand_edges;
       sel_nedges = cand_nedges;
     }
@@ -965,7 +965,7 @@ geo_edge_ctx_make(const GSERIALIZED *gs)
     }
     ctx->cand_edges = palloc(sizeof(Edge *) * ctx->nedges);
     /* Array for collecting the ids resulting from an R-tree search */
-    rtree_results = meos_array_create(sizeof(int64));
+    rtree_results = index_result_create();
   }
   return ctx;
 }
@@ -1754,7 +1754,7 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
           rtree_results);
         for (int k = 0; k < nc; k++)
           ctx->cand_edges[k] =
-            ctx->edge_ptrs[*(int64 *) meos_array_get(rtree_results, k)];
+            ctx->edge_ptrs[INDEX_RESULT_ID_N(rtree_results, k)];
         sel = ctx->cand_edges; seln = nc;
       }
       intervals->count = 0;
@@ -1934,7 +1934,7 @@ geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
       int nc = rtree_search(ctx->rtree, INDEX_OVERLAPS, &query, rtree_results);
       for (int j = 0; j < nc; j++)
         ctx->cand_edges[j] =
-          ctx->edge_ptrs[*(int64 *) meos_array_get(rtree_results, j)];
+          ctx->edge_ptrs[INDEX_RESULT_ID_N(rtree_results, j)];
       for (int j = 0; j < nc && ! result; j++)
         if (edge_intersect(e, ctx->cand_edges[j]))
           result = true;
@@ -2503,7 +2503,7 @@ point_geom_within(double px, double py, Edge **edges, int nedges,
     int nc = rtree_search(rtree, INDEX_OVERLAPS, &query, rtree_results);
     for (int i = 0; i < nc; i++)
       if (point_edge_dist2(px, py,
-            edges[*(int64 *) meos_array_get(rtree_results, i)]) <=
+            edges[INDEX_RESULT_ID_N(rtree_results, i)]) <=
           d2 + MEOS_GEOM_TOLERANCE)
         return true;
   }
@@ -2782,7 +2782,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
       int cand_nedges = rtree_search(rtree, INDEX_OVERLAPS, &query,
         rtree_results);
       for (int j = 0; j < cand_nedges; j++)
-        cand_edges[j] = edges[*(int64 *) meos_array_get(rtree_results, j)];
+        cand_edges[j] = edges[INDEX_RESULT_ID_N(rtree_results, j)];
       sel_edges = cand_edges;
       sel_nedges = cand_nedges;
     }

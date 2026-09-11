@@ -140,9 +140,9 @@ int main(void)
    * meaningful for the dedup search) */
   Temporal *query = make_wiggly_trip(123456, buf, sizeof(buf));
 
-  MeosArray *single_ids = meos_array_create(sizeof(int64));
-  MeosArray *mest_ids = meos_array_create(sizeof(int64));
-  MeosArray *deg_ids = meos_array_create(sizeof(int64));
+  MeosArray *single_ids = index_result_create();
+  MeosArray *mest_ids = index_result_create();
+  MeosArray *deg_ids = index_result_create();
 
   int single_count = rtree_search_temporal(rtree_single, INDEX_OVERLAPS,
     query, single_ids);
@@ -158,16 +158,22 @@ int main(void)
   int *mest_seen = calloc(NUM_TRIPS, sizeof(int));
   int *deg_seen = calloc(NUM_TRIPS, sizeof(int));
   for (int i = 0; i < single_count; i++)
-    in_single[*(int64 *) meos_array_get(single_ids, i)] = true;
+  {
+    int64 id;
+    index_result_id(single_ids, i, &id);
+    in_single[id] = true;
+  }
   for (int i = 0; i < mest_count; i++)
   {
-    int64 id = *(int64 *) meos_array_get(mest_ids, i);
+    int64 id;
+    index_result_id(mest_ids, i, &id);
     in_mest[id] = true;
     mest_seen[id]++;
   }
   for (int i = 0; i < deg_count; i++)
   {
-    int64 id = *(int64 *) meos_array_get(deg_ids, i);
+    int64 id;
+    index_result_id(deg_ids, i, &id);
     in_deg[id] = true;
     deg_seen[id]++;
   }

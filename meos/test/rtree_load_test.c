@@ -99,12 +99,12 @@ cmp_int64(const void *a, const void *b)
 static int64 *
 search_sorted(const RTree *rtree, const STBox *query, int *count)
 {
-  MeosArray *result = meos_array_create(sizeof(int64));
+  MeosArray *result = index_result_create();
   rtree_search(rtree, INDEX_OVERLAPS, query, result);
   *count = meos_array_count(result);
   int64 *ids = malloc(sizeof(int64) * (size_t) (*count ? *count : 1));
   for (int i = 0; i < *count; i++)
-    ids[i] = *(int64 *) meos_array_get(result, i);
+    index_result_id(result, i, &ids[i]);
   qsort(ids, (size_t) *count, sizeof(int64), cmp_int64);
   meos_array_destroy(result);
   return ids;

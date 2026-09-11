@@ -2243,7 +2243,7 @@ geom_areal_touching_stretches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
   LWGEOM **lines = palloc(sizeof(LWGEOM *) * 64);
   int nlines = 0, maxlines = 64;
-  MeosArray *candidates = index ? meos_array_create(sizeof(int64)) : NULL;
+  MeosArray *candidates = index ? index_result_create() : NULL;
   for (int i = 0; i < n1; i++)
   {
     const WoundSeg *a = &s1[i];
@@ -2269,7 +2269,7 @@ geom_areal_touching_stretches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
     for (int c = 0; c < ncand; c++)
     {
-      int j = index ? (int) *(int64 *) meos_array_get(candidates, c) : c;
+      int j = index ? (int) INDEX_RESULT_ID_N(candidates, c) : c;
       const WoundSeg *b = &s2[j];
       /* The boxes decide all but a handful of pairs, and the kernel is what
        * the walk would otherwise spend its time in */
