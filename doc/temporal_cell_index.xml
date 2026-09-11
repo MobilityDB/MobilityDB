@@ -2255,7 +2255,7 @@ FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8));
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rasterTileValue(tgeompoint,rast raquet[]) → tfloat
 </programlisting>
-				<para>Evaluates every tile of <varname>rast</varname> at each instant of <varname>traj</varname> (SRID 4326) and returns the sampled pixel values as a single <varname>tfloat</varname>. A trajectory that leaves one tile is covered by several of them, each contributing the instants that fall inside it. Tiles of one zoom level partition the plane, so they contribute disjoint instants. Tiles of different zoom levels overlap, and where two of them sample the same instant the value of the tile of higher zoom is kept, that being the one carrying the finer resolution. Returns <varname>NULL</varname> when no instant falls inside a tile or survives nodata filtering.</para>
+				<para>Reads every tile of <varname>rast</varname> along <varname>traj</varname> (SRID 4326) and returns the pixel values as a single <varname>tfloat</varname>. A trajectory that leaves one tile is covered by several of them, each answering the part of the trip over it. Tiles of one zoom level partition the plane, so they answer disjoint times. Tiles of different zoom levels overlap, and where two of them answer the same time the value of the tile of higher zoom is kept, that being the one carrying the finer resolution. Returns <varname>NULL</varname> when the trip never meets a pixel of a tile carrying data.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample a trajectory across every tile it crosses, in one value
 SELECT t.tripid, rasterTileValue(t.trip, array_agg(r.tile)) FROM trips t
