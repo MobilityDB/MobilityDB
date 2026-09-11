@@ -214,8 +214,8 @@ CREATE FUNCTION rasterTileValue(
 
 /**
  * @ingroup mobilitydb_raster
- * @brief Sample an array of raquet raster tiles at the instants of a 
- * trajectory, keeping the value of the tile of highest zoom where tiles overlap
+ * @brief Read an array of raquet raster tiles along a trajectory, keeping
+ * the value of the tile of highest zoom where tiles overlap
  * @param[in] traj Trajectory
  * @param[in] rast Array of raquet tiles
  */

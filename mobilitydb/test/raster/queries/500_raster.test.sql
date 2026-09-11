@@ -559,6 +559,24 @@ SELECT rasterTileValue(traj, fine)::text AS fine_alone,
   rasterTileValue(traj, ARRAY[fine, east])::text AS fine_then_east
 FROM t;
 
+-- A moving trip is read from every tile it crosses, each from the instant it
+-- reaches it: west until lon 0, then fine, whose pixels 7 and 8 replace the
+-- values of east where the two overlap, then east beyond lon 90. The answer
+-- does not depend on the array order.
+WITH t AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-45.0 75.0)@2024-01-01,
+    Point(135.0 75.0)@2024-01-03]' AS traj,
+    raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west,
+    raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
+    raquet('\x05060708'::bytea, 2, 2, 5198279869892395008::bigint, 'UINT8') AS fine
+)
+SELECT rasterTileValue(traj, ARRAY[west, east, fine])::text AS merged,
+  rasterTileValue(traj, ARRAY[fine, east, west])::text =
+    rasterTileValue(traj, ARRAY[west, east, fine])::text AS order_free,
+  rasterTileValue(traj, ARRAY[east])::text =
+    rasterTileValue(traj, east)::text AS singleton_equals_scalar
+FROM t;
+
 -- A one-element array agrees with the scalar form, and an array of tiles that
 -- the trajectory never enters returns NULL.
 WITH t AS (

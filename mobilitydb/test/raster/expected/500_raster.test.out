@@ -523,6 +523,24 @@ FROM t;
 (1 row)
 
 WITH t AS (
+  SELECT tgeompoint 'SRID=4326;[Point(-45.0 75.0)@2024-01-01,
+    Point(135.0 75.0)@2024-01-03]' AS traj,
+    raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west,
+    raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
+    raquet('\x05060708'::bytea, 2, 2, 5198279869892395008::bigint, 'UINT8') AS fine
+)
+SELECT rasterTileValue(traj, ARRAY[west, east, fine])::text AS merged,
+  rasterTileValue(traj, ARRAY[fine, east, west])::text =
+    rasterTileValue(traj, ARRAY[west, east, fine])::text AS order_free,
+  rasterTileValue(traj, ARRAY[east])::text =
+    rasterTileValue(traj, east)::text AS singleton_equals_scalar
+FROM t;
+                                                                      merged                                                                      | order_free | singleton_equals_scalar 
+--------------------------------------------------------------------------------------------------------------------------------------------------+------------+-------------------------
+ Interp=Step;{[2@2024-01-01 00:00:00+00, 7@2024-01-01 12:00:00+00, 8@2024-01-02 00:00:00+00, 2@2024-01-02 12:00:00+00, 2@2024-01-03 00:00:00+00]} | t          | t
+(1 row)
+
+WITH t AS (
   SELECT tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-02}' AS traj,
     raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
     raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west

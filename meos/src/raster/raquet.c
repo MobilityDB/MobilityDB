@@ -998,19 +998,18 @@ raster_tile_value(const Temporal *traj, const Raquet *rq)
 
 /**
  * @ingroup meos_raster
- * @brief Return the values of an array of Raquet tiles sampled at the instants
- * of a trajectory
- * @details A trajectory that leaves a single tile is sampled from the whole set
- * of tiles covering it, each tile contributing the instants that fall inside
- * it. Tiles of one zoom level partition the plane, so they contribute disjoint
- * instants. Tiles of different zoom levels overlap, and where two of them
- * sample the same instant the value of the tile of higher zoom is kept, that
- * being the one carrying the finer resolution.
+ * @brief Return the values of an array of Raquet tiles read along a trajectory
+ * @details A trajectory that leaves a single tile is read from the whole set
+ * of tiles covering it, each tile answering the part of the trip that lies
+ * over it. Tiles of one zoom level partition the plane, so they answer
+ * disjoint times. Tiles of different zoom levels overlap, and where two of
+ * them answer the same time the value of the tile of higher zoom is kept,
+ * that being the one carrying the finer resolution.
  * @param[in] rqarr Array of Raquet tiles
  * @param[in] count Number of tiles in the array
  * @param[in] traj Trajectory (temporal geometry point)
- * @return A temporal float, or @p NULL when no instant of @p traj falls inside
- * a tile or survives nodata filtering
+ * @return A temporal float, or @p NULL when the trajectory never meets a pixel
+ * of a tile carrying data
  * @csqlfn #Raster_tile_value_array()
  */
 Temporal *
@@ -1021,58 +1020,46 @@ raster_tile_value_array(const Temporal *traj, const Raquet **rqarr, int count)
   if (! ensure_positive(count))
     return NULL;
 
-  /* The instants of the trajectory are the slots the tiles compete for, since a
-   * sampled instant carries the timestamp of the instant it was sampled at */
-  int ninsts;
-  const TInstant **insts = temporal_insts_p(traj, &ninsts);
-  double *values = palloc(sizeof(double) * ninsts);
-  int *zooms = palloc(sizeof(int) * ninsts);
-  for (int i = 0; i < ninsts; i++)
-    zooms[i] = -1;                  /* no tile has covered this instant yet */
-
+  /* The tiles answer from the finest zoom down, the array order breaking a
+   * tie, so a coarser tile answers only the time no finer one has */
+  int *order = palloc(sizeof(int) * count);
+  int norder = 0;
   for (int i = 0; i < count; i++)
   {
     if (rqarr[i] == NULL)
       continue;
-    Temporal *sampled = raster_tile_value(traj, rqarr[i]);
-    if (sampled == NULL)
-      continue;
-    int zoom = (int) raster_quadbin_zoom(rqarr[i]->quadbin);
-    int nsampled;
-    const TInstant **sinsts = temporal_insts_p(sampled, &nsampled);
-    /* Both arrays are ordered by timestamp, so one walk places every sampled
-     * value in its slot */
-    int k = 0;
-    for (int j = 0; j < nsampled; j++)
+    uint32_t zoom = raster_quadbin_zoom(rqarr[i]->quadbin);
+    int j = norder++;
+    while (j > 0 && raster_quadbin_zoom(rqarr[order[j - 1]]->quadbin) < zoom)
     {
-      while (k < ninsts && insts[k]->t < sinsts[j]->t)
-        k++;
-      if (k == ninsts)
-        break;
-      if (insts[k]->t == sinsts[j]->t && zoom > zooms[k])
-      {
-        zooms[k] = zoom;
-        values[k] = DatumGetFloat8(tinstant_value(sinsts[j]));
-      }
+      order[j] = order[j - 1];
+      j--;
     }
-    pfree(sinsts); pfree(sampled);
+    order[j] = i;
   }
 
-  TInstant **result_insts = palloc(sizeof(TInstant *) * ninsts);
-  int nresult = 0;
-  for (int i = 0; i < ninsts; i++)
-    if (zooms[i] >= 0)
-      result_insts[nresult++] =
-        tinstant_make(Float8GetDatum(values[i]), T_TFLOAT, insts[i]->t);
-  pfree(insts); pfree(values); pfree(zooms);
-
-  if (nresult == 0)
+  Temporal *result = NULL;
+  for (int i = 0; i < norder; i++)
   {
-    pfree(result_insts);
-    return NULL;
+    Temporal *part = raster_tile_value(traj, rqarr[order[i]]);
+    if (part == NULL)
+      continue;
+    if (result == NULL)
+    {
+      result = part;
+      continue;
+    }
+    SpanSet *answered = temporal_time(result);
+    Temporal *rest = temporal_restrict_tstzspanset(part, answered, REST_MINUS);
+    pfree(answered); pfree(part);
+    if (rest == NULL)
+      continue;
+    Temporal *merged = temporal_merge(result, rest);
+    pfree(result); pfree(rest);
+    result = merged;
   }
-  return (Temporal *) tsequence_make_free(result_insts, nresult, true, true,
-    DISCRETE, NORMALIZE);
+  pfree(order);
+  return result;
 }
 
 /*****************************************************************************/
