@@ -206,12 +206,11 @@ extern bool raquet_gt(const Raquet *rq1, const Raquet *rq2);
 
 /* Sampling functions */
 
-/* Sampling of a PostGIS raster: reads the band the position falls in with
- * nearest-neighbour resampling, and derives the bounding-box pre-filter from
- * the raster extent */
+/* Sampling of a PostGIS raster: reads the band the position falls in, and
+ * derives the bounding-box pre-filter from the raster extent */
 
 extern Temporal *raster_value(const Temporal *traj, const Raster *rast,
-  int band);
+  int band, bool exclude_nodata, const char *resample);
 extern Temporal *raster_at_value(const Temporal *traj, const Raster *rast,
   int band, const Span *vspan);
 extern Temporal *raster_minus_value(const Temporal *traj, const Raster *rast,

@@ -33,7 +33,9 @@
  * trajectories.
  *
  * Sampling functions:
- *   rasterValue(tgeompoint, raster, band integer DEFAULT 1) → tfloat
+ *   rasterValue(tgeompoint, raster, band integer DEFAULT 1,
+ *     exclude_nodata_value boolean DEFAULT true,
+ *     resample text DEFAULT 'nearest') → tfloat
  *   rasterTileValueQuadbin(tgeompoint, bytea, ...) → tfloat
  *   quadbins(tgeompoint, integer) → bigint[]
  *
@@ -174,11 +176,17 @@ CREATE FUNCTION raquetRead(
  * @param[in] traj Trajectory
  * @param[in] rast Raster
  * @param[in] band Band number (1-based, default 1)
+ * @param[in] exclude_nodata_value True to leave out the positions over a
+ * nodata pixel (default true)
+ * @param[in] resample Name of the read of a position, nearest or bilinear
+ * (default nearest)
  */
 CREATE OR REPLACE FUNCTION rasterValue(
     traj  tgeompoint,
     rast  raster,
-    band  integer DEFAULT 1
+    band  integer DEFAULT 1,
+    exclude_nodata_value boolean DEFAULT true,
+    resample text DEFAULT 'nearest'
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_value'
   LANGUAGE C STRICT PARALLEL SAFE;

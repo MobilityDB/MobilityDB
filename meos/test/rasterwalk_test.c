@@ -97,7 +97,7 @@ static Temporal *
 grid_read(const Grid *g, const Temporal *traj)
 {
   if (g->rast)
-    return raster_value(traj, g->rast, 1);
+    return raster_value(traj, g->rast, 1, true, NULL);
   return raster_tile_value_quadbin(traj, g->pixels, g->size, g->width,
     g->height, g->quadbin, MEOS_PT_UINT16, 0.0, false);
 }
@@ -321,7 +321,7 @@ int main(void)
     Raster *rast = raster_make32bf(12, 1, 1.0, -1.0, 0.0, 1.0, 0.0, 0.0,
       strip, true, -9999.0f);
     Temporal *seg = segment(0, 0.5, 0.5, 11.5, 0.5);
-    Temporal *runs = raster_value(seg, rast, 1);
+    Temporal *runs = raster_value(seg, rast, 1, true, NULL);
     int nruns = runs ? temporal_num_sequences(runs) : 0;
     printf("%-18s runs %d\n", "nodata strip", nruns);
     if (nruns != 6)

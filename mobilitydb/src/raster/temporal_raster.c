@@ -72,6 +72,10 @@ PG_FUNCTION_INFO_V1(Raster_value);
  * @param[in] traj Trajectory
  * @param[in] rast Raster
  * @param[in] band Band number (1-based, default 1)
+ * @param[in] exclude_nodata_value True to leave out the positions over a
+ * nodata pixel (default true)
+ * @param[in] resample Name of the read of a position, nearest or bilinear
+ * (default nearest)
  * @sqlfn rasterValue()
  */
 Datum
@@ -80,9 +84,12 @@ Raster_value(PG_FUNCTION_ARGS)
   Temporal *traj = PG_GETARG_TEMPORAL_P(0);
   Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
   int32 band = PG_ARGISNULL(2) ? 1 : PG_GETARG_INT32(2);
+  bool exclude_nodata = PG_GETARG_BOOL(3);
+  char *resample = text_to_cstring(PG_GETARG_TEXT_P(4));
 
-  Temporal *result = raster_value(traj, rast, band);
+  Temporal *result = raster_value(traj, rast, band, exclude_nodata, resample);
 
+  pfree(resample);
   PG_FREE_IF_COPY(traj, 0);
   PG_FREE_IF_COPY(rast, 1);
   if (result == NULL)

@@ -244,6 +244,84 @@ SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 0.5)@2001-01-01,
   POINT(11.5 0.5)@2001-01-12]', r)::text AS result
 FROM rast;
 
+-- A position over a nodata pixel answers the nodata value when the caller
+-- keeps it, as ST_Value answers it with exclude_nodata_value false, so a trip
+-- crossing the nodata pixel(row=1,col=2) answers one sequence rather than
+-- one per visit.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999.0::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, -9999.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
+    POINT(1.5 2.5)@2001-01-02}', r, 1, false)::text AS kept,
+  valueAtTimestamp(rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
+    POINT(1.5 2.5)@2001-01-02}', r, 1, false), '2001-01-02') =
+    ST_Value(r, 1, ST_Point(1.5, 2.5, 4326), false) AS kept_as_postgis,
+  rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+    POINT(2.5 2.5)@2001-01-03]', r, 1, false)::text AS crossed
+FROM rast;
+
+-- A position read by bilinear interpolation answers what ST_Value answers with
+-- resample bilinear, the name read without regard to case. The four pixels
+-- around POINT(0.75 2.25) hold 10, 20, 40 and 50, weighted 9, 3, 3 and 1
+-- sixteenths, so it answers 20 where the pixel it falls in holds 10, and
+-- those around POINT(1.25 1.75) weighted the other way answer 40 where the
+-- pixel it falls in holds 50.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+), trip AS (
+  SELECT tgeompoint 'SRID=4326;{POINT(0.75 2.25)@2001-01-01,
+    POINT(1.25 1.75)@2001-01-02}' AS t
+)
+SELECT rasterValue(t, r, 1, true, 'bilinear')::text AS bilinear,
+  rasterValue(t, r)::text AS nearest,
+  rasterValue(t, r, 1, true, 'BILINEAR') = rasterValue(t, r, 1, true, 'bilinear')
+    AS without_case,
+  valueAtTimestamp(rasterValue(t, r, 1, true, 'bilinear'), '2001-01-01') =
+    ST_Value(r, 1, ST_Point(0.75, 2.25, 4326), true, 'bilinear') AS first_as_postgis,
+  valueAtTimestamp(rasterValue(t, r, 1, true, 'bilinear'), '2001-01-02') =
+    ST_Value(r, 1, ST_Point(1.25, 1.75, 4326), true, 'bilinear') AS second_as_postgis
+FROM rast, trip;
+
+-- A bilinear value varies quadratically in time along a trip that moves
+-- between its instants, which a temporal float cannot state, and a read the
+-- raster does not know is refused rather than taken for another.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 0.5)@2001-01-03]', r, 1, true, 'bilinear')
+FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r, 1,
+  true, 'cubic')
+FROM rast;
+
 -- A trip over a Raquet tile is read the same way, the tile grid being the
 -- pixels of its QUADBIN cell.
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;[Point(45.0 75.0)@2024-01-01,

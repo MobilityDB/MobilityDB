@@ -448,7 +448,7 @@ int main(void)
     " POINT(0.5 0.5)@2001-01-04}");
   assert(traj_values != NULL);
   meos_errno_reset();
-  Temporal *values = raster_value(traj_values, rast_values, 1);
+  Temporal *values = raster_value(traj_values, rast_values, 1, true, NULL);
   assert(values != NULL);
   assert(meos_errno() == 0);
   char *values_str = tfloat_out(values, 0);
@@ -467,7 +467,7 @@ int main(void)
     " POINT(2.5 0.5)@2001-01-03]");
   assert(traj_linear != NULL);
   meos_errno_reset();
-  Temporal *along = raster_value(traj_linear, rast_values, 1);
+  Temporal *along = raster_value(traj_linear, rast_values, 1, true, NULL);
   assert(along != NULL);
   assert(meos_errno() == 0);
   char *along_str = tfloat_out(along, 0);
@@ -487,7 +487,7 @@ int main(void)
   Temporal *traj_gap = tgeompoint_in("SRID=4326;[POINT(0.5 2.5)@2001-01-01,"
     " POINT(2.5 2.5)@2001-01-03]");
   assert(traj_gap != NULL);
-  Temporal *visits = raster_value(traj_gap, rast_values, 1);
+  Temporal *visits = raster_value(traj_gap, rast_values, 1, true, NULL);
   assert(visits != NULL);
   char *visits_str = tfloat_out(visits, 0);
   printf("raster_value(trip across nodata): %s\n", visits_str);
@@ -517,7 +517,7 @@ int main(void)
   {
     meos_errno_reset();
     Temporal *none = raster_value(traj_values, rast_values,
-      bad_bands[i]);
+      bad_bands[i], true, NULL);
     printf("raster_value(band %d): %s, errno %d\n", bad_bands[i],
       none ? "non-NULL" : "NULL", meos_errno());
     assert(none == NULL);
@@ -529,18 +529,62 @@ int main(void)
   Temporal *traj_3857 = tgeompoint_in("SRID=3857;{POINT(0.5 2.5)@2001-01-01}");
   assert(traj_3857 != NULL);
   meos_errno_reset();
-  assert(raster_value(traj_3857, rast_values, 1) == NULL);
+  assert(raster_value(traj_3857, rast_values, 1, true, NULL) == NULL);
   assert(meos_errno() != 0);
 
   /* A null argument is rejected rather than dereferenced */
   meos_errno_reset();
-  assert(raster_value(NULL, rast_values, 1) == NULL);
-  assert(raster_value(traj_values, NULL, 1) == NULL);
+  assert(raster_value(NULL, rast_values, 1, true, NULL) == NULL);
+  assert(raster_value(traj_values, NULL, 1, true, NULL) == NULL);
   assert(raster_at_value(traj_values, rast_values, 1, NULL) == NULL);
   assert(raster_minus_value(traj_values, rast_values, 1, NULL) == NULL);
   assert(eraster_value(traj_values, rast_values, 1, NULL) == -1);
   assert(araster_value(traj_values, rast_values, 1, NULL) == -1);
   assert(meos_errno() != 0);
+
+  /* A position over a nodata pixel answers the nodata value when the caller
+   * keeps it rather than leaving it out */
+  Temporal *traj_nodata = tgeompoint_in(
+    "SRID=4326;{POINT(1.5 2.5)@2001-01-01}");
+  assert(traj_nodata != NULL);
+  meos_errno_reset();
+  Temporal *kept_nodata = raster_value(traj_nodata, rast_values, 1, false,
+    NULL);
+  assert(kept_nodata != NULL);
+  assert(meos_errno() == 0);
+  assert(tfloat_start_value(kept_nodata) == -9999.0);
+  free(kept_nodata); free(traj_nodata);
+
+  /* A bilinear read interpolates the four pixels around a position, a nodata
+   * one taking the value of the pixel the position falls in: POINT(0.75 2.25)
+   * weighs 10, the nodata pixel read as 10, 40 and 50 by 9, 3, 3 and 1
+   * sixteenths, which is 18.125 */
+  Temporal *traj_bilinear = tgeompoint_in(
+    "SRID=4326;{POINT(0.75 2.25)@2001-01-01}");
+  assert(traj_bilinear != NULL);
+  meos_errno_reset();
+  Temporal *bilin = raster_value(traj_bilinear, rast_values, 1, true,
+    "Bilinear");
+  assert(bilin != NULL);
+  assert(meos_errno() == 0);
+  printf("raster_value(raster, 1, bilinear) at POINT(0.75 2.25): %f\n",
+    tfloat_start_value(bilin));
+  assert(tfloat_start_value(bilin) == 18.125);
+  free(bilin); free(traj_bilinear);
+
+  /* A bilinear value varies quadratically along a moving trajectory, which a
+   * temporal float cannot state, and a read the raster does not know is
+   * refused rather than taken for another */
+  Temporal *traj_moving = tgeompoint_in("SRID=4326;[POINT(0.5 2.5)@2001-01-01,"
+    " POINT(2.5 0.5)@2001-01-03]");
+  assert(traj_moving != NULL);
+  meos_errno_reset();
+  assert(raster_value(traj_moving, rast_values, 1, true, "bilinear") == NULL);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_value(traj_values, rast_values, 1, true, "cubic") == NULL);
+  assert(meos_errno() != 0);
+  free(traj_moving);
 
   /* Clipping keeps the pixels a geometry covers and no others. The region
    * below spans x in [0,2] and y in [1,3], so it covers the two left columns
@@ -568,7 +612,7 @@ int main(void)
     " POINT(1.5 1.5)@2001-01-02}");
   assert(traj_kept != NULL);
   meos_errno_reset();
-  Temporal *kept = raster_value(traj_kept, cropped, 1);
+  Temporal *kept = raster_value(traj_kept, cropped, 1, true, NULL);
   assert(kept != NULL);
   assert(meos_errno() == 0);
   assert(temporal_num_instants(kept) == 2);
@@ -591,7 +635,7 @@ int main(void)
   assert(raster_upper_left_y(whole) == 3.0);
 
   meos_errno_reset();
-  Temporal *masked = raster_value(traj_values, whole, 1);
+  Temporal *masked = raster_value(traj_values, whole, 1, true, NULL);
   assert(masked != NULL);
   assert(meos_errno() == 0);
   char *masked_str = tfloat_out(masked, 0);
@@ -653,7 +697,7 @@ int main(void)
   Temporal *traj_merc = tgeompoint_in(traj_merc_str);
   assert(traj_merc != NULL);
   meos_errno_reset();
-  Temporal *merc_val = raster_value(traj_merc, merc, 1);
+  Temporal *merc_val = raster_value(traj_merc, merc, 1, true, NULL);
   assert(merc_val != NULL);
   assert(meos_errno() == 0);
   char *merc_val_str = tfloat_out(merc_val, 0);
@@ -692,7 +736,7 @@ int main(void)
     " POINT(0.75 2.25)@2001-01-04}");
   assert(traj_finer != NULL);
   meos_errno_reset();
-  Temporal *finer_val = raster_value(traj_finer, finer, 1);
+  Temporal *finer_val = raster_value(traj_finer, finer, 1, true, NULL);
   assert(finer_val != NULL);
   assert(meos_errno() == 0);
   char *finer_str = tfloat_out(finer_val, 0);
@@ -877,7 +921,7 @@ int main(void)
   Temporal *traj_rc = tgeompoint_in("SRID=4326;{POINT(0.5 2.5)@2001-01-01,"
     " POINT(2.5 0.5)@2001-01-02}");
   assert(traj_rc != NULL);
-  Temporal *rc_val = raster_value(traj_rc, rc, 1);
+  Temporal *rc_val = raster_value(traj_rc, rc, 1, true, NULL);
   assert(rc_val != NULL);
   char *rc_str = tfloat_out(rc_val, 0);
   printf("raster_reclass sampled at the 10 pixel and the 90 pixel: %s\n",
@@ -905,7 +949,7 @@ int main(void)
   free(rbst);
   Temporal *traj_50 = tgeompoint_in("SRID=4326;{POINT(1.5 1.5)@2001-01-01}");
   assert(traj_50 != NULL);
-  Temporal *v50 = raster_value(traj_50, rb, 1);
+  Temporal *v50 = raster_value(traj_50, rb, 1, true, NULL);
   assert(v50 != NULL);
   printf("raster_reclass(\"[0-50):1, [50-100]:2\") at the 50 pixel: %f\n",
     tfloat_start_value(v50));
@@ -917,7 +961,7 @@ int main(void)
    * through to the second */
   Temporal *traj_40 = tgeompoint_in("SRID=4326;{POINT(0.5 1.5)@2001-01-01}");
   assert(traj_40 != NULL);
-  Temporal *v40 = raster_value(traj_40, rb, 1);
+  Temporal *v40 = raster_value(traj_40, rb, 1, true, NULL);
   assert(v40 != NULL);
   assert(tfloat_start_value(v40) == 1.0);
   free(v40); free(traj_40); free(rb);
