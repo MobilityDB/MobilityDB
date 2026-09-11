@@ -135,10 +135,10 @@ int main(void)
     "000000000000084000000000000000000000000000000000e6100000030003008a"
     "00000000006e6f5f737563685f7261737465722e74696600");
   nerrors = 0;
-  v = raster_value(inst, rast, 1);
+  v = raster_value(inst, rast, 1, true, NULL);
   failures += ! raised("raster core, value at an instant", v == NULL);
   free(v);
-  v = raster_value(trip, rast, 1);
+  v = raster_value(trip, rast, 1, true, NULL);
   failures += ! raised("raster core, value along a trip", v == NULL);
   free(v);
   v = raster_at_value(trip, rast, 1, span);

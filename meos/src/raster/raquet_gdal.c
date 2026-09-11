@@ -545,6 +545,7 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
   GDALApplyGeoTransform(gt, xsize, ysize, &xs[3], &ys[3]);
   ops->grid = &raster_value_gdal_grid;
   ops->pixel = &raster_value_gdal_pixel;
+  ops->point = NULL;
   ops->cross = NULL;
   ops->ctx = ctx;
   ops->width = ctx->xsize;

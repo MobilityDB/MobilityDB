@@ -1861,14 +1861,16 @@ raster_to_stbox(const Raster *rast)
 /**
  * @brief State a raster sampling call keeps for the length of a trajectory:
  * the deserialized raster, the band the values are read from, the inverse
- * geotransform, computed once and handed to every point conversion, and
- * whether a pixel of the band could not be read
+ * geotransform, computed once and handed to every point conversion, whether
+ * a nodata pixel carries no value, and whether a pixel of the band could not
+ * be read
  */
 typedef struct
 {
   rt_raster raster;   /**< Raster carrying its bands */
   rt_band band;       /**< Band the pixel values are read from */
   double igt[6];      /**< Inverse geotransform of the raster */
+  bool exclude_nodata; /**< Whether a nodata pixel carries no value */
   bool unreadable;    /**< Whether a pixel of the band could not be read */
 } RasterSampleState;
 
@@ -1895,7 +1897,9 @@ raster_value_grid(const void *ctxp, double x, double y, double *col,
  * the vendored raster core
  * @details Reading the pixel a position falls in is the nearest-neighbour
  * read of that position. A nodata pixel answers that there is no value,
- * which is the contract of ::raster_pixel_fn. A pixel the raster core cannot
+ * which is the contract of ::raster_pixel_fn, unless the state keeps the
+ * nodata value, which the pixel then answers as `ST_Value` answers it with
+ * `exclude_nodata_value` false. A pixel the raster core cannot
  * read, as when the band is stored outside the database in a file that
  * cannot be opened, carries no value either, and the state records it so
  * that the caller raises an error once it has released the raster; the
@@ -1913,7 +1917,34 @@ raster_value_pixel(void *ctxp, int col, int row, double *value)
     state->unreadable = true;
     return false;
   }
-  return ! isnodata;
+  return ! isnodata || ! state->exclude_nodata;
+}
+
+/**
+ * @brief Raster value callback reading a PostGIS raster at a position by
+ * bilinear interpolation of the four pixels around it
+ * @details The value is the one `ST_Value` answers with `resample` set to
+ * bilinear, read by the same `rt_band_get_pixel_resample`. That read takes a
+ * neighbour it cannot read for a nodata one, so the pixel the position falls
+ * in is read first: a band whose file cannot be opened then raises an error
+ * as the read of that pixel alone raises it.
+ */
+static bool
+raster_value_bilinear(void *ctxp, double col, double row, double *value)
+{
+  RasterSampleState *state = (RasterSampleState *) ctxp;
+  if (state->unreadable)
+    return false;
+  int isnodata;
+  if (rt_band_get_pixel_resample(state->band, col, row, RT_NEAREST, value,
+        &isnodata) != ES_NONE ||
+      rt_band_get_pixel_resample(state->band, col, row, RT_BILINEAR, value,
+        &isnodata) != ES_NONE)
+  {
+    state->unreadable = true;
+    return false;
+  }
+  return ! isnodata || ! state->exclude_nodata;
 }
 
 /**
@@ -1922,6 +1953,9 @@ raster_value_pixel(void *ctxp, int col, int row, double *value)
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
+ * @param[in] exclude_nodata True when a nodata pixel carries no value
+ * @param[in] bilinear True to read a position by bilinear interpolation of
+ * the pixels around it, false to read the pixel it falls in
  * @param[out] state Sampling state; on success its raster is owned by the
  * caller, which releases it with #raster_destroy()
  * @param[out] ops Descriptor of the raster grid
@@ -1929,7 +1963,8 @@ raster_value_pixel(void *ctxp, int col, int row, double *value)
  */
 static bool
 raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
-  RasterSampleState *state, RasterGridOps *ops)
+  bool exclude_nodata, bool bilinear, RasterSampleState *state,
+  RasterGridOps *ops)
 {
   /* The bands are needed, so the raster is fully deserialized. It keeps
    * pointers into `rast` without owning them, and the caller destroys it
@@ -1969,6 +2004,7 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
   }
   state->raster = raster;
   state->band = rtband;
+  state->exclude_nodata = exclude_nodata;
   state->unreadable = false;
 
   /* Bounding box of the raster extent, which bears the rotation of the
@@ -1983,6 +2019,7 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
   }
   ops->grid = &raster_value_grid;
   ops->pixel = &raster_value_pixel;
+  ops->point = bilinear ? &raster_value_bilinear : NULL;
   ops->cross = NULL;
   ops->ctx = state;
   ops->width = (int) rt_raster_get_width(raster);
@@ -2031,25 +2068,78 @@ raster_rtcore_release(RasterSampleState *state, int band)
 }
 
 /**
+ * @brief Return whether the name of a read of a position states the bilinear
+ * one, raising an error for a name that states neither read
+ * @details The names are those `ST_Value` reads, without regard to case
+ * @param[in] resample Name of the read
+ * @param[out] bilinear True for the bilinear read, false for the nearest one
+ * @return False after raising an error for a name that states no read
+ */
+static bool
+raster_resample_bilinear(const char *resample, bool *bilinear)
+{
+  size_t len = strlen(resample);
+  char *name = palloc(len + 1);
+  for (size_t i = 0; i < len; i++)
+    name[i] = (char) tolower((unsigned char) resample[i]);
+  name[len] = '\0';
+  bool found = true;
+  if (strcmp(name, "bilinear") == 0)
+    *bilinear = true;
+  else if (strcmp(name, "nearest") == 0)
+    *bilinear = false;
+  else
+    found = false;
+  pfree(name);
+  if (! found)
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown resample type: %s", resample);
+  return found;
+}
+
+/**
  * @ingroup meos_raster
  * @brief Return the values of a raster band read along a trajectory
+ * @details A position reads the pixel it falls in, or, with @p resample
+ * stating the bilinear read, the value the four pixels around it
+ * interpolate, as `ST_Value` reads it. A bilinear value varies within a
+ * pixel, so along a segment of a moving trajectory it varies quadratically
+ * in time, which a temporal float cannot state: such a trajectory raises an
+ * error rather than answering the values at its instants alone
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
+ * @param[in] exclude_nodata True to leave out the positions over a nodata
+ * pixel, false to answer the nodata value there
+ * @param[in] resample Name of the read of a position, nearest or bilinear,
+ * read without regard to case, NULL for nearest
  * @return A temporal float, or @p NULL when no instant of @p traj falls
  * inside the raster or survives nodata filtering
  * @errval NULL
  * @csqlfn #Raster_value()
  */
 Temporal *
-raster_value(const Temporal *traj, const Raster *rast, int band)
+raster_value(const Temporal *traj, const Raster *rast, int band,
+  bool exclude_nodata, const char *resample)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
+  bool bilinear = false;
+  if (resample && ! raster_resample_bilinear(resample, &bilinear))
+    return NULL;
+  /* Raised before the raster is read, so that nothing is held */
+  if (bilinear && MEOS_FLAGS_GET_INTERP(traj->flags) == LINEAR)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "A bilinear value varies quadratically along a moving trajectory, "
+      "which a temporal float cannot state");
+    return NULL;
+  }
 
   RasterSampleState state;
   RasterGridOps ops;
-  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
+  if (! raster_rtcore_gridops(traj, rast, band, exclude_nodata, bilinear,
+      &state, &ops))
     return NULL;
   Temporal *result = raster_value_sampler(traj, &ops);
   if (! raster_rtcore_release(&state, band))
@@ -2084,7 +2174,7 @@ raster_at_value(const Temporal *traj, const Raster *rast, int band,
 
   RasterSampleState state;
   RasterGridOps ops;
-  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
+  if (! raster_rtcore_gridops(traj, rast, band, true, false, &state, &ops))
     return NULL;
   Temporal *result = raster_at_value_sampler(traj, &ops, vspan);
   if (! raster_rtcore_release(&state, band))
@@ -2119,7 +2209,7 @@ raster_minus_value(const Temporal *traj, const Raster *rast, int band,
 
   RasterSampleState state;
   RasterGridOps ops;
-  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
+  if (! raster_rtcore_gridops(traj, rast, band, true, false, &state, &ops))
     return NULL;
   Temporal *result = raster_minus_value_sampler(traj, &ops, vspan);
   if (! raster_rtcore_release(&state, band))
@@ -2152,7 +2242,7 @@ eraster_value(const Temporal *traj, const Raster *rast, int band,
 
   RasterSampleState state;
   RasterGridOps ops;
-  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
+  if (! raster_rtcore_gridops(traj, rast, band, true, false, &state, &ops))
     return -1;
   int result = eraster_value_sampler(traj, &ops, vspan);
   return raster_rtcore_release(&state, band) ? result : -1;
@@ -2179,7 +2269,7 @@ araster_value(const Temporal *traj, const Raster *rast, int band,
 
   RasterSampleState state;
   RasterGridOps ops;
-  if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
+  if (! raster_rtcore_gridops(traj, rast, band, true, false, &state, &ops))
     return -1;
   int result = araster_value_sampler(traj, &ops, vspan);
   return raster_rtcore_release(&state, band) ? result : -1;

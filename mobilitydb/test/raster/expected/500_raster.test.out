@@ -221,6 +221,80 @@ FROM rast;
  Interp=Step;{[1@2001-01-01 00:00:00+00, 1@2001-01-01 12:00:00+00), [2@2001-01-02 11:59:59.999999+00, 2@2001-01-03 12:00:00+00), [3@2001-01-04 12:00:00+00, 3@2001-01-05 12:00:00+00), [4@2001-01-06 12:00:00+00, 4@2001-01-07 12:00:00+00), [5@2001-01-08 12:00:00+00, 5@2001-01-09 12:00:00+00), [6@2001-01-10 12:00:00+00, 6@2001-01-11 12:00:00+00)}
 (1 row)
 
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999.0::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, -9999.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
+    POINT(1.5 2.5)@2001-01-02}', r, 1, false)::text AS kept,
+  valueAtTimestamp(rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
+    POINT(1.5 2.5)@2001-01-02}', r, 1, false), '2001-01-02') =
+    ST_Value(r, 1, ST_Point(1.5, 2.5, 4326), false) AS kept_as_postgis,
+  rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+    POINT(2.5 2.5)@2001-01-03]', r, 1, false)::text AS crossed
+FROM rast;
+                           kept                            | kept_as_postgis |                                                           crossed                                                           
+-----------------------------------------------------------+-----------------+-----------------------------------------------------------------------------------------------------------------------------
+ {10@2001-01-01 00:00:00+00, -9999@2001-01-02 00:00:00+00} | t               | Interp=Step;[10@2001-01-01 00:00:00+00, -9999@2001-01-01 12:00:00+00, 30@2001-01-02 12:00:00+00, 30@2001-01-03 00:00:00+00]
+(1 row)
+
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+), trip AS (
+  SELECT tgeompoint 'SRID=4326;{POINT(0.75 2.25)@2001-01-01,
+    POINT(1.25 1.75)@2001-01-02}' AS t
+)
+SELECT rasterValue(t, r, 1, true, 'bilinear')::text AS bilinear,
+  rasterValue(t, r)::text AS nearest,
+  rasterValue(t, r, 1, true, 'BILINEAR') = rasterValue(t, r, 1, true, 'bilinear')
+    AS without_case,
+  valueAtTimestamp(rasterValue(t, r, 1, true, 'bilinear'), '2001-01-01') =
+    ST_Value(r, 1, ST_Point(0.75, 2.25, 4326), true, 'bilinear') AS first_as_postgis,
+  valueAtTimestamp(rasterValue(t, r, 1, true, 'bilinear'), '2001-01-02') =
+    ST_Value(r, 1, ST_Point(1.25, 1.75, 4326), true, 'bilinear') AS second_as_postgis
+FROM rast, trip;
+                        bilinear                        |                        nearest                         | without_case | first_as_postgis | second_as_postgis 
+--------------------------------------------------------+--------------------------------------------------------+--------------+------------------+-------------------
+ {20@2001-01-01 00:00:00+00, 40@2001-01-02 00:00:00+00} | {10@2001-01-01 00:00:00+00, 50@2001-01-02 00:00:00+00} | t            | t                | t
+(1 row)
+
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+  POINT(2.5 0.5)@2001-01-03]', r, 1, true, 'bilinear')
+FROM rast;
+ERROR:  A bilinear value varies quadratically along a moving trajectory, which a temporal float cannot state
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8
+  ) AS r
+)
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r, 1,
+  true, 'cubic')
+FROM rast;
+ERROR:  Unknown resample type: cubic
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;[Point(45.0 75.0)@2024-01-01,
   Point(135.0 75.0)@2024-01-02]',
   decode('01020304', 'hex'), 2, 2, 5193776270265024512, 'uint8', 0.0, false)::text;

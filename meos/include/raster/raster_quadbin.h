@@ -65,6 +65,18 @@ typedef void (*raster_grid_fn)(const void *ctx, double x, double y,
 typedef bool (*raster_pixel_fn)(void *ctx, int col, int row, double *value);
 
 /**
+ * @brief Callback returning the value a raster states at a position named by
+ * its grid coordinates, inside the grid, for a value that varies within a
+ * pixel: return true and set @p value, or return false when the position
+ * carries no value
+ * @details The traversal of a moving trajectory reads the pixels it crosses,
+ * so a grid answering this callback is read at the instants of a trajectory
+ * alone, and its caller refuses a moving one
+ */
+typedef bool (*raster_point_fn)(void *ctx, double col, double row,
+  double *value);
+
+/**
  * @brief Callback returning the parameter at which the segment from
  * (@p x1, @p y1) to (@p x2, @p y2) reaches the grid line @p k of an axis,
  * 0 naming the columns and 1 the rows
@@ -89,7 +101,9 @@ typedef struct RasterGridOps
 {
   raster_grid_fn grid;      /**< Grid coordinates of a position */
   raster_pixel_fn pixel;    /**< Value of a pixel */
-  raster_cross_fn cross;    /**< Parameter at which a segment reaches a grid
+  raster_point_fn point;    /**< Value at a position, NULL where a position
+                                 answers the value of the pixel it falls in */
+  raster_cross_fn cross;   /**< Parameter at which a segment reaches a grid
                                  line, NULL when the grid coordinates are
                                  affine in the position */
   void *ctx;                /**< State of the engine, passed to the callbacks */

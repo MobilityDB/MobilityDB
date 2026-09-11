@@ -402,6 +402,7 @@ raquet_gridops(RaquetSampleState *state, RasterGridOps *ops)
 {
   ops->grid = &raquet_grid;
   ops->pixel = &raquet_pixel;
+  ops->point = NULL;
   ops->cross = &raquet_cross;
   ops->ctx = state;
   ops->width = state->width;
@@ -541,6 +542,9 @@ raster_sample_at(const RasterGridOps *ops, double x, double y,
    * belongs to the cell beyond it */
   if (col < 0 || col >= ops->width || row < 0 || row >= ops->height)
     return false;
+  /* A value varying within its pixel is read at the position itself */
+  if (ops->point)
+    return ops->point(ops->ctx, gcol, grow, value);
   return ops->pixel(ops->ctx, col, row, value);
 }
 
