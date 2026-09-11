@@ -1024,6 +1024,20 @@ SELECT asText(stops(tgeompoint '(Point(900 0)@2001-01-01, Point(0 0)@2001-01-02,
 SELECT asText(stops(tgeompoint '{(Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
   Point(8 0)@2001-01-03), [Point(900 0)@2001-01-05, Point(0 0)@2001-01-06,
   Point(5 0)@2001-01-07, Point(8 0)@2001-01-08)}', 154.0, '2 days'));
+-- Two sequences meeting at one timestamp keep their stops apart there
+SELECT asText(stops(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02),
+  [Point(100 0)@2001-01-02, Point(100 0)@2001-01-03]}', 1.0, '12 hours'));
+-- A stay beginning after the value leaves the area of an earlier instant is
+-- found from its first instant, alone, followed by more of the stay, and
+-- after a stay too short to be a stop
+SELECT asText(stops(tgeompoint '[Point(900 0)@2001-01-01, Point(0 0)@2001-01-02,
+  Point(5 0)@2001-01-05, Point(8 0)@2001-01-09]', 154.0, '5 days'));
+SELECT asText(stops(tgeompoint '[Point(900 0)@2001-01-01, Point(0 0)@2001-01-02,
+  Point(5 0)@2001-01-05, Point(8 0)@2001-01-09, Point(6 0)@2001-01-13,
+  Point(900 0)@2001-01-14]', 154.0, '5 days'));
+SELECT asText(stops(tgeompoint '[Point(0 0)@2001-01-01, Point(5 0)@2001-01-02,
+  Point(500 0)@2001-01-03, Point(505 0)@2001-01-04, Point(508 0)@2001-01-09]',
+  154.0, '5 days'));
 
 -------------------------------------------------------------------------------
 -- Ever/always comparison functions
