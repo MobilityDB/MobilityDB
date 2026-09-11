@@ -1104,7 +1104,7 @@ SELECT ST_NPoints(getValue(cellToBoundary(ts2cell '47c3c@2001-01-01'))::geometry
 	</sect1>
 	<sect1 xml:id="tcell_bbox_ops">
 		<title>Operaciones de cuadro delimitador</title>
-		<para>Los siguientes operadores comparan el <emphasis>cuadro delimitador</emphasis> espaciotemporal de las celdas temporales en lugar de la contención en la jerarquía de celdas. <varname>tcell</varname> es un tipo temporal espacial: su cuadro delimitador es un <varname>stbox</varname> que combina la extensión espacial geodésica de las fronteras de las celdas (su envolvente de longitud/latitud en el SRID 4326) con el período de tiempo <varname>tstzspan</varname> de la trayectoria. Los operadores de más abajo comparan ese cuadro a lo largo de los ejes espaciales y/o del eje temporal. Véase la sección de indexación para las clases de operadores que hacen que estos operadores puedan usar índices.</para>
+		<para>Los siguientes operadores comparan el <emphasis>cuadro delimitador</emphasis> espaciotemporal de las celdas temporales en lugar de la contención en la jerarquía de celdas. <varname>tcell</varname> es un tipo temporal espacial: su cuadro delimitador es un <varname>stbox</varname> que combina la extensión espacial de las fronteras de las celdas (su envolvente de longitud/latitud en el SRID 4326), geodésica para una celda H3 o S2 y plana para una celda QUADBIN, con el período de tiempo <varname>tstzspan</varname> de la trayectoria. Los operadores de más abajo comparan ese cuadro a lo largo de los ejes espaciales y/o del eje temporal. Véase la sección de indexación para las clases de operadores que hacen que estos operadores puedan usar índices.</para>
 
 		<note>
 			<para>El operador <varname>@&gt;</varname> comprueba la contención del cuadro delimitador espaciotemporal (la extensión espacial y el tiempo conjuntamente), <emphasis>no</emphasis> la contención en la jerarquía de celdas. Para comprobar si una celda es el ancestro de otra en una resolución dada, use <link linkend="tcell_cell_to_parent"><varname>cellToParent</varname></link>.</para>
@@ -1119,7 +1119,7 @@ SELECT ST_NPoints(getValue(cellToBoundary(ts2cell '47c3c@2001-01-01'))::geometry
 stbox(tcell) &#8594; stbox
 expandSpace(tcell,float) &#8594; stbox
 </programlisting>
-				<para>El cuadro es la envolvente geodésica de las fronteras de las celdas junto con el período de tiempo de la trayectoria, de modo que es la clave que almacenan ambas clases de operadores de índice de la sección de indexación.</para>
+				<para>El cuadro es la envolvente de las fronteras de las celdas, geodésica para una celda H3 o S2 y plana para una celda QUADBIN, junto con el período de tiempo de la trayectoria, de modo que es la clave que almacenan ambas clases de operadores de índice de la sección de indexación.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(stbox(th3index '871fa44a8ffffff@2001-01-01'), 6);
 /* SRID=4326;GEODSTBOX XT(((4.280027,50.79295),(4.314775,50.815648)),
@@ -1575,7 +1575,7 @@ SELECT mergeAgg(temp) FROM (VALUES (ts2cell '47c3c@2001-01-01')) AS t(temp);
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX Trips_Cells_SPGist_Idx ON Trips USING SPGist(Cells);
 </programlisting>
-		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para las celdas temporales, que es un <varname>stbox</varname>, como todos los tipos espaciotemporales: la extensión geodésica de las fronteras de las celdas junto con el período de tiempo.</para>
+		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para las celdas temporales, que es un <varname>stbox</varname>, como todos los tipos espaciotemporales: la extensión de las fronteras de las celdas, geodésica para las celdas H3 y S2 y plana para las celdas QUADBIN, junto con el período de tiempo.</para>
 
 		<para>Cada clase de operadores lleva el nombre del tipo temporal que indexa, de modo que una columna <varname>th3index</varname> toma <varname>th3index_rtree_ops</varname> para GiST y <varname>th3index_quadtree_ops</varname> o <varname>th3index_kdtree_ops</varname> para SP-GiST, y los nombres de <varname>tquadbin</varname> y <varname>ts2cell</varname> igualmente. La clase de árbol cuaternario es la predeterminada de SP-GiST y la clase de árbol k-d se nombra explícitamente. También se definen una clase de operadores B-tree y una hash, que ordenan y aplican hash por el valor temporal subyacente.</para>
 
