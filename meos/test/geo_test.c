@@ -740,6 +740,93 @@ int main(void)
   free(holed_geo); free(holed_buf);
   meos_errno_reset();
 
+  /* The round join at a vertex spans the angle the two edges meeting there
+   * turn by, and at a vertex turning by less than about 2e-4 radians it bulges
+   * from its chord by less than the rounding of coordinates near 6e6. Such a
+   * join is no arc of the answer: its three rounded points name a circle of
+   * another radius, or one across the chord, and the offset beyond it does not
+   * meet it exactly. It is written as its chord, or as nothing where the chord
+   * itself is within the rounding. The witnesses are two real protected areas
+   * at coordinates near 4e5 to 9e5 and 6.1e6 to 6.3e6, each with a hole vertex
+   * turning by under 1e-8 radians, and the first of them with that vertex
+   * moved by 1e-6 along its normal, where the join's chord is just over the
+   * rounding. Each buffer at radius 1 covers the geometry it is taken of, and
+   * every arc it carries bulges from its chord by more than the rounding of
+   * its own coordinates */
+  const char *straight_joints[] = {
+    "MULTIPOLYGON(((898914.9403076661 6122116.964651632,"
+    "892000.0000313906 6128240.709886038,881878.7649123298 6134742.834215424,"
+    "895337.2320802852 6149482.958137969,911403.2986007167 6138679.914452544,"
+    "898914.9403076661 6122116.964651632),"
+    "(907237.9528864882 6136624.956954372,894477.5768949464 6145528.711752129,"
+    "891483.2765023337 6142244.494390287,893273.247674003 6139116.564902924,"
+    "900857.8283076342 6128187.6022518305,903018.1035232148 6131044.4443305535,"
+    "907237.9528864882 6136624.956954372)))",
+    "MULTIPOLYGON(((427476.90227913705 6289481.157459412,"
+    "430837.72147431236 6289481.963124866,430916.2857289751 6276994.411554065,"
+    "430917.8166187645 6276751.080126724,425577.2465192299 6276753.74492519,"
+    "425474.3087710385 6271012.617867712,416077.0768295746 6272295.634823122,"
+    "417158.4882763424 6295836.6436494235,427477.49727490137 6294083.592144184,"
+    "427476.90227913705 6289481.157459412),"
+    "(430183.978312475 6276753.744946178,430183.97828800324 6288132.508823933,"
+    "416409.7076745876 6276753.744863464,425577.2465192299 6276753.74492519,"
+    "430183.978312475 6276753.744946178)))",
+    "MULTIPOLYGON(((898914.9403076661 6122116.964651632,"
+    "892000.0000313906 6128240.709886038,881878.7649123298 6134742.834215424,"
+    "895337.2320802852 6149482.958137969,911403.2986007167 6138679.914452544,"
+    "898914.9403076661 6122116.964651632),"
+    "(907237.9528864882 6136624.956954372,894477.5768949464 6145528.711752129,"
+    "891483.2765023337 6142244.494390287,893273.247674003 6139116.564902924,"
+    "900857.8283076342 6128187.6022518305,903018.1035224171 6131044.444331157,"
+    "907237.9528864882 6136624.956954372)))"
+  };
+  char straight_patt[10] = "T*****FF*";
+  for (size_t i = 0; i < sizeof(straight_joints) / sizeof(straight_joints[0]);
+      i++)
+  {
+    GSERIALIZED *g = geom_in(straight_joints[i], -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    GSERIALIZED *b = geom_buffer(g, 1.0, "");
+    printf("geom_buffer(a real area with a nearly straight hole vertex, %zu): "
+      "answered %d, errno %d\n", i, b != NULL, meos_errno());
+    assert(b != NULL);
+    assert(meos_errno() == 0);
+    bool covers = geom_relate_pattern(b, g, straight_patt);
+    printf("  it covers the geometry it is taken of: %d\n", covers);
+    assert(covers == true);
+    assert(meos_errno() == 0);
+    /* Every arc bulges from its chord by more than the rounding of its
+     * coordinates: its middle point lies further from the chord than that */
+    char *text = geo_as_text(b, 17);
+    assert(text != NULL);
+    int arcs = 0, flat = 0;
+    for (const char *s = strstr(text, "CIRCULARSTRING("); s;
+        s = strstr(s + 1, "CIRCULARSTRING("))
+    {
+      double x1, y1, xm, ym, x2, y2;
+      int n = sscanf(s, "CIRCULARSTRING(%lf %lf,%lf %lf,%lf %lf", &x1, &y1,
+        &xm, &ym, &x2, &y2);
+      assert(n == 6);
+      double scale = 0.0, c[6] = { x1, y1, xm, ym, x2, y2 };
+      for (int k = 0; k < 6; k++)
+        if (fabs(c[k]) > scale)
+          scale = fabs(c[k]);
+      double band = 4.0 * DBL_EPSILON * scale;
+      double cross = (xm - x1) * (y2 - y1) - (ym - y1) * (x2 - x1);
+      double chord2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+      if (cross * cross <= band * band * chord2)
+        flat++;
+      arcs++;
+    }
+    printf("  arcs %d, of which bulging less than the rounding %d\n", arcs,
+      flat);
+    assert(arcs > 0);
+    assert(flat == 0);
+    free(text); free(b); free(g);
+    meos_errno_reset();
+  }
+
   /* What a radial distance misses its arc by is a property of the coordinates
    * it is read from, so the band it is judged against is theirs. At projected
    * coordinates the point this states lies 1.6e-11 off the circle it is placed
