@@ -468,70 +468,142 @@ size_t gbox_serialized_size(lwflags_t flags)
 ** Compute cartesian bounding GBOX boxes from LWGEOM.
 */
 
+/* MEOS: the cross product of coordinate differences, computed exactly and
+ * rounded once, from meos/src/geo/geo_funcs.c */
+extern double cross_product_exact(double ax, double ay, double bx, double by,
+	double cx, double cy, double dx, double dy);
+
+/* MEOS: the rounding of a coordinate the arc box constructs, by which the box
+ * is padded outward, since a box may hold more than the arc and never less.
+ * A reach beyond the chord midpoint goes through some fifty roundings of the
+ * unit roundoff DBL_EPSILON / 2, from the exact cross product through the
+ * angle, the chord normal and lw_arc_reach, so 32 DBL_EPSILON bounds it; the
+ * midpoint and the final sum add at most one rounding each of the two end
+ * coordinates */
+#define ARC_GBOX_ROUNDING (32.0 * DBL_EPSILON)
+
+static double
+lw_arc_gbox_pad(double c1, double c2, double reach)
+{
+	return ARC_GBOX_ROUNDING * reach + 2.0 * DBL_EPSILON * (fabs(c1) + fabs(c2));
+}
+
+/* MEOS: (1 + omega cos a) / sin a, the reach of the circle beyond the chord
+ * midpoint in a direction W, in units of half the chord, where omega and perp
+ * are the components of W along the chord normal toward the arc and across it.
+ * Where omega cos a < 0 the sum cancels, and it is rewritten as
+ * (1 - |omega|) + |omega| (1 - |cos a|) with each difference from 1 read off
+ * the other component, so a nearly straight arc keeps its bulge */
+static double
+lw_arc_reach(double omega, double perp, double sina, double cosa)
+{
+	double t;
+	if (omega * cosa >= 0.0)
+		t = 1.0 + omega * cosa;
+	else
+	{
+		double w = fabs(omega), c = fabs(cosa);
+		t = perp * perp / (1.0 + w) + w * (sina * sina / (1.0 + c));
+	}
+	return t / sina;
+}
+
+/* MEOS: the box of an arc is decided on its input vertices exactly, and
+ * constructed from the chord A1-A3 and the angle at A2 rather than from the
+ * circumcentre. lw_arc_center reads an arc as a segment where twice its cross
+ * product is below EPSILON_SQLMM, an absolute 1e-8 on an AREA, and as a
+ * closed circle where its ends lie within 1e-8 of each other: a box read off
+ * it is the box of the chord for an arc a few 1e-5 across, and of another
+ * circle below 1e-8. The circumcentre of a nearly straight arc also cancels
+ * against its radius, where the chord and the angle do not */
 int lw_arc_calculate_gbox_cartesian_2d(const POINT2D *A1, const POINT2D *A2, const POINT2D *A3, GBOX *gbox)
 {
-	POINT2D xmin, ymin, xmax, ymax;
-	POINT2D C;
-	int A2_side;
-	double radius_A;
-
 	LWDEBUG(2, "lw_arc_calculate_gbox_cartesian_2d called.");
 
-	radius_A = lw_arc_center(A1, A2, A3, &C);
+	/* First approximation, bounds of start/end points */
+	gbox->xmin = FP_MIN(A1->x, A3->x);
+	gbox->ymin = FP_MIN(A1->y, A3->y);
+	gbox->xmax = FP_MAX(A1->x, A3->x);
+	gbox->ymax = FP_MAX(A1->y, A3->y);
 
-	/* Negative radius signals straight line, p1/p2/p3 are collinear */
-	if (radius_A < 0.0)
+	/* MEOS: matched start/end points imply the circle whose diameter runs
+	 * from A1 to A2 */
+	if (A1->x == A3->x && A1->y == A3->y)
 	{
-        gbox->xmin = FP_MIN(A1->x, A3->x);
-        gbox->ymin = FP_MIN(A1->y, A3->y);
-        gbox->xmax = FP_MAX(A1->x, A3->x);
-        gbox->ymax = FP_MAX(A1->y, A3->y);
-	    return LW_SUCCESS;
-	}
-
-	/* Matched start/end points imply circle */
-	if ( A1->x == A3->x && A1->y == A3->y )
-	{
-		gbox->xmin = C.x - radius_A;
-		gbox->ymin = C.y - radius_A;
-		gbox->xmax = C.x + radius_A;
-		gbox->ymax = C.y + radius_A;
+		double dx = A2->x - A1->x, dy = A2->y - A1->y;
+		double cx = A1->x + dx / 2.0, cy = A1->y + dy / 2.0;
+		double r = hypot(dx, dy) / 2.0;
+		double padx = lw_arc_gbox_pad(A1->x, A2->x, r);
+		double pady = lw_arc_gbox_pad(A1->y, A2->y, r);
+		gbox->xmin = cx - r - padx;
+		gbox->ymin = cy - r - pady;
+		gbox->xmax = cx + r + padx;
+		gbox->ymax = cy + r + pady;
 		return LW_SUCCESS;
 	}
 
-	/* First approximation, bounds of start/end points */
-    gbox->xmin = FP_MIN(A1->x, A3->x);
-    gbox->ymin = FP_MIN(A1->y, A3->y);
-    gbox->xmax = FP_MAX(A1->x, A3->x);
-    gbox->ymax = FP_MAX(A1->y, A3->y);
+	/* MEOS: the turn at A2, the cross product of A1 - A2 and A3 - A2, exactly.
+	 * Zero where the three points are collinear, A2 on an end included, and
+	 * the arc is then the segment A1-A3; otherwise its sign is the side of the
+	 * chord A1-A3 the arc lies on. Where its two products do not nearly
+	 * cancel, their rounded difference keeps its relative precision to a few
+	 * roundings; otherwise it is computed exactly */
+	double ux = A1->x - A2->x, uy = A1->y - A2->y;
+	double vx = A3->x - A2->x, vy = A3->y - A2->y;
+	double left = ux * vy, right = uy * vx;
+	double cross = left - right;
+	if (! (fabs(cross) > 0.5 * (fabs(left) + fabs(right))))
+		cross = cross_product_exact(A2->x, A2->y, A1->x, A1->y,
+			A2->x, A2->y, A3->x, A3->y);
+	if (cross == 0.0)
+		return LW_SUCCESS;
 
-	/* Create points for the possible extrema */
-	xmin.x = C.x - radius_A;
-	xmin.y = C.y;
-	ymin.x = C.x;
-	ymin.y = C.y - radius_A;
-	xmax.x = C.x + radius_A;
-	xmax.y = C.y;
-	ymax.x = C.x;
-	ymax.y = C.y + radius_A;
+	/* MEOS: the inscribed angle a at A2, from the cross product and the dot
+	 * product of the two vectors, each to within a few roundings of itself */
+	double dot = ux * vx + uy * vy;
+	double h = hypot(cross, dot);
+	double sina = fabs(cross) / h, cosa = dot / h;
 
-	/* Divide the circle into two parts, one on each side of a line
-	   joining p1 and p3. The circle extrema on the same side of that line
-	   as p2 is on, are also the extrema of the bbox. */
+	/* MEOS: the chord, its midpoint, half its length and its unit normal
+	 * toward the arc. The circle has radius half / sin a and its centre lies
+	 * half cot a from the midpoint along that normal, so the extreme of the
+	 * circle in a direction W lies half (1 + omega cos a) / sin a beyond the
+	 * midpoint, and it is on the arc where omega >= - cos a */
+	double chx = A3->x - A1->x, chy = A3->y - A1->y;
+	double len = hypot(chx, chy);
+	double half = len / 2.0;
+	double mx = A1->x + chx / 2.0, my = A1->y + chy / 2.0;
+	double side = (cross > 0.0) ? 1.0 : -1.0;
+	double nx = - side * chy / len, ny = side * chx / len;
+	/* An extreme on the edge of that condition sits on an end of the arc, so
+	 * one read on the wrong side of it moves the box by a rounding: take it */
+	double slack = ARC_GBOX_ROUNDING;
+	double reach, pad;
 
-	A2_side = lw_segment_side(A1, A3, A2);
-
-	if ( A2_side == lw_segment_side(A1, A3, &xmin) )
-		gbox->xmin = xmin.x;
-
-	if ( A2_side == lw_segment_side(A1, A3, &ymin) )
-		gbox->ymin = ymin.y;
-
-	if ( A2_side == lw_segment_side(A1, A3, &xmax) )
-		gbox->xmax = xmax.x;
-
-	if ( A2_side == lw_segment_side(A1, A3, &ymax) )
-		gbox->ymax = ymax.y;
+	if (nx >= - cosa - slack)
+	{
+		reach = half * lw_arc_reach(nx, ny, sina, cosa);
+		pad = lw_arc_gbox_pad(A1->x, A3->x, reach);
+		gbox->xmax = FP_MAX(gbox->xmax, mx + reach + pad);
+	}
+	if (- nx >= - cosa - slack)
+	{
+		reach = half * lw_arc_reach(- nx, ny, sina, cosa);
+		pad = lw_arc_gbox_pad(A1->x, A3->x, reach);
+		gbox->xmin = FP_MIN(gbox->xmin, mx - reach - pad);
+	}
+	if (ny >= - cosa - slack)
+	{
+		reach = half * lw_arc_reach(ny, nx, sina, cosa);
+		pad = lw_arc_gbox_pad(A1->y, A3->y, reach);
+		gbox->ymax = FP_MAX(gbox->ymax, my + reach + pad);
+	}
+	if (- ny >= - cosa - slack)
+	{
+		reach = half * lw_arc_reach(- ny, nx, sina, cosa);
+		pad = lw_arc_gbox_pad(A1->y, A3->y, reach);
+		gbox->ymin = FP_MIN(gbox->ymin, my - reach - pad);
+	}
 
 	return LW_SUCCESS;
 }

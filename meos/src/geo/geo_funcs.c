@@ -692,6 +692,58 @@ grow_expansion(int elen, const double *e, double b, double *h)
 }
 
 /**
+ * @brief Add the cross product of the vectors B - A and D - C, exactly, into
+ * an expansion held in one of two buffers, and return its length
+ * @details Each difference is its rounded value plus the error of the
+ * rounding, and each product of two terms is its rounded value plus its
+ * error, so the sixteen terms add up to the cross product exactly; a term
+ * with a zero factor adds nothing and is skipped. The last component carries
+ * the sign of the whole
+ * @param[in] buf1,buf2 Room for 32 components each
+ * @param[out] result The buffer holding the expansion
+ * @return Number of components, 0 exactly where the vectors are parallel
+ */
+static int
+cross_product_expansion(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy, double *buf1, double *buf2,
+  const double **result)
+{
+  double d[4], t[4];
+  two_diff(bx, ax, &d[0], &t[0]);
+  two_diff(dy, cy, &d[1], &t[1]);
+  two_diff(by, ay, &d[2], &t[2]);
+  two_diff(dx, cx, &d[3], &t[3]);
+  /* (d0 + t0) (d1 + t1) - (d2 + t2) (d3 + t3), term by term */
+  const double lf[2] = {d[0], t[0]}, lg[2] = {d[1], t[1]};
+  const double rf[2] = {d[2], t[2]}, rg[2] = {d[3], t[3]};
+  double *e = buf1, *h = buf2, *swap;
+  int elen = 0;
+  for (int i = 0; i < 2; i++)
+    for (int j = 0; j < 2; j++)
+    {
+      double x, y;
+      if (lf[i] != 0.0 && lg[j] != 0.0)
+      {
+        two_product(lf[i], lg[j], &x, &y);
+        elen = grow_expansion(elen, e, x, h);
+        swap = e; e = h; h = swap;
+        elen = grow_expansion(elen, e, y, h);
+        swap = e; e = h; h = swap;
+      }
+      if (rf[i] != 0.0 && rg[j] != 0.0)
+      {
+        two_product(rf[i], rg[j], &x, &y);
+        elen = grow_expansion(elen, e, - x, h);
+        swap = e; e = h; h = swap;
+        elen = grow_expansion(elen, e, - y, h);
+        swap = e; e = h; h = swap;
+      }
+    }
+  *result = e;
+  return elen;
+}
+
+/**
  * @brief Return the sign of the cross product of the vectors B - A and D - C,
  * decided exactly
  * @details Each difference is its rounded value plus the error of the
@@ -726,38 +778,42 @@ cross_product_sign_exact(double ax, double ay, double bx, double by,
     double err = fma(d[0], d[1], - l) - fma(d[2], d[3], - r);
     return (err > 0.0) ? 1 : ((err < 0.0) ? -1 : 0);
   }
-  /* (d0 + t0) (d1 + t1) - (d2 + t2) (d3 + t3), term by term */
-  const double lf[2] = {d[0], t[0]}, lg[2] = {d[1], t[1]};
-  const double rf[2] = {d[2], t[2]}, rg[2] = {d[3], t[3]};
   double buf1[32], buf2[32];
-  double *e = buf1, *h = buf2, *swap;
-  int elen = 0;
-  for (int i = 0; i < 2; i++)
-    for (int j = 0; j < 2; j++)
-    {
-      double x, y;
-      if (lf[i] != 0.0 && lg[j] != 0.0)
-      {
-        two_product(lf[i], lg[j], &x, &y);
-        elen = grow_expansion(elen, e, x, h);
-        swap = e; e = h; h = swap;
-        elen = grow_expansion(elen, e, y, h);
-        swap = e; e = h; h = swap;
-      }
-      if (rf[i] != 0.0 && rg[j] != 0.0)
-      {
-        two_product(rf[i], rg[j], &x, &y);
-        elen = grow_expansion(elen, e, - x, h);
-        swap = e; e = h; h = swap;
-        elen = grow_expansion(elen, e, - y, h);
-        swap = e; e = h; h = swap;
-      }
-    }
+  const double *e;
+  int elen = cross_product_expansion(ax, ay, bx, by, cx, cy, dx, dy, buf1,
+    buf2, &e);
   /* Every term with a zero factor: the cross product is zero */
   if (elen == 0)
     return 0;
   double top = e[elen - 1];
   return (top > 0.0) ? 1 : ((top < 0.0) ? -1 : 0);
+}
+
+/**
+ * @brief Return the cross product of the vectors B - A and D - C, computed
+ * exactly and rounded once
+ * @details The cross product of rounded differences carries an error of the
+ * order of a rounding of each of its two products, so where the vectors are
+ * nearly parallel and the products nearly cancel, it keeps none of its
+ * relative precision. The exact expansion of #cross_product_sign_exact,
+ * summed from its smallest component up, keeps it, however small the cross
+ * product is against the coordinates
+ * @note Exact where no product of coordinate differences overflows or
+ * underflows
+ * @return The cross product, 0 exactly where the vectors are parallel
+ */
+double
+cross_product_exact(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  double buf1[32], buf2[32];
+  const double *e;
+  int elen = cross_product_expansion(ax, ay, bx, by, cx, cy, dx, dy, buf1,
+    buf2, &e);
+  double sum = 0.0;
+  for (int i = 0; i < elen; i++)
+    sum += e[i];
+  return sum;
 }
 
 /*****************************************************************************

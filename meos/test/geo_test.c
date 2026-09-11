@@ -625,6 +625,46 @@ int main(void)
   free(pip_wkt);
   meos_errno_reset();
 
+  /* The box of an arc takes its size from the arc. A semicircle through
+   * (0 0), (s s) and (2s 0) is 2s wide and s high, and it holds its own middle
+   * vertex (s s), so it intersects that point at every s. A box read off the
+   * circumcentre with an absolute bound is, at s = 2^-16, the box of the
+   * chord, of height 0, which the point lies outside, and at s = 2^-28 the
+   * box of a circle on the two ends. Halving a double is exact, so the box at
+   * s is the box at 1 times s to the last bit; it may hold a rounding more
+   * than the arc, and never less */
+  double semi_s = 1.0, semi_unit[4] = {0, 0, 0, 0};
+  int semi_ok = 0;
+  for (int k = 0; k >= -40; k--, semi_s *= 0.5)
+  {
+    char semi_wkt[160], apex_wkt[96];
+    snprintf(semi_wkt, sizeof semi_wkt,
+      "CIRCULARSTRING(0 0,%.17g %.17g,%.17g 0)", semi_s, semi_s, 2 * semi_s);
+    snprintf(apex_wkt, sizeof apex_wkt, "POINT(%.17g %.17g)", semi_s, semi_s);
+    GSERIALIZED *semi = geom_in(semi_wkt, -1);
+    GSERIALIZED *apex = geom_in(apex_wkt, -1);
+    assert(semi != NULL); assert(apex != NULL);
+    STBox *semi_box = geo_to_stbox(semi);
+    assert(semi_box != NULL);
+    double b[4] = {semi_box->xmin, semi_box->ymin, semi_box->xmax,
+      semi_box->ymax};
+    if (k == 0)
+      memcpy(semi_unit, b, sizeof b);
+    assert(geom_intersects2d(semi, apex));
+    assert(b[0] <= 0.0 && b[1] <= 0.0);
+    assert(b[2] >= 2 * semi_s && b[3] >= semi_s);
+    assert(b[2] - b[0] <= 2 * semi_s * (1.0 + 1e-13));
+    assert(b[3] - b[1] <= semi_s * (1.0 + 1e-13));
+    for (int i = 0; i < 4; i++)
+      assert(b[i] == semi_unit[i] * semi_s);
+    semi_ok++;
+    free(semi_box); free(semi); free(apex);
+  }
+  printf("the box of a semicircle holds it, and meets its middle vertex, at "
+    "%d scales from 1 to 2^-40, the same box to the last bit\n", semi_ok);
+  assert(semi_ok == 41);
+  meos_errno_reset();
+
   /* A GEOMETRYCOLLECTION is the union of its components, so what it shares
    * with another geometry is the union of what the components share. The
    * overlay reads it that way now, which is how the matrix has always read a
