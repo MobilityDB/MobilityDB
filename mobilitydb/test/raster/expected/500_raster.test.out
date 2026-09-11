@@ -256,6 +256,42 @@ WITH rast AS (
 SELECT rasterValue(tgeompoint 'SRID=3857;{POINT(1.5 1.5)@2001-01-01}', r)
 FROM rast;
 ERROR:  Operation on mixed SRID
+CREATE TEMP TABLE tbl_outdb AS
+SELECT ('0100000100000000000000f03f000000000000f0bf0000000000000000'
+  '000000000000084000000000000000000000000000000000e6100000030003008a'
+  '00000000006e6f5f737563685f7261737465722e74696600')::raster AS r;
+SELECT 1
+SELECT ST_BandPath(r, 1) AS band_path FROM tbl_outdb;
+     band_path      
+--------------------
+ no_such_raster.tif
+(1 row)
+
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r)
+FROM tbl_outdb;
+ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 1.5)@2001-01-01,
+  POINT(2.5 1.5)@2001-01-02]', r)
+FROM tbl_outdb;
+ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+SELECT atRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
+  floatspan '[0, 100]')
+FROM tbl_outdb;
+ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+SELECT minusRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
+  floatspan '[0, 100]')
+FROM tbl_outdb;
+ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+SELECT eRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
+  floatspan '[0, 100]')
+FROM tbl_outdb;
+ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+SELECT aRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
+  floatspan '[0, 100]')
+FROM tbl_outdb;
+ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+DROP TABLE tbl_outdb;
+DROP TABLE
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(

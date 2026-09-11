@@ -279,6 +279,35 @@ WITH rast AS (
 SELECT rasterValue(tgeompoint 'SRID=3857;{POINT(1.5 1.5)@2001-01-01}', r)
 FROM rast;
 
+-- A band stored outside the database is read from its file, so a file that
+-- cannot be opened leaves the band without pixels to read, which is an error
+-- and not an empty answer: no value, never and always would each state
+-- something about a band nobody read. The band of this 3x3 raster names the
+-- file no_such_raster.tif, which does not exist.
+CREATE TEMP TABLE tbl_outdb AS
+SELECT ('0100000100000000000000f03f000000000000f0bf0000000000000000'
+  '000000000000084000000000000000000000000000000000e6100000030003008a'
+  '00000000006e6f5f737563685f7261737465722e74696600')::raster AS r;
+SELECT ST_BandPath(r, 1) AS band_path FROM tbl_outdb;
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r)
+FROM tbl_outdb;
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 1.5)@2001-01-01,
+  POINT(2.5 1.5)@2001-01-02]', r)
+FROM tbl_outdb;
+SELECT atRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
+  floatspan '[0, 100]')
+FROM tbl_outdb;
+SELECT minusRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
+  floatspan '[0, 100]')
+FROM tbl_outdb;
+SELECT eRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
+  floatspan '[0, 100]')
+FROM tbl_outdb;
+SELECT aRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
+  floatspan '[0, 100]')
+FROM tbl_outdb;
+DROP TABLE tbl_outdb;
+
 -- The sampling reads the grid the geotransform states, in whatever reference
 -- system the pair agrees on: the same raster shape in EPSG:3857 answers what it
 -- answers in EPSG:4326, so nothing in the walk assumes lon/lat.
