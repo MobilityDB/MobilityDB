@@ -25,8 +25,9 @@ var searchData=
   ['etype_22',['etype',['../structEdge_ab9d747062b7db4e670251261e769fc1b.html#ab9d747062b7db4e670251261e769fc1b',1,'Edge']]],
   ['events_23',['events',['../tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490',1,'tpoint_geom_clip.c']]],
   ['ever_24',['ever',['../structLiftedFunctionInfo_a9ef5146dcc9811c15f77cdda45aeb29b.html#a9ef5146dcc9811c15f77cdda45aeb29b',1,'LiftedFunctionInfo']]],
-  ['expand_5farg_25',['expand_arg',['../structIndexableFunction_a2ef3e9dac47cabd5fff41ed1b1ad9134.html#a2ef3e9dac47cabd5fff41ed1b1ad9134',1,'IndexableFunction']]],
-  ['extent_26',['extent',['../structND__STATS__T_af13bd239f2a9b1877188f02de8401a44.html#af13bd239f2a9b1877188f02de8401a44',1,'ND_STATS_T']]],
-  ['extra_27',['extra',['../structSkipList_a4fbfeb6cca80f06b4dd99790067f1e7e.html#a4fbfeb6cca80f06b4dd99790067f1e7e',1,'SkipList']]],
-  ['extrasize_28',['extrasize',['../structSkipList_a705a809de7d55be2529d307a7f640af5.html#a705a809de7d55be2529d307a7f640af5',1,'SkipList']]]
+  ['exclude_5fnodata_25',['exclude_nodata',['../structRasterSampleState_a156f1ba573d91bdb79ff62edd118b10c.html#a156f1ba573d91bdb79ff62edd118b10c',1,'RasterSampleState']]],
+  ['expand_5farg_26',['expand_arg',['../structIndexableFunction_a2ef3e9dac47cabd5fff41ed1b1ad9134.html#a2ef3e9dac47cabd5fff41ed1b1ad9134',1,'IndexableFunction']]],
+  ['extent_27',['extent',['../structND__STATS__T_af13bd239f2a9b1877188f02de8401a44.html#af13bd239f2a9b1877188f02de8401a44',1,'ND_STATS_T']]],
+  ['extra_28',['extra',['../structSkipList_a4fbfeb6cca80f06b4dd99790067f1e7e.html#a4fbfeb6cca80f06b4dd99790067f1e7e',1,'SkipList']]],
+  ['extrasize_29',['extrasize',['../structSkipList_a705a809de7d55be2529d307a7f640af5.html#a705a809de7d55be2529d307a7f640af5',1,'SkipList']]]
 ];

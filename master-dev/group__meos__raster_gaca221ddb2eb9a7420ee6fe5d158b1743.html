@@ -89,14 +89,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga9efd41ca7120b99502f0e392ce5cce94.html#ga9efd41ca7120b99502f0e392ce5cce94">raster_minus_value_gdal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga40c9d67b8d3cda85aba9dbf390f53293.html#ga40c9d67b8d3cda85aba9dbf390f53293">raster_tile_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga47799b6d30d305d68a07f44f719a62a2.html#ga47799b6d30d305d68a07f44f719a62a2">raster_tile_value_array</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster_ga8b065b73bf70f32e2e1dd645f7e17f77.html#ga8b065b73bf70f32e2e1dd645f7e17f77">raster_value</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster_gaca221ddb2eb9a7420ee6fe5d158b1743.html#gaca221ddb2eb9a7420ee6fe5d158b1743">raster_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga53345ad5839dfb7d63ac1e0afde597fa.html#ga53345ad5839dfb7d63ac1e0afde597fa">raster_value_gdal</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga8b065b73bf70f32e2e1dd645f7e17f77" name="ga8b065b73bf70f32e2e1dd645f7e17f77"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8b065b73bf70f32e2e1dd645f7e17f77">&#9670;&#160;</a></span>raster_value()</h2>
+<a id="gaca221ddb2eb9a7420ee6fe5d158b1743" name="gaca221ddb2eb9a7420ee6fe5d158b1743"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaca221ddb2eb9a7420ee6fe5d158b1743">&#9670;&#160;</a></span>raster_value()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -117,7 +117,19 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>band</em>&#160;</td>
+          <td class="paramname"><em>band</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>exclude_nodata</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>resample</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -128,11 +140,13 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the values of a raster band read along a trajectory. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A position reads the pixel it falls in, or, with <code>resample</code> stating the bilinear read, the value the four pixels around it interpolate, as <code>ST_Value</code> reads it. A bilinear value varies within a pixel, so along a segment of a moving trajectory it varies quadratically in time, which a temporal float cannot state: such a trajectory raises an error rather than answering the values at its instants alone </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Trajectory (temporal geometry point) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">band</td><td>Band number (1-based) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exclude_nodata</td><td>True to leave out the positions over a nodata pixel, false to answer the nodata value there </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">resample</td><td>Name of the read of a position, nearest or bilinear, read without regard to case, NULL for nearest </td></tr>
   </table>
   </dd>
 </dl>
