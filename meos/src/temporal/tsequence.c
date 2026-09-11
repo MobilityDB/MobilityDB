@@ -1348,12 +1348,13 @@ tsequence_restart(TSequence *seq, int count)
     tsequence_compute_bbox(seq);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_temporal_transf
  * @brief Return a subsequence of a temporal sequence specified by two instants
  * @param[in] seq Temporal sequence
- * @param[in] from,to Indexes
+ * @param[in] from,to Indexes of the first and the last instant kept
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
  */
 TSequence *
@@ -1366,14 +1367,13 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
   /* General case */
   int count = to - from + 1;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < to - from; i++)
+  for (int i = 0; i < count; i++)
     instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, i + from);
   TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
     MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
   pfree(instants);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
