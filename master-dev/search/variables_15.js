@@ -37,7 +37,7 @@ var searchData=
   ['tnumberindexablefunctions_34',['TNumberIndexableFunctions',['../temporal__supportfn_8c_a1c34446963389da7cd6587e4a13fcab4.html#a1c34446963389da7cd6587e4a13fcab4',1,'temporal_supportfn.c']]],
   ['tnumberstrategies_35',['TNumberStrategies',['../temporal__supportfn_8c_abdad065302e62f8965c5667eca9e28e4.html#abdad065302e62f8965c5667eca9e28e4',1,'temporal_supportfn.c']]],
   ['to_5fsplit_36',['to_split',['../structSpanBinState_a35d340c802ed91ee8e34041914abb177.html#a35d340c802ed91ee8e34041914abb177',1,'SpanBinState']]],
-  ['tol_37',['tol',['../structRelateEdges_ae27994da8903aa602f8bc7919daf714d.html#ae27994da8903aa602f8bc7919daf714d',1,'RelateEdges::tol()'],['../structEdge_ac5d4df36654f4f6b6aa9e298237b0a0d.html#ac5d4df36654f4f6b6aa9e298237b0a0d',1,'Edge::tol()']]],
+  ['tol_37',['tol',['../structRelateEdges_ae27994da8903aa602f8bc7919daf714d.html#ae27994da8903aa602f8bc7919daf714d',1,'RelateEdges::tol()'],['../structBufferExtent_a5f9d12c26a8d22317fbe8e3cc3c26846.html#a5f9d12c26a8d22317fbe8e3cc3c26846',1,'BufferExtent::tol()'],['../structEdge_ac5d4df36654f4f6b6aa9e298237b0a0d.html#ac5d4df36654f4f6b6aa9e298237b0a0d',1,'Edge::tol()']]],
   ['top_38',['TOP',['../tgeo__restrict_8c_a70b88566f57a524f32d6a3271e47e7b6.html#a70b88566f57a524f32d6a3271e47e7b6',1,'tgeo_restrict.c']]],
   ['top_5fmerc_39',['top_merc',['../structRaquetSampleState_a48d25942fb397c32d60df9e72982769d.html#a48d25942fb397c32d60df9e72982769d',1,'RaquetSampleState']]],
   ['totalcount_40',['totalcount',['../structTSequenceSet_a9382517852348dd679b7887855207cf1.html#a9382517852348dd679b7887855207cf1',1,'TSequenceSet']]],
