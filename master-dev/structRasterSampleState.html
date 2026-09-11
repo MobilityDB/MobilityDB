@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>State a raster sampling call keeps for the length of a trajectory: the deserialized raster, the band the values are read from, and the inverse geotransform, computed once and handed to every point conversion.  
+<p>State a raster sampling call keeps for the length of a trajectory: the deserialized raster, the band the values are read from, the inverse geotransform, computed once and handed to every point conversion, and whether a pixel of the band could not be read.  
  <a href="structRasterSampleState.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -90,9 +90,12 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a43b0dc3c578eea4ec13c567c3f95584b"><td class="memItemLeft" align="right" valign="top">rt_raster&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRasterSampleState_a43b0dc3c578eea4ec13c567c3f95584b.html#a43b0dc3c578eea4ec13c567c3f95584b">raster</a></td></tr>
 <tr class="memdesc:a43b0dc3c578eea4ec13c567c3f95584b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raster carrying its bands.  <a href="structRasterSampleState_a43b0dc3c578eea4ec13c567c3f95584b.html#a43b0dc3c578eea4ec13c567c3f95584b">More...</a><br /></td></tr>
 <tr class="separator:a43b0dc3c578eea4ec13c567c3f95584b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48e866684041570b91216a8cf358caeb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRasterSampleState_a48e866684041570b91216a8cf358caeb.html#a48e866684041570b91216a8cf358caeb">unreadable</a></td></tr>
+<tr class="memdesc:a48e866684041570b91216a8cf358caeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether a pixel of the band could not be read.  <a href="structRasterSampleState_a48e866684041570b91216a8cf358caeb.html#a48e866684041570b91216a8cf358caeb">More...</a><br /></td></tr>
+<tr class="separator:a48e866684041570b91216a8cf358caeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >State a raster sampling call keeps for the length of a trajectory: the deserialized raster, the band the values are read from, and the inverse geotransform, computed once and handed to every point conversion. </p>
+<div class="textblock"><p >State a raster sampling call keeps for the length of a trajectory: the deserialized raster, the band the values are read from, the inverse geotransform, computed once and handed to every point conversion, and whether a pixel of the band could not be read. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>meos/src/raster/<a class="el" href="raster__rtcore_8c.html">raster_rtcore.c</a></li>
 </ul>

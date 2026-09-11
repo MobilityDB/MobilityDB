@@ -105,6 +105,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a500f47ef3c31844535b0842b1ebf94ba.html#a500f47ef3c31844535b0842b1ebf94ba">raster_resample_alg</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_afd2cec94ee537a558d6d41e88b060a7d.html#afd2cec94ee537a558d6d41e88b060a7d">raster_rescale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a8d8c4e9140ee312bcae766e4f151a299.html#a8d8c4e9140ee312bcae766e4f151a299">raster_rtcore_gridops</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a855de89458752b4703858feef806845b.html#a855de89458752b4703858feef806845b">raster_rtcore_release</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga6ead48a103acba95933c8e9d67c3f006.html#ga6ead48a103acba95933c8e9d67c3f006">raster_scale_x</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga093c5fa346a0f27f6d0dfba0fc35efd5.html#ga093c5fa346a0f27f6d0dfba0fc35efd5">raster_scale_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_acddad7b88e284ca51f32c3285c2d7c94.html#acddad7b88e284ca51f32c3285c2d7c94">raster_serialize_destroy</a></td></tr>
@@ -184,7 +185,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Raster pixel callback reading one pixel of a PostGIS raster through the vendored raster core. </p>
-<p >Reading the pixel a position falls in is the nearest-neighbour read of that position. A nodata pixel answers that there is no value, which is the contract of <a class="el" href="raster__quadbin_8h_a86bc9090a05ec01d585e4fae32a3353c.html#a86bc9090a05ec01d585e4fae32a3353c" title="Callback returning the value of a pixel named by its column and its row, both inside the grid: return...">raster_pixel_fn</a> </p>
+<p >Reading the pixel a position falls in is the nearest-neighbour read of that position. A nodata pixel answers that there is no value, which is the contract of <a class="el" href="raster__quadbin_8h_a86bc9090a05ec01d585e4fae32a3353c.html#a86bc9090a05ec01d585e4fae32a3353c" title="Callback returning the value of a pixel named by its column and its row, both inside the grid: return...">raster_pixel_fn</a>. A pixel the raster core cannot read, as when the band is stored outside the database in a file that cannot be opened, carries no value either, and the state records it so that the caller raises an error once it has released the raster; the pixels after it are not read. </p>
 
 </div>
 </div>

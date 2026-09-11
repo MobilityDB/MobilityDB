@@ -36,5 +36,6 @@ var searchData=
   ['wkt_5fsfsql_33',['WKT_SFSQL',['../postgis__ext__defs_8in_8h_a12b2d0c15bb1930ba8dce5da92362204.html#a12b2d0c15bb1930ba8dce5da92362204',1,'postgis_ext_defs.in.h']]],
   ['worker_34',['worker',['../threaded__geos__test_8c_a6f8707552918a45117066fc3b7a0a06f.html#a6f8707552918a45117066fc3b7a0a06f',1,'worker(void *arg):&#160;threaded_geos_test.c'],['../threaded__test_8c_a6f8707552918a45117066fc3b7a0a06f.html#a6f8707552918a45117066fc3b7a0a06f',1,'worker(void *arg):&#160;threaded_test.c']]],
   ['worker_5farg_35',['worker_arg',['../structworker__arg.html',1,'']]],
-  ['woundseg_36',['WoundSeg',['../structWoundSeg.html',1,'']]]
+  ['woundseg_36',['WoundSeg',['../structWoundSeg.html',1,'']]],
+  ['write_5fvrt_37',['write_vrt',['../rasterread__test_8c_ace1124371d485e5f8b27fc6419d6652b.html#ace1124371d485e5f8b27fc6419d6652b',1,'rasterread_test.c']]]
 ];
