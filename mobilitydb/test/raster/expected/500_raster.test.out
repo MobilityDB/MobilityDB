@@ -643,6 +643,110 @@ FROM t;
 SELECT raquetRead(
   decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'));
 ERROR:  Raster has no geotransform; cannot derive its QUADBIN cell: in-memory raster
+SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
+SET
+SET postgis.enable_outdb_rasters = true;
+SET
+SELECT lo_from_bytea(424242, ST_AsGDALRaster(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+  '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+  ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+        [40.0::float4, 50.0::float4, 60.0::float4],
+        [70.0::float4, 80.0::float4, 90.0::float4]]), 'GTiff')) = 424242
+  AS written;
+ written 
+---------
+ t
+(1 row)
+
+SELECT lo_export(424242, 'raster_file_forms.tif') AS exported;
+ exported 
+----------
+        1
+(1 row)
+
+SELECT lo_unlink(424242) AS unlinked;
+ unlinked 
+----------
+        1
+(1 row)
+
+SELECT lo_from_bytea(424243, decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex')) = 424243
+  AS written;
+ written 
+---------
+ t
+(1 row)
+
+SELECT lo_export(424243, 'raquet_file_form.tif') AS exported;
+ exported 
+----------
+        1
+(1 row)
+
+SELECT lo_unlink(424243) AS unlinked;
+ unlinked 
+----------
+        1
+(1 row)
+
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]) AS r
+), trip AS (
+  SELECT tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+    POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]' AS t
+)
+SELECT rasterValue(t, 'raster_file_forms.tif')::text AS file_form,
+  rasterValue(t, 'raster_file_forms.tif'::text) = rasterValue(t, r)
+    AS value_same,
+  atRasterValue(t, 'raster_file_forms.tif'::text, floatspan '[40, 90]') =
+    atRasterValue(t, r, floatspan '[40, 90]') AS at_same,
+  minusRasterValue(t, 'raster_file_forms.tif'::text, floatspan '[40, 90]') =
+    minusRasterValue(t, r, floatspan '[40, 90]') AS minus_same,
+  eRasterValue(t, 'raster_file_forms.tif'::text, floatspan '[65, 75]') AS ever_file,
+  eRasterValue(t, r, floatspan '[65, 75]') AS ever_raster,
+  aRasterValue(t, 'raster_file_forms.tif'::text, floatspan '[0, 100]') AS always_file,
+  aRasterValue(t, r, floatspan '[0, 100]') AS always_raster
+FROM rast, trip;
+                                                                                   file_form                                                                                    | value_same | at_same | minus_same | ever_file | ever_raster | always_file | always_raster 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------+---------+------------+-----------+-------------+-------------+---------------
+ Interp=Step;[10@2001-01-01 00:00:00+00, 20@2001-01-01 06:00:00+00, 30@2001-01-01 18:00:00+00, 50@2001-01-02 06:00:00+00, 70@2001-01-02 18:00:00+00, 70@2001-01-03 00:00:00+00] | t          | t       | t          | t         | t           | t           | t
+(1 row)
+
+SELECT raquetRead('raquet_file_form.tif'::text, 5193776270265024512::bigint)::text
+     = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text
+       AS file_form_equals_constructor;
+ file_form_equals_constructor 
+------------------------------
+ t
+(1 row)
+
+SET postgis.enable_outdb_rasters = false;
+SET
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
+  'raster_file_forms.tif'::text);
+ERROR:  Reading the raster file raster_file_forms.tif on the server is disabled by postgis.enable_outdb_rasters
+SELECT raquetRead('raquet_file_form.tif'::text, 5193776270265024512::bigint);
+ERROR:  Reading the raster file raquet_file_form.tif on the server is disabled by postgis.enable_outdb_rasters
+SET postgis.enable_outdb_rasters = true;
+SET
+SET postgis.gdal_enabled_drivers = 'DISABLE_ALL';
+SET
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
+  'raster_file_forms.tif'::text);
+ERROR:  Cannot read the raster file raster_file_forms.tif: postgis.gdal_enabled_drivers disables every GDAL driver
+SET postgis.gdal_enabled_drivers = 'GTiff';
+SET
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
+  '/vsicurl/https://example.org/raster.tif'::text);
+ERROR:  Cannot read the raster file /vsicurl/https://example.org/raster.tif: postgis.gdal_enabled_drivers does not enable VSICURL
+SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
+SET
 SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
          5193776270265024512::bigint, 'UINT8')))
        = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');

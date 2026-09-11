@@ -2839,7 +2839,7 @@
 					<para><link linkend="raquet"><varname>raquet</varname></link>: Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
+					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode a raster file into a Raquet raster tile via GDAL</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

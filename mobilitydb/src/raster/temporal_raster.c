@@ -42,7 +42,12 @@
 #include <fmgr.h>
 #include <funcapi.h>
 #include <access/htup_details.h>
+#include <catalog/pg_type.h>
+#include <commands/extension.h>
 #include <utils/array.h>
+#include <utils/guc.h>
+#include <utils/lsyscache.h>
+#include <utils/syscache.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -200,6 +205,219 @@ Araster_value(PG_FUNCTION_ARGS)
 
   PG_FREE_IF_COPY(traj, 0);
   PG_FREE_IF_COPY(rast, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * The file forms: a raster file on the server read through GDAL
+ *****************************************************************************/
+
+/**
+ * @brief Return true if a raster file on the server may be read, as PostGIS
+ * allows a raster band stored outside the database to be read
+ * @details PostGIS applies `postgis.gdal_enabled_drivers` to GDAL when its
+ * raster library is loaded, so the library is loaded before the file is
+ * opened. The file is then read where `postgis.enable_outdb_rasters` is on,
+ * and a path through a GDAL virtual file system other than `/vsimem/` where
+ * the drivers enabled include `VSICURL`, the tests PostGIS makes on a path
+ * before it opens it.
+ * @param[in] path Path of the raster file
+ */
+static bool
+ensure_raster_file_readable(const char *path)
+{
+  /* Looking up the input function of the raster type loads the PostGIS
+   * raster library, whose initialization applies the enabled drivers */
+  Oid ext_oid = get_extension_oid("postgis_raster", true);
+  Oid type_oid = OidIsValid(ext_oid) ?
+    GetSysCacheOid2(TYPENAMENSP, Anum_pg_type_oid, CStringGetDatum("raster"),
+      ObjectIdGetDatum(get_extension_schema(ext_oid))) : InvalidOid;
+  if (OidIsValid(type_oid))
+  {
+    Oid infunc, ioparam;
+    FmgrInfo finfo;
+    getTypeInputInfo(type_oid, &infunc, &ioparam);
+    fmgr_info(infunc, &finfo);
+  }
+  const char *outdb = GetConfigOption("postgis.enable_outdb_rasters", true,
+    false);
+  if (! outdb || strcmp(outdb, "on") != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Reading the raster file %s on the server is disabled by "
+      "postgis.enable_outdb_rasters", path);
+    return false;
+  }
+  const char *drivers = GetConfigOption("postgis.gdal_enabled_drivers", true,
+    false);
+  if (! drivers || strstr(drivers, "DISABLE_ALL"))
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Cannot read the raster file %s: postgis.gdal_enabled_drivers disables "
+      "every GDAL driver", path);
+    return false;
+  }
+  if (! strstr(drivers, "ENABLE_ALL") && strstr(path, "/vsi") &&
+      ! strstr(path, "/vsimem") && ! strstr(drivers, "VSICURL"))
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Cannot read the raster file %s: postgis.gdal_enabled_drivers does not "
+      "enable VSICURL", path);
+    return false;
+  }
+  return true;
+}
+
+PGDLLEXPORT Datum Raster_value_gdal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_value_gdal);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values of a band of a raster file on the server read
+ * along a trajectory
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server
+ * @param[in] band Band number (1-based, default 1)
+ * @sqlfn rasterValue()
+ */
+Datum
+Raster_value_gdal(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  char *path = text_to_cstring(PG_GETARG_TEXT_PP(1));
+  int32 band = PG_ARGISNULL(2) ? 1 : PG_GETARG_INT32(2);
+  if (! ensure_raster_file_readable(path))
+    PG_RETURN_NULL();
+
+  Temporal *result = raster_value_gdal(traj, path, band);
+
+  pfree(path);
+  PG_FREE_IF_COPY(traj, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_at_value_gdal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_at_value_gdal);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the instants of a trajectory where the value it reads from a
+ * raster file on the server falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @param[in] band Band number (1-based, default 1)
+ * @sqlfn atRasterValue()
+ */
+Datum
+Raster_at_value_gdal(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  char *path = text_to_cstring(PG_GETARG_TEXT_PP(1));
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int32 band = PG_ARGISNULL(3) ? 1 : PG_GETARG_INT32(3);
+  if (! ensure_raster_file_readable(path))
+    PG_RETURN_NULL();
+
+  Temporal *result = raster_at_value_gdal(traj, path, band, vspan);
+
+  pfree(path);
+  PG_FREE_IF_COPY(traj, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_minus_value_gdal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_minus_value_gdal);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the instants of a trajectory where the value it reads from a
+ * raster file on the server falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server
+ * @param[in] vspan Float value range to exclude
+ * @param[in] band Band number (1-based, default 1)
+ * @sqlfn minusRasterValue()
+ */
+Datum
+Raster_minus_value_gdal(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  char *path = text_to_cstring(PG_GETARG_TEXT_PP(1));
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int32 band = PG_ARGISNULL(3) ? 1 : PG_GETARG_INT32(3);
+  if (! ensure_raster_file_readable(path))
+    PG_RETURN_NULL();
+
+  Temporal *result = raster_minus_value_gdal(traj, path, band, vspan);
+
+  pfree(path);
+  PG_FREE_IF_COPY(traj, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Eraster_value_gdal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Eraster_value_gdal);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if a trajectory ever reads a value inside a float range
+ * from a raster file on the server
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server
+ * @param[in] vspan Float value range
+ * @param[in] band Band number (1-based, default 1)
+ * @sqlfn eRasterValue()
+ */
+Datum
+Eraster_value_gdal(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  char *path = text_to_cstring(PG_GETARG_TEXT_PP(1));
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int32 band = PG_ARGISNULL(3) ? 1 : PG_GETARG_INT32(3);
+  if (! ensure_raster_file_readable(path))
+    PG_RETURN_NULL();
+
+  int result = eraster_value_gdal(traj, path, band, vspan);
+
+  pfree(path);
+  PG_FREE_IF_COPY(traj, 0);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Araster_value_gdal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Araster_value_gdal);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value a trajectory reads from a raster file on
+ * the server falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server
+ * @param[in] vspan Float value range
+ * @param[in] band Band number (1-based, default 1)
+ * @sqlfn aRasterValue()
+ */
+Datum
+Araster_value_gdal(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  char *path = text_to_cstring(PG_GETARG_TEXT_PP(1));
+  Span *vspan = PG_GETARG_SPAN_P(2);
+  int32 band = PG_ARGISNULL(3) ? 1 : PG_GETARG_INT32(3);
+  if (! ensure_raster_file_readable(path))
+    PG_RETURN_NULL();
+
+  int result = araster_value_gdal(traj, path, band, vspan);
+
+  pfree(path);
+  PG_FREE_IF_COPY(traj, 0);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
@@ -1012,8 +1230,8 @@ Raquet_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_RAQUET_P(result);
 }
 
-PGDLLEXPORT Datum Raquet_read(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Raquet_read);
+PGDLLEXPORT Datum Raquet_read_bytes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_read_bytes);
 /**
  * @ingroup mobilitydb_raster
  * @brief Return a Raquet tile decoded from an in-memory raster file via GDAL
@@ -1026,7 +1244,7 @@ PG_FUNCTION_INFO_V1(Raquet_read);
  * @sqlfn raquetRead()
  */
 Datum
-Raquet_read(PG_FUNCTION_ARGS)
+Raquet_read_bytes(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
@@ -1037,6 +1255,36 @@ Raquet_read(PG_FUNCTION_ARGS)
   const uint8_t *data = (const uint8_t *) VARDATA_ANY(rasterfile);
   size_t size = VARSIZE_ANY_EXHDR(rasterfile);
   Raquet *result = raquet_read_bytes(data, size, quadbin);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_RAQUET_P(result);
+}
+
+PGDLLEXPORT Datum Raquet_read(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_read);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile read from a raster file on the server via GDAL
+ * @details The file is read where PostGIS allows a raster band stored outside
+ * the database to be read.
+ * @param[in] path Path of a raster file on the server (text)
+ * @param[in] quadbin CARTO QUADBIN cell (bigint), or NULL to derive it from the
+ * raster geotransform and EPSG:3857 spatial reference
+ * @sqlfn raquetRead()
+ */
+Datum
+Raquet_read(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  char *path = text_to_cstring(PG_GETARG_TEXT_PP(0));
+  /* A NULL quadbin requests deriving the tile identifier from the raster
+   * geotransform; raquet_read treats 0 as that request */
+  uint64 quadbin = PG_ARGISNULL(1) ? 0 : (uint64) PG_GETARG_INT64(1);
+  if (! ensure_raster_file_readable(path))
+    PG_RETURN_NULL();
+  Raquet *result = raquet_read(path, quadbin);
+  pfree(path);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_RAQUET_P(result);
