@@ -137,6 +137,10 @@ jobs:
           ./interval_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o timestamp_test timestamp_test.c -L/usr/local/lib -lmeos
           ./timestamp_test
+          # SIBLING-FROM timestamp_test. The zones come from the time zone
+          # database compiled into libmeos.
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tzdata_test tzdata_test.c -L/usr/local/lib -lmeos
+          ./tzdata_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
           ./npoint_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o trajclip_test trajclip_test.c -L/usr/local/lib -lmeos

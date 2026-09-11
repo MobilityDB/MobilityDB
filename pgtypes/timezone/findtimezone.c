@@ -171,9 +171,13 @@ struct tztry
 
 static bool check_system_link_file(const char *linkname, struct tztry *tt,
 								   char *bestzonename);
+/* MEOS: unused in standalone MEOS, which scores its compiled-in zones */
 static void scan_available_timezones(char *tzdir, char *tzdirsub,
 									 struct tztry *tt,
-									 int *bestscore, char *bestzonename);
+									 int *bestscore, char *bestzonename)
+									 pg_attribute_unused();
+static void consider_timezone(const char *tzname, struct tztry *tt,
+							  int *bestscore, char *bestzonename);
 
 
 /*
@@ -346,7 +350,6 @@ identify_system_timezone(void)
 	struct tm  *tm;
 	int			thisyear;
 	int			bestscore;
-	char		tmptzdir[MAXPGPATH];
 	int			std_ofs;
 	char		std_zone_name[TZ_STRLEN_MAX + 1],
 				dst_zone_name[TZ_STRLEN_MAX + 1];
@@ -416,12 +419,24 @@ identify_system_timezone(void)
 		return resultbuf;
 
 	/* No luck, so search for the best-matching timezone file */
-	strlcpy(tmptzdir, pg_TZDIR(), sizeof(tmptzdir));
 	bestscore = -1;
 	resultbuf[0] = '\0';
-	scan_available_timezones(tmptzdir, tmptzdir + strlen(tmptzdir) + 1,
-							 &tt,
-							 &bestscore, resultbuf);
+#if MEOS && !defined(SYSTEMTZDIR)
+	/* MEOS: standalone MEOS scores the zones of the time zone database
+	 * compiled into the library (tzdata_embedded.c) */
+	for (int i = 0; i < pg_tzdata_embedded_count(); i++)
+		consider_timezone(pg_tzdata_embedded_name(i), &tt, &bestscore,
+						  resultbuf);
+#else
+	{
+		char		tmptzdir[MAXPGPATH];
+
+		strlcpy(tmptzdir, pg_TZDIR(), sizeof(tmptzdir));
+		scan_available_timezones(tmptzdir, tmptzdir + strlen(tmptzdir) + 1,
+								 &tt,
+								 &bestscore, resultbuf);
+	}
+#endif
 	if (bestscore > 0)
 	{
 		/* Ignore IANA's rather silly "Factory" zone; use GMT instead */
@@ -644,6 +659,38 @@ zone_name_pref(const char *zonename)
 }
 
 /*
+ * Score the zone tzname against the system timezone behavior, and make it
+ * the best zone if it scores higher than *bestscore, or as high and the name
+ * preference, then the shorter name, then the lower name breaks the tie in
+ * its favor.  bestzonename must be a buffer of length TZ_STRLEN_MAX + 1.
+ */
+static void
+consider_timezone(const char *tzname, struct tztry *tt,
+				  int *bestscore, char *bestzonename)
+{
+	int			score = score_timezone(tzname, tt);
+
+	if (score > *bestscore)
+	{
+		*bestscore = score;
+		strlcpy(bestzonename, tzname, TZ_STRLEN_MAX + 1);
+	}
+	else if (score == *bestscore)
+	{
+		/* Consider how to break a tie */
+		int			namepref = (zone_name_pref(tzname) -
+								zone_name_pref(bestzonename));
+
+		if (namepref > 0 ||
+			(namepref == 0 &&
+			 (strlen(tzname) < strlen(bestzonename) ||
+			  (strlen(tzname) == strlen(bestzonename) &&
+			   strcmp(tzname, bestzonename) < 0))))
+			strlcpy(bestzonename, tzname, TZ_STRLEN_MAX + 1);
+	}
+}
+
+/*
  * Recursively scan the timezone database looking for the best match to
  * the system timezone behavior.
  *
@@ -705,26 +752,7 @@ scan_available_timezones(char *tzdir, char *tzdirsub, struct tztry *tt,
 		else
 		{
 			/* Load and test this file */
-			int			score = score_timezone(tzdirsub, tt);
-
-			if (score > *bestscore)
-			{
-				*bestscore = score;
-				strlcpy(bestzonename, tzdirsub, TZ_STRLEN_MAX + 1);
-			}
-			else if (score == *bestscore)
-			{
-				/* Consider how to break a tie */
-				int			namepref = (zone_name_pref(tzdirsub) -
-										zone_name_pref(bestzonename));
-
-				if (namepref > 0 ||
-					(namepref == 0 &&
-					 (strlen(tzdirsub) < strlen(bestzonename) ||
-					  (strlen(tzdirsub) == strlen(bestzonename) &&
-					   strcmp(tzdirsub, bestzonename) < 0))))
-					strlcpy(bestzonename, tzdirsub, TZ_STRLEN_MAX + 1);
-			}
+			consider_timezone(tzdirsub, tt, bestscore, bestzonename);
 		}
 
 		/* Restore tzdir */
