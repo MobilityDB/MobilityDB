@@ -10,6 +10,7 @@ on:
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
+      - 'pointcloud-pg/**'
       - 'postgis/**'
       - 'CMakeLists.txt'
     branches-ignore:
@@ -22,6 +23,7 @@ on:
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
+      - 'pointcloud-pg/**'
       - 'postgis/**'
       - 'CMakeLists.txt'
     branches-ignore:
@@ -45,25 +47,81 @@ jobs:
           msystem: UCRT64
           update: true
           install: >-
+            git
+            autoconf
+            automake
+            libtool
+            make
+            diffutils
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
             mingw-w64-ucrt-x86_64-postgresql
             mingw-w64-ucrt-x86_64-postgis
+            mingw-w64-ucrt-x86_64-libxml2
+            mingw-w64-ucrt-x86_64-zlib
 
       - uses: ./.github/actions/msys2-toolchain-report
 
-      - name: Configure
+      - name: Build libh3 from source
+        # MSYS2 packages no h3, and H3=ON asks CMake for the library by name.
+        # It installs into the MSYS2 prefix, beside postgres.exe, which is where
+        # the server looks for the libh3 DLL the extension loads.
         run: |
-          mkdir build
-          cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
+          git clone --depth 1 --branch v4.2.1 https://github.com/uber/h3.git h3-src
+          cmake -S h3-src -B h3-build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$MSYSTEM_PREFIX" \
+            -DBUILD_SHARED_LIBS=ON \
+            -DBUILD_TESTING=OFF \
+            -DENABLE_DOCS=OFF \
+            -DBUILD_BENCHMARKS=OFF \
+            -DBUILD_FILTERS=OFF \
+            -DBUILD_GENERATORS=OFF
+          cmake --build h3-build -j
+          cmake --install h3-build
+
+      - name: Build and install the vendored pgPointCloud
+        # POINTCLOUD maps to a PostgreSQL extension of its own, which the
+        # extension's `requires` names, and MSYS2 packages no build of it, so
+        # the one the tree carries is built the way fedora.yml builds it. It is
+        # built from a copy, since the configure step writes into its tree.
+        run: |
+          cp -r pointcloud-pg pointcloud-ext
+          cd pointcloud-ext
+          ./autogen.sh
+          ./configure --with-pgconfig="$(command -v pg_config)"
+          make -j
+          make install
+
+      - name: Build and install the h3 PostgreSQL extension
+        # H3 names the h3 extension in the extension's requires clause and
+        # MSYS2 packages none. The h3 core it builds adds the MSVC flag /W2 on
+        # Windows unless its warnings are off, and installs its own library
+        # into CMAKE_INSTALL_PREFIX, which a local directory keeps apart.
+        run: |
+          git clone --depth 1 --recurse-submodules --branch v4.2.3 \
+            https://github.com/postgis/h3-pg.git h3-pg-checkout
+          cmake -S h3-pg-checkout -B h3-pg-build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_WARNINGS=OFF \
+            -DCMAKE_INSTALL_PREFIX="$PWD/h3-pg-prefix"
+          cmake --build h3-pg-build -j
+          cmake --install h3-pg-build
+
+      - name: Configure with every family
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DALL=ON \
+            -DH3_LIBRARY="$MSYSTEM_PREFIX/lib/libh3.dll.a" \
+            -DH3_INCLUDE_DIR="$MSYSTEM_PREFIX/include/h3"
 
       - name: Build
         run: |
-          cd build
-          cmake --build .
-          cmake --install .
+          cmake --build build
+          cmake --install build
 
       - name: Test install
         run: |
@@ -85,7 +143,7 @@ jobs:
           pg_ctl start
           # Create database and add the MobilityDB extension
           createdb -U runneradmin mydb
-          psql -p 5432 -U runneradmin -d mydb -v ON_ERROR_STOP=1 -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydbFullVersion(); SELECT tfloat '[1@2000-01-01]';"
+          psql -p 5432 -U runneradmin -d mydb -v ON_ERROR_STOP=1 -c "CREATE EXTENSION pointcloud; CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydbFullVersion(); SELECT tfloat '[1@2000-01-01]';"
       - name: Dump postgres log
         if: always()
         shell: msys2 {0}
@@ -99,7 +157,15 @@ jobs:
             done
           fi
 
-      # - name: Run tests
-        # run: |
-          # cd build
-          # ctest --output-on-failure
+      - name: Run the suite
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Dump the log of the suite's server
+        if: failure()
+        run: |
+          for f in build/tmptest/log/*.log; do
+            echo "--- $f ---"
+            cat "$f"
+          done
