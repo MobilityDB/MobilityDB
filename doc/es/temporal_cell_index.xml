@@ -2052,6 +2052,70 @@ SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32'
 
 		<para>Los operadores de restricción y predicado que cierran la sección componen <varname>rasterValue</varname> con las funciones estándar de restricción temporal y predicado de MobilityDB. Aceptan un argumento opcional <varname>band</varname> (por defecto 1) e invocan <varname>rasterValue</varname> exactamente una vez por invocación.</para>
 
+		<para>Una función de ráster toma el nombre de su homóloga del ráster de PostGIS sin el prefijo <varname>ST_</varname>, y los nombres y los valores por defecto de sus argumentos. Una sola signatura responde a cada operación, de modo que una forma de PostGIS que solo fija un argumento de otra se escribe mediante esa otra forma. Un nombre que el estándar SQL reserva toma el tipo como prefijo, de modo que <varname>ST_Value</varname> es <varname>rasterValue</varname>, y las funciones de Well-Known Binary toman los nombres que toma todo tipo de MobilityDB.</para>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>Ráster de PostGIS</entry>
+						<entry>MobilityDB</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>ST_Value</varname></entry>
+						<entry><varname>rasterValue</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_Clip</varname></entry>
+						<entry><varname>clip</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_Transform</varname></entry>
+						<entry><varname>transform</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_Rescale</varname></entry>
+						<entry><varname>rescale</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_Reclass</varname></entry>
+						<entry><varname>reclass</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_SummaryStats</varname></entry>
+						<entry><varname>summaryStats</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_DumpAsPolygons</varname></entry>
+						<entry><varname>dumpAsPolygons</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_NumBands</varname>, <varname>ST_Width</varname>, <varname>ST_Height</varname>, <varname>ST_SRID</varname></entry>
+						<entry><varname>numBands</varname>, <varname>width</varname>, <varname>height</varname>, <varname>SRID</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_UpperLeftX</varname>, <varname>ST_UpperLeftY</varname>, <varname>ST_ScaleX</varname>, <varname>ST_ScaleY</varname>, <varname>ST_SkewX</varname>, <varname>ST_SkewY</varname></entry>
+						<entry><varname>upperLeftX</varname>, <varname>upperLeftY</varname>, <varname>scaleX</varname>, <varname>scaleY</varname>, <varname>skewX</varname>, <varname>skewY</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_BandPixelType</varname>, <varname>ST_BandNoDataValue</varname></entry>
+						<entry><varname>bandPixelType</varname>, <varname>bandNoDataValue</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_AsBinary</varname>, <varname>ST_AsHexWKB</varname></entry>
+						<entry><varname>asBinary</varname>, <varname>asHexWKB</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_RastFromWKB</varname>, <varname>ST_RastFromHexWKB</varname></entry>
+						<entry><varname>rasterFromBinary</varname>, <varname>rasterFromHexWKB</varname></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+		<para><varname>asBinary</varname> y <varname>asHexWKB</varname> toman un orden de bytes donde PostGIS toma <varname>outasin</varname>, y sin él devuelven los bytes de <varname>ST_AsBinary</varname> y <varname>ST_AsHexWKB</varname>.</para>
+
 		<itemizedlist>
 			<listitem xml:id="raster_rasterValue">
 				<indexterm significance="normal"><primary><varname>rasterValue</varname></primary></indexterm>
@@ -2093,9 +2157,10 @@ WHERE atSpan(rasterValue(trip, elev), floatspan '[200, 9999]') IS NOT NULL;
 				<indexterm significance="normal"><primary><varname>reclass</varname></primary></indexterm>
 				<para>Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-reclass(raster,band integer,expr text,pixeltype text,nodata float8=NULL) → raster
+reclass(raster,nband integer,reclassexpr text,pixeltype text,nodataval float8=NULL)
+  → raster
 </programlisting>
-				<para>La expresión sigue la gramática de <varname>ST_Reclass</varname> de PostGIS: una lista de asignaciones separadas por comas, cada una un rango de origen y un destino separados por dos puntos, siendo un rango un valor o dos separados por un guion. Un rango escrito sin corchetes incluye su extremo inferior y excluye el superior, mientras que <varname>(</varname> excluye el extremo inferior y <varname>]</varname> incluye el superior, de modo que <varname>0-50</varname> deja 50 sin asignar mientras que <varname>[50-100]</varname> lo toma. Un píxel que ningún rango toma contiene el valor nodata de la banda resultante, o cero cuando la banda no declara ninguno. Esa banda tiene el tipo de píxel <varname>pixeltype</varname>, con el nombre que le da PostGIS raster, como <varname>8BUI</varname>, y no declara valor nodata cuando se omite <varname>nodata</varname>. El ráster conserva su malla y sus demás bandas, de modo que las clases pueden leerse a lo largo de una trayectoria con <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>La expresión sigue la gramática de <varname>ST_Reclass</varname> de PostGIS: una lista de asignaciones separadas por comas, cada una un rango de origen y un destino separados por dos puntos, siendo un rango un valor o dos separados por un guion. Un rango escrito sin corchetes incluye su extremo inferior y excluye el superior, mientras que <varname>(</varname> excluye el extremo inferior y <varname>]</varname> incluye el superior, de modo que <varname>0-50</varname> deja 50 sin asignar mientras que <varname>[50-100]</varname> lo toma. Un píxel que ningún rango toma contiene el valor nodata de la banda resultante, o cero cuando la banda no declara ninguno. Esa banda tiene el tipo de píxel <varname>pixeltype</varname>, con el nombre que le da PostGIS raster, como <varname>8BUI</varname>, y no declara valor nodata cuando se omite <varname>nodataval</varname>. El ráster conserva su malla y sus demás bandas, de modo que las clases pueden leerse a lo largo de una trayectoria con <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
@@ -2201,9 +2266,9 @@ FROM rast;
 				<indexterm significance="normal"><primary><varname>summaryStats</varname></primary></indexterm>
 				<para>Devuelve las estadísticas de los píxeles de una banda de ráster</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-summaryStats(raster,band integer=1,excludeNodata boolean=true) → summarystats
+summaryStats(raster,nband integer=1,exclude_nodata_value boolean=true) → summarystats
 </programlisting>
-				<para>La banda se lee una sola vez y devuelve el registro <varname>summarystats</varname> de PostGIS que devuelve <varname>ST_SummaryStats</varname>: el número de píxeles contados, y la suma, la media, la desviación estándar, el mínimo y el máximo de sus valores. Se leen todos los píxeles, por lo que la respuesta es exacta y no muestreada; los píxeles que la banda declara como nodata quedan fuera salvo que <varname>excludeNodata</varname> sea falso, y una banda sin ningún píxel que contar devuelve un recuento de cero y ninguna estadística.</para>
+				<para>La banda se lee una sola vez y devuelve el registro <varname>summarystats</varname> de PostGIS que devuelve <varname>ST_SummaryStats</varname>: el número de píxeles contados, y la suma, la media, la desviación estándar, el mínimo y el máximo de sus valores. Se leen todos los píxeles, por lo que la respuesta es exacta y no muestreada; los píxeles que la banda declara como nodata quedan fuera salvo que <varname>exclude_nodata_value</varname> sea falso, y una banda sin ningún píxel que contar devuelve un recuento de cero y ninguna estadística.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
@@ -2222,9 +2287,9 @@ SELECT (summaryStats(r)).* FROM rast;
 				<para>Devuelve los polígonos de una banda de ráster, uno por cada grupo de píxeles que comparten un valor &SRF;
 </para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-dumpAsPolygons(raster,band integer=1,excludeNodata boolean=true) → {geomval}
+dumpAsPolygons(raster,band integer=1,exclude_nodata_value boolean=true) → {geomval}
 </programlisting>
-				<para>Una banda declara un valor por píxel, y esta función declara la misma banda como las regiones que cubren esos valores, devolviendo los registros <varname>geomval</varname> de PostGIS que devuelve <varname>ST_DumpAsPolygons</varname>. Cada polígono lleva el sistema de referencia del ráster, donde <varname>ST_DumpAsPolygons</varname> no declara ninguno, de modo que puede compararse con las trayectorias a lo largo de las cuales se lee la cobertura. Los píxeles que la banda declara como nodata quedan fuera salvo que <varname>excludeNodata</varname> sea falso, una banda cuyos píxeles son todos nodata no cubre nada y no devuelve ninguna fila, y una banda que el ráster no tiene genera un error.</para>
+				<para>Una banda declara un valor por píxel, y esta función declara la misma banda como las regiones que cubren esos valores, devolviendo los registros <varname>geomval</varname> de PostGIS que devuelve <varname>ST_DumpAsPolygons</varname>. Cada polígono lleva el sistema de referencia del ráster, donde <varname>ST_DumpAsPolygons</varname> no declara ninguno, de modo que puede compararse con las trayectorias a lo largo de las cuales se lee la cobertura. Los píxeles que la banda declara como nodata quedan fuera salvo que <varname>exclude_nodata_value</varname> sea falso, una banda cuyos píxeles son todos nodata no cubre nada y no devuelve ninguna fila, y una banda que el ráster no tiene genera un error.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Classify a 3x3 synthetic elevation raster, then read each class as a region
 WITH rast AS (

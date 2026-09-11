@@ -2055,6 +2055,70 @@ SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32'
 
 		<para>The restriction and predicate operators that close the section compose <varname>rasterValue</varname> with the standard MobilityDB temporal restriction and predicate functions. They accept an optional <varname>band</varname> argument (default 1) and call <varname>rasterValue</varname> exactly once per invocation.</para>
 
+		<para>A raster function takes the name of its PostGIS raster counterpart with the <varname>ST_</varname> prefix removed, and the names and defaults of its arguments. One signature answers each operation, so a PostGIS form that only fixes an argument of another is written through that other form. A name the SQL standard reserves takes the type as a prefix, so <varname>ST_Value</varname> is <varname>rasterValue</varname>, and the Well-Known Binary functions take the names every MobilityDB type takes.</para>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>PostGIS raster</entry>
+						<entry>MobilityDB</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>ST_Value</varname></entry>
+						<entry><varname>rasterValue</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_Clip</varname></entry>
+						<entry><varname>clip</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_Transform</varname></entry>
+						<entry><varname>transform</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_Rescale</varname></entry>
+						<entry><varname>rescale</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_Reclass</varname></entry>
+						<entry><varname>reclass</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_SummaryStats</varname></entry>
+						<entry><varname>summaryStats</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_DumpAsPolygons</varname></entry>
+						<entry><varname>dumpAsPolygons</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_NumBands</varname>, <varname>ST_Width</varname>, <varname>ST_Height</varname>, <varname>ST_SRID</varname></entry>
+						<entry><varname>numBands</varname>, <varname>width</varname>, <varname>height</varname>, <varname>SRID</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_UpperLeftX</varname>, <varname>ST_UpperLeftY</varname>, <varname>ST_ScaleX</varname>, <varname>ST_ScaleY</varname>, <varname>ST_SkewX</varname>, <varname>ST_SkewY</varname></entry>
+						<entry><varname>upperLeftX</varname>, <varname>upperLeftY</varname>, <varname>scaleX</varname>, <varname>scaleY</varname>, <varname>skewX</varname>, <varname>skewY</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_BandPixelType</varname>, <varname>ST_BandNoDataValue</varname></entry>
+						<entry><varname>bandPixelType</varname>, <varname>bandNoDataValue</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_AsBinary</varname>, <varname>ST_AsHexWKB</varname></entry>
+						<entry><varname>asBinary</varname>, <varname>asHexWKB</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_RastFromWKB</varname>, <varname>ST_RastFromHexWKB</varname></entry>
+						<entry><varname>rasterFromBinary</varname>, <varname>rasterFromHexWKB</varname></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+		<para><varname>asBinary</varname> and <varname>asHexWKB</varname> take a byte order where PostGIS takes <varname>outasin</varname>, and without one answer the bytes of <varname>ST_AsBinary</varname> and <varname>ST_AsHexWKB</varname>.</para>
+
 		<itemizedlist>
 			<listitem xml:id="raster_rasterValue">
 				<indexterm significance="normal"><primary><varname>rasterValue</varname></primary></indexterm>
@@ -2096,9 +2160,10 @@ WHERE atSpan(rasterValue(trip, elev), floatspan '[200, 9999]') IS NOT NULL;
 				<indexterm significance="normal"><primary><varname>reclass</varname></primary></indexterm>
 				<para>Return a raster whose band holds the classes an expression maps its values to</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-reclass(raster,band integer,expr text,pixeltype text,nodata float8=NULL) → raster
+reclass(raster,nband integer,reclassexpr text,pixeltype text,nodataval float8=NULL)
+  → raster
 </programlisting>
-				<para>The expression follows the grammar of the PostGIS <varname>ST_Reclass</varname>: a comma-separated list of mappings, each a source range and a destination around a colon, a range being one value or two around a dash. A range written plainly includes its low end and excludes its high end, while <varname>(</varname> excludes the low end and <varname>]</varname> includes the high end, so <varname>0-50</varname> leaves 50 unmapped where <varname>[50-100]</varname> takes it. A pixel no range takes holds the nodata value of the resulting band, or zero when the band states none. That band has the pixel type <varname>pixeltype</varname>, named as PostGIS raster names it, such as <varname>8BUI</varname>, and states no nodata value when <varname>nodata</varname> is left out. The raster keeps its grid and its other bands, so the classes can be read along a trajectory with <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>The expression follows the grammar of the PostGIS <varname>ST_Reclass</varname>: a comma-separated list of mappings, each a source range and a destination around a colon, a range being one value or two around a dash. A range written plainly includes its low end and excludes its high end, while <varname>(</varname> excludes the low end and <varname>]</varname> includes the high end, so <varname>0-50</varname> leaves 50 unmapped where <varname>[50-100]</varname> takes it. A pixel no range takes holds the nodata value of the resulting band, or zero when the band states none. That band has the pixel type <varname>pixeltype</varname>, named as PostGIS raster names it, such as <varname>8BUI</varname>, and states no nodata value when <varname>nodataval</varname> is left out. The raster keeps its grid and its other bands, so the classes can be read along a trajectory with <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
@@ -2204,9 +2269,9 @@ FROM rast;
 				<indexterm significance="normal"><primary><varname>summaryStats</varname></primary></indexterm>
 				<para>Return the statistics of the pixels of a raster band</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-summaryStats(raster,band integer=1,excludeNodata boolean=true) → summarystats
+summaryStats(raster,nband integer=1,exclude_nodata_value boolean=true) → summarystats
 </programlisting>
-				<para>The band is read once and answers the PostGIS <varname>summarystats</varname> record that <varname>ST_SummaryStats</varname> answers: the number of pixels counted, and the sum, mean, standard deviation, minimum and maximum of their values. Every pixel is read, so the answer is exact rather than sampled; the pixels the band states as nodata are left out unless <varname>excludeNodata</varname> is false, and a band with no pixel to count answers a count of zero and no statistic.</para>
+				<para>The band is read once and answers the PostGIS <varname>summarystats</varname> record that <varname>ST_SummaryStats</varname> answers: the number of pixels counted, and the sum, mean, standard deviation, minimum and maximum of their values. Every pixel is read, so the answer is exact rather than sampled; the pixels the band states as nodata are left out unless <varname>exclude_nodata_value</varname> is false, and a band with no pixel to count answers a count of zero and no statistic.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
@@ -2225,9 +2290,9 @@ SELECT (summaryStats(r)).* FROM rast;
 				<para>Return the polygons of a raster band, one for each group of pixels sharing a value &SRF;
 </para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-dumpAsPolygons(raster,band integer=1,excludeNodata boolean=true) → {geomval}
+dumpAsPolygons(raster,band integer=1,exclude_nodata_value boolean=true) → {geomval}
 </programlisting>
-				<para>A band states a value per pixel, and this states the same band as the regions those values cover, answering the PostGIS <varname>geomval</varname> records that <varname>ST_DumpAsPolygons</varname> answers. Each polygon carries the reference system of the raster, where <varname>ST_DumpAsPolygons</varname> states none, so it can be compared with the trajectories the coverage is read along. The pixels the band states as nodata are left out unless <varname>excludeNodata</varname> is false, a band whose every pixel is nodata covers nothing and answers no row, and a band the raster does not have raises an error.</para>
+				<para>A band states a value per pixel, and this states the same band as the regions those values cover, answering the PostGIS <varname>geomval</varname> records that <varname>ST_DumpAsPolygons</varname> answers. Each polygon carries the reference system of the raster, where <varname>ST_DumpAsPolygons</varname> states none, so it can be compared with the trajectories the coverage is read along. The pixels the band states as nodata are left out unless <varname>exclude_nodata_value</varname> is false, a band whose every pixel is nodata covers nothing and answers no row, and a band the raster does not have raises an error.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Classify a 3x3 synthetic elevation raster, then read each class as a region
 WITH rast AS (
