@@ -172,8 +172,9 @@ extern bool raster_band_nodata_value(const Raster *rast, int band,
 
 /* Processing functions for PostGIS rasters */
 
-extern Raster *raster_clip(const Raster *rast, const GSERIALIZED *gs,
-  bool crop);
+extern Raster *raster_clip(const Raster *rast, const int *bands, int nbands,
+  const GSERIALIZED *gs, const double *nodata, int nnodata, bool crop,
+  bool touched);
 extern Raster *raster_transform(const Raster *rast, int32_t srid,
   const char *algorithm, double max_err);
 extern Raster *raster_rescale(const Raster *rast, double scale_x,

@@ -597,7 +597,8 @@ int main(void)
   /* Cropping reduces the result to the extent the two share, which is two
    * pixels by two on the grid the subject states */
   meos_errno_reset();
-  Raster *cropped = raster_clip(rast_values, region, true);
+  Raster *cropped = raster_clip(rast_values, NULL, 0, region, NULL, 0, true,
+    false);
   assert(cropped != NULL);
   assert(meos_errno() == 0);
   assert(raster_width(cropped) == 2);
@@ -626,7 +627,8 @@ int main(void)
    * pixel(1,1) = 10 stands inside the region and answers, while
    * pixel(3,1) = 70 stands outside it and answers nothing */
   meos_errno_reset();
-  Raster *whole = raster_clip(rast_values, region, false);
+  Raster *whole = raster_clip(rast_values, NULL, 0, region, NULL, 0, false,
+    false);
   assert(whole != NULL);
   assert(meos_errno() == 0);
   assert(raster_width(whole) == 3);
@@ -652,13 +654,60 @@ int main(void)
     -1);
   assert(region_3857 != NULL);
   meos_errno_reset();
-  assert(raster_clip(rast_values, region_3857, true) == NULL);
+  assert(raster_clip(rast_values, NULL, 0, region_3857, NULL, 0, true,
+    false) == NULL);
   assert(meos_errno() != 0);
 
   /* A null argument is rejected rather than dereferenced */
   meos_errno_reset();
-  assert(raster_clip(NULL, region, true) == NULL);
-  assert(raster_clip(rast_values, NULL, true) == NULL);
+  assert(raster_clip(NULL, NULL, 0, region, NULL, 0, true, false) == NULL);
+  assert(raster_clip(rast_values, NULL, 0, NULL, NULL, 0, true,
+    false) == NULL);
+  assert(meos_errno() != 0);
+
+  /* A pixel the geometry touches is kept where the caller asks for it, where
+   * otherwise only a pixel whose centre the geometry covers is. The triangle
+   * below covers the centre of pixel(1,1) = 10 alone and touches the nodata
+   * pixel(1,2) and pixel(2,1) = 40, so the pixels carrying a value count one
+   * without touched and two with it. It spans two pixels each way, since the
+   * mask it is burnt into rounds its extent to whole pixels */
+  GSERIALIZED *corner = geom_in("SRID=4326;POLYGON((0 3,1.8 3,0 1.2,0 3))",
+    -1);
+  assert(corner != NULL);
+  meos_errno_reset();
+  Raster *centres = raster_clip(rast_values, NULL, 0, corner, NULL, 0, false,
+    false);
+  Raster *touching = raster_clip(rast_values, NULL, 0, corner, NULL, 0, false,
+    true);
+  assert(centres != NULL && touching != NULL);
+  assert(meos_errno() == 0);
+  BandStats *cst = raster_summary_stats(centres, 1, true);
+  BandStats *tst = raster_summary_stats(touching, 1, true);
+  assert(cst != NULL && tst != NULL);
+  printf("raster_clip(corner) without and with touched: %u and %u pixel(s)\n",
+    cst->count, tst->count);
+  assert(cst->count == 1 && cst->sum == 10.0);
+  assert(tst->count == 2 && tst->sum == 10.0 + 40.0);
+  free(cst); free(tst); free(centres); free(touching); free(corner);
+
+  /* The bands kept are the ones named, and the pixels the geometry does not
+   * cover answer the nodata value the caller states; a band the raster does
+   * not have is refused */
+  int keep[] = {1};
+  double nodata_one[] = {-1.0};
+  meos_errno_reset();
+  Raster *kept1 = raster_clip(rast_values, keep, 1, region, nodata_one, 1,
+    true, false);
+  assert(kept1 != NULL);
+  assert(meos_errno() == 0);
+  double kept1_nodata = 0.0;
+  assert(raster_band_nodata_value(kept1, 1, &kept1_nodata));
+  assert(kept1_nodata == -1.0);
+  free(kept1);
+  int missing[] = {2};
+  meos_errno_reset();
+  assert(raster_clip(rast_values, missing, 1, region, NULL, 0, true,
+    false) == NULL);
   assert(meos_errno() != 0);
 
   free(region_3857); free(region); free(whole); free(cropped);

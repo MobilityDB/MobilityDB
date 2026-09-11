@@ -2129,9 +2129,11 @@ SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>clip</varname></primary></indexterm>
 				<para>Return a raster keeping the pixels of another that a geometry covers</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-clip(raster,geom geometry,crop boolean=true) → raster
+clip(raster,geom geometry,crop boolean=true,touched boolean=false) → raster
+clip(raster,nband integer[],geom geometry,nodataval float8[]=NULL,crop boolean=true,
+  touched boolean=false) → raster
 </programlisting>
-				<para>Every band is read against a mask the geometry is burnt into, as the PostGIS <varname>ST_Clip</varname> reads it: a pixel the geometry does not cover answers the nodata value of its band, and the smallest value its pixel type holds when the band declares none. With <varname>crop</varname> the result carries the extent the raster and the geometry share, and otherwise the extent of the raster. The geometry is in the reference system of the raster; one in another system raises an error.</para>
+				<para>Every band is read against a mask the geometry is burnt into, as the PostGIS <varname>ST_Clip</varname> reads it: a pixel the geometry does not cover answers the nodata value of its band, and the smallest value its pixel type holds when the band declares none. With <varname>crop</varname> the result carries the extent the raster and the geometry share, and otherwise the extent of the raster. The geometry is in the reference system of the raster; one in another system raises an error. With <varname>nband</varname> the result keeps the bands named, every band when it is NULL, <varname>nodataval</varname> states the nodata value of the pixels the geometry does not cover, one for every band or one per band, and with <varname>touched</varname> a pixel the geometry touches is kept where otherwise only one whose centre it covers is.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (

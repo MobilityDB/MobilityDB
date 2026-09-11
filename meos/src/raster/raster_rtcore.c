@@ -812,10 +812,12 @@ raster_clip_callback(rt_iterator_arg arg, void *userarg __attribute__((unused)),
  * against a raster it already shares a grid with, and never on its own
  * @param[in] raster Deserialized subject stating the grid
  * @param[in] gs Geometry to burn
+ * @param[in] touched True to burn every pixel the geometry touches, false to
+ * burn the pixels whose centre it covers
  * @errval NULL
  */
 static rt_raster
-raster_geo_mask(rt_raster raster, const GSERIALIZED *gs)
+raster_geo_mask(rt_raster raster, const GSERIALIZED *gs, bool touched)
 {
   LWGEOM *geom = lwgeom_from_gserialized((GSERIALIZED *) gs);
   if (! geom)
@@ -847,12 +849,16 @@ raster_geo_mask(rt_raster raster, const GSERIALIZED *gs)
   double ul_y = rt_raster_get_y_offset(raster);
   double skew_x = rt_raster_get_x_skew(raster);
   double skew_y = rt_raster_get_y_skew(raster);
+  /* The touched pixels are the one option the rasterizer reads, as the
+   * PostGIS RASTER_clip hands it over */
+  char all_touched[] = "ALL_TOUCHED=TRUE";
+  char *options[] = {all_touched, NULL};
 
   rt_raster result = rt_raster_gdal_rasterize(
     (const unsigned char *) wkb->data, (uint32_t) (LWSIZE_GET(wkb->size) -
       LWVARHDRSZ), NULL, 1, &pixtype, &init, &value, &nodata, &hasnodata,
     NULL, NULL, &scale_x, &scale_y, &ul_x, &ul_y, NULL, NULL, &skew_x,
-    &skew_y, NULL);
+    &skew_y, touched ? options : NULL);
   lwfree(wkb);
   if (! result)
   {
@@ -869,21 +875,41 @@ raster_geo_mask(rt_raster raster, const GSERIALIZED *gs)
 /**
  * @ingroup meos_raster_base_transf
  * @brief Return a raster keeping the pixels of another that a geometry covers
- * @details Every band of the subject is read in turn against a mask the
- * geometry is burnt into. A pixel the geometry does not cover answers nodata.
- * When @p crop is true the result carries the extent the two share, and
- * otherwise it carries the extent of the subject
+ * @details The bands kept are read in turn against a mask the geometry is
+ * burnt into, as the PostGIS `ST_Clip` reads them. A pixel the geometry does
+ * not cover answers the nodata value of its band: the value @p nodata states,
+ * one for every band or one per band with the last standing for the bands
+ * after it, or otherwise the nodata value of the band, and the smallest value
+ * its pixel type holds where the band states none. When @p crop is true the
+ * result carries the extent the two share, and otherwise it carries the
+ * extent of the subject
  * @param[in] rast Raster to clip
+ * @param[in] bands Numbers of the bands to keep, starting at 1, in the order
+ * of the result, or NULL for every band
+ * @param[in] nbands Number of elements of @p bands
  * @param[in] gs Geometry to clip it to
+ * @param[in] nodata Nodata values of the bands of the result, or NULL for the
+ * nodata value of each band
+ * @param[in] nnodata Number of elements of @p nodata
  * @param[in] crop True to reduce the result to the extent the raster and the
  * geometry share
+ * @param[in] touched True to keep every pixel the geometry touches, false to
+ * keep the pixels whose centre it covers
  * @errval NULL
- * @csqlfn #Raster_clip()
+ * @csqlfn #Raster_clip(), #Raster_clip_bands()
  */
 Raster *
-raster_clip(const Raster *rast, const GSERIALIZED *gs, bool crop)
+raster_clip(const Raster *rast, const int *bands, int nbands,
+  const GSERIALIZED *gs, const double *nodata, int nnodata, bool crop,
+  bool touched)
 {
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  if ((bands && nbands < 1) || (nodata && nnodata < 1))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "An array of bands or of nodata values cannot be empty");
+    return NULL;
+  }
 
   /* A raster and a geometry of different reference systems state positions
    * that cannot be compared */
@@ -910,8 +936,20 @@ raster_clip(const Raster *rast, const GSERIALIZED *gs, bool crop)
       "The raster carries no band to clip");
     return NULL;
   }
+  /* The bands named are checked before any of them is read */
+  for (int i = 0; bands && i < nbands; i++)
+  {
+    if (bands[i] < 1 || bands[i] > numbands)
+    {
+      raster_destroy(raster);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Raster has no band %d, it has %d", bands[i], numbands);
+      return NULL;
+    }
+  }
+  int nresult = bands ? nbands : numbands;
 
-  rt_raster mask = raster_geo_mask(raster, gs);
+  rt_raster mask = raster_geo_mask(raster, gs, touched);
   if (! mask)
   {
     raster_destroy(raster);
@@ -921,27 +959,38 @@ raster_clip(const Raster *rast, const GSERIALIZED *gs, bool crop)
   /* The result states the extent the two share, or that of the subject */
   rt_extenttype extent = crop ? ET_INTERSECTION : ET_FIRST;
   rt_raster result = NULL;
-  for (int i = 0; i < numbands; i++)
+  for (int i = 0; i < nresult; i++)
   {
-    rt_band band = rt_raster_get_band(raster, (uint32_t) i);
+    int b = bands ? bands[i] - 1 : i;
+    rt_band band = rt_raster_get_band(raster, (uint32_t) b);
     if (! band)
     {
       raster_destroy(mask); raster_destroy(raster);
       if (result) raster_destroy(result);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "Could not read band %d of the raster", i + 1);
+        "Could not read band %d of the raster", b + 1);
       return NULL;
     }
-    /* A band keeps its own pixel type and nodata value across the clip */
+    /* A band keeps its own pixel type across the clip, and its own nodata
+     * value unless the caller states another */
     rt_pixtype pixtype = rt_band_get_pixtype(band);
-    int hasnodata = rt_band_get_hasnodata_flag(band);
+    int hasnodata;
     double nodataval = 0.0;
-    if (hasnodata)
-      rt_band_get_nodata(band, &nodataval);
+    if (nodata)
+    {
+      hasnodata = 1;
+      nodataval = nodata[i < nnodata ? i : nnodata - 1];
+    }
+    else
+    {
+      hasnodata = rt_band_get_hasnodata_flag(band);
+      if (hasnodata)
+        rt_band_get_nodata(band, &nodataval);
+    }
 
     struct rt_iterator_t itrset[2];
     itrset[0].raster = raster;
-    itrset[0].nband = (uint16_t) i;
+    itrset[0].nband = (uint16_t) b;
     itrset[0].nbnodata = 1;
     itrset[1].raster = mask;
     itrset[1].nband = 0;
@@ -955,7 +1004,7 @@ raster_clip(const Raster *rast, const GSERIALIZED *gs, bool crop)
       raster_destroy(mask); raster_destroy(raster);
       if (result) raster_destroy(result);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "Could not clip band %d of the raster", i + 1);
+        "Could not clip band %d of the raster", b + 1);
       return NULL;
     }
 
@@ -970,7 +1019,7 @@ raster_clip(const Raster *rast, const GSERIALIZED *gs, bool crop)
         raster_destroy(banded); raster_destroy(mask); raster_destroy(raster);
         raster_destroy(result);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "Could not add band %d to the clipped raster", i + 1);
+          "Could not add band %d to the clipped raster", b + 1);
         return NULL;
       }
       /* The band is held by the result now, so only its carrier is released */

@@ -817,6 +817,7 @@ PG_FUNCTION_INFO_V1(Raster_clip);
  * @param[in] rast Raster
  * @param[in] geom Geometry, in the reference system of the raster
  * @param[in] crop True to reduce the result to the extent the two share
+ * @param[in] touched True to keep every pixel the geometry touches
  * @sqlfn clip()
  */
 Datum
@@ -826,8 +827,67 @@ Raster_clip(PG_FUNCTION_ARGS)
   Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   bool crop = PG_GETARG_BOOL(2);
-  Raster *result = raster_clip(rast, gs, crop);
+  bool touched = PG_GETARG_BOOL(3);
+  Raster *result = raster_clip(rast, NULL, 0, gs, NULL, 0, crop, touched);
   PG_FREE_IF_COPY(gs, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_clip_bands(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_clip_bands);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster keeping the pixels of some bands of another that a
+ * geometry covers
+ * @param[in] rast Raster
+ * @param[in] nband Numbers of the bands to keep, NULL for every band
+ * @param[in] geom Geometry, in the reference system of the raster
+ * @param[in] nodataval Nodata values of the bands of the result, NULL for the
+ * nodata value of each band
+ * @param[in] crop True to reduce the result to the extent the two share
+ * @param[in] touched True to keep every pixel the geometry touches
+ * @note Not STRICT: a NULL array of bands keeps every band, and a NULL array
+ * of nodata values keeps the nodata value of each band
+ * @sqlfn clip()
+ */
+Datum
+Raster_clip_bands(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(2);
+  int nbands = 0, nnodata = 0;
+  int *bands = NULL;
+  double *nodata = NULL;
+  if (! PG_ARGISNULL(1))
+  {
+    Datum *elems = datumarr_extract(PG_GETARG_ARRAYTYPE_P(1), &nbands);
+    bands = palloc(sizeof(int) * (size_t) (nbands > 0 ? nbands : 1));
+    for (int i = 0; i < nbands; i++)
+      bands[i] = DatumGetInt32(elems[i]);
+    pfree(elems);
+  }
+  if (! PG_ARGISNULL(3))
+  {
+    Datum *elems = datumarr_extract(PG_GETARG_ARRAYTYPE_P(3), &nnodata);
+    nodata = palloc(sizeof(double) * (size_t) (nnodata > 0 ? nnodata : 1));
+    for (int i = 0; i < nnodata; i++)
+      nodata[i] = DatumGetFloat8(elems[i]);
+    pfree(elems);
+  }
+  /* A crop or a touch left unstated takes its default */
+  bool crop = PG_ARGISNULL(4) ? true : PG_GETARG_BOOL(4);
+  bool touched = PG_ARGISNULL(5) ? false : PG_GETARG_BOOL(5);
+  Raster *result = raster_clip(rast, bands, nbands, gs, nodata, nnodata, crop,
+    touched);
+  if (bands)
+    pfree(bands);
+  if (nodata)
+    pfree(nodata);
+  PG_FREE_IF_COPY(gs, 2);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
