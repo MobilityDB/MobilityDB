@@ -1860,14 +1860,16 @@ raster_to_stbox(const Raster *rast)
 
 /**
  * @brief State a raster sampling call keeps for the length of a trajectory:
- * the deserialized raster, the band the values are read from, and the inverse
- * geotransform, computed once and handed to every point conversion
+ * the deserialized raster, the band the values are read from, the inverse
+ * geotransform, computed once and handed to every point conversion, and
+ * whether a pixel of the band could not be read
  */
 typedef struct
 {
   rt_raster raster;   /**< Raster carrying its bands */
   rt_band band;       /**< Band the pixel values are read from */
   double igt[6];      /**< Inverse geotransform of the raster */
+  bool unreadable;    /**< Whether a pixel of the band could not be read */
 } RasterSampleState;
 
 /**
@@ -1893,15 +1895,24 @@ raster_value_grid(const void *ctxp, double x, double y, double *col,
  * the vendored raster core
  * @details Reading the pixel a position falls in is the nearest-neighbour
  * read of that position. A nodata pixel answers that there is no value,
- * which is the contract of ::raster_pixel_fn
+ * which is the contract of ::raster_pixel_fn. A pixel the raster core cannot
+ * read, as when the band is stored outside the database in a file that
+ * cannot be opened, carries no value either, and the state records it so
+ * that the caller raises an error once it has released the raster; the
+ * pixels after it are not read.
  */
 static bool
 raster_value_pixel(void *ctxp, int col, int row, double *value)
 {
   RasterSampleState *state = (RasterSampleState *) ctxp;
+  if (state->unreadable)
+    return false;
   int isnodata;
   if (rt_band_get_pixel(state->band, col, row, value, &isnodata) != ES_NONE)
+  {
+    state->unreadable = true;
     return false;
+  }
   return ! isnodata;
 }
 
@@ -1958,6 +1969,7 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
   }
   state->raster = raster;
   state->band = rtband;
+  state->unreadable = false;
 
   /* Bounding box of the raster extent, which bears the rotation of the
    * geotransform */
@@ -1982,6 +1994,43 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
 }
 
 /**
+ * @brief Release the raster a sampling call deserialized, raising an error
+ * when a pixel of its band could not be read
+ * @details A band stored outside the database is read from its file when its
+ * first pixel is read, so a file that cannot be opened surfaces there, in the
+ * middle of the walk. The walk carries on without reading, the raster is
+ * released, and the error names the file.
+ * @param[in] state Sampling state, whose raster is released
+ * @param[in] band Band number (1-based)
+ * @return true when every pixel read answered, false after raising the error
+ */
+static bool
+raster_rtcore_release(RasterSampleState *state, int band)
+{
+  if (! state->unreadable)
+  {
+    raster_destroy(state->raster);
+    return true;
+  }
+  /* The path belongs to the raster, so it is copied before the release */
+  char path[1024] = "";
+  const char *ext = rt_band_is_offline(state->band) ?
+    rt_band_get_ext_path(state->band) : NULL;
+  if (ext)
+    snprintf(path, sizeof(path), "%s", ext);
+  raster_destroy(state->raster);
+  if (path[0])
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read band %d of the raster from %s", band, path);
+    return false;
+  }
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Could not read band %d of the raster", band);
+  return false;
+}
+
+/**
  * @ingroup meos_raster
  * @brief Return the values of a raster band read along a trajectory
  * @param[in] traj Trajectory (temporal geometry point)
@@ -1989,6 +2038,7 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
  * @param[in] band Band number (1-based)
  * @return A temporal float, or @p NULL when no instant of @p traj falls
  * inside the raster or survives nodata filtering
+ * @errval NULL
  * @csqlfn #Raster_value()
  */
 Temporal *
@@ -2002,7 +2052,12 @@ raster_value(const Temporal *traj, const Raster *rast, int band)
   if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return NULL;
   Temporal *result = raster_value_sampler(traj, &ops);
-  raster_destroy(state.raster);
+  if (! raster_rtcore_release(&state, band))
+  {
+    if (result)
+      pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -2016,6 +2071,7 @@ raster_value(const Temporal *traj, const Raster *rast, int band)
  * @param[in] vspan Float value range (inclusive bounds)
  * @return A trajectory restricted to the qualifying instants, or @p NULL
  * when none qualify
+ * @errval NULL
  * @csqlfn #Raster_at_value()
  */
 Temporal *
@@ -2031,7 +2087,12 @@ raster_at_value(const Temporal *traj, const Raster *rast, int band,
   if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return NULL;
   Temporal *result = raster_at_value_sampler(traj, &ops, vspan);
-  raster_destroy(state.raster);
+  if (! raster_rtcore_release(&state, band))
+  {
+    if (result)
+      pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -2045,6 +2106,7 @@ raster_at_value(const Temporal *traj, const Raster *rast, int band,
  * @param[in] vspan Float value range to exclude
  * @return A trajectory restricted to the qualifying instants, or @p NULL
  * when none qualify
+ * @errval NULL
  * @csqlfn #Raster_minus_value()
  */
 Temporal *
@@ -2060,7 +2122,12 @@ raster_minus_value(const Temporal *traj, const Raster *rast, int band,
   if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return NULL;
   Temporal *result = raster_minus_value_sampler(traj, &ops, vspan);
-  raster_destroy(state.raster);
+  if (! raster_rtcore_release(&state, band))
+  {
+    if (result)
+      pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -2088,8 +2155,7 @@ eraster_value(const Temporal *traj, const Raster *rast, int band,
   if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return -1;
   int result = eraster_value_sampler(traj, &ops, vspan);
-  raster_destroy(state.raster);
-  return result;
+  return raster_rtcore_release(&state, band) ? result : -1;
 }
 
 /**
@@ -2116,8 +2182,7 @@ araster_value(const Temporal *traj, const Raster *rast, int band,
   if (! raster_rtcore_gridops(traj, rast, band, &state, &ops))
     return -1;
   int result = araster_value_sampler(traj, &ops, vspan);
-  raster_destroy(state.raster);
-  return result;
+  return raster_rtcore_release(&state, band) ? result : -1;
 }
 
 /*****************************************************************************/

@@ -414,7 +414,8 @@ raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
 /**
  * @brief Per-call state of the GDAL grid callbacks: the raster band to read,
  * the inverse geotransform mapping a geographic point to a pixel
- * (col, row), the band size, and the nodata sentinel
+ * (col, row), the band size, the nodata sentinel, and whether a pixel of the
+ * band could not be read
  */
 typedef struct
 {
@@ -424,6 +425,7 @@ typedef struct
   int ysize;
   int has_nodata;
   double nodata;
+  bool unreadable;
 } RasterValueGdalCtx;
 
 /**
@@ -446,17 +448,26 @@ raster_value_gdal_grid(const void *ctxp, double x, double y, double *col,
 /**
  * @brief Raster pixel callback backed by a single-pixel GDALRasterIO read:
  * the context carries the band, only the pixel varies per call
+ * @details A pixel GDAL cannot read, as when a virtual raster takes its
+ * pixels from a file that cannot be opened, carries no value, and the context
+ * records it so that the caller raises an error once it has closed the file;
+ * the pixels after it are not read.
  */
 static bool
 raster_value_gdal_pixel(void *ctxp, int col, int row, double *value)
 {
   RasterValueGdalCtx *ctx = (RasterValueGdalCtx *) ctxp;
+  if (ctx->unreadable)
+    return false;
   double val;
   /* No bracket here: the caller holds the handler across the whole walk, and
    * pushing one per instant costs a CPL allocation per sample */
   if (GDALRasterIO(ctx->band, GF_Read, col, row, 1, 1, &val, 1, 1,
       GDT_Float64, 0, 0) != CE_None)
+  {
+    ctx->unreadable = true;
     return false;
+  }
   if (ctx->has_nodata && val == ctx->nodata)
     return false;   /* nodata pixel */
   *value = val;
@@ -523,6 +534,7 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
   ctx->ysize = GDALGetRasterBandYSize(rb);
   ctx->has_nodata = has_nodata;
   ctx->nodata = nodata;
+  ctx->unreadable = false;
 
   /* Bounding box of the raster extent, from the four corners of the
    * geotransform (correct even for a rotated geotransform) */
@@ -555,12 +567,41 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
 }
 
 /**
+ * @brief Close the raster file a sampling call opened, raising an error when
+ * a pixel of its band could not be read
+ * @details The message GDAL gave for the failed read is copied before the
+ * file is closed, which may replace it.
+ * @param[in] ds Open GDAL dataset, which is closed
+ * @param[in] ctx Sampling context of the call
+ * @param[in] path Path of the raster file
+ * @param[in] band Band number (1-based)
+ * @return true when every pixel read answered, false after raising the error
+ */
+static bool
+raster_gdal_close(GDALDatasetH ds, const RasterValueGdalCtx *ctx,
+  const char *path, int band)
+{
+  if (! ctx->unreadable)
+  {
+    raquet_gdal_release(ds, NULL, NULL);
+    return true;
+  }
+  char detail[512];
+  snprintf(detail, sizeof(detail), "%s", meos_gdal_error());
+  raquet_gdal_release(ds, NULL, NULL);
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Cannot read band %d of raster file: %s (%s)", band, path, detail);
+  return false;
+}
+
+/**
  * @ingroup meos_raster
  * @brief Return the values of a raster band read along a trajectory,
  * reading the raster through GDAL
  * @param[in] traj Trajectory (SRID matching the raster)
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] band Band number (1-based)
+ * @errval NULL
  */
 Temporal *
 raster_value_gdal(const Temporal *traj, const char *path, int band)
@@ -576,7 +617,12 @@ raster_value_gdal(const Temporal *traj, const char *path, int band)
   meos_gdal_enter();
   Temporal *result = raster_value_sampler(traj, &ops);
   meos_gdal_leave();
-  raquet_gdal_release(ds, NULL, NULL);
+  if (! raster_gdal_close(ds, &ctx, path, band))
+  {
+    if (result)
+      pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -588,6 +634,7 @@ raster_value_gdal(const Temporal *traj, const char *path, int band)
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range (inclusive bounds)
+ * @errval NULL
  */
 Temporal *
 raster_at_value_gdal(const Temporal *traj, const char *path, int band,
@@ -605,7 +652,12 @@ raster_at_value_gdal(const Temporal *traj, const char *path, int band,
   meos_gdal_enter();
   Temporal *result = raster_at_value_sampler(traj, &ops, vspan);
   meos_gdal_leave();
-  raquet_gdal_release(ds, NULL, NULL);
+  if (! raster_gdal_close(ds, &ctx, path, band))
+  {
+    if (result)
+      pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -617,6 +669,7 @@ raster_at_value_gdal(const Temporal *traj, const char *path, int band,
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range to exclude
+ * @errval NULL
  */
 Temporal *
 raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
@@ -634,7 +687,12 @@ raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
   meos_gdal_enter();
   Temporal *result = raster_minus_value_sampler(traj, &ops, vspan);
   meos_gdal_leave();
-  raquet_gdal_release(ds, NULL, NULL);
+  if (! raster_gdal_close(ds, &ctx, path, band))
+  {
+    if (result)
+      pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -648,6 +706,7 @@ raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
  * @param[in] vspan Float value range
  * @return 1 if the trajectory ever samples a value inside @p vspan, 0 if
  * not, and -1 on error
+ * @errval -1
  */
 int
 eraster_value_gdal(const Temporal *traj, const char *path, int band,
@@ -665,8 +724,7 @@ eraster_value_gdal(const Temporal *traj, const char *path, int band,
   meos_gdal_enter();
   int result = eraster_value_sampler(traj, &ops, vspan);
   meos_gdal_leave();
-  raquet_gdal_release(ds, NULL, NULL);
-  return result;
+  return raster_gdal_close(ds, &ctx, path, band) ? result : -1;
 }
 
 /**
@@ -679,6 +737,7 @@ eraster_value_gdal(const Temporal *traj, const char *path, int band,
  * @param[in] vspan Float value range
  * @return 1 if every sampled value falls inside @p vspan, 0 if not, and -1
  * on error
+ * @errval -1
  */
 int
 araster_value_gdal(const Temporal *traj, const char *path, int band,
@@ -696,8 +755,7 @@ araster_value_gdal(const Temporal *traj, const char *path, int band,
   meos_gdal_enter();
   int result = araster_value_sampler(traj, &ops, vspan);
   meos_gdal_leave();
-  raquet_gdal_release(ds, NULL, NULL);
-  return result;
+  return raster_gdal_close(ds, &ctx, path, band) ? result : -1;
 }
 
 /*****************************************************************************/
