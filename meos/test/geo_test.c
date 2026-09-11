@@ -983,6 +983,99 @@ int main(void)
   free(slit_geo); free(slit_buf);
   meos_errno_reset();
 
+  /* A hole enclosing more than the disc of the buffer distance can still be
+   * narrower than that disc everywhere, and then it closes as completely as a
+   * slit does. Contracting it instead carries the contraction through itself
+   * and out inverted, and that ring punches a hole out of the answer that
+   * leaves part of the geometry outside its own buffer. The witnesses are a
+   * real protected area at coordinates near 6e5 and 6.2e6 with a triangular
+   * hole of area 26 and inradius 0.27, and a 40 by 1.9 hole in a rectangle at
+   * projected coordinates: at radius 1 each buffer is one ring. The third is
+   * a hole of two 10 by 10 squares joined by a corridor 0.5 wide, its ring
+   * starting in the corridor: the corridor closes and the two squares remain,
+   * so the buffer is three rings */
+  struct { const char *wkt; int rings; } thin_holes[] = {
+    { "POLYGON((598748.431908384 6231972.612348927,"
+      "598725.9789901585 6231992.14297339,598736.132026755 6231996.785020689,"
+      "598749.7700310068 6232003.676951672,"
+      "598767.0550227865 6232011.118754201,"
+      "598782.0606100154 6232005.904304087,"
+      "598801.6145847357 6232017.452975724,"
+      "598795.1840637308 6232025.589429581,"
+      "598800.5282135725 6232029.60860161,"
+      "598807.9140115813 6232031.788037166,"
+      "598821.3009848295 6232039.589984702,"
+      "598821.694021919 6232039.766981951,"
+      "598838.3410314263 6232047.3389637545,"
+      "598855.6739823949 6232057.305979122,"
+      "598876.1419834822 6232070.423953169,"
+      "598884.540030279 6232078.230026512,598902.8329745892 6232090.47897214,"
+      "598923.1100209871 6232101.939963522,"
+      "598937.0410075549 6232111.960952927,"
+      "598955.803996217 6232122.971956091,"
+      "598971.0720083194 6232138.862045685,"
+      "598980.4260034026 6232145.353992017,"
+      "598997.2419830085 6232162.572974423,"
+      "599000.7051666592 6232165.78767751,"
+      "599019.4539806957 6232183.191052728,"
+      "599049.4820152846 6232145.658973159,599063.268993503 6232157.90004712,"
+      "599033.1090148184 6232195.98703301,"
+      "599043.6989960822 6232205.342051839,"
+      "599058.1770015014 6232221.5369507605,"
+      "599070.596005946 6232233.548039008,"
+      "599088.2560091332 6232252.561031305,"
+      "599097.9380317861 6232263.823961932,"
+      "599110.8763387129 6232246.947918306,"
+      "599104.3450099735 6232229.72805305,"
+      "599097.9887581593 6232205.021322581,"
+      "599092.4433277263 6232163.82065649,"
+      "599089.5190218221 6232111.712000776,"
+      "599076.9689942431 6232099.955038149,"
+      "599063.5940120309 6232087.426967074,"
+      "599046.4339847305 6232077.412880268,"
+      "598983.6839852863 6232046.105971506,"
+      "598927.8571005123 6232021.490983588,"
+      "598902.795072532 6232003.349122802,"
+      "598815.0781221815 6231962.202547334,"
+      "598795.0659008787 6231955.095444741,"
+      "598777.4549110628 6231947.366859418,"
+      "598748.431908384 6231972.612348927),"
+      "(598821.8112078012 6232003.1620914405,"
+      "598844.06773823 6232018.872609331,598900.2439986852 6232060.862979959,"
+      "598821.8112078012 6232003.1620914405))", 1 },
+    { "POLYGON((600000 6200000,600100 6200000,600100 6200060,600000 6200060,"
+      "600000 6200000),(600030 6200030,600030 6200031.9,600070 6200031.9,"
+      "600070 6200030,600030 6200030))", 1 },
+    { "POLYGON((0 0,100 0,100 60,0 60,0 0),(30 30.25,50 30.25,50 35,60 35,"
+      "60 25,50 25,50 29.75,30 29.75,30 25,20 25,20 35,30 35,30 30.25))", 3 },
+  };
+  char thin_patt[10] = "T*****FF*";
+  for (size_t i = 0; i < sizeof(thin_holes) / sizeof(thin_holes[0]); i++)
+  {
+    GSERIALIZED *g = geom_in(thin_holes[i].wkt, -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    GSERIALIZED *b = geom_buffer(g, 1.0, "");
+    printf("geom_buffer(an area with a hole narrower than the radius, %zu): "
+      "answered %d, errno %d\n", i, b != NULL, meos_errno());
+    assert(b != NULL);
+    assert(meos_errno() == 0);
+    bool covers = geom_relate_pattern(b, g, thin_patt);
+    char *text = geo_as_text(b, 17);
+    assert(text != NULL);
+    int rings = 0;
+    for (const char *s = strstr(text, "COMPOUNDCURVE("); s;
+        s = strstr(s + 1, "COMPOUNDCURVE("))
+      rings++;
+    printf("  it covers the geometry it is taken of: %d, rings %d\n", covers,
+      rings);
+    assert(covers == true);
+    assert(rings == thin_holes[i].rings);
+    assert(meos_errno() == 0);
+    free(text); free(b); free(g);
+    meos_errno_reset();
+  }
+
   /* An offset that degenerates at one exact radius: the two offsets of a U
    * meet with no width left where the radius is half the gap between its arms,
    * and the inward offset of an arc lands on the centre where the radius
