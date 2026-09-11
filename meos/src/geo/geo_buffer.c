@@ -1536,6 +1536,82 @@ buffer_is_contained(const LWGEOM *inner, const LWGEOM *outer)
 }
 
 /**
+ * @brief Extent of a buffer surface as the tests relating two surfaces read it
+ */
+typedef struct
+{
+  double xmin, xmax, ymin, ymax; /**< Union of the boxes of its edges */
+  double tol;                    /**< Largest tolerance an edge carries */
+  double slack;                  /**< How far beyond the extent a point placed
+                                      to probe containment may land */
+  bool empty;                    /**< True when the surface has no edge */
+} BufferExtent;
+
+/**
+ * @brief Set the extent of a buffer surface
+ * @details The box is the union of the boxes #buffer_boundaries_intersect
+ * compares, so two surfaces whose extents lie further apart than the larger
+ * edge tolerance hold no pair of edges that test reaches. The slack bounds
+ * where #buffer_is_contained places its probes: the representative point is
+ * computed on an edge, on an arc as the centre plus the radius turned, and
+ * each probe moves off it by #buffer_containment_epsilon, so a probe lies
+ * within that offset plus the rounding of the coordinates and of the arcs
+ * of the extent
+ * @param[in] geom Buffer surface
+ * @param[out] ext Extent
+ */
+static void
+buffer_component_extent(const LWGEOM *geom, BufferExtent *ext)
+{
+  assert(geom); assert(ext);
+  ext->xmin = ext->ymin = DBL_MAX;
+  ext->xmax = ext->ymax = -DBL_MAX;
+  ext->tol = 0.0;
+  ext->empty = true;
+  double arcs = 0.0;
+  MeosArray *edges = geom_extract_edges(geom);
+  for (uint32_t i = 0; i < edges->count; i++)
+  {
+    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    if (! e)
+      continue;
+    ext->empty = false;
+    ext->xmin = fmin(ext->xmin, e->xmin);
+    ext->xmax = fmax(ext->xmax, e->xmax);
+    ext->ymin = fmin(ext->ymin, e->ymin);
+    ext->ymax = fmax(ext->ymax, e->ymax);
+    ext->tol = fmax(ext->tol, e->tol);
+    if (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC)
+      arcs = fmax(arcs, fabs(e->cx) + fabs(e->cy) + e->radius);
+  }
+  meos_array_destroy(edges);
+  double coords = fmax(fmax(fabs(ext->xmin), fabs(ext->xmax)),
+    fmax(fabs(ext->ymin), fabs(ext->ymax)));
+  ext->slack = buffer_containment_epsilon(geom) +
+    8.0 * DBL_EPSILON * (arcs + coords);
+  return;
+}
+
+/**
+ * @brief Return true when two buffer surfaces are too far apart for their
+ * boundaries to meet or for one to contain the other
+ * @details #buffer_components_relation answers disjoint for such a pair: no
+ * pair of their edges comes within the band #buffer_boundaries_intersect
+ * reads, and no probe of #buffer_is_contained reaches the other surface
+ */
+static bool
+buffer_extents_apart(const BufferExtent *ext1, const BufferExtent *ext2)
+{
+  assert(ext1); assert(ext2);
+  if (ext1->empty || ext2->empty)
+    return false;
+  double pad = fmax(fmax(ext1->tol, ext2->tol), MEOS_GEOM_TOLERANCE) +
+    ext1->slack + ext2->slack;
+  return ext1->xmax + pad < ext2->xmin || ext2->xmax + pad < ext1->xmin ||
+    ext1->ymax + pad < ext2->ymin || ext2->ymax + pad < ext1->ymin;
+}
+
+/**
  * @brief Classify the relationship between two buffer surfaces.
  * @return
  *   0 = disjoint
@@ -5315,10 +5391,15 @@ buffer_union_components(LWGEOM **buffers, uint32_t count, int32_t srid)
 {
   assert(buffers); assert(count > 0);
   LWGEOM **merged = palloc(sizeof(LWGEOM *) * count);
+  /* The extent of each merged surface, read once, so that a pair lying apart
+   * is answered without extracting the edges of either */
+  BufferExtent *extents = palloc(sizeof(BufferExtent) * count);
   uint32_t nmerged = 0;
   for (uint32_t i = 0; i < count; i++)
   {
     LWGEOM *current = buffers[i];
+    BufferExtent current_ext;
+    buffer_component_extent(current, &current_ext);
     bool again = true;
     while (again)
     {
@@ -5326,7 +5407,8 @@ buffer_union_components(LWGEOM **buffers, uint32_t count, int32_t srid)
       for (uint32_t j = 0; j < nmerged; j++)
       {
         /* Disjoint surfaces stay apart */
-        if (buffer_components_relation(current, merged[j]) == 0)
+        if (buffer_extents_apart(&current_ext, &extents[j]) ||
+            buffer_components_relation(current, merged[j]) == 0)
           continue;
         bool touching = false;
         LWGEOM *both = buffer_areal_union_simple(current, merged[j],
@@ -5344,19 +5426,23 @@ buffer_union_components(LWGEOM **buffers, uint32_t count, int32_t srid)
             lwgeom_free(merged[k]);
           for (uint32_t k = i + 1; k < count; k++)
             lwgeom_free(buffers[k]);
-          pfree(merged);
+          pfree(merged); pfree(extents);
           return NULL;
         }
         lwgeom_free(current); lwgeom_free(merged[j]);
         current = both;
+        buffer_component_extent(current, &current_ext);
         /* The last surface takes the place of the one just consumed */
         merged[j] = merged[--nmerged];
+        extents[j] = extents[nmerged];
         again = true;
         break;
       }
     }
+    extents[nmerged] = current_ext;
     merged[nmerged++] = current;
   }
+  pfree(extents);
 
   /* One surface needs no collection wrapper */
   if (nmerged == 1)
