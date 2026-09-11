@@ -4962,6 +4962,76 @@ buffer_point_edges_distance(double x, double y, const MeosArray *edges)
 }
 
 /**
+ * @brief Return an R-tree of the boxes of the edges of a geometry, by their
+ * position in the array
+ * @details A box is widened by the rounding of the coordinates it is read
+ * from, so the index admits every edge the distance of
+ * #buffer_point_edge_distance reaches within a box query: an index may admit
+ * more candidates than it needs, never fewer
+ */
+static RTree *
+buffer_edges_index(const MeosArray *edges)
+{
+  RTree *index = rtree_create_stbox();
+  for (uint32_t i = 0; i < edges->count; i++)
+  {
+    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    if (! e || e->etype == EDGE_POINT)
+      continue;
+    double pad = e->tol + 16.0 * DBL_EPSILON * (fabs(e->xmin) +
+      fabs(e->xmax) + fabs(e->ymin) + fabs(e->ymax));
+    if (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC)
+      pad += 16.0 * DBL_EPSILON * e->radius;
+    STBox box;
+    stbox_set(true, false, false, 0, e->xmin - pad, e->xmax + pad,
+      e->ymin - pad, e->ymax + pad, 0, 0, NULL, &box);
+    rtree_insert(index, &box, i);
+  }
+  return index;
+}
+
+/**
+ * @brief Return true when an edge of a geometry lies nearer a point than a
+ * distance
+ * @details The same answer as comparing #buffer_point_edges_distance with the
+ * distance, read from the edges whose box reaches within the distance of the
+ * point, and settled at the first edge found nearer
+ * @param[in] index R-tree of #buffer_edges_index
+ * @param[out] found Room for the positions the index answers
+ */
+static bool
+buffer_point_edges_nearer(double x, double y, const MeosArray *edges,
+  const RTree *index, double limit, MeosArray *found)
+{
+  /* The distance over no edge is DBL_MAX and over any edge at least 0, so
+   * these two answers need no edge: every distance is below a limit beyond
+   * DBL_MAX or not a number, and none is below a limit of 0 */
+  if (! (limit <= DBL_MAX))
+    return true;
+  if (limit <= 0.0)
+    return false;
+  /* A distance computed below the limit may belong to a point that lies
+   * beyond it by the rounding of that distance, which grows with the limit
+   * and with the magnitude of the point, so the query reaches that far */
+  double reach = limit + 16.0 * DBL_EPSILON * (limit + fabs(x) + fabs(y));
+  STBox query;
+  stbox_set(true, false, false, 0, nextafter(x - reach, -INFINITY),
+    nextafter(x + reach, INFINITY), nextafter(y - reach, -INFINITY),
+    nextafter(y + reach, INFINITY), 0, 0, NULL, &query);
+  meos_array_reset(found);
+  int nc = rtree_search(index, INDEX_OVERLAPS, &query, found);
+  for (int c = 0; c < nc; c++)
+  {
+    const Edge *e = (const Edge *) meos_array_get(edges,
+      (int) INDEX_RESULT_ID_N(found, c));
+    if (e && e->etype != EDGE_POINT &&
+        buffer_point_edge_distance(x, y, e) < limit)
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Return the boundary of the buffer of a geometry, given a ring of
  * offsets that may run into itself
  * @details Every piece of the ring is split where it meets any other piece of
@@ -5041,6 +5111,8 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
    * of the question */
   double tol = Max(MEOS_GEOM_TOLERANCE, radius * 1.0e-9);
   MeosArray *keep = meos_array_create(sizeof(BufferPiece));
+  RTree *index = buffer_edges_index(edges);
+  MeosArray *found = index_result_create();
   for (int i = 0; i < meos_array_count(split); i++)
   {
     BufferPiece *piece = (BufferPiece *) meos_array_get(split, (uint32_t) i);
@@ -5055,9 +5127,12 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
      * bound of `radius * 1e-9` calibrated to a radius of 1, and the piece is
      * dropped: the ring it belongs to then reaches a point nothing continues */
     double mid_tol = Max(tol, coordinate_tolerance(mid.x, mid.y));
-    if (buffer_point_edges_distance(mid.x, mid.y, edges) >= radius - mid_tol)
+    if (! buffer_point_edges_nearer(mid.x, mid.y, edges, index,
+        radius - mid_tol, found))
       meos_array_add(keep, piece);
   }
+  meos_array_destroy(found);
+  rtree_free(index);
 
   LWGEOM *result = (meos_array_count(keep) > 0) ?
     buffer_make_surfaces_from_pieces(keep, srid) : NULL;
