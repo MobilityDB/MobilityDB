@@ -63,8 +63,7 @@ PGDLLEXPORT Datum Raster_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Raster_value);
 /**
  * @ingroup mobilitydb_raster
- * @brief Return the values of a raster band sampled at the instants of a
- * trajectory
+ * @brief Return the values of a raster band read along a trajectory
  * @param[in] traj Trajectory
  * @param[in] rast Raster
  * @param[in] band Band number (1-based, default 1)
