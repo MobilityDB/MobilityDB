@@ -1021,4 +1021,22 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
     fmax(coordinate_tolerance(x1, x2), coordinate_tolerance(y1, y2)));
 }
 
+/**
+ * @brief Return true if a point lies on a segment, decided exactly
+ * @details For a point that is an input vertex, never a constructed one: the
+ * point lies on the segment exactly where it lies on its line, a sign of a
+ * cross product of coordinate differences (#cross_product_sign), and within
+ * the box of its two ends, comparisons of input coordinates. A segment of no
+ * length holds only its one point
+ */
+static inline bool
+point_on_segment_exact(double px, double py, double x1, double y1, double x2,
+  double y2)
+{
+  if (px < fmin(x1, x2) || px > fmax(x1, x2) ||
+      py < fmin(y1, y2) || py > fmax(y1, y2))
+    return false;
+  return cross_product_sign(x1, y1, x2, y2, x1, y1, px, py) == 0;
+}
+
 #endif /* __GEO_FUNCS_H__ */

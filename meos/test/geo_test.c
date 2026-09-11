@@ -351,6 +351,76 @@ int main(void)
   }
   meos_errno_reset();
 
+  /* Where an end of one line lies relative to the other line is a question
+   * on three input vertices, with one exact answer. An end half a unit in the
+   * last place off the other line, or a few units in the last place from its
+   * end, lies off it, which is what CGAL's exact kernel answers for each of
+   * these pairs: in the first two the lines share their first vertex and
+   * nothing else, and in the other three an end of the second line lies
+   * inside the first and nothing else is shared. The pairs run at
+   * coordinates near 4.5e15, 4.8e14, 3.3e8, 290 and 0.03 */
+  struct { const char *a, *b, *matrix; } lineends[] = {
+    { "LINESTRING(0 0,9007199254740990 9007199254740988)",
+      "LINESTRING(0 0,4503599627370495 4503599627370495)", "FF1F00102" },
+    { "LINESTRING(-283144758449940 485509397516197,"
+        "-284886900263520 481648740423073)",
+      "LINESTRING(-283144758449940 485509397516197,"
+        "-284886900263521 481648740423072)", "FF1F00102" },
+    { "LINESTRING(-327175204.0343151 -97720966.76015949,"
+        "-327816177.3798351 -97936883.91283894)",
+      "LINESTRING(-327335447.3706951 -97774946.04832935,"
+        "-327816177.3798342 -97936883.91283894)", "F01FF0102" },
+    { "LINESTRING(286.8830701420029 -413.570565510352,"
+        "290.10594642651085 -410.84838066357406)",
+      "LINESTRING(287.6887820147749 -412.89002537870874,"
+        "290.1059464265127 -410.84838066357406)", "F01FF0102" },
+    { "LINESTRING(0.030081357121877428 0.00023621927371220153,"
+        "0.036577042090003786 0.005648444167555056)",
+      "LINESTRING(0.03170527655384636 0.0015892739890230878,"
+        "0.036577042090003564 0.005648444167555056)", "F01FF0102" },
+  };
+  for (size_t i = 0; i < sizeof(lineends) / sizeof(lineends[0]); i++)
+  {
+    GSERIALIZED *ga = geom_in(lineends[i].a, -1);
+    GSERIALIZED *gb = geom_in(lineends[i].b, -1);
+    assert(ga != NULL);
+    assert(gb != NULL);
+    meos_errno_reset();
+    char *gm = geom_relate(ga, gb);
+    printf("geom_relate(two lines meeting at one point, %zu): %s, errno %d\n",
+      i, gm ? gm : "(NULL)", meos_errno());
+    assert(gm != NULL);
+    assert(strcmp(gm, lineends[i].matrix) == 0);
+    assert(meos_errno() == 0);
+    free(gm); free(ga); free(gb);
+  }
+  meos_errno_reset();
+
+  /* Two input points are one point exactly where their coordinates are
+   * equal. Points 1e-13 apart are two points: the two are disjoint, as
+   * geom_intersects answers, and a line 1e-13 long has both of its ends in
+   * its boundary, one of them the point and the other outside it */
+  struct { const char *a, *b, *matrix; } tinypts[] = {
+    { "POINT(0 0)", "POINT(1e-13 0)", "FF0FFF0F2" },
+    { "LINESTRING(0 0,1e-13 0)", "POINT(1e-13 0)", "FF10F0FF2" },
+  };
+  for (size_t i = 0; i < sizeof(tinypts) / sizeof(tinypts[0]); i++)
+  {
+    GSERIALIZED *ga = geom_in(tinypts[i].a, -1);
+    GSERIALIZED *gb = geom_in(tinypts[i].b, -1);
+    assert(ga != NULL);
+    assert(gb != NULL);
+    meos_errno_reset();
+    char *gm = geom_relate(ga, gb);
+    printf("geom_relate(%s, %s): %s, errno %d\n", tinypts[i].a, tinypts[i].b,
+      gm ? gm : "(NULL)", meos_errno());
+    assert(gm != NULL);
+    assert(strcmp(gm, tinypts[i].matrix) == 0);
+    assert(meos_errno() == 0);
+    free(gm); free(ga); free(gb);
+  }
+  meos_errno_reset();
+
   /* Two areas lying on OPPOSITE SIDES of one line share no area, so neither
    * interior holds a point of the other's boundary, however near the two
    * boundaries run. Deciding that from a boundary portion means classifying a
