@@ -85,10 +85,16 @@ typedef enum
 
 /* Point / polygon conversions — bodies in th3index_latlng.c. */
 
-/* Shared helper: build a geodetic SRID 4326 LWPOLY from a libh3
- * CellBoundary and serialise. Primary definition in
- * th3index_latlng.c; also called from th3index_edges.c. */
-extern GSERIALIZED *cell_boundary_to_gs(const CellBoundary *bnd);
+/* Shared helper: build an SRID 4326 polygon, geodetic or planar, from a
+ * libh3 CellBoundary and serialise. Primary definition in
+ * th3index_latlng.c; also called from th3index_edges.c and h3index.c. */
+extern GSERIALIZED *cell_boundary_to_gs(const CellBoundary *bnd,
+  bool geodetic);
+
+/* Geodetic centroid and boundary of a cell, for the shared cell operations
+ * whose temporal results are geodetic. Bodies in th3index_latlng.c. */
+extern GSERIALIZED *h3index_cell_to_geogpoint(H3Index cell);
+extern GSERIALIZED *h3index_cell_to_geog(H3Index cell);
 
 /* Cell-sampling helpers shared between the static-geo walker
  * (h3_geo.c::linestring_to_cells_into) and the temporal densifier

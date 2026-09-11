@@ -80,6 +80,15 @@ SELECT ST_Contains(
   cellToBoundary(h3index '871fa44a8ffffff'),
   cellToPoint(h3index '871fa44a8ffffff'));
 
+-- The boundary and the centroid are planar geometries, so the box of a
+-- geometry around the cell overlaps them
+SELECT cellToBoundary(h3index '871fa44a8ffffff')
+  && ST_MakeEnvelope(4, 50, 5, 51, 4326);
+SELECT ST_Intersects(cellToBoundary(h3index '871fa44a8ffffff'),
+  ST_MakeEnvelope(4, 50, 5, 51, 4326));
+SELECT cellToPoint(h3index '871fa44a8ffffff')
+  && ST_MakeEnvelope(4, 50, 5, 51, 4326);
+
 -- The cell containing the centroid is the cell itself
 SELECT geoToH3Cell(cellToPoint(h3index '871fa44a8ffffff'), 7)
   = h3index '871fa44a8ffffff';
@@ -111,5 +120,12 @@ SELECT cellArea(h3index '871fa44a8ffffff')
 
 SELECT ST_AsBinary(cellToBoundary(h3index '871fa44a8ffffff'))
   = ST_AsBinary(getValue(cellToBoundary(th3index '871fa44a8ffffff@2001-01-01'))::geometry);
+
+-- The planar trajectory holds the planar centroid, so the box of a geometry
+-- around the cell overlaps it
+SELECT ST_AsBinary(startValue(tgeompoint(th3index '871fa44a8ffffff@2001-01-01')))
+  = ST_AsBinary(cellToPoint(h3index '871fa44a8ffffff'));
+SELECT startValue(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'))
+  && ST_MakeEnvelope(4, 50, 5, 51, 4326);
 
 -------------------------------------------------------------------------------

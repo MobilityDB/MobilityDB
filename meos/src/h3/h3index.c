@@ -544,26 +544,26 @@ datum_h3_latlng_to_cell(Datum point_d, Datum res_d)
 }
 
 /**
- * @brief Return the center point of an H3 cell
+ * @brief Return the geodetic center point of an H3 cell
  */
 Datum
 datum_h3_cell_to_latlng(Datum d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_H3INDEX_CELL(DatumGetH3Index(d), (Datum) 0);
-  GSERIALIZED *gs = h3index_cell_to_point(DatumGetH3Index(d));
+  GSERIALIZED *gs = h3index_cell_to_geogpoint(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
 
 /**
- * @brief Return the boundary of an H3 cell as a geometry
+ * @brief Return the geodetic boundary of an H3 cell
  */
 Datum
 datum_h3_cell_to_boundary(Datum d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_H3INDEX_CELL(DatumGetH3Index(d), (Datum) 0);
-  GSERIALIZED *gs = h3index_cell_to_boundary(DatumGetH3Index(d));
+  GSERIALIZED *gs = h3index_cell_to_geog(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
 

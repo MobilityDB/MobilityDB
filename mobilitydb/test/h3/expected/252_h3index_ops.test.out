@@ -92,6 +92,27 @@ SELECT ST_Contains(
  t
 (1 row)
 
+SELECT cellToBoundary(h3index '871fa44a8ffffff')
+  && ST_MakeEnvelope(4, 50, 5, 51, 4326);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_Intersects(cellToBoundary(h3index '871fa44a8ffffff'),
+  ST_MakeEnvelope(4, 50, 5, 51, 4326));
+ st_intersects 
+---------------
+ t
+(1 row)
+
+SELECT cellToPoint(h3index '871fa44a8ffffff')
+  && ST_MakeEnvelope(4, 50, 5, 51, 4326);
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT geoToH3Cell(cellToPoint(h3index '871fa44a8ffffff'), 7)
   = h3index '871fa44a8ffffff';
  ?column? 
@@ -127,6 +148,20 @@ SELECT cellArea(h3index '871fa44a8ffffff')
 
 SELECT ST_AsBinary(cellToBoundary(h3index '871fa44a8ffffff'))
   = ST_AsBinary(getValue(cellToBoundary(th3index '871fa44a8ffffff@2001-01-01'))::geometry);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_AsBinary(startValue(tgeompoint(th3index '871fa44a8ffffff@2001-01-01')))
+  = ST_AsBinary(cellToPoint(h3index '871fa44a8ffffff'));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT startValue(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'))
+  && ST_MakeEnvelope(4, 50, 5, 51, 4326);
  ?column? 
 ----------
  t
