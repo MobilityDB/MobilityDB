@@ -1533,6 +1533,36 @@ WITH rast AS (
 SELECT count(*) FROM rast, dumpAsPolygons(r, 2);
 
 -------------------------------------------------------------------------------
+-- Argument names
+-------------------------------------------------------------------------------
+
+-- A raster function takes the names of the arguments of its PostGIS
+-- counterpart, so a call naming them reads the same with or without the ST_
+-- prefix.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT summaryStats(r, nband => 1, exclude_nodata_value => false) =
+    ST_SummaryStats(r, nband => 1, exclude_nodata_value => false)
+    AS summarystats_named,
+  ST_DumpValues(reclass(r, nband => 1, reclassexpr => '0-50:1, 50-100:2',
+    pixeltype => '8BUI'), 1) =
+  ST_DumpValues(ST_Reclass(r, nband => 1, reclassexpr => '0-50:1, 50-100:2',
+    pixeltype => '8BUI'), 1) AS reclass_named,
+  ST_MetaData(rescale(r, scalex => 0.5, scaley => -0.5)) =
+    ST_MetaData(ST_Rescale(r, scalex => 0.5, scaley => -0.5)) AS rescale_named,
+  (SELECT count(*) FROM dumpAsPolygons(r, band => 1,
+    exclude_nodata_value => false)) =
+  (SELECT count(*) FROM ST_DumpAsPolygons(r, band => 1,
+    exclude_nodata_value => false)) AS dumpaspolygons_named
+FROM rast;
+
+-------------------------------------------------------------------------------
 -- raster conversion to stbox
 -------------------------------------------------------------------------------
 

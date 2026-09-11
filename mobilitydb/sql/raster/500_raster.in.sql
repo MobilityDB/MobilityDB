@@ -610,8 +610,8 @@ CREATE FUNCTION asHexWKB(raster, endian text DEFAULT '')
  * @brief Return a raster whose band states the classes an expression maps its
  * values onto
  * @param[in] rast Raster
- * @param[in] band Number of the band, starting at 1
- * @param[in] expr Reclassification expression
+ * @param[in] nband Number of the band, starting at 1
+ * @param[in] reclassexpr Reclassification expression
  * @param[in] pixeltype Name of the pixel type of the resulting band
  * @param[in] nodataval Nodata value of the resulting band, absent where the
  * band states none
@@ -619,8 +619,8 @@ CREATE FUNCTION asHexWKB(raster, endian text DEFAULT '')
  * carries none, which is a different answer from a band whose nodata value is
  * zero
  */
-CREATE FUNCTION reclass(raster, integer, text, text,
-    float8 DEFAULT NULL)
+CREATE FUNCTION reclass(rast raster, nband integer, reclassexpr text,
+    pixeltype text, nodataval float8 DEFAULT NULL)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_reclass'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -700,8 +700,8 @@ CREATE FUNCTION transform(rast raster, alignto raster,
  * @param[in] algorithm Name of the resampling algorithm
  * @param[in] maxerr Error in input pixels the warp may commit
  */
-CREATE FUNCTION rescale(raster, float8, float8,
-    text DEFAULT 'NearestNeighbour', float8 DEFAULT 0.125)
+CREATE FUNCTION rescale(rast raster, scalex float8, scaley float8,
+    algorithm text DEFAULT 'NearestNeighbour', maxerr float8 DEFAULT 0.125)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_rescale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -710,11 +710,12 @@ CREATE FUNCTION rescale(raster, float8, float8,
  * @ingroup mobilitydb_raster
  * @brief Return what the pixels of a raster band amount to
  * @param[in] rast Raster
- * @param[in] band Number of the band, starting at 1
- * @param[in] exclude_nodata True to leave the pixels the band states as nodata
- * out of the statistics
+ * @param[in] nband Number of the band, starting at 1
+ * @param[in] exclude_nodata_value True to leave the pixels the band states as
+ * nodata out of the statistics
  */
-CREATE FUNCTION summaryStats(raster, integer DEFAULT 1, boolean DEFAULT true)
+CREATE FUNCTION summaryStats(rast raster, nband integer DEFAULT 1,
+    exclude_nodata_value boolean DEFAULT true)
   RETURNS summarystats
   AS 'MODULE_PATHNAME', 'Raster_summary_stats'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -725,10 +726,11 @@ CREATE FUNCTION summaryStats(raster, integer DEFAULT 1, boolean DEFAULT true)
  * carrying the same value
  * @param[in] rast Raster
  * @param[in] band Number of the band, starting at 1
- * @param[in] exclude_nodata True to leave the pixels the band states as nodata
- * out
+ * @param[in] exclude_nodata_value True to leave the pixels the band states as
+ * nodata out
  */
-CREATE FUNCTION dumpAsPolygons(raster, integer DEFAULT 1, boolean DEFAULT true)
+CREATE FUNCTION dumpAsPolygons(rast raster, band integer DEFAULT 1,
+    exclude_nodata_value boolean DEFAULT true)
   RETURNS SETOF geomval
   AS 'MODULE_PATHNAME', 'Raster_dump_as_polygons'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
