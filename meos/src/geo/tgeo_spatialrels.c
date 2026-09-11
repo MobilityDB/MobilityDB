@@ -2350,7 +2350,7 @@ setset_box_pairs(const STBox *bb1, int count1, const STBox *bb2, int count2,
   for (int j = 0; j < count2; j++)
     rtree_insert(rtree2, (void *) &bb2[j], j);
 
-  MeosArray *found = meos_array_create(sizeof(int64));
+  MeosArray *found = index_result_create();
   int n = rtree_join(rtree1, rtree2, INDEX_OVERLAPS, found);
   int *result = NULL;
   if (n > 0)
@@ -2359,7 +2359,7 @@ setset_box_pairs(const STBox *bb1, int count1, const STBox *bb2, int count2,
     /* The ids are the segment positions inserted above, so they are bounded by
      * count1/count2 and the narrowing back to int is exact */
     for (int k = 0; k < 2 * n; k++)
-      result[k] = (int) *(int64 *) meos_array_get(found, k);
+      result[k] = (int) INDEX_RESULT_ID_N(found, k);
     qsort(result, (size_t) n, 2 * sizeof(int), pair_cmp);
   }
   meos_array_destroy(found);

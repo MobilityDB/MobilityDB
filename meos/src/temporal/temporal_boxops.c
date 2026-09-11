@@ -249,6 +249,65 @@ ensure_index_join_op(IndexSearchOp op)
 }
 
 /**
+ * @brief Return true if an array holds the ids an index answers, report an
+ * error otherwise
+ * @details Shared by the in-memory RTree and SPTree indexes. A search copies
+ * each id into the array at the width of its elements, so an array of
+ * narrower elements keeps part of every id and answers another one
+ * @param[in] result Array
+ */
+bool
+ensure_index_result(const MeosArray *result)
+{
+  if (! result->varlength && result->elem_size == sizeof(int64))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The array cannot hold the ids an index answers, create it with "
+    "index_result_create");
+  return false;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Return an array collecting the ids an in-memory index answers
+ * @details A search or a join of an RTree or an SPTree fills the array, and
+ * #index_result_id reads an id back. The array can be reused across searches,
+ * each of which resets it
+ * @return New array
+ * @errval NULL
+ */
+MeosArray *
+index_result_create(void)
+{
+  return meos_array_create(sizeof(int64));
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Return in the last argument the n-th id, 0-based, an in-memory index
+ * answers
+ * @details A join answers two ids per pair, so pair `k` is read at positions
+ * `2 * k` and `2 * k + 1`
+ * @param[in] result Array filled by a search or a join
+ * @param[in] n Position of the id
+ * @param[out] id Id
+ * @return Return true if the id is found
+ */
+bool
+index_result_id(const MeosArray *result, int n, int64 *id)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(result, false); VALIDATE_NOT_NULL(id, false);
+  if (! ensure_index_result(result))
+    return false;
+  const int64 *slot = meos_array_get(result, n);
+  if (! slot)
+    return false;
+  *id = *slot;
+  return true;
+}
+
+/**
  * @brief Decompose a temporal value into an array of tight per-segment
  * bounding boxes whose element type matches the given bounding box type
  * @details Shared by the in-memory RTree and SPTree indexes. The

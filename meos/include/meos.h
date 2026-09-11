@@ -395,6 +395,11 @@ typedef enum
   INDEX_ADJACENT       /**< Find stored boxes that share a boundary with the query */
 } IndexSearchOp;
 
+/* Functions for the ids an in-memory index answers */
+
+extern MeosArray *index_result_create(void);
+extern bool index_result_id(const MeosArray *result, int n, int64 *id);
+
 /**
  * Structure for the in-memory Rtree index
  */

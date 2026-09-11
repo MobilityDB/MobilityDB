@@ -1087,7 +1087,8 @@ spnode_search(const SPTree *sptree, const SPNode *node, const void *nodebox,
  * overlap the query, @p INDEX_CONTAINS finds boxes that contain the query,
  * @p INDEX_CONTAINED_BY finds boxes contained by the query
  * @param[in] query The bounding box that serves as query
- * @param[out] result MeosArray of int to collect matching ids
+ * @param[out] result Array collecting the matching ids, made by
+ * #index_result_create
  * @return Number of matching ids
  */
 int
@@ -1097,7 +1098,7 @@ sptree_search(const SPTree *sptree, IndexSearchOp op, const void *query,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(sptree, -1); VALIDATE_NOT_NULL(query, -1);
   VALIDATE_NOT_NULL(result, -1);
-  if (! ensure_valid_sptree_box(sptree, query))
+  if (! ensure_valid_sptree_box(sptree, query) || ! ensure_index_result(result))
     return -1;
 
   /* Project the query box into the internal box type (TPCBox: STBox) */
@@ -1175,7 +1176,7 @@ spnode_join(const SPTree *sptree1, const SPNode *node1, const SPTree *sptree2,
   for (int k = 0; k < count; k++)
   {
     int64 id1 = node1->id;
-    int64 id2 = *(int64 *) meos_array_get(found, k);
+    int64 id2 = INDEX_RESULT_ID_N(found, k);
     meos_array_add(result, &id1);
     meos_array_add(result, &id2);
   }
@@ -1201,15 +1202,14 @@ spnode_join(const SPTree *sptree1, const SPNode *node1, const SPTree *sptree2,
  *
  * The result array is reset before the join. It receives two ids per pair, the
  * entry of @p sptree1 followed by the entry of @p sptree2, so pair `k` is read
- * with #meos_array_get at positions `2 * k` and `2 * k + 1`.
+ * with #index_result_id at positions `2 * k` and `2 * k + 1`.
  * @param[in] sptree1,sptree2 The SPTrees to join, of the same bounding box
  * type. They need not be of the same kind
  * @param[in] op The join operation: @p INDEX_OVERLAPS pairs entries that
  * overlap, @p INDEX_CONTAINS pairs entries of @p sptree1 that contain an entry
  * of @p sptree2, @p INDEX_CONTAINED_BY pairs entries of @p sptree1 contained by
  * an entry of @p sptree2
- * @param[out] result MeosArray of int64 to collect the ids (created by the
- * caller with `meos_array_create(sizeof(int64))`)
+ * @param[out] result Array collecting the ids, made by #index_result_create
  * @return Number of qualifying pairs, half the number of collected ids, on
  * error -1
  */
@@ -1222,7 +1222,7 @@ sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
   VALIDATE_NOT_NULL(result, -1);
   if (! ensure_same_index_bboxtype(sptree1->bboxtype, sptree2->bboxtype) ||
       ! ensure_valid_sptree_sptree(sptree1, sptree2) ||
-      ! ensure_index_join_op(op))
+      ! ensure_index_join_op(op) || ! ensure_index_result(result))
     return -1;
 
   meos_array_reset(result);
@@ -1230,7 +1230,7 @@ sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
   {
     char rootbox2[SPTREE_NODEBOX_MAXSIZE];
     sptree2->nodebox_init(rootbox2, sptree2->root->centroid, sptree2);
-    MeosArray *found = meos_array_create(sizeof(int64));
+    MeosArray *found = index_result_create();
     spnode_join(sptree1, sptree1->root, sptree2, rootbox2,
       index_op_converse(op), found, result);
     meos_array_destroy(found);
@@ -1281,7 +1281,8 @@ sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int64 id)
  * @param[in] sptree The SPTree to query
  * @param[in] op The search operation
  * @param[in] temp The temporal value whose bounding box serves as query
- * @param[out] result MeosArray of int to collect matching ids
+ * @param[out] result Array collecting the matching ids, made by
+ * #index_result_create
  * @return Number of matching ids
  */
 int
@@ -1334,6 +1335,16 @@ sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int64 id,
 }
 
 /**
+ * @brief Order two indexed ids, in the form @p qsort takes
+ */
+static int
+sptree_id_cmp(const void *a, const void *b)
+{
+  int64 l = *(const int64 *) a, r = *(const int64 *) b;
+  return (l < r) ? -1 : ((l > r) ? 1 : 0);
+}
+
+/**
  * @ingroup meos_temporal_box_index
  * @brief Search an in-memory space-partitioning index built with
  * #sptree_insert_temporal_split using a temporal value, returning each matching
@@ -1348,24 +1359,21 @@ sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int64 id,
  * @param[in] temp The temporal value whose per-segment bounding boxes serve as
  * queries
  * @param[in] maxboxes Maximum number of query boxes derived from `temp`
- * @param[out] result MeosArray of int to collect the deduplicated matching ids
+ * @param[out] result Array collecting the deduplicated matching ids, made by
+ * #index_result_create
  * @return Number of distinct matching ids
+ * @errval -1
  * @see sptree_search_temporal
  */
-/**
- * @brief Order two indexed ids, in the form @p qsort takes
- */
-static int
-sptree_id_cmp(const void *a, const void *b)
-{
-  int64 l = *(const int64 *) a, r = *(const int64 *) b;
-  return (l < r) ? -1 : ((l > r) ? 1 : 0);
-}
-
 int
 sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
   const Temporal *temp, int maxboxes, MeosArray *result)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(result, -1);
+  if (! ensure_index_result(result))
+    return -1;
+
   meos_array_reset(result);
   if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
     return 0;
@@ -1376,15 +1384,15 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
     return 0;
 
   /* Accumulate the raw (possibly duplicated) candidate ids of every query box */
-  MeosArray *raw = meos_array_create(sizeof(int64));
-  MeosArray *hits = meos_array_create(sizeof(int64));
+  MeosArray *raw = index_result_create();
+  MeosArray *hits = index_result_create();
   for (int i = 0; i < count; i++)
   {
     int nhits = sptree_search(sptree, op,
       (char *) boxes + (size_t) i * sptree->boxsize, hits);
     for (int j = 0; j < nhits; j++)
     {
-      int64 id = *(int64 *) meos_array_get(hits, j);
+      int64 id = INDEX_RESULT_ID_N(hits, j);
       meos_array_add(raw, &id);
     }
   }
@@ -1398,7 +1406,7 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
   {
     int64 *ids = palloc((size_t) nraw * sizeof(int64));
     for (int i = 0; i < nraw; i++)
-      ids[i] = *(int64 *) meos_array_get(raw, i);
+      ids[i] = INDEX_RESULT_ID_N(raw, i);
     qsort(ids, (size_t) nraw, sizeof(int64), sptree_id_cmp);
     for (int i = 0; i < nraw; i++)
       if (i == 0 || ids[i] != ids[i - 1])

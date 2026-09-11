@@ -1014,7 +1014,7 @@ dist_geom_point_inside(double x, double y, const DistGeom *g)
     int nc = rtree_search(g->rtree, INDEX_OVERLAPS, &query, dist_pip_results);
     for (int j = 0; j < nc; j++)
       dist_poly_seg_raycross(
-        &g->segs[*(int64 *) meos_array_get(dist_pip_results, j)], x, y,
+        &g->segs[INDEX_RESULT_ID_N(dist_pip_results, j)], x, y,
         &inside);
     return inside;
   }

@@ -3804,12 +3804,12 @@ relate_point_on_boundary_index(double x, double y, const RelateEdges *re)
   STBox query;
   stbox_set(true, false, false, 0, x - re->tol, x + re->tol, y - re->tol,
     y + re->tol, 0, 0, NULL, &query);
-  MeosArray *candidates = meos_array_create(sizeof(int64));
+  MeosArray *candidates = index_result_create();
   int nc = rtree_search(re->index, INDEX_OVERLAPS, &query, candidates);
   bool result = false;
   for (int c = 0; c < nc && ! result; c++)
   {
-    Edge *one = re->edges[*(int64 *) meos_array_get(candidates, c)];
+    Edge *one = re->edges[INDEX_RESULT_ID_N(candidates, c)];
     result = relate_point_on_boundary(x, y, &one, 1);
   }
   meos_array_destroy(candidates);
@@ -6076,12 +6076,12 @@ relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
     double pad = fmax(other->tol, edge->tol);
     stbox_set(true, false, false, 0, edge->xmin - pad, edge->xmax + pad,
       edge->ymin - pad, edge->ymax + pad, 0, 0, NULL, &query);
-    candidates = meos_array_create(sizeof(int64));
+    candidates = index_result_create();
     ncand = rtree_search(other->index, INDEX_OVERLAPS, &query, candidates);
   }
   for (int c = 0; c < ncand; c++)
   {
-    int j = candidates ? (int) *(int64 *) meos_array_get(candidates, c) : c;
+    int j = candidates ? (int) INDEX_RESULT_ID_N(candidates, c) : c;
     const Edge *oedge = other->edges[j];
     if (! relate_area_boundary_edge(oedge))
       continue;
@@ -6219,7 +6219,7 @@ relate_area_boundary_points(const RelateEdges *are, const RelateEdges *bre,
 {
   Edge **aedges = are->edges, **bedges = bre->edges;
   int na = are->nedges, nb = bre->nedges;
-  MeosArray *candidates = bre->index ? meos_array_create(sizeof(int64)) : NULL;
+  MeosArray *candidates = bre->index ? index_result_create() : NULL;
   for (int i = 0; i < na; i++)
   {
     const Edge *a = aedges[i];
@@ -6240,7 +6240,7 @@ relate_area_boundary_points(const RelateEdges *are, const RelateEdges *bre,
     }
     for (int c = 0; c < ncand; c++)
     {
-      int j = candidates ? (int) *(int64 *) meos_array_get(candidates, c) : c;
+      int j = candidates ? (int) INDEX_RESULT_ID_N(candidates, c) : c;
       const Edge *b = bedges[j];
       if (!relate_area_boundary_edge(b))
         continue;
@@ -6450,12 +6450,12 @@ relate_area_boundaries_cross(const RelateEdges *a, const RelateEdges *b)
     STBox query;
     stbox_set(true, false, false, 0, ea->xmin, ea->xmax, ea->ymin, ea->ymax,
       0, 0, NULL, &query);
-    MeosArray *candidates = meos_array_create(sizeof(int64));
+    MeosArray *candidates = index_result_create();
     int nc = rtree_search(b->index, INDEX_OVERLAPS, &query, candidates);
     bool result = false;
     for (int c = 0; c < nc && ! result; c++)
     {
-      const Edge *eb = b->edges[*(int64 *) meos_array_get(candidates, c)];
+      const Edge *eb = b->edges[INDEX_RESULT_ID_N(candidates, c)];
       result = relate_area_edges_cross(ea, eb);
     }
     meos_array_destroy(candidates);
@@ -6776,7 +6776,7 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
     indexed = (comps[i].re.index != NULL);
   if (indexed)
   {
-    MeosArray *candidates = meos_array_create(sizeof(int64));
+    MeosArray *candidates = index_result_create();
     double r = seed > MEOS_GEOM_TOLERANCE ? seed : MEOS_GEOM_TOLERANCE;
     for (int round = 0; round < 64; round++)
     {
@@ -6790,7 +6790,7 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
           candidates);
         for (int c = 0; c < nc; c++)
         {
-          int j = (int) *(int64 *) meos_array_get(candidates, c);
+          int j = (int) INDEX_RESULT_ID_N(candidates, c);
           double d = relate_edge_distance(x, y, comps[i].edges[j]);
           /* An edge the point LIES ON is no clearance from it. What the
            * distance misses the edge by is a property of the arithmetic --
@@ -6979,7 +6979,7 @@ relate_union_edges(const LWGEOM *geom)
     edges[i] = (Edge *) meos_array_get(all, i);
   RelateEdges re;
   relate_edges_init(&re, edges, nall, index);
-  MeosArray *candidates = re.index ? meos_array_create(sizeof(int64)) : NULL;
+  MeosArray *candidates = re.index ? index_result_create() : NULL;
   for (int i = 0; i < nall; i++)
   {
     Edge *e = edges[i];
@@ -7006,7 +7006,7 @@ relate_union_edges(const LWGEOM *geom)
     }
     for (int c = 0; c < ncand; c++)
     {
-      int j = candidates ? (int) *(int64 *) meos_array_get(candidates, c) : c;
+      int j = candidates ? (int) INDEX_RESULT_ID_N(candidates, c) : c;
       const Edge *other = edges[j];
       if (j == i || ! relate_area_boundary_edge(other))
         continue;
@@ -7790,13 +7790,13 @@ relate_edges_meet_any(const Edge *a, const RelateEdges *other)
     }
     return false;
   }
-  MeosArray *candidates = meos_array_create(sizeof(int64));
+  MeosArray *candidates = index_result_create();
   int nc = relate_edges_candidates(other, a->xmin, a->xmax, a->ymin, a->ymax,
     candidates);
   bool result = false;
   for (int c = 0; c < nc && ! result; c++)
   {
-    const Edge *b = other->edges[*(int64 *) meos_array_get(candidates, c)];
+    const Edge *b = other->edges[INDEX_RESULT_ID_N(candidates, c)];
     if (b->etype == EDGE_POINT)
       continue;
     /* The index query is grown by the widest tolerance the array asks for,
@@ -7829,12 +7829,12 @@ relate_point_on_any_edge(double x, double y, const RelateEdges *other)
         return true;
     return false;
   }
-  MeosArray *candidates = meos_array_create(sizeof(int64));
+  MeosArray *candidates = index_result_create();
   int nc = relate_edges_candidates(other, x, x, y, y, candidates);
   bool result = false;
   for (int c = 0; c < nc && ! result; c++)
     result = relate_point_on_edge(x, y,
-      other->edges[*(int64 *) meos_array_get(candidates, c)]);
+      other->edges[INDEX_RESULT_ID_N(candidates, c)]);
   meos_array_destroy(candidates);
   return result;
 }
@@ -8791,7 +8791,7 @@ linear_union_dissolve_edges(const MeosArray *edges, int32_t srid,
       NULL, &box);
     rtree_insert(rtree, &box, i);
   }
-  MeosArray *found = meos_array_create(sizeof(int64));
+  MeosArray *found = index_result_create();
   int *which = palloc(sizeof(int) * (size_t) (nedges + 1));
   LinearStretch *cover = palloc(sizeof(LinearStretch) * (size_t) (nedges + 1));
   int maxpieces = nedges + 1, npieces = 0;
@@ -8807,7 +8807,7 @@ linear_union_dissolve_edges(const MeosArray *edges, int32_t srid,
     int nwhich = 0;
     for (int f = 0; f < nfound; f++)
     {
-      int j = (int) *(int64 *) meos_array_get(found, (uint32_t) f);
+      int j = (int) INDEX_RESULT_ID_N(found, (uint32_t) f);
       if (j < i)
         which[nwhich++] = j;
     }

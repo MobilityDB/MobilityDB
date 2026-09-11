@@ -103,11 +103,15 @@ static void
 compare(const char *label, const SPTree *sptree, IndexSearchOp op,
   const void *query, const bool *truth)
 {
-  MeosArray *result = meos_array_create(sizeof(int64));
+  MeosArray *result = index_result_create();
   int count = sptree_search(sptree, op, query, result);
   bool *in_index = calloc(NUM_BOXES, sizeof(bool));
   for (int i = 0; i < count; i++)
-    in_index[*(int64 *) meos_array_get(result, i)] = true;
+  {
+    int64 id;
+    index_result_id(result, i, &id);
+    in_index[id] = true;
+  }
 
   int missed = 0, extra = 0;
   for (int i = 0; i < NUM_BOXES; i++)
@@ -412,9 +416,9 @@ test_mest(void)
   }
   Temporal *query = make_wiggly_tfloat(123456, buf, sizeof(buf));
 
-  MeosArray *single_ids = meos_array_create(sizeof(int64));
-  MeosArray *mest_ids = meos_array_create(sizeof(int64));
-  MeosArray *deg_ids = meos_array_create(sizeof(int64));
+  MeosArray *single_ids = index_result_create();
+  MeosArray *mest_ids = index_result_create();
+  MeosArray *deg_ids = index_result_create();
   int single_count = sptree_search_temporal(single, INDEX_OVERLAPS, query,
     single_ids);
   int mest_count = sptree_search_temporal_dedup(mest, INDEX_OVERLAPS, query,
@@ -428,16 +432,22 @@ test_mest(void)
   int *mest_seen = calloc(NUM_TRIPS, sizeof(int));
   int *deg_seen = calloc(NUM_TRIPS, sizeof(int));
   for (int i = 0; i < single_count; i++)
-    in_single[*(int64 *) meos_array_get(single_ids, i)] = true;
+  {
+    int64 id;
+    index_result_id(single_ids, i, &id);
+    in_single[id] = true;
+  }
   for (int i = 0; i < mest_count; i++)
   {
-    int64 id = *(int64 *) meos_array_get(mest_ids, i);
+    int64 id;
+    index_result_id(mest_ids, i, &id);
     in_mest[id] = true;
     mest_seen[id]++;
   }
   for (int i = 0; i < deg_count; i++)
   {
-    int64 id = *(int64 *) meos_array_get(deg_ids, i);
+    int64 id;
+    index_result_id(deg_ids, i, &id);
     in_deg[id] = true;
     deg_seen[id]++;
   }
@@ -547,9 +557,9 @@ test_stbox_mest(void)
   }
   Temporal *query = make_wiggly_trip(123456, buf, sizeof(buf));
 
-  MeosArray *single_ids = meos_array_create(sizeof(int64));
-  MeosArray *mest_ids = meos_array_create(sizeof(int64));
-  MeosArray *deg_ids = meos_array_create(sizeof(int64));
+  MeosArray *single_ids = index_result_create();
+  MeosArray *mest_ids = index_result_create();
+  MeosArray *deg_ids = index_result_create();
   int single_count = sptree_search_temporal(single, INDEX_OVERLAPS, query,
     single_ids);
   int mest_count = sptree_search_temporal_dedup(mest, INDEX_OVERLAPS, query,
@@ -563,16 +573,22 @@ test_stbox_mest(void)
   int *mest_seen = calloc(NUM_TRIPS, sizeof(int));
   int *deg_seen = calloc(NUM_TRIPS, sizeof(int));
   for (int i = 0; i < single_count; i++)
-    in_single[*(int64 *) meos_array_get(single_ids, i)] = true;
+  {
+    int64 id;
+    index_result_id(single_ids, i, &id);
+    in_single[id] = true;
+  }
   for (int i = 0; i < mest_count; i++)
   {
-    int64 id = *(int64 *) meos_array_get(mest_ids, i);
+    int64 id;
+    index_result_id(mest_ids, i, &id);
     in_mest[id] = true;
     mest_seen[id]++;
   }
   for (int i = 0; i < deg_count; i++)
   {
-    int64 id = *(int64 *) meos_array_get(deg_ids, i);
+    int64 id;
+    index_result_id(deg_ids, i, &id);
     in_deg[id] = true;
     deg_seen[id]++;
   }
@@ -930,11 +946,15 @@ static void
 selective(const char *label, const SPTree *sptree, const void *query,
   const bool *truth, int ntruth)
 {
-  MeosArray *result = meos_array_create(sizeof(int64));
+  MeosArray *result = index_result_create();
   int count = sptree_search(sptree, INDEX_OVERLAPS, query, result);
   bool *in_index = calloc(SEL_BOXES, sizeof(bool));
   for (int i = 0; i < count; i++)
-    in_index[*(int64 *) meos_array_get(result, i)] = true;
+  {
+    int64 id;
+    index_result_id(result, i, &id);
+    in_index[id] = true;
+  }
   int missed = 0;
   for (int i = 0; i < SEL_BOXES; i++)
     if (truth[i] && ! in_index[i])
@@ -1053,7 +1073,7 @@ test_reported_size(SPTreeKind kind, const char *kindname)
 
   /* A tree holding nothing */
   SPTree *none = sptree_create_stbox(kind);
-  MeosArray *result = meos_array_create(sizeof(int64));
+  MeosArray *result = index_result_create();
   STBox *query = random_stbox(200, 50);
   int count = sptree_search(none, INDEX_OVERLAPS, query, result);
   snprintf(name, sizeof(name), "%s empty answers 0, not the error sentinel",

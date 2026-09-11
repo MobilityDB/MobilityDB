@@ -712,6 +712,14 @@ typedef struct MeosArray
   void *elems;      /**< Pointer to the array elements */
 } MeosArray;
 
+/**
+ * @brief Return the n-th id, 0-based, of an array collecting the ids an
+ * in-memory index answers
+ * @note Internal counterpart of #index_result_id, for a caller holding an
+ * array made by #index_result_create and a position below its count
+ */
+#define INDEX_RESULT_ID_N(result, n) (((const int64 *) (result)->elems)[(n)])
+
 
 /*****************************************************************************/
 
@@ -953,6 +961,7 @@ extern bool ensure_bbox_temporal_compatible(MeosType bboxtype,
   const Temporal *temp);
 extern bool ensure_same_index_bboxtype(MeosType bboxtype1, MeosType bboxtype2);
 extern bool ensure_index_join_op(IndexSearchOp op);
+extern bool ensure_index_result(const MeosArray *result);
 extern void *bbox_temporal_split_boxes(MeosType bboxtype, size_t boxsize,
   const Temporal *temp, int maxboxes, int *count);
 

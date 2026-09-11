@@ -32,7 +32,8 @@
  * @brief A program that tests the position search operations of the in-memory
  * indexes, i.e., the operations that order a dimension, against the exact
  * answer and across both index structures, together with the equality
- * operation, which orders no dimension but is pruned the way containment is.
+ * operation, which orders no dimension but is pruned the way containment is,
+ * and the width of the ids the indexes answer.
  *
  * An index answers a position operation by two different tests: an entry is
  * accepted by the operator of the box type, and a subtree is descended when it
@@ -120,7 +121,7 @@ sorted_of(MeosArray *result, int *count)
   *count = meos_array_count(result);
   int64 *ids = malloc(sizeof(int64) * (size_t) (*count ? *count : 1));
   for (int i = 0; i < *count; i++)
-    ids[i] = *(int64 *) meos_array_get(result, i);
+    index_result_id(result, i, &ids[i]);
   qsort(ids, (size_t) *count, sizeof(int64), cmp_int64);
   return ids;
 }
@@ -178,21 +179,21 @@ main(void)
       qsort(want, (size_t) nwant, sizeof(int64), cmp_int64);
       hits += nwant;
 
-      MeosArray *r = meos_array_create(sizeof(int64));
+      MeosArray *r = index_result_create();
       rtree_search(rt, OPS[o].op, query, r);
       int n; int64 *got = sorted_of(r, &n);
       if (n != nwant || (nwant && memcmp(got, want, sizeof(int64) * (size_t) nwant)))
         wrong_rt++;
       free(got); meos_array_destroy(r);
 
-      r = meos_array_create(sizeof(int64));
+      r = index_result_create();
       sptree_search(quad, OPS[o].op, query, r);
       got = sorted_of(r, &n);
       if (n != nwant || (nwant && memcmp(got, want, sizeof(int64) * (size_t) nwant)))
         wrong_quad++;
       free(got); meos_array_destroy(r);
 
-      r = meos_array_create(sizeof(int64));
+      r = index_result_create();
       sptree_search(kd, OPS[o].op, query, r);
       got = sorted_of(r, &n);
       if (n != nwant || (nwant && memcmp(got, want, sizeof(int64) * (size_t) nwant)))
@@ -233,9 +234,9 @@ main(void)
         if (same_stbox_stbox(&boxes[i], query))
           want++;
 
-      MeosArray *got_rt = meos_array_create(sizeof(int64));
-      MeosArray *got_quad = meos_array_create(sizeof(int64));
-      MeosArray *got_kd = meos_array_create(sizeof(int64));
+      MeosArray *got_rt = index_result_create();
+      MeosArray *got_quad = index_result_create();
+      MeosArray *got_kd = index_result_create();
       int n_rt = rtree_search(rt, INDEX_SAME, query, got_rt);
       int n_quad = sptree_search(quad, INDEX_SAME, query, got_quad);
       int n_kd = sptree_search(kd, INDEX_SAME, query, got_kd);
@@ -300,9 +301,9 @@ main(void)
       sptree_insert(aquad, &chain[i], chain_ids[i]);
       sptree_insert(akd, &chain[i], chain_ids[i]);
     }
-    MeosArray *g1 = meos_array_create(sizeof(int64));
-    MeosArray *g2 = meos_array_create(sizeof(int64));
-    MeosArray *g3 = meos_array_create(sizeof(int64));
+    MeosArray *g1 = index_result_create();
+    MeosArray *g2 = index_result_create();
+    MeosArray *g3 = index_result_create();
     int n1 = rtree_search(art, INDEX_ADJACENT, query, g1);
     int n2 = sptree_search(aquad, INDEX_ADJACENT, query, g2);
     int n3 = sptree_search(akd, INDEX_ADJACENT, query, g3);
@@ -321,7 +322,7 @@ main(void)
     RTree *art2 = rtree_create_intspan();
     for (int i = 0; i < NADJ; i++)
       rtree_insert(art2, &chain[i], chain_ids[i]);
-    MeosArray *pairs = meos_array_create(sizeof(int64));
+    MeosArray *pairs = index_result_create();
     rtree_join(art, art2, INDEX_ADJACENT, pairs);
     int got_pairs = meos_array_count(pairs) / 2;
     if (got_pairs != want_pairs)
@@ -336,6 +337,57 @@ main(void)
     rtree_free(art); rtree_free(art2);
     sptree_free(aquad); sptree_free(akd);
     free(chain); free(chain_ids);
+  }
+
+  /* The ids an index answers. An id is 64 bits wide, and a search copies it
+   * into the result array at the width of the array's elements, so an id
+   * beyond 32 bits keeps its high half only in an array made for the ids. An
+   * array of narrower elements would keep the low half and answer another id,
+   * 5 for the one inserted here, so every index refuses it. */
+  {
+    const int64 big = 4294967301;
+    STBox *b = stbox_in("STBOX X((1,1),(2,2))");
+    RTree *irt = rtree_create_stbox();
+    SPTree *iquad = sptree_create_stbox(SPTREE_QUADTREE);
+    SPTree *ikd = sptree_create_stbox(SPTREE_KDTREE);
+    rtree_insert(irt, b, big);
+    sptree_insert(iquad, b, big);
+    sptree_insert(ikd, b, big);
+
+    MeosArray *res = index_result_create();
+    int64 id_rt = 0, id_quad = 0, id_kd = 0;
+    bool read_rt = rtree_search(irt, INDEX_OVERLAPS, b, res) == 1 &&
+      index_result_id(res, 0, &id_rt);
+    bool read_quad = sptree_search(iquad, INDEX_OVERLAPS, b, res) == 1 &&
+      index_result_id(res, 0, &id_quad);
+    bool read_kd = sptree_search(ikd, INDEX_OVERLAPS, b, res) == 1 &&
+      index_result_id(res, 0, &id_kd);
+    if (! read_rt || ! read_quad || ! read_kd || id_rt != big ||
+        id_quad != big || id_kd != big)
+    {
+      printf("index ids: the id %lld reads back as R-tree %lld, quad-tree "
+        "%lld, k-d tree %lld\n", (long long) big, (long long) id_rt,
+        (long long) id_quad, (long long) id_kd);
+      failures++;
+    }
+
+    meos_initialize_noexit_error_handler();
+    MeosArray *narrow = meos_array_create(sizeof(int));
+    int n_rt = rtree_search(irt, INDEX_OVERLAPS, b, narrow);
+    int n_quad = sptree_search(iquad, INDEX_OVERLAPS, b, narrow);
+    int n_join = rtree_join(irt, irt, INDEX_OVERLAPS, narrow);
+    if (n_rt != -1 || n_quad != -1 || n_join != -1)
+    {
+      printf("index ids: an array of int elements is answered into rather "
+        "than refused, R-tree %d, quad-tree %d, join %d\n", n_rt, n_quad,
+        n_join);
+      failures++;
+    }
+    meos_errno_reset();
+
+    meos_array_destroy(res); meos_array_destroy(narrow);
+    rtree_free(irt); sptree_free(iquad); sptree_free(ikd);
+    free(b);
   }
 
   rtree_free(rt);
