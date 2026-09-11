@@ -13,6 +13,10 @@ set(TZ_SOURCES
 if(NOT PGTYPES_EXT_NO_BACKEND_DUPS)
   list(APPEND TZ_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/pgtz.c)
 endif()
+# The time zone database compiled into standalone MEOS
+if(MEOS AND NOT MEOS_TZDATA_DIR)
+  list(APPEND TZ_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/tzdata_embedded.c)
+endif()
 
 set(PGTYPES_SOURCES ${PGTYPES_SOURCES} ${TZ_SOURCES}
   # Mandatory so that the variable update is visible in the parent directory's scope

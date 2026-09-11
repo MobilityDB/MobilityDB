@@ -73,6 +73,12 @@ struct pg_tz
 /* in pgtz.c */
 extern int	pg_open_tzfile(const char *name, char *canonname);
 
+/* in tzdata_embedded.c, standalone MEOS only */
+extern int	pg_tzdata_embedded_read(const char *name, char *canonname,
+									char *buf, size_t bufsize);
+extern int	pg_tzdata_embedded_count(void);
+extern const char *pg_tzdata_embedded_name(int i);
+
 /* in localtime.c */
 extern int	tzload(const char *name, char *canonname, struct state *sp,
 				   bool doextend);

@@ -131,16 +131,19 @@ else()
   set(PGTYPES_EXT_NO_BACKEND_DUPS FALSE)
 endif()
 
-# Set the location of the directory of the time zone database. macOS may also
-# have /var/db/timezone/zoneinfo but /usr/share/zoneinfo is the standard
-# fallback. An explicit -DMEOS_TZDATA_DIR overrides everything: this is how the
-# Windows (UCRT64) build points standalone MEOS at the native tzdata package
-# (e.g. cygpath -m "$MSYSTEM_PREFIX/share/zoneinfo"), since Windows has no
-# /usr/share/zoneinfo and pg_TZDIR()'s get_share_path() fallback would resolve
-# to a non-existent relative "share/timezone" and abort meos_initialize().
+# The time zone database. Standalone MEOS carries its own, compiled from the
+# tzdata.zi of the PostgreSQL release it tracks (timezone/tzdata_embedded.c),
+# as PostgreSQL carries the zone files it compiles from the same source: it
+# reads the same zones on every platform, with or without a zone directory on
+# the host. An explicit -DMEOS_TZDATA_DIR makes it read the zone files of that
+# directory instead, as PostgreSQL's --with-system-tzdata does. The extension
+# build reads the zones of the PostgreSQL server it runs in, from
+# /usr/share/zoneinfo outside Windows.
 if(MEOS_TZDATA_DIR)
   add_definitions(-DSYSTEMTZDIR="${MEOS_TZDATA_DIR}")
   message(STATUS "Directory of the time zone database: ${MEOS_TZDATA_DIR}")
+elseif(MEOS)
+  message(STATUS "Time zone database: compiled into the library")
 elseif(NOT WIN32)
   add_definitions(-DSYSTEMTZDIR="/usr/share/zoneinfo")
   message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")

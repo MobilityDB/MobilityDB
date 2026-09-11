@@ -215,7 +215,6 @@ tzloadbody(char const *name, char *canonname, struct state *sp, bool doextend,
        union local_storage *lsp)
 {
   int      i;
-  int      fid;
   int      stored;
   ssize_t    nread;
   union input_buffer *up = &lsp->u.u;
@@ -233,7 +232,19 @@ tzloadbody(char const *name, char *canonname, struct state *sp, bool doextend,
   if (name[0] == ':')
     ++name;
 
-  fid = pg_open_tzfile(name, canonname);
+#if MEOS && !defined(SYSTEMTZDIR)
+  /* MEOS: standalone MEOS reads the zone from the time zone database
+   * compiled into the library (tzdata_embedded.c), the whole of its database
+   * as a zone directory is the whole of PostgreSQL's: a name it does not
+   * hold is not a zone. A build given a zone directory (MEOS_TZDATA_DIR)
+   * reads the files there instead. */
+  nread = pg_tzdata_embedded_read(name, canonname, up->buf, sizeof up->buf);
+  if (nread < 0)
+    return ENOENT;
+  if (nread < tzheadsize)
+    return EINVAL;
+#else
+  int      fid = pg_open_tzfile(name, canonname);
   if (fid < 0)
     return ENOENT;      /* pg_open_tzfile may not set errno */
 
@@ -250,6 +261,7 @@ tzloadbody(char const *name, char *canonname, struct state *sp, bool doextend,
   }
   if (close(fid) < 0)
     return errno;
+#endif
   for (stored = 4; stored <= 8; stored *= 2)
   {
     int32    ttisstdcnt = detzcode(up->tzhead.tzh_ttisstdcnt);
