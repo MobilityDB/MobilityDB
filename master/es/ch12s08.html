@@ -25,7 +25,7 @@ SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-0
 -- {[Cbuffer(POINT(1 1.123),0.123)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-02)}
 </pre></li><li class="listitem"><a name="tcbuffer_stops"></a><a class="indexterm" name="id8038"></a><p>Extrae las subsecuencias en las que el búfer circular temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</p><pre class="programlisting">
 stops(tcbuffer,maxdist float=0.0,minduration interval='0 minutes') → tcbuffer
-</pre><p>El tamaño del área es la mayor distancia entre dos centros de la subsecuencia, como se indica para un punto temporal en <a class="link" href="ch07s07.html#tgeo_stops"><code class="varname">stops</code></a>.</p><pre class="programlisting">
+</pre><p>El tamaño del área es la mayor distancia entre dos centros de la subsecuencia, y una parada que comienza o termina en el primer o el último instante de una secuencia incluye ese instante solo si la secuencia lo incluye, como se indica para un punto temporal en <a class="link" href="ch07s07.html#tgeo_stops"><code class="varname">stops</code></a>.</p><pre class="programlisting">
 SELECT asText(stops(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(2 2), 0.5)@2001-01-03,
   Cbuffer(Point(2 2), 0.5)@2001-01-04]'));

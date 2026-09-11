@@ -129,10 +129,10 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-0
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 stops(tpoint,maxdist float=0.0,minduration interval='0 minutes') → tpoint
-</pre><p>The size of the area is the greatest distance between two points of the subsequence, which is the quantity the temporal float form of the function reads as the difference between the greatest and the least value it takes. If <code class="varname">maxDist</code> is not given it is assumed 0.0 and thus, the function extracts the constant segments of the given temporal point. The distance is computed in the units of the coordinate system for a <code class="varname">tgeompoint</code> and in meters on the WGS84 spheroid for a <code class="varname">tgeogpoint</code>. Note that even though the function accepts 3D geometries, the computation is always performed in 2D.</p><pre class="programlisting">
+</pre><p>The size of the area is the greatest distance between two points of the subsequence, which is the quantity the temporal float form of the function reads as the difference between the greatest and the least value it takes. If <code class="varname">maxDist</code> is not given it is assumed 0.0 and thus, the function extracts the constant segments of the given temporal point. The distance is computed in the units of the coordinate system for a <code class="varname">tgeompoint</code> and in meters on the WGS84 spheroid for a <code class="varname">tgeogpoint</code>. Note that even though the function accepts 3D geometries, the computation is always performed in 2D. A stop that begins at the first instant of a sequence includes that instant only if the sequence does, and the same holds for a stop that ends at its last instant. Stops are found in time order: each begins at the earliest instant from which the value stays within an area of the maximum size for the minimum duration, and ends at the last instant before it leaves the area.</p><pre class="programlisting">
 SELECT asText(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02,
   Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]'));
-/* {[POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02), [POINT(2 2)@2001-01-03,
+/* {[POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02], [POINT(2 2)@2001-01-03,
    POINT(2 2)@2001-01-04]} */
 SELECT asText(stops(tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 1 1)@2001-01-02,
   Point(2 2 2)@2001-01-03, Point(2 2 2)@2001-01-04]', 1.75));
