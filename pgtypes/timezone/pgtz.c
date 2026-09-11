@@ -514,6 +514,13 @@ meos_initialize_timezone(const char *tz_str)
     /* default timezone */
     tz_str = "GMT";
 
+#if MEOS
+  /* The abbreviations a timestamp may carry, installed once per process */
+  if (! pg_tznames_install_default())
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Failed to install the time zone abbreviations");
+#endif
+
   /* Free the existing timezone entry */
   if (session_timezone)
     pfree(session_timezone); 
