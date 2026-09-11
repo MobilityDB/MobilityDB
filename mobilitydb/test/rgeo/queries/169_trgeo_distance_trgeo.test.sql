@@ -83,10 +83,11 @@ SELECT interp(tDistance(
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(20 0),0)@2001-01-01, Pose(Point(14 0),0)@2001-01-02]'));
 
--- The shortest line joins the two bodies themselves
+-- The shortest line joins the two bodies themselves, at the one pair of
+-- corners that come closest
 SELECT ST_AsText(shortestLine(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
-  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(20 0),0)@2001-01-01, Pose(Point(14 0),0)@2001-01-02]'));
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(20 2),0)@2001-01-01, Pose(Point(14 2),0)@2001-01-02]'));
 
 -- Two long hulls passing 2.2 m apart on nearly parallel headings: the
 -- closest-feature walk reaches a transition a few 1e-14 short of the end of a
