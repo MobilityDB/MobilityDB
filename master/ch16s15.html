@@ -37,7 +37,7 @@ SELECT numValues(h3UncompactCells(h3CompactCells(
 -- 7
 </pre></li><li class="listitem"><a name="raster_quadbins"></a><a class="indexterm" name="id12868"></a><p>Return the distinct QUADBIN cells at a zoom level covered by a trajectory</p><pre class="programlisting">
 quadbins(tgeompoint,zoom integer) → bigint[]
-</pre><p>Returns the set of unique QUADBIN cells the trajectory covers. A trajectory that states nothing between its instants covers the tiles holding them; one that moves between them also covers the tiles it crosses on the way, and the segment is walked at half a tile to find them, the tile narrowing towards the poles as its Web-Mercator envelope does. The result is suitable as a WHERE-clause join key against a Raquet table, where a tile the trip crosses but the set omits is a tile the join never reads. <code class="varname">zoom</code> must be in [0, 15].</p><pre class="programlisting">
+</pre><p>Returns the set of unique QUADBIN cells the trajectory covers. A trajectory that states nothing between its instants covers the tiles holding them; one that moves between them also covers every tile it crosses on the way, since the segment is traversed tile by tile. The result is suitable as a WHERE-clause join key against a Raquet table, where a tile the trip crosses but the set omits is a tile the join never reads. <code class="varname">zoom</code> must be in [0, 15].</p><pre class="programlisting">
 -- Three instants spanning three tiles at zoom 3
 SELECT quadbins(tgeompoint 'SRID=4326;
   {Point(-60 45)@2024-01-01, Point(0 45)@2024-01-02, Point(60 45)@2024-01-03}', 3);
