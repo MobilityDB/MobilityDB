@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_linesegm_intersect</title>
+<title>MobilityDB: buffer_join_is_point</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -141,9 +141,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a08831621623bf9d8db97ee4f46b04c3f.html#a08831621623bf9d8db97ee4f46b04c3f">buffer_is_areal_geometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7737c88e2a3c445c4c8c23b1096cc17b.html#a7737c88e2a3c445c4c8c23b1096cc17b">buffer_is_boundary_edge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae1f13617888db5d9161693239e5aa4d2.html#ae1f13617888db5d9161693239e5aa4d2">buffer_is_contained</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a1c3abdea33c64d03bad211755423e91f.html#a1c3abdea33c64d03bad211755423e91f">buffer_join_is_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5725c86bdf4ad4a115ad37e404e639a7.html#a5725c86bdf4ad4a115ad37e404e639a7">buffer_keep_closest</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a804e90f95a99f3d9cba68d31a02a3f25.html#a804e90f95a99f3d9cba68d31a02a3f25">buffer_line_intersection</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a4853c2f3b46f2e72e87121cccd207f72.html#a4853c2f3b46f2e72e87121cccd207f72">buffer_linesegm_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a15728da7384d2eb369e3a13c4f71a5e4.html#a15728da7384d2eb369e3a13c4f71a5e4">buffer_locator_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a01b3bb60e73f627b1abd9e336d3caa9f.html#a01b3bb60e73f627b1abd9e336d3caa9f">buffer_locator_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac4e0865876d9181ce640766c5195130f.html#ac4e0865876d9181ce640766c5195130f">buffer_locator_point</a></td></tr>
@@ -243,8 +243,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4853c2f3b46f2e72e87121cccd207f72" name="a4853c2f3b46f2e72e87121cccd207f72"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4853c2f3b46f2e72e87121cccd207f72">&#9670;&#160;</a></span>buffer_linesegm_intersect()</h2>
+<a id="a1c3abdea33c64d03bad211755423e91f" name="a1c3abdea33c64d03bad211755423e91f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c3abdea33c64d03bad211755423e91f">&#9670;&#160;</a></span>buffer_join_is_point()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -253,52 +253,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structIntersectResult.html">IntersectResult</a> buffer_linesegm_intersect </td>
+          <td class="memname">static bool buffer_join_is_point </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ax</em>, </td>
+          <td class="paramtype"><a class="el" href="structPOINT2D.html">POINT2D</a>&#160;</td>
+          <td class="paramname"><em>p1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ay</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>rx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>ry</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dy</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structPOINT2D.html">POINT2D</a>&#160;</td>
+          <td class="paramname"><em>p2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -308,25 +272,13 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return where two segments of a buffer meet, the first given by its start and its direction. </p>
-<p >The buffer asks this of its own edges, offsets it computes from the input and whose ends are rounded, so the verdict is taken within tolerances rather than exactly: two offsets that share a corner meet at one point even where their rounded ends do not exactly coincide. <a class="el" href="geo__funcs_8h_a8f027e7f6fed84bad331b1a24de1fa54.html#a8f027e7f6fed84bad331b1a24de1fa54" title="Return the intersection value obtained by computing the intersection of a line segment defined by two...">linesegm_intersect</a> decides the same question exactly, on input vertices.</p><ul>
-<li>No intersection: INTERSECT_NONE -&gt; t0 and t1 undefined</li>
-<li>Single point: INTERSECT_POINT -&gt; t0 in [0,1], t1 ignored</li>
-<li>Overlap segment: INTERSECT_OVERLAP -&gt; t0 &lt; t1 in [0,1], apart by at least MEOS_GEOM_TOLERANCE <dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ax,ay</td><td>Coordinates of the start of the first segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rx,ry</td><td>Vector from the start to the end of the first segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">cx,cy,dx,dy</td><td>Coordinates of the ends of the second segment </td></tr>
-  </table>
-  </dd>
-</dl>
-</li>
-</ul>
+<p>Return true if the two ends of a join are one point. </p>
+<p >The ends of a join are the offsets of one vertex along the normals of the two edges meeting there, each constructed and rounded to the coordinates it is written at. Where the edges turn by less than that rounding resolves, the two ends lie within it of each other and the join between them has no extent the coordinates can carry: written as an arc, its three rounded points name a circle of another radius altogether, and written as a segment it is a sliver whose direction is the rounding. The two pieces it would join meet at one point instead. </p>
 
 </div>
 </div>
