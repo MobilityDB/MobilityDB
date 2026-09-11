@@ -10,8 +10,9 @@ SELECT atValue(th3index '{871fa4418ffffff@2001-01-01,
 SELECT atValue(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}',
   quadbin '48a6227affffffff');
 -- {48a6227affffffff@2001-01-01}
-SELECT atValue(ts2cell '47c3c@2001-01-01', s2cell '47c3c');
--- 47c3c@2001-01-01
+SELECT atValue(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}',
+  s2cell '47c3c');
+-- {47c3c@2001-01-01}
 </pre></li><li class="listitem"><a name="tcell_at_time"></a><a class="indexterm" name="id12595"></a><a class="indexterm" name="id12598"></a><p>Restrict a temporal cell to (the complement of) a time value</p><pre class="programlisting">
 atTime(tcell,time) → tcell
 minusTime(tcell,time) → tcell
@@ -22,6 +23,7 @@ SELECT atTime(th3index '[871fa4418ffffff@2001-01-01,
 SELECT atTime(tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-04]',
   tstzspan '[2001-01-02, 2001-01-03]');
 -- [48a6227affffffff@2001-01-02, 48a6227affffffff@2001-01-03]
-SELECT atTime(ts2cell '47c3c@2001-01-01', tstzspan '[2001-01-01, 2001-01-02]');
--- 47c3c@2001-01-01
+SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
+  tstzspan '[2001-01-02, 2001-01-03]');
+-- [47c3c@2001-01-02, 47c3c@2001-01-03]
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Modifications </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Static Geometry Coverage</td></tr></table></div></body></html>

@@ -17,8 +17,12 @@ SELECT asText(cellToPoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
 SELECT asText(tgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
 -- POINT(4.297401 50.8043)@2001-01-01
+SELECT ST_AsText(cellToPoint(quadbin '48a6227affffffff'), 6);
+-- POINT(4.394531 50.847573)
 SELECT asText(cellToPoint(tquadbin '48a6227affffffff@2001-01-01'), 6);
 -- POINT(4.394531 50.847573)@2001-01-01
+SELECT ST_AsText(cellToPoint(s2cell '47c3c'), 6);
+-- POINT(4.222019 50.936164)
 SELECT asText(cellToPoint(ts2cell '47c3c@2001-01-01'), 6);
 -- POINT(4.222019 50.936164)@2001-01-01
 </pre></li><li class="listitem"><a name="tcell_cell_to_boundary"></a><a class="indexterm" name="id12710"></a><p>Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</p><pre class="programlisting">

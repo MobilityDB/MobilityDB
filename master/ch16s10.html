@@ -6,22 +6,30 @@ SELECT getResolution(h3index '831c02fffffffff');
 -- 3
 SELECT getResolution(th3index '831c02fffffffff@2001-01-01');
 -- 3@2001-01-01
+SELECT getResolution(quadbin '48a6227affffffff');
+-- 10
 SELECT getResolution(tquadbin '48a6227affffffff@2001-01-01');
 -- 10@2001-01-01
+SELECT getResolution(s2cell '47c3c');
+-- 7
 SELECT getResolution(ts2cell '47c3c@2001-01-01');
 -- 7@2001-01-01
 </pre></li><li class="listitem"><a name="tcell_is_valid_cell"></a><a class="indexterm" name="id12659"></a><p>Return a temporal boolean stating at each instant whether the value is a valid cell</p><pre class="programlisting">
 isValidCell(cell) → boolean
 isValidCell(tcell) → tbool
 </pre><p>A value is a valid cell when its bit pattern denotes something its grid indexes: for QUADBIN, tile coordinates within the bounds of the resolution the identifier states; for H3, a base cell and digit sequence the icosahedron carries; for S2, a face and a Hilbert position at a level between 0 and 30.</p><p>Only H3 can be asked the question of a value that answers <code class="varname">false</code>: its input function admits any bit pattern and leaves the verdict to this function, while the QUADBIN and the S2 input functions reject a pattern that indexes nothing, so <code class="varname">tquadbin '0'</code> and <code class="varname">ts2cell '0'</code> raise an error before the call is made.</p><pre class="programlisting">
-SELECT isValidCell(quadbin '48a6227affffffff');
+SELECT isValidCell(h3index '831c02fffffffff');
 -- t
 SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
 -- t@2001-01-01
 SELECT isValidCell(th3index '0@2001-01-01');
 -- f@2001-01-01
+SELECT isValidCell(quadbin '48a6227affffffff');
+-- t
 SELECT isValidCell(tquadbin '48a6227affffffff@2001-01-01');
 -- t@2001-01-01
+SELECT isValidCell(s2cell '47c3c');
+-- t
 SELECT isValidCell(ts2cell '47c3c@2001-01-01');
 -- t@2001-01-01
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s09.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s11.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Static Geometry Coverage </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Hierarchy</td></tr></table></div></body></html>

@@ -3,8 +3,8 @@ tcell {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tcell → boolean
 </pre><pre class="programlisting">
 SELECT th3index '831c02fffffffff@2001-01-01' = th3index '831c02fffffffff@2001-01-01';
 -- t
-SELECT tquadbin '48a6227affffffff@2001-01-01' &lt; tquadbin '485623ffffffffff@2001-01-01';
--- f
+SELECT tquadbin '48a6227affffffff@2001-01-01' = tquadbin '48a6227affffffff@2001-01-01';
+-- t
 SELECT ts2cell '47c3c@2001-01-01' = ts2cell '47c3c@2001-01-01';
 -- t
 </pre></li><li class="listitem"><a name="tcell_ever_always"></a><a class="indexterm" name="id12449"></a><a class="indexterm" name="id12452"></a><a class="indexterm" name="id12455"></a><a class="indexterm" name="id12458"></a><p>Comparaciones siempre y alguna vez</p><pre class="programlisting">
@@ -14,16 +14,17 @@ SELECT th3index '[831c02fffffffff@2001-01-01,
   880326b885fffff@2001-01-05]' ?= h3index '880326b885fffff';
 -- t
 SELECT tquadbin '[48a6227affffffff@2001-01-01,
-  485623ffffffffff@2001-01-05]' %= quadbin '485623ffffffffff';
--- f
-SELECT ts2cell '47c3c@2001-01-01' ?= s2cell '47c3c';
+  485623ffffffffff@2001-01-05]' ?= quadbin '485623ffffffffff';
+-- t
+SELECT ts2cell '[47c3c@2001-01-01,
+  47c4@2001-01-05]' ?= s2cell '47c4';
 -- t
 </pre></li><li class="listitem"><a name="tcell_tcomp"></a><a class="indexterm" name="id12470"></a><a class="indexterm" name="id12473"></a><p>Comparaciones temporales</p><pre class="programlisting">
 {cell,tcell} {#=, #&lt;&gt;} {cell,tcell} → tbool
 </pre><p>Devolver un booleano temporal que da la igualdad, o la desigualdad, por instante entre una celda temporal y un sondeo</p><pre class="programlisting">
 SELECT th3index '831c02fffffffff@2001-01-01' #= h3index '831c02fffffffff';
 -- t@2001-01-01
-SELECT tquadbin '48a6227affffffff@2001-01-01' #&lt;&gt; quadbin '485623ffffffffff';
+SELECT tquadbin '48a6227affffffff@2001-01-01' #= quadbin '48a6227affffffff';
 -- t@2001-01-01
 SELECT ts2cell '47c3c@2001-01-01' #= s2cell '47c3c';
 -- t@2001-01-01

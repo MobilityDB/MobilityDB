@@ -4,8 +4,20 @@ text(tcell) → text
 </pre><p>El tipo estático acompañante <code class="varname">cell</code> contiene un único identificador de celda (no temporal) y <code class="varname">cellset</code> un conjunto finito de ellos; comparten la representación textual hexadecimal / decimal del tipo temporal, llevan los operadores estándar de igualdad y de orden a través de una clase de operadores btree y hash, y exponen los predicados de validez de más abajo. Un modificador de tipo restringe una columna a un subtipo, que es <code class="varname">Instant</code>, <code class="varname">Sequence</code> o <code class="varname">SequenceSet</code>.</p><pre class="programlisting">
 SELECT th3index '831c02fffffffff@2001-01-01';
 -- 831c02fffffffff@2001-01-01
+SELECT th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]';
+-- [831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]
+SELECT th3index '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]}';
+-- {[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]}
+SELECT tquadbin '48a6227affffffff@2001-01-01';
+-- 48a6227affffffff@2001-01-01
 SELECT tquadbin '[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]';
 -- [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]
+SELECT tquadbin '{[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]}';
+-- {[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]}
+SELECT ts2cell '47c3c@2001-01-01';
+-- 47c3c@2001-01-01
+SELECT ts2cell '[47c3c@2001-01-01, 47c4@2001-01-02]';
+-- [47c3c@2001-01-01, 47c4@2001-01-02]
 SELECT ts2cell '{[47c3c@2001-01-01, 47c4@2001-01-02]}';
 -- {[47c3c@2001-01-01, 47c4@2001-01-02]}
 </pre></li><li class="listitem"><a name="tcell_astext"></a><a class="indexterm" name="id11582"></a><a class="indexterm" name="id11585"></a><a class="indexterm" name="id11588"></a><a class="indexterm" name="id11591"></a><p>Serializar una celda temporal como texto, como binario, como binario bien conocido hexadecimal o como MF-JSON</p><pre class="programlisting">

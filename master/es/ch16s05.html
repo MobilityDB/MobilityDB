@@ -26,9 +26,8 @@ getValues(tcell) → cellset
 </pre><pre class="programlisting">
 SELECT getValues(th3index '831c02fffffffff@2001-01-01');
 -- {"831c02fffffffff"}
-SELECT getValues(th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02,
-    880326b885fffff@2001-01-03]');
--- {"831c00fffffffff", "831c02fffffffff", "880326b885fffff"}
+SELECT getValues(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
+-- {"831c00fffffffff", "831c02fffffffff"}
 SELECT getValues(tquadbin '48a6227affffffff@2001-01-01');
 -- {"48a6227affffffff"}
 SELECT getValues(tquadbin '{48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02}');
@@ -46,7 +45,8 @@ SELECT valueAtTimestamp(th3index
 SELECT valueAtTimestamp(tquadbin
   '[48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-05]', '2001-01-03');
 -- 48a6227affffffff
-SELECT valueAtTimestamp(ts2cell '47c3c@2001-01-01', timestamptz '2001-01-01');
+SELECT valueAtTimestamp(ts2cell
+  '[47c3c@2001-01-01, 47c4@2001-01-05]', '2001-01-03');
 -- 47c3c
 </pre></li><li class="listitem"><a name="raster_numBands"></a><a class="indexterm" name="id11842"></a><p>Devuelve el número de bandas de un ráster</p><pre class="programlisting">
 numBands(raster) → integer

@@ -24,19 +24,43 @@ appendSequence(tcell,tcellSeq) → tcell
 SELECT asText(appendInstant(th3index '831c02fffffffff@2001-01-01',
   th3index '831c00fffffffff@2001-01-02'));
 -- [831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]
+SELECT asText(appendSequence(th3index '[831c02fffffffff@2001-01-01]',
+  th3index '[831c00fffffffff@2001-01-02]'));
+-- {[831c02fffffffff@2001-01-01], [831c00fffffffff@2001-01-02]}
+SELECT asText(appendInstant(tquadbin '48a6227affffffff@2001-01-01',
+  tquadbin '485623ffffffffff@2001-01-02'));
+-- [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-02]
 SELECT asText(appendSequence(tquadbin '[48a6227affffffff@2001-01-01]',
   tquadbin '[485623ffffffffff@2001-01-02]'));
 -- {[48a6227affffffff@2001-01-01], [485623ffffffffff@2001-01-02]}
+SELECT asText(appendInstant(ts2cell '47c3c@2001-01-01',
+  ts2cell '47c4@2001-01-02'));
+-- [47c3c@2001-01-01, 47c4@2001-01-02]
+SELECT asText(appendSequence(ts2cell '[47c3c@2001-01-01]',
+  ts2cell '[47c4@2001-01-02]'));
+-- {[47c3c@2001-01-01], [47c4@2001-01-02]}
 </pre></li><li class="listitem"><a name="tcell_merge"></a><a class="indexterm" name="id11988"></a><p>Fusionar las celdas temporales</p><pre class="programlisting">
 merge(tcell,tcell) → tcell
 merge(tcell[]) → tcell
 </pre><pre class="programlisting">
-SELECT asText(merge(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-03]',
-  ts2cell '[47c3c@2001-01-03, 47c4@2001-01-05]'));
--- [47c3c@2001-01-01, 47c4@2001-01-05]
+SELECT asText(merge(th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-03]',
+  th3index '[831c02fffffffff@2001-01-03, 831c00fffffffff@2001-01-05]'));
+-- [831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]
 SELECT asText(merge(ARRAY[th3index '831c02fffffffff@2001-01-01',
   th3index '831c00fffffffff@2001-01-03']));
 -- {831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-03}
+SELECT asText(merge(tquadbin '[48a6227affffffff@2001-01-01, 48a6227affffffff@2001-01-03]',
+  tquadbin '[48a6227affffffff@2001-01-03, 485623ffffffffff@2001-01-05]'));
+-- [48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-05]
+SELECT asText(merge(ARRAY[tquadbin '48a6227affffffff@2001-01-01',
+  tquadbin '485623ffffffffff@2001-01-03']));
+-- {48a6227affffffff@2001-01-01, 485623ffffffffff@2001-01-03}
+SELECT asText(merge(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-03]',
+  ts2cell '[47c3c@2001-01-03, 47c4@2001-01-05]'));
+-- [47c3c@2001-01-01, 47c4@2001-01-05]
+SELECT asText(merge(ARRAY[ts2cell '47c3c@2001-01-01',
+  ts2cell '47c4@2001-01-03']));
+-- {47c3c@2001-01-01, 47c4@2001-01-03}
 </pre></li><li class="listitem"><a name="tcell_set_interp"></a><a class="indexterm" name="id11995"></a><p>Establecer la interpolación de una celda temporal</p><pre class="programlisting">
 setInterp(tcell,interp text) → tcell
 </pre><pre class="programlisting">
@@ -46,6 +70,7 @@ SELECT setInterp(th3index '{871fa4418ffffff@2001-01-01,
 SELECT setInterp(tquadbin '{48a6227affffffff@2001-01-01,
   485623ffffffffff@2001-01-02}', 'step');
 -- {[48a6227affffffff@2001-01-01], [485623ffffffffff@2001-01-02]}
-SELECT setInterp(ts2cell '{47c3c@2001-01-01}', 'step');
--- [47c3c@2001-01-01]
+SELECT setInterp(ts2cell '{47c3c@2001-01-01,
+  47c4@2001-01-02}', 'step');
+-- {[47c3c@2001-01-01], [47c4@2001-01-02]}
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s05.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s07.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Accesores </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Modificaciones</td></tr></table></div></body></html>
