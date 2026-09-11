@@ -36,7 +36,8 @@
  * directory, Windows included. It checks a zone found by name ignoring case,
  * a zone name that is a link to another zone, the standard and daylight
  * saving offsets of a zone, an offset that is not a whole number of hours,
- * and a zone named inside the text of a timestamp.
+ * a zone named inside the text of a timestamp, and abbreviations of
+ * PostgreSQL's Default set that the session zone does not define.
  *
  * The program can be build as follows
  * @code
@@ -87,6 +88,17 @@ main(void)
   /* A zone named inside the text of a timestamp */
   check("Europe/Brussels", "2001-01-15 12:00:00 America/New_York",
     "2001-01-15 18:00:00+01");
+  /* Abbreviations of PostgreSQL's Default set that the session zone does not
+   * define, answered as PostgreSQL answers them: CET is a fixed offset of one
+   * hour, also in summer and although a zone of that name exists, PDT is a
+   * daylight saving time, and MSK takes the offset of Europe/Moscow at the
+   * instant */
+  check("America/New_York", "2001-07-15 12:00:00 CET",
+    "2001-07-15 07:00:00-04");
+  check("America/New_York", "2001-07-15 12:00:00 PDT",
+    "2001-07-15 15:00:00-04");
+  check("America/New_York", "2001-01-15 12:00:00 MSK",
+    "2001-01-15 04:00:00-05");
 
   meos_finalize();
   if (failures)

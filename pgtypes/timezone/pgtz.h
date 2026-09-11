@@ -79,6 +79,9 @@ extern int	pg_tzdata_embedded_read(const char *name, char *canonname,
 extern int	pg_tzdata_embedded_count(void);
 extern const char *pg_tzdata_embedded_name(int i);
 
+/* in tznames_default.c, standalone MEOS only */
+extern bool pg_tznames_install_default(void);
+
 /* in localtime.c */
 extern int	tzload(const char *name, char *canonname, struct state *sp,
 				   bool doextend);

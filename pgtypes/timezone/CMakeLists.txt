@@ -17,6 +17,10 @@ endif()
 if(MEOS AND NOT MEOS_TZDATA_DIR)
   list(APPEND TZ_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/tzdata_embedded.c)
 endif()
+# The time zone abbreviations of standalone MEOS
+if(MEOS)
+  list(APPEND TZ_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/tznames_default.c)
+endif()
 
 set(PGTYPES_SOURCES ${PGTYPES_SOURCES} ${TZ_SOURCES}
   # Mandatory so that the variable update is visible in the parent directory's scope

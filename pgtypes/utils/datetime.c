@@ -109,17 +109,17 @@ const char *const days[] = {"Sunday", "Monday", "Tuesday", "Wednesday",
  * abbrevs[] field has the same format as the static datetktbl.
  *
  * MEOS: except for the universal ones, which are marked below. A server reads
- * its abbreviations from the file the timezone_abbreviations setting names, and
- * MEOS has neither that setting nor a configuration directory to read, so
- * zoneabbrevtbl stays empty and every abbreviation has to come from the session
- * zone. That leaves "Z" unreadable, because it is the designator of no zone: it
- * is the UTC designator of RFC 3339 section 5.6, the format every OGC Moving
- * Features datetime is written in, and PostgreSQL reads it from the ETC block
- * of its Default set. The entries below are that block, the abbreviations
- * PostgreSQL gives a fixed zero offset, so a MEOS build and a server agree on
- * what they mean. They are reached only after the session zone, exactly as a
- * loaded set would be, so an abbreviation the zone defines keeps its local
- * meaning.
+ * its abbreviations from the file the timezone_abbreviations setting names.
+ * Standalone MEOS installs PostgreSQL's Default set, which it carries in the
+ * library (pgtypes/timezone/tznames_default.c); the extension installs none,
+ * so there every abbreviation has to come from the session zone. That would
+ * leave "Z" unreadable, because it is the designator of no zone: it is the UTC
+ * designator of RFC 3339 section 5.6, the format every OGC Moving Features
+ * datetime is written in, and PostgreSQL reads it from the ETC block of its
+ * Default set. The entries below are that block, the abbreviations PostgreSQL
+ * gives a fixed zero offset, so the extension and a server agree on what they
+ * mean. They are reached only after the session zone and an installed set,
+ * so an abbreviation the zone defines keeps its local meaning.
  */
 static const datetkn datetktbl[] = {
   /* token, type, value */
@@ -4910,6 +4910,30 @@ FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp,
 
   dtza = (DynamicZoneAbbrev *) ((char *) tbl + tp->value);
 
+#if MEOS
+  /* MEOS: every thread reads the one table, so the zone is published once:
+   * a thread that finds it already published by another frees its own copy */
+  pg_tz *tz = __atomic_load_n(&dtza->tz, __ATOMIC_ACQUIRE);
+  if (tz == NULL)
+  {
+    tz = pg_tzset(dtza->zone);
+    if (tz == NULL)
+    {
+      /* Ooops, bogus zone name in config file entry */
+      extra->dtee_timezone = dtza->zone;
+      extra->dtee_abbrev = tp->token;
+      return NULL;
+    }
+    pg_tz *expected = NULL;
+    if (! __atomic_compare_exchange_n(&dtza->tz, &expected, tz, false,
+          __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+    {
+      pfree(tz);
+      tz = expected;
+    }
+  }
+  return tz;
+#else
   /* Look up the underlying zone if we haven't already */
   if (dtza->tz == NULL)
   {
@@ -4922,6 +4946,7 @@ FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp,
     }
   }
   return dtza->tz;
+#endif
 }
 
 #if 0 /* NOT USED */
