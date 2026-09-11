@@ -79,7 +79,7 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.temp <> t2.temp;
 
 WITH ais(mmsi, temp) AS (
   SELECT mmsi,
-    th3indexSeq(array_agg(th3index(geoToH3Cell(geom, 10), t) ORDER BY t))
+    th3indexSeq(array_agg(th3index(latLngToCell(geom, 10), t) ORDER BY t))
   FROM tbl_ais_instant GROUP BY mmsi )
 SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
 

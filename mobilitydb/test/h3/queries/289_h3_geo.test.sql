@@ -27,22 +27,22 @@
 --
 -------------------------------------------------------------------------------
 
--- Static-geometry → H3 cell / cell set: geoToH3Cell, geoToH3IndexSet,
+-- Static-geometry → H3 cell / cell set: latLngToCell, geoToH3IndexSet,
 -- and the eEq cell-set prefilter.  Covers every WKT/GSERIALIZED
 -- geometry type the kernel supports.
 
 -------------------------------------------------------------------------------
--- POINT → single cell  (geoToH3Cell)
+-- POINT → single cell  (latLngToCell)
 -------------------------------------------------------------------------------
 
 -- Brussels city center (lat 50.85, lng 4.35), resolution 7
-SELECT geoToH3Cell(geometry 'SRID=4326;POINT(4.35 50.85)', 7);
+SELECT latLngToCell(geometry 'SRID=4326;POINT(4.35 50.85)', 7);
 
 -- Same point at resolution 0 (coarse) gives a base cell
-SELECT geoToH3Cell(geometry 'SRID=4326;POINT(4.35 50.85)', 0);
+SELECT latLngToCell(geometry 'SRID=4326;POINT(4.35 50.85)', 0);
 
 -- Non-POINT input: returns first point's cell (use geoToH3IndexSet for the full set)
-SELECT geoToH3Cell(geometry 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 7);
+SELECT latLngToCell(geometry 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 7);
 
 -------------------------------------------------------------------------------
 -- POINT → single-element set  (geoToH3IndexSet)
@@ -77,7 +77,7 @@ SELECT numvalues(
 WITH line(g) AS (
   VALUES (geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)')),
 samples AS (
-  SELECT geoToH3Cell(ST_LineInterpolatePoint(g, i / 500.0), 11) AS cell,
+  SELECT latLngToCell(ST_LineInterpolatePoint(g, i / 500.0), 11) AS cell,
     geoToH3IndexSet(g, 11) AS cover
   FROM line, generate_series(0, 500) AS i)
 SELECT bool_and(cell <@ cover) FROM samples;

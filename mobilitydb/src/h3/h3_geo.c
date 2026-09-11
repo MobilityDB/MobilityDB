@@ -59,7 +59,7 @@ PG_FUNCTION_INFO_V1(Geo_point_to_h3index);
 /**
  * @ingroup mobilitydb_h3_conversion
  * @brief Single H3 cell covering a POINT geometry at the given resolution
- * @sqlfn geoToH3Cell()
+ * @sqlfn latLngToCell()
  */
 Datum
 Geo_point_to_h3index(PG_FUNCTION_ARGS)

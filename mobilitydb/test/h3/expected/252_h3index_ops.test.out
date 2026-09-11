@@ -113,7 +113,7 @@ SELECT cellToPoint(h3index '871fa44a8ffffff')
  t
 (1 row)
 
-SELECT geoToH3Cell(cellToPoint(h3index '871fa44a8ffffff'), 7)
+SELECT latLngToCell(cellToPoint(h3index '871fa44a8ffffff'), 7)
   = h3index '871fa44a8ffffff';
  ?column? 
 ----------

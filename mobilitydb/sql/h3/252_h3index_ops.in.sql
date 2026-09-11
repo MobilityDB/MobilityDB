@@ -32,7 +32,7 @@
  * @brief Static h3index cell operations.
  *
  * Non-temporal operations on the `h3index` base type: the static-geometry
- * → cell / cell-set constructors (`geoToH3Cell`, `geoToH3IndexSet`) and the
+ * → cell / cell-set constructors (`latLngToCell`, `geoToH3IndexSet`) and the
  * MobilityDB ports of the h3-pg SETOF-returning grid functions. h3-pg
  * returns rows; MobilityDB returns a single `h3indexset` (or `intset` for
  * icosahedron faces) — the finite collection companion type of `h3index`.
@@ -97,7 +97,7 @@ CREATE FUNCTION cellArea(h3index)
  * Static geometry → H3 cell (POINT only) / cell set (any geometry)
  ******************************************************************************/
 
-CREATE FUNCTION geoToH3Cell(geometry, integer)
+CREATE FUNCTION latLngToCell(geometry, resolution integer)
   RETURNS h3index
   AS 'MODULE_PATHNAME', 'Geo_point_to_h3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
