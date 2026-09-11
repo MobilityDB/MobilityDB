@@ -1113,12 +1113,16 @@ raster_srs_text(int32_t srid)
  * @param[in] srid Target reference system, or the subject's own to keep it
  * @param[in] scale_x,scale_y Pixel size in the units of the target system, or
  * NULL to let the warp choose it
+ * @param[in] grid_x,grid_y Point of the target system a grid line of the result
+ * passes through, or NULL to let the warp place the grid
+ * @param[in] skew_x,skew_y Skew of the result, or NULL for none
  * @param[in] algorithm Name of the resampling algorithm
  * @param[in] max_err Error in input pixels the warp may commit, 0 for none
  * @errval NULL
  */
 static Raster *
 raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
+  double *grid_x, double *grid_y, double *skew_x, double *skew_y,
   const char *algorithm, double max_err)
 {
   GDALResampleAlg alg = GRA_NearestNeighbour;
@@ -1173,7 +1177,8 @@ raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
   }
 
   rt_raster result = rt_raster_gdal_warp(raster, src_srs, dst_srs, scale_x,
-    scale_y, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, alg, max_err);
+    scale_y, NULL, NULL, NULL, NULL, grid_x, grid_y, skew_x, skew_y, alg,
+    max_err);
   if (src_srs) pfree(src_srs);
   if (dst_srs) pfree(dst_srs);
   raster_destroy(raster);
@@ -1191,7 +1196,8 @@ raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
  * @brief Return a raster stated in another spatial reference system
  * @details Every band is carried into the target system and resampled onto the
  * grid the reprojection implies, so the result states the same coverage read
- * through another system rather than the same pixels relabelled
+ * through another system rather than the same pixels relabelled. A pixel size
+ * stated for the result fixes its grid, as `ST_Transform` reads it
  * @param[in] rast Raster to reproject
  * @param[in] srid Target spatial reference system identifier
  * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
@@ -1199,12 +1205,14 @@ raster_warp(const Raster *rast, int32_t srid, double *scale_x, double *scale_y,
  * Max and Min, read without regard to case
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
+ * @param[in] scale_x,scale_y Pixel size of the result in the units of the
+ * target system, 0 to let the warp derive it
  * @errval NULL
  * @csqlfn #Raster_transform()
  */
 Raster *
 raster_transform(const Raster *rast, int32_t srid, const char *algorithm,
-  double max_err)
+  double max_err, double scale_x, double scale_y)
 {
   VALIDATE_NOT_NULL(rast, NULL);
   if (srid == SRID_UNKNOWN)
@@ -1213,7 +1221,52 @@ raster_transform(const Raster *rast, int32_t srid, const char *algorithm,
       "The target of a reprojection cannot be an unknown SRID");
     return NULL;
   }
-  return raster_warp(rast, srid, NULL, NULL, algorithm, max_err);
+  /* A pixel size of 0 leaves the axis to the warp, as the PostGIS
+   * RASTER_GDALWarp reads it */
+  return raster_warp(rast, srid, scale_x != 0.0 ? &scale_x : NULL,
+    scale_y != 0.0 ? &scale_y : NULL, NULL, NULL, NULL, NULL, algorithm,
+    max_err);
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return a raster stated on the grid of another raster
+ * @details The result takes the reference system, the pixel size, the grid
+ * origin and the skew of @p alignto, as `ST_Transform` reads them from the
+ * raster it aligns to, so every pixel of the result coincides with a pixel of
+ * that grid
+ * @param[in] rast Raster to reproject
+ * @param[in] alignto Raster whose grid the result lies on
+ * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
+ * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
+ * Max and Min, read without regard to case
+ * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
+ * calculation
+ * @errval NULL
+ * @csqlfn #Raster_transform_raster()
+ */
+Raster *
+raster_transform_raster(const Raster *rast, const Raster *alignto,
+  const char *algorithm, double max_err)
+{
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(alignto, NULL);
+  int32_t srid = raster_srid(alignto);
+  if (srid == SRID_UNKNOWN)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The target of a reprojection cannot be an unknown SRID");
+    return NULL;
+  }
+  double scale_x = raster_scale_x(alignto);
+  double scale_y = raster_scale_y(alignto);
+  double grid_x = raster_upper_left_x(alignto);
+  double grid_y = raster_upper_left_y(alignto);
+  double skew_x = raster_skew_x(alignto);
+  double skew_y = raster_skew_y(alignto);
+  /* A skew of 0 states no skew, as the PostGIS RASTER_GDALWarp reads it */
+  return raster_warp(rast, srid, &scale_x, &scale_y, &grid_x, &grid_y,
+    skew_x != 0.0 ? &skew_x : NULL, skew_y != 0.0 ? &skew_y : NULL,
+    algorithm, max_err);
 }
 
 /**
@@ -1247,8 +1300,8 @@ raster_rescale(const Raster *rast, double scale_x, double scale_y,
       "The pixel size of a rescaled raster cannot be zero");
     return NULL;
   }
-  return raster_warp(rast, raster_srid(rast), &scale_x, &scale_y, algorithm,
-    max_err);
+  return raster_warp(rast, raster_srid(rast), &scale_x, &scale_y, NULL, NULL,
+    NULL, NULL, algorithm, max_err);
 }
 
 /**

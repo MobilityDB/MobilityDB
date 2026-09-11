@@ -2155,10 +2155,12 @@ FROM rast;
 				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
 				<para>Return a raster stated in another spatial reference system</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-transform(raster,srid integer,algorithm text='NearestNeighbour',
+transform(raster,srid integer,algorithm text='NearestNeighbour',maxerr float8=0.125,
+  scalex float8=0,scaley float8=0) → raster
+transform(raster,alignto raster,algorithm text='NearestNeighbour',
   maxerr float8=0.125) → raster
 </programlisting>
-				<para>Every band is carried into the target system and resampled onto the grid the reprojection implies, through the same GDAL warp as the PostGIS <varname>ST_Transform</varname>, so the result states the same coverage read through another system. The algorithm is one of <varname>NearestNeighbour</varname>, <varname>Bilinear</varname>, <varname>Cubic</varname>, <varname>CubicSpline</varname>, <varname>Lanczos</varname>, <varname>Max</varname> and <varname>Min</varname>, named without regard to case, and <varname>maxerr</varname> is the error in input pixels the warp may commit, 0 for an exact calculation.</para>
+				<para>Every band is carried into the target system and resampled onto the grid the reprojection implies, through the same GDAL warp as the PostGIS <varname>ST_Transform</varname>, so the result states the same coverage read through another system. The algorithm is one of <varname>NearestNeighbour</varname>, <varname>Bilinear</varname>, <varname>Cubic</varname>, <varname>CubicSpline</varname>, <varname>Lanczos</varname>, <varname>Max</varname> and <varname>Min</varname>, named without regard to case, and <varname>maxerr</varname> is the error in input pixels the warp may commit, 0 for an exact calculation. <varname>scalex</varname> and <varname>scaley</varname> state the pixel size of the result, 0 letting the warp derive it, and <varname>alignto</varname> takes the reference system, the pixel size, the grid origin and the skew of another raster, so the result lies on its grid.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (

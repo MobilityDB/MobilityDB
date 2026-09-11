@@ -718,7 +718,7 @@ int main(void)
    * metres, so the pixel of one degree becomes a pixel of some 10^5 metres,
    * and the meridian of longitude 0 stands at x = 0 in both systems. */
   meos_errno_reset();
-  Raster *merc = raster_transform(rast_values, 3857, NULL, 0.0);
+  Raster *merc = raster_transform(rast_values, 3857, NULL, 0.0, 0.0, 0.0);
   assert(merc != NULL);
   assert(meos_errno() == 0);
   printf("raster_transform(raster, 3857): srid %d, %dx%d, scale (%f, %f), "
@@ -756,6 +756,37 @@ int main(void)
   assert(tfloat_start_value(merc_val) == 10.0);
   free(merc_val_str); free(merc_val);
   free(traj_merc); free(merc);
+
+  /* A pixel size stated for the result fixes its grid, and a raster to align
+   * to hands over its reference system, its pixel size and its grid origin, so
+   * the upper left corner of the result lies a whole number of pixels from the
+   * corner of the grid it aligns to */
+  meos_errno_reset();
+  Raster *scaled = raster_transform(rast_values, 3857, NULL, 0.0, 150000.0,
+    -150000.0);
+  assert(scaled != NULL);
+  assert(meos_errno() == 0);
+  assert(raster_srid(scaled) == 3857);
+  assert(raster_scale_x(scaled) == 150000.0);
+  assert(raster_scale_y(scaled) == -150000.0);
+  Raster *aligned = raster_transform_raster(rast_values, scaled, NULL, 0.0);
+  assert(aligned != NULL);
+  assert(meos_errno() == 0);
+  assert(raster_srid(aligned) == 3857);
+  assert(raster_scale_x(aligned) == 150000.0);
+  double shift = (raster_upper_left_x(aligned) -
+    raster_upper_left_x(scaled)) / 150000.0;
+  printf("raster_transform_raster(raster, grid): upper left %f pixel(s) from "
+    "the corner of the grid\n", shift);
+  assert(shift == (double) (long) shift);
+  free(aligned);
+
+  /* A null argument is rejected rather than dereferenced */
+  meos_errno_reset();
+  assert(raster_transform_raster(NULL, scaled, NULL, 0.0) == NULL);
+  assert(raster_transform_raster(rast_values, NULL, NULL, 0.0) == NULL);
+  assert(meos_errno() != 0);
+  free(scaled);
 
   /* Rescaling states the same coverage on a grid of the pixel size asked for,
    * keeping the reference system and the upper left corner. Halving the pixel
@@ -814,15 +845,15 @@ int main(void)
    * covers ground, and a warp commits no negative error */
   meos_errno_reset();
   /* 0 is the unknown SRID; the public surface publishes no name for it */
-  assert(raster_transform(rast_values, 0, NULL, 0.0) == NULL);
+  assert(raster_transform(rast_values, 0, NULL, 0.0, 0.0, 0.0) == NULL);
   assert(raster_rescale(rast_values, 0.0, -0.5, NULL, 0.0) == NULL);
   assert(raster_rescale(rast_values, 0.5, 0.0, NULL, 0.0) == NULL);
-  assert(raster_transform(rast_values, 3857, NULL, -1.0) == NULL);
+  assert(raster_transform(rast_values, 3857, NULL, -1.0, 0.0, 0.0) == NULL);
   assert(meos_errno() != 0);
 
   /* A null argument is rejected rather than dereferenced */
   meos_errno_reset();
-  assert(raster_transform(NULL, 3857, NULL, 0.0) == NULL);
+  assert(raster_transform(NULL, 3857, NULL, 0.0, 0.0, 0.0) == NULL);
   assert(raster_rescale(NULL, 0.5, -0.5, NULL, 0.0) == NULL);
   assert(meos_errno() != 0);
 

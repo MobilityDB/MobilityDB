@@ -176,7 +176,9 @@ extern Raster *raster_clip(const Raster *rast, const int *bands, int nbands,
   const GSERIALIZED *gs, const double *nodata, int nnodata, bool crop,
   bool touched);
 extern Raster *raster_transform(const Raster *rast, int32_t srid,
-  const char *algorithm, double max_err);
+  const char *algorithm, double max_err, double scale_x, double scale_y);
+extern Raster *raster_transform_raster(const Raster *rast,
+  const Raster *alignto, const char *algorithm, double max_err);
 extern Raster *raster_rescale(const Raster *rast, double scale_x,
   double scale_y, const char *algorithm, double max_err);
 extern GeomVal *raster_dump_as_polygons(const Raster *rast, int band,

@@ -2152,10 +2152,12 @@ FROM rast;
 				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
 				<para>Devuelve un ráster expresado en otro sistema de referencia espacial</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-transform(raster,srid integer,algorithm text='NearestNeighbour',
+transform(raster,srid integer,algorithm text='NearestNeighbour',maxerr float8=0.125,
+  scalex float8=0,scaley float8=0) → raster
+transform(raster,alignto raster,algorithm text='NearestNeighbour',
   maxerr float8=0.125) → raster
 </programlisting>
-				<para>Cada banda se lleva al sistema de destino y se remuestrea sobre la malla que implica la reproyección, mediante la misma deformación de GDAL que <varname>ST_Transform</varname> de PostGIS, de modo que el resultado expresa la misma cobertura leída a través de otro sistema. El algoritmo es uno de <varname>NearestNeighbour</varname>, <varname>Bilinear</varname>, <varname>Cubic</varname>, <varname>CubicSpline</varname>, <varname>Lanczos</varname>, <varname>Max</varname> y <varname>Min</varname>, nombrado sin distinguir mayúsculas de minúsculas, y <varname>maxerr</varname> es el error en píxeles de entrada que la deformación puede cometer, 0 para un cálculo exacto.</para>
+				<para>Cada banda se lleva al sistema de destino y se remuestrea sobre la malla que implica la reproyección, mediante la misma deformación de GDAL que <varname>ST_Transform</varname> de PostGIS, de modo que el resultado expresa la misma cobertura leída a través de otro sistema. El algoritmo es uno de <varname>NearestNeighbour</varname>, <varname>Bilinear</varname>, <varname>Cubic</varname>, <varname>CubicSpline</varname>, <varname>Lanczos</varname>, <varname>Max</varname> y <varname>Min</varname>, nombrado sin distinguir mayúsculas de minúsculas, y <varname>maxerr</varname> es el error en píxeles de entrada que la deformación puede cometer, 0 para un cálculo exacto. <varname>scalex</varname> y <varname>scaley</varname> declaran el tamaño de píxel del resultado, 0 dejando que la deformación lo derive, y <varname>alignto</varname> toma el sistema de referencia, el tamaño de píxel, el origen de la malla y la inclinación de otro ráster, de modo que el resultado queda sobre su malla.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
