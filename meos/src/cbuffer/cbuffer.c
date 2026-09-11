@@ -571,17 +571,16 @@ geom_to_cbuffer(const GSERIALIZED *gs)
     int32_t srid = gserialized_get_srid(gs);
     LWCURVEPOLY *poly = (LWCURVEPOLY *) lwgeom_from_gserialized(gs);
     LWLINE *ring = (LWLINE *) poly->rings[0];
-    POINT4D p1, p2;
-    getPoint4d_p(ring->points, 0, &p1);
-    getPoint4d_p(ring->points, 1, &p2);
+    const POINT2D *p1 = getPoint2d_cp(ring->points, 0);
+    const POINT2D *p2 = getPoint2d_cp(ring->points, 1);
     /* The two points are the ends of a diameter, so the centre is halfway
      * between them and the radius is half of what separates them. We cannot
      * call the PostGIS function
      * interpolate_point4d(&p1, &p2, &p, ratio);
      * since it uses a double and not a long double for the interpolation */
-    double x = p1.x + (double) ((long double) (p2.x - p1.x) * 0.5);
-    double y = p1.y + (double) ((long double) (p2.y - p1.y) * 0.5);
-    radius = hypot(p2.x - p1.x, p2.y - p1.y) / 2;
+    double x = p1->x + (double) ((long double) (p2->x - p1->x) * 0.5);
+    double y = p1->y + (double) ((long double) (p2->y - p1->y) * 0.5);
+    radius = hypot(p2->x - p1->x, p2->y - p1->y) / 2;
     LWGEOM *center = (LWGEOM *) lwpoint_make2d(srid, x, y);
     gscenter = geom_serialize(center);
     lwgeom_free((LWGEOM *) poly); lwgeom_free(center); 

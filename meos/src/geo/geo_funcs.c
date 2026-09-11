@@ -67,12 +67,11 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
 {
   for (int i = 0; i < (int) pa->npoints - 1; i++)
   {
-    POINT4D a, b;
-    (void) getPoint4d_p(pa, i, &a);
-    (void) getPoint4d_p(pa, i + 1, &b);
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
     Edge e;
-    e.x1 = a.x; e.y1 = a.y;
-    e.x2 = b.x; e.y2 = b.y;
+    e.x1 = a->x; e.y1 = a->y;
+    e.x2 = b->x; e.y2 = b->y;
     e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
     e.ymin = Min(e.y1, e.y2); e.ymax = Max(e.y1, e.y2);
     e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
@@ -95,11 +94,10 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
    * closed trajectory) has no vertex to read; it contributes no edge. */
   if (! pt->point || pt->point->npoints < 1)
     return;
-  POINT4D p;
-  (void) getPoint4d_p(pt->point, 0, &p);
+  const POINT2D *p = getPoint2d_cp(pt->point, 0);
   Edge e;
-  e.x1 = e.x2 = e.xmin = e.xmax = p.x;
-  e.y1 = e.y2 = e.ymin = e.ymax = p.y;
+  e.x1 = e.x2 = e.xmin = e.xmax = p->x;
+  e.y1 = e.y2 = e.ymin = e.ymax = p->y;
   e.dx = e.dy = e.length = 0;
   e.etype = EDGE_POINT;
   edge_set_tolerance(&e);
@@ -236,7 +234,7 @@ extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
  * emitted as line edges
  */
 static void
-emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
+emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   MeosArray *edges, EdgeType line_etype, EdgeType arc_etype)
 {
   /* The circumcentre below is read from the SQUARES of the coordinates, and
@@ -358,11 +356,8 @@ emit_circstring_edges(const LWCIRCSTRING *circ, MeosArray *edges,
   int np = (int) pa->npoints;
   for (int i = 0; i + 2 < np; i += 2)
   {
-    POINT4D pa4, pb4, pc4;
-    (void) getPoint4d_p(pa, i, &pa4);
-    (void) getPoint4d_p(pa, i + 1, &pb4);
-    (void) getPoint4d_p(pa, i + 2, &pc4);
-    emit_arc_edge(&pa4, &pb4, &pc4, edges, line_etype, arc_etype);
+    emit_arc_edge(getPoint2d_cp(pa, i), getPoint2d_cp(pa, i + 1),
+      getPoint2d_cp(pa, i + 2), edges, line_etype, arc_etype);
   }
   return;
 }
@@ -2550,16 +2545,14 @@ lwmpoint_is_simple(const LWMPOINT *mpoint)
     const LWPOINT *point1 = mpoint->geoms[i];
     if (! point1 || lwpoint_is_empty(point1))
       continue;
-    POINT2D p1;
-    lwpoint_getPoint2d_p(point1, &p1);
+    const POINT2D *p1 = getPoint2d_cp(point1->point, 0);
     for (uint32_t j = i + 1; j < mpoint->ngeoms; j++)
     {
       const LWPOINT *point2 = mpoint->geoms[j];
       if (! point2 || lwpoint_is_empty(point2))
         continue;
-      POINT2D p2;
-      lwpoint_getPoint2d_p(point2, &p2);
-      if (p1.x == p2.x && p1.y == p2.y)
+      const POINT2D *p2 = getPoint2d_cp(point2->point, 0);
+      if (p1->x == p2->x && p1->y == p2->y)
         return false;
     }
   }
@@ -4348,10 +4341,7 @@ relate_extract_points_iter(const LWGEOM *geom, POINT2D *result, int *count)
     return;
   if (geom->type == POINTTYPE)
   {
-    POINT4D p;
-    getPoint4d_p(((const LWPOINT *) geom)->point, 0, &p);
-    result[*count].x = p.x;
-    result[*count].y = p.y;
+    result[*count] = *getPoint2d_cp(((const LWPOINT *) geom)->point, 0);
     (*count)++;
     return;
   }

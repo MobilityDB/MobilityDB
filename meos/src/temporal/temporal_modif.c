@@ -174,8 +174,8 @@ lwmline_sew(const LWMLINE *mline)
       empty[i] = used[i] = true;
       continue;
     }
-    getPoint2d_p(ln->points, 0, &head[i]);
-    getPoint2d_p(ln->points, ln->points->npoints - 1, &tail[i]);
+    head[i] = *getPoint2d_cp(ln->points, 0);
+    tail[i] = *getPoint2d_cp(ln->points, ln->points->npoints - 1);
   }
 
   /* How many line ends meet at each end, which is what tells a point the

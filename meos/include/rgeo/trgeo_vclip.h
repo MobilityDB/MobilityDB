@@ -94,10 +94,10 @@ uint_mod_sub(uint32_t i, uint32_t j, uint32_t n)
  * 1 < s      -> p after point ve
  */
 static inline double
-compute_s(POINT4D p, POINT4D vs, POINT4D ve)
+compute_s(const POINT2D *p, const POINT2D *vs, const POINT2D *ve)
 {
-  return ((p.x - vs.x) * (ve.x - vs.x) + (p.y - vs.y) * (ve.y - vs.y)) /
-    ((ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y));
+  return ((p->x - vs->x) * (ve->x - vs->x) + (p->y - vs->y) * (ve->y - vs->y)) /
+    ((ve->x - vs->x) * (ve->x - vs->x) + (ve->y - vs->y) * (ve->y - vs->y));
 }
 
 extern int v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
@@ -106,7 +106,7 @@ extern int v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   const Pose *pose1, const Pose *pose2, uint32_t *poly1_feature,
   uint32_t *poly2_feature, double *dist);
 
-extern void apply_pose_point4d(POINT4D *p, const Pose *pose);
+extern void apply_pose_point2d(POINT2D *p, const Pose *pose);
 
 /*****************************************************************************/
 

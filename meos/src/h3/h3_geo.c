@@ -366,10 +366,10 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
 static void
 point_to_cells_into(const LWPOINT *lwp, int32 resolution, h3_buf *out)
 {
-  POINT4D p;
-  if (! lwpoint_getPoint4d_p(lwp, &p))
+  if (lwpoint_is_empty(lwp))
     return;
-  H3Index cell = h3_latlng_deg_to_cell(p.y, p.x, resolution);
+  const POINT2D *p = getPoint2d_cp(lwp->point, 0);
+  H3Index cell = h3_latlng_deg_to_cell(p->y, p->x, resolution);
   h3_buf_push(out, cell);
 }
 
@@ -408,11 +408,10 @@ linestring_to_cells_into(const LWLINE *line, int32 resolution, h3_buf *out)
 
   for (uint32_t i = 0; i + 1 < pa->npoints; i++)
   {
-    POINT4D p0, p1;
-    getPoint4d_p(pa, i,     &p0);
-    getPoint4d_p(pa, i + 1, &p1);
-    double dx = p1.x - p0.x;
-    double dy = p1.y - p0.y;
+    const POINT2D *p0 = getPoint2d_cp(pa, i);
+    const POINT2D *p1 = getPoint2d_cp(pa, i + 1);
+    double dx = p1->x - p0->x;
+    double dy = p1->y - p0->y;
     double seg_deg = sqrt(dx * dx + dy * dy);
     int nsamples = (int) ceil(seg_deg / step_deg);
     if (nsamples < 1)
@@ -420,8 +419,8 @@ linestring_to_cells_into(const LWLINE *line, int32 resolution, h3_buf *out)
     for (int s = 0; s <= nsamples; s++)
     {
       double t = (double) s / (double) nsamples;
-      double lat = p0.y + t * dy;
-      double lng = p0.x + t * dx;
+      double lat = p0->y + t * dy;
+      double lng = p0->x + t * dx;
       h3_buf_push_ring1(out, h3_latlng_deg_to_cell(lat, lng, resolution));
     }
   }
@@ -443,20 +442,18 @@ pointarray_to_geoloop(const POINTARRAY *pa, GeoLoop *loop)
    * the ring is closed (npoints with last == first). */
   if (n >= 2)
   {
-    POINT4D first, last;
-    getPoint4d_p(pa, 0,     &first);
-    getPoint4d_p(pa, n - 1, &last);
-    if (first.x == last.x && first.y == last.y)
+    const POINT2D *first = getPoint2d_cp(pa, 0);
+    const POINT2D *last = getPoint2d_cp(pa, n - 1);
+    if (first->x == last->x && first->y == last->y)
       n--;
   }
   loop->numVerts = (int) n;
   loop->verts    = palloc(sizeof(LatLng) * (size_t) (n > 0 ? n : 1));
   for (uint32_t i = 0; i < n; i++)
   {
-    POINT4D p;
-    getPoint4d_p(pa, i, &p);
-    loop->verts[i].lng = degsToRads(p.x);
-    loop->verts[i].lat = degsToRads(p.y);
+    const POINT2D *p = getPoint2d_cp(pa, i);
+    loop->verts[i].lng = degsToRads(p->x);
+    loop->verts[i].lat = degsToRads(p->y);
   }
 }
 
