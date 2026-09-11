@@ -83,6 +83,10 @@ jobs:
           # unit of work does. SIBLING-FROM allocator_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o lifecycle_test lifecycle_test.c -L/usr/local/lib -lmeos
           ./lifecycle_test
+          # timezone_switch_test reads one abbreviation under one timezone
+          # after another. SIBLING-FROM lifecycle_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o timezone_switch_test timezone_switch_test.c -L/usr/local/lib -lmeos
+          ./timezone_switch_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o bool_test bool_test.c -L/usr/local/lib -lmeos
           ./bool_test
           # int_test is what reads <meos.h> and <pg_int.h> in one translation

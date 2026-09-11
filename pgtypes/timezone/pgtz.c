@@ -525,6 +525,9 @@ meos_initialize_timezone(const char *tz_str)
   if (session_timezone)
     pfree(session_timezone); 
   session_timezone = pg_tzset(tz_str);
+  /* The cache of timezone abbreviations may hold the zone just freed, as
+   * PostgreSQL's assign_timezone clears it after a change of timezone */
+  ClearTimeZoneAbbrevCache();
   if (! session_timezone)
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "Failed to initialize local timezone");
@@ -562,6 +565,7 @@ meos_finalize_timezone(void)
   {
     pfree(session_timezone);
     session_timezone = NULL;
+    ClearTimeZoneAbbrevCache();
   }
   if (timezone_cache)
   {

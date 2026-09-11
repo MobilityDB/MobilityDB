@@ -30,6 +30,7 @@
 #include "pgtypes.h"  /* meos_strtod */
 
 #include "../../meos/include/meos_error.h"
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
 // #include "access/htup_details.h"
 // #include "access/xact.h"
@@ -278,11 +279,12 @@ static const int szdeltatktbl = sizeof deltatktbl / sizeof deltatktbl[0];
 
 static TimeZoneAbbrevTable *zoneabbrevtbl = NULL;
 
-/* Caches of recent lookup results in the above tables */
+/* Caches of recent lookup results in the above tables.
+ * MEOS: per thread (MEOS_TLS), as the session timezone they are read under */
 
-static const datetkn *datecache[MAXDATEFIELDS] = {NULL};
+static MEOS_TLS const datetkn *datecache[MAXDATEFIELDS] = {NULL};
 
-static const datetkn *deltacache[MAXDATEFIELDS] = {NULL};
+static MEOS_TLS const datetkn *deltacache[MAXDATEFIELDS] = {NULL};
 
 /* Cache for results of timezone abbreviation lookups */
 
@@ -294,7 +296,9 @@ typedef struct TzAbbrevCache
   pg_tz     *tz;        /* relevant zone, if variable-offset */
 } TzAbbrevCache;
 
-static TzAbbrevCache tzabbrevcache[MAXDATEFIELDS];
+/* MEOS: per thread (MEOS_TLS), since an entry can hold the session timezone of
+ * the thread that filled it */
+static MEOS_TLS TzAbbrevCache tzabbrevcache[MAXDATEFIELDS];
 
 /*
  * Calendar time to Julian date conversions.
