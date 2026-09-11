@@ -279,11 +279,12 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 			</listitem>
 			<listitem xml:id="raquetRead">
 				<indexterm significance="normal"><primary><varname>raquetRead</varname></primary></indexterm>
-				<para>Decodifica un archivo ráster en memoria en una tesela ráster Raquet mediante GDAL</para>
+				<para>Decodifica un archivo ráster en una tesela ráster Raquet mediante GDAL</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 raquetRead(bytea,quadbin bigint) → raquet
+raquetRead(text,quadbin bigint) → raquet
 </programlisting>
-				<para>Lee los bytes de <varname>rasterfile</varname>, un ráster en cualquier formato compatible con GDAL (GeoTIFF, PNG, …), a través del sistema de archivos virtual <varname>/vsimem/</varname> de GDAL, y empaqueta su primera banda, en orden de fila mayor, en un único valor <varname>raquet</varname> autodescriptivo georreferenciado por la celda <varname>quadbin</varname>. El tipo de datos de la banda debe ser uno de <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname> o <varname>Float64</varname>; el valor de nodata de la banda, cuando está definido, se traslada a la tesela. Como el archivo se suministra como bytes, no se requiere acceso a archivos del lado del servidor. GDAL realiza la decodificación, por lo que el controlador de formato del ráster debe estar permitido por la configuración <varname>postgis.gdal_enabled_drivers</varname> de PostGIS (que deshabilita todos los controladores de forma predeterminada); habilítelo con, por ejemplo, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. Esta es la contraparte de ingesta del constructor <link linkend="raquet"><varname>raquet</varname></link>, que construye una tesela a partir de bytes de píxeles ya decodificados. Cuando se omite <varname>quadbin</varname> o es <varname>NULL</varname>, el identificador de la tesela se deriva de la georreferenciación del ráster: el ráster debe llevar una referencia espacial <varname>EPSG:3857</varname> (Web-Mercator) y una geotransformación alineada con los ejes que describa una única tesela QUADBIN. Un ráster sin referencia espacial, uno que no esté en <varname>EPSG:3857</varname>, o una geotransformación rotada o no alineada con la cuadrícula de teselas provoca un error en lugar de ser forzado.</para>
+				<para>Lee los bytes de <varname>rasterfile</varname>, un ráster en cualquier formato compatible con GDAL (GeoTIFF, PNG, …), a través del sistema de archivos virtual <varname>/vsimem/</varname> de GDAL, y empaqueta su primera banda, en orden de fila mayor, en un único valor <varname>raquet</varname> autodescriptivo georreferenciado por la celda <varname>quadbin</varname>. El tipo de datos de la banda debe ser uno de <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname> o <varname>Float64</varname>; el valor de nodata de la banda, cuando está definido, se traslada a la tesela. Como el archivo se suministra como bytes, no se requiere acceso a archivos del lado del servidor. GDAL realiza la decodificación, por lo que el controlador de formato del ráster debe estar permitido por la configuración <varname>postgis.gdal_enabled_drivers</varname> de PostGIS (que deshabilita todos los controladores de forma predeterminada); habilítelo con, por ejemplo, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. Esta es la contraparte de ingesta del constructor <link linkend="raquet"><varname>raquet</varname></link>, que construye una tesela a partir de bytes de píxeles ya decodificados. Cuando se omite <varname>quadbin</varname> o es <varname>NULL</varname>, el identificador de la tesela se deriva de la georreferenciación del ráster: el ráster debe llevar una referencia espacial <varname>EPSG:3857</varname> (Web-Mercator) y una geotransformación alineada con los ejes que describa una única tesela QUADBIN. Un ráster sin referencia espacial, uno que no esté en <varname>EPSG:3857</varname>, o una geotransformación rotada o no alineada con la cuadrícula de teselas provoca un error en lugar de ser forzado. La forma que recibe <varname>text</varname> lee en su lugar el archivo ráster del servidor en esa ruta, allí donde PostGIS permite leer una banda ráster almacenada fuera de la base de datos, como indica <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Decode a GeoTIFF stored in a bytea column into a raquet tile
 SELECT raquetRead(file_bytes, quadbin) AS tile FROM elevation_files;
@@ -2057,8 +2058,9 @@ SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32'
 				<para>Lee una banda de ráster a lo largo de una trayectoria</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
+rasterValue(tgeompoint,path text,band integer=1) → tfloat
 </programlisting>
-				<para>Lee la banda <varname>band</varname> a lo largo de <varname>traj</varname>, tomando el valor del píxel en el que cae cada posición. Una trayectoria que no afirma nada entre sus instantes se lee en sus instantes y devuelve un <varname>tfloat</varname> de conjunto de instantes. Una trayectoria que se mueve entre ellos pasa por los píxeles intermedios, por lo que cada segmento se recorre píxel a píxel, y devuelve un <varname>tfloat</varname> escalonado que mantiene cada valor desde el instante en que el trayecto alcanza el píxel que lo contiene, incluido un píxel del que el trayecto solo corta una esquina. Una posición fuera del ráster o sobre un píxel sin datos no lleva valor y termina el tramo, por lo que un trayecto que sale y vuelve a entrar en el ráster devuelve una secuencia por visita, y <varname>NULL</varname> cuando nunca encuentra un píxel con datos. Una banda cuyos píxeles no se pueden leer, como una banda almacenada fuera de la base de datos en un archivo que no se puede abrir, provoca un error en lugar de leerse como una banda sin valores.</para>
+				<para>Lee la banda <varname>band</varname> a lo largo de <varname>traj</varname>, tomando el valor del píxel en el que cae cada posición. Una trayectoria que no afirma nada entre sus instantes se lee en sus instantes y devuelve un <varname>tfloat</varname> de conjunto de instantes. Una trayectoria que se mueve entre ellos pasa por los píxeles intermedios, por lo que cada segmento se recorre píxel a píxel, y devuelve un <varname>tfloat</varname> escalonado que mantiene cada valor desde el instante en que el trayecto alcanza el píxel que lo contiene, incluido un píxel del que el trayecto solo corta una esquina. Una posición fuera del ráster o sobre un píxel sin datos no lleva valor y termina el tramo, por lo que un trayecto que sale y vuelve a entrar en el ráster devuelve una secuencia por visita, y <varname>NULL</varname> cuando nunca encuentra un píxel con datos. Una banda cuyos píxeles no se pueden leer, como una banda almacenada fuera de la base de datos en un archivo que no se puede abrir, provoca un error en lugar de leerse como una banda sin valores. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, en cualquier formato compatible con GDAL, mediante GDAL, allí donde PostGIS permite leer una banda ráster almacenada fuera de la base de datos: <varname>postgis.enable_outdb_rasters</varname> debe estar activado y <varname>postgis.gdal_enabled_drivers</varname> debe habilitar el controlador del archivo. Devuelve lo que la forma que recibe un <varname>raster</varname> devuelve sobre el mismo ráster.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
@@ -2285,8 +2287,9 @@ JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
 				<para>Devuelve la parte de una trayectoria donde el valor ráster que lee cae dentro de un rango de flotante</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
+atRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
 </programlisting>
-				<para>Lee <varname>rasterValue</varname> a lo largo de <varname>traj</varname> y devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está dentro de <varname>vspan</varname>. Devuelve <varname>NULL</varname> cuando ningún tiempo satisface la condición.</para>
+				<para>Lee <varname>rasterValue</varname> a lo largo de <varname>traj</varname> y devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está dentro de <varname>vspan</varname>. Devuelve <varname>NULL</varname> cuando ningún tiempo satisface la condición. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
@@ -2307,8 +2310,9 @@ SELECT asText(atRasterValue(tgeompoint 'SRID=4326;
 				<para>Devuelve la parte de una trayectoria donde el valor ráster que lee cae fuera de un rango de flotante</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
+minusRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
 </programlisting>
-				<para>El complemento de <varname>atRasterValue</varname>: devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está fuera de <varname>vspan</varname>. Devuelve <varname>NULL</varname> cuando el valor del píxel está dentro de <varname>vspan</varname> en todo momento.</para>
+				<para>El complemento de <varname>atRasterValue</varname>: devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está fuera de <varname>vspan</varname>. Devuelve <varname>NULL</varname> cuando el valor del píxel está dentro de <varname>vspan</varname> en todo momento. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Keep only the instant whose raster value (10) is below 40
 SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM trips,
@@ -2321,8 +2325,9 @@ SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM 
 				<para>Devuelve verdadero si la trayectoria alguna vez lee un valor de píxel ráster dentro de un rango de flotante</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
+eRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
 </programlisting>
-				<para>Devuelve <varname>true</varname> cuando <varname>traj</varname> lee alguna vez un valor de píxel dentro de <varname>vspan</varname>, <varname>false</varname> en caso contrario. Devuelve <varname>NULL</varname> únicamente cuando la entrada es <varname>NULL</varname>.</para>
+				<para>Devuelve <varname>true</varname> cuando <varname>traj</varname> lee alguna vez un valor de píxel dentro de <varname>vspan</varname>, <varname>false</varname> en caso contrario. Devuelve <varname>NULL</varname> únicamente cuando la entrada es <varname>NULL</varname>. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that ever crossed terrain above 200 m
 SELECT tripid FROM trips,
@@ -2335,8 +2340,9 @@ SELECT tripid FROM trips,
 				<para>Devuelve verdadero si cada valor de píxel que la trayectoria lee sobre el ráster está dentro de un rango de flotante</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 aRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
+aRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
 </programlisting>
-				<para>Devuelve <varname>true</varname> cuando cada valor de píxel que <varname>traj</varname> lee sobre el ráster está dentro de <varname>vspan</varname>, <varname>false</varname> cuando al menos uno no lo está. Devuelve <varname>NULL</varname> únicamente cuando la entrada es <varname>NULL</varname>.</para>
+				<para>Devuelve <varname>true</varname> cuando cada valor de píxel que <varname>traj</varname> lee sobre el ráster está dentro de <varname>vspan</varname>, <varname>false</varname> cuando al menos uno no lo está. Devuelve <varname>NULL</varname> únicamente cuando la entrada es <varname>NULL</varname>. La forma que recibe <varname>path</varname> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that stayed entirely below 100 m elevation
 SELECT tripid FROM trips,

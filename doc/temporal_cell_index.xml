@@ -279,11 +279,12 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 			</listitem>
 			<listitem xml:id="raquetRead">
 				<indexterm significance="normal"><primary><varname>raquetRead</varname></primary></indexterm>
-				<para>Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
+				<para>Decode a raster file into a Raquet raster tile via GDAL</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 raquetRead(bytea,quadbin bigint) → raquet
+raquetRead(text,quadbin bigint) → raquet
 </programlisting>
-				<para>Reads the bytes of <varname>rasterfile</varname>, a raster in any format GDAL supports (GeoTIFF, PNG, …), through GDAL's <varname>/vsimem/</varname> virtual filesystem, and packs its first band, row-major, into a single self-describing <varname>raquet</varname> value georeferenced by the <varname>quadbin</varname> cell. The band data type must be one of <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname>, or <varname>Float64</varname>; the band nodata value, when set, is carried into the tile. Because the file is supplied as bytes, no server-side file access is required. GDAL performs the decode, so the raster's format driver must be permitted by PostGIS's <varname>postgis.gdal_enabled_drivers</varname> setting (which disables all drivers by default); enable it with, for example, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. This is the ingest counterpart of the <link linkend="raquet"><varname>raquet</varname></link> constructor, which builds a tile from already-decoded pixel bytes. When <varname>quadbin</varname> is omitted or <varname>NULL</varname>, the tile identifier is derived from the raster's georeferencing: the raster must carry an <varname>EPSG:3857</varname> (Web-Mercator) spatial reference and an axis-aligned geotransform describing a single QUADBIN tile. A raster with no spatial reference, one that is not in <varname>EPSG:3857</varname>, or a geotransform that is rotated or not aligned to the tile grid raises an error rather than being coerced.</para>
+				<para>Reads the bytes of <varname>rasterfile</varname>, a raster in any format GDAL supports (GeoTIFF, PNG, …), through GDAL's <varname>/vsimem/</varname> virtual filesystem, and packs its first band, row-major, into a single self-describing <varname>raquet</varname> value georeferenced by the <varname>quadbin</varname> cell. The band data type must be one of <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname>, or <varname>Float64</varname>; the band nodata value, when set, is carried into the tile. Because the file is supplied as bytes, no server-side file access is required. GDAL performs the decode, so the raster's format driver must be permitted by PostGIS's <varname>postgis.gdal_enabled_drivers</varname> setting (which disables all drivers by default); enable it with, for example, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. This is the ingest counterpart of the <link linkend="raquet"><varname>raquet</varname></link> constructor, which builds a tile from already-decoded pixel bytes. When <varname>quadbin</varname> is omitted or <varname>NULL</varname>, the tile identifier is derived from the raster's georeferencing: the raster must carry an <varname>EPSG:3857</varname> (Web-Mercator) spatial reference and an axis-aligned geotransform describing a single QUADBIN tile. A raster with no spatial reference, one that is not in <varname>EPSG:3857</varname>, or a geotransform that is rotated or not aligned to the tile grid raises an error rather than being coerced. The form taking <varname>text</varname> reads the raster file at that path on the server instead, where PostGIS allows a raster band stored outside the database to be read, as <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> states.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Decode a GeoTIFF stored in a bytea column into a raquet tile
 SELECT raquetRead(file_bytes, quadbin) AS tile FROM elevation_files;
@@ -2060,8 +2061,9 @@ SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32'
 				<para>Read a raster band along a trajectory</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
+rasterValue(tgeompoint,path text,band integer=1) → tfloat
 </programlisting>
-				<para>Reads band <varname>band</varname> along <varname>traj</varname>, taking the value of the pixel each position falls in. A trajectory that states nothing between its instants is read at its instants and answers an instant-set <varname>tfloat</varname>. A trajectory that moves between them passes over the pixels between them, so each segment is traversed pixel by pixel, and it answers a step <varname>tfloat</varname> holding each value from the instant the trip reaches the pixel holding it, a pixel whose corner the trip only clips included. A position outside the raster or over a nodata pixel carries no value and ends the run, so a trip that leaves and re-enters the raster answers one sequence per visit, and <varname>NULL</varname> when it never meets a pixel carrying data. A band whose pixels cannot be read, such as a band stored outside the database in a file that cannot be opened, raises an error rather than reading as a band without values.</para>
+				<para>Reads band <varname>band</varname> along <varname>traj</varname>, taking the value of the pixel each position falls in. A trajectory that states nothing between its instants is read at its instants and answers an instant-set <varname>tfloat</varname>. A trajectory that moves between them passes over the pixels between them, so each segment is traversed pixel by pixel, and it answers a step <varname>tfloat</varname> holding each value from the instant the trip reaches the pixel holding it, a pixel whose corner the trip only clips included. A position outside the raster or over a nodata pixel carries no value and ends the run, so a trip that leaves and re-enters the raster answers one sequence per visit, and <varname>NULL</varname> when it never meets a pixel carrying data. A band whose pixels cannot be read, such as a band stored outside the database in a file that cannot be opened, raises an error rather than reading as a band without values. The form taking <varname>path</varname> reads a raster file on the server, in any format GDAL supports, through GDAL, where PostGIS allows a raster band stored outside the database to be read: <varname>postgis.enable_outdb_rasters</varname> must be on and <varname>postgis.gdal_enabled_drivers</varname> must enable the driver of the file. It answers what the form taking a <varname>raster</varname> answers over the same raster.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
@@ -2288,8 +2290,9 @@ JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
 				<para>Return the part of a trajectory where the raster value it reads falls inside a float range</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
+atRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
 </programlisting>
-				<para>Reads <varname>rasterValue</varname> along <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no time satisfies the condition.</para>
+				<para>Reads <varname>rasterValue</varname> along <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no time satisfies the condition. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
@@ -2310,8 +2313,9 @@ SELECT asText(atRasterValue(tgeompoint 'SRID=4326;
 				<para>Return the part of a trajectory where the raster value it reads falls outside a float range</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
+minusRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
 </programlisting>
-				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when the pixel value lies within <varname>vspan</varname> at every time.</para>
+				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when the pixel value lies within <varname>vspan</varname> at every time. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Keep only the instant whose raster value (10) is below 40
 SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM trips,
@@ -2324,8 +2328,9 @@ SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM 
 				<para>Return true if the trajectory ever reads a raster pixel value inside a float range</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
+eRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
 </programlisting>
-				<para>Returns <varname>true</varname> when <varname>traj</varname> ever reads a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
+				<para>Returns <varname>true</varname> when <varname>traj</varname> ever reads a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that ever crossed terrain above 200 m
 SELECT tripid FROM trips,
@@ -2338,8 +2343,9 @@ SELECT tripid FROM trips,
 				<para>Return true if every pixel value the trajectory reads over the raster lies inside a float range</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 aRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
+aRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
 </programlisting>
-				<para>Returns <varname>true</varname> when every pixel value <varname>traj</varname> reads over the raster lies within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
+				<para>Returns <varname>true</varname> when every pixel value <varname>traj</varname> reads over the raster lies within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>. The form taking <varname>path</varname> reads a raster file on the server, as the corresponding form of <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> does.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that stayed entirely below 100 m elevation
 SELECT tripid FROM trips,

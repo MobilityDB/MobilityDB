@@ -681,6 +681,78 @@ SELECT raquetRead(
   decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'));
 
 -------------------------------------------------------------------------------
+-- The file forms of rasterValue, its restrictions and predicates, and
+-- raquetRead: a raster file on the server read through GDAL
+-------------------------------------------------------------------------------
+
+-- A raster file on the server is read where PostGIS allows a band stored
+-- outside the database to be read. The 3x3 raster of the examples and the
+-- 2 x 2 GeoTIFF above are written to files in the data directory, which a
+-- relative path names.
+SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
+SET postgis.enable_outdb_rasters = true;
+SELECT lo_from_bytea(424242, ST_AsGDALRaster(ST_SetValues(ST_AddBand(
+  ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+  '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+  ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+        [40.0::float4, 50.0::float4, 60.0::float4],
+        [70.0::float4, 80.0::float4, 90.0::float4]]), 'GTiff')) = 424242
+  AS written;
+SELECT lo_export(424242, 'raster_file_forms.tif') AS exported;
+SELECT lo_unlink(424242) AS unlinked;
+SELECT lo_from_bytea(424243, decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex')) = 424243
+  AS written;
+SELECT lo_export(424243, 'raquet_file_form.tif') AS exported;
+SELECT lo_unlink(424243) AS unlinked;
+
+-- The file forms answer what the raster forms answer over the same raster.
+-- A string literal in the second position names a file, text being the
+-- preferred type of an untyped literal.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]) AS r
+), trip AS (
+  SELECT tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
+    POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]' AS t
+)
+SELECT rasterValue(t, 'raster_file_forms.tif')::text AS file_form,
+  rasterValue(t, 'raster_file_forms.tif'::text) = rasterValue(t, r)
+    AS value_same,
+  atRasterValue(t, 'raster_file_forms.tif'::text, floatspan '[40, 90]') =
+    atRasterValue(t, r, floatspan '[40, 90]') AS at_same,
+  minusRasterValue(t, 'raster_file_forms.tif'::text, floatspan '[40, 90]') =
+    minusRasterValue(t, r, floatspan '[40, 90]') AS minus_same,
+  eRasterValue(t, 'raster_file_forms.tif'::text, floatspan '[65, 75]') AS ever_file,
+  eRasterValue(t, r, floatspan '[65, 75]') AS ever_raster,
+  aRasterValue(t, 'raster_file_forms.tif'::text, floatspan '[0, 100]') AS always_file,
+  aRasterValue(t, r, floatspan '[0, 100]') AS always_raster
+FROM rast, trip;
+
+-- raquetRead reads the file into the tile it decodes from the same bytes
+SELECT raquetRead('raquet_file_form.tif'::text, 5193776270265024512::bigint)::text
+     = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text
+       AS file_form_equals_constructor;
+
+-- The setting PostGIS states for a band stored outside the database decides
+-- a file read, and so do the GDAL drivers it enables.
+SET postgis.enable_outdb_rasters = false;
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
+  'raster_file_forms.tif'::text);
+SELECT raquetRead('raquet_file_form.tif'::text, 5193776270265024512::bigint);
+SET postgis.enable_outdb_rasters = true;
+SET postgis.gdal_enabled_drivers = 'DISABLE_ALL';
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
+  'raster_file_forms.tif'::text);
+SET postgis.gdal_enabled_drivers = 'GTiff';
+SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}',
+  '/vsicurl/https://example.org/raster.tif'::text);
+SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
+
+-------------------------------------------------------------------------------
 -- raquet (Hex)WKB round trip
 --
 -- The tile carries its pixels and its QUADBIN georeferencing in one value, so

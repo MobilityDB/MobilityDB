@@ -326,9 +326,7 @@ raquet_from_gdal_dataset(GDALDatasetH ds, const char *vpath, uint64 quadbin,
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile, or 0
  * to derive it from the raster geotransform and EPSG:3857 spatial reference
- * @note The SQL surface reads the raster from bytes rather than a server-side
- * path, so the wrapper binds #raquet_read_bytes() and this function carries no
- * @p csqlfn link
+ * @csqlfn #Raquet_read()
  */
 Raquet *
 raquet_read(const char *path, uint64 quadbin)
@@ -362,7 +360,7 @@ raquet_read(const char *path, uint64 quadbin)
  * @param[in] size Number of bytes in @p data
  * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile, or 0
  * to derive it from the raster geotransform and EPSG:3857 spatial reference
- * @csqlfn #Raquet_read()
+ * @csqlfn #Raquet_read_bytes()
  */
 Raquet *
 raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
@@ -602,6 +600,7 @@ raster_gdal_close(GDALDatasetH ds, const RasterValueGdalCtx *ctx,
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] band Band number (1-based)
  * @errval NULL
+ * @csqlfn #Raster_value_gdal()
  */
 Temporal *
 raster_value_gdal(const Temporal *traj, const char *path, int band)
@@ -635,6 +634,7 @@ raster_value_gdal(const Temporal *traj, const char *path, int band)
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range (inclusive bounds)
  * @errval NULL
+ * @csqlfn #Raster_at_value_gdal()
  */
 Temporal *
 raster_at_value_gdal(const Temporal *traj, const char *path, int band,
@@ -670,6 +670,7 @@ raster_at_value_gdal(const Temporal *traj, const char *path, int band,
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range to exclude
  * @errval NULL
+ * @csqlfn #Raster_minus_value_gdal()
  */
 Temporal *
 raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
@@ -707,6 +708,7 @@ raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
  * @return 1 if the trajectory ever samples a value inside @p vspan, 0 if
  * not, and -1 on error
  * @errval -1
+ * @csqlfn #Eraster_value_gdal()
  */
 int
 eraster_value_gdal(const Temporal *traj, const char *path, int band,
@@ -738,6 +740,7 @@ eraster_value_gdal(const Temporal *traj, const char *path, int band,
  * @return 1 if every sampled value falls inside @p vspan, 0 if not, and -1
  * on error
  * @errval -1
+ * @csqlfn #Araster_value_gdal()
  */
 int
 araster_value_gdal(const Temporal *traj, const char *path, int band,

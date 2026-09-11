@@ -248,9 +248,8 @@ def resolve(dirs):
         if refs:
             continue
         # A wrapper whose name is the function's own stem binds it, unless the
-        # wrapper resolves to a different MEOS function: raquet_read and
-        # raquet_read_bytes share the stem Raquet_read, which binds the bytes
-        # form, so the name alone would tag the path form that nothing binds
+        # wrapper resolves to a different MEOS function, where the name alone
+        # would tag a function that nothing binds
         stem = cap(fn)
         if stem in pgnames and deleg_of.get(stem, fn) == fn:
             auto.append((fn, stem, f, 'ownstem'))

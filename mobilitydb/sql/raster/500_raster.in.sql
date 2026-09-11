@@ -45,6 +45,9 @@
  *   eRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → boolean
  *   aRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → boolean
  *
+ * rasterValue and the four functions above also take the path of a raster
+ * file on the server in place of the raster, which GDAL reads.
+ *
  * This file is compiled into the mobilitydb extension only when
  * MobilityDB is built with `-DRASTER=ON`; the generated
  * `mobilitydb.control` then declares `requires = '...postgis_raster'`
@@ -143,8 +146,23 @@ CREATE FUNCTION raquetRead(
     rasterfile bytea,
     quadbin    bigint DEFAULT NULL
 ) RETURNS raquet
-  AS 'MODULE_PATHNAME', 'Raquet_read'
+  AS 'MODULE_PATHNAME', 'Raquet_read_bytes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile read from a raster file on the server via GDAL
+ * @param[in] path Path of a raster file on the server in any GDAL-supported
+ * format
+ * @param[in] quadbin CARTO QUADBIN cell, or NULL to derive it from the raster
+ * geotransform and EPSG:3857 spatial reference
+ */
+CREATE FUNCTION raquetRead(
+    path    text,
+    quadbin bigint DEFAULT NULL
+) RETURNS raquet
+  AS 'MODULE_PATHNAME', 'Raquet_read'
+  LANGUAGE C PARALLEL SAFE;
 
 /******************************************************************************
  * rasterValue
@@ -163,6 +181,23 @@ CREATE OR REPLACE FUNCTION rasterValue(
     band  integer DEFAULT 1
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values of a band of a raster file on the server read
+ * along a trajectory
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server in any GDAL-supported
+ * format
+ * @param[in] band Band number (1-based, default 1)
+ */
+CREATE OR REPLACE FUNCTION rasterValue(
+    traj  tgeompoint,
+    path  text,
+    band  integer DEFAULT 1
+) RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Raster_value_gdal'
   LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -263,6 +298,22 @@ CREATE OR REPLACE FUNCTION atRasterValue(traj tgeompoint, rast raster,
   AS 'MODULE_PATHNAME', 'Raster_at_value'
   LANGUAGE C STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the instants of a trajectory where the value it reads from a
+ * raster file on the server falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server in any GDAL-supported
+ * format
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @param[in] band Band number (1-based, default 1)
+ */
+CREATE OR REPLACE FUNCTION atRasterValue(traj tgeompoint, path text,
+    vspan floatspan, band integer DEFAULT 1)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_at_value_gdal'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * minusRasterValue
  *****************************************************************************/
@@ -280,6 +331,22 @@ CREATE OR REPLACE FUNCTION minusRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Raster_minus_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the instants of a trajectory where the value it reads from a
+ * raster file on the server falls outside a float range
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server in any GDAL-supported
+ * format
+ * @param[in] vspan Float value range to exclude
+ * @param[in] band Band number (1-based, default 1)
+ */
+CREATE OR REPLACE FUNCTION minusRasterValue(traj tgeompoint, path text,
+    vspan floatspan, band integer DEFAULT 1)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_minus_value_gdal'
   LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -301,6 +368,22 @@ CREATE OR REPLACE FUNCTION eRasterValue(traj tgeompoint, rast raster,
   AS 'MODULE_PATHNAME', 'Eraster_value'
   LANGUAGE C STRICT PARALLEL SAFE;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the trajectory ever reads a value inside a float range
+ * from a raster file on the server
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server in any GDAL-supported
+ * format
+ * @param[in] vspan Float value range
+ * @param[in] band Band number (1-based, default 1)
+ */
+CREATE OR REPLACE FUNCTION eRasterValue(traj tgeompoint, path text,
+    vspan floatspan, band integer DEFAULT 1)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eraster_value_gdal'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * aRasterValue
  *****************************************************************************/
@@ -317,6 +400,21 @@ CREATE OR REPLACE FUNCTION eRasterValue(traj tgeompoint, rast raster,
 CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Araster_value'
+  LANGUAGE C STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every value the trajectory reads from a raster file on
+ * the server falls inside a float range
+ * @param[in] traj Trajectory
+ * @param[in] path Path of a raster file on the server in any GDAL-supported
+ * format
+ * @param[in] vspan Float value range
+ * @param[in] band Band number (1-based, default 1)
+ */
+CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, path text,
+    vspan floatspan, band integer DEFAULT 1) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Araster_value_gdal'
   LANGUAGE C STRICT PARALLEL SAFE;
 
 /******************************************************************************
