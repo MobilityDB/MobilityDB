@@ -6370,6 +6370,7 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
    * A positive polygon buffer contracts the holes. Therefore the
    * buffering side is the opposite of the exterior side.
    */
+  MeosArray *edges = NULL;
   for (uint32_t i = 1; i < poly->nrings; i++)
   {
     /* A positive buffer erodes a hole, and what is left of one is non-empty
@@ -6390,11 +6391,44 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
       join_style, mitre_limit, srid);
     if (! hole)
     {
+      if (edges)
+        meos_array_destroy(edges);
       lwgeom_free(lwcurvepoly_as_lwgeom(result));
       return NULL;
     }
+    /* The area test above is necessary but not sufficient: a hole enclosing
+     * more than the disc can still be narrower than it everywhere. Contracted
+     * by more than it is wide, it passes through itself and comes back out
+     * inverted at the distance it overshot by, which bounds nothing, so the
+     * hole closes rather than punching that ring out of the answer. Where the
+     * contraction does not cross itself it is inverted as a whole or not at
+     * all, and the point it holds says which (#buffer_ring_inverted); where it
+     * crosses itself, the resolution below keeps the parts that are a hole */
+    if (! inward)
+    {
+      /* The crossing test reads the boundary of a surface, so the ring is
+       * asked as the boundary of one, as #buffer_ring_encloses_no_area does */
+      LWCURVEPOLY *probe = lwcurvepoly_construct_empty(srid, 0, 0);
+      lwcurvepoly_add_ring(probe, lwgeom_clone_deep(lwcompound_as_lwgeom(
+        hole)));
+      LWGEOM *surface = lwcurvepoly_as_lwgeom(probe);
+      bool crosses = buffer_boundary_self_intersects(surface);
+      lwgeom_free(surface);
+      if (! crosses)
+      {
+        if (! edges)
+          edges = geom_extract_edges((const LWGEOM *) poly);
+        if (buffer_ring_inverted(hole, edges, radius, srid))
+        {
+          lwgeom_free(lwcompound_as_lwgeom(hole));
+          continue;
+        }
+      }
+    }
     buffer_curvepoly_add_ring(result, hole);
   }
+  if (edges)
+    meos_array_destroy(edges);
 
   /* A ring contracted past the width of the polygon crosses itself, and it
    * takes the boundary overlay to say which surfaces the crossing leaves */
