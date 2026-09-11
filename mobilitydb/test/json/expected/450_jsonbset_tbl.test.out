@@ -163,10 +163,16 @@ SELECT COUNT(*) FROM test2 t1, tbl_jsonbset t2 WHERE t1.k = t2.k AND t1.s <> t2.
      0
 (1 row)
 
+SELECT cmp(jsonbset '{"\"a\""}', jsonbset '{"\"z\""}') = -1;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE cmp(t1.s, t2.s) = -1;
  count 
 -------
-  1136
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s = t2.s;

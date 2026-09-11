@@ -109,8 +109,8 @@ int64_cmp(int64 l, int64 r)
 }
 
 /**
- * @brief Return -1, 0, or 1 depending on whether the first value is less than, 
- * equal to, or greater than the second one
+ * @brief Return a negative value, 0, or a positive value depending on whether
+ * the first value is less than, equal to, or greater than the second one
  */
 int
 datum_cmp(Datum l, Datum r, MeosType type)
