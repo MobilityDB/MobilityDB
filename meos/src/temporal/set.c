@@ -1189,7 +1189,14 @@ set_cmp(const Set *s1, const Set *s2)
     else
       result = 0;
   }
-  return result;
+  /* datum_cmp states the order in the sign of its result */
+  if (result == INT_MAX)
+    return INT_MAX;
+  if (result < 0)
+    return -1;
+  if (result > 0)
+    return 1;
+  return 0;
 }
 
 /**

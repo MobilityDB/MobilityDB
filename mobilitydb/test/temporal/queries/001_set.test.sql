@@ -171,6 +171,8 @@ SELECT dateset '{2001-01-01}' <= dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
 SELECT dateset '{2001-01-01}' > dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
 SELECT dateset '{2001-01-01}' >= dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
 
+SELECT cmp(textset '{"apple"}', textset '{"zebra"}') = -1;
+
 SELECT cmp(tstzset '{2001-01-01}', tstzset '{2001-01-01, 2001-01-02, 2001-01-03}') = -1;
 SELECT tstzset '{2001-01-01}' = tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';
 SELECT tstzset '{2001-01-01}' <> tstzset '{2001-01-01, 2001-01-02, 2001-01-03}';

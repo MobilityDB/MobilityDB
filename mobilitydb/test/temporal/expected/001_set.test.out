@@ -503,6 +503,12 @@ SELECT dateset '{2001-01-01}' >= dateset '{2001-01-01, 2001-01-02, 2001-01-03}';
  f
 (1 row)
 
+SELECT cmp(textset '{"apple"}', textset '{"zebra"}') = -1;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT cmp(tstzset '{2001-01-01}', tstzset '{2001-01-01, 2001-01-02, 2001-01-03}') = -1;
  ?column? 
 ----------
