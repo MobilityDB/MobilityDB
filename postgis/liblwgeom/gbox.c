@@ -468,11 +468,6 @@ size_t gbox_serialized_size(lwflags_t flags)
 ** Compute cartesian bounding GBOX boxes from LWGEOM.
 */
 
-/* MEOS: the cross product of coordinate differences, computed exactly and
- * rounded once, from meos/src/geo/geo_funcs.c */
-extern double cross_product_exact(double ax, double ay, double bx, double by,
-	double cx, double cy, double dx, double dy);
-
 /* MEOS: the rounding of a coordinate the arc box constructs, by which the box
  * is padded outward, since a box may hold more than the arc and never less.
  * A reach beyond the chord midpoint goes through some fifty roundings of the
@@ -542,39 +537,18 @@ int lw_arc_calculate_gbox_cartesian_2d(const POINT2D *A1, const POINT2D *A2, con
 		return LW_SUCCESS;
 	}
 
-	/* MEOS: the turn at A2, the cross product of A1 - A2 and A3 - A2, exactly.
-	 * Zero where the three points are collinear, A2 on an end included, and
-	 * the arc is then the segment A1-A3; otherwise its sign is the side of the
-	 * chord A1-A3 the arc lies on. Where its two products do not nearly
-	 * cancel, their rounded difference keeps its relative precision to a few
-	 * roundings; otherwise it is computed exactly */
-	double ux = A1->x - A2->x, uy = A1->y - A2->y;
-	double vx = A3->x - A2->x, vy = A3->y - A2->y;
-	double left = ux * vy, right = uy * vx;
-	double cross = left - right;
-	if (! (fabs(cross) > 0.5 * (fabs(left) + fabs(right))))
-		cross = cross_product_exact(A2->x, A2->y, A1->x, A1->y,
-			A2->x, A2->y, A3->x, A3->y);
-	if (cross == 0.0)
+	/* MEOS: three collinear points, A2 on an end included, are the segment
+	 * A1-A3 */
+	LW_ARC_FRAME f;
+	if (! lw_arc_frame(A1, A2, A3, &f))
 		return LW_SUCCESS;
 
-	/* MEOS: the inscribed angle a at A2, from the cross product and the dot
-	 * product of the two vectors, each to within a few roundings of itself */
-	double dot = ux * vx + uy * vy;
-	double h = hypot(cross, dot);
-	double sina = fabs(cross) / h, cosa = dot / h;
-
-	/* MEOS: the chord, its midpoint, half its length and its unit normal
-	 * toward the arc. The circle has radius half / sin a and its centre lies
-	 * half cot a from the midpoint along that normal, so the extreme of the
-	 * circle in a direction W lies half (1 + omega cos a) / sin a beyond the
-	 * midpoint, and it is on the arc where omega >= - cos a */
-	double chx = A3->x - A1->x, chy = A3->y - A1->y;
-	double len = hypot(chx, chy);
-	double half = len / 2.0;
-	double mx = A1->x + chx / 2.0, my = A1->y + chy / 2.0;
-	double side = (cross > 0.0) ? 1.0 : -1.0;
-	double nx = - side * chy / len, ny = side * chx / len;
+	/* MEOS: the circle has radius half / sin a and its centre lies half cot a
+	 * from the chord midpoint along the normal toward the arc, so the extreme
+	 * of the circle in a direction W lies half (1 + omega cos a) / sin a
+	 * beyond the midpoint, and it is on the arc where omega >= - cos a */
+	double half = f.half, mx = f.mx, my = f.my, nx = f.nx, ny = f.ny;
+	double sina = f.sina, cosa = f.cosa;
 	/* An extreme on the edge of that condition sits on an end of the arc, so
 	 * one read on the wrong side of it moves the box by a rounding: take it */
 	double slack = ARC_GBOX_ROUNDING;
