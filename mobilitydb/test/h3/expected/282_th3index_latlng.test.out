@@ -51,8 +51,8 @@ WITH densified AS (
     tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
     9) AS t
 )
-SELECT startValue(t) = geoToH3Cell(geometry 'SRID=4326;POINT(-73.96 40.78)', 9) AS start_cell_preserved,
-       endValue(t)   = geoToH3Cell(geometry 'SRID=4326;POINT(2.35 48.86)', 9)   AS end_cell_preserved,
+SELECT startValue(t) = latLngToCell(geometry 'SRID=4326;POINT(-73.96 40.78)', 9) AS start_cell_preserved,
+       endValue(t)   = latLngToCell(geometry 'SRID=4326;POINT(2.35 48.86)', 9)   AS end_cell_preserved,
        numValues(getValues(t)) > 1000 AS path_densified
 FROM densified;
  start_cell_preserved | end_cell_preserved | path_densified 
@@ -71,8 +71,8 @@ WITH d AS (
   SELECT th3index(
     tgeompoint 'SRID=4326;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7) AS t
 )
-SELECT startValue(t) = geoToH3Cell(geometry 'SRID=4326;POINT(-73.96 40.78)', 7) AS start_cell_preserved,
-       endValue(t)   = geoToH3Cell(geometry 'SRID=4326;POINT(-73.90 40.80)', 7) AS end_cell_preserved
+SELECT startValue(t) = latLngToCell(geometry 'SRID=4326;POINT(-73.96 40.78)', 7) AS start_cell_preserved,
+       endValue(t)   = latLngToCell(geometry 'SRID=4326;POINT(-73.90 40.80)', 7) AS end_cell_preserved
 FROM d;
  start_cell_preserved | end_cell_preserved 
 ----------------------+--------------------

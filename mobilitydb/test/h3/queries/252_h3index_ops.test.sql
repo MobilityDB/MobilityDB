@@ -90,7 +90,7 @@ SELECT cellToPoint(h3index '871fa44a8ffffff')
   && ST_MakeEnvelope(4, 50, 5, 51, 4326);
 
 -- The cell containing the centroid is the cell itself
-SELECT geoToH3Cell(cellToPoint(h3index '871fa44a8ffffff'), 7)
+SELECT latLngToCell(cellToPoint(h3index '871fa44a8ffffff'), 7)
   = h3index '871fa44a8ffffff';
 
 -------------------------------------------------------------------------------

@@ -910,19 +910,19 @@ SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
 		<para>These functions convert an ordinary (non-temporal) geometry into the cell or cell set that covers it at a given resolution, and test whether a temporal cell trajectory ever enters that cell set. The cell-set output together with the ever-intersects predicate form the cross-platform spatial prefilter used by the portable BerlinMOD queries.</para>
 
 		<itemizedlist>
-			<listitem xml:id="tcell_geoToH3Cell">
-				<indexterm significance="normal"><primary><varname>geoToH3Cell</varname></primary></indexterm>
+			<listitem xml:id="tcell_latLngToCell">
+				<indexterm significance="normal"><primary><varname>latLngToCell</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geoToQuadbinCell</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geoToS2Cell</varname></primary></indexterm>
 				<para>Return the cell of a grid that contains a point geometry at the given resolution</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-geoToH3Cell(geometry,integer) → h3index
+latLngToCell(geometry,resolution integer) → h3index
 geoToQuadbinCell(geometry,integer) → quadbin
 geoToS2Cell(geography,integer) → s2cell
 </programlisting>
-				<para>The geometry must be a <varname>POINT</varname>, and its longitude and latitude are interpreted in SRID 4326.</para>
+				<para>The geometry must be a <varname>POINT</varname>, and its longitude and latitude are interpreted in SRID 4326. The H3 form takes the name of the h3-pg function <varname>h3_latlng_to_cell</varname>; QUADBIN and S2 have no host extension, and their forms keep the names MobilityDB gives them.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT geoToH3Cell(geometry 'SRID=4326;Point(4.35 50.85)', 7);
+SELECT latLngToCell(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- 871fa4418ffffff
 SELECT geoToQuadbinCell(geometry 'SRID=4326;Point(4.35 50.85)', 10);
 -- 48a6227affffffff
@@ -937,7 +937,7 @@ SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoToH3IndexSet(geometry,integer) → h3indexset
 </programlisting>
-				<para>Every geometry type is supported: a <varname>POINT</varname> yields a single cell, a <varname>LINESTRING</varname> samples its segments and takes the neighbours of each sample, so that the set holds every cell the line meets, a <varname>POLYGON</varname> fills its interior, and <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> values return the union of their components. The covering is stated for H3 alone: it is the one grid MobilityDB carries a region-covering kernel for, and the QUADBIN and S2 forms are not yet implemented.</para>
+				<para>Every geometry type is supported: a <varname>POINT</varname> yields a single cell, a <varname>LINESTRING</varname> samples its segments and takes the neighbours of each sample, so that the set holds every cell the line meets, a <varname>POLYGON</varname> fills its interior, and <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> values return the union of their components. The covering is stated for H3 alone: it is the one grid MobilityDB carries a region-covering kernel for, and the QUADBIN and S2 forms are not yet implemented. It answers every cell the geometry meets, the covering a spatial prefilter needs, where the h3-pg function <varname>h3_polygon_to_cells</varname> answers the cells whose centre a polygon holds, which is why the name stays MobilityDB's.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- {"871fa4418ffffff"}
@@ -1256,7 +1256,7 @@ cellArea(cell) → float8
 cellArea(tcell) → tfloat
 </programlisting>
 				<para>A cell area shrinks toward the poles on the QUADBIN grid, as Web-Mercator squares cover progressively less ground at higher latitudes. An H3 or an S2 cell is defined on the sphere, so its area varies only with resolution and with the cell's position in the base solid.</para>
-				<para>The unit is the square metre for every grid, so <varname>cellArea</varname> answers the same quantity whichever grid holds the cell.</para>
+				<para>The unit is the square metre for every grid, so <varname>cellArea</varname> answers the same quantity whichever grid holds the cell. The h3-pg function <varname>h3_cell_area</varname> answers square kilometres unless asked otherwise, so for an H3 cell <varname>cellArea</varname> answers a million times its default.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
 -- 4441914.270110932@2001-01-01
@@ -1624,6 +1624,48 @@ CREATE INDEX Trips_Cells_SPGist_Idx ON Trips USING SPGist(Cells);
 	<sect1 xml:id="tcell_h3_specific">
 		<title>H3-Specific Operations</title>
 		<para>An H3 cell is a hexagon on an icosahedron, so it has neighbours through six edges, vertices shared with them, and a base cell among the 122 the icosahedron carries. Twelve cells at each resolution are pentagons. None of that has a counterpart in a square or a spherical quadrilateral grid.</para>
+		<para>MobilityDB builds on the h3 extension (h3-pg) and reads its <varname>h3index</varname> type, so every h3-pg function stays available beside the ones below. A MobilityDB function over an H3 cell takes the name of its h3-pg counterpart without the <varname>h3_</varname> prefix, an operation the three grids share takes the name they share, and one signature answers each operation.</para>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>h3-pg</entry>
+						<entry>MobilityDB</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>h3_latlng_to_cell</varname></entry>
+						<entry><varname>latLngToCell</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_cell_to_geometry</varname>, <varname>h3_cell_to_latlng</varname></entry>
+						<entry><varname>cellToPoint</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_cell_to_boundary</varname></entry>
+						<entry><varname>cellToBoundary</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_cell_to_parent</varname>, <varname>h3_cell_to_children</varname></entry>
+						<entry><varname>cellToParent</varname>, <varname>cellToChildren</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_get_resolution</varname>, <varname>h3_is_valid_cell</varname></entry>
+						<entry><varname>getResolution</varname>, <varname>isValidCell</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_grid_disk</varname></entry>
+						<entry><varname>gridDisk</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_cell_area</varname></entry>
+						<entry><varname>cellArea</varname></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
 		<itemizedlist>
 			<listitem xml:id="tcell_h3_get_base_cell_number">
 				<indexterm significance="normal"><primary><varname>th3GetBaseCellNumber</varname></primary></indexterm>

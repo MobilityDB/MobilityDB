@@ -908,19 +908,19 @@ SELECT atTime(ts2cell '[47c3c@2001-01-01, 47c3c@2001-01-04]',
 		<para>Estas funciones convierten una geometría ordinaria (no temporal) en la celda o el conjunto de celdas que la cubre en una resolución dada, y comprueban si una trayectoria de celdas temporales entra alguna vez en ese conjunto de celdas. La salida del conjunto de celdas junto con el predicado de intersección alguna vez forman el prefiltro espacial multiplataforma que usan las consultas portables de BerlinMOD.</para>
 
 		<itemizedlist>
-			<listitem xml:id="tcell_geoToH3Cell">
-				<indexterm significance="normal"><primary><varname>geoToH3Cell</varname></primary></indexterm>
+			<listitem xml:id="tcell_latLngToCell">
+				<indexterm significance="normal"><primary><varname>latLngToCell</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geoToQuadbinCell</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geoToS2Cell</varname></primary></indexterm>
 				<para>Devolver la celda de una cuadrícula que contiene una geometría de punto en la resolución dada</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-geoToH3Cell(geometry,integer) → h3index
+latLngToCell(geometry,resolution integer) → h3index
 geoToQuadbinCell(geometry,integer) → quadbin
 geoToS2Cell(geography,integer) → s2cell
 </programlisting>
-				<para>La geometría debe ser un <varname>POINT</varname>, y su longitud y su latitud se interpretan en el SRID 4326.</para>
+				<para>La geometría debe ser un <varname>POINT</varname>, y su longitud y su latitud se interpretan en el SRID 4326. La forma H3 toma el nombre de la función <varname>h3_latlng_to_cell</varname> de h3-pg; QUADBIN y S2 no tienen extensión anfitriona, y sus formas conservan los nombres que les da MobilityDB.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT geoToH3Cell(geometry 'SRID=4326;Point(4.35 50.85)', 7);
+SELECT latLngToCell(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- 871fa4418ffffff
 SELECT geoToQuadbinCell(geometry 'SRID=4326;Point(4.35 50.85)', 10);
 -- 48a6227affffffff
@@ -935,7 +935,7 @@ SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10);
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoToH3IndexSet(geometry,integer) → h3indexset
 </programlisting>
-				<para>Se admite todo tipo de geometría: un <varname>POINT</varname> produce una única celda, una <varname>LINESTRING</varname> muestrea sus segmentos y toma los vecinos de cada muestra, de modo que el conjunto contiene todas las celdas que la línea toca, un <varname>POLYGON</varname> rellena su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes. La cobertura se presenta solo para H3: es la única cuadrícula para la que MobilityDB lleva un núcleo de cobertura de regiones, y las formas para QUADBIN y S2 aún no están implementadas.</para>
+				<para>Se admite todo tipo de geometría: un <varname>POINT</varname> produce una única celda, una <varname>LINESTRING</varname> muestrea sus segmentos y toma los vecinos de cada muestra, de modo que el conjunto contiene todas las celdas que la línea toca, un <varname>POLYGON</varname> rellena su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes. La cobertura se presenta solo para H3: es la única cuadrícula para la que MobilityDB lleva un núcleo de cobertura de regiones, y las formas para QUADBIN y S2 aún no están implementadas. Devuelve todas las celdas que la geometría toca, la cobertura que necesita un prefiltro espacial, donde la función <varname>h3_polygon_to_cells</varname> de h3-pg devuelve las celdas cuyo centro contiene un polígono, razón por la que el nombre sigue siendo el de MobilityDB.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- {"871fa4418ffffff"}
@@ -1253,7 +1253,7 @@ cellArea(cell) → float8
 cellArea(tcell) → tfloat
 </programlisting>
 				<para>El área de una celda se encoge hacia los polos en la cuadrícula QUADBIN, ya que los cuadrados de Web-Mercator cubren progresivamente menos terreno en latitudes más altas. Una celda H3 o S2 se define sobre la esfera, de modo que su área varía únicamente con la resolución y con la posición de la celda en el sólido base.</para>
-				<para>La unidad es el metro cuadrado, fijada por la ranura <varname>cell_area</varname> del descriptor <varname>DggsCellOps</varname> al que se conecta cada cuadrícula, de modo que <varname>cellArea</varname> responde la misma cantidad sea cual sea la cuadrícula que contiene la celda.</para>
+				<para>La unidad es el metro cuadrado, fijada por la ranura <varname>cell_area</varname> del descriptor <varname>DggsCellOps</varname> al que se conecta cada cuadrícula, de modo que <varname>cellArea</varname> responde la misma cantidad sea cual sea la cuadrícula que contiene la celda. La función <varname>h3_cell_area</varname> de h3-pg responde kilómetros cuadrados salvo que se le pida otra unidad, de modo que para una celda H3 <varname>cellArea</varname> responde un millón de veces su valor por defecto.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT cellArea(th3index '871fa44a8ffffff@2001-01-01');
 -- 4441914.270110932@2001-01-01
@@ -1621,6 +1621,48 @@ CREATE INDEX Trips_Cells_SPGist_Idx ON Trips USING SPGist(Cells);
 	<sect1 xml:id="tcell_h3_specific">
 		<title>Operaciones específicas de H3</title>
 		<para>Una celda H3 es un hexágono sobre un icosaedro, de modo que tiene vecinos a través de seis aristas, vértices compartidos con ellos y una celda base entre las 122 que lleva el icosaedro. Doce celdas de cada resolución son pentágonos. Nada de eso tiene contrapartida en una cuadrícula de cuadrados o de cuadriláteros esféricos.</para>
+		<para>MobilityDB se apoya en la extensión h3 (h3-pg) y lee su tipo <varname>h3index</varname>, de modo que toda función de h3-pg sigue disponible junto a las siguientes. Una función de MobilityDB sobre una celda H3 toma el nombre de su homóloga de h3-pg sin el prefijo <varname>h3_</varname>, una operación que comparten las tres cuadrículas toma el nombre que comparten, y una sola signatura responde a cada operación.</para>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>h3-pg</entry>
+						<entry>MobilityDB</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>h3_latlng_to_cell</varname></entry>
+						<entry><varname>latLngToCell</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_cell_to_geometry</varname>, <varname>h3_cell_to_latlng</varname></entry>
+						<entry><varname>cellToPoint</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_cell_to_boundary</varname></entry>
+						<entry><varname>cellToBoundary</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_cell_to_parent</varname>, <varname>h3_cell_to_children</varname></entry>
+						<entry><varname>cellToParent</varname>, <varname>cellToChildren</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_get_resolution</varname>, <varname>h3_is_valid_cell</varname></entry>
+						<entry><varname>getResolution</varname>, <varname>isValidCell</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_grid_disk</varname></entry>
+						<entry><varname>gridDisk</varname></entry>
+					</row>
+					<row>
+						<entry><varname>h3_cell_area</varname></entry>
+						<entry><varname>cellArea</varname></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
 		<itemizedlist>
 			<listitem xml:id="tcell_h3_get_base_cell_number">
 				<indexterm significance="normal"><primary><varname>th3GetBaseCellNumber</varname></primary></indexterm>

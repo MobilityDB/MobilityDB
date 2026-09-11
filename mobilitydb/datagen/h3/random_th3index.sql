@@ -31,7 +31,7 @@
  * random_th3index.sql
  * Basic synthetic data generator functions for the static H3 cell index type
  * and the temporal H3 cell index type. Cells are always VALID: each is built
- * from a random WGS84 (SRID 4326) point via geoToH3Cell, so the h3-semantic
+ * from a random WGS84 (SRID 4326) point via latLngToCell, so the h3-semantic
  * operators (lat/lng, hierarchy, traversal, metrics) exercise real cells.
  * th3index has step interpolation only, so there is no continuous-sequence
  * generator.
@@ -53,7 +53,7 @@ BEGIN
     RAISE EXCEPTION 'lowres/highres must satisfy 0 <= lowres <= highres <= 15: %, %',
       lowres, highres;
   END IF;
-  RETURN geoToH3Cell(ST_SetSRID(random_geom_point(-180, 180, -90, 90), 4326),
+  RETURN latLngToCell(ST_SetSRID(random_geom_point(-180, 180, -90, 90), 4326),
     random_int(lowres, highres));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
