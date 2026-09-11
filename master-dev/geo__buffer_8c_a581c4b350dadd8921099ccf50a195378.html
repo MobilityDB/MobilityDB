@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_areal_overlay</title>
+<title>MobilityDB: buffer_point_edges_nearer</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -101,7 +101,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a1e70769ab5617570d900e380bbfe28c1.html#a1e70769ab5617570d900e380bbfe28c1">buffer_areal_dissolve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a26fd3a91bf0a99fee0a411c5dbacd25b.html#a26fd3a91bf0a99fee0a411c5dbacd25b">buffer_areal_is_degenerate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a357a495dc1101c3616b54c8c033437b6.html#a357a495dc1101c3616b54c8c033437b6">buffer_areal_operation</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_aa9e1545e514f0621709f49e985036282.html#aa9e1545e514f0621709f49e985036282">buffer_areal_overlay</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa9e1545e514f0621709f49e985036282.html#aa9e1545e514f0621709f49e985036282">buffer_areal_overlay</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_acad053b8ea93e6e2274633fcf9b51a6e.html#acad053b8ea93e6e2274633fcf9b51a6e">buffer_areal_representative_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aede157af0f31441667bf7a7aa7937849.html#aede157af0f31441667bf7a7aa7937849">buffer_areal_union_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_abf85b9bce5aac6bf8fd6a7bf92930ee4.html#abf85b9bce5aac6bf8fd6a7bf92930ee4">buffer_boundaries_cross</a></td></tr>
@@ -184,7 +184,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2da911d37898237aab38db871fb33d64.html#a2da911d37898237aab38db871fb33d64">buffer_pieces_meet</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa769075729327141bd98598b1e2092b3.html#aa769075729327141bd98598b1e2092b3">buffer_point_edge_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2a9b213088ae7accdbc0b10efbc2849d.html#a2a9b213088ae7accdbc0b10efbc2849d">buffer_point_edges_distance</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a581c4b350dadd8921099ccf50a195378.html#a581c4b350dadd8921099ccf50a195378">buffer_point_edges_nearer</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a581c4b350dadd8921099ccf50a195378.html#a581c4b350dadd8921099ccf50a195378">buffer_point_edges_nearer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae3c9090d008e1fb3b1f4929911adf883.html#ae3c9090d008e1fb3b1f4929911adf883">buffer_point_offset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afd6dd08960eff26831bb4ad5bee23c07.html#afd6dd08960eff26831bb4ad5bee23c07">buffer_point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae51fba08d848f3e608a839f29d0ac863.html#ae51fba08d848f3e608a839f29d0ac863">buffer_points_equal</a></td></tr>
@@ -247,8 +247,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa9e1545e514f0621709f49e985036282" name="aa9e1545e514f0621709f49e985036282"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa9e1545e514f0621709f49e985036282">&#9670;&#160;</a></span>buffer_areal_overlay()</h2>
+<a id="a581c4b350dadd8921099ccf50a195378" name="a581c4b350dadd8921099ccf50a195378"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a581c4b350dadd8921099ccf50a195378">&#9670;&#160;</a></span>buffer_point_edges_nearer()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -257,28 +257,40 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * buffer_areal_overlay </td>
+          <td class="memname">static bool buffer_point_edges_nearer </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom1</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom2</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4">ClipOper</a>&#160;</td>
-          <td class="paramname"><em>oper</em>, </td>
+          <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>edges</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>touching</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>limit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>found</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -293,17 +305,14 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Answer a Boolean operation on two areal geometries while preserving circular arcs. </p>
-<p >One mechanism answers the three operations, and the boundary of the answer is always built the same way: the two boundaries are cut at the nodes where they meet, every piece is placed inside or outside the other geometry by its own midpoint, the operation says which side it keeps (<a class="el" href="geo__buffer_8c_a985d220e4b1226ecc01e99edef9b197d.html#a985d220e4b1226ecc01e99edef9b197d">buffer_select_overlay_boundary</a>), and the kept pieces are chained back into rings. An arc is cut into arcs of its own circle throughout, so the answer carries the circles its operands do rather than the chords a linearization would put in their place.</p>
-<p >Nothing here asks how the two geometries lie relative to one another. Where their boundaries stay apart there is nothing to cut and every piece is wholly inside or wholly outside, which is the containment and the disjoint case answered by the same selection; and a geometry of several components is read piece by piece, so one component inside and another outside need no separate treatment. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return true when an edge of a geometry lies nearer a point than a distance. </p>
+<p >The same answer as comparing <a class="el" href="geo__buffer_8c_a2a9b213088ae7accdbc0b10efbc2849d.html#a2a9b213088ae7accdbc0b10efbc2849d" title="Return the distance from a point to the nearest edge of a geometry.">buffer_point_edges_distance</a> with the distance, read from the edges whose box reaches within the distance of the point, and settled at the first edge found nearer </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">geom1,geom2</td><td>Areal geometries </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">oper</td><td>Operation, one of <code>CL_UNION</code>, <code>CL_INTERSECTION</code> and <code>CL_DIFFERENCE</code> </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">touching</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> when the two boundaries meet without their interiors overlapping, which a union answers as two surfaces A stretch the two boundaries SHARE is bounded by the nodes at its ends, so it splits into a piece of its own and is placed like any other &ndash; by the side each interior occupies rather than by a midpoint that lies on both. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>R-tree of <a class="el" href="geo__buffer_8c_a8d6bad17af8ea333867cf689050d6ead.html#a8d6bad17af8ea333867cf689050d6ead" title="Return an R-tree of the boxes of the edges of a geometry, by their position in the array.">buffer_edges_index</a> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">found</td><td>Room for the positions the index answers </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The overlay, an EMPTY geometry where it covers nothing, what an intersection meets along where the two share no area &ndash; the NODES where they meet at isolated points and the STRETCH of boundary they share where they meet along one &ndash; or <code>NULL</code> for a pair this does not answer, which is a shared piece whose sides do not resolve and a meeting that is not a crossing </dd></dl>
 
 </div>
 </div>
