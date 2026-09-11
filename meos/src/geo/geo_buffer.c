@@ -297,11 +297,7 @@ buffer_snap_to_curve_end(const LWCOMPOUND *curve, POINT2D *point)
   const LWLINE *prev = (const LWLINE *) curve->geoms[curve->ngeoms - 1];
   if (! prev || ! prev->points || prev->points->npoints == 0)
     return;
-  POINT4D last;
-  getPoint4d_p(prev->points, prev->points->npoints - 1, &last);
-  POINT2D end;
-  end.x = last.x;
-  end.y = last.y;
+  POINT2D end = *getPoint2d_cp(prev->points, prev->points->npoints - 1);
   if (buffer_points_equal(end, *point))
     *point = end;
   return;
@@ -4324,10 +4320,9 @@ buffer_ring_area(const POINTARRAY *pa)
   double area = 0.0;
   for (uint32_t i = 0; i < pa->npoints - 1; i++)
   {
-    POINT4D p1, p2;
-    getPoint4d_p(pa, i, &p1);
-    getPoint4d_p(pa, i + 1, &p2);
-    area += p1.x * p2.y - p2.x * p1.y;
+    const POINT2D *p1 = getPoint2d_cp(pa, i);
+    const POINT2D *p2 = getPoint2d_cp(pa, i + 1);
+    area += p1->x * p2->y - p2->x * p1->y;
   }
   return area * 0.5;
 }
@@ -4381,12 +4376,7 @@ buffer_ring(const POINTARRAY *source, double radius, bool outward_left,
   uint32_t n = source->npoints - 1;
   POINT2D *points = palloc(sizeof(POINT2D) * n);
   for (uint32_t i = 0; i < n; i++)
-  {
-    POINT4D p;
-    getPoint4d_p(source, i, &p);
-    points[i].x = p.x;
-    points[i].y = p.y;
-  }
+    points[i] = *getPoint2d_cp(source, i);
 
   /* The unit normal of every segment, pointing to the buffered side */
   double *nx = palloc(sizeof(double) * n);
@@ -5839,9 +5829,8 @@ meos_buffer_point(const LWPOINT *point, double radius)
 {
   assert(point); assert(radius > 0.0);
   int32_t srid = lwgeom_get_srid((const LWGEOM *) point);
-  POINT4D pt;
-  lwpoint_getPoint4d_p(point, &pt);
-  return lwcircle_make(pt.x, pt.y, radius, srid);
+  const POINT2D *pt = getPoint2d_cp(point->point, 0);
+  return lwcircle_make(pt->x, pt->y, radius, srid);
 }
 
 /*****************************************************************************
@@ -5920,12 +5909,7 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
   uint32_t npoints = line->points->npoints;
   POINT2D *points = palloc(sizeof(POINT2D) * npoints);
   for (uint32_t i = 0; i < npoints; i++)
-  {
-    POINT4D point;
-    getPoint4d_p(line->points, i, &point);
-    points[i].x = point.x;
-    points[i].y = point.y;
-  }
+    points[i] = *getPoint2d_cp(line->points, i);
 
   /* Remove duplicate consecutive points */
   uint32_t nvalid = 0;
@@ -6228,16 +6212,11 @@ meos_buffer_line_split(const LWLINE *line, double radius, JoinStyle join_style,
   uint32_t nvalid = 0;
   for (uint32_t i = 0; i < npoints; i++)
   {
-    POINT4D point;
-    getPoint4d_p(line->points, i, &point);
+    const POINT2D *point = getPoint2d_cp(line->points, i);
     if (nvalid == 0 ||
-        hypot(point.x - points[nvalid - 1].x,
-              point.y - points[nvalid - 1].y) > MEOS_GEOM_TOLERANCE)
-    {
-      points[nvalid].x = point.x;
-      points[nvalid].y = point.y;
-      nvalid++;
-    }
+        hypot(point->x - points[nvalid - 1].x,
+              point->y - points[nvalid - 1].y) > MEOS_GEOM_TOLERANCE)
+      points[nvalid++] = *point;
   }
   npoints = nvalid;
   if (npoints < 3)

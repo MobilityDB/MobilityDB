@@ -1467,12 +1467,11 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
       assert(geom1->type == LINETYPE);
       LWLINE *lwline = lwgeom_as_lwline(geom1);
       /* Initialize edge */
-      POINT4D a, b;
       GEOGRAPHIC_POINT proj;
-      getPoint4d_p(lwline->points, 0, &a);
-      getPoint4d_p(lwline->points, 1, &b);
-      geographic_point_init(a.x, a.y, &(e.start));
-      geographic_point_init(b.x, b.y, &(e.end));
+      const POINT2D *a = getPoint2d_cp(lwline->points, 0);
+      const POINT2D *b = getPoint2d_cp(lwline->points, 1);
+      geographic_point_init(a->x, a->y, &(e.start));
+      geographic_point_init(b->x, b->y, &(e.end));
       /* Get the spherical distance between point and edge */
       edge_distance_to_point(&e, &closest1, &proj);
       /* Compute distance from beginning of the segment to closest point */
@@ -1513,10 +1512,10 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
       {
         assert(geom1->type == LINETYPE);
         LWLINE *lwline = lwgeom_as_lwline(geom1);
-        POINT2D a, b, closest;
-        getPoint2d_p(lwline->points, 0, &a);
-        getPoint2d_p(lwline->points, 1, &b);
-        *fraction = closest_point2d_on_segment_ratio(&dl.p1, &a, &b, &closest);
+        POINT2D closest;
+        *fraction = closest_point2d_on_segment_ratio(&dl.p1,
+          getPoint2d_cp(lwline->points, 0), getPoint2d_cp(lwline->points, 1),
+          &closest);
       }
     }
   }

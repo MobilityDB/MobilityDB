@@ -361,22 +361,22 @@ rel_posesegm_interpolate(Pose *pose1_s, Pose *pose1_e, Pose *pose2_s,
  * of the closest feature between a fixed point and a rotating polygon edge
  */
 static double
-f_tpoint_poly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
-  Pose *poly_pose_e, double ratio, bool solution_kind)
+f_tpoint_poly(const POINT2D *p, const POINT2D *q, const POINT2D *r,
+  Pose *poly_pose_s, Pose *poly_pose_e, double ratio, bool solution_kind)
 {
   double dx, dy, dtheta;
   double co, si, qx, qy, rx, ry;
   pose_interpolate_2d(poly_pose_s, poly_pose_e, ratio, &dx, &dy, &dtheta);
   co = cos(dtheta);
   si = sin(dtheta);
-  qx = q.x * co - q.y * si + dx;
-  qy = q.x * si + q.y * co + dy;
-  rx = r.x * co - r.y * si + dx;
-  ry = r.x * si + r.y * co + dy;
+  qx = q->x * co - q->y * si + dx;
+  qy = q->x * si + q->y * co + dy;
+  rx = r->x * co - r->y * si + dx;
+  ry = r->x * si + r->y * co + dy;
   if (solution_kind) /* MEOS_SOLVE_0 */
-    return (p.x - qx) * (rx - qx) + (p.y - qy) * (ry - qy);
+    return (p->x - qx) * (rx - qx) + (p->y - qy) * (ry - qy);
   else /* MEOS_SOLVE_1 */
-    return (p.x - rx) * (rx - qx) + (p.y - ry) * (ry - qy);
+    return (p->x - rx) * (rx - qx) + (p->y - ry) * (ry - qy);
 }
 
 /**
@@ -408,34 +408,36 @@ solve_s_tpoly_point(LWPOLY *poly, LWPOINT *point, Pose *poly_pose_s,
   Pose *poly_pose_e, uint32_t poly_v, double prev_result, bool solution_kind)
 {
   uint32_t n = poly->rings[0]->npoints - 1;
-  POINT4D p, q, r;
-  lwpoint_getPoint4d_p(point, &p);
-  getPoint4d_p(poly->rings[0], poly_v, &q);
-  getPoint4d_p(poly->rings[0], uint_mod_add(poly_v, 1, n), &r);
+  const POINT2D *p = getPoint2d_cp(point->point, 0);
+  const POINT2D *q = getPoint2d_cp(poly->rings[0], poly_v);
+  const POINT2D *r = getPoint2d_cp(poly->rings[0], uint_mod_add(poly_v, 1, n));
 
 /*  if (solution_kind)
     printf("s(t) = 0; p = (%lf, %lf), q = (%lf, %lf), r = (%lf, %lf), \npose_1 = (%lf, %lf, %lf), pose_2 = (%lf, %lf, %lf)\n",
-      p.x, p.y, q.x, q.y, r.x, r.y,
+      p->x, p->y, q->x, q->y, r->x, r->y,
       poly_pose_s->data[0], poly_pose_s->data[1], poly_pose_s->data[2],
       poly_pose_e->data[0], poly_pose_e->data[1], poly_pose_e->data[2]);
   else
     printf("s(t) = 1; p = (%lf, %lf), q = (%lf, %lf), r = (%lf, %lf), \npose_1 = (%lf, %lf, %lf), pose_2 = (%lf, %lf, %lf)\n",
-      p.x, p.y, q.x, q.y, r.x, r.y,
+      p->x, p->y, q->x, q->y, r->x, r->y,
       poly_pose_s->data[0], poly_pose_s->data[1], poly_pose_s->data[2],
       poly_pose_e->data[0], poly_pose_e->data[1], poly_pose_e->data[2]);
   fflush(stdout);*/
 
   if (fabs(poly_pose_s->data[2] - poly_pose_e->data[2]) < MEOS_EPSILON)
   {
-    apply_pose_point4d(&q, poly_pose_s);
-    apply_pose_point4d(&r, poly_pose_s);
+    POINT2D qp = *q, rp = *r;
+    apply_pose_point2d(&qp, poly_pose_s);
+    apply_pose_point2d(&rp, poly_pose_s);
     double result;
-    double discr = ((poly_pose_e->data[0] - poly_pose_s->data[0]) * (r.x - q.x)
-      + (poly_pose_e->data[1] - poly_pose_s->data[1]) * (r.y - q.y));
+    double discr = ((poly_pose_e->data[0] - poly_pose_s->data[0]) * (rp.x - qp.x)
+      + (poly_pose_e->data[1] - poly_pose_s->data[1]) * (rp.y - qp.y));
     if (solution_kind) /* MEOS_SOLVE_0 */
-      result = ((p.x - q.x) * (r.x - q.x) + (p.y - q.y) * (r.y - q.y)) / discr;
+      result = ((p->x - qp.x) * (rp.x - qp.x) + (p->y - qp.y) * (rp.y - qp.y)) /
+        discr;
     else /* MEOS_SOLVE_1 */
-      result = ((p.x - r.x) * (r.x - q.x) + (p.y - r.y) * (r.y - q.y)) / discr;
+      result = ((p->x - rp.x) * (rp.x - qp.x) + (p->y - rp.y) * (rp.y - qp.y)) /
+        discr;
     return transition_ratio(result, prev_result);
   }
 
@@ -888,9 +890,9 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs,
  * of the closest feature between a fixed polygon and a rotating one
  */
 static double
-f_tpoly_poly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
-  Pose *poly_pose_e, Pose *poly2_pose_s, Pose *poly2_pose_e, double ratio,
-  bool solution_kind)
+f_tpoly_poly(const POINT2D *p, const POINT2D *q, const POINT2D *r,
+  Pose *poly_pose_s, Pose *poly_pose_e, Pose *poly2_pose_s, Pose *poly2_pose_e,
+  double ratio, bool solution_kind)
 {
   double dx, dy, dtheta;
   double co, si, qx, qy, rx, ry;
@@ -898,14 +900,14 @@ f_tpoly_poly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
     ratio, &dx, &dy, &dtheta);
   co = cos(dtheta);
   si = sin(dtheta);
-  qx = q.x * co - q.y * si + dx;
-  qy = q.x * si + q.y * co + dy;
-  rx = r.x * co - r.y * si + dx;
-  ry = r.x * si + r.y * co + dy;
+  qx = q->x * co - q->y * si + dx;
+  qy = q->x * si + q->y * co + dy;
+  rx = r->x * co - r->y * si + dx;
+  ry = r->x * si + r->y * co + dy;
   if (solution_kind) /* MEOS_SOLVE_0 */
-    return (p.x - qx) * (rx - qx) + (p.y - qy) * (ry - qy);
+    return (p->x - qx) * (rx - qx) + (p->y - qy) * (ry - qy);
   else /* MEOS_SOLVE_1 */
-    return (p.x - rx) * (rx - qx) + (p.y - ry) * (ry - qy);
+    return (p->x - rx) * (rx - qx) + (p->y - ry) * (ry - qy);
 }
 
 /**
@@ -918,10 +920,10 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
   uint32_t poly2_v, double prev_result, bool solution_kind)
 {
   uint32_t n1 = poly1->rings[0]->npoints - 1;
-  POINT4D p, q, r;
-  getPoint4d_p(poly2->rings[0], poly2_v, &p);
-  getPoint4d_p(poly1->rings[0], poly1_v, &q);
-  getPoint4d_p(poly1->rings[0], uint_mod_add(poly1_v, 1, n1), &r);
+  const POINT2D *p = getPoint2d_cp(poly2->rings[0], poly2_v);
+  const POINT2D *q = getPoint2d_cp(poly1->rings[0], poly1_v);
+  const POINT2D *r = getPoint2d_cp(poly1->rings[0],
+    uint_mod_add(poly1_v, 1, n1));
 
   /* The closed-form shortcut assumes the second polygon is static; with both
    * polygons moving the relative motion is not a linear pose segment, so fall
@@ -929,17 +931,20 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
   if (! poly2_pose_s &&
       fabs(poly_pose_s->data[2] - poly_pose_e->data[2]) < MEOS_EPSILON)
   {
-    apply_pose_point4d(&q, poly_pose_s);
-    apply_pose_point4d(&r, poly_pose_s);
+    POINT2D qp = *q, rp = *r;
+    apply_pose_point2d(&qp, poly_pose_s);
+    apply_pose_point2d(&rp, poly_pose_s);
     double result;
-    double discr = (poly_pose_e->data[0] - poly_pose_s->data[0]) * (r.x - q.x)
-                 + (poly_pose_e->data[1] - poly_pose_s->data[1]) * (r.y - q.y);
+    double discr = (poly_pose_e->data[0] - poly_pose_s->data[0]) * (rp.x - qp.x)
+                 + (poly_pose_e->data[1] - poly_pose_s->data[1]) * (rp.y - qp.y);
     if (fabs(discr) < MEOS_EPSILON)
       return 2;
     if (solution_kind) /* MEOS_SOLVE_0 */
-      result = ((p.x - q.x) * (r.x - q.x) + (p.y - q.y) * (r.y - q.y)) / discr;
+      result = ((p->x - qp.x) * (rp.x - qp.x) + (p->y - qp.y) * (rp.y - qp.y)) /
+        discr;
     else /* MEOS_SOLVE_1 */
-      result = ((p.x - r.x) * (r.x - q.x) + (p.y - r.y) * (r.y - q.y)) / discr;
+      result = ((p->x - rp.x) * (rp.x - qp.x) + (p->y - rp.y) * (rp.y - qp.y)) /
+        discr;
     return transition_ratio(result, prev_result);
   }
 
@@ -989,9 +994,9 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
  * of the closest feature between a rotating polygon and a fixed one
  */
 static double
-f_poly_tpoly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
-  Pose *poly_pose_e, Pose *poly2_pose_s, Pose *poly2_pose_e, double ratio,
-  bool solution_kind)
+f_poly_tpoly(const POINT2D *p, const POINT2D *q, const POINT2D *r,
+  Pose *poly_pose_s, Pose *poly_pose_e, Pose *poly2_pose_s, Pose *poly2_pose_e,
+  double ratio, bool solution_kind)
 {
   double dx, dy, dtheta;
   double co, si, px, py;
@@ -999,12 +1004,12 @@ f_poly_tpoly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
     ratio, &dx, &dy, &dtheta);
   co = cos(dtheta);
   si = sin(dtheta);
-  px = p.x * co - p.y * si + dx;
-  py = p.x * si + p.y * co + dy;
+  px = p->x * co - p->y * si + dx;
+  py = p->x * si + p->y * co + dy;
   if (solution_kind) /* MEOS_SOLVE_0 */
-    return (px - q.x) * (r.x - q.x) + (py - q.y) * (r.y - q.y);
+    return (px - q->x) * (r->x - q->x) + (py - q->y) * (r->y - q->y);
   else /* MEOS_SOLVE_1 */
-    return (px - r.x) * (r.x - q.x) + (py - r.y) * (r.y - q.y);
+    return (px - r->x) * (r->x - q->x) + (py - r->y) * (r->y - q->y);
 }
 
 /**
@@ -1017,10 +1022,10 @@ solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
   uint32_t poly2_v, double prev_result, bool solution_kind)
 {
   uint32_t n1 = poly1->rings[0]->npoints - 1;
-  POINT4D p, q, r;
-  getPoint4d_p(poly2->rings[0], poly2_v, &p);
-  getPoint4d_p(poly1->rings[0], poly1_v, &q);
-  getPoint4d_p(poly1->rings[0], uint_mod_add(poly1_v, 1, n1), &r);
+  const POINT2D *p = getPoint2d_cp(poly2->rings[0], poly2_v);
+  const POINT2D *q = getPoint2d_cp(poly1->rings[0], poly1_v);
+  const POINT2D *r = getPoint2d_cp(poly1->rings[0],
+    uint_mod_add(poly1_v, 1, n1));
 
   /* The closed-form shortcut assumes the second polygon is static; with both
    * polygons moving the relative motion is not a linear pose segment, so fall
@@ -1028,16 +1033,19 @@ solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
   if (! poly2_pose_s &&
       fabs(poly_pose_s->data[2] - poly_pose_e->data[2]) < MEOS_EPSILON)
   {
-    apply_pose_point4d(&p, poly_pose_s);
+    POINT2D pp = *p;
+    apply_pose_point2d(&pp, poly_pose_s);
     double result;
-    double discr = - (poly_pose_e->data[0] - poly_pose_s->data[0]) * (r.x - q.x)
-                   - (poly_pose_e->data[1] - poly_pose_s->data[1]) * (r.y - q.y);
+    double discr = - (poly_pose_e->data[0] - poly_pose_s->data[0]) * (r->x - q->x)
+                   - (poly_pose_e->data[1] - poly_pose_s->data[1]) * (r->y - q->y);
     if (fabs(discr) < MEOS_EPSILON)
       return 2;
     if (solution_kind) /* MEOS_SOLVE_0 */
-      result = ((p.x - q.x) * (r.x - q.x) + (p.y - q.y) * (r.y - q.y)) / discr;
+      result = ((pp.x - q->x) * (r->x - q->x) + (pp.y - q->y) * (r->y - q->y)) /
+        discr;
     else /* MEOS_SOLVE_1 */
-      result = ((p.x - r.x) * (r.x - q.x) + (p.y - r.y) * (r.y - q.y)) / discr;
+      result = ((pp.x - r->x) * (r->x - q->x) + (pp.y - r->y) * (r->y - q->y)) /
+        discr;
     return transition_ratio(result, prev_result);
   }
 
@@ -1179,22 +1187,23 @@ f_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
 {
   uint32_t n1 = poly1->rings[0]->npoints - 1;
   uint32_t n2 = poly2->rings[0]->npoints - 1;
-  POINT4D ps, pe, qs, qe;
-  getPoint4d_p(poly1->rings[0], poly1_v, &qs);
-  getPoint4d_p(poly1->rings[0], uint_mod_add(poly1_v, 1, n1), &qe);
-  getPoint4d_p(poly2->rings[0], poly2_v, &ps);
-  getPoint4d_p(poly2->rings[0], uint_mod_add(poly2_v, 1, n2), &pe);
+  const POINT2D *qs = getPoint2d_cp(poly1->rings[0], poly1_v);
+  const POINT2D *qe = getPoint2d_cp(poly1->rings[0],
+    uint_mod_add(poly1_v, 1, n1));
+  const POINT2D *ps = getPoint2d_cp(poly2->rings[0], poly2_v);
+  const POINT2D *pe = getPoint2d_cp(poly2->rings[0],
+    uint_mod_add(poly2_v, 1, n2));
   double dx, dy, dtheta;
   double co, si, qsx, qsy, qex, qey;
   rel_pose_interpolate_2d(poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
     ratio, &dx, &dy, &dtheta);
   co = cos(dtheta);
   si = sin(dtheta);
-  qsx = qs.x * co - qs.y * si + dx;
-  qsy = qs.x * si + qs.y * co + dy;
-  qex = qe.x * co - qe.y * si + dx;
-  qey = qe.x * si + qe.y * co + dy;
-  return (pe.x - ps.x) * (qey - qsy) - (pe.y - ps.y) * (qex - qsx);
+  qsx = qs->x * co - qs->y * si + dx;
+  qsy = qs->x * si + qs->y * co + dy;
+  qex = qe->x * co - qe->y * si + dx;
+  qey = qe->x * si + qe->y * co + dy;
+  return (pe->x - ps->x) * (qey - qsy) - (pe->y - ps->y) * (qex - qsx);
 }
 
 /**
@@ -1333,19 +1342,18 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     /* Determine how to update closest feature */
     uint32_t n1 = poly1->rings[0]->npoints - 1;
     uint32_t n2 = poly2->rings[0]->npoints - 1;
-    POINT4D ps, pe, qs, qe;
-    getPoint4d_p(poly1->rings[0], i1, &qs);
-    getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
-    getPoint4d_p(poly2->rings[0], i2, &ps);
-    getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
+    const POINT2D *ps = getPoint2d_cp(poly2->rings[0], i2);
+    const POINT2D *pe = getPoint2d_cp(poly2->rings[0], uint_mod_add(i2, 1, n2));
+    POINT2D qs = *getPoint2d_cp(poly1->rings[0], i1);
+    POINT2D qe = *getPoint2d_cp(poly1->rings[0], uint_mod_add(i1, 1, n1));
     Pose *pose = rel_posesegm_interpolate(pose_start, pose_end, pose2_start,
       pose2_end, ratio_3);
-    apply_pose_point4d(&qs, pose);
-    apply_pose_point4d(&qe, pose);
+    apply_pose_point2d(&qs, pose);
+    apply_pose_point2d(&qe, pose);
     pfree(pose);
     /* TODO: check if we assume that ccw1 == ccw2 here or not */
-    double s1 = compute_s(qe, ps, pe);
-    double s2 = compute_s(ps, qs, qe);
+    double s1 = compute_s(&qe, ps, pe);
+    double s2 = compute_s(ps, &qs, &qe);
     // printf("C: %lf, %lf\n", s1, s2);
     // fflush(stdout);
     if (0 < s1 && s1 < 1)
@@ -1386,19 +1394,18 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     /* Determine how to update closest feature */
     uint32_t n1 = poly1->rings[0]->npoints - 1;
     uint32_t n2 = poly2->rings[0]->npoints - 1;
-    POINT4D ps, pe, qs, qe;
-    getPoint4d_p(poly1->rings[0], uint_mod_sub(i1, 1, n1), &qs);
-    getPoint4d_p(poly1->rings[0], i1, &qe);
-    getPoint4d_p(poly2->rings[0], i2, &ps);
-    getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
+    const POINT2D *ps = getPoint2d_cp(poly2->rings[0], i2);
+    const POINT2D *pe = getPoint2d_cp(poly2->rings[0], uint_mod_add(i2, 1, n2));
+    POINT2D qs = *getPoint2d_cp(poly1->rings[0], uint_mod_sub(i1, 1, n1));
+    POINT2D qe = *getPoint2d_cp(poly1->rings[0], i1);
     Pose *pose = rel_posesegm_interpolate(pose_start, pose_end, pose2_start,
       pose2_end, ratio_4);
-    apply_pose_point4d(&qs, pose);
-    apply_pose_point4d(&qe, pose);
+    apply_pose_point2d(&qs, pose);
+    apply_pose_point2d(&qe, pose);
     pfree(pose);
     /* TODO: check if we assume that ccw1 == ccw2 here or not */
-    double s1 = compute_s(qs, ps, pe);
-    double s2 = compute_s(pe, qs, qe);
+    double s1 = compute_s(&qs, ps, pe);
+    double s2 = compute_s(pe, &qs, &qe);
     // printf("D: %lf, %lf\n", s1, s2);
     // fflush(stdout);
     if (0 < s1 && s1 < 1)
@@ -1499,19 +1506,18 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     /* Determine how to update closest feature */
     uint32_t n1 = poly1->rings[0]->npoints - 1;
     uint32_t n2 = poly2->rings[0]->npoints - 1;
-    POINT4D ps, pe, qs, qe;
-    getPoint4d_p(poly1->rings[0], i1, &qs);
-    getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
-    getPoint4d_p(poly2->rings[0], i2, &ps);
-    getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
+    const POINT2D *ps = getPoint2d_cp(poly2->rings[0], i2);
+    const POINT2D *pe = getPoint2d_cp(poly2->rings[0], uint_mod_add(i2, 1, n2));
+    POINT2D qs = *getPoint2d_cp(poly1->rings[0], i1);
+    POINT2D qe = *getPoint2d_cp(poly1->rings[0], uint_mod_add(i1, 1, n1));
     Pose *pose = rel_posesegm_interpolate(pose_start, pose_end, pose2_start,
       pose2_end, ratio_3);
-    apply_pose_point4d(&qs, pose);
-    apply_pose_point4d(&qe, pose);
+    apply_pose_point2d(&qs, pose);
+    apply_pose_point2d(&qe, pose);
     pfree(pose);
     /* TODO: check if we assume that ccw1 == ccw2 here or not */
-    double s1 = compute_s(pe, qs, qe);
-    double s2 = compute_s(qs, ps, pe);
+    double s1 = compute_s(pe, &qs, &qe);
+    double s2 = compute_s(&qs, ps, pe);
     // printf("A: %lf, %lf\n", s1, s2);
     // fflush(stdout);
     if (0 < s1 && s1 < 1)
@@ -1552,19 +1558,18 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     /* Determine how to update closest feature */
     uint32_t n1 = poly1->rings[0]->npoints - 1;
     uint32_t n2 = poly2->rings[0]->npoints - 1;
-    POINT4D ps, pe, qs, qe;
-    getPoint4d_p(poly1->rings[0], i1, &qs);
-    getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
-    getPoint4d_p(poly2->rings[0], uint_mod_sub(i2, 1, n2), &ps);
-    getPoint4d_p(poly2->rings[0], i2, &pe);
+    const POINT2D *ps = getPoint2d_cp(poly2->rings[0], uint_mod_sub(i2, 1, n2));
+    const POINT2D *pe = getPoint2d_cp(poly2->rings[0], i2);
+    POINT2D qs = *getPoint2d_cp(poly1->rings[0], i1);
+    POINT2D qe = *getPoint2d_cp(poly1->rings[0], uint_mod_add(i1, 1, n1));
     Pose *pose = rel_posesegm_interpolate(pose_start, pose_end, pose2_start,
       pose2_end, ratio_4);
-    apply_pose_point4d(&qs, pose);
-    apply_pose_point4d(&qe, pose);
+    apply_pose_point2d(&qs, pose);
+    apply_pose_point2d(&qe, pose);
     pfree(pose);
     /* TODO: check if we assume that ccw1 == ccw2 here or not */
-    double s1 = compute_s(ps, qs, qe);
-    double s2 = compute_s(qe, ps, pe);
+    double s1 = compute_s(ps, &qs, &qe);
+    double s2 = compute_s(&qe, ps, pe);
     // printf("B: %lf, %lf\n", s1, s2);
     // fflush(stdout);
     if (0 < s1 && s1 < 1)
@@ -2460,9 +2465,9 @@ trgeoinst_translate_by_tpoint(const TInstant *pinst, const TInstant *qinst,
   const GSERIALIZED *ref_gs)
 {
   const Pose *pose = DatumGetPoseP(tinstant_value_p(pinst));
-  POINT4D pt;
-  datum_point4d(tinstant_value_p(qinst), &pt);
-  Pose *tpose = pose_make_2d(pose->data[0] - pt.x, pose->data[1] - pt.y,
+  const POINT2D *pt = GSERIALIZED_POINT2D_P(
+    DatumGetGserializedP(tinstant_value_p(qinst)));
+  Pose *tpose = pose_make_2d(pose->data[0] - pt->x, pose->data[1] - pt->y,
     pose->data[2], MEOS_FLAGS_GET_GEODETIC(pose->flags), pose_srid(pose));
   TInstant *result = trgeometryinst_make(ref_gs, tpose, pinst->t);
   pfree(tpose);
@@ -2681,14 +2686,14 @@ nai_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
   Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
   if (dist != NULL)
   {
-    /* temporal_min_instant returns a copy that must be freed */
-    TInstant *min = temporal_min_instant(dist);
+    /* The instant is read in place, dist being freed only after it */
+    const TInstant *min = temporal_min_inst_p(dist);
     /* The closest point may be at an exclusive bound */
     Datum value;
     temporal_value_at_timestamptz(temp1, min->t, false, &value);
     result = trgeometryinst_make(trgeo_geom_p(temp1), DatumGetPoseP(value),
       min->t);
-    pfree(dist); pfree(min); pfree(DatumGetPointer(value));
+    pfree(dist); pfree(DatumGetPointer(value));
   }
   return result;
 }
@@ -2711,14 +2716,14 @@ nai_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
   Temporal *dist = tdistance_trgeometry_trgeometry(temp1, temp2);
   if (dist != NULL)
   {
-    /* temporal_min_instant returns a copy that must be freed */
-    TInstant *min = temporal_min_instant(dist);
+    /* The instant is read in place, dist being freed only after it */
+    const TInstant *min = temporal_min_inst_p(dist);
     /* The closest point may be at an exclusive bound. */
     Datum value;
     temporal_value_at_timestamptz(temp1, min->t, false, &value);
     result = trgeometryinst_make(trgeo_geom_p(temp1), DatumGetPoseP(value),
       min->t);
-    pfree(dist); pfree(min); pfree(DatumGetPointer(value));
+    pfree(dist); pfree(DatumGetPointer(value));
   }
   return result;
 }

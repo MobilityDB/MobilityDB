@@ -1425,12 +1425,12 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
      * the weld leaves the line the shape it already had */
     if (pa->npoints >= 2)
     {
-      POINT2D u, v;
-      getPoint2d_p(pa, pa->npoints - 2, &u);
-      getPoint2d_p(pa, pa->npoints - 1, &v);
-      double cross = (v.x - u.x) * (q1.y - v.y) - (v.y - u.y) * (q1.x - v.x);
-      double scale = fmax(fabs(v.x - u.x) + fabs(v.y - u.y),
-        fabs(q1.x - v.x) + fabs(q1.y - v.y));
+      const POINT2D *u = getPoint2d_cp(pa, pa->npoints - 2);
+      const POINT2D *v = getPoint2d_cp(pa, pa->npoints - 1);
+      double cross = (v->x - u->x) * (q1.y - v->y) -
+        (v->y - u->y) * (q1.x - v->x);
+      double scale = fmax(fabs(v->x - u->x) + fabs(v->y - u->y),
+        fabs(q1.x - v->x) + fabs(q1.y - v->y));
       if (fabs(cross) <= MEOS_GEOM_TOLERANCE * fmax(scale, 1.0))
       {
         ptarray_remove_point(pa, pa->npoints - 1);
@@ -1739,16 +1739,15 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
       continue;
     for (uint32_t i = 1; i < ln->points->npoints; i++)
     {
-      POINT2D pa, pb;
-      getPoint2d_p(ln->points, i - 1, &pa);
-      getPoint2d_p(ln->points, i, &pb);
+      const POINT2D *pa = getPoint2d_cp(ln->points, i - 1);
+      const POINT2D *pb = getPoint2d_cp(ln->points, i);
       Edge **sel = ctx->edge_ptrs;
       int seln = ctx->nedges;
       if (ctx->rtree)
       {
         STBox query;
-        stbox_set(true, false, false, ctx->srid, Min(pa.x, pb.x),
-          Max(pa.x, pb.x), Min(pa.y, pb.y), Max(pa.y, pb.y), 0, 0, NULL,
+        stbox_set(true, false, false, ctx->srid, Min(pa->x, pb->x),
+          Max(pa->x, pb->x), Min(pa->y, pb->y), Max(pa->y, pb->y), 0, 0, NULL,
           &query);
         int nc = rtree_search(ctx->rtree, INDEX_OVERLAPS, &query,
           rtree_results);
@@ -1758,10 +1757,10 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
         sel = ctx->cand_edges; seln = nc;
       }
       intervals->count = 0;
-      intervals_from_points(&pa, &pb, sel, seln);
-      intervals_from_lines(&pa, &pb, sel, seln);
-      intervals_from_arcs(&pa, &pb, sel, seln);
-      intervals_from_polygons(&pa, &pb, sel, seln, ctx->edge_ptrs,
+      intervals_from_points(pa, pb, sel, seln);
+      intervals_from_lines(pa, pb, sel, seln);
+      intervals_from_arcs(pa, pb, sel, seln);
+      intervals_from_polygons(pa, pb, sel, seln, ctx->edge_ptrs,
         ctx->nedges, ctx->rtree, ctx->box.xmax);
 
       const Span *intervarr = intervals->elems;
@@ -1776,7 +1775,7 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
         norm = spanarr_normalize(intervals->elems, count, ORDER, &count);
         intervarr = norm;
       }
-      segment_pieces(&pa, &pb, intervarr, count, inside, pieces, touches);
+      segment_pieces(pa, pb, intervarr, count, inside, pieces, touches);
       if (norm)
         pfree(norm);
     }

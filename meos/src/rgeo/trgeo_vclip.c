@@ -66,7 +66,7 @@
  * @brief Apply a pose to a point, that is rotate it and then translate it
  */
 void
-apply_pose_point4d(POINT4D *p, const Pose *pose)
+apply_pose_point2d(POINT2D *p, const Pose *pose)
 {
   double c = cos(pose->data[2]);
   double s = sin(pose->data[2]);
@@ -86,9 +86,9 @@ apply_pose_point4d(POINT4D *p, const Pose *pose)
  * angle < 0: P is on the left of l
  */
 static inline double
-compute_angle(POINT4D p, POINT4D vs, POINT4D ve)
+compute_angle(const POINT2D *p, const POINT2D *vs, const POINT2D *ve)
 {
-  return (p.x - vs.x) * (ve.y - vs.y) - (p.y - vs.y) * (ve.x - vs.x);
+  return (p->x - vs->x) * (ve->y - vs->y) - (p->y - vs->y) * (ve->x - vs->x);
 }
 
 /**
@@ -99,11 +99,12 @@ compute_angle(POINT4D p, POINT4D vs, POINT4D ve)
  * between vs and ve. (0 <= compute_s(p, vs, ve) <= 1)
  */
 static inline double
-compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
+compute_dist2(const POINT2D *p, const POINT2D *vs, const POINT2D *ve)
 {
   double s = compute_s(p, vs, ve);
-  return (p.x - vs.x - (ve.x - vs.x) * s) * (p.x - vs.x - (ve.x - vs.x) * s) +
-    (p.y - vs.y - (ve.y - vs.y) * s) * (p.y - vs.y - (ve.y - vs.y) * s);
+  return
+    (p->x - vs->x - (ve->x - vs->x) * s) * (p->x - vs->x - (ve->x - vs->x) * s) +
+    (p->y - vs->y - (ve->y - vs->y) * s) * (p->y - vs->y - (ve->y - vs->y) * s);
 }
 
 /**
@@ -111,17 +112,17 @@ compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
  * projection that falls outside it
  */
 static inline double
-compute_dist2_safe(POINT4D p, POINT4D vs, POINT4D ve)
+compute_dist2_safe(const POINT2D *p, const POINT2D *vs, const POINT2D *ve)
 {
   double s = compute_s(p, vs, ve);
   if (s <= 0)
-    return (p.x - vs.x) * (p.x - vs.x) + (p.y - vs.y) * (p.y - vs.y);
+    return (p->x - vs->x) * (p->x - vs->x) + (p->y - vs->y) * (p->y - vs->y);
   else if (s >= 1)
-    return (p.x - ve.x) * (p.x - ve.x) + (p.y - ve.y) * (p.y - ve.y);
+    return (p->x - ve->x) * (p->x - ve->x) + (p->y - ve->y) * (p->y - ve->y);
   else
     return
-      (p.x - vs.x - (ve.x - vs.x) * s) * (p.x - vs.x - (ve.x - vs.x) * s) +
-      (p.y - vs.y - (ve.y - vs.y) * s) * (p.y - vs.y - (ve.y - vs.y) * s);
+      (p->x - vs->x - (ve->x - vs->x) * s) * (p->x - vs->x - (ve->x - vs->x) * s) +
+      (p->y - vs->y - (ve->y - vs->y) * s) * (p->y - vs->y - (ve->y - vs->y) * s);
 }
 
 /**
@@ -131,11 +132,8 @@ compute_dist2_safe(POINT4D p, POINT4D vs, POINT4D ve)
 static bool
 poly_is_ccw(const LWPOLY *poly)
 {
-  POINT4D v1, v2, v3;
-  getPoint4d_p(poly->rings[0], 0, &v1);
-  getPoint4d_p(poly->rings[0], 1, &v2);
-  getPoint4d_p(poly->rings[0], 2, &v3);
-  return compute_angle(v1, v2, v3) < 0;
+  return compute_angle(getPoint2d_cp(poly->rings[0], 0),
+    getPoint2d_cp(poly->rings[0], 1), getPoint2d_cp(poly->rings[0], 2)) < 0;
 }
 
 /**
@@ -143,34 +141,34 @@ poly_is_ccw(const LWPOLY *poly)
  * neighbouring vertex while one stands closer
  */
 static int
-vertex_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
+vertex_vertex_tpoly_point(const LWPOLY *poly, const POINT2D *point,
   const Pose *pose, uint32_t *poly_feature)
 {
   double s_next, s_prev;
-  POINT4D v, v_prev, v_next;
+  POINT2D v, v_prev, v_next;
   uint32_t n = poly->rings[0]->npoints - 1;
   uint32_t i = *poly_feature / 2;
 
   /* Get endpoints of previous and next edge */
-  getPoint4d_p(poly->rings[0], uint_mod_sub(i, 1, n), &v_prev);
-  getPoint4d_p(poly->rings[0], i, &v);
-  getPoint4d_p(poly->rings[0], uint_mod_add(i, 1, n), &v_next);
+  v_prev = *getPoint2d_cp(poly->rings[0], uint_mod_sub(i, 1, n));
+  v = *getPoint2d_cp(poly->rings[0], i);
+  v_next = *getPoint2d_cp(poly->rings[0], uint_mod_add(i, 1, n));
   if (pose)
   {
-    apply_pose_point4d(&v_prev, pose);
-    apply_pose_point4d(&v, pose);
-    apply_pose_point4d(&v_next, pose);
+    apply_pose_point2d(&v_prev, pose);
+    apply_pose_point2d(&v, pose);
+    apply_pose_point2d(&v_next, pose);
   }
 
   /* Check if the point is in v's Voronoi region */
-  s_prev = compute_s(point, v_prev, v);
+  s_prev = compute_s(point, &v_prev, &v);
   if (s_prev < 1)
   {
     /* Go to the previous edge */
     *poly_feature = uint_mod_sub(*poly_feature, 1, 2*n);
     return MEOS_CONTINUE;
   }
-  s_next = compute_s(point, v, v_next);
+  s_next = compute_s(point, &v, &v_next);
   if (s_next > 0)
   {
     /* Go to the next edge */
@@ -190,25 +188,25 @@ vertex_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
  * neighbouring feature while one stands closer
  */
 static int
-edge_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
+edge_vertex_tpoly_point(const LWPOLY *poly, const POINT2D *point,
   bool ccw_poly, const Pose *pose, uint32_t *poly_feature)
 {
   double s, angle;
-  POINT4D v_start, v_end;
+  POINT2D v_start, v_end;
   uint32_t n = poly->rings[0]->npoints - 1;
   uint32_t i = *poly_feature / 2;
 
   /* Get edge endpoints */
-  getPoint4d_p(poly->rings[0], i, &v_start);
-  getPoint4d_p(poly->rings[0], uint_mod_add(i, 1, n), &v_end);
+  v_start = *getPoint2d_cp(poly->rings[0], i);
+  v_end = *getPoint2d_cp(poly->rings[0], uint_mod_add(i, 1, n));
   if (pose)
   {
-    apply_pose_point4d(&v_start, pose);
-    apply_pose_point4d(&v_end, pose);
+    apply_pose_point2d(&v_start, pose);
+    apply_pose_point2d(&v_end, pose);
   }
 
   /* Check if the point is in the edge's Voronoi region */
-  s = compute_s(point, v_start, v_end);
+  s = compute_s(point, &v_start, &v_end);
   if (s < 0)
   {
     /* Go to the start vertex */
@@ -223,28 +221,28 @@ edge_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
   }
 
   /* Check for local minimum */
-  angle = compute_angle(point, v_start, v_end);
+  angle = compute_angle(point, &v_start, &v_end);
   if ((ccw_poly && angle < 0)
     || (!ccw_poly && angle > 0))
   {
     /* Found local minimum */
     double dmax = -1;
-    getPoint4d_p(poly->rings[0], 0, &v_start);
+    v_start = *getPoint2d_cp(poly->rings[0], 0);
     if (pose)
-      apply_pose_point4d(&v_start, pose);
+      apply_pose_point2d(&v_start, pose);
     for (i = 0; i < n; ++i)
     {
       /* Find edge with the largest positive distance
          to the given point */
       double distance = -1;
-      getPoint4d_p(poly->rings[0], i + 1, &v_end);
+      v_end = *getPoint2d_cp(poly->rings[0], i + 1);
       if (pose)
-        apply_pose_point4d(&v_end, pose);
-      angle = compute_angle(point, v_start, v_end);
+        apply_pose_point2d(&v_end, pose);
+      angle = compute_angle(point, &v_start, &v_end);
       if ((ccw_poly && angle > 0)
         || (!ccw_poly && angle < 0))
       {
-        distance = compute_dist2(point, v_start, v_end);
+        distance = compute_dist2(point, &v_start, &v_end);
         if (distance > dmax)
         {
           dmax = distance;
@@ -275,8 +273,7 @@ v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
   int result;
   int loop = 0;
   bool ccw_poly = poly_is_ccw(poly);
-  POINT4D pt;
-  lwpoint_getPoint4d_p(point, &pt);
+  const POINT2D *pt = getPoint2d_cp(point->point, 0);
 
   do
   {
@@ -307,25 +304,25 @@ v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
     /* compute the distance */
     if (*poly_feature % 2 == 0)
     {
-      POINT4D v;
+      POINT2D v;
       uint32_t i = *poly_feature / 2;
-      getPoint4d_p(poly->rings[0], i, &v);
+      v = *getPoint2d_cp(poly->rings[0], i);
       if (pose)
-        apply_pose_point4d(&v, pose);
-      *dist = sqrt((pt.x - v.x) * (pt.x - v.x) + (pt.y - v.y) * (pt.y - v.y));
+        apply_pose_point2d(&v, pose);
+      *dist = sqrt((pt->x - v.x) * (pt->x - v.x) + (pt->y - v.y) * (pt->y - v.y));
     }
     else
     {
-      POINT4D v_start, v_end;
+      POINT2D v_start, v_end;
       uint32_t i = *poly_feature / 2;
-      getPoint4d_p(poly->rings[0], i, &v_start);
-      getPoint4d_p(poly->rings[0], i + 1, &v_end);
+      v_start = *getPoint2d_cp(poly->rings[0], i);
+      v_end = *getPoint2d_cp(poly->rings[0], i + 1);
       if (pose)
       {
-        apply_pose_point4d(&v_start, pose);
-        apply_pose_point4d(&v_end, pose);
+        apply_pose_point2d(&v_start, pose);
+        apply_pose_point2d(&v_end, pose);
       }
-      *dist = sqrt(compute_dist2(pt, v_start, v_end));
+      *dist = sqrt(compute_dist2(pt, &v_start, &v_end));
     }
   }
   return MEOS_DISJOINT;
@@ -341,7 +338,7 @@ vertex_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   uint32_t *poly2_feature)
 {
   double s1_next, s1_prev, s2_prev, s2_next;
-  POINT4D v1, v1_prev, v1_next, v2, v2_prev, v2_next;
+  POINT2D v1, v1_prev, v1_next, v2, v2_prev, v2_next;
   uint32_t n1 = poly1->rings[0]->npoints - 1;
   uint32_t n2 = poly2->rings[0]->npoints - 1;
   uint32_t i1 = *poly1_feature / 2;
@@ -349,35 +346,35 @@ vertex_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
 
   /* Get endpoints of previous and next edges */
   /* poly1 */
-  getPoint4d_p(poly1->rings[0], uint_mod_sub(i1, 1, n1), &v1_prev);
-  getPoint4d_p(poly1->rings[0], i1, &v1);
-  getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &v1_next);
+  v1_prev = *getPoint2d_cp(poly1->rings[0], uint_mod_sub(i1, 1, n1));
+  v1 = *getPoint2d_cp(poly1->rings[0], i1);
+  v1_next = *getPoint2d_cp(poly1->rings[0], uint_mod_add(i1, 1, n1));
   if (pose1)
   {
-    apply_pose_point4d(&v1_prev, pose1);
-    apply_pose_point4d(&v1, pose1);
-    apply_pose_point4d(&v1_next, pose1);
+    apply_pose_point2d(&v1_prev, pose1);
+    apply_pose_point2d(&v1, pose1);
+    apply_pose_point2d(&v1_next, pose1);
   }
   /* poly2 */
-  getPoint4d_p(poly2->rings[0], uint_mod_sub(i2, 1, n2), &v2_prev);
-  getPoint4d_p(poly2->rings[0], i2, &v2);
-  getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &v2_next);
+  v2_prev = *getPoint2d_cp(poly2->rings[0], uint_mod_sub(i2, 1, n2));
+  v2 = *getPoint2d_cp(poly2->rings[0], i2);
+  v2_next = *getPoint2d_cp(poly2->rings[0], uint_mod_add(i2, 1, n2));
   if (pose2)
   {
-    apply_pose_point4d(&v2_prev, pose2);
-    apply_pose_point4d(&v2, pose2);
-    apply_pose_point4d(&v2_next, pose2);
+    apply_pose_point2d(&v2_prev, pose2);
+    apply_pose_point2d(&v2, pose2);
+    apply_pose_point2d(&v2_next, pose2);
   }
 
   /* Check if v2 is in v1's Voronoi region */
-  s1_prev = compute_s(v2, v1_prev, v1);
+  s1_prev = compute_s(&v2, &v1_prev, &v1);
   if (s1_prev + MEOS_EPSILON < 1)
   {
     /* Go to the previous edge */
     *poly1_feature = uint_mod_sub(*poly1_feature, 1, 2*n1);
     return MEOS_CONTINUE;
   }
-  s1_next = compute_s(v2, v1, v1_next);
+  s1_next = compute_s(&v2, &v1, &v1_next);
   if (s1_next - MEOS_EPSILON > 0)
   {
     /* Go to the next edge */
@@ -385,14 +382,14 @@ vertex_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
     return MEOS_CONTINUE;
   }
   /* Check if v1 is in v2's Voronoi region */
-  s2_prev = compute_s(v1, v2_prev, v2);
+  s2_prev = compute_s(&v1, &v2_prev, &v2);
   if (s2_prev + MEOS_EPSILON < 1)
   {
     /* Go to the previous edge */
     *poly2_feature = uint_mod_sub(*poly2_feature, 1, 2*n2);
     return MEOS_CONTINUE;
   }
-  s2_next = compute_s(v1, v2, v2_next);
+  s2_next = compute_s(&v1, &v2, &v2_next);
   if (s2_next - MEOS_EPSILON > 0)
   {
     /* Go to the next edge */
@@ -418,33 +415,33 @@ edge_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   uint32_t *poly1_feature, uint32_t *poly2_feature)
 {
   double s1, angle1, s2_prev, s2_next;
-  POINT4D v1, v1_start, v1_end, v2, v2_prev, v2_next;
+  POINT2D v1, v1_start, v1_end, v2, v2_prev, v2_next;
   uint32_t n1 = poly1->rings[0]->npoints - 1;
   uint32_t n2 = poly2->rings[0]->npoints - 1;
   uint32_t i1 = *poly1_feature / 2;
   uint32_t i2 = *poly2_feature / 2;
 
   /* Get edge endpoints of edge of poly1 */
-  getPoint4d_p(poly1->rings[0], i1, &v1_start);
-  getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &v1_end);
+  v1_start = *getPoint2d_cp(poly1->rings[0], i1);
+  v1_end = *getPoint2d_cp(poly1->rings[0], uint_mod_add(i1, 1, n1));
   if (pose1)
   {
-    apply_pose_point4d(&v1_start, pose1);
-    apply_pose_point4d(&v1_end, pose1);
+    apply_pose_point2d(&v1_start, pose1);
+    apply_pose_point2d(&v1_end, pose1);
   }
   /* Get endpoints of previous and next edges of poly2 */
-  getPoint4d_p(poly2->rings[0], uint_mod_sub(i2, 1, n2), &v2_prev);
-  getPoint4d_p(poly2->rings[0], i2, &v2);
-  getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &v2_next);
+  v2_prev = *getPoint2d_cp(poly2->rings[0], uint_mod_sub(i2, 1, n2));
+  v2 = *getPoint2d_cp(poly2->rings[0], i2);
+  v2_next = *getPoint2d_cp(poly2->rings[0], uint_mod_add(i2, 1, n2));
   if (pose2)
   {
-    apply_pose_point4d(&v2_prev, pose2);
-    apply_pose_point4d(&v2, pose2);
-    apply_pose_point4d(&v2_next, pose2);
+    apply_pose_point2d(&v2_prev, pose2);
+    apply_pose_point2d(&v2, pose2);
+    apply_pose_point2d(&v2_next, pose2);
   }
 
   /* Check if v2 is in the Voronoi region of the edge of poly1 */
-  s1 = compute_s(v2, v1_start, v1_end);
+  s1 = compute_s(&v2, &v1_start, &v1_end);
   if (s1 + MEOS_EPSILON < 0)
   {
     /* Go to the start vertex */
@@ -459,27 +456,27 @@ edge_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   }
 
   /* Check for local minimum */
-  angle1 = compute_angle(v2, v1_start, v1_end);
+  angle1 = compute_angle(&v2, &v1_start, &v1_end);
   if ((ccw_poly1 && angle1 < 0)
     || (!ccw_poly1 && angle1 > 0))
   {
     /* Found local minimum */
     double dmax = -1;
-    getPoint4d_p(poly1->rings[0], 0, &v1_start);
+    v1_start = *getPoint2d_cp(poly1->rings[0], 0);
     if (pose1)
-      apply_pose_point4d(&v1_start, pose1);
+      apply_pose_point2d(&v1_start, pose1);
     for (i1 = 0; i1 < n1; ++i1)
     {
       /* Find edge of poly1 with the largest
          positive distance to v2 */
-      getPoint4d_p(poly1->rings[0], i1 + 1, &v1_end);
+      v1_end = *getPoint2d_cp(poly1->rings[0], i1 + 1);
       if (pose1)
-        apply_pose_point4d(&v1_end, pose1);
-      angle1 = compute_angle(v2, v1_start, v1_end);
+        apply_pose_point2d(&v1_end, pose1);
+      angle1 = compute_angle(&v2, &v1_start, &v1_end);
       if ((ccw_poly1 && angle1 > 0)
         || (!ccw_poly1 && angle1 < 0))
       {
-        double distance = compute_dist2(v2, v1_start, v1_end);
+        double distance = compute_dist2(&v2, &v1_start, &v1_end);
         if (distance > dmax)
         {
           dmax = distance;
@@ -499,13 +496,13 @@ edge_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   v1.x = v1_start.x * (1 - s1) + v1_end.x * s1;
   v1.y = v1_start.y * (1 - s1) + v1_end.y * s1;
   /* Check if v1 is in v2's Voronoi region */
-  s2_prev = compute_s(v1, v2_prev, v2);
+  s2_prev = compute_s(&v1, &v2_prev, &v2);
   if (s2_prev + MEOS_EPSILON < 1)
   {
     *poly2_feature = uint_mod_sub(*poly2_feature, 1, 2*n2);
     return MEOS_CONTINUE;
   }
-  s2_next = compute_s(v1, v2, v2_next);
+  s2_next = compute_s(&v1, &v2, &v2_next);
   if (s2_next - MEOS_EPSILON > 0)
   {
     *poly2_feature = uint_mod_add(*poly2_feature, 1, 2*n2);
@@ -526,41 +523,41 @@ edge_edge_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   uint32_t *poly2_feature)
 {
   double d1_start, d1_end, d2_start, d2_end;
-  POINT4D v1_start, v1_end, v2_start, v2_end;
+  POINT2D v1_start, v1_end, v2_start, v2_end;
   uint32_t n1 = poly1->rings[0]->npoints - 1;
   uint32_t n2 = poly2->rings[0]->npoints - 1;
   uint32_t i1 = *poly1_feature / 2;
   uint32_t i2 = *poly2_feature / 2;
 
   /* Get edge endpoints of edge of poly1 */
-  getPoint4d_p(poly1->rings[0], i1, &v1_start);
-  getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &v1_end);
+  v1_start = *getPoint2d_cp(poly1->rings[0], i1);
+  v1_end = *getPoint2d_cp(poly1->rings[0], uint_mod_add(i1, 1, n1));
   if (pose1)
   {
-    apply_pose_point4d(&v1_start, pose1);
-    apply_pose_point4d(&v1_end, pose1);
+    apply_pose_point2d(&v1_start, pose1);
+    apply_pose_point2d(&v1_end, pose1);
   }
   /* Get edge endpoints of edge of poly2 */
-  getPoint4d_p(poly2->rings[0], i2, &v2_start);
-  getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &v2_end);
+  v2_start = *getPoint2d_cp(poly2->rings[0], i2);
+  v2_end = *getPoint2d_cp(poly2->rings[0], uint_mod_add(i2, 1, n2));
   if (pose2)
   {
-    apply_pose_point4d(&v2_start, pose2);
-    apply_pose_point4d(&v2_end, pose2);
+    apply_pose_point2d(&v2_start, pose2);
+    apply_pose_point2d(&v2_end, pose2);
   }
 
   /* Check if the edges intersect */
-  if (compute_angle(v1_start, v2_start, v2_end) *
-        compute_angle(v1_end, v2_start, v2_end) < 0 &&
-      compute_angle(v2_start, v1_start, v1_end) *
-        compute_angle(v2_end, v1_start, v1_end) < 0)
+  if (compute_angle(&v1_start, &v2_start, &v2_end) *
+        compute_angle(&v1_end, &v2_start, &v2_end) < 0 &&
+      compute_angle(&v2_start, &v1_start, &v1_end) *
+        compute_angle(&v2_end, &v1_start, &v1_end) < 0)
     return MEOS_INTERSECT;
 
   /* Compute distances of each vertex to opposing edge */
-  d1_start = compute_dist2_safe(v1_start, v2_start, v2_end);
-  d1_end = compute_dist2_safe(v1_end, v2_start, v2_end);
-  d2_start = compute_dist2_safe(v2_start, v1_start, v1_end);
-  d2_end = compute_dist2_safe(v2_end, v1_start, v1_end);
+  d1_start = compute_dist2_safe(&v1_start, &v2_start, &v2_end);
+  d1_end = compute_dist2_safe(&v1_end, &v2_start, &v2_end);
+  d2_start = compute_dist2_safe(&v2_start, &v1_start, &v1_end);
+  d2_end = compute_dist2_safe(&v2_end, &v1_start, &v1_end);
 
   /* Update vertex with the smallest distance */
   if (d1_start <= d1_end && d1_start <= d2_start && d1_start <= d2_end)
@@ -624,51 +621,51 @@ v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
     /* compute the distance */
     if (*poly1_feature % 2 == 0 && *poly2_feature % 2 == 0) /* vertex <-> vertex */
     {
-      POINT4D v1, v2;
+      POINT2D v1, v2;
       uint32_t i1 = *poly1_feature / 2;
       uint32_t i2 = *poly2_feature / 2;
-      getPoint4d_p(poly1->rings[0], i1, &v1);
+      v1 = *getPoint2d_cp(poly1->rings[0], i1);
       if (pose1)
-        apply_pose_point4d(&v1, pose1);
-      getPoint4d_p(poly2->rings[0], i2, &v2);
+        apply_pose_point2d(&v1, pose1);
+      v2 = *getPoint2d_cp(poly2->rings[0], i2);
       if (pose2)
-        apply_pose_point4d(&v2, pose2);
+        apply_pose_point2d(&v2, pose2);
       *dist = sqrt((v1.x - v2.x) * (v1.x - v2.x) +
         (v1.y - v2.y) * (v1.y - v2.y));
     }
     else if (*poly1_feature % 2 == 0) /* vertex <-> edge */
     {
-      POINT4D v1, v2_start, v2_end;
+      POINT2D v1, v2_start, v2_end;
       uint32_t i1 = *poly1_feature / 2;
       uint32_t i2 = *poly2_feature / 2;
-      getPoint4d_p(poly1->rings[0], i1, &v1);
+      v1 = *getPoint2d_cp(poly1->rings[0], i1);
       if (pose1)
-        apply_pose_point4d(&v1, pose1);
-      getPoint4d_p(poly2->rings[0], i2, &v2_start);
-      getPoint4d_p(poly2->rings[0], i2 + 1, &v2_end);
+        apply_pose_point2d(&v1, pose1);
+      v2_start = *getPoint2d_cp(poly2->rings[0], i2);
+      v2_end = *getPoint2d_cp(poly2->rings[0], i2 + 1);
       if (pose2)
       {
-        apply_pose_point4d(&v2_start, pose2);
-        apply_pose_point4d(&v2_end, pose2);
+        apply_pose_point2d(&v2_start, pose2);
+        apply_pose_point2d(&v2_end, pose2);
       }
-      *dist = sqrt(compute_dist2(v1, v2_start, v2_end));
+      *dist = sqrt(compute_dist2(&v1, &v2_start, &v2_end));
     }
     else if (*poly2_feature % 2 == 0) /* edge <-> vertex */
     {
-      POINT4D v1_start, v1_end, v2;
+      POINT2D v1_start, v1_end, v2;
       uint32_t i1 = *poly1_feature / 2;
       uint32_t i2 = *poly2_feature / 2;
-      getPoint4d_p(poly1->rings[0], i1, &v1_start);
-      getPoint4d_p(poly1->rings[0], i1 + 1, &v1_end);
+      v1_start = *getPoint2d_cp(poly1->rings[0], i1);
+      v1_end = *getPoint2d_cp(poly1->rings[0], i1 + 1);
       if (pose1)
       {
-        apply_pose_point4d(&v1_start, pose1);
-        apply_pose_point4d(&v1_end, pose1);
+        apply_pose_point2d(&v1_start, pose1);
+        apply_pose_point2d(&v1_end, pose1);
       }
-      getPoint4d_p(poly2->rings[0], i2, &v2);
+      v2 = *getPoint2d_cp(poly2->rings[0], i2);
       if (pose2)
-        apply_pose_point4d(&v2, pose2);
-      *dist = sqrt(compute_dist2(v2, v1_start, v1_end));
+        apply_pose_point2d(&v2, pose2);
+      *dist = sqrt(compute_dist2(&v2, &v1_start, &v1_end));
     }
     else
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "V-clip: Invalid combination of current features: (%d, %d)", *poly1_feature, *poly2_feature);
