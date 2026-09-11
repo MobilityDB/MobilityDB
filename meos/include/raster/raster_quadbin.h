@@ -50,31 +50,51 @@ extern void raster_quadbin_bounds(uint64 cell, double *xmin, double *ymin,
 
 extern uint32_t raster_quadbin_zoom(uint64 cell);
 
-extern double raster_sample_step(const double *gt);
-
 /**
- * @brief Callback returning the raster pixel value at a point: return true
- * and set @p value, or return false when the point lies outside the raster
- * or on a nodata pixel
+ * @brief Callback returning the grid coordinates of a position: its column
+ * and its row as real numbers, whose floors name the pixel it falls in
  */
-typedef bool (*raster_sample_fn)(void *ctx, double x, double y,
-  double *value);
+typedef void (*raster_grid_fn)(const void *ctx, double x, double y,
+  double *col, double *row);
 
 /**
- * @brief What a raster engine tells the sampling about its grid: how to read
- * a value, how far apart two positions of a walk over it are, and where it
- * lies
+ * @brief Callback returning the value of a pixel named by its column and its
+ * row, both inside the grid: return true and set @p value, or return false
+ * when the pixel carries no value
+ */
+typedef bool (*raster_pixel_fn)(void *ctx, int col, int row, double *value);
+
+/**
+ * @brief Callback returning the parameter at which the segment from
+ * (@p x1, @p y1) to (@p x2, @p y2) reaches the grid line @p k of an axis,
+ * 0 naming the columns and 1 the rows
+ * @details The parameter is 0 at the first endpoint and 1 at the second, and
+ * the grid coordinate of each axis is monotonic along the segment, so the
+ * segment reaches the line at one parameter.
+ */
+typedef double (*raster_cross_fn)(const void *ctx, double x1, double y1,
+  double x2, double y2, int axis, double k);
+
+/**
+ * @brief What a raster engine tells the sampling about its grid: where a
+ * position lies in it, the value of a pixel, where a segment reaches one of
+ * its lines, and where it lies
  * @details The descriptor plays for a raster grid the part `DggsCellOps`
  * plays for a DGGS: the sampling names one of these instead of repeating the
- * engine's four arguments at every entry point, and an engine fills it in one
+ * engine's arguments at every entry point, and an engine fills it in one
  * place. The PostGIS raster, a GDAL file and a Raquet tile answer the same
- * three questions and differ only in how.
+ * questions and differ only in how.
  */
 typedef struct RasterGridOps
 {
-  raster_sample_fn sample;  /**< Value of the pixel a position falls in */
-  void *ctx;                /**< State of the engine, passed to @p sample */
-  double step;              /**< Distance between two positions of a walk */
+  raster_grid_fn grid;      /**< Grid coordinates of a position */
+  raster_pixel_fn pixel;    /**< Value of a pixel */
+  raster_cross_fn cross;    /**< Parameter at which a segment reaches a grid
+                                 line, NULL when the grid coordinates are
+                                 affine in the position */
+  void *ctx;                /**< State of the engine, passed to the callbacks */
+  int width;                /**< Number of columns of the grid */
+  int height;               /**< Number of rows of the grid */
   STBox box;                /**< Extent of the grid, the pre-filter */
 } RasterGridOps;
 

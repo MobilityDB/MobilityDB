@@ -152,8 +152,7 @@ CREATE FUNCTION raquetRead(
 
 /**
  * @ingroup mobilitydb_raster
- * @brief Return the values of a raster band sampled at the instants of a
- * trajectory
+ * @brief Return the values of a raster band read along a trajectory
  * @param[in] traj Trajectory
  * @param[in] rast Raster
  * @param[in] band Band number (1-based, default 1)
@@ -172,8 +171,8 @@ CREATE OR REPLACE FUNCTION rasterValue(
 
 /**
  * @ingroup mobilitydb_raster
- * @brief Return the values of a Raquet raster chip sampled at the instants of
- * a trajectory, using a QUADBIN cell to determine the tile georeferencing
+ * @brief Return the values of a Raquet raster chip read along a trajectory,
+ * using a QUADBIN cell to determine the tile georeferencing
  * @param[in] traj Trajectory (SRID 4326)
  * @param[in] pixels Row-major pixel bytes
  * @param[in] width Tile width in pixels
@@ -202,7 +201,7 @@ CREATE OR REPLACE FUNCTION rasterTileValueQuadbin(
 
 /**
  * @ingroup mobilitydb_raster
- * @brief Sample a raquet raster tile at the instants of a trajectory
+ * @brief Read a raquet raster tile along a trajectory
  * @param[in] traj Trajectory
  * @param[in] rast Raquet tile
  */

@@ -979,8 +979,7 @@ raquet_hash_extended(const Raquet *rq, uint64 seed)
 
 /**
  * @ingroup meos_raster
- * @brief Return the values of a Raquet tile sampled at the instants of a
- * trajectory
+ * @brief Return the values of a Raquet tile read along a trajectory
  * @note The sampling surface is double-valued whatever the pixel type of the
  * band, as #raster_tile_value_quadbin() describes
  * @param[in] traj Trajectory (temporal geometry point)

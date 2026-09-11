@@ -1254,7 +1254,7 @@ SELECT numValues(h3UncompactCells(h3CompactCells(
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 quadbins(tgeompoint,zoom integer) → bigint[]
 </programlisting>
-				<para>Returns the set of unique QUADBIN cells the trajectory covers. A trajectory that states nothing between its instants covers the tiles holding them; one that moves between them also covers the tiles it crosses on the way, and the segment is walked at half a tile to find them, the tile narrowing towards the poles as its Web-Mercator envelope does. The result is suitable as a WHERE-clause join key against a Raquet table, where a tile the trip crosses but the set omits is a tile the join never reads. <varname>zoom</varname> must be in [0, 15].</para>
+				<para>Returns the set of unique QUADBIN cells the trajectory covers. A trajectory that states nothing between its instants covers the tiles holding them; one that moves between them also covers every tile it crosses on the way, since the segment is traversed tile by tile. The result is suitable as a WHERE-clause join key against a Raquet table, where a tile the trip crosses but the set omits is a tile the join never reads. <varname>zoom</varname> must be in [0, 15].</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Three instants spanning three tiles at zoom 3
 SELECT quadbins(tgeompoint 'SRID=4326;
@@ -2039,7 +2039,7 @@ SELECT s2EdgeNeighbors(s2cell '47c3c3');
 
 		<para>The sections above state what a raster shares with the other tessellations. The operations below are the raster's own: a raster cell carries a <emphasis>value</emphasis> where an H3, QUADBIN or S2 cell carries only identity, so a trajectory read against a raster answers a <varname>tfloat</varname> rather than a temporal cell.</para>
 
-		<para>MobilityDB's raster sampling operator evaluates a raster band at the instants of a moving-point trajectory and returns a <varname>tfloat</varname>. Instants whose position falls outside the raster extent or on a nodata pixel are silently dropped. The sampling operators are double-valued whatever the pixel type of the band, so a pixel type belongs to the sampling surface when every value it can hold is exactly representable in a double precision number. That is what lets a band of any type be sampled into one <varname>tfloat</varname>, and a column holding tiles of several pixel types be read by a single query. A pixel type is also accepted under the name PostGIS raster gives it, so the band type an <varname>ST_BandPixelType</varname> call reports (<varname>8BUI</varname>, <varname>16BSI</varname>, <varname>32BF</varname>, …) passes into the tile constructors as it stands. PostGIS raster carries no 16-bit float and no 64-bit integer, so <varname>float16</varname>, <varname>int64</varname> and <varname>uint64</varname> take the spelling its grammar gives them, <varname>16BF</varname>, <varname>64BSI</varname> and <varname>64BUI</varname>. Its <varname>1BB</varname>, <varname>2BUI</varname> and <varname>4BUI</varname> types bound a pixel to less than a byte while PostGIS stores each of them a byte a pixel, so such a band is already the bytes of an unsigned 8-bit band and the constructors read it as <varname>uint8</varname>; the bound is the only thing the name adds, and a tile does not carry it. The name a tile reports is the one the RaQuet specification gives the type.
+		<para>MobilityDB's raster sampling operator reads a raster band along a moving-point trajectory and returns a <varname>tfloat</varname>. A position outside the raster extent or on a nodata pixel carries no value. The sampling operators are double-valued whatever the pixel type of the band, so a pixel type belongs to the sampling surface when every value it can hold is exactly representable in a double precision number. That is what lets a band of any type be sampled into one <varname>tfloat</varname>, and a column holding tiles of several pixel types be read by a single query. A pixel type is also accepted under the name PostGIS raster gives it, so the band type an <varname>ST_BandPixelType</varname> call reports (<varname>8BUI</varname>, <varname>16BSI</varname>, <varname>32BF</varname>, …) passes into the tile constructors as it stands. PostGIS raster carries no 16-bit float and no 64-bit integer, so <varname>float16</varname>, <varname>int64</varname> and <varname>uint64</varname> take the spelling its grammar gives them, <varname>16BF</varname>, <varname>64BSI</varname> and <varname>64BUI</varname>. Its <varname>1BB</varname>, <varname>2BUI</varname> and <varname>4BUI</varname> types bound a pixel to less than a byte while PostGIS stores each of them a byte a pixel, so such a band is already the bytes of an unsigned 8-bit band and the constructors read it as <varname>uint8</varname>; the bound is the only thing the name adds, and a tile does not carry it. The name a tile reports is the one the RaQuet specification gives the type.
 
 The types <varname>uint64</varname> and <varname>int64</varname> hold values beyond that domain: a tile of either is stored and read back exactly, while sampling a pixel whose value no double precision number names raises an error rather than answering with a neighbouring value. This enables queries such as <emphasis>what elevation profile did each vehicle follow?</emphasis> or <emphasis>which trips entered a temperature threshold band?</emphasis></para>
 
@@ -2057,11 +2057,11 @@ SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32'
 		<itemizedlist>
 			<listitem xml:id="raster_rasterValue">
 				<indexterm significance="normal"><primary><varname>rasterValue</varname></primary></indexterm>
-				<para>Sample a raster band at each instant of a trajectory</para>
+				<para>Read a raster band along a trajectory</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
 </programlisting>
-				<para>Reads band <varname>band</varname> along <varname>traj</varname>, taking the value of the pixel each position falls in. A trajectory that states nothing between its instants is read at its instants and answers an instant-set <varname>tfloat</varname>. A trajectory that moves between them passes over the pixels between them, so it is walked at half a pixel, the step at which a hexagonal cell index is walked, and answers a step <varname>tfloat</varname> holding each value until the trip reaches a pixel holding another. A position outside the raster or over a nodata pixel carries no value and ends the run, so a trip that leaves and re-enters the raster answers one sequence per visit, and <varname>NULL</varname> when it never meets a pixel carrying data.</para>
+				<para>Reads band <varname>band</varname> along <varname>traj</varname>, taking the value of the pixel each position falls in. A trajectory that states nothing between its instants is read at its instants and answers an instant-set <varname>tfloat</varname>. A trajectory that moves between them passes over the pixels between them, so each segment is traversed pixel by pixel, and it answers a step <varname>tfloat</varname> holding each value from the instant the trip reaches the pixel holding it, a pixel whose corner the trip only clips included. A position outside the raster or over a nodata pixel carries no value and ends the run, so a trip that leaves and re-enters the raster answers one sequence per visit, and <varname>NULL</varname> when it never meets a pixel carrying data.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
@@ -2072,8 +2072,8 @@ WITH rast AS (
     [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
 SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2001-01-01,
   POINT(2.5 2.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r)::text FROM rast;
--- Interp=Step;[10@2001-01-01, 20@2001-01-01 06:00:00, 30@2001-01-01 18:00:00,
---   50@2001-01-02 08:00:00, 70@2001-01-02 20:00:00, 70@2001-01-03]
+/* Interp=Step;[10@2001-01-01, 20@2001-01-01 06:00:00, 30@2001-01-01 18:00:00,
+   50@2001-01-02 06:00:00, 70@2001-01-02 18:00:00, 70@2001-01-03] */
 </programlisting>
 				<para>Applied to a trajectory dataset with a terrain elevation raster:</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -2241,7 +2241,7 @@ ORDER BY val;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 rasterTileValue(tgeompoint,rast raquet) → tfloat
 </programlisting>
-				<para>Evaluates the tile at each instant of <varname>traj</varname> (SRID 4326), returning the sampled pixel values as a <varname>tfloat</varname>. This is the typed equivalent of <link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: the dimensions, QUADBIN cell, pixel type and nodata handling are taken from the <varname>raquet</varname> value instead of from separate arguments. Returns <varname>NULL</varname> when no instant falls inside the tile or survives nodata filtering.</para>
+				<para>Reads the tile along <varname>traj</varname> (SRID 4326) as <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> reads a raster, returning the pixel values as a <varname>tfloat</varname>. This is the typed equivalent of <link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: the dimensions, QUADBIN cell, pixel type and nodata handling are taken from the <varname>raquet</varname> value instead of from separate arguments. Returns <varname>NULL</varname> when the trip never meets a pixel of the tile carrying data.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample pre-packaged raquet tiles along ship trajectories
 SELECT t.tripid, rasterTileValue(t.trip, r.tile)
@@ -2270,7 +2270,7 @@ JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8)) GROUP BY t.tripid
 rasterTileValueQuadbin(tgeompoint,pixels bytea,width integer,height integer,
   quadbin bigint,pixtype text,nodata float8,has_nodata boolean) → tfloat
 </programlisting>
-				<para>Evaluates a row-major single-band pixel array at each instant of <varname>traj</varname> (SRID 4326). The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <varname>quadbin</varname> alone via the Web-Mercator slippy-tile transform. The <varname>pixtype</varname> argument must be one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>. When <varname>has_nodata</varname> is true, instants whose pixel equals <varname>nodata</varname> are silently dropped. Returns <varname>NULL</varname> when no instant survives.</para>
+				<para>Reads a row-major single-band pixel array along <varname>traj</varname> (SRID 4326), as <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> reads a raster. The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <varname>quadbin</varname> alone via the Web-Mercator slippy-tile transform. The <varname>pixtype</varname> argument must be one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>. When <varname>has_nodata</varname> is true, a pixel equal to <varname>nodata</varname> carries no value. Returns <varname>NULL</varname> when the trip never meets a pixel carrying data.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample elevation tiles from a Raquet Parquet table for all ship trajectories
 SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_data, r.width, r.height,
@@ -2285,11 +2285,11 @@ JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
 
 			<listitem xml:id="raster_atRasterValue">
 				<indexterm significance="normal"><primary><varname>atRasterValue</varname></primary></indexterm>
-				<para>Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
+				<para>Return the part of a trajectory where the raster value it reads falls inside a float range</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
 </programlisting>
-				<para>Evaluates <varname>rasterValue</varname> at every instant of <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no instant satisfies the condition.</para>
+				<para>Reads <varname>rasterValue</varname> along <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no time satisfies the condition.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
@@ -2300,17 +2300,18 @@ WITH rast AS (
 SELECT asText(atRasterValue(tgeompoint 'SRID=4326;
   [POINT(0.5 2.5)@2001-01-01, POINT(1.5 1.5)@2001-01-02, POINT(0.5 0.5)@2001-01-03]', r,
   floatspan '[40, 90]')) FROM rast;
--- {[POINT(1.5 1.5)@2001-01-02], [POINT(0.5 0.5)@2001-01-03]}
+/* {[POINT(1 2)@2001-01-01 12:00:00, POINT(1.5 1.5)@2001-01-02,
+   POINT(0.5 0.5)@2001-01-03]} */
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="raster_minusRasterValue">
 				<indexterm significance="normal"><primary><varname>minusRasterValue</varname></primary></indexterm>
-				<para>Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
+				<para>Return the part of a trajectory where the raster value it reads falls outside a float range</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
 </programlisting>
-				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when every instant satisfies the condition.</para>
+				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when the pixel value lies within <varname>vspan</varname> at every time.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Keep only the instant whose raster value (10) is below 40
 SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM trips,
@@ -2320,11 +2321,11 @@ SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM 
 
 			<listitem xml:id="raster_eRasterValue">
 				<indexterm significance="normal"><primary><varname>eRasterValue</varname></primary></indexterm>
-				<para>Return true if the trajectory ever samples a raster pixel value inside a float range</para>
+				<para>Return true if the trajectory ever reads a raster pixel value inside a float range</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 </programlisting>
-				<para>Returns <varname>true</varname> when at least one in-extent instant of <varname>traj</varname> samples a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
+				<para>Returns <varname>true</varname> when <varname>traj</varname> ever reads a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that ever crossed terrain above 200 m
 SELECT tripid FROM trips,
@@ -2334,11 +2335,11 @@ SELECT tripid FROM trips,
 
 			<listitem xml:id="raster_aRasterValue">
 				<indexterm significance="normal"><primary><varname>aRasterValue</varname></primary></indexterm>
-				<para>Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
+				<para>Return true if every pixel value the trajectory reads over the raster lies inside a float range</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 aRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 </programlisting>
-				<para>Returns <varname>true</varname> when every in-extent instant of <varname>traj</varname> samples a pixel value within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
+				<para>Returns <varname>true</varname> when every pixel value <varname>traj</varname> reads over the raster lies within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that stayed entirely below 100 m elevation
 SELECT tripid FROM trips,

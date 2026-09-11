@@ -3212,7 +3212,7 @@
 			<title>Raster-Specific Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Sample a raster band at each instant of a trajectory</para>
+					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Read a raster band along a trajectory</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Return a raster whose band holds the classes an expression maps its values to</para>
@@ -3242,16 +3242,16 @@
 					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
+					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Return the part of a trajectory where the raster value it reads falls inside a float range</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_minusRasterValue"><varname>minusRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
+					<para><link linkend="raster_minusRasterValue"><varname>minusRasterValue</varname></link>: Return the part of a trajectory where the raster value it reads falls outside a float range</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_eRasterValue"><varname>eRasterValue</varname></link>: Return true if the trajectory ever samples a raster pixel value inside a float range</para>
+					<para><link linkend="raster_eRasterValue"><varname>eRasterValue</varname></link>: Return true if the trajectory ever reads a raster pixel value inside a float range</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_aRasterValue"><varname>aRasterValue</varname></link>: Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
+					<para><link linkend="raster_aRasterValue"><varname>aRasterValue</varname></link>: Return true if every pixel value the trajectory reads over the raster lies inside a float range</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

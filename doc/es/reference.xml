@@ -3203,7 +3203,7 @@
 			<title>Operaciones específicas de ráster</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Muestrea una banda de ráster en cada instante de una trayectoria</para>
+					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Lee una banda de ráster a lo largo de una trayectoria</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>
@@ -3233,16 +3233,16 @@
 					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Muestrea un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Devuelve los instantes de una trayectoria donde el valor ráster muestreado cae dentro de un rango de flotante</para>
+					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Devuelve la parte de una trayectoria donde el valor ráster que lee cae dentro de un rango de flotante</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_minusRasterValue"><varname>minusRasterValue</varname></link>: Devuelve los instantes de una trayectoria donde el valor ráster muestreado cae fuera de un rango de flotante</para>
+					<para><link linkend="raster_minusRasterValue"><varname>minusRasterValue</varname></link>: Devuelve la parte de una trayectoria donde el valor ráster que lee cae fuera de un rango de flotante</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_eRasterValue"><varname>eRasterValue</varname></link>: Devuelve verdadero si la trayectoria alguna vez muestrea un valor de píxel ráster dentro de un rango de flotante</para>
+					<para><link linkend="raster_eRasterValue"><varname>eRasterValue</varname></link>: Devuelve verdadero si la trayectoria alguna vez lee un valor de píxel ráster dentro de un rango de flotante</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raster_aRasterValue"><varname>aRasterValue</varname></link>: Devuelve verdadero si cada instante de la trayectoria dentro de la extensión del ráster muestrea un valor de píxel dentro de un rango de flotante</para>
+					<para><link linkend="raster_aRasterValue"><varname>aRasterValue</varname></link>: Devuelve verdadero si cada valor de píxel que la trayectoria lee sobre el ráster está dentro de un rango de flotante</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -412,9 +412,9 @@ raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
  *****************************************************************************/
 
 /**
- * @brief Per-call state for #raster_value_gdal_sample: the raster band to
- * read, the inverse geotransform mapping a geographic point to a pixel
- * (col, row), the band size for bounds-checking, and the nodata sentinel
+ * @brief Per-call state of the GDAL grid callbacks: the raster band to read,
+ * the inverse geotransform mapping a geographic point to a pixel
+ * (col, row), the band size, and the nodata sentinel
  */
 typedef struct
 {
@@ -424,24 +424,33 @@ typedef struct
   int ysize;
   int has_nodata;
   double nodata;
-  double step;        /**< Distance between two positions of the walk */
 } RasterValueGdalCtx;
 
 /**
- * @brief Raster sampling callback backed by a single-pixel GDALRasterIO
- * read: the context carries the band and the inverse geotransform, only the
- * point argument varies per call
+ * @brief Raster grid callback converting a position to the raster
+ * coordinates of a GDAL raster with its inverse geotransform
+ * @details `GDALApplyGeoTransform` takes a writable geotransform, so it reads
+ * a copy of the one the context holds
+ */
+static void
+raster_value_gdal_grid(const void *ctxp, double x, double y, double *col,
+  double *row)
+{
+  const RasterValueGdalCtx *ctx = (const RasterValueGdalCtx *) ctxp;
+  double inv_gt[6];
+  memcpy(inv_gt, ctx->inv_gt, sizeof(inv_gt));
+  GDALApplyGeoTransform(inv_gt, x, y, col, row);
+  return;
+}
+
+/**
+ * @brief Raster pixel callback backed by a single-pixel GDALRasterIO read:
+ * the context carries the band, only the pixel varies per call
  */
 static bool
-raster_value_gdal_sample(void *ctxp, double x, double y, double *value)
+raster_value_gdal_pixel(void *ctxp, int col, int row, double *value)
 {
   RasterValueGdalCtx *ctx = (RasterValueGdalCtx *) ctxp;
-  double col_f, row_f;
-  GDALApplyGeoTransform(ctx->inv_gt, x, y, &col_f, &row_f);
-  int col = (int) floor(col_f);
-  int row = (int) floor(row_f);
-  if (col < 0 || col >= ctx->xsize || row < 0 || row >= ctx->ysize)
-    return false;   /* point outside the pixel grid */
   double val;
   /* No bracket here: the caller holds the handler across the whole walk, and
    * pushing one per instant costs a CPL allocation per sample */
@@ -509,8 +518,6 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
   int has_nodata = 0;
   double nodata = GDALGetRasterNoDataValue(rb, &has_nodata);
 
-  ctx->step = raster_sample_step(gt);
-
   ctx->band = rb;
   ctx->xsize = GDALGetRasterBandXSize(rb);
   ctx->ysize = GDALGetRasterBandYSize(rb);
@@ -526,9 +533,12 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
   GDALApplyGeoTransform(gt, xsize, 0, &xs[1], &ys[1]);
   GDALApplyGeoTransform(gt, 0, ysize, &xs[2], &ys[2]);
   GDALApplyGeoTransform(gt, xsize, ysize, &xs[3], &ys[3]);
-  ops->sample = &raster_value_gdal_sample;
+  ops->grid = &raster_value_gdal_grid;
+  ops->pixel = &raster_value_gdal_pixel;
+  ops->cross = NULL;
   ops->ctx = ctx;
-  ops->step = ctx->step;
+  ops->width = ctx->xsize;
+  ops->height = ctx->ysize;
   memset(&ops->box, 0, sizeof(STBox));
   ops->box.xmin = ops->box.xmax = xs[0];
   ops->box.ymin = ops->box.ymax = ys[0];
@@ -546,8 +556,8 @@ raster_gdal_gridops(const char *path, int band_num, GDALDatasetH *ds_out,
 
 /**
  * @ingroup meos_raster
- * @brief Return the values of a raster band sampled at the instants of a
- * trajectory, reading the raster through GDAL
+ * @brief Return the values of a raster band read along a trajectory,
+ * reading the raster through GDAL
  * @param[in] traj Trajectory (SRID matching the raster)
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] band Band number (1-based)

@@ -1868,28 +1868,39 @@ typedef struct
   rt_raster raster;   /**< Raster carrying its bands */
   rt_band band;       /**< Band the pixel values are read from */
   double igt[6];      /**< Inverse geotransform of the raster */
-  double step;        /**< Distance between two positions of the walk */
 } RasterSampleState;
 
 /**
- * @brief Raster sampling callback reading one pixel of a PostGIS raster
- * through the vendored raster core
- * @details The point is converted to raster coordinates with the inverse
- * geotransform and read with nearest-neighbour resampling. A point outside
- * the pixel grid and a nodata pixel alike answer that there is no value,
- * which is the contract of ::raster_sample_fn
+ * @brief Raster grid callback converting a position to the raster
+ * coordinates of a PostGIS raster with its inverse geotransform, as
+ * `rt_raster_geopoint_to_rasterpoint` converts one
+ * @details `GDALApplyGeoTransform` takes a writable geotransform, so it reads
+ * a copy of the one the state holds
+ */
+static void
+raster_value_grid(const void *ctxp, double x, double y, double *col,
+  double *row)
+{
+  const RasterSampleState *state = (const RasterSampleState *) ctxp;
+  double igt[6];
+  memcpy(igt, state->igt, sizeof(igt));
+  GDALApplyGeoTransform(igt, x, y, col, row);
+  return;
+}
+
+/**
+ * @brief Raster pixel callback reading one pixel of a PostGIS raster through
+ * the vendored raster core
+ * @details Reading the pixel a position falls in is the nearest-neighbour
+ * read of that position. A nodata pixel answers that there is no value,
+ * which is the contract of ::raster_pixel_fn
  */
 static bool
-raster_value_sample(void *ctxp, double x, double y, double *value)
+raster_value_pixel(void *ctxp, int col, int row, double *value)
 {
   RasterSampleState *state = (RasterSampleState *) ctxp;
-  double xr, yr;
-  if (rt_raster_geopoint_to_rasterpoint(state->raster, x, y, &xr, &yr,
-      state->igt) != ES_NONE)
-    return false;
   int isnodata;
-  if (rt_band_get_pixel_resample(state->band, xr, yr, RT_NEAREST, value,
-      &isnodata) != ES_NONE)
+  if (rt_band_get_pixel(state->band, col, row, value, &isnodata) != ES_NONE)
     return false;
   return ! isnodata;
 }
@@ -1947,11 +1958,6 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
   }
   state->raster = raster;
   state->band = rtband;
-  /* Half the smaller pixel side, in the units the trajectory states its
-   * positions in, so the walk cannot step over a pixel */
-  double gt[6];
-  rt_raster_get_geotransform_matrix(raster, gt);
-  state->step = raster_sample_step(gt);
 
   /* Bounding box of the raster extent, which bears the rotation of the
    * geotransform */
@@ -1963,9 +1969,12 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
       "Could not compute the extent of the raster");
     return false;
   }
-  ops->sample = &raster_value_sample;
+  ops->grid = &raster_value_grid;
+  ops->pixel = &raster_value_pixel;
+  ops->cross = NULL;
   ops->ctx = state;
-  ops->step = state->step;
+  ops->width = (int) rt_raster_get_width(raster);
+  ops->height = (int) rt_raster_get_height(raster);
   memset(&ops->box, 0, sizeof(STBox));
   ops->box.xmin = env.MinX; ops->box.xmax = env.MaxX;
   ops->box.ymin = env.MinY; ops->box.ymax = env.MaxY;
@@ -1974,8 +1983,7 @@ raster_rtcore_gridops(const Temporal *traj, const Raster *rast, int band,
 
 /**
  * @ingroup meos_raster
- * @brief Return the values of a raster band sampled at the instants of a
- * trajectory
+ * @brief Return the values of a raster band read along a trajectory
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
