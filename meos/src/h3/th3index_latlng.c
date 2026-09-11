@@ -104,17 +104,21 @@ h3index_cell_to_point(H3Index cell)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
     return NULL;
   }
+  /* Planar (non-geodetic) lon/lat point, as the geometry it is */
   return geopoint_make(radsToDegs(ll.lng), radsToDegs(ll.lat), 0.0,
-    false, true, SRID_DEFAULT);
+    false, false, SRID_DEFAULT);
 }
 
 /**
- * @brief Build a geodetic SRID 4326 LWPOLY from a libh3 CellBoundary
- * and serialise it. The ring is closed by repeating vertex 0. Shared
- * between cell and directed-edge boundary adapters.
+ * @brief Return an SRID 4326 polygon built from a libh3 CellBoundary,
+ * geodetic or planar as its caller states
+ * @details The ring closes by repeating vertex 0. The cell and the
+ * directed-edge boundary adapters share it.
+ * @param[in] bnd Boundary
+ * @param[in] geodetic True when the polygon is geodetic
  */
 GSERIALIZED *
-cell_boundary_to_gs(const CellBoundary *bnd)
+cell_boundary_to_gs(const CellBoundary *bnd, bool geodetic)
 {
   POINTARRAY *pa = ptarray_construct_empty(LW_FALSE, LW_FALSE,
     bnd->numVerts + 1);
@@ -137,7 +141,7 @@ cell_boundary_to_gs(const CellBoundary *bnd)
 
   LWPOLY *poly = lwpoly_construct_empty(SRID_DEFAULT, LW_FALSE, LW_FALSE);
   lwpoly_add_ring(poly, pa);
-  lwgeom_set_geodetic(lwpoly_as_lwgeom(poly), LW_TRUE);
+  lwgeom_set_geodetic(lwpoly_as_lwgeom(poly), geodetic);
   GSERIALIZED *result = geo_serialize(lwpoly_as_lwgeom(poly));
   lwpoly_free(poly);
   return result;
@@ -158,7 +162,40 @@ h3index_cell_to_boundary(H3Index cell)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
     return NULL;
   }
-  return cell_boundary_to_gs(&bnd);
+  return cell_boundary_to_gs(&bnd, false);
+}
+
+/**
+ * @brief Return the centroid of an H3 cell as a geodetic point
+ * @param[in] cell H3 cell
+ */
+GSERIALIZED *
+h3index_cell_to_geogpoint(H3Index cell)
+{
+  LatLng ll;
+  if (cellToLatLng(cell, &ll) != E_SUCCESS)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+    return NULL;
+  }
+  return geopoint_make(radsToDegs(ll.lng), radsToDegs(ll.lat), 0.0,
+    false, true, SRID_DEFAULT);
+}
+
+/**
+ * @brief Return the boundary of an H3 cell as a geodetic polygon
+ * @param[in] cell H3 cell
+ */
+GSERIALIZED *
+h3index_cell_to_geog(H3Index cell)
+{
+  CellBoundary bnd;
+  if (cellToBoundary(cell, &bnd) != E_SUCCESS)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+    return NULL;
+  }
+  return cell_boundary_to_gs(&bnd, true);
 }
 
 /*****************************************************************************
@@ -460,11 +497,19 @@ th3index_to_tgeogpoint(const Temporal *temp)
 /*****************************************************************************
  * cellToPoint (planar output, SRID 4326 overload)
  *
- * Both overloads share the same static adapter `h3index_cell_to_point`,
- * which emits an SRID-4326 point. The geography-vs-geometry nature
- * of the result is disambiguated at the lifting layer via the
- * `restype` setting — downstream consumers see the intended type.
+ * The planar trajectory lifts the planar centroid `h3index_cell_to_point`
+ * answers, and the geodetic trajectory above lifts the geodetic centroid
+ * `h3index_cell_to_geogpoint` answers through the shared cell operations.
  *****************************************************************************/
+
+/**
+ * @brief Return the planar centroid of an H3 cell
+ */
+static Datum
+datum_h3_cell_to_geompoint(Datum d)
+{
+  return PointerGetDatum(h3index_cell_to_point(DatumGetH3Index(d)));
+}
 
 /**
  * @ingroup meos_h3_latlng
@@ -480,7 +525,7 @@ th3index_to_tgeompoint(const Temporal *temp)
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_h3_cell_to_latlng;
+  lfinfo.func = (varfunc) &datum_h3_cell_to_geompoint;
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TH3INDEX;
   lfinfo.restype = T_TGEOMPOINT;
