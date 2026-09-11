@@ -665,6 +665,38 @@ int main(void)
   assert(semi_ok == 41);
   meos_errno_reset();
 
+  /* The distance from a point to an arc takes its size from the arc too. The
+   * same semicircle has its centre at (s 0) and its radius s, so the point
+   * (s 2s) above its top lies at distance s from it, exactly: the power of
+   * the point over its distance to the centre plus the radius is 3s^2 / 3s.
+   * Its middle vertex (s s) lies on it, at distance 0. A distance read off
+   * the circumcentre with an absolute bound is, at s = 2^-16, the distance
+   * to the chord, 2s */
+  double dist_s = 1.0;
+  int dist_ok = 0;
+  for (int k = 0; k >= -40; k--, dist_s *= 0.5)
+  {
+    char semi_wkt[160], above_wkt[96], apex_wkt[96];
+    snprintf(semi_wkt, sizeof semi_wkt,
+      "CIRCULARSTRING(0 0,%.17g %.17g,%.17g 0)", dist_s, dist_s, 2 * dist_s);
+    snprintf(above_wkt, sizeof above_wkt, "POINT(%.17g %.17g)", dist_s,
+      2 * dist_s);
+    snprintf(apex_wkt, sizeof apex_wkt, "POINT(%.17g %.17g)", dist_s, dist_s);
+    GSERIALIZED *semi = geom_in(semi_wkt, -1);
+    GSERIALIZED *above = geom_in(above_wkt, -1);
+    GSERIALIZED *apex = geom_in(apex_wkt, -1);
+    assert(semi != NULL); assert(above != NULL); assert(apex != NULL);
+    assert(geom_distance2d(semi, above) == dist_s);
+    assert(geom_distance2d(semi, apex) == 0.0);
+    assert(geom_dwithin2d(semi, apex, 0.0));
+    dist_ok++;
+    free(semi); free(above); free(apex);
+  }
+  printf("the distance from a point to a semicircle is its closed form, and "
+    "its middle vertex lies on it, at %d scales from 1 to 2^-40\n", dist_ok);
+  assert(dist_ok == 41);
+  meos_errno_reset();
+
   /* A GEOMETRYCOLLECTION is the union of its components, so what it shares
    * with another geometry is the union of what the components share. The
    * overlay reads it that way now, which is how the matrix has always read a

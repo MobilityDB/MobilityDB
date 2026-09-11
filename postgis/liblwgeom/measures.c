@@ -1526,13 +1526,45 @@ lw_dist2d_seg_arc(const POINT2D *A1,
 	return LW_FALSE;
 }
 
+/* MEOS: record a distance computed apart from its two points, in the order
+ * lw_dist2d_pt_pt records them */
+static void
+lw_dist2d_pt_pt_at(const POINT2D *thep1, const POINT2D *thep2, double dist, DISTPTS *dl)
+{
+	if (((dl->distance - dist) * (dl->mode)) > 0)
+	{
+		dl->distance = dist;
+		if (dl->twisted > 0)
+		{
+			dl->p1 = *thep1;
+			dl->p2 = *thep2;
+		}
+		else
+		{
+			dl->p1 = *thep2;
+			dl->p2 = *thep1;
+		}
+	}
+}
+
+/* MEOS: the distance from a point to an arc, decided on the input vertices
+ * exactly and measured without the circumcentre, whose distance from the arc
+ * cancels against the radius of a nearly straight arc. A point equal to a
+ * vertex of the arc lies on it, and an arc whose ends are the same vertex is
+ * the circle on the diameter A1-A2. Otherwise, in the frame of lw_arc_frame,
+ * with n the normal of the chord toward the arc, h = half cot a the signed
+ * distance from the chord midpoint to the centre C along n and R = half / sin a
+ * the radius, and with q = P - A1 and c = A3 - A1 read from the input vertex
+ * A1, which lies on the circle, the power of P with respect to the circle is
+ * q.(q - c) - 2 h q.n, and its signed distance delta to the circle is that
+ * power over |P - C| + R. The power carries rounding of the size of its terms,
+ * and |P - C| - R rounding of the size of |P - C| + R, so of the two forms the
+ * one whose bound is smaller gives delta. The nearest point of the circle lies
+ * on the arc where q.n >= - delta cos a, and otherwise the nearest point of
+ * the arc is one of its ends */
 int
 lw_dist2d_pt_arc(const POINT2D *P, const POINT2D *A1, const POINT2D *A2, const POINT2D *A3, DISTPTS *dl)
 {
-	double radius_A, d;
-	POINT2D C; /* center of circle defined by arc A */
-	POINT2D X; /* point circle(A) where line from C to P crosses */
-
 	if (dl->mode < 0)
 	{
 		lwerror("lw_dist2d_pt_arc does not support maxdistance mode");
@@ -1543,33 +1575,73 @@ lw_dist2d_pt_arc(const POINT2D *P, const POINT2D *A1, const POINT2D *A2, const P
 	if (lw_arc_is_pt(A1, A2, A3))
 		return lw_dist2d_pt_pt(P, A1, dl);
 
-	/* Calculate centers and radii of circles. */
-	radius_A = lw_arc_center(A1, A2, A3, &C);
+	/* MEOS: the ends of the arc lie on it */
+	if (P->x == A1->x && P->y == A1->y)
+		return lw_dist2d_pt_pt(P, A1, dl);
+	if (P->x == A3->x && P->y == A3->y)
+		return lw_dist2d_pt_pt(P, A3, dl);
 
-	/* This "arc" is actually a line (A2 is colinear with A1,A3) */
-	if (radius_A < 0.0)
-		return lw_dist2d_pt_seg(P, A1, A3, dl);
-
-	/* Distance from point to center */
-	d = distance2d_pt_pt(&C, P);
-
-	/* P is the center of the circle */
-	if (FP_EQUALS(d, 0.0))
+	/* MEOS: an arc whose ends are the same vertex is a whole circle, through
+	 * A2 */
+	if (A1->x == A3->x && A1->y == A3->y)
 	{
-		dl->distance = radius_A;
-		dl->p1 = *A1;
-		dl->p2 = *P;
+		if (P->x == A2->x && P->y == A2->y)
+			return lw_dist2d_pt_pt(P, A2, dl);
+		double cx = A1->x + (A2->x - A1->x) / 2.0;
+		double cy = A1->y + (A2->y - A1->y) / 2.0;
+		double r = hypot(A2->x - A1->x, A2->y - A1->y) / 2.0;
+		double dx = P->x - cx, dy = P->y - cy;
+		double d = hypot(dx, dy);
+		POINT2D X;
+		if (d == 0.0)
+		{
+			lw_dist2d_pt_pt_at(A1, P, r, dl);
+			return LW_TRUE;
+		}
+		X.x = P->x - (d - r) * dx / d;
+		X.y = P->y - (d - r) * dy / d;
+		lw_dist2d_pt_pt_at(P, &X, fabs(d - r), dl);
 		return LW_TRUE;
 	}
 
-	/* X is the point on the circle where the line from P to C crosses */
-	X.x = C.x + (P->x - C.x) * radius_A / d;
-	X.y = C.y + (P->y - C.y) * radius_A / d;
+	/* MEOS: three collinear points, A2 on an end included, are the segment
+	 * A1-A3 */
+	LW_ARC_FRAME f;
+	if (! lw_arc_frame(A1, A2, A3, &f))
+		return lw_dist2d_pt_seg(P, A1, A3, dl);
 
-	/* Is crossing point inside the arc? Or arc is actually circle? */
-	if (p2d_same(A1, A3) || lw_pt_in_arc(&X, A1, A2, A3))
+	/* MEOS: an arc that turns at A2 passes through it */
+	if (P->x == A2->x && P->y == A2->y)
+		return lw_dist2d_pt_pt(P, A2, dl);
+
+	/* P and the centre C are read from A1, an input vertex on the circle:
+	 * C - A1 is half the chord plus h along n, of length the radius */
+	double chx = A3->x - A1->x, chy = A3->y - A1->y;
+	double hc = f.half * f.cosa / f.sina, radius = f.half / f.sina;
+	double qx = P->x - A1->x, qy = P->y - A1->y;
+	double qn = qx * f.nx + qy * f.ny;
+	double pcx = qx - (chx / 2.0 + f.nx * hc), pcy = qy - (chy / 2.0 + f.ny * hc);
+	double pc = sqrt(pcx * pcx + pcy * pcy);
+
+	/* P is the centre of the circle, every point of the arc at the radius */
+	if (pc == 0.0)
 	{
-		lw_dist2d_pt_pt(P, &X, dl);
+		lw_dist2d_pt_pt_at(A1, P, radius, dl);
+		return LW_TRUE;
+	}
+
+	double qq = qx * qx + qy * qy, qch = qx * chx + qy * chy;
+	double power = (qq - qch) - 2.0 * hc * qn;
+	double bound_power = (qq + fabs(qch) + 2.0 * fabs(hc * qn)) / (pc + radius);
+	double delta = (bound_power < pc + radius) ? power / (pc + radius) : pc - radius;
+
+	if (qn >= - delta * f.cosa)
+	{
+		/* The nearest point of the circle: P moved by delta toward C */
+		POINT2D X;
+		X.x = P->x - delta * pcx / pc;
+		X.y = P->y - delta * pcy / pc;
+		lw_dist2d_pt_pt_at(P, &X, fabs(delta), dl);
 	}
 	else
 	{
