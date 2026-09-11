@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s04.html" title="Conversions"><link rel="next" href="ch16s06.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_accessors"></a>Accessors</h2></div></div></div><p><a class="link" href="ch16s05.html#raster_numBands"><code class="varname">numBands</code></a>, <a class="link" href="ch16s05.html#raster_SRID"><code class="varname">SRID</code></a> and the corner, scale and skew accessors read the grid of a PostGIS <code class="varname">raster</code>; <a class="link" href="ch16s05.html#raquet_width"><code class="varname">width</code></a>, <a class="link" href="ch16s05.html#raquet_height"><code class="varname">height</code></a> and the band accessors read a raster and a <code class="varname">raquet</code> tile alike, and the other accessors read a <code class="varname">raquet</code> tile.</p><p>A <code class="varname">raquet</code> value is self-describing: the accessors below read back the georeferencing and layout it carries, so a tile packaged with the <a class="link" href="ch16s03.html#raquet"><code class="varname">raquet</code></a> constructor or decoded with <a class="link" href="ch16s03.html#raquetRead"><code class="varname">raquetRead</code></a> can be inspected without keeping the loose columns it was built from.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_startValue"></a><a class="indexterm" name="id12362"></a><a class="indexterm" name="id12365"></a><a class="indexterm" name="id12368"></a><p>Return the first, the last, or the nth distinct cell identifier of a temporal value</p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch16.html" title="Chapter 16. Temporal Tessellations"><link rel="prev" href="ch16s04.html" title="Conversions"><link rel="next" href="ch16s06.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch16s04.html">Prev</a> </td><th width="60%" align="center">Chapter 16. Temporal Tessellations</th><td width="20%" align="right"> <a accesskey="n" href="ch16s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcell_accessors"></a>Accessors</h2></div></div></div><p><a class="link" href="ch16s05.html#raster_numBands"><code class="varname">numBands</code></a>, <a class="link" href="ch16s05.html#raster_SRID"><code class="varname">SRID</code></a> and the corner, scale and skew accessors read the grid of a PostGIS <code class="varname">raster</code>; <a class="link" href="ch16s05.html#raquet_width"><code class="varname">width</code></a>, <a class="link" href="ch16s05.html#raquet_height"><code class="varname">height</code></a> and the band accessors read a raster and a <code class="varname">raquet</code> tile alike, and the other accessors read a <code class="varname">raquet</code> tile.</p><p>A <code class="varname">raquet</code> value is self-describing: the accessors below read back the georeferencing and layout it carries, so a tile packaged with the <a class="link" href="ch16s03.html#raquet"><code class="varname">raquet</code></a> constructor or decoded with <a class="link" href="ch16s03.html#raquetRead"><code class="varname">raquetRead</code></a> can be inspected without keeping the loose columns it was built from.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcell_startValue"></a><a class="indexterm" name="id12365"></a><a class="indexterm" name="id12368"></a><a class="indexterm" name="id12371"></a><p>Return the first, the last, or the nth distinct cell identifier of a temporal value</p><pre class="programlisting">
 startValue(tcell) → cell
 endValue(tcell) → cell
 valueN(tcell,integer) → cell
@@ -21,7 +21,7 @@ SELECT endValue(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
 -- 47c4
 SELECT valueN(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}', 1);
 -- 47c3c
-</pre></li><li class="listitem"><a name="tcell_getValues"></a><a class="indexterm" name="id12379"></a><p>Return the set of distinct cell identifiers the trajectory takes</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_getValues"></a><a class="indexterm" name="id12382"></a><p>Return the set of distinct cell identifiers the trajectory takes</p><pre class="programlisting">
 getValues(tcell) → cellset
 </pre><pre class="programlisting">
 SELECT getValues(th3index '831c02fffffffff@2001-01-01');
@@ -37,7 +37,7 @@ SELECT getValues(ts2cell '47c3c@2001-01-01');
 -- {"47c3c"}
 SELECT getValues(ts2cell '{47c3c@2001-01-01, 47c4@2001-01-02}');
 -- {"47c3c", "47c4"}
-</pre></li><li class="listitem"><a name="tcell_valueAtTimestamp"></a><a class="indexterm" name="id12386"></a><p>Return the cell identifier at a given timestamp, using step interpolation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcell_valueAtTimestamp"></a><a class="indexterm" name="id12389"></a><p>Return the cell identifier at a given timestamp, using step interpolation</p><pre class="programlisting">
 valueAtTimestamp(tcell,timestamptz) → cell
 </pre><pre class="programlisting">
 SELECT valueAtTimestamp(th3index
@@ -48,7 +48,7 @@ SELECT valueAtTimestamp(tquadbin
 -- 48a6227affffffff
 SELECT valueAtTimestamp(ts2cell '47c3c@2001-01-01', timestamptz '2001-01-01');
 -- 47c3c
-</pre></li><li class="listitem"><a name="raster_numBands"></a><a class="indexterm" name="id12393"></a><p>Return the number of bands of a raster</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_numBands"></a><a class="indexterm" name="id12396"></a><p>Return the number of bands of a raster</p><pre class="programlisting">
 numBands(raster) → integer
 </pre><p>The band number accepted by <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> and by the operators built on it ranges from 1 to this value.</p><pre class="programlisting">
 WITH rast1 AS (
@@ -58,52 +58,52 @@ WITH rast1 AS (
 SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
   numBands((SELECT r FROM rast2)) AS num_bands_two;
 -- 1 | 2
-</pre></li><li class="listitem"><a name="raster_SRID"></a><a class="indexterm" name="id12403"></a><p>Return the spatial reference system identifier of a raster</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_SRID"></a><a class="indexterm" name="id12406"></a><p>Return the spatial reference system identifier of a raster</p><pre class="programlisting">
 SRID(raster) → integer
 </pre><pre class="programlisting">
 SELECT SRID(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857));
 -- 3857
-</pre></li><li class="listitem"><a name="raster_upperLeftX"></a><a class="indexterm" name="id12410"></a><a class="indexterm" name="id12413"></a><p>Return the X or the Y coordinate of the upper left corner of a raster</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_upperLeftX"></a><a class="indexterm" name="id12413"></a><a class="indexterm" name="id12416"></a><p>Return the X or the Y coordinate of the upper left corner of a raster</p><pre class="programlisting">
 upperLeftX(raster) → float8
 upperLeftY(raster) → float8
 </pre><p>The corner is the origin the geotransform states, which the skew rotates the grid about, so it is a corner of the extent only when both skews are zero.</p><pre class="programlisting">
 SELECT upperLeftX(r), upperLeftY(r)
 FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS r) t;
 -- 10 | 20
-</pre></li><li class="listitem"><a name="raster_scaleX"></a><a class="indexterm" name="id12421"></a><a class="indexterm" name="id12424"></a><p>Return the pixel width or the pixel height of a raster, that is, the X or the Y component of its scale</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_scaleX"></a><a class="indexterm" name="id12424"></a><a class="indexterm" name="id12427"></a><p>Return the pixel width or the pixel height of a raster, that is, the X or the Y component of its scale</p><pre class="programlisting">
 scaleX(raster) → float8
 scaleY(raster) → float8
 </pre><p>The pixel height is negative for a grid whose rows run north to south, which is how a raster is ordinarily written.</p><pre class="programlisting">
 SELECT scaleX(r), scaleY(r)
 FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS r) t;
 -- 1.5 | -2
-</pre></li><li class="listitem"><a name="raster_skewX"></a><a class="indexterm" name="id12432"></a><a class="indexterm" name="id12435"></a><p>Return the X or the Y component of the skew of a raster</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_skewX"></a><a class="indexterm" name="id12435"></a><a class="indexterm" name="id12438"></a><p>Return the X or the Y component of the skew of a raster</p><pre class="programlisting">
 skewX(raster) → float8
 skewY(raster) → float8
 </pre><p>A raster whose two skews are zero is axis-aligned.</p><pre class="programlisting">
 SELECT skewX(r), skewY(r)
 FROM (SELECT ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 1.5, -2.0, 0.5, 0.25, 3857) AS r) t;
 -- 0.5 | 0.25
-</pre></li><li class="listitem"><a name="raquet_quadbin_accessor"></a><a class="indexterm" name="id12443"></a><p>Return the QUADBIN cell of a Raquet tile</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raquet_quadbin_accessor"></a><a class="indexterm" name="id12446"></a><p>Return the QUADBIN cell of a Raquet tile</p><pre class="programlisting">
 quadbin(raquet) → bigint
 </pre><pre class="programlisting">
 SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 5193776270265024512
-</pre></li><li class="listitem"><a name="raquet_width"></a><a class="indexterm" name="id12450"></a><p>Return the width in pixels of a raster or a Raquet tile</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raquet_width"></a><a class="indexterm" name="id12453"></a><p>Return the width in pixels of a raster or a Raquet tile</p><pre class="programlisting">
 width({raster,raquet}) → integer
 </pre><pre class="programlisting">
 SELECT width(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
 -- 3
 SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
-</pre></li><li class="listitem"><a name="raquet_height"></a><a class="indexterm" name="id12457"></a><p>Return the height in pixels of a raster or a Raquet tile</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raquet_height"></a><a class="indexterm" name="id12460"></a><p>Return the height in pixels of a raster or a Raquet tile</p><pre class="programlisting">
 height({raster,raquet}) → integer
 </pre><pre class="programlisting">
 SELECT height(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326));
 -- 2
 SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
-</pre></li><li class="listitem"><a name="raster_bandPixelType"></a><a class="indexterm" name="id12464"></a><p>Return the name of the pixel data type of a raster band or of a Raquet tile</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_bandPixelType"></a><a class="indexterm" name="id12467"></a><p>Return the name of the pixel data type of a raster band or of a Raquet tile</p><pre class="programlisting">
 bandPixelType(raster,band integer=1) → text
 bandPixelType(raquet) → text
 </pre><p>The returned name is the one the constructors accept, that is, one of <code class="varname">uint8</code>, <code class="varname">int8</code>, <code class="varname">uint16</code>, <code class="varname">int16</code>, <code class="varname">uint32</code>, <code class="varname">int32</code>, <code class="varname">uint64</code>, <code class="varname">int64</code>, <code class="varname">float16</code>, <code class="varname">float32</code>, or <code class="varname">float64</code>. The constructors read the name without regard to case, so the name PostGIS raster gives a pixel type carries into them as it stands; the name returned here is the lower-case spelling the RaQuet specification gives a tile's <code class="varname">type</code> field, for a PostGIS band as for a tile, so a band and a tile of the same type report the same name.</p><pre class="programlisting">
@@ -113,7 +113,7 @@ SELECT bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'));
 SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
 -- 5193776270265024512 | 2 | 2 | uint8
-</pre></li><li class="listitem"><a name="raster_bandHasNoDataValue"></a><a class="indexterm" name="id12484"></a><p>Return whether a raster band or a Raquet tile states a nodata value</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_bandHasNoDataValue"></a><a class="indexterm" name="id12487"></a><p>Return whether a raster band or a Raquet tile states a nodata value</p><pre class="programlisting">
 bandHasNoDataValue(raster,band integer=1) → boolean
 bandHasNoDataValue(raquet) → boolean
 </pre><p>A band that states none has no pixel to exclude, so every pixel it holds carries a value.</p><pre class="programlisting">
@@ -123,7 +123,7 @@ SELECT bandHasNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI':
 SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
   'uint8'));
 -- false
-</pre></li><li class="listitem"><a name="raster_bandNoDataValue"></a><a class="indexterm" name="id12492"></a><p>Return the nodata value of a raster band or of a Raquet tile</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_bandNoDataValue"></a><a class="indexterm" name="id12495"></a><p>Return the nodata value of a raster band or of a Raquet tile</p><pre class="programlisting">
 bandNoDataValue(raster,band integer=1) → float8
 bandNoDataValue(raquet) → float8
 </pre><p>A band that states no nodata value answers <code class="varname">NULL</code>.</p><pre class="programlisting">
@@ -136,7 +136,7 @@ SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'u
 -- A tile built without a nodata value states none
 SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- NULL
-</pre></li><li class="listitem"><a name="raquet_pixels"></a><a class="indexterm" name="id12501"></a><p>Return the pixel bytes of a Raquet tile</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raquet_pixels"></a><a class="indexterm" name="id12504"></a><p>Return the pixel bytes of a Raquet tile</p><pre class="programlisting">
 pixels(raquet) → bytea
 </pre><p>The bytes are row-major and packed, <code class="varname">width</code> × <code class="varname">height</code> pixels of the size of <a class="link" href="ch16s05.html#raster_bandPixelType"><code class="varname">bandPixelType</code></a> each, little-endian when a pixel is wider than one byte, which is the layout the constructors accept. A tile therefore round trips through its own accessors.</p><pre class="programlisting">
 SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));

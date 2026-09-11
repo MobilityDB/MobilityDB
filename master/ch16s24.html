@@ -6,9 +6,10 @@ SELECT DISTINCT q FROM unnest(quadbins(traj, 8)) AS q;
 -- Step 2: sample each matching tile
 SELECT rasterTileValueQuadbin(traj, band_data, width, height, quadbin, 'float32', nodata,
   true) FROM elevation_raquet WHERE quadbin = ANY(quadbins(traj, 8));
-</pre><p>The restriction and predicate operators that close the section compose <code class="varname">rasterValue</code> with the standard MobilityDB temporal restriction and predicate functions. They accept an optional <code class="varname">band</code> argument (default 1) and call <code class="varname">rasterValue</code> exactly once per invocation.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_rasterValue"></a><a class="indexterm" name="id13496"></a><p>Read a raster band along a trajectory</p><pre class="programlisting">
+</pre><p>The restriction and predicate operators that close the section compose <code class="varname">rasterValue</code> with the standard MobilityDB temporal restriction and predicate functions. They accept an optional <code class="varname">band</code> argument (default 1) and call <code class="varname">rasterValue</code> exactly once per invocation.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_rasterValue"></a><a class="indexterm" name="id13499"></a><p>Read a raster band along a trajectory</p><pre class="programlisting">
 rasterValue(tgeompoint,rast raster,band integer=1) → tfloat
-</pre><p>Reads band <code class="varname">band</code> along <code class="varname">traj</code>, taking the value of the pixel each position falls in. A trajectory that states nothing between its instants is read at its instants and answers an instant-set <code class="varname">tfloat</code>. A trajectory that moves between them passes over the pixels between them, so each segment is traversed pixel by pixel, and it answers a step <code class="varname">tfloat</code> holding each value from the instant the trip reaches the pixel holding it, a pixel whose corner the trip only clips included. A position outside the raster or over a nodata pixel carries no value and ends the run, so a trip that leaves and re-enters the raster answers one sequence per visit, and <code class="varname">NULL</code> when it never meets a pixel carrying data. A band whose pixels cannot be read, such as a band stored outside the database in a file that cannot be opened, raises an error rather than reading as a band without values.</p><pre class="programlisting">
+rasterValue(tgeompoint,path text,band integer=1) → tfloat
+</pre><p>Reads band <code class="varname">band</code> along <code class="varname">traj</code>, taking the value of the pixel each position falls in. A trajectory that states nothing between its instants is read at its instants and answers an instant-set <code class="varname">tfloat</code>. A trajectory that moves between them passes over the pixels between them, so each segment is traversed pixel by pixel, and it answers a step <code class="varname">tfloat</code> holding each value from the instant the trip reaches the pixel holding it, a pixel whose corner the trip only clips included. A position outside the raster or over a nodata pixel carries no value and ends the run, so a trip that leaves and re-enters the raster answers one sequence per visit, and <code class="varname">NULL</code> when it never meets a pixel carrying data. A band whose pixels cannot be read, such as a band stored outside the database in a file that cannot be opened, raises an error rather than reading as a band without values. The form taking <code class="varname">path</code> reads a raster file on the server, in any format GDAL supports, through GDAL, where PostGIS allows a raster band stored outside the database to be read: <code class="varname">postgis.enable_outdb_rasters</code> must be on and <code class="varname">postgis.gdal_enabled_drivers</code> must enable the driver of the file. It answers what the form taking a <code class="varname">raster</code> answers over the same raster.</p><pre class="programlisting">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
@@ -29,7 +30,7 @@ SELECT tripid, avgValue(rasterValue(trip, elev)) AS mean_elev FROM trips,
 -- Trips that crossed terrain above 200 m
 SELECT tripid FROM trips, elevation_raster
 WHERE atSpan(rasterValue(trip, elev), floatspan '[200, 9999]') IS NOT NULL;
-</pre></li><li class="listitem"><a name="raster_reclass"></a><a class="indexterm" name="id13511"></a><p>Return a raster whose band holds the classes an expression maps its values to</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_reclass"></a><a class="indexterm" name="id13518"></a><p>Return a raster whose band holds the classes an expression maps its values to</p><pre class="programlisting">
 reclass(raster,band integer,expr text,pixeltype text,nodata float8=NULL) → raster
 </pre><p>The expression follows the grammar of the PostGIS <code class="varname">ST_Reclass</code>: a comma-separated list of mappings, each a source range and a destination around a colon, a range being one value or two around a dash. A range written plainly includes its low end and excludes its high end, while <code class="varname">(</code> excludes the low end and <code class="varname">]</code> includes the high end, so <code class="varname">0-50</code> leaves 50 unmapped where <code class="varname">[50-100]</code> takes it. A pixel no range takes holds the nodata value of the resulting band, or zero when the band states none. That band has the pixel type <code class="varname">pixeltype</code>, named as PostGIS raster names it, such as <code class="varname">8BUI</code>, and states no nodata value when <code class="varname">nodata</code> is left out. The raster keeps its grid and its other bands, so the classes can be read along a trajectory with <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>.</p><pre class="programlisting">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
@@ -54,7 +55,7 @@ SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
   POINT(1.5 1.5)@2001-01-02, POINT(2.5 0.5)@2001-01-03}',
   reclass(r, 1, '0-50:1, [50-100]:2', '8BUI', 0))::text FROM rast;
 -- {1@2001-01-01, 2@2001-01-02, 2@2001-01-03}
-</pre></li><li class="listitem"><a name="raster_clip"></a><a class="indexterm" name="id13529"></a><p>Return a raster keeping the pixels of another that a geometry covers</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_clip"></a><a class="indexterm" name="id13536"></a><p>Return a raster keeping the pixels of another that a geometry covers</p><pre class="programlisting">
 clip(raster,geom geometry,crop boolean=true) → raster
 </pre><p>Every band is read against a mask the geometry is burnt into, as the PostGIS <code class="varname">ST_Clip</code> reads it: a pixel the geometry does not cover answers the nodata value of its band, and the smallest value its pixel type holds when the band declares none. With <code class="varname">crop</code> the result carries the extent the raster and the geometry share, and otherwise the extent of the raster. The geometry is in the reference system of the raster; one in another system raises an error.</p><pre class="programlisting">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
@@ -70,7 +71,7 @@ SELECT ST_DumpValues(clip(r, geometry 'SRID=4326;POLYGON((0 1,2 1,2 3,0 3,0 1))'
   AS kept_extent
 FROM rast;
 -- {{10,20},{40,50}} | {{10,20,NULL},{40,50,NULL},{NULL,NULL,NULL}}
-</pre></li><li class="listitem"><a name="raster_transform"></a><a class="indexterm" name="id13539"></a><p>Return a raster stated in another spatial reference system</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_transform"></a><a class="indexterm" name="id13546"></a><p>Return a raster stated in another spatial reference system</p><pre class="programlisting">
 transform(raster,srid integer,algorithm text='NearestNeighbour',
   maxerr float8=0.125) → raster
 </pre><p>Every band is carried into the target system and resampled onto the grid the reprojection implies, through the same GDAL warp as the PostGIS <code class="varname">ST_Transform</code>, so the result states the same coverage read through another system. The algorithm is one of <code class="varname">NearestNeighbour</code>, <code class="varname">Bilinear</code>, <code class="varname">Cubic</code>, <code class="varname">CubicSpline</code>, <code class="varname">Lanczos</code>, <code class="varname">Max</code> and <code class="varname">Min</code>, named without regard to case, and <code class="varname">maxerr</code> is the error in input pixels the warp may commit, 0 for an exact calculation.</p><pre class="programlisting">
@@ -85,7 +86,7 @@ SELECT SRID(transform(r, 3857)) AS srid, width(transform(r, 3857)) AS width,
   height(transform(r, 3857)) AS height
 FROM rast;
 -- 3857 | 3 | 3
-</pre></li><li class="listitem"><a name="raster_rescale"></a><a class="indexterm" name="id13556"></a><p>Return a raster resampled to another pixel size</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rescale"></a><a class="indexterm" name="id13563"></a><p>Return a raster resampled to another pixel size</p><pre class="programlisting">
 rescale(raster,scalex float8,scaley float8,algorithm text='NearestNeighbour',
   maxerr float8=0.125) → raster
 </pre><p>The result keeps the reference system and the upper left corner of the raster and states its coverage on a grid of the pixel size asked for, through the same GDAL warp as the PostGIS <code class="varname">ST_Rescale</code>, so a coarser scale reads fewer pixels over the same ground. The scales are in the units of the raster's reference system, and the algorithm and the error are those of <a class="link" href="ch16s24.html#raster_transform"><code class="varname">transform</code></a>.</p><pre class="programlisting">
@@ -101,7 +102,7 @@ SELECT width(rescale(r, 0.5, -0.5)) AS width,
   scaleX(rescale(r, 0.5, -0.5)) AS scalex
 FROM rast;
 -- 6 | 6 | 0.5
-</pre></li><li class="listitem"><a name="raster_summaryStats"></a><a class="indexterm" name="id13567"></a><p>Return the statistics of the pixels of a raster band</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_summaryStats"></a><a class="indexterm" name="id13574"></a><p>Return the statistics of the pixels of a raster band</p><pre class="programlisting">
 summaryStats(raster,band integer=1,excludeNodata boolean=true) → summarystats
 </pre><p>The band is read once and answers the PostGIS <code class="varname">summarystats</code> record that <code class="varname">ST_SummaryStats</code> answers: the number of pixels counted, and the sum, mean, standard deviation, minimum and maximum of their values. Every pixel is read, so the answer is exact rather than sampled; the pixels the band states as nodata are left out unless <code class="varname">excludeNodata</code> is false, and a band with no pixel to count answers a count of zero and no statistic.</p><pre class="programlisting">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
@@ -113,7 +114,7 @@ WITH rast AS (
     [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
 SELECT (summaryStats(r)).* FROM rast;
 -- 9 | 450 | 50 | 25.81988897471611 | 10 | 90
-</pre></li><li class="listitem"><a name="raster_dumpAsPolygons"></a><a class="indexterm" name="id13578"></a><p>Return the polygons of a raster band, one for each group of pixels sharing a value <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="raster_dumpAsPolygons"></a><a class="indexterm" name="id13585"></a><p>Return the polygons of a raster band, one for each group of pixels sharing a value <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
 </p><pre class="programlisting">
 dumpAsPolygons(raster,band integer=1,excludeNodata boolean=true) → {geomval}
@@ -130,19 +131,19 @@ FROM rast, dumpAsPolygons(reclass(r, 1, '0-50:1, [50-100]:2', '8BUI', 0))
 ORDER BY val;
 -- 1 | POLYGON((0 3,0 1,1 1,1 2,3 2,3 3,0 3))
 -- 2 | POLYGON((1 2,1 1,0 1,0 0,3 0,3 2,1 2))
-</pre></li><li class="listitem"><a name="raster_rasterTileValue"></a><a class="indexterm" name="id13597"></a><p>Sample a <code class="varname">raquet</code> raster tile along a trajectory</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rasterTileValue"></a><a class="indexterm" name="id13604"></a><p>Sample a <code class="varname">raquet</code> raster tile along a trajectory</p><pre class="programlisting">
 rasterTileValue(tgeompoint,rast raquet) → tfloat
 </pre><p>Reads the tile along <code class="varname">traj</code> (SRID 4326) as <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> reads a raster, returning the pixel values as a <code class="varname">tfloat</code>. This is the typed equivalent of <a class="link" href="ch16s24.html#raster_rasterTileValueQuadbin"><code class="varname">rasterTileValueQuadbin</code></a>: the dimensions, QUADBIN cell, pixel type and nodata handling are taken from the <code class="varname">raquet</code> value instead of from separate arguments. Returns <code class="varname">NULL</code> when the trip never meets a pixel of the tile carrying data.</p><pre class="programlisting">
 -- Sample pre-packaged raquet tiles along ship trajectories
 SELECT t.tripid, rasterTileValue(t.trip, r.tile)
 FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8));
-</pre></li><li class="listitem"><a name="raster_rasterTileValueArray"></a><a class="indexterm" name="id13614"></a><p>Sample an array of <code class="varname">raquet</code> raster tiles along a trajectory</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rasterTileValueArray"></a><a class="indexterm" name="id13621"></a><p>Sample an array of <code class="varname">raquet</code> raster tiles along a trajectory</p><pre class="programlisting">
 rasterTileValue(tgeompoint,rast raquet[]) → tfloat
 </pre><p>Reads every tile of <code class="varname">rast</code> along <code class="varname">traj</code> (SRID 4326) and returns the pixel values as a single <code class="varname">tfloat</code>. A trajectory that leaves one tile is covered by several of them, each answering the part of the trip over it. Tiles of one zoom level partition the plane, so they answer disjoint times. Tiles of different zoom levels overlap, and where two of them answer the same time the value of the tile of higher zoom is kept, that being the one carrying the finer resolution. Returns <code class="varname">NULL</code> when the trip never meets a pixel of a tile carrying data.</p><pre class="programlisting">
 -- Sample a trajectory across every tile it crosses, in one value
 SELECT t.tripid, rasterTileValue(t.trip, array_agg(r.tile)) FROM trips t
 JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8)) GROUP BY t.tripid, t.trip;
-</pre></li><li class="listitem"><a name="raster_rasterTileValueQuadbin"></a><a class="indexterm" name="id13627"></a><p>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rasterTileValueQuadbin"></a><a class="indexterm" name="id13634"></a><p>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</p><pre class="programlisting">
 rasterTileValueQuadbin(tgeompoint,pixels bytea,width integer,height integer,
   quadbin bigint,pixtype text,nodata float8,has_nodata boolean) → tfloat
 </pre><p>Reads a row-major single-band pixel array along <code class="varname">traj</code> (SRID 4326), as <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> reads a raster. The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <code class="varname">quadbin</code> alone via the Web-Mercator slippy-tile transform. The <code class="varname">pixtype</code> argument must be one of <code class="varname">uint8</code>, <code class="varname">int8</code>, <code class="varname">uint16</code>, <code class="varname">int16</code>, <code class="varname">uint32</code>, <code class="varname">int32</code>, <code class="varname">uint64</code>, <code class="varname">int64</code>, <code class="varname">float16</code>, <code class="varname">float32</code>, or <code class="varname">float64</code>. When <code class="varname">has_nodata</code> is true, a pixel equal to <code class="varname">nodata</code> carries no value. Returns <code class="varname">NULL</code> when the trip never meets a pixel carrying data.</p><pre class="programlisting">
@@ -154,9 +155,10 @@ JOIN elevation_raquet r ON r.quadbin = ANY(quadbins(t.trip, 8));
 SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
   r.band_data, 256, 256, r.quadbin, 'int16', -9999, true)) AS mean_sst FROM trips t
 JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
-</pre></li><li class="listitem"><a name="raster_atRasterValue"></a><a class="indexterm" name="id13654"></a><p>Return the part of a trajectory where the raster value it reads falls inside a float range</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_atRasterValue"></a><a class="indexterm" name="id13661"></a><p>Return the part of a trajectory where the raster value it reads falls inside a float range</p><pre class="programlisting">
 atRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
-</pre><p>Reads <code class="varname">rasterValue</code> along <code class="varname">traj</code> and returns the sub-trajectory restricted to the times when the pixel value lies within <code class="varname">vspan</code>. Returns <code class="varname">NULL</code> when no time satisfies the condition.</p><pre class="programlisting">
+atRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
+</pre><p>Reads <code class="varname">rasterValue</code> along <code class="varname">traj</code> and returns the sub-trajectory restricted to the times when the pixel value lies within <code class="varname">vspan</code>. Returns <code class="varname">NULL</code> when no time satisfies the condition. The form taking <code class="varname">path</code> reads a raster file on the server, as the corresponding form of <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> does.</p><pre class="programlisting">
 WITH rast AS (
   SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
     4326), '32BF'::text, 0.0::float8, NULL::float8), 1, 1, 1,
@@ -168,21 +170,24 @@ SELECT asText(atRasterValue(tgeompoint 'SRID=4326;
   floatspan '[40, 90]')) FROM rast;
 /* {[POINT(1 2)@2001-01-01 12:00:00, POINT(1.5 1.5)@2001-01-02,
    POINT(0.5 0.5)@2001-01-03]} */
-</pre></li><li class="listitem"><a name="raster_minusRasterValue"></a><a class="indexterm" name="id13666"></a><p>Return the part of a trajectory where the raster value it reads falls outside a float range</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_minusRasterValue"></a><a class="indexterm" name="id13676"></a><p>Return the part of a trajectory where the raster value it reads falls outside a float range</p><pre class="programlisting">
 minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
-</pre><p>The complement of <code class="varname">atRasterValue</code>: returns the sub-trajectory restricted to the times when the pixel value lies outside <code class="varname">vspan</code>. Returns <code class="varname">NULL</code> when the pixel value lies within <code class="varname">vspan</code> at every time.</p><pre class="programlisting">
+minusRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
+</pre><p>The complement of <code class="varname">atRasterValue</code>: returns the sub-trajectory restricted to the times when the pixel value lies outside <code class="varname">vspan</code>. Returns <code class="varname">NULL</code> when the pixel value lies within <code class="varname">vspan</code> at every time. The form taking <code class="varname">path</code> reads a raster file on the server, as the corresponding form of <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> does.</p><pre class="programlisting">
 -- Keep only the instant whose raster value (10) is below 40
 SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM trips,
   elevation_raster;
-</pre></li><li class="listitem"><a name="raster_eRasterValue"></a><a class="indexterm" name="id13678"></a><p>Return true if the trajectory ever reads a raster pixel value inside a float range</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_eRasterValue"></a><a class="indexterm" name="id13691"></a><p>Return true if the trajectory ever reads a raster pixel value inside a float range</p><pre class="programlisting">
 eRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
-</pre><p>Returns <code class="varname">true</code> when <code class="varname">traj</code> ever reads a pixel value within <code class="varname">vspan</code>, <code class="varname">false</code> otherwise. Returns <code class="varname">NULL</code> only when the input is <code class="varname">NULL</code>.</p><pre class="programlisting">
+eRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
+</pre><p>Returns <code class="varname">true</code> when <code class="varname">traj</code> ever reads a pixel value within <code class="varname">vspan</code>, <code class="varname">false</code> otherwise. Returns <code class="varname">NULL</code> only when the input is <code class="varname">NULL</code>. The form taking <code class="varname">path</code> reads a raster file on the server, as the corresponding form of <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> does.</p><pre class="programlisting">
 -- Trips that ever crossed terrain above 200 m
 SELECT tripid FROM trips,
   elevation_raster WHERE eRasterValue(trip, elev_raster, floatspan '[200, 9999]');
-</pre></li><li class="listitem"><a name="raster_aRasterValue"></a><a class="indexterm" name="id13692"></a><p>Return true if every pixel value the trajectory reads over the raster lies inside a float range</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_aRasterValue"></a><a class="indexterm" name="id13708"></a><p>Return true if every pixel value the trajectory reads over the raster lies inside a float range</p><pre class="programlisting">
 aRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
-</pre><p>Returns <code class="varname">true</code> when every pixel value <code class="varname">traj</code> reads over the raster lies within <code class="varname">vspan</code>, <code class="varname">false</code> when at least one does not. Returns <code class="varname">NULL</code> only when the input is <code class="varname">NULL</code>.</p><pre class="programlisting">
+aRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
+</pre><p>Returns <code class="varname">true</code> when every pixel value <code class="varname">traj</code> reads over the raster lies within <code class="varname">vspan</code>, <code class="varname">false</code> when at least one does not. Returns <code class="varname">NULL</code> only when the input is <code class="varname">NULL</code>. The form taking <code class="varname">path</code> reads a raster file on the server, as the corresponding form of <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> does.</p><pre class="programlisting">
 -- Trips that stayed entirely below 100 m elevation
 SELECT tripid FROM trips,
   elevation_raster WHERE aRasterValue(trip, elev_raster, floatspan '[0, 100]');
