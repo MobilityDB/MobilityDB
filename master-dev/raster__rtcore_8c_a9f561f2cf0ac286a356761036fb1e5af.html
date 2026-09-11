@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_value_sample</title>
+<title>MobilityDB: raster_value_pixel</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -118,7 +118,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gadfbc83f15b1994a9a8495d53de23c575.html#gadfbc83f15b1994a9a8495d53de23c575">raster_upper_left_x</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga2375659ab043ed481860a90c41182bb2.html#ga2375659ab043ed481860a90c41182bb2">raster_upper_left_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga8b065b73bf70f32e2e1dd645f7e17f77.html#ga8b065b73bf70f32e2e1dd645f7e17f77">raster_value</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raster__rtcore_8c_a9f0b6ff376c23870805566eab5e0fa99.html#a9f0b6ff376c23870805566eab5e0fa99">raster_value_sample</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a31584958c6b97f31be45520666f56b33.html#a31584958c6b97f31be45520666f56b33">raster_value_grid</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raster__rtcore_8c_a9f561f2cf0ac286a356761036fb1e5af.html#a9f561f2cf0ac286a356761036fb1e5af">raster_value_pixel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_ad465a503b6e1477ebd35c1f42e369e6d.html#ad465a503b6e1477ebd35c1f42e369e6d">raster_warp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga1252044dfe5684c39c6f1bb429981810.html#ga1252044dfe5684c39c6f1bb429981810">raster_width</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__rtcore_8c_a5d93e55668ab2c26fc2b9879fc418387.html#a5d93e55668ab2c26fc2b9879fc418387">raster_wkb</a></td></tr>
@@ -136,8 +137,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9f0b6ff376c23870805566eab5e0fa99" name="a9f0b6ff376c23870805566eab5e0fa99"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f0b6ff376c23870805566eab5e0fa99">&#9670;&#160;</a></span>raster_value_sample()</h2>
+<a id="a9f561f2cf0ac286a356761036fb1e5af" name="a9f561f2cf0ac286a356761036fb1e5af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f561f2cf0ac286a356761036fb1e5af">&#9670;&#160;</a></span>raster_value_pixel()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -146,7 +147,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool raster_value_sample </td>
+          <td class="memname">static bool raster_value_pixel </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>ctxp</em>, </td>
@@ -154,14 +155,14 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>col</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>row</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -182,8 +183,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Raster sampling callback reading one pixel of a PostGIS raster through the vendored raster core. </p>
-<p >The point is converted to raster coordinates with the inverse geotransform and read with nearest-neighbour resampling. A point outside the pixel grid and a nodata pixel alike answer that there is no value, which is the contract of <a class="el" href="raster__quadbin_8h_a213ed2e8e0e869aef637d127b08f7bc8.html#a213ed2e8e0e869aef637d127b08f7bc8" title="Callback returning the raster pixel value at a point: return true and set value, or return false when...">raster_sample_fn</a> </p>
+<p>Raster pixel callback reading one pixel of a PostGIS raster through the vendored raster core. </p>
+<p >Reading the pixel a position falls in is the nearest-neighbour read of that position. A nodata pixel answers that there is no value, which is the contract of <a class="el" href="raster__quadbin_8h_a86bc9090a05ec01d585e4fae32a3353c.html#a86bc9090a05ec01d585e4fae32a3353c" title="Callback returning the value of a pixel named by its column and its row, both inside the grid: return...">raster_pixel_fn</a> </p>
 
 </div>
 </div>

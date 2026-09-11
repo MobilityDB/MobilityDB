@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_value_gdal_sample</title>
+<title>MobilityDB: raster_value_gdal_grid</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -94,13 +94,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a7bbef213c064390de2540f0c6c8704b2.html#a7bbef213c064390de2540f0c6c8704b2">raster_gdal_gridops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga9efd41ca7120b99502f0e392ce5cce94.html#ga9efd41ca7120b99502f0e392ce5cce94">raster_minus_value_gdal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga53345ad5839dfb7d63ac1e0afde597fa.html#ga53345ad5839dfb7d63ac1e0afde597fa">raster_value_gdal</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_a2b57fab834e0646e868b1ff832716874.html#a2b57fab834e0646e868b1ff832716874">raster_value_gdal_sample</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_a7b99bea9bd74f0e035fa675e4bb4952d.html#a7b99bea9bd74f0e035fa675e4bb4952d">raster_value_gdal_grid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_aecee76b54e22c4e242c93d33394b172c.html#aecee76b54e22c4e242c93d33394b172c">raster_value_gdal_pixel</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a2b57fab834e0646e868b1ff832716874" name="a2b57fab834e0646e868b1ff832716874"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2b57fab834e0646e868b1ff832716874">&#9670;&#160;</a></span>raster_value_gdal_sample()</h2>
+<a id="a7b99bea9bd74f0e035fa675e4bb4952d" name="a7b99bea9bd74f0e035fa675e4bb4952d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b99bea9bd74f0e035fa675e4bb4952d">&#9670;&#160;</a></span>raster_value_gdal_grid()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -109,9 +110,9 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool raster_value_gdal_sample </td>
+          <td class="memname">static void raster_value_gdal_grid </td>
           <td>(</td>
-          <td class="paramtype">void *&#160;</td>
+          <td class="paramtype">const void *&#160;</td>
           <td class="paramname"><em>ctxp</em>, </td>
         </tr>
         <tr>
@@ -130,7 +131,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>value</em>&#160;</td>
+          <td class="paramname"><em>col</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>row</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -145,7 +152,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Raster sampling callback backed by a single-pixel GDALRasterIO read: the context carries the band and the inverse geotransform, only the point argument varies per call. </p>
+<p>Raster grid callback converting a position to the raster coordinates of a GDAL raster with its inverse geotransform. </p>
+<p ><code>GDALApplyGeoTransform</code> takes a writable geotransform, so it reads a copy of the one the context holds </p>
 
 </div>
 </div>

@@ -49,7 +49,7 @@ var searchData=
   ['delta_5fdistance_46',['DELTA_DISTANCE',['../08__berlinmod__simplify_8c_a9f27b14f6e9977df2cd8c410212ab3ff.html#a9f27b14f6e9977df2cd8c410212ab3ff',1,'08_berlinmod_simplify.c']]],
   ['delta_5funix_5fpostgres_5fepoch_47',['DELTA_UNIX_POSTGRES_EPOCH',['../meos_2include_2temporal_2temporal_8h_a9e2e6c0d74336fd387f1805faa853229.html#a9e2e6c0d74336fd387f1805faa853229',1,'temporal.h']]],
   ['dense_5fbufsz_48',['DENSE_BUFSZ',['../cellcover__test_8c_aed31066014650b42645279fc0c2274fb.html#aed31066014650b42645279fc0c2274fb',1,'cellcover_test.c']]],
-  ['dense_5fpositions_49',['DENSE_POSITIONS',['../cellcover__test_8c_a4fd6f0e6710f85e74b98fef49d1503fe.html#a4fd6f0e6710f85e74b98fef49d1503fe',1,'cellcover_test.c']]],
+  ['dense_5fpositions_49',['DENSE_POSITIONS',['../cellcover__test_8c_a4fd6f0e6710f85e74b98fef49d1503fe.html#a4fd6f0e6710f85e74b98fef49d1503fe',1,'DENSE_POSITIONS():&#160;cellcover_test.c'],['../rasterwalk__test_8c_a4fd6f0e6710f85e74b98fef49d1503fe.html#a4fd6f0e6710f85e74b98fef49d1503fe',1,'DENSE_POSITIONS():&#160;rasterwalk_test.c']]],
   ['discontinuous_50',['DISCONTINUOUS',['../meos_2include_2temporal_2temporal_8h_a04b3107dfcf77825787f00d509bb98d0.html#a04b3107dfcf77825787f00d509bb98d0',1,'temporal.h']]],
   ['dist_51',['DIST',['../setset__pairs__test_8c_ab8a17bd7aebfe396839620a814ec3e4d.html#ab8a17bd7aebfe396839620a814ec3e4d',1,'setset_pairs_test.c']]],
   ['double2pgetdatum_52',['Double2PGetDatum',['../meos_2include_2temporal_2temporal_8h_ab26a31953f73bd85a5b5734b77fa31e4.html#ab26a31953f73bd85a5b5734b77fa31e4',1,'temporal.h']]],

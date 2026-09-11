@@ -127,8 +127,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the values of an array of <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tiles sampled at the instants of a trajectory. </p>
-<p >A trajectory that leaves a single tile is sampled from the whole set of tiles covering it, each tile contributing the instants that fall inside it. Tiles of one zoom level partition the plane, so they contribute disjoint instants. Tiles of different zoom levels overlap, and where two of them sample the same instant the value of the tile of higher zoom is kept, that being the one carrying the finer resolution. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the values of an array of <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tiles read along a trajectory. </p>
+<p >A trajectory that leaves a single tile is read from the whole set of tiles covering it, each tile answering the part of the trip that lies over it. Tiles of one zoom level partition the plane, so they answer disjoint times. Tiles of different zoom levels overlap, and where two of them answer the same time the value of the tile of higher zoom is kept, that being the one carrying the finer resolution. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rqarr</td><td>Array of <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tiles </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of tiles in the array </td></tr>
@@ -136,7 +136,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A temporal float, or <code>NULL</code> when no instant of <code>traj</code> falls inside a tile or survives nodata filtering @csqlfn <a class="el" href="group__mobilitydb__raster_gafdccba2c5f8936bff8d92514d77c2524.html#gafdccba2c5f8936bff8d92514d77c2524" title="Sample an array of Raquet tiles along a tgeompoint trajectory.">Raster_tile_value_array()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A temporal float, or <code>NULL</code> when the trajectory never meets a pixel of a tile carrying data @csqlfn <a class="el" href="group__mobilitydb__raster_gafdccba2c5f8936bff8d92514d77c2524.html#gafdccba2c5f8936bff8d92514d77c2524" title="Sample an array of Raquet tiles along a tgeompoint trajectory.">Raster_tile_value_array()</a> </dd></dl>
 
 </div>
 </div>

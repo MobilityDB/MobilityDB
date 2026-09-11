@@ -12,7 +12,7 @@ var searchData=
   ['wgs84_5fa_9',['WGS84_A',['../meos_2src_2pose_2pose_8c_aa09b7cbfbfc67364d373c1a238784a8f.html#aa09b7cbfbfc67364d373c1a238784a8f',1,'pose.c']]],
   ['wgs84_5fe2_10',['WGS84_E2',['../meos_2src_2pose_2pose_8c_a73ce4d1e415638d524b735e7d3a0f8d8.html#a73ce4d1e415638d524b735e7d3a0f8d8',1,'pose.c']]],
   ['wgs84_5ff_11',['WGS84_F',['../meos_2src_2pose_2pose_8c_ae90bd6b6a77238cf3358909bedb5ea9b.html#ae90bd6b6a77238cf3358909bedb5ea9b',1,'pose.c']]],
-  ['width_12',['width',['../structRaquet_af8cde2fe143a7a6b3ab96a3768cfdb3d.html#af8cde2fe143a7a6b3ab96a3768cfdb3d',1,'Raquet::width()'],['../structRaquetSampleState_a216b0629e3bd902ef67dac7c2441c7b5.html#a216b0629e3bd902ef67dac7c2441c7b5',1,'RaquetSampleState::width()']]],
+  ['width_12',['width',['../structRaquet_af8cde2fe143a7a6b3ab96a3768cfdb3d.html#af8cde2fe143a7a6b3ab96a3768cfdb3d',1,'Raquet::width()'],['../structRasterGridOps_a8bc4144d5b96653fbd8f2aec2cb8b4a1.html#a8bc4144d5b96653fbd8f2aec2cb8b4a1',1,'RasterGridOps::width()'],['../structRaquetSampleState_a216b0629e3bd902ef67dac7c2441c7b5.html#a216b0629e3bd902ef67dac7c2441c7b5',1,'RaquetSampleState::width()'],['../structGrid_a811c4e2e31bacb9b811aaaf105aeca00.html#a811c4e2e31bacb9b811aaaf105aeca00',1,'Grid::width()']]],
   ['with_5fgeom_13',['WITH_GEOM',['../trgeo_8h_aa03c2c862ea80cfefa8402842a72a3e4.html#aa03c2c862ea80cfefa8402842a72a3e4',1,'trgeo.h']]],
   ['with_5fz_14',['WITH_Z',['../meos_2include_2temporal_2temporal_8h_a62afd9d0d14c085e65b000b5bb37af76.html#a62afd9d0d14c085e65b000b5bb37af76',1,'temporal.h']]],
   ['within_15',['within',['../postgis_8h_abfb0bea6ea7bc7c7ba7b99aa67b1f038.html#abfb0bea6ea7bc7c7ba7b99aa67b1f038',1,'postgis.h']]],
