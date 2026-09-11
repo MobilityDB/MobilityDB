@@ -1302,6 +1302,86 @@ WITH rast AS (
       '32BF'::text, 0.0::float8, -9999::float8),
     1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
   ) AS r
+), g AS (
+  SELECT ST_GeomFromText('POLYGON((0 3,1.8 3,0 1.2,0 3))', 4326) AS g
+)
+SELECT ST_DumpValues(clip(r, g, false), 1) AS centres,
+  ST_DumpValues(clip(r, g, false, true), 1) AS touched,
+  ST_DumpValues(clip(r, g, false), 1) = ST_DumpValues(ST_Clip(r, g, false), 1)
+    AS centres_as_postgis,
+  ST_DumpValues(clip(r, g, false, true), 1) =
+    ST_DumpValues(ST_Clip(r, g, false, true), 1) AS touched_as_postgis
+FROM rast, g;
+                      centres                       |                    touched                     | centres_as_postgis | touched_as_postgis 
+----------------------------------------------------+------------------------------------------------+--------------------+--------------------
+ {{10,NULL,NULL},{NULL,NULL,NULL},{NULL,NULL,NULL}} | {{10,20,NULL},{40,NULL,NULL},{NULL,NULL,NULL}} | t                  | t
+(1 row)
+
+WITH rast AS (
+  SELECT ST_SetValues(ST_SetValues(
+    ST_AddBand(ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+      '32BF'::text, 0.0::float8, NULL::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]),
+    2, 1, 1, ARRAY[ARRAY[1,2,3], ARRAY[4,5,6], ARRAY[7,8,9]]::float8[][]) AS r
+), g AS (
+  SELECT ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326) AS g
+)
+SELECT ST_NumBands(clip(r, ARRAY[2], g)) AS one_band,
+  ST_DumpValues(clip(r, ARRAY[2], g), 1) =
+    ST_DumpValues(ST_Clip(ST_Band(r, 2), g), 1) AS band_as_postgis,
+  ST_DumpValues(c, 1) = ST_DumpValues(p, 1) AND
+    ST_DumpValues(c, 2) = ST_DumpValues(p, 2) AS reordered_as_postgis,
+  ST_BandNoDataValue(c, 1) AS first_nodata,
+  ST_BandNoDataValue(c, 2) AS second_nodata,
+  ST_BandNoDataValue(clip(r, ARRAY[1, 2], g, ARRAY[-1]::float8[]), 2)
+    AS shared_nodata,
+  ST_DumpValues(clip(r, NULL, g), 1) = ST_DumpValues(clip(r, g), 1) AND
+    ST_DumpValues(clip(r, NULL, g), 2) = ST_DumpValues(clip(r, g), 2)
+    AS every_band
+FROM rast, g, LATERAL (
+  SELECT clip(r, ARRAY[2, 1], g, ARRAY[-1, -2]::float8[], false) AS c,
+    ST_Clip(ST_Band(r, ARRAY[2, 1]), g, ARRAY[-1, -2]::float8[], false) AS p
+) AS pair;
+ one_band | band_as_postgis | reordered_as_postgis | first_nodata | second_nodata | shared_nodata | every_band 
+----------+-----------------+----------------------+--------------+---------------+---------------+------------
+        1 | t               | t                    |           -1 |            -2 |            -1 | t
+(1 row)
+
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT clip(r, ARRAY[2], ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326))
+FROM rast;
+ERROR:  Raster has no band 2, it has 1
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT clip(r, ARRAY[]::integer[],
+  ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326))
+FROM rast;
+ERROR:  An array of bands or of nodata values cannot be empty
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT clip(r, ARRAY[1], ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326),
+  ARRAY[NULL]::float8[])
+FROM rast;
+ERROR:  null array element not allowed in this context
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
 )
 SELECT ST_SRID(transform(r, 3857)) AS srid,
   ST_MetaData(transform(r, 3857)) = ST_MetaData(ST_Transform(r, 3857))

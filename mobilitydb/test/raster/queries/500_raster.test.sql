@@ -1257,6 +1257,88 @@ WITH rast AS (
 SELECT clip(r, ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 3857))
 FROM rast;
 
+-- A pixel the geometry touches is kept where the caller asks for it, where
+-- otherwise only a pixel whose centre the geometry covers is. The triangle
+-- below covers the centre of the pixel holding 10 alone and touches the ones
+-- holding 20 and 40, and spans two pixels each way, since the mask it is burnt
+-- into rounds the extent of the geometry to whole pixels; PostGIS's ST_Clip is
+-- the oracle, with and without touched.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+), g AS (
+  SELECT ST_GeomFromText('POLYGON((0 3,1.8 3,0 1.2,0 3))', 4326) AS g
+)
+SELECT ST_DumpValues(clip(r, g, false), 1) AS centres,
+  ST_DumpValues(clip(r, g, false, true), 1) AS touched,
+  ST_DumpValues(clip(r, g, false), 1) = ST_DumpValues(ST_Clip(r, g, false), 1)
+    AS centres_as_postgis,
+  ST_DumpValues(clip(r, g, false, true), 1) =
+    ST_DumpValues(ST_Clip(r, g, false, true), 1) AS touched_as_postgis
+FROM rast, g;
+
+-- A clip keeps the bands it names, in the order it names them, and states the
+-- nodata value of the pixels the geometry does not cover, one for every band
+-- or one per band. PostGIS's ST_Clip over the bands ST_Band extracts is the
+-- oracle, and a NULL array of bands keeps every band.
+WITH rast AS (
+  SELECT ST_SetValues(ST_SetValues(
+    ST_AddBand(ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+      '32BF'::text, 0.0::float8, NULL::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]),
+    2, 1, 1, ARRAY[ARRAY[1,2,3], ARRAY[4,5,6], ARRAY[7,8,9]]::float8[][]) AS r
+), g AS (
+  SELECT ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326) AS g
+)
+SELECT ST_NumBands(clip(r, ARRAY[2], g)) AS one_band,
+  ST_DumpValues(clip(r, ARRAY[2], g), 1) =
+    ST_DumpValues(ST_Clip(ST_Band(r, 2), g), 1) AS band_as_postgis,
+  ST_DumpValues(c, 1) = ST_DumpValues(p, 1) AND
+    ST_DumpValues(c, 2) = ST_DumpValues(p, 2) AS reordered_as_postgis,
+  ST_BandNoDataValue(c, 1) AS first_nodata,
+  ST_BandNoDataValue(c, 2) AS second_nodata,
+  ST_BandNoDataValue(clip(r, ARRAY[1, 2], g, ARRAY[-1]::float8[]), 2)
+    AS shared_nodata,
+  ST_DumpValues(clip(r, NULL, g), 1) = ST_DumpValues(clip(r, g), 1) AND
+    ST_DumpValues(clip(r, NULL, g), 2) = ST_DumpValues(clip(r, g), 2)
+    AS every_band
+FROM rast, g, LATERAL (
+  SELECT clip(r, ARRAY[2, 1], g, ARRAY[-1, -2]::float8[], false) AS c,
+    ST_Clip(ST_Band(r, ARRAY[2, 1]), g, ARRAY[-1, -2]::float8[], false) AS p
+) AS pair;
+
+-- A band the raster does not have, an empty array of bands and a NULL element
+-- are refused rather than read as some other band.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT clip(r, ARRAY[2], ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326))
+FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT clip(r, ARRAY[]::integer[],
+  ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326))
+FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT clip(r, ARRAY[1], ST_GeomFromText('POLYGON((0 1,2 1,2 3,0 3,0 1))', 4326),
+  ARRAY[NULL]::float8[])
+FROM rast;
+
 -------------------------------------------------------------------------------
 -- transform and rescale
 -------------------------------------------------------------------------------

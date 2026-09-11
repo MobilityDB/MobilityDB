@@ -631,11 +631,34 @@ CREATE FUNCTION reclass(raster, integer, text, text,
  * @param[in] rast Raster
  * @param[in] geom Geometry, in the reference system of the raster
  * @param[in] crop True to reduce the result to the extent the two share
+ * @param[in] touched True to keep every pixel the geometry touches
  */
-CREATE FUNCTION clip(raster, geometry, boolean DEFAULT true)
+CREATE FUNCTION clip(rast raster, geom geometry, crop boolean DEFAULT true,
+    touched boolean DEFAULT false)
   RETURNS raster
   AS 'MODULE_PATHNAME', 'Raster_clip'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster keeping the pixels of some bands of another that a
+ * geometry covers
+ * @param[in] rast Raster
+ * @param[in] nband Numbers of the bands to keep, NULL for every band
+ * @param[in] geom Geometry, in the reference system of the raster
+ * @param[in] nodataval Nodata values of the bands of the result, one for every
+ * band or one per band, NULL for the nodata value of each band
+ * @param[in] crop True to reduce the result to the extent the two share
+ * @param[in] touched True to keep every pixel the geometry touches
+ * @note Not STRICT: a NULL array of bands keeps every band, and a NULL array
+ * of nodata values keeps the nodata value of each band
+ */
+CREATE FUNCTION clip(rast raster, nband integer[], geom geometry,
+    nodataval float8[] DEFAULT NULL, crop boolean DEFAULT true,
+    touched boolean DEFAULT false)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_clip_bands'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /**
  * @ingroup mobilitydb_raster

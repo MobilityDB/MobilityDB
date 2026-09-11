@@ -2126,9 +2126,11 @@ SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>clip</varname></primary></indexterm>
 				<para>Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-clip(raster,geom geometry,crop boolean=true) → raster
+clip(raster,geom geometry,crop boolean=true,touched boolean=false) → raster
+clip(raster,nband integer[],geom geometry,nodataval float8[]=NULL,crop boolean=true,
+  touched boolean=false) → raster
 </programlisting>
-				<para>Cada banda se lee contra una máscara en la que se graba la geometría, tal como la lee <varname>ST_Clip</varname> de PostGIS: un píxel que la geometría no cubre devuelve el valor nodata de su banda, y el menor valor que admite su tipo de píxel cuando la banda no declara ninguno. Con <varname>crop</varname> el resultado conserva la extensión que comparten el ráster y la geometría, y en caso contrario la extensión del ráster. La geometría está en el sistema de referencia del ráster; una en otro sistema genera un error.</para>
+				<para>Cada banda se lee contra una máscara en la que se graba la geometría, tal como la lee <varname>ST_Clip</varname> de PostGIS: un píxel que la geometría no cubre devuelve el valor nodata de su banda, y el menor valor que admite su tipo de píxel cuando la banda no declara ninguno. Con <varname>crop</varname> el resultado conserva la extensión que comparten el ráster y la geometría, y en caso contrario la extensión del ráster. La geometría está en el sistema de referencia del ráster; una en otro sistema genera un error. Con <varname>nband</varname> el resultado conserva las bandas nombradas, todas cuando es NULL, <varname>nodataval</varname> declara el valor nodata de los píxeles que la geometría no cubre, uno para todas las bandas o uno por banda, y con <varname>touched</varname> se conserva un píxel que la geometría toca donde de otro modo solo se conserva uno cuyo centro cubre.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
