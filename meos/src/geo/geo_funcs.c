@@ -4141,12 +4141,28 @@ relate_same_point(double x1, double y1, double x2, double y2)
 }
 
 /**
- * @brief Return true if an edge has non-zero length.
+ * @brief Return true if an edge has non-zero length
+ * @details The ends of an edge are input vertices, so it has no length
+ * exactly where they are equal
  */
 static inline bool
 relate_edge_nonempty(const Edge *e)
 {
-  return !relate_same_point(e->x1, e->y1, e->x2, e->y2);
+  return e->x1 != e->x2 || e->y1 != e->y2;
+}
+
+/**
+ * @brief Return true if two points are one point
+ * @details Two input vertices are one point exactly where their coordinates
+ * are equal. A constructed point is rounded, and reads as another point
+ * within the MEOS tolerance
+ * @param[in] x1,y1,x2,y2 Coordinates of the two points
+ * @param[in] vertex True if both points are input vertices
+ */
+static inline bool
+relate_points_equal(double x1, double y1, double x2, double y2, bool vertex)
+{
+  return vertex ? (x1 == x2 && y1 == y2) : relate_same_point(x1, y1, x2, y2);
 }
 
 /**
@@ -4169,9 +4185,14 @@ relate_point_is_edge_endpoint(double x, double y, const Edge *e)
  * Closed lines consequently have an empty boundary.
  * The function works on the extracted Edge representation, so circular arcs
  * remain exact.
+ * @param[in] x,y Coordinates of the point
+ * @param[in] edges,nedges Edges of the linear geometry
+ * @param[in] vertex True if the point is an input vertex, compared with the
+ * endpoints exactly (#relate_points_equal)
  */
 static bool
-relate_point_on_linear_boundary(double x, double y, Edge **edges, int nedges)
+relate_point_on_linear_boundary(double x, double y, Edge **edges, int nedges,
+  bool vertex)
 {
   int count = 0;
   for (int i = 0; i < nedges; i++)
@@ -4181,9 +4202,9 @@ relate_point_on_linear_boundary(double x, double y, Edge **edges, int nedges)
       continue;
     if (!relate_edge_nonempty(e))
       continue;
-    if (relate_same_point(x, y, e->x1, e->y1))
+    if (relate_points_equal(x, y, e->x1, e->y1, vertex))
       count++;
-    if (relate_same_point(x, y, e->x2, e->y2))
+    if (relate_points_equal(x, y, e->x2, e->y2, vertex))
       count++;
   }
   return (count & 1) != 0;
@@ -4198,9 +4219,19 @@ relate_point_on_linear_boundary(double x, double y, Edge **edges, int nedges)
  * Note that an endpoint of an individual edge does NOT automatically make the
  * point part of the geometry boundary. Endpoint parity is evaluated over the
  * complete linear geometry.
+ *
+ * Whether an input vertex lies on a straight edge is a question on three
+ * input vertices, decided exactly (#point_on_segment_exact); a constructed
+ * point is rounded and is located within the tolerance its coordinates call
+ * for (#point_on_segment)
+ * @param[in] x,y Coordinates of the point
+ * @param[in] edges,nedges Edges of the linear geometry
+ * @param[in] vertex True if the point is an input vertex rather than a point
+ * the engine constructs
  */
 static int
-relate_point_in_linear(double x, double y, Edge **edges, int nedges)
+relate_point_in_linear(double x, double y, Edge **edges, int nedges,
+  bool vertex)
 {
   bool found = false;
   for (int i = 0; i < nedges; i++)
@@ -4210,7 +4241,8 @@ relate_point_in_linear(double x, double y, Edge **edges, int nedges)
       continue;
     bool on = false;
     if (e->etype == EDGE_LINESEG)
-      on = point_on_segment(x, y, e->x1, e->y1, e->x2, e->y2);
+      on = vertex ? point_on_segment_exact(x, y, e->x1, e->y1, e->x2, e->y2) :
+        point_on_segment(x, y, e->x1, e->y1, e->x2, e->y2);
     else if (e->etype == EDGE_LINEARC)
       on = point_on_arc(x, y, e);
     if (on)
@@ -4222,7 +4254,7 @@ relate_point_in_linear(double x, double y, Edge **edges, int nedges)
 
   if (! found)
     return 2;
-  if (relate_point_on_linear_boundary(x, y, edges, nedges))
+  if (relate_point_on_linear_boundary(x, y, edges, nedges, vertex))
     return 1;
   return 0;
 }
@@ -4294,13 +4326,15 @@ relate_extract_points(const LWGEOM *geom, int *count)
 
 /**
  * @brief Return true if a point belongs to a set of points
+ * @details The point and the set are input vertices, so the point belongs to
+ * the set exactly where its coordinates are those of one of its points
  */
 static bool
 relate_point_in_points(double x, double y, const POINT2D *points, int count)
 {
   for (int i = 0; i < count; i++)
   {
-    if (relate_same_point(x, y, points[i].x, points[i].y))
+    if (relate_points_equal(x, y, points[i].x, points[i].y, true))
       return true;
   }
   return false;
@@ -4357,7 +4391,8 @@ relate_point_linear(const LWGEOM *point_geom, const LWGEOM *line_geom,
    * boundary row stays F */
   for (int i = 0; i < np; i++)
   {
-    switch (relate_point_in_linear(points[i].x, points[i].y, edges, nedges))
+    switch (relate_point_in_linear(points[i].x, points[i].y, edges, nedges,
+      true))
     {
       case 0:
         de9im_add(&m->ii, 0);
@@ -4838,7 +4873,7 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
     /* Point intersection */
     double x = line->x1 + r.t0 * line->dx;
     double y = line->y1 + r.t0 * line->dy;
-    int lloc = relate_point_in_linear(x, y, all_lines, nlines);
+    int lloc = relate_point_in_linear(x, y, all_lines, nlines, false);
     if (lloc == 0)
       m->ib = 0;
     else if (lloc == 1)
@@ -4858,7 +4893,7 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
       double t = roots[i];
       double x = line->x1 + t * line->dx;
       double y = line->y1 + t * line->dy;
-      int lloc = relate_point_in_linear(x, y, all_lines, nlines);
+      int lloc = relate_point_in_linear(x, y, all_lines, nlines, false);
       if (lloc == 0)
         m->ib = 0;
       else if (lloc == 1)
@@ -4884,7 +4919,7 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
       double x = boundary->x1 + roots[i] * boundary->dx;
       double y = boundary->y1 + roots[i] * boundary->dy;
       double t = relate_arc_parameter(line, x, y);
-      int lloc = relate_point_in_linear(x, y, all_lines, nlines);
+      int lloc = relate_point_in_linear(x, y, all_lines, nlines, false);
       if (lloc == 0)
         m->ib = 0;
       else if (lloc == 1)
@@ -4925,7 +4960,8 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
 
     for (int i = 0; i < n; i++)
     {
-      int lloc = relate_point_in_linear(ix[i], iy[i], all_lines, nlines);
+      int lloc = relate_point_in_linear(ix[i], iy[i], all_lines, nlines,
+        false);
       if (lloc == 0)
         m->ib = 0;
       else if (lloc == 1)
@@ -5162,10 +5198,10 @@ relate_linear_boundary_points(Edge **edges, int nedges, int *count)
       /* Keep a single entry per distinct point */
       bool seen = false;
       for (int j = 0; j < *count && ! seen; j++)
-        seen = relate_same_point(x, y, result[j].x, result[j].y);
+        seen = relate_points_equal(x, y, result[j].x, result[j].y, true);
       if (seen)
         continue;
-      if (! relate_point_on_linear_boundary(x, y, edges, nedges))
+      if (! relate_point_on_linear_boundary(x, y, edges, nedges, true))
         continue;
       result[*count].x = x;
       result[*count].y = y;
@@ -5231,6 +5267,65 @@ relate_linear_edge_points(const Edge *a, const Edge *b, POINT2D *out)
 }
 
 /**
+ * @brief Return true if two straight edges meet at one point lying on neither
+ * Mod-2 boundary
+ * @details Where the two edges meet at one point is a question on their four
+ * input vertices, answered exactly: at an end of either edge where that end
+ * lies on the other (#point_on_segment_exact), and otherwise at a crossing
+ * interior to both, which the rounded parameter of the crossing cannot tell
+ * from a meeting at an end. An end is a boundary point where its coordinates are those of one.
+ * A crossing interior to both edges is one only where a boundary point lies
+ * on both edges: two segments of different directions share one point at
+ * most, so that boundary point is the crossing
+ * @param[in] a,b Straight edges
+ * @param[in] b1,nb1,b2,nb2 Mod-2 boundary points of the two geometries
+ */
+static bool
+relate_segments_meet_inside(const Edge *a, const Edge *b, const POINT2D *b1,
+  int nb1, const POINT2D *b2, int nb2)
+{
+  IntersectResult r = linesegm_intersect(a->x1, a->y1, a->x2, a->y2,
+    b->x1, b->y1, b->x2, b->y2);
+  if (r.type != INTERSECT_POINT)
+    return false;
+  bool vertex = true;
+  double x = 0.0, y = 0.0;
+  if (point_on_segment_exact(a->x1, a->y1, b->x1, b->y1, b->x2, b->y2))
+  {
+    x = a->x1; y = a->y1;
+  }
+  else if (point_on_segment_exact(a->x2, a->y2, b->x1, b->y1, b->x2, b->y2))
+  {
+    x = a->x2; y = a->y2;
+  }
+  else if (point_on_segment_exact(b->x1, b->y1, a->x1, a->y1, a->x2, a->y2))
+  {
+    x = b->x1; y = b->y1;
+  }
+  else if (point_on_segment_exact(b->x2, b->y2, a->x1, a->y1, a->x2, a->y2))
+  {
+    x = b->x2; y = b->y2;
+  }
+  else
+    vertex = false;
+  for (int k = 0; k < 2; k++)
+  {
+    const POINT2D *bp = k ? b2 : b1;
+    int nb = k ? nb2 : nb1;
+    for (int p = 0; p < nb; p++)
+    {
+      if (vertex ? (bp[p].x == x && bp[p].y == y) :
+          (point_on_segment_exact(bp[p].x, bp[p].y, a->x1, a->y1, a->x2,
+             a->y2) &&
+           point_on_segment_exact(bp[p].x, bp[p].y, b->x1, b->y1, b->x2,
+             b->y2)))
+        return false;
+    }
+  }
+  return true;
+}
+
+/**
  * @brief Compute the DE-9IM matrix for two linear geometries
  * @details Every cell has exactly one source, so no cell can be attributed
  * twice or left to the visiting order of the edge pairs:
@@ -5288,6 +5383,13 @@ relate_linear_linear(const LWGEOM *g1, const LWGEOM *g2,
       else if (relate_linear_edges_overlap(a, b, &t0, &t1))
         de9im_add(&m->ii, 1);
 
+      /* Two straight edges meet at a point decided on their input vertices */
+      if (a->etype == EDGE_LINESEG && b->etype == EDGE_LINESEG)
+      {
+        if (relate_segments_meet_inside(a, b, b1, nb1, b2, nb2))
+          de9im_add(&m->ii, 0);
+        continue;
+      }
       int np = relate_linear_edge_points(a, b, points);
       for (int k = 0; k < np; k++)
       {
@@ -5308,7 +5410,7 @@ relate_linear_linear(const LWGEOM *g1, const LWGEOM *g2,
    * g2, in the interior of g2, or outside g2 altogether */
   for (int p = 0; p < nb1; p++)
   {
-    int loc = relate_point_in_linear(b1[p].x, b1[p].y, e2, n2);
+    int loc = relate_point_in_linear(b1[p].x, b1[p].y, e2, n2, true);
     if (loc == 1)
       de9im_add(&m->bb, 0);
     else if (loc == 0)
@@ -5320,7 +5422,7 @@ relate_linear_linear(const LWGEOM *g1, const LWGEOM *g2,
   /* Boundary column of g2, symmetrically */
   for (int p = 0; p < nb2; p++)
   {
-    int loc = relate_point_in_linear(b2[p].x, b2[p].y, e1, n1);
+    int loc = relate_point_in_linear(b2[p].x, b2[p].y, e1, n1, true);
     if (loc == 1)
       de9im_add(&m->bb, 0);
     else if (loc == 0)
@@ -5427,7 +5529,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
         double x, y;
         relate_area_edge_point(boundary, (bparams[k] + bparams[k + 1]) * 0.5,
           &x, &y);
-        if (relate_point_in_linear(x, y, lines, nl) == 2)
+        if (relate_point_in_linear(x, y, lines, nl, false) == 2)
         {
           m->eb = 1;
           break;
@@ -5482,7 +5584,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
     {
       double x = endpoint == 0 ? line->x1 : line->x2;
       double y = endpoint == 0 ? line->y1 : line->y2;
-      int lloc = relate_point_in_linear(x, y, lines, nl);
+      int lloc = relate_point_in_linear(x, y, lines, nl, true);
       if (lloc == 2)
         continue;
       int aloc = relate_point_in_area(x, y, area_edges, na);
@@ -5523,8 +5625,9 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
       continue;
     if (! relate_edge_nonempty(line))
       continue;
-    if (relate_point_on_linear_boundary(line->x1, line->y1, lines, nl) ||
-        relate_point_on_linear_boundary(line->x2, line->y2, lines, nl))
+    if (relate_point_on_linear_boundary(line->x1, line->y1, lines, nl,
+          true) ||
+        relate_point_on_linear_boundary(line->x2, line->y2, lines, nl, true))
       has_boundary = true;
   }
 
@@ -5545,7 +5648,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
       const double y[2] = {line->y1, line->y2};
       for (int k = 0; k < 2; k++)
       {
-        if (!relate_point_on_linear_boundary(x[k], y[k], lines, nl))
+        if (!relate_point_on_linear_boundary(x[k], y[k], lines, nl, true))
           continue;
         int aloc = relate_point_in_area(x[k], y[k], area_edges, na);
         if (aloc == 2)
@@ -7128,7 +7231,7 @@ relate_comp_covered(const LWGEOM *comp, const RelateComp *comps, int ncomp,
     {
       result = relate_in_area_union(e->x1, e->y1, comps, ncomp) ||
         (nledges > 0 && relate_point_in_linear(e->x1, e->y1, ledges,
-          nledges) != 2);
+          nledges, true) != 2);
       continue;
     }
     /* A linear edge is covered when every portion of it left by the areal
