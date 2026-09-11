@@ -161,6 +161,8 @@ extern bool meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
 extern bool relate_is_areal(const LWGEOM *geom);
 extern int cross_product_sign_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy);
+extern double cross_product_exact(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy);
 
 /* The edges of one geometry, kept so that several relationships asked about it
  * read them once. A relationship extracts the edges of both its operands, and
