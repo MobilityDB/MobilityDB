@@ -1964,6 +1964,9 @@ SELECT segmentMaxDuration(tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-0
 -- sequence, and one that ends at the last instant its upper bound
 SELECT stops(tfloat '(1@2001-01-01, 1.8@2001-01-02, 2@2001-01-03, 10@2001-01-04]', 1.5, '2 days');
 SELECT stops(tfloat '[10@2001-01-01, 1@2001-01-02, 1.8@2001-01-03, 2@2001-01-04)', 1.5, '2 days');
+-- A stay beginning after the value leaves the range of an earlier instant is
+-- found from its first instant
+SELECT stops(tfloat '[10@2001-01-01, 1@2001-01-02, 1.5@2001-01-05, 1.8@2001-01-09]', 1.5, '5 days');
 
 -------------------------------------------------------------------------------
 -- Restriction functions

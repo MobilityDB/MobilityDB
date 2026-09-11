@@ -3334,55 +3334,32 @@ tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   assert(seq); assert(seq->count > 1); assert(seq->temptype == T_TFLOAT);
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
-  const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
-  int end, start = 0, nseqs = 0;
-  bool is_stopped = false, previously_stopped = false;
-
-  for (end = 0; end < seq->count; ++end)
+  /* The walk of #tpointseq_stops_iter, the size of a window being the range
+   * of the values it takes */
+  int start = 0, nseqs = 0;
+  for (int end = 1; end < seq->count; end++)
   {
-    inst1 = TSEQUENCE_INST_N(seq, start);
-    inst2 = TSEQUENCE_INST_N(seq, end);
-
-    while (! is_stopped && end - start > 1 &&
-      (int64)(inst2->t - inst1->t) >= mintunits)
-    {
-      inst1 = TSEQUENCE_INST_N(seq, ++start);
-    }
-
-    if (end - start == 0)
+    if (mrr_distance_scalar(seq, start, end) <= maxdist)
       continue;
-
-    is_stopped = mrr_distance_scalar(seq, start, end) <= maxdist;
-
-    inst2 = TSEQUENCE_INST_N(seq, end - 1);
-    if (! is_stopped && previously_stopped &&
-      (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
+    if (end - 1 > start && TSEQUENCE_INST_N(seq, end - 1)->t -
+        TSEQUENCE_INST_N(seq, start)->t >= mintunits)
     {
-      TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
-      for (int i = 0; i < end - start; ++i)
-        instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
-      /* A stop found here ends before the last instant, so only its lower
-       * bound can be that of the sequence */
-      bool lower_inc = (start == 0) ? seq->period.lower_inc : true;
-      result[nseqs++] = tsequence_make(instants, end - start, lower_inc, true,
-        LINEAR, NORMALIZE_NO);
+      result[nseqs++] = tsequence_subseq(seq, start, end - 1,
+        (start == 0) ? seq->period.lower_inc : true, true);
       start = end;
+      continue;
     }
-    previously_stopped = is_stopped;
+    do
+      start++;
+    while (start < end && mrr_distance_scalar(seq, start, end) > maxdist);
   }
 
-  inst2 = TSEQUENCE_INST_N(seq, end - 1);
-  if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
-  {
-    TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
-    for (int i = 0; i < end - start; ++i)
-      instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
-    /* The last stop ends at the last instant and takes the upper bound of the
-     * sequence, and also its lower bound when it begins at the first one */
-    bool lower_inc = (start == 0) ? seq->period.lower_inc : true;
-    result[nseqs++] = tsequence_make(instants, end - start, lower_inc,
-      seq->period.upper_inc, LINEAR, NORMALIZE_NO);
-  }
+  /* The window reaching the last instant lies within the area */
+  int last = seq->count - 1;
+  if (last > start && TSEQUENCE_INST_N(seq, last)->t -
+      TSEQUENCE_INST_N(seq, start)->t >= mintunits)
+    result[nseqs++] = tsequence_subseq(seq, start, last,
+      (start == 0) ? seq->period.lower_inc : true, seq->period.upper_inc);
   return nseqs;
 }
 

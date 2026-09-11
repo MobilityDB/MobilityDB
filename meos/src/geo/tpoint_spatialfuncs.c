@@ -3270,53 +3270,41 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   win.diam_start = win.diam_end = -1;
   win.diameter = 0.0;
 
-  const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
-  int end, start = 0, nseqs = 0;
-  bool is_stopped = false, previously_stopped = false;
-
-  for (end = 0; end < seq->count; ++end)
+  /* The window runs from the start to the end instant and grows while the
+   * value stays within the area. When the value leaves the area at the end
+   * instant, the instants before it are the longest stay beginning at the
+   * start. A stay of two instants or more lasting the minimum duration is a
+   * stop, and the search resumes at the end instant. A shorter stay is not,
+   * and no stop begins at the start, so the window gives up its first
+   * instants until it lies within the area again: a stay beginning at any
+   * later instant is then examined whole. A stop takes the bound of the
+   * sequence at the first or the last instant, which the sequence may
+   * exclude, and holds every other instant it spans. */
+  int start = 0, nseqs = 0;
+  for (int end = 1; end < seq->count; end++)
   {
-    inst1 = TSEQUENCE_INST_N(seq, start);
-    inst2 = TSEQUENCE_INST_N(seq, end);
-
-    while (! is_stopped && end - start > 1 &&
-      (int64)(inst2->t - inst1->t) >= mintunits)
-      inst1 = TSEQUENCE_INST_N(seq, ++start);
-
-    if (end - start == 0)
+    if (stopwindow_within(&win, start, end))
       continue;
-
-    is_stopped = stopwindow_within(&win, start, end);
-    inst2 = TSEQUENCE_INST_N(seq, end - 1);
-    if (! is_stopped && previously_stopped &&
-      (int64)(inst2->t - inst1->t) >= mintunits) /* Found a stop */
+    if (end - 1 > start && TSEQUENCE_INST_N(seq, end - 1)->t -
+        TSEQUENCE_INST_N(seq, start)->t >= mintunits)
     {
-      TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
-      for (int i = 0; i < end - start; ++i)
-        instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
-      /* A stop found here ends before the last instant, so only its lower
-       * bound can be that of the sequence */
-      bool lower_inc = (start == 0) ? seq->period.lower_inc : true;
-      result[nseqs++] = tsequence_make(instants, end - start, lower_inc, true,
-        LINEAR, NORMALIZE_NO);
+      result[nseqs++] = tsequence_subseq(seq, start, end - 1,
+        (start == 0) ? seq->period.lower_inc : true, true);
       start = end;
+      continue;
     }
-    previously_stopped = is_stopped;
+    do
+      start++;
+    while (start < end && ! stopwindow_within(&win, start, end));
   }
   pfree(points);
 
-  inst2 = TSEQUENCE_INST_N(seq, end - 1);
-  if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
-  {
-    TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
-    for (int i = 0; i < end - start; ++i)
-      instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
-    /* The last stop ends at the last instant and takes the upper bound of the
-     * sequence, and also its lower bound when it begins at the first one */
-    bool lower_inc = (start == 0) ? seq->period.lower_inc : true;
-    result[nseqs++] = tsequence_make(instants, end - start, lower_inc,
-      seq->period.upper_inc, LINEAR, NORMALIZE_NO);
-  }
+  /* The window reaching the last instant lies within the area */
+  int last = seq->count - 1;
+  if (last > start && TSEQUENCE_INST_N(seq, last)->t -
+      TSEQUENCE_INST_N(seq, start)->t >= mintunits)
+    result[nseqs++] = tsequence_subseq(seq, start, last,
+      (start == 0) ? seq->period.lower_inc : true, seq->period.upper_inc);
   return nseqs;
 }
 

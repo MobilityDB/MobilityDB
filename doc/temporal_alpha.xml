@@ -228,7 +228,7 @@ SELECT shiftScaleValue(tfloat '{[1@2001-01-01,2@2001-01-02],[3@2001-01-03,4@2001
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 stops(tfloat,maxdist float=0.0,minduration interval='0 minutes') → tfloat
 </programlisting>
-				<para>If <varname>maxDist</varname> is not given, a value 0.0 is assumed by default and thus, the function extracts the constant segments of the temporal float. A stop that begins at the first instant of a sequence includes that instant only if the sequence does, and the same holds for a stop that ends at its last instant.</para>
+				<para>If <varname>maxDist</varname> is not given, a value 0.0 is assumed by default and thus, the function extracts the constant segments of the temporal float. A stop that begins at the first instant of a sequence includes that instant only if the sequence does, and the same holds for a stop that ends at its last instant. Stops are found in time order: each begins at the earliest instant from which the value stays within the maximum distance for the minimum duration, and ends at the last instant before it leaves.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-02, 2@2001-01-03]');
 -- {[1@2001-01-01, 1@2001-01-02]}
