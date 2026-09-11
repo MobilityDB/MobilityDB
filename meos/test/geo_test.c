@@ -1926,6 +1926,28 @@ int main(void)
     "1e-9 1e-9,1e-9 0,0 0,-1e-9 0))") == 0);
   free(sw); free(swu); free(swwkt);
   meos_errno_reset();
+  /* A trajectory split in two where it turns back: the second half walks back
+   * over the first along two edges, then leaves across it. The union of the
+   * halves is the point set the trajectory covers, which forks at (3 0) --
+   * two curves -- and whose last edge crosses the first half at x = 44/7,
+   * a point no double holds, so the answer is drawn with the input vertices
+   * alone. Its length is 11 + sqrt(13) + sqrt(58) = 22.221324381327896 */
+  GSERIALIZED *fk1 = geom_in("LINESTRING(0 0,10 0,10 1)", -1);
+  GSERIALIZED *fk2 = geom_in("LINESTRING(10 1,10 0,3 0,5 3,8 -4)", -1);
+  assert(fk1 != NULL); assert(fk2 != NULL);
+  GSERIALIZED *fkarr[2] = {fk1, fk2};
+  meos_errno_reset();
+  GSERIALIZED *fku = geom_array_union(fkarr, 2);
+  assert(fku != NULL);
+  assert(meos_errno() == 0);
+  char *fkwkt = geo_as_text(fku, 15);
+  assert(fkwkt != NULL);
+  printf("union of the two halves of a trajectory that turns back: %s, "
+    "length %.17g\n", fkwkt, geom_length(fku));
+  assert(strcmp(fkwkt, "MULTILINESTRING((0 0,10 0,10 1),(3 0,5 3,8 -4))") == 0);
+  assert(fabs(geom_length(fku) - 22.221324381327896) < 1e-12);
+  free(fk1); free(fk2); free(fku); free(fkwkt);
+  meos_errno_reset();
   free(farpt);
 
   /* An arc is a curve, and the lift along it is read by ANGLE rather than by

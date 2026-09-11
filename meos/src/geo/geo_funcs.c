@@ -8403,9 +8403,13 @@ linear_union_piece(const POINT2D *p1, const POINT2D *p2, int32_t srid)
  * starts. Every end is an input vertex compared by position, so two
  * stretches meeting at a shared vertex leave nothing between them and an edge
  * of any length keeps what is uncovered of it, however short. An edge of zero
- * length draws a point, which a line already walks, and adds no piece
+ * length draws a point, which a line already walks, and adds no piece.
+ * The stretches are sorted by where they start, so the pieces do not depend
+ * on the order the covering edges are given in
  * @param[in] b Edge
- * @param[in] edges,count Edges that may cover it
+ * @param[in] edges Edges that may cover it
+ * @param[in] which,count Positions in @p edges of the edges to read, or
+ * @p NULL for the first @p count of them
  * @param[out] cover Room for @p count stretches
  * @param[out] pieces Array the pieces are appended to, with room for
  * @p count + 1 of them
@@ -8413,16 +8417,18 @@ linear_union_piece(const POINT2D *p1, const POINT2D *p2, int32_t srid)
  * @return Number of pieces added
  */
 static int
-linear_union_uncovered(const Edge *b, const MeosArray *edges, int count,
-  LinearStretch *cover, LWGEOM **pieces, int32_t srid)
+linear_union_uncovered(const Edge *b, const MeosArray *edges,
+  const int *which, int count, LinearStretch *cover, LWGEOM **pieces,
+  int32_t srid)
 {
   assert(b); assert(edges); assert(cover); assert(pieces);
   if (b->dx == 0.0 && b->dy == 0.0)
     return 0;
   int ncover = 0;
-  for (int j = 0; j < count; j++)
+  for (int k = 0; k < count; k++)
   {
     LinearStretch s;
+    int j = which ? which[k] : k;
     if (! linear_union_cover(b, (const Edge *) meos_array_get(edges, j), &s))
       continue;
     int q = ncover - 1;
@@ -8665,7 +8671,7 @@ linear_union_merge(const LWGEOM *geom1, const LWGEOM *geom2)
   int npieces = 0;
   for (int j = 0; j < n2; j++)
     npieces += linear_union_uncovered((const Edge *) meos_array_get(e2, j),
-      e1, n1, cover, &pieces[npieces], srid);
+      e1, NULL, n1, cover, &pieces[npieces], srid);
   pfree(cover);
   meos_array_destroy(e1); meos_array_destroy(e2);
 
@@ -8695,50 +8701,72 @@ linear_union_merge(const LWGEOM *geom1, const LWGEOM *geom2)
 }
 
 /**
- * @brief Return a line that walks its own points once
+ * @brief Return the curves a sequence of straight edges draws, walking each of
+ * their points once
  * @details A union is a POINT SET, so the measure of the answer is the measure
  * of that set: a line walking a stretch twice -- @p LINESTRING(6 5,6 3,6 4)
  * traverses @p (6 3)-(6 4) on the way down and again on the way back -- reports
- * a length larger than the set it covers.  Each segment keeps only what no
- * EARLIER segment of the same line already covers, and what remains is sewn
- * back into the curve it draws
- * @param[in] geom Geometry
- * @param[out] curves Curves the line draws walking each of its points once,
- * allocated here and owned by the caller
- * @return Number of curves, or 0 where the geometry is not a line of straight
- * segments -- the caller then keeps the line as it stands. Dropping a doubled
- * stretch can leave what remains in SEVERAL pieces, so a line does not always
- * walk its own points as one curve
+ * a length larger than the set it covers, and so do two lines drawing one
+ * stretch between them. Each edge keeps only what no EARLIER edge of the
+ * sequence already covers (#linear_union_uncovered), and what remains is sewn
+ * into the curves it draws (#linear_union_chain_all), several where it forks.
+ * Every end of a piece is an input vertex, so the answer holds no constructed
+ * coordinate
+ * @param[in] edges Straight edges, in the order they are read
+ * @param[in] srid Spatial reference identifier
+ * @param[out] curves Curves drawn, allocated here and owned by the caller
+ * @return Number of curves
  */
 static int
-linear_union_dissolve(const LWGEOM *geom, LWGEOM ***curves)
+linear_union_dissolve_edges(const MeosArray *edges, int32_t srid,
+  LWGEOM ***curves)
 {
-  assert(geom); assert(curves);
-  *curves = NULL;
-  if (geom->type != LINETYPE)
-    return 0;
-  MeosArray *edges = geom_extract_edges(geom);
-  if (! edges || ! linear_union_straight(edges))
-  {
-    if (edges) meos_array_destroy(edges);
-    return 0;
-  }
+  assert(edges); assert(curves);
   int nedges = (int) edges->count;
-  if (nedges < 2)
-  {
-    meos_array_destroy(edges);
-    return 0;
-  }
-  int32_t srid = lwgeom_get_srid(geom);
-
-  LWGEOM **pieces = palloc(sizeof(LWGEOM *) * (size_t) (nedges * nedges + 1));
-  LinearStretch *cover = palloc(sizeof(LinearStretch) * (size_t) (nedges + 1));
-  int npieces = 0;
+  /* An edge covers a stretch of another only where their boxes meet, so the
+   * edges read for each one are the EARLIER ones an index over the boxes
+   * answers, rather than all of them */
+  RTree *rtree = rtree_create_stbox();
   for (int i = 0; i < nedges; i++)
-    npieces += linear_union_uncovered((const Edge *) meos_array_get(edges, i),
-      edges, i, cover, &pieces[npieces], srid);
-  pfree(cover);
-  meos_array_destroy(edges);
+  {
+    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    STBox box;
+    stbox_set(true, false, false, 0, e->xmin, e->xmax, e->ymin, e->ymax, 0, 0,
+      NULL, &box);
+    rtree_insert(rtree, &box, i);
+  }
+  MeosArray *found = meos_array_create(sizeof(int64));
+  int *which = palloc(sizeof(int) * (size_t) (nedges + 1));
+  LinearStretch *cover = palloc(sizeof(LinearStretch) * (size_t) (nedges + 1));
+  int maxpieces = nedges + 1, npieces = 0;
+  LWGEOM **pieces = palloc(sizeof(LWGEOM *) * (size_t) maxpieces);
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    STBox query;
+    stbox_set(true, false, false, 0, e->xmin, e->xmax, e->ymin, e->ymax, 0, 0,
+      NULL, &query);
+    meos_array_reset(found);
+    int nfound = rtree_search(rtree, INDEX_OVERLAPS, &query, found);
+    int nwhich = 0;
+    for (int f = 0; f < nfound; f++)
+    {
+      int j = (int) *(int64 *) meos_array_get(found, (uint32_t) f);
+      if (j < i)
+        which[nwhich++] = j;
+    }
+    /* An edge adds at most one piece more than the stretches covering it */
+    if (npieces + nwhich + 1 > maxpieces)
+    {
+      maxpieces = Max(2 * maxpieces, npieces + nwhich + 1);
+      pieces = repalloc(pieces, sizeof(LWGEOM *) * (size_t) maxpieces);
+    }
+    npieces += linear_union_uncovered(e, edges, which, nwhich, cover,
+      &pieces[npieces], srid);
+  }
+  pfree(cover); pfree(which);
+  meos_array_destroy(found);
+  rtree_free(rtree);
 
   int ncurves = linear_union_chain_all(pieces, npieces, srid, curves);
   for (int p = 0; p < npieces; p++)
@@ -8795,26 +8823,46 @@ meos_linear_union(const LWGEOM *geom)
    * measure of the answer is the measure of what it covers. Dropping the
    * doubled stretch can leave what remains in SEVERAL curves, so a component
    * may stand for more than one, and the list grows to hold them */
-  int maxcur = ncomp;
+  /* The lines of straight segments are dissolved TOGETHER, as one sequence of
+   * edges read component after component: each edge keeps what no earlier edge
+   * of ANY line covers. Where two lines share a stretch that is what their
+   * union draws, however it forks -- a fork is several curves, not a refusal --
+   * and it is decided on input vertices alone. A line with no segment of any
+   * length, a point and a curve carrying an arc are kept as they stand */
+  int maxcur = ncomp + 1;
   const LWGEOM **cur = palloc(sizeof(LWGEOM *) * maxcur);
   LWGEOM **owned = palloc0(sizeof(LWGEOM *) * maxcur);
+  bool *together = palloc0(sizeof(bool) * maxcur);
   int ncur = 0;
+  MeosArray *lineedges = meos_array_create(sizeof(Edge));
   for (int i = 0; i < ncomp; i++)
   {
-    LWGEOM **curves = NULL;
-    int ncurves = linear_union_dissolve(comps[i], &curves);
-    if (ncurves <= 0)
+    MeosArray *edges = (comps[i]->type == LINETYPE) ?
+      geom_extract_edges(comps[i]) : NULL;
+    bool straight = edges && linear_union_straight(edges);
+    bool haslength = false;
+    for (int e = 0; straight && e < (int) edges->count && ! haslength; e++)
     {
-      if (ncur == maxcur)
-      {
-        maxcur *= 2;
-        cur = repalloc(cur, sizeof(LWGEOM *) * (size_t) maxcur);
-        owned = repalloc(owned, sizeof(LWGEOM *) * (size_t) maxcur);
-      }
-      owned[ncur] = NULL;
-      cur[ncur++] = comps[i];
+      const Edge *edge = (const Edge *) meos_array_get(edges, e);
+      haslength = edge->dx != 0.0 || edge->dy != 0.0;
+    }
+    if (straight && haslength)
+    {
+      for (int e = 0; e < (int) edges->count; e++)
+        meos_array_add(lineedges, meos_array_get(edges, e));
+      meos_array_destroy(edges);
       continue;
     }
+    if (edges)
+      meos_array_destroy(edges);
+    owned[ncur] = NULL;
+    cur[ncur++] = comps[i];
+  }
+  if (lineedges->count > 0)
+  {
+    LWGEOM **curves = NULL;
+    int ncurves = linear_union_dissolve_edges(lineedges,
+      lwgeom_get_srid(geom), &curves);
     for (int c = 0; c < ncurves; c++)
     {
       if (ncur == maxcur)
@@ -8822,12 +8870,16 @@ meos_linear_union(const LWGEOM *geom)
         maxcur *= 2;
         cur = repalloc(cur, sizeof(LWGEOM *) * (size_t) maxcur);
         owned = repalloc(owned, sizeof(LWGEOM *) * (size_t) maxcur);
+        together = repalloc(together, sizeof(bool) * (size_t) maxcur);
       }
       owned[ncur] = curves[c];
+      together[ncur] = true;
       cur[ncur++] = curves[c];
     }
-    pfree(curves);
+    if (curves)
+      pfree(curves);
   }
+  meos_array_destroy(lineedges);
   ncomp = ncur;
   GBOX *boxes = palloc(sizeof(GBOX) * ncomp);
   bool *hasbox = palloc(sizeof(bool) * ncomp);
@@ -8858,6 +8910,10 @@ meos_linear_union(const LWGEOM *geom)
       for (int j = i + 1; j < ncomp; j++)
       {
         if (dropped[j])
+          continue;
+        /* Two curves of the one dissolve walk each of their points once
+         * between them, so neither covers the other nor shares a stretch */
+        if (together[i] && together[j])
           continue;
         if (hasbox[i] && hasbox[j] &&
             gbox_overlaps_2d(&boxes[i], &boxes[j]) == LW_FALSE)
@@ -8893,6 +8949,7 @@ meos_linear_union(const LWGEOM *geom)
             lwgeom_free(owned[i]);
           owned[i] = merged;
           cur[i] = merged;
+          together[i] = false;
           dropped[j] = true;
           again = true;
           break;
@@ -8906,7 +8963,8 @@ meos_linear_union(const LWGEOM *geom)
     for (int i = 0; i < ncomp; i++)
       if (owned[i])
         lwgeom_free(owned[i]);
-    pfree(owned); pfree(cur); pfree(boxes); pfree(hasbox); pfree(dropped);
+    pfree(owned); pfree(cur); pfree(together); pfree(boxes); pfree(hasbox);
+    pfree(dropped);
     pfree(comps);
     return NULL;
   }
@@ -8925,7 +8983,7 @@ meos_linear_union(const LWGEOM *geom)
     for (int i = 0; i < ncomp; i++)
       if (owned[i])
         lwgeom_free(owned[i]);
-    pfree(owned); pfree(cur); pfree(dropped); pfree(comps);
+    pfree(owned); pfree(cur); pfree(together); pfree(dropped); pfree(comps);
     return result;
   }
 
@@ -8962,7 +9020,7 @@ meos_linear_union(const LWGEOM *geom)
   for (int i = 0; i < ncomp; i++)
     if (owned[i])
       lwgeom_free(owned[i]);
-  pfree(owned); pfree(cur); pfree(dropped); pfree(comps);
+  pfree(owned); pfree(cur); pfree(together); pfree(dropped); pfree(comps);
   uint8_t colltype = allpoint ? MULTIPOINTTYPE :
     (allline ? MULTILINETYPE :
       (allcurve ? MULTICURVETYPE : COLLECTIONTYPE));
