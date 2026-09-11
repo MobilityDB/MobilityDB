@@ -210,10 +210,10 @@ SELECT asText(NearestApproachInstant(tgeometry '{[Point(1 1)@2001-01-01, Point(2
 
 SELECT asText(NearestApproachInstant(tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]', geometry 'Linestring(1 1,3 3)'));
 
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring(90 0,0 90)'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 90)'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 90)'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 90)'),6));
+SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring(90 0,0 60)'),6));
+SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 60)'),6));
+SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 60)'),6));
+SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 60)'),6));
 SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring empty'),6));
 SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring empty'),6));
 SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring empty'),6));
@@ -229,10 +229,10 @@ SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeometry '{Po
 SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'));
 SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'));
 
-SELECT asText(NearestApproachInstant(geography 'Linestring(90 0,0 90)', tgeography 'Point(-90 0)@2001-01-01'));
-SELECT asText(NearestApproachInstant(geography 'Linestring(90 0,0 90)', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'));
-SELECT asText(NearestApproachInstant(geography 'Linestring(90 0,0 90)', tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]'));
-SELECT asText(NearestApproachInstant(geography 'Linestring(90 0,0 90)', tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(90 0,0 60)', tgeography 'Point(-90 0)@2001-01-01'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(90 0,0 60)', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(90 0,0 60)', tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(90 0,0 60)', tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'));
 
 SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeography 'Point(-90 0)@2001-01-01'));
 SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'));
@@ -340,10 +340,10 @@ SELECT round(NearestApproachDistance(tgeometry '{Point(1 1 1)@2001-01-01, Point(
 SELECT round(NearestApproachDistance(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', geometry 'Linestring Z empty'), 6);
 SELECT round(NearestApproachDistance(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Linestring Z empty'), 6);
 
-SELECT round(NearestApproachDistance(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring(90 0,0 90)'), 6);
-SELECT round(NearestApproachDistance(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 90)'), 6);
-SELECT round(NearestApproachDistance(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 90)'), 6);
-SELECT round(NearestApproachDistance(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 90)'), 6);
+SELECT round(NearestApproachDistance(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring(90 0,0 60)'), 0);
+SELECT round(NearestApproachDistance(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 60)'), 0);
+SELECT round(NearestApproachDistance(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 60)'), 0);
+SELECT round(NearestApproachDistance(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 60)'), 0);
 
 SELECT round(NearestApproachDistance(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring empty'), 6);
 SELECT round(NearestApproachDistance(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring empty'), 6);
@@ -380,10 +380,10 @@ SELECT round(NearestApproachDistance(geometry 'Linestring Z empty', tgeometry '{
 SELECT round(NearestApproachDistance(geometry 'Linestring Z empty', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
 SELECT round(NearestApproachDistance(geometry 'Linestring Z empty', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
 
-SELECT round(NearestApproachDistance(geography 'Linestring(90 0,0 90)', tgeography 'Point(-90 0)@2001-01-01'), 6);
-SELECT round(NearestApproachDistance(geography 'Linestring(90 0,0 90)', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'), 6);
-SELECT round(NearestApproachDistance(geography 'Linestring(90 0,0 90)', tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]'), 6);
-SELECT round(NearestApproachDistance(geography 'Linestring(90 0,0 90)', tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'), 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(90 0,0 60)', tgeography 'Point(-90 0)@2001-01-01'), 0);
+SELECT round(NearestApproachDistance(geography 'Linestring(90 0,0 60)', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'), 0);
+SELECT round(NearestApproachDistance(geography 'Linestring(90 0,0 60)', tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]'), 0);
+SELECT round(NearestApproachDistance(geography 'Linestring(90 0,0 60)', tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'), 0);
 
 SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeography 'Point(-90 0)@2001-01-01'), 6);
 SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'), 6);
@@ -521,10 +521,10 @@ SELECT round((tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Poin
 SELECT round((tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' |=| geometry 'Linestring Z empty'), 6);
 SELECT round((tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' |=| geometry 'Linestring Z empty'), 6);
 
-SELECT round((tgeography 'Point(-90 0)@2001-01-01' |=| geography 'Linestring(90 0,0 90)'), 6);
-SELECT round((tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' |=| geography 'Linestring(90 0,0 90)'), 6);
-SELECT round((tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' |=| geography 'Linestring(90 0,0 90)'), 6);
-SELECT round((tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' |=| geography 'Linestring(90 0,0 90)'), 6);
+SELECT round((tgeography 'Point(-90 0)@2001-01-01' |=| geography 'Linestring(90 0,0 60)'), 0);
+SELECT round((tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' |=| geography 'Linestring(90 0,0 60)'), 0);
+SELECT round((tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' |=| geography 'Linestring(90 0,0 60)'), 0);
+SELECT round((tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' |=| geography 'Linestring(90 0,0 60)'), 0);
 
 SELECT round((tgeography 'Point(-90 0)@2001-01-01' |=| geography 'Linestring empty'), 6);
 SELECT round((tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' |=| geography 'Linestring empty'), 6);
@@ -561,10 +561,10 @@ SELECT round((geometry 'Linestring Z empty' |=| tgeometry '{Point(1 1 1)@2001-01
 SELECT round((geometry 'Linestring Z empty' |=| tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
 SELECT round((geometry 'Linestring Z empty' |=| tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
 
-SELECT round((geography 'Linestring(90 0,0 90)' |=| tgeography 'Point(-90 0)@2001-01-01'), 6);
-SELECT round((geography 'Linestring(90 0,0 90)' |=| tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'), 6);
-SELECT round((geography 'Linestring(90 0,0 90)' |=| tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]'), 6);
-SELECT round((geography 'Linestring(90 0,0 90)' |=| tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'), 6);
+SELECT round((geography 'Linestring(90 0,0 60)' |=| tgeography 'Point(-90 0)@2001-01-01'), 0);
+SELECT round((geography 'Linestring(90 0,0 60)' |=| tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'), 0);
+SELECT round((geography 'Linestring(90 0,0 60)' |=| tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]'), 0);
+SELECT round((geography 'Linestring(90 0,0 60)' |=| tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'), 0);
 
 SELECT round((geography 'Linestring empty' |=| tgeography 'Point(-90 0)@2001-01-01'), 6);
 SELECT round((geography 'Linestring empty' |=| tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'), 6);
@@ -679,10 +679,10 @@ SELECT ST_AsTexT(shortestLine(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@
 SELECT ST_AsTexT(shortestLine(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', geometry 'Linestring Z empty'));
 SELECT ST_AsTexT(shortestLine(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Linestring Z empty'));
 
-SELECT ST_AsTexT(shortestLine(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring(90 0,0 90)'), 1);
-SELECT ST_AsTexT(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 90)'), 1);
-SELECT ST_AsTexT(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 90)'), 1);
-SELECT ST_AsTexT(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 90)'), 1);
+SELECT ST_AsTexT(shortestLine(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring(90 0,0 60)'), 1);
+SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 60)')), 6);
+SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 60)')), 6);
+SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 60)')), 6);
 
 SELECT ST_AsTexT(shortestLine(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring empty'));
 SELECT ST_AsTexT(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring empty'));
@@ -709,10 +709,10 @@ SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeometry '{Point(1
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'));
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'));
 
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(90 0,0 90)', tgeography 'Point(-90 0)@2001-01-01'), 1);
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(90 0,0 90)', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'), 1);
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(90 0,0 90)', tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]'), 1);
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(90 0,0 90)', tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring(90 0,0 60)', tgeography 'Point(-90 0)@2001-01-01'), 1);
+SELECT ST_AsTexT(round(shortestLine(geography 'Linestring(90 0,0 60)', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}')), 6);
+SELECT ST_AsTexT(round(shortestLine(geography 'Linestring(90 0,0 60)', tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]')), 6);
+SELECT ST_AsTexT(round(shortestLine(geography 'Linestring(90 0,0 60)', tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
 
 SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeography 'Point(-90 0)@2001-01-01'), 1);
 SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'), 1);

@@ -3392,6 +3392,18 @@ dot_product_side(const POINT3D *p, const POINT3D *q)
 }
 
 /**
+* Utility function for edge_intersects(), true if P lies on the side of the
+* center of the sphere that holds the edge A1/A2.
+*/ /* MEOS */
+static int
+edge_faces_point(const POINT3D *A1, const POINT3D *A2, const POINT3D *P)
+{
+	POINT3D AC;
+	vector_sum(A1, A2, &AC);
+	return dot_product(P, &AC) > 0.0;
+}
+
+/**
 * Returns non-zero if edges A and B interact. The type of interaction is given in the
 * return value with the bitmask elements defined above.
 */
@@ -3471,30 +3483,36 @@ edge_intersects(const POINT3D *A1, const POINT3D *A2, const POINT3D *B1, const P
 		return PIR_NO_INTERACT;
 	}
 
-	/* The rest are all intersects variants... */
-	rv |= PIR_INTERSECTS;
+	/* The rest are all touch variants. An end point on the plane of the */
+	/* other edge lies where the two great circles meet, and the other */
+	/* edge, shorter than half a circle, holds either that point or its */
+	/* antipode: it touches only in the first case. */ /* MEOS */
 
 	/* A touches B */
-	if ( a1_side == 0 )
+	if ( a1_side == 0 && edge_faces_point(B1, B2, A1) )
 	{
 		/* Touches at A1, A2 is on what side? */
+		rv |= PIR_INTERSECTS;
 		rv |= (a2_side < 0 ? PIR_A_TOUCH_RIGHT : PIR_A_TOUCH_LEFT);
 	}
-	else if ( a2_side == 0 )
+	else if ( a2_side == 0 && edge_faces_point(B1, B2, A2) )
 	{
 		/* Touches at A2, A1 is on what side? */
+		rv |= PIR_INTERSECTS;
 		rv |= (a1_side < 0 ? PIR_A_TOUCH_RIGHT : PIR_A_TOUCH_LEFT);
 	}
 
 	/* B touches A */
-	if ( b1_side == 0 )
+	if ( b1_side == 0 && edge_faces_point(A1, A2, B1) )
 	{
 		/* Touches at B1, B2 is on what side? */
+		rv |= PIR_INTERSECTS;
 		rv |= (b2_side < 0 ? PIR_B_TOUCH_RIGHT : PIR_B_TOUCH_LEFT);
 	}
-	else if ( b2_side == 0 )
+	else if ( b2_side == 0 && edge_faces_point(A1, A2, B2) )
 	{
 		/* Touches at B2, B1 is on what side? */
+		rv |= PIR_INTERSECTS;
 		rv |= (b1_side < 0 ? PIR_B_TOUCH_RIGHT : PIR_B_TOUCH_LEFT);
 	}
 
