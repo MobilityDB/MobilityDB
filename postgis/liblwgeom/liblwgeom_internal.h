@@ -442,6 +442,17 @@ int lw_segment_side(const POINT2D *p1, const POINT2D *p2, const POINT2D *q);
 int lw_arc_side(const POINT2D *A1, const POINT2D *A2, const POINT2D *A3, const POINT2D *Q);
 int lw_arc_calculate_gbox_cartesian_2d(const POINT2D *A1, const POINT2D *A2, const POINT2D *A3, GBOX *gbox);
 double lw_arc_center(const POINT2D *p1, const POINT2D *p2, const POINT2D *p3, POINT2D *result);
+/* MEOS: an arc read off its chord A1-A3 and its inscribed angle a at A2
+ * rather than off its circumcentre, which cancels against the radius of a
+ * nearly straight arc */
+typedef struct
+{
+	double mx, my;     /* midpoint of the chord */
+	double nx, ny;     /* unit normal of the chord, toward the arc */
+	double half;       /* half the length of the chord */
+	double sina, cosa; /* sine and cosine of the angle a */
+} LW_ARC_FRAME;
+int lw_arc_frame(const POINT2D *A1, const POINT2D *A2, const POINT2D *A3, LW_ARC_FRAME *frame); /* MEOS */
 int lw_pt_in_seg(const POINT2D *P, const POINT2D *A1, const POINT2D *A2);
 int lw_pt_in_arc(const POINT2D *P, const POINT2D *A1, const POINT2D *A2, const POINT2D *A3);
 int lw_arc_is_pt(const POINT2D *A1, const POINT2D *A2, const POINT2D *A3);

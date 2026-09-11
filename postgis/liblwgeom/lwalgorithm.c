@@ -117,6 +117,52 @@ lw_arc_is_pt(const POINT2D *A1, const POINT2D *A2, const POINT2D *A3)
 		return LW_FALSE;
 }
 
+/* MEOS: the cross product of coordinate differences, computed exactly and
+ * rounded once, from meos/src/geo/geo_funcs.c */
+extern double cross_product_exact(double ax, double ay, double bx, double by,
+	double cx, double cy, double dx, double dy);
+
+/* MEOS: read an arc whose ends differ off its chord and the inscribed angle a
+ * at A2, deciding on the input vertices exactly. The turn at A2, the cross
+ * product of A1 - A2 and A3 - A2, is zero where the three points are
+ * collinear, A2 on an end included, and the arc is then the segment A1-A3;
+ * otherwise its sign is the side of the chord the arc lies on. Where its two
+ * products do not nearly cancel, their rounded difference keeps its relative
+ * precision to a few roundings; otherwise it is computed exactly. Returns
+ * LW_FALSE where the arc is that segment */
+int
+lw_arc_frame(const POINT2D *A1, const POINT2D *A2, const POINT2D *A3, LW_ARC_FRAME *frame)
+{
+	double ux = A1->x - A2->x, uy = A1->y - A2->y;
+	double vx = A3->x - A2->x, vy = A3->y - A2->y;
+	double left = ux * vy, right = uy * vx;
+	double cross = left - right;
+	if (! (fabs(cross) > 0.5 * (fabs(left) + fabs(right))))
+		cross = cross_product_exact(A2->x, A2->y, A1->x, A1->y,
+			A2->x, A2->y, A3->x, A3->y);
+	if (cross == 0.0)
+		return LW_FALSE;
+
+	/* The angle a, from the cross product and the dot product of the two
+	 * vectors, each to within a few roundings of itself */
+	double dot = ux * vx + uy * vy;
+	double h = sqrt(cross * cross + dot * dot);
+	frame->sina = fabs(cross) / h;
+	frame->cosa = dot / h;
+
+	/* The chord, its midpoint, half its length and its unit normal toward
+	 * the arc */
+	double chx = A3->x - A1->x, chy = A3->y - A1->y;
+	double len = sqrt(chx * chx + chy * chy);
+	double side = (cross > 0.0) ? 1.0 : -1.0;
+	frame->half = len / 2.0;
+	frame->mx = A1->x + chx / 2.0;
+	frame->my = A1->y + chy / 2.0;
+	frame->nx = - side * chy / len;
+	frame->ny = side * chx / len;
+	return LW_TRUE;
+}
+
 /**
 * Returns the length of a circular arc segment
 */
