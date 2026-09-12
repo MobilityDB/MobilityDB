@@ -1386,27 +1386,76 @@ lw_dist2d_ptarray_ptarrayarc(const POINTARRAY *pa, const POINTARRAY *pb, DISTPTS
 	}
 	else
 	{
+		/* MEOS: a segment further from the arcs, or from one arc of them, than
+		 * the distance found holds no nearer point, as for the segments in
+		 * lw_dist2d_ptarray_ptarray, the box of an arc enclosing the arc it
+		 * draws. The pairs are still visited in order, nothing is skipped once
+		 * the distance is within the tolerance, and the last pair is always
+		 * measured. The box of each arc is built once, for every segment it is
+		 * measured against */
+		uint32_t narcs = (pb->npoints - 1) / 2, k;
+		GBOX box1, box2, seg1;
+		GBOX *arcbox = lwalloc(sizeof(GBOX) * narcs);
+		int boxed = ptarray_calculate_gbox_cartesian(pa, &box1) == LW_SUCCESS;
+		double reach = 0.0;
+		B1 = getPoint2d_cp(pb, 0);
+		for (k = 0; k < narcs; k++)
+		{
+			B2 = getPoint2d_cp(pb, 2 * k + 1);
+			B3 = getPoint2d_cp(pb, 2 * k + 2);
+			lw_arc_calculate_gbox_cartesian_2d(B1, B2, B3, &arcbox[k]);
+			B1 = B3;
+		}
+		box2 = arcbox[0];
+		for (k = 1; k < narcs; k++)
+		{
+			box2.xmin = FP_MIN(box2.xmin, arcbox[k].xmin);
+			box2.xmax = FP_MAX(box2.xmax, arcbox[k].xmax);
+			box2.ymin = FP_MIN(box2.ymin, arcbox[k].ymin);
+			box2.ymax = FP_MAX(box2.ymax, arcbox[k].ymax);
+		}
+		if (boxed)
+			reach = FP_MAX(lw_dist2d_gbox_reach(&box1), lw_dist2d_gbox_reach(&box2));
 		A1 = getPoint2d_cp(pa, 0);
 		for (t = 1; t < pa->npoints; t++) /* For each segment in pa */
 		{
+			int last1 = (t == pa->npoints - 1);
 			A2 = getPoint2d_cp(pa, t);
+			lw_dist2d_seg_gbox(A1, A2, &seg1);
+			if (boxed && ! last1 && dl->distance > dl->tolerance &&
+			    lw_dist2d_gbox_apart(&seg1, &box2, dl->distance, reach))
+			{
+				A1 = A2;
+				continue;
+			}
 			B1 = getPoint2d_cp(pb, 0);
-			for (u = 1; u < pb->npoints; u += 2) /* For each arc in pb */
+			for (u = 1, k = 0; u < pb->npoints; u += 2, k++) /* For each arc in pb */
 			{
 				B2 = getPoint2d_cp(pb, u);
 				B3 = getPoint2d_cp(pb, u + 1);
+				if (boxed && ! (last1 && u == pb->npoints - 2) &&
+				    dl->distance > dl->tolerance &&
+				    lw_dist2d_gbox_apart(&seg1, &arcbox[k], dl->distance, reach))
+				{
+					B1 = B3;
+					continue;
+				}
 				dl->twisted = twist;
 
 				lw_dist2d_seg_arc(A1, A2, B1, B2, B3, dl);
 
 				/* If we've found a distance within tolerance, we're done */
 				if (dl->distance <= dl->tolerance && dl->mode == DIST_MIN)
+				{
+					lwfree(arcbox);
 					return LW_TRUE;
+				}
 
 				B1 = B3;
 			}
 			A1 = A2;
 		}
+		lwfree(arcbox);
 	}
 	return LW_TRUE;
 }
