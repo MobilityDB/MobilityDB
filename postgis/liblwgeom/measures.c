@@ -1524,7 +1524,6 @@ lw_dist2d_seg_arc(const POINT2D *A1,
 	{
 		lw_dist2d_pt_arc(A1, B1, B2, B3, dl);
 		lw_dist2d_pt_arc(A2, B1, B2, B3, dl);
-		return LW_TRUE;
 	}
 	/* or, one of the arc end points is the closest */
 	else if (pt_in_seg && !pt_in_arc)
@@ -1536,7 +1535,6 @@ lw_dist2d_seg_arc(const POINT2D *A1,
 		lw_dist2d_pt_seg(B1, A1, A2, dl);
 		lw_dist2d_pt_seg(B3, A1, A2, dl);
 		dl->twisted = -dl->twisted;
-		return LW_TRUE;
 	}
 	/* Finally, one of the end-point to end-point combos is the closest. */
 	else
@@ -1545,10 +1543,29 @@ lw_dist2d_seg_arc(const POINT2D *A1,
 		lw_dist2d_pt_pt(A1, B3, dl);
 		lw_dist2d_pt_pt(A2, B1, dl);
 		lw_dist2d_pt_pt(A2, B3, dl);
-		return LW_TRUE;
 	}
 
-	return LW_FALSE;
+	/* MEOS: the flags above are read on one crossing or on one point, and do
+	 * not rule the other candidates out. Where the segment and the arc do not
+	 * cross, and the pair of the circle point nearest the line and its foot
+	 * does not lie on both, the closest points hold an end of the segment or
+	 * an end of the arc, so every one of those four candidates is measured,
+	 * but for the two the family above has measured; each replaces the
+	 * answer only where it is strictly nearer, so the family keeps the answer
+	 * it gives on a tie */
+	if (! (pt_in_arc && !pt_in_seg))
+	{
+		lw_dist2d_pt_arc(A1, B1, B2, B3, dl);
+		lw_dist2d_pt_arc(A2, B1, B2, B3, dl);
+	}
+	if (! (pt_in_seg && !pt_in_arc))
+	{
+		dl->twisted = -dl->twisted;
+		lw_dist2d_pt_seg(B1, A1, A2, dl);
+		lw_dist2d_pt_seg(B3, A1, A2, dl);
+		dl->twisted = -dl->twisted;
+	}
+	return LW_TRUE;
 }
 
 /* MEOS: record a distance computed apart from its two points, in the order

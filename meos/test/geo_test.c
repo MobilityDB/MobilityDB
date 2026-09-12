@@ -708,7 +708,10 @@ int main(void)
    * its end (-51.606 11.029), 21.134199125017 from the segment, which a
    * stroke of the arc into a million points gives too. With the crossings of
    * the line built from the end of the segment nearest the centre of the arc,
-   * they lie off the circle and the pair reads 0 */
+   * they lie off the circle and the pair reads 0. The seventh pair is a
+   * segment and an arc whose end (1 50) lies at distance 1 from the segment,
+   * which reads 50.01 while the kernel measures only the ends of the segment
+   * against the arc */
   static const struct { const char *a, *b; double dist, tol; } curve_dist[] =
   {
     {"CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(0 0,-1 5,0 10),"
@@ -771,6 +774,8 @@ int main(void)
     {"LINESTRING(-68.783742 -2.494091,-60.061866 -9.05758)",
        "CIRCULARSTRING(-44.366 20.140,-46.412 17.269,-51.606 11.029)",
        21.134199125017, 1e-9},
+    {"LINESTRING(0 -100,0 100)", "CIRCULARSTRING(40 60,20 52,1 50)", 1.0,
+       0.0},
   };
   int curve_ok = 0;
   for (size_t i = 0; i < sizeof curve_dist / sizeof curve_dist[0]; i++)
@@ -785,7 +790,7 @@ int main(void)
   }
   printf("the distance between curves is the value PostGIS's tests give, or "
     "the closed form, on %d pairs\n", curve_ok);
-  assert(curve_ok == 6);
+  assert(curve_ok == 7);
   meos_errno_reset();
 
   /* The shortest line between two geometries runs from the first to the
