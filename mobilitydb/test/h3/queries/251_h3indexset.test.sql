@@ -92,6 +92,23 @@ SELECT h3indexsetFromBinary(asBinary(h3indexset '{8a2a1072b59ffff, 831c02fffffff
 SELECT h3indexsetFromHexWKB(asHexWKB(h3indexset '{8a2a1072b59ffff}'))
        = h3indexset '{8a2a1072b59ffff}';
 
+-- EWKT, EWKB and HexEWKB state the SRID 4326 of a cell, and every form reads back
+SELECT asEWKT(h3indexset '{8a2a1072b59ffff, 831c02fffffffff}');
+SELECT asHexEWKB(h3indexset '{8a2a1072b59ffff}', 'XDR');
+SELECT h3indexsetFromText(asText(h3indexset '{8a2a1072b59ffff, 831c02fffffffff}'))
+       = h3indexset '{8a2a1072b59ffff, 831c02fffffffff}';
+SELECT h3indexsetFromEWKT(asEWKT(h3indexset '{8a2a1072b59ffff, 831c02fffffffff}'))
+       = h3indexset '{8a2a1072b59ffff, 831c02fffffffff}';
+SELECT h3indexsetFromEWKB(asEWKB(h3indexset '{8a2a1072b59ffff}'))
+       = h3indexset '{8a2a1072b59ffff}';
+SELECT h3indexsetFromHexEWKB(asHexEWKB(h3indexset '{8a2a1072b59ffff}'))
+       = h3indexset '{8a2a1072b59ffff}';
+
+-- A cell states SRID 4326, so another SRID is refused in every input form
+SELECT h3indexsetFromEWKT('SRID=3857;{8a2a1072b59ffff}');
+SELECT h3indexsetFromHexEWKB(replace(asHexEWKB(h3indexset '{8a2a1072b59ffff}', 'XDR'),
+  '000010E6', '00000F11'));
+
 -------------------------------------------------------------------------------
 -- Accessors
 -------------------------------------------------------------------------------

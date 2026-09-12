@@ -45,6 +45,30 @@ SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexEWKB(s)) <> 
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromEWKB(asEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexEWKB(asHexEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT asEWKT(cbuffersetFromEWKT('SRID=3812;{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),1)"}'));
+                             asewkt                             
+----------------------------------------------------------------
+ SRID=3812;{"Cbuffer(POINT(1 1),0.5)", "Cbuffer(POINT(2 2),1)"}
+(1 row)
+
+SELECT SRID(cbuffersetFromText('{"Cbuffer(Point(1 1),0.5)"}'));
+ srid 
+------
+    0
+(1 row)
+
 SELECT numValues(set(array_agg(DISTINCT cb ORDER BY cb))) FROM tbl_cbuffer WHERE cb IS NOT NULL;
  numvalues 
 -----------

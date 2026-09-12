@@ -45,6 +45,12 @@ SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromHexWKB(asHexEWKB(s)) <> s;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromHexEWKB(asHexEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
 SELECT numValues(set(array_agg(DISTINCT pose ORDER BY pose))) FROM tbl_pose2d WHERE pose IS NOT NULL;
  numvalues 
 -----------

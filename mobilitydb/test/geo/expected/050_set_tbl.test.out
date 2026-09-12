@@ -110,6 +110,18 @@ SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexEWKB(g)) <> g;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexEWKB(asHexEWKB(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexEWKB(asHexEWKB(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
 SELECT asText(geomsetFromHexWKB(asHexWKB(geomset '{"Point(1 1 1)"}')));
        astext        
 ---------------------

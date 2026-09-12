@@ -91,6 +91,10 @@ CREATE FUNCTION npointsetFromHexWKB(text)
   RETURNS npointset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION npointsetFromHexEWKB(text)
+  RETURNS npointset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(npointset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text

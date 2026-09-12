@@ -189,6 +189,9 @@
 					<para><link linkend="setspan_asText"><varname>asText</varname></link>: Devuelve la representación de texto conocido (WKT)</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="setspan_asEWKT"><varname>asEWKT</varname></link>: Devuelve la representación extendida de texto conocido (EWKT) de un conjunto espacial</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="setspan_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 				<listitem>
@@ -199,6 +202,12 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="setspan_FromHexWKB"><varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Entrada desde la representación hexadecimal binaria conocida (HexWKB)</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="setspan_FromEWKT"><varname>spatialsettypeFromText</varname>, <varname>spatialsettypeFromEWKT</varname></link>: Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT) de un conjunto espacial</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="setspan_FromEWKB"><varname>spatialsettypeFromEWKB</varname>, <varname>spatialsettypeFromHexEWKB</varname></link>: Entrada desde la representación extendida binaria conocida (EWKB) o desde la representación hexadecimal extendida binaria conocida (HexEWKB) de un conjunto espacial</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

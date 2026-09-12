@@ -64,8 +64,26 @@ FROM tbl_pcpatchset WHERE s IS NOT NULL;
 SELECT COUNT(*) FROM tbl_pcpatchset WHERE s IS NULL;
 
 -------------------------------------------------------------------------------
--- Set types — input/output from/to WKB, EWKB, HexWKB, and HexEWKB.
+-- Set types — input/output from/to WKT, EWKT, WKB, EWKB, HexWKB, and HexEWKB.
 -------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromText(asText(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromEWKT(asEWKT(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromEWKB(asEWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromHexEWKB(asHexEWKB(s)) <> s;
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromText(asText(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromEWKT(asEWKT(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromEWKB(asEWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromHexEWKB(asHexEWKB(s)) <> s;
 
 SELECT COUNT(*) FROM tbl_pcpointset
 WHERE s IS NOT NULL AND pcpointsetFromBinary(asBinary(s)) <> s;
@@ -107,6 +125,17 @@ SELECT asEWKB(s) <> asBinary(s) AS differ,
   pcpointsetFromBinary(asEWKB(s)) = s AS ewkb_roundtrips,
   pcpointsetFromBinary(asBinary(s)) = s AS wkb_roundtrips
 FROM t;
+
+-- The extended text states the SRID of the schema, reads back, and a stated
+-- SRID other than that one is refused in the text and in the binary form
+WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0),
+  pcpoint(3, 2.0, 2.0, 2.0)]) AS s)
+SELECT left(asEWKT(s), 10) AS prefix, pcpointsetFromEWKT(asEWKT(s)) = s AS ewkt_roundtrips
+FROM t;
+WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0)]) AS s)
+SELECT pcpointsetFromEWKT(replace(asEWKT(s), 'SRID=4326', 'SRID=3857')) FROM t;
+WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0)]) AS s)
+SELECT pcpointsetFromHexEWKB(replace(asHexEWKB(s, 'XDR'), '000010E6', '00000F11')) FROM t;
 
 DELETE FROM pointcloud_formats WHERE pcid = 3;
 

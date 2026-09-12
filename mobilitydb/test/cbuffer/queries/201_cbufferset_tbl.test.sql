@@ -54,6 +54,14 @@ SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromBinary(asEWKB(s)) <> s;
 SELECT COUNT(*) FROM tbl_cbufferset WHERE setSRID(cbuffersetFromHexWKB(asHexWKB(s)), 3812) <> s;
 SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexEWKB(s)) <> s;
 
+-- The EWKB and HexEWKB readers keep the SRID the extended forms state
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromEWKB(asEWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexEWKB(asHexEWKB(s)) <> s;
+
+-- The text readers: EWKT states the SRID, WKT does not
+SELECT asEWKT(cbuffersetFromEWKT('SRID=3812;{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),1)"}'));
+SELECT SRID(cbuffersetFromText('{"Cbuffer(Point(1 1),0.5)"}'));
+
 -------------------------------------------------------------------------------
 -- Constructor
 

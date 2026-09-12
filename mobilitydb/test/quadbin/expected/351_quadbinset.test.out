@@ -105,6 +105,51 @@ SELECT asText(quadbinset '{480fffffffffffff, 48427fffffffffff}');
  {"480fffffffffffff", "48427fffffffffff"}
 (1 row)
 
+SELECT asEWKT(quadbinset '{480fffffffffffff, 48427fffffffffff}');
+                       asewkt                       
+----------------------------------------------------
+ SRID=4326;{"480fffffffffffff", "48427fffffffffff"}
+(1 row)
+
+SELECT asHexEWKB(quadbinset '{480fffffffffffff}', 'XDR');
+                ashexewkb                 
+------------------------------------------
+ 00004841000010E600000001480FFFFFFFFFFFFF
+(1 row)
+
+SELECT quadbinsetFromText(asText(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinsetFromEWKT(asEWKT(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinsetFromEWKB(asEWKB(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinsetFromHexEWKB(asHexEWKB(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinsetFromEWKT('SRID=3857;{480fffffffffffff}');
+ERROR:  The SRID 3857 cannot be stated for the quadbin
+SELECT quadbinsetFromHexEWKB(replace(asHexEWKB(quadbinset '{480fffffffffffff}', 'XDR'),
+  '000010E6', '00000F11'));
+ERROR:  The SRID of the WKB (3857) does not match the SRID of the quadbinset (4326)
 SELECT quadbinset '{480fffffffffffff}' = quadbinset '{480fffffffffffff}';
  ?column? 
 ----------

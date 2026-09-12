@@ -10,6 +10,65 @@ SELECT s2cellset '{47c3c444c0000004, 47c3c444c0000004}';
  {"47c3c444c0000004"}
 (1 row)
 
+SELECT asEWKT(s2cellset '{47c3c444c000000c, 47c3c444c0000004}');
+                       asewkt                       
+----------------------------------------------------
+ SRID=4326;{"47c3c444c0000004", "47c3c444c000000c"}
+(1 row)
+
+SELECT asHexEWKB(s2cellset '{47c3c444c000000c}', 'XDR');
+                ashexewkb                 
+------------------------------------------
+ 00005661000010E60000000147C3C444C000000C
+(1 row)
+
+SELECT s2cellsetFromText(asText(s2cellset '{47c3c444c000000c, 47c3c444c0000004}'))
+  = s2cellset '{47c3c444c000000c, 47c3c444c0000004}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellsetFromEWKT(asEWKT(s2cellset '{47c3c444c000000c, 47c3c444c0000004}'))
+  = s2cellset '{47c3c444c000000c, 47c3c444c0000004}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellsetFromBinary(asBinary(s2cellset '{47c3c444c000000c, 47c3c444c0000004}'))
+  = s2cellset '{47c3c444c000000c, 47c3c444c0000004}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellsetFromEWKB(asEWKB(s2cellset '{47c3c444c000000c, 47c3c444c0000004}'))
+  = s2cellset '{47c3c444c000000c, 47c3c444c0000004}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellsetFromHexWKB(asHexWKB(s2cellset '{47c3c444c000000c}'))
+  = s2cellset '{47c3c444c000000c}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellsetFromHexEWKB(asHexEWKB(s2cellset '{47c3c444c000000c}'))
+  = s2cellset '{47c3c444c000000c}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT s2cellsetFromEWKT('SRID=3857;{47c3c444c000000c}');
+ERROR:  The SRID 3857 cannot be stated for the s2cell
+SELECT s2cellsetFromHexEWKB(replace(asHexEWKB(s2cellset '{47c3c444c000000c}', 'XDR'),
+  '000010E6', '00000F11'));
+ERROR:  The SRID of the WKB (3857) does not match the SRID of the s2cellset (4326)
 SELECT s2cell '47c3c444c0000008';
 ERROR:  s2cell value "47c3c444c0000008" does not encode a valid S2 cell
 LINE 1: SELECT s2cell '47c3c444c0000008';
