@@ -573,13 +573,39 @@ WITH t AS (SELECT tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz),
   tpcpoint(pcpoint(4, 2.0, 2.0, 2.0), '2024-01-02'::timestamptz)]) AS temp)
 SELECT tpcpointFromBinary(asBinary(temp)) = temp AS wkb_roundtrips,
+  tpcpointFromEWKB(asEWKB(temp)) = temp AS ewkb_roundtrips,
+  tpcpointFromHexEWKB(asHexEWKB(temp)) = temp AS hexewkb_roundtrips,
+  tpcpointFromText(asText(temp)) = temp AS text_roundtrips,
+  tpcpointFromEWKT(asEWKT(temp)) = temp AS ewkt_roundtrips,
+  octet_length(asEWKB(temp)) - octet_length(asBinary(temp)) AS extra_bytes,
+  split_part(asEWKT(temp), ';', 1) AS ewkt_srid,
   SRID(temp) AS srid
 FROM t;
- wkb_roundtrips | srid 
-----------------+------
- t              | 4326
+ wkb_roundtrips | ewkb_roundtrips | hexewkb_roundtrips | text_roundtrips | ewkt_roundtrips | extra_bytes | ewkt_srid | srid 
+----------------+-----------------+--------------------+-----------------+-----------------+-------------+-----------+------
+ t              | t               | t                  | t               | t               |           4 | SRID=4326 | 4326
 (1 row)
 
+SELECT tpcpointFromEWKT('SRID=3857;' ||
+  asText(tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz)));
+ERROR:  The SRID of the pcpoint (4326) does not match the SRID of the tpcpoint (3857)
+SELECT tpcpointFromHexEWKB(replace(asHexEWKB(
+  tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz), 'XDR'),
+  '000010E6', '00000F11'));
+ERROR:  The SRID of the WKB (3857) does not match the SRID of the tpcpoint (4326)
+WITH a AS (SELECT ARRAY[
+  tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(4, 2.0, 2.0, 2.0), '2024-01-02'::timestamptz)] AS arr)
+SELECT asEWKT(arr) = ARRAY[asEWKT(arr[1]), asEWKT(arr[2])] AS elementwise,
+  split_part((asEWKT(arr))[1], ';', 1) AS ewkt_srid
+FROM a;
+ elementwise | ewkt_srid 
+-------------+-----------
+ t           | SRID=4326
+(1 row)
+
+SELECT tpcpointFromEWKT('SRID=4326;' || asText(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)));
+ERROR:  The SRID of a pcpoint is the one its schema declares and cannot be set
 DELETE FROM pointcloud_formats WHERE pcid = 4;
 DELETE 1
 SELECT count(*) FROM unnest(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]));

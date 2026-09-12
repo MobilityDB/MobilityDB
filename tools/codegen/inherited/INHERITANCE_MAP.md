@@ -473,8 +473,12 @@ separate `io_repr.sql.tmpl`; the generic block renderer covers both shapes.
 | hex | `asHexWKB` / `FromHexWKB` | — | `Temporal_as_hexwkb` / `Temporal_from_hexwkb` |
 | MF-JSON | `asMFJSON` / `FromMFJSON` | — | `Temporal_as_mfjson` / `Temporal_from_mfjson` |
 
-EWKT/EWKB are **TSpatial<T>-level**, the `E` = carries the SRID
-([[ewkt-ewkb-tspatial-srid-representation]]). Conventions to reproduce verbatim:
+EWKT/EWKB are **TSpatial<T>-level**, the `E` = carries the SRID, and every
+TSpatial<T> family inherits them, those whose SRID is derived rather than set
+(`tnpoint` from the `ways` network, `tpcpoint`/`tpcpatch` from the schema of their
+`pcid`) included: a family whose temporal types are in the `tspatial` class and that
+carries a plain form carries its `E` twin, which `generate.py --validate` enforces
+(`repr_missing_e_twins`). Conventions to reproduce verbatim:
 `maxdecimaldigits integer DEFAULT 15` on float/coordinate-bearing types only;
 `endian text DEFAULT ''` on `asBinary`/`asHexWKB`.
 
@@ -920,7 +924,7 @@ declarations under `mobilitydb/sql/`:
 |---|---|---|
 | `SRID` `setSRID` `transform` `transformPipeline` | identity of the reference system | 5/11 — absent from `npointset`, `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`, whose types IMPOSE or INHERIT the system (§9.1) |
 | `stbox` | the spatial bounding extent | 6/11 — absent from `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset` |
-| `asEWKT` `asEWKB` `asHexEWKB` | the SRID-CARRYING representations | 6/11 — the `E` forms mirror their bases, so the same five are absent |
+| `asEWKT` `asEWKB` `asHexEWKB` | the SRID-CARRYING representations | `asEWKT` 6/11, absent from `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`; `asEWKB` and `asHexEWKB` 8/11, absent from the three cell sets only |
 | `round` | rounding of COORDINATES | 6/11 — the same five; a cell id carries no coordinates to round |
 | `distance` | ⭐ the OVERRIDE, below | 5/11 — absent from `posechainset`, `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset` |
 

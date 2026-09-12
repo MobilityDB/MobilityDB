@@ -2798,10 +2798,10 @@
 					<para><link linkend="tcell_in_out"><varname>tcell</varname></link>: Entrada y salida de una celda temporal en su forma textual</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_astext"><varname>asText</varname>, <varname>asBinary</varname>, <varname>asHexWKB</varname>, <varname>asMFJSON</varname></link>: Serializar una celda temporal como texto, como binario, como binario bien conocido hexadecimal o como MF-JSON</para>
+					<para><link linkend="tcell_astext"><varname>asText</varname>, <varname>asEWKT</varname>, <varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname>, <varname>asMFJSON</varname></link>: Serializar una celda temporal como texto, como binario o como binario bien conocido hexadecimal, con o sin su SRID, o como MF-JSON</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcell_frombinary"><varname>tcellFromBinary</varname>, <varname>tcellFromHexWKB</varname>, <varname>tcellFromMFJSON</varname></link>: Reconstruir una celda temporal a partir de su representación binaria, hexadecimal o MF-JSON</para>
+					<para><link linkend="tcell_frombinary"><varname>tcellFromText</varname>, <varname>tcellFromEWKT</varname>, <varname>tcellFromBinary</varname>, <varname>tcellFromEWKB</varname>, <varname>tcellFromHexWKB</varname>, <varname>tcellFromHexEWKB</varname>, <varname>tcellFromMFJSON</varname></link>: Reconstruir una celda temporal a partir de su representación textual, binaria, hexadecimal o MF-JSON</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (WKB) de un ráster o de una tesela Raquet</para>
@@ -3403,10 +3403,16 @@
 				<title>Entrada y salida</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpoint_asText"><varname>asText</varname></link>: Devuelve la representación textual de un tpcpoint, o de un arreglo de ellos, y convertir un tpcpoint a texto</para>
+						<para><link linkend="tpcpoint_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación textual de un tpcpoint, o de un arreglo de ellos, con o sin su SRID, y convertir un tpcpoint a texto</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación JSON de características móviles (MF-JSON)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria o binaria bien conocida hexadecimal de un tpcpoint, con o sin su SRID</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_fromText"><varname>tpcpointFromText</varname>, <varname>tpcpointFromEWKT</varname>, <varname>tpcpointFromBinary</varname>, <varname>tpcpointFromEWKB</varname>, <varname>tpcpointFromHexWKB</varname>, <varname>tpcpointFromHexEWKB</varname></link>: Devuelve un tpcpoint a partir de su representación textual, binaria o binaria bien conocida hexadecimal, con o sin su SRID</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3573,7 +3579,13 @@
 				<title>Entrada y salida</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_asText"><varname>asText</varname></link>: Devuelve la representación textual de un tpcpatch, o de un arreglo de ellos, y convertir un tpcpatch a texto</para>
+						<para><link linkend="tpcpatch_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación textual de un tpcpatch, o de un arreglo de ellos, con o sin su SRID, y convertir un tpcpatch a texto</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria o binaria bien conocida hexadecimal de un tpcpatch, con o sin su SRID</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_fromText"><varname>tpcpatchFromText</varname>, <varname>tpcpatchFromEWKT</varname>, <varname>tpcpatchFromBinary</varname>, <varname>tpcpatchFromEWKB</varname>, <varname>tpcpatchFromHexWKB</varname>, <varname>tpcpatchFromHexEWKB</varname></link>: Devuelve un tpcpatch a partir de su representación textual, binaria o binaria bien conocida hexadecimal, con o sin su SRID</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación JSON de características móviles (MF-JSON)</para>

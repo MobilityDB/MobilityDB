@@ -110,7 +110,21 @@ CREATE CAST (tpcpoint AS tpcpoint)
  * WKB / HexWKB helpers
  ******************************************************************************/
 
+CREATE FUNCTION tpcpointFromText(text)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpcpointFromEWKT(text)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tpcpointFromBinary(bytea)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcpointFromEWKB(bytea)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -118,13 +132,25 @@ CREATE FUNCTION tpcpointFromHexWKB(text)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcpointFromHexEWKB(text)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tpcpoint, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKB(tpcpoint, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(tpcpoint, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexEWKB(tpcpoint, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- asMFJSON is output-only: the JSON form summarises a tpcpoint by
 -- (coordinates, datetimes) without carrying the schema (pcid + dim
@@ -148,6 +174,14 @@ CREATE FUNCTION asText(tpcpoint)
 CREATE FUNCTION asText(tpcpoint[])
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(tpcpoint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(tpcpoint[])
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tpcpoint AS text) WITH FUNCTION asText(tpcpoint);

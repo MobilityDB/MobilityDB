@@ -103,6 +103,25 @@ SELECT asText(tquadbinFromBinary(asBinary(tquadbin '480fffffffffffff@2001-01-01'
 SELECT asText(tquadbinFromHexWKB(asHexWKB(tquadbin '480fffffffffffff@2001-01-01')));
 
 -------------------------------------------------------------------------------
+-- Extended forms
+-- A cell states SRID 4326, so the extended forms state it and a stated SRID
+-- is refused unless it is that one
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
+SELECT asText(tquadbinFromText(asText(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]')));
+SELECT asEWKT(tquadbinFromEWKT(asEWKT(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]')));
+SELECT asEWKT(tquadbinFromEWKB(asEWKB(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}')));
+SELECT asEWKT(tquadbinFromEWKB(asEWKB(tquadbin '480fffffffffffff@2001-01-01', 'NDR')));
+SELECT asEWKT(tquadbinFromHexEWKB(asHexEWKB(tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}')));
+SELECT asEWKT(tquadbinFromEWKT('SRID=4326;480fffffffffffff@2001-01-01'));
+-- The extended binary form states SRID 4326
+SELECT asHexEWKB(tquadbin '480fffffffffffff@2001-01-01', 'XDR') LIKE '%000010E6%';
+-- Another SRID is refused, in text and in binary
+SELECT tquadbinFromEWKT('SRID=3857;480fffffffffffff@2001-01-01');
+SELECT tquadbinFromHexEWKB(replace(asHexEWKB(tquadbin '480fffffffffffff@2001-01-01', 'XDR'), '000010E6', '00000F11'));
+
+-------------------------------------------------------------------------------
 -- Assignment casts to/from tbigint (explicit AS ASSIGNMENT, bidirectional)
 -------------------------------------------------------------------------------
 

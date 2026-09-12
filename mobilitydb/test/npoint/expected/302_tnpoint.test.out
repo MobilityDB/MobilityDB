@@ -214,6 +214,70 @@ SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-
  Interp=Step;{[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asEWKT(tnpoint 'Npoint(1, 0.5)@2001-01-01');
+                        asewkt                        
+------------------------------------------------------
+ SRID=5676;NPoint(1,0.5)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}');
+                                                                                             asewkt                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;{[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(ARRAY[tnpoint 'Npoint(1, 0.5)@2001-01-01', 'Npoint(2, 0.6)@2001-01-02']);
+                                                     asewkt                                                      
+-----------------------------------------------------------------------------------------------------------------
+ {"SRID=5676;NPoint(1,0.5)@Mon Jan 01 00:00:00 2001 PST","SRID=5676;NPoint(2,0.6)@Tue Jan 02 00:00:00 2001 PST"}
+(1 row)
+
+SELECT tnpointFromText(asText(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]'));
+                                     tnpointfromtext                                      
+------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tnpointFromEWKT(asEWKT(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]'));
+                                     tnpointfromewkt                                      
+------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tnpointFromEWKB(asEWKB(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]'));
+                                     tnpointfromewkb                                      
+------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tnpointFromEWKB(asEWKB(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02}', 'XDR'));
+                                     tnpointfromewkb                                      
+------------------------------------------------------------------------------------------
+ {NPoint(1,0.3)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.5)@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tnpointFromHexEWKB(asHexEWKB(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'));
+                                                                                  tnpointfromhexewkb                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tnpointFromEWKT('SRID=5676;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]');
+                                     tnpointfromewkt                                      
+------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asHexEWKB(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'XDR') LIKE '%0000162C%';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpointFromEWKT('SRID=4326;Npoint(1, 0.5)@2001-01-01');
+ERROR:  The SRID of the npoint (5676) does not match the SRID of the tnpoint (4326)
+SELECT tnpointFromHexEWKB(replace(asHexEWKB(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'XDR'), '0000162C', '000010E6'));
+ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
 SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Npoint(1, 0.5)@2001-01-01'));
              tnpointfromhexwkb              
 --------------------------------------------

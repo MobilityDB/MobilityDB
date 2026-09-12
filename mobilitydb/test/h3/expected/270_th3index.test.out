@@ -232,6 +232,58 @@ SELECT asText(th3indexFromHexWKB(asHexWKB(th3index '880326b885fffff@2001-01-01')
  880326b885fffff@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+SELECT asEWKT(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]');
+                                                 asewkt                                                 
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(th3indexFromText(asText(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]')));
+                                            astext                                            
+----------------------------------------------------------------------------------------------
+ [880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(th3indexFromEWKT(asEWKT(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]')));
+                                                 asewkt                                                 
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(th3indexFromEWKB(asEWKB(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}')));
+                                                 asewkt                                                 
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;{880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT asEWKT(th3indexFromEWKB(asEWKB(th3index '880326b885fffff@2001-01-01', 'NDR')));
+                         asewkt                         
+--------------------------------------------------------
+ SRID=4326;880326b885fffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(th3indexFromHexEWKB(asHexEWKB(th3index '{[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b885fffff@2001-01-04]}')));
+                                                                                                 asewkt                                                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST], [880326b885fffff@Wed Jan 03 00:00:00 2001 PST, 880326b885fffff@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(th3indexFromEWKT('SRID=4326;880326b885fffff@2001-01-01'));
+                         asewkt                         
+--------------------------------------------------------
+ SRID=4326;880326b885fffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asHexEWKB(th3index '880326b885fffff@2001-01-01', 'XDR') LIKE '%000010E6%';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT th3indexFromEWKT('SRID=3857;880326b885fffff@2001-01-01');
+ERROR:  The SRID of the h3index (4326) does not match the SRID of the th3index (3857)
+SELECT th3indexFromHexEWKB(replace(asHexEWKB(th3index '880326b885fffff@2001-01-01', 'XDR'), '000010E6', '00000F11'));
+ERROR:  The SRID of the WKB (3857) does not match the SRID of the th3index (4326)
 SELECT (tbigint '622236723497533439@2012-01-01 08:00:00')::th3index;
                    th3index                   
 ----------------------------------------------

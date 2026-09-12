@@ -50,6 +50,51 @@ SELECT asText(ARRAY[tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]
  t
 (1 row)
 
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 6, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
+INSERT 0 1
+WITH t AS (SELECT tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(6, 1.0, 1.0, 1.0), pcpoint(6, 2.0, 2.0, 2.0)),
+    '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(6, 5.0, 5.0, 5.0)),
+    '2024-01-02'::timestamptz)]) AS temp)
+SELECT tpcpatchFromBinary(asBinary(temp)) = temp AS wkb_roundtrips,
+  tpcpatchFromHexWKB(asHexWKB(temp)) = temp AS hexwkb_roundtrips,
+  tpcpatchFromEWKB(asEWKB(temp)) = temp AS ewkb_roundtrips,
+  tpcpatchFromHexEWKB(asHexEWKB(temp)) = temp AS hexewkb_roundtrips,
+  tpcpatchFromText(asText(temp)) = temp AS text_roundtrips,
+  tpcpatchFromEWKT(asEWKT(temp)) = temp AS ewkt_roundtrips,
+  octet_length(asEWKB(temp)) - octet_length(asBinary(temp)) AS extra_bytes,
+  split_part(asEWKT(temp), ';', 1) AS ewkt_srid,
+  SRID(temp) AS srid
+FROM t;
+ wkb_roundtrips | hexwkb_roundtrips | ewkb_roundtrips | hexewkb_roundtrips | text_roundtrips | ewkt_roundtrips | extra_bytes | ewkt_srid | srid 
+----------------+-------------------+-----------------+--------------------+-----------------+-----------------+-------------+-----------+------
+ t              | t                 | t               | t                  | t               | t               |           4 | SRID=4326 | 4326
+(1 row)
+
+SELECT tpcpatchFromEWKT('SRID=3857;' || asText(tpcpatch(
+  pcpatch(pcpoint(6, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)));
+ERROR:  The SRID of the pcpatch (4326) does not match the SRID of the tpcpatch (3857)
+SELECT tpcpatchFromHexEWKB(replace(asHexEWKB(tpcpatch(
+  pcpatch(pcpoint(6, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz), 'XDR'),
+  '000010E6', '00000F11'));
+ERROR:  The SRID of the WKB (3857) does not match the SRID of the tpcpatch (4326)
+WITH a AS (SELECT ARRAY[
+  tpcpatch(pcpatch(pcpoint(6, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(6, 5.0, 5.0, 5.0)), '2024-01-02'::timestamptz)] AS arr)
+SELECT asEWKT(arr) = ARRAY[asEWKT(arr[1]), asEWKT(arr[2])] AS elementwise,
+  split_part((asEWKT(arr))[1], ';', 1) AS ewkt_srid
+FROM a;
+ elementwise | ewkt_srid 
+-------------+-----------
+ t           | SRID=4326
+(1 row)
+
+SELECT tpcpatchFromEWKT('SRID=4326;' || asText(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz)));
+ERROR:  The SRID of a pcpatch is the one its schema declares and cannot be set
+DELETE FROM pointcloud_formats WHERE pcid = 6;
+DELETE 1
 SELECT pcid(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz));
  pcid 
 ------
