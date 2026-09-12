@@ -201,21 +201,34 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
       posechain_set_srid_int(DatumGetPoseChainP(d), srid);
       return true;
 #endif
+#if NPOINT
+    case T_NPOINT:
+    {
+      /* A network point holds no SRID: it has the one of the routes of the
+       * ways table. A stated SRID is checked against it when the network
+       * states one, and accepted when no network is loaded */
+      int32_t ways_srid = npoint_srid(DatumGetNpointP(d));
+      return (ways_srid == SRID_UNKNOWN || ways_srid == srid);
+    }
+#endif
 #if H3
     case T_H3INDEX:
-      /* H3 cells are inherently WGS84; only SRID 4326 is accepted */
+      /* H3 computes on a sphere with the WGS84 authalic radius and exchanges
+       * its cells as WGS84 longitude and latitude, so a cell states SRID 4326 */
       (void) d;
       return (srid == SRID_DEFAULT);
 #endif
 #if QUADBIN
     case T_QUADBIN:
-      /* Quadbin cells are planar lon/lat; only SRID 4326 is accepted */
+      /* A quadbin cell is a tile of the spherical Mercator projection of WGS84
+       * longitude and latitude, so a cell states SRID 4326 */
       (void) d;
       return (srid == SRID_DEFAULT);
 #endif
 #if S2CELL
     case T_S2CELL:
-      /* S2 cells are geodetic; only SRID 4326 is accepted */
+      /* S2 computes on a perfect sphere and its cells are exchanged as WGS84
+       * longitude and latitude, so a cell states SRID 4326 */
       (void) d;
       return (srid == SRID_DEFAULT);
 #endif
@@ -305,20 +318,11 @@ tspatialinst_srid(const TInstant *inst)
 int32_t
 tspatial_srid(const Temporal *temp)
 {
-  /* Ensure the validity of the arguments. The pgpointcloud temporal types
-   * are accepted alongside the spatiotemporal ones: they are excluded from
-   * tspatial_type() because their bounding box is a TPCBox rather than an
-   * STBox, but a TPCBox begins with a whole STBox (see the static_asserts in
-   * meos_pointcloud.h), so the SRID is read from the same offset. This
-   * mirrors how temporal_boxops.c admits them beside tspatial_type(). */
-#if POINTCLOUD
-  if (! ensure_not_null((void *) temp))
-    return SRID_INVALID;
-  if (! tpointcloud_temptype(temp->temptype))
-    VALIDATE_TSPATIAL(temp, SRID_INVALID);
-#else
+  /* Ensure the validity of the arguments. The bounding box of the
+   * pgpointcloud temporal types is a TPCBox rather than an STBox, but a
+   * TPCBox begins with a whole STBox (see the static_asserts in
+   * meos_pointcloud.h), so their SRID is read from the same offset */
   VALIDATE_TSPATIAL(temp, SRID_INVALID);
-#endif
   const STBox *box;
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
