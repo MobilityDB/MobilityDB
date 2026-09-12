@@ -7653,9 +7653,30 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
 }
 
 /**
+ * @brief Return in the last argument the box a relationship reads the scale
+ * of a geometry from: the box the geometry caches, or else one computed here
+ * and not kept, so that the geometry is not written to
+ * @return False where the geometry is geodetic, whose box is geocentric and
+ * says nothing of the coordinates, where it is empty, or where no box is
+ * computed
+ */
+static bool
+relate_scale_box(const LWGEOM *geom, GBOX *box)
+{
+  if (FLAGS_GET_GEODETIC(geom->flags) || lwgeom_is_empty(geom))
+    return false;
+  if (geom->bbox)
+  {
+    *box = *geom->bbox;
+    return true;
+  }
+  return lwgeom_calculate_gbox(geom, box) == LW_SUCCESS;
+}
+
+/**
  * @brief Return the scale a relationship reads the coordinates of two
- * geometries at: the power of two bringing a joint extent below 1 into
- * [1, 2), and 1 otherwise
+ * geometries at, from their boxes: the power of two bringing a joint extent
+ * below 1 into [1, 2), and 1 otherwise
  * @details The relationship of two geometries does not change when both are
  * scaled by the same factor, and a power of two scales every coordinate
  * exactly, so the engine reading both at the scale answers as it would on the
@@ -7663,31 +7684,15 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
  * the shape of the edges it reads once the geometries are small against them:
  * a curve and its buffer of radius 2^-20 read as meeting outside the buffer.
  * Geometries spanning a unit or more are read as they are
- * @return 1 where either geometry is geodetic or empty, where the joint
- * extent is zero or a unit or more, or where a scaled coordinate would not be
- * finite
+ * @return 1 where the joint extent is zero or a unit or more, or where a
+ * scaled coordinate would not be finite
  */
 static double
-relate_scale_factor(const LWGEOM *g1, const LWGEOM *g2)
+relate_boxes_scale(const GBOX *b1, const GBOX *b2)
 {
-  /* A geodetic box is geocentric and says nothing of the coordinates */
-  if (FLAGS_GET_GEODETIC(g1->flags) || FLAGS_GET_GEODETIC(g2->flags) ||
-      lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
-    return 1.0;
-  /* The box a geometry caches, or else one computed here and not kept, so
-   * that neither geometry is written to. The two are joined on the plane
-   * whatever dimensions each carries */
-  GBOX c1, c2;
-  if (g1->bbox)
-    c1 = *g1->bbox;
-  else if (lwgeom_calculate_gbox(g1, &c1) != LW_SUCCESS)
-    return 1.0;
-  if (g2->bbox)
-    c2 = *g2->bbox;
-  else if (lwgeom_calculate_gbox(g2, &c2) != LW_SUCCESS)
-    return 1.0;
-  double xmin = Min(c1.xmin, c2.xmin), xmax = Max(c1.xmax, c2.xmax);
-  double ymin = Min(c1.ymin, c2.ymin), ymax = Max(c1.ymax, c2.ymax);
+  /* The two boxes are joined on the plane whatever dimensions each carries */
+  double xmin = Min(b1->xmin, b2->xmin), xmax = Max(b1->xmax, b2->xmax);
+  double ymin = Min(b1->ymin, b2->ymin), ymax = Max(b1->ymax, b2->ymax);
   double ext = Max(xmax - xmin, ymax - ymin);
   if (! (ext > 0.0 && ext < 1.0))
     return 1.0;
@@ -7695,6 +7700,20 @@ relate_scale_factor(const LWGEOM *g1, const LWGEOM *g2)
   double reach = Max(Max(fabs(xmin), fabs(xmax)), Max(fabs(ymin),
     fabs(ymax)));
   return isfinite(reach * f) ? f : 1.0;
+}
+
+/**
+ * @brief Return the scale a relationship reads the coordinates of two
+ * geometries at, which #relate_boxes_scale sets from their boxes
+ * @return 1 where either geometry has no box #relate_scale_box reads
+ */
+static double
+relate_scale_factor(const LWGEOM *g1, const LWGEOM *g2)
+{
+  GBOX b1, b2;
+  if (! relate_scale_box(g1, &b1) || ! relate_scale_box(g2, &b2))
+    return 1.0;
+  return relate_boxes_scale(&b1, &b2);
 }
 
 /**
@@ -8234,20 +8253,31 @@ relate_spatialrel_ops(const RelateOperands *opsp, spatialRel rel, bool *result)
 
 /**
  * @brief The edges of one geometry, kept for every relationship asked about it
+ * @details A relationship reads its two geometries at the scale their joint
+ * extent sets (#relate_boxes_scale), so a geometry asked about against others
+ * of other sizes and places is read at more than one scale. Its edges are kept
+ * for every scale they are read at, and read at a scale only when a pair first
+ * asks for it
  */
 struct RelateCtx
 {
-  RelateOperand op;  /**< The geometry and the edges it draws */
+  const LWGEOM *geom;  /**< Geometry the edges are those of */
+  bool hasbox;         /**< True if @p box is one a scale is read from */
+  GBOX box;            /**< Box of the geometry, see #relate_scale_box */
+  int nread;           /**< Number of scales the edges are kept at */
+  int maxread;         /**< Number of scales the two arrays below hold */
+  double *scales;      /**< Scales the edges are kept at */
+  MeosArray **arrs;    /**< Edges read at each of those scales */
 };
 
 /**
- * @brief Read the edges of a geometry once, for a caller that asks about it
- * more than once
+ * @brief Keep the edges of a geometry for a caller that asks about it more
+ * than once
  * @param[in] geom Geometry
  * @return The context, or NULL where the geometry is one the engine does not
  * cover, which #meos_spatialrel_ctx then answers as uncovered
- * @note Building the context is what a relationship does at its own entry, so
- * a caller holding one pays the extraction once instead of once per pair
+ * @note A caller holding a context pays the extraction once for each scale its
+ * pairs are read at instead of once per pair
  */
 void *
 relate_ctx_make(const LWGEOM *geom)
@@ -8259,9 +8289,35 @@ relate_ctx_make(const LWGEOM *geom)
   if (geom_meos_coverage(geom) != 1)
     return NULL;
   struct RelateCtx *ctx = palloc(sizeof(struct RelateCtx));
-  ctx->op.geom = geom;
-  ctx->op.arr = relate_extract_edges(geom, 1.0);
+  ctx->geom = geom;
+  ctx->hasbox = relate_scale_box(geom, &ctx->box);
+  ctx->nread = 0;
+  ctx->maxread = 2;
+  ctx->scales = palloc(sizeof(double) * ctx->maxread);
+  ctx->arrs = palloc(sizeof(MeosArray *) * ctx->maxread);
   return ctx;
+}
+
+/**
+ * @brief Return the edges of the geometry of a context read at a scale,
+ * reading them at that scale the first time a pair asks for it
+ * @note The edges belong to the context and are released with it
+ */
+static MeosArray *
+relate_ctx_edges(struct RelateCtx *ctx, double scale)
+{
+  for (int i = 0; i < ctx->nread; i++)
+    if (ctx->scales[i] == scale)
+      return ctx->arrs[i];
+  if (ctx->nread == ctx->maxread)
+  {
+    ctx->maxread *= 2;
+    ctx->scales = repalloc(ctx->scales, sizeof(double) * ctx->maxread);
+    ctx->arrs = repalloc(ctx->arrs, sizeof(MeosArray *) * ctx->maxread);
+  }
+  ctx->scales[ctx->nread] = scale;
+  ctx->arrs[ctx->nread] = relate_extract_edges(ctx->geom, scale);
+  return ctx->arrs[ctx->nread++];
 }
 
 /**
@@ -8273,7 +8329,9 @@ relate_ctx_free(void *ctxv)
   struct RelateCtx *ctx = (struct RelateCtx *) ctxv;
   if (! ctx)
     return;
-  meos_array_destroy(ctx->op.arr);
+  for (int i = 0; i < ctx->nread; i++)
+    meos_array_destroy(ctx->arrs[i]);
+  pfree(ctx->scales); pfree(ctx->arrs);
   pfree(ctx);
   return;
 }
@@ -8286,8 +8344,10 @@ relate_ctx_free(void *ctxv)
  * @param[in] rel Relationship asked for
  * @param[out] result True if the geometries stand in the relationship
  * @return True if the pair is covered
- * @note The contexts keep owning their edges: this borrows them for the call
- * and releases nothing, so one context serves as many relationships as the
+ * @note The pair is read at the scale its joint extent sets, from the boxes
+ * the contexts keep. A context keeps the edges it reads at a scale it had not
+ * been read at, so it is written to through the handle its caller holds; it
+ * keeps owning every edge, and one context serves as many relationships as the
  * caller asks
  */
 bool
@@ -8295,8 +8355,8 @@ meos_spatialrel_ctx(const void *ctx1, const void *ctx2, spatialRel rel,
   bool *result)
 {
   assert(result);
-  const struct RelateCtx *c1 = (const struct RelateCtx *) ctx1;
-  const struct RelateCtx *c2 = (const struct RelateCtx *) ctx2;
+  struct RelateCtx *c1 = (struct RelateCtx *) ctx1;
+  struct RelateCtx *c2 = (struct RelateCtx *) ctx2;
 
   /* A geometry the engine does not cover carries no context, and the pair is
    * uncovered exactly as #meos_spatialrel reports it */
@@ -8305,17 +8365,19 @@ meos_spatialrel_ctx(const void *ctx1, const void *ctx2, spatialRel rel,
 
   /* An empty geometry holds no point to share with another, and none of the
    * four patterns admits an empty operand */
-  if (lwgeom_is_empty(c1->op.geom) || lwgeom_is_empty(c2->op.geom))
+  if (lwgeom_is_empty(c1->geom) || lwgeom_is_empty(c2->geom))
   {
     *result = false;
     return true;
   }
 
-  /* Each context extracted the edges of its geometry as they are */
   RelateOperands ops;
-  ops.op[0] = c1->op;
-  ops.op[1] = c2->op;
-  ops.scale = 1.0;
+  ops.scale = (c1->hasbox && c2->hasbox) ?
+    relate_boxes_scale(&c1->box, &c2->box) : 1.0;
+  ops.op[0].geom = c1->geom;
+  ops.op[0].arr = relate_ctx_edges(c1, ops.scale);
+  ops.op[1].geom = c2->geom;
+  ops.op[1].arr = relate_ctx_edges(c2, ops.scale);
   return relate_spatialrel_ops(&ops, rel, result);
 }
 

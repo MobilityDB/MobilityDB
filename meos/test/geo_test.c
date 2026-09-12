@@ -761,6 +761,63 @@ int main(void)
   assert(cov_ok == 24);
   meos_errno_reset();
 
+  /* A relationship asked from the edges a geometry keeps for many questions
+   * takes nothing from the size of the pair either. The union of that compound
+   * curve and its buffer is the buffer alone, one surface, and two circular
+   * strings that meet form one cluster, at every scale from 1 to 2^-23. Read
+   * at a fixed size, the union keeps the curve beside the buffer and the two
+   * strings fall into two clusters at 2^-22 */
+  static const double ctx_arc1[10] = {-62.23798897946629, 45.02999585785349,
+    -63.57751790698321, 44.25943553386923, -54.13401589077565,
+    47.445197838459485, -47.879089812914216, 40.968069010858905,
+    -46.17447669603102, 38.103871258761};
+  static const double ctx_arc2[10] = {-66.99138251089116, 15.92121886945246,
+    -76.03325013901814, 7.520108701258234, -69.47649951102183,
+    1.331742503837627, -67.7756956221341, 5.312985986964651,
+    -63.2930991148274, -2.6940914138737275};
+  double ctx_s = 1.0;
+  int ctx_ok = 0;
+  for (int k = 0; k >= -23; k--, ctx_s *= 0.5)
+  {
+    char curve_wkt[256];
+    snprintf(curve_wkt, sizeof curve_wkt,
+      "COMPOUNDCURVE((0 0,%.17g 0),CIRCULARSTRING(%.17g 0,%.17g %.17g,0 0))",
+      10 * ctx_s, 10 * ctx_s, 5 * ctx_s, 2 * ctx_s);
+    GSERIALIZED *curve = geom_in(curve_wkt, -1);
+    assert(curve != NULL);
+    GSERIALIZED *cbuf = geom_buffer(curve, ctx_s, "");
+    assert(cbuf != NULL);
+    GSERIALIZED *parts[2] = {cbuf, curve};
+    GSERIALIZED *cunion = geom_array_union(parts, 2);
+    assert(cunion != NULL && geo_num_geos(cunion) == 1);
+    free(cunion); free(cbuf); free(curve);
+
+    char arc_wkt[2][512];
+    const double *arcs[2] = {ctx_arc1, ctx_arc2};
+    for (int a = 0; a < 2; a++)
+    {
+      const double *c = arcs[a];
+      snprintf(arc_wkt[a], sizeof arc_wkt[a], "SRID=3812;CIRCULARSTRING("
+        "%.17g %.17g,%.17g %.17g,%.17g %.17g,%.17g %.17g,%.17g %.17g)",
+        c[0] * ctx_s, c[1] * ctx_s, c[2] * ctx_s, c[3] * ctx_s, c[4] * ctx_s,
+        c[5] * ctx_s, c[6] * ctx_s, c[7] * ctx_s, c[8] * ctx_s, c[9] * ctx_s);
+    }
+    GSERIALIZED *ga = geom_in(arc_wkt[0], -1), *gb = geom_in(arc_wkt[1], -1);
+    assert(ga != NULL && gb != NULL);
+    const GSERIALIZED *pair[2] = {ga, gb};
+    int nclusters = 0;
+    GSERIALIZED **clusters = geo_cluster_intersecting(pair, 2, &nclusters);
+    assert(clusters != NULL && nclusters == 1);
+    for (int i = 0; i < nclusters; i++)
+      free(clusters[i]);
+    free(clusters); free(ga); free(gb);
+    ctx_ok++;
+  }
+  printf("the union of a curve and its buffer is one surface, and two arcs "
+    "that meet one cluster, at %d scales from 1 to 2^-23\n", ctx_ok);
+  assert(ctx_ok == 24);
+  meos_errno_reset();
+
   /* The distance between curves is checked on the cases PostGIS gives its
    * own unit tests for the distance fixes of its 3.6 line (ticket 5989): a
    * point outside a curve polygon beside its arc, a point beside the arc of a
