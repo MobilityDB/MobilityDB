@@ -301,6 +301,16 @@ lw_dist2d_gbox_reach(const GBOX *b)
 		FP_MAX(fabs(b->ymin), fabs(b->ymax)));
 }
 
+/* MEOS: the box of a segment */
+static inline void
+lw_dist2d_seg_gbox(const POINT2D *a, const POINT2D *b, GBOX *box)
+{
+	box->xmin = FP_MIN(a->x, b->x);
+	box->xmax = FP_MAX(a->x, b->x);
+	box->ymin = FP_MIN(a->y, b->y);
+	box->ymax = FP_MAX(a->y, b->y);
+}
+
 /* MEOS: whether two boxes lie further apart than a distance already found,
  * reach bounding the magnitude of their coordinates. Every distance the walk
  * computes between what the boxes hold is at least the distance between the
@@ -1297,14 +1307,44 @@ lw_dist2d_ptarray_ptarray(POINTARRAY *l1, POINTARRAY *l2, DISTPTS *dl)
 	}
 	else
 	{
+		/* MEOS: a segment further from the other line, or from a segment of
+		 * it, than the distance found holds no nearer point, as for the parts
+		 * in lw_dist2d_recursive, and the segments are still visited in order.
+		 * Nothing is skipped once the distance is within the tolerance, where
+		 * the walk ends after the next pair it measures, and the last pair is
+		 * always measured, since the orientation it leaves in dl->twisted is
+		 * the one the next call on the same distance starts from */
+		GBOX box1, box2, seg1, seg2;
+		int boxed = ptarray_calculate_gbox_cartesian(l1, &box1) == LW_SUCCESS &&
+			ptarray_calculate_gbox_cartesian(l2, &box2) == LW_SUCCESS;
+		double reach = boxed ?
+			FP_MAX(lw_dist2d_gbox_reach(&box1), lw_dist2d_gbox_reach(&box2)) : 0.0;
 		start = getPoint2d_cp(l1, 0);
 		for (t = 1; t < l1->npoints; t++) /*for each segment in L1 */
 		{
+			int last1 = (t == l1->npoints - 1);
 			end = getPoint2d_cp(l1, t);
+			lw_dist2d_seg_gbox(start, end, &seg1);
+			if (boxed && ! last1 && dl->distance > dl->tolerance &&
+			    lw_dist2d_gbox_apart(&seg1, &box2, dl->distance, reach))
+			{
+				start = end;
+				continue;
+			}
 			start2 = getPoint2d_cp(l2, 0);
 			for (u = 1; u < l2->npoints; u++) /*for each segment in L2 */
 			{
 				end2 = getPoint2d_cp(l2, u);
+				if (boxed && ! (last1 && u == l2->npoints - 1) &&
+				    dl->distance > dl->tolerance)
+				{
+					lw_dist2d_seg_gbox(start2, end2, &seg2);
+					if (lw_dist2d_gbox_apart(&seg1, &seg2, dl->distance, reach))
+					{
+						start2 = end2;
+						continue;
+					}
+				}
 				dl->twisted = twist;
 				lw_dist2d_seg_seg(start, end, start2, end2, dl);
 				if (dl->distance <= dl->tolerance && dl->mode == DIST_MIN)
