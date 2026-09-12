@@ -72,6 +72,8 @@ SELECT npointFromBinary(asBinary(npoint 'SRID=5676;Npoint(1,0.5)'));
 SELECT npointFromEWKB(asEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
 SELECT npointFromHexEWKB(asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
 SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
+-- An SRID other than the one of the network is refused
+SELECT npointFromHexEWKB(replace(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)', 'XDR'), '0000162C', '000010E6'));
 
 -------------------------------------------------------------------------------
 -- Constructors

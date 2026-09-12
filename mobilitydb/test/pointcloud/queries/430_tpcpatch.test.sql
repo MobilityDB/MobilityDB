@@ -75,6 +75,49 @@ SELECT array_length(asText(ARRAY[:inst1, :inst2]), 1);
 SELECT asText(ARRAY[:inst1, :inst2]) = ARRAY[asText(:inst1), asText(:inst2)];
 
 -------------------------------------------------------------------------------
+-- Binary and extended forms
+-- The plain forms omit the SRID and the extended forms state the one of the
+-- schema, so both are read under a schema declaring one.
+-------------------------------------------------------------------------------
+
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 6, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
+
+WITH t AS (SELECT tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(6, 1.0, 1.0, 1.0), pcpoint(6, 2.0, 2.0, 2.0)),
+    '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(6, 5.0, 5.0, 5.0)),
+    '2024-01-02'::timestamptz)]) AS temp)
+SELECT tpcpatchFromBinary(asBinary(temp)) = temp AS wkb_roundtrips,
+  tpcpatchFromHexWKB(asHexWKB(temp)) = temp AS hexwkb_roundtrips,
+  tpcpatchFromEWKB(asEWKB(temp)) = temp AS ewkb_roundtrips,
+  tpcpatchFromHexEWKB(asHexEWKB(temp)) = temp AS hexewkb_roundtrips,
+  tpcpatchFromText(asText(temp)) = temp AS text_roundtrips,
+  tpcpatchFromEWKT(asEWKT(temp)) = temp AS ewkt_roundtrips,
+  octet_length(asEWKB(temp)) - octet_length(asBinary(temp)) AS extra_bytes,
+  split_part(asEWKT(temp), ';', 1) AS ewkt_srid,
+  SRID(temp) AS srid
+FROM t;
+-- A stated SRID other than the one of the schema is refused, in text and in
+-- binary
+SELECT tpcpatchFromEWKT('SRID=3857;' || asText(tpcpatch(
+  pcpatch(pcpoint(6, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)));
+SELECT tpcpatchFromHexEWKB(replace(asHexEWKB(tpcpatch(
+  pcpatch(pcpoint(6, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz), 'XDR'),
+  '000010E6', '00000F11'));
+-- The array form states the SRID of each element, as the element-wise form does
+WITH a AS (SELECT ARRAY[
+  tpcpatch(pcpatch(pcpoint(6, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(6, 5.0, 5.0, 5.0)), '2024-01-02'::timestamptz)] AS arr)
+SELECT asEWKT(arr) = ARRAY[asEWKT(arr[1]), asEWKT(arr[2])] AS elementwise,
+  split_part((asEWKT(arr))[1], ';', 1) AS ewkt_srid
+FROM a;
+-- A schema declaring no SRID refuses a stated one
+SELECT tpcpatchFromEWKT('SRID=4326;' || asText(:inst1));
+
+DELETE FROM pointcloud_formats WHERE pcid = 6;
+
+-------------------------------------------------------------------------------
 -- pcid + per-instant point counts
 -------------------------------------------------------------------------------
 

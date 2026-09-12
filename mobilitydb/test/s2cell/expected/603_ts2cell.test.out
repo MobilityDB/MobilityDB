@@ -22,6 +22,82 @@ SELECT asText(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-0
  {[47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST], [47c3c3@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asText(ts2cellFromBinary(asBinary(ts2cell '47c3c3@2001-01-01')));
+               astext                
+-------------------------------------
+ 47c3c3@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(ts2cellFromBinary(asBinary(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}')));
+                                                       astext                                                        
+---------------------------------------------------------------------------------------------------------------------
+ {[47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST], [47c3c3@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(ts2cellFromBinary(asBinary(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 'NDR')));
+                                   astext                                   
+----------------------------------------------------------------------------
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(ts2cellFromHexWKB(asHexWKB(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}')));
+                                   astext                                   
+----------------------------------------------------------------------------
+ {47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+                                        asewkt                                        
+--------------------------------------------------------------------------------------
+ SRID=4326;[47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(ts2cellFromText(asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')));
+                                   astext                                   
+----------------------------------------------------------------------------
+ [47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(ts2cellFromEWKT(asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')));
+                                        asewkt                                        
+--------------------------------------------------------------------------------------
+ SRID=4326;[47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(ts2cellFromEWKB(asEWKB(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}')));
+                                        asewkt                                        
+--------------------------------------------------------------------------------------
+ SRID=4326;{47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT asEWKT(ts2cellFromEWKB(asEWKB(ts2cell '47c3c3@2001-01-01', 'NDR')));
+                    asewkt                     
+-----------------------------------------------
+ SRID=4326;47c3c3@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(ts2cellFromHexEWKB(asHexEWKB(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}')));
+                                                            asewkt                                                             
+-------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[47c3c3@Mon Jan 01 00:00:00 2001 PST, 54b5c9@Tue Jan 02 00:00:00 2001 PST], [47c3c3@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(ts2cellFromEWKT('SRID=4326;47c3c3@2001-01-01'));
+                    asewkt                     
+-----------------------------------------------
+ SRID=4326;47c3c3@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asHexEWKB(ts2cell '47c3c3@2001-01-01', 'XDR') LIKE '%000010E6%';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ts2cellFromEWKT('SRID=3857;47c3c3@2001-01-01');
+ERROR:  The SRID of the s2cell (4326) does not match the SRID of the ts2cell (3857)
+SELECT ts2cellFromHexEWKB(replace(asHexEWKB(ts2cell '47c3c3@2001-01-01', 'XDR'), '000010E6', '00000F11'));
+ERROR:  The SRID of the WKB (3857) does not match the SRID of the ts2cell (4326)
 SELECT asMFJSON(ts2cell '47c3c3@2012-01-01 08:00:00');
                                                                                     asmfjson                                                                                     
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

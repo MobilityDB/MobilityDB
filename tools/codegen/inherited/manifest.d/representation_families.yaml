@@ -120,17 +120,25 @@ representation_families:
     asText: Tspatial_as_text
   arrsyms:
     asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
   blocks:
   - lit: "/*****************************************************************************\n * Input/output from (E)WKT, (E)WKB, and HexEWKB\n *****************************************************************************/"
   - ops:
+    - FromText
+    - FromEWKT
     - - FromBinary
       - FromHexWKB
+    - FromEWKB
+    - FromHexEWKB
     - FromMFJSON
   - lit: /*****************************************************************************/
   - ops:
     - asText
+    - asEWKT
     - asBinary
+    - asEWKB
     - asHexWKB
+    - asHexEWKB
     - asMFJSON
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
@@ -183,11 +191,18 @@ representation_families:
   - lit: "/******************************************************************************\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n ******************************************************************************/"
   - ops:
     - asText
+    - asEWKT
     - asBinary
+    - asEWKB
     - asHexWKB
+    - asHexEWKB
     - asMFJSON
+    - FromText
+    - FromEWKT
     - FromBinary
+    - FromEWKB
     - FromHexWKB
+    - FromHexEWKB
     - FromMFJSON
 - family: quadbin
   file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
@@ -204,11 +219,18 @@ representation_families:
   - lit: "/******************************************************************************\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n ******************************************************************************/"
   - ops:
     - asText
+    - asEWKT
     - asBinary
+    - asEWKB
     - asHexWKB
+    - asHexEWKB
     - asMFJSON
+    - FromText
+    - FromEWKT
     - FromBinary
+    - FromEWKB
     - FromHexWKB
+    - FromHexEWKB
     - FromMFJSON
 - family: s2cell
   file: mobilitydb/sql/s2cell/603_ts2cell.in.sql
@@ -225,11 +247,18 @@ representation_families:
   - lit: "/******************************************************************************\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n ******************************************************************************/"
   - ops:
     - asText
+    - asEWKT
     - asBinary
+    - asEWKB
     - asHexWKB
+    - asHexEWKB
     - asMFJSON
+    - FromText
+    - FromEWKT
     - FromBinary
+    - FromEWKB
     - FromHexWKB
+    - FromHexEWKB
     - FromMFJSON
 
 - family: json
@@ -353,13 +382,20 @@ representation_families:
     asText: Temporal_as_text
   arrsyms:
     asText: Temporalarr_as_text
+    asEWKT: Spatialarr_as_ewkt
   blocks:
   - lit: "/******************************************************************************\n * WKB / HexWKB helpers\n ******************************************************************************/"
   - ops:
+    - FromText
+    - FromEWKT
     - - FromBinary
+      - FromEWKB
       - FromHexWKB
+      - FromHexEWKB
       - asBinary
+      - asEWKB
       - asHexWKB
+      - asHexEWKB
       - lit: '-- asMFJSON is output-only: the JSON form summarises a tpcpoint by
 
           -- (coordinates, datetimes) without carrying the schema (pcid + dim
@@ -378,6 +414,7 @@ representation_families:
 
           -- coordinate text form.'
       - asText
+      - asEWKT
   - lit: CREATE CAST (tpcpoint AS text) WITH FUNCTION asText(tpcpoint);
 - family: pointcloud_patch
   file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
@@ -391,13 +428,20 @@ representation_families:
     asText: Temporal_as_text
   arrsyms:
     asText: Temporalarr_as_text
+    asEWKT: Spatialarr_as_ewkt
   blocks:
   - lit: "/******************************************************************************\n * WKB / HexWKB helpers\n ******************************************************************************/"
   - ops:
+    - FromText
+    - FromEWKT
     - - FromBinary
+      - FromEWKB
       - FromHexWKB
+      - FromHexEWKB
       - asBinary
+      - asEWKB
       - asHexWKB
+      - asHexEWKB
       - lit: '-- asMFJSON is output-only: the JSON form summarises a tpcpatch by
 
           -- (pcid, npoints, bounds) per instant without carrying the per-point
@@ -416,6 +460,7 @@ representation_families:
 
           -- coordinate text form.'
       - asText
+      - asEWKT
   - lit: CREATE CAST (tpcpatch AS text) WITH FUNCTION asText(tpcpatch);
 - family: tpoint
   file: mobilitydb/sql/geo/053_tpoint_inout.in.sql
