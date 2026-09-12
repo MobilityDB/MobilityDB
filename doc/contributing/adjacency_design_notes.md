@@ -381,11 +381,12 @@ refinement, the box half an answer that is a widening. Same principle, two direc
 
 ### 5.5 How far the rule reaches
 
-The rule is not confined to the boxes. `temporal_boxops_meos.c:695/712/728` passes
+The rule is not confined to the boxes. `temporal_boxops_meos.c` passes
 `&adjacent_tbox_tbox` to `adjacent_tnumber_tbox`, `adjacent_tbox_tnumber` and
 `adjacent_tnumber_tnumber`, so every temporal-number adjacency answer follows what `tbox`
-decides; `tspatial_topops_meos.c:247/261/274` wires `&adjacent_stbox_stbox` the same way
-for every temporal spatial type.
+decides; `tspatial_topops_meos.c` wires `&adjacent_stbox_stbox` into `adjacent_stbox_tspatial`,
+`adjacent_tspatial_stbox` and `adjacent_tspatial_tspatial` the same way for every temporal
+spatial type.
 
 Ten test files discriminate the rule, over **33 expected-output lines** — the set a
 change to it has to answer for:
