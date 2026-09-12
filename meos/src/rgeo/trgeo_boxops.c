@@ -226,8 +226,12 @@ trgeoinstarr_compute_bbox(const GSERIALIZED *geom, TInstant **instants,
 STBox *
 trgeometry_stboxes(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
-  assert(temp->temptype == T_TRGEOMETRY);
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
   const GSERIALIZED *geom = trgeo_geom_p(temp);
   switch (temp->subtype)
   {
