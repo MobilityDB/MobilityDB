@@ -61,17 +61,22 @@
 /**
  * @brief Add to the dynamic array in the last argument the edges obtained
  * from a ring
+ * @param[in] pa Ring
+ * @param[out] edges Edges
+ * @param[in] etype Type of the edges
+ * @param[in] scale Factor every coordinate is read at, a power of two
  */
 static void
-emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
+emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype,
+  double scale)
 {
   for (int i = 0; i < (int) pa->npoints - 1; i++)
   {
     const POINT2D *a = getPoint2d_cp(pa, i);
     const POINT2D *b = getPoint2d_cp(pa, i + 1);
     Edge e;
-    e.x1 = a->x; e.y1 = a->y;
-    e.x2 = b->x; e.y2 = b->y;
+    e.x1 = a->x * scale; e.y1 = a->y * scale;
+    e.x2 = b->x * scale; e.y2 = b->y * scale;
     e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
     e.ymin = Min(e.y1, e.y2); e.ymax = Max(e.y1, e.y2);
     e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
@@ -88,7 +93,7 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
  * from a point
  */
 static void
-extract_point(const LWPOINT *pt, MeosArray *edges)
+extract_point(const LWPOINT *pt, MeosArray *edges, double scale)
 {
   /* An empty point (e.g. a component of a multipoint or the boundary of a
    * closed trajectory) has no vertex to read; it contributes no edge. */
@@ -96,8 +101,8 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
     return;
   const POINT2D *p = getPoint2d_cp(pt->point, 0);
   Edge e;
-  e.x1 = e.x2 = e.xmin = e.xmax = p->x;
-  e.y1 = e.y2 = e.ymin = e.ymax = p->y;
+  e.x1 = e.x2 = e.xmin = e.xmax = p->x * scale;
+  e.y1 = e.y2 = e.ymin = e.ymax = p->y * scale;
   e.dx = e.dy = e.length = 0;
   e.etype = EDGE_POINT;
   edge_set_tolerance(&e);
@@ -110,10 +115,10 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
  * from a multipoint
  */
 static void
-extract_mpoint(const LWMPOINT *mp, MeosArray *edges)
+extract_mpoint(const LWMPOINT *mp, MeosArray *edges, double scale)
 {
   for (int i = 0; i < (int) mp->ngeoms; i++)
-    extract_point((const LWPOINT *) mp->geoms[i], edges);
+    extract_point((const LWPOINT *) mp->geoms[i], edges, scale);
   return;
 }
 
@@ -122,9 +127,9 @@ extract_mpoint(const LWMPOINT *mp, MeosArray *edges)
  * from a line
  */
 static void
-extract_line(const LWLINE *line, MeosArray *edges)
+extract_line(const LWLINE *line, MeosArray *edges, double scale)
 {
-  emit_ring_edges(line->points, edges, EDGE_LINESEG);
+  emit_ring_edges(line->points, edges, EDGE_LINESEG, scale);
   return;
 }
 
@@ -133,10 +138,10 @@ extract_line(const LWLINE *line, MeosArray *edges)
  * from a multiline
  */
 static void
-extract_mline(const LWMLINE *ml, MeosArray *edges)
+extract_mline(const LWMLINE *ml, MeosArray *edges, double scale)
 {
   for (int i = 0; i < (int) ml->ngeoms; i++)
-    extract_line(ml->geoms[i], edges);
+    extract_line(ml->geoms[i], edges, scale);
   return;
 }
 
@@ -151,9 +156,12 @@ extract_mline(const LWMLINE *ml, MeosArray *edges)
  * #ptarray_signed_area accumulates DIFFERENCES of coordinates rather than the
  * coordinates themselves, so its rounding grows with that extent and not with
  * the distance of the ring from the origin.
+ * @note The ring is read at @p scale, a power of two, which scales every
+ * difference of coordinates exactly: the extent by @p scale and the area by
+ * its square, as if both were computed from the scaled coordinates
  */
 static bool
-ring_encloses_no_area(const POINTARRAY *pa)
+ring_encloses_no_area(const POINTARRAY *pa, double scale)
 {
   if (! pa || pa->npoints < 3)
     return true;
@@ -166,10 +174,10 @@ ring_encloses_no_area(const POINTARRAY *pa)
     xmin = Min(xmin, p->x); xmax = Max(xmax, p->x);
     ymin = Min(ymin, p->y); ymax = Max(ymax, p->y);
   }
-  double extent = Max(xmax - xmin, ymax - ymin);
+  double extent = Max(xmax - xmin, ymax - ymin) * scale;
   double tol = (MEOS_GEOM_TOLERANCE +
     4.0 * DBL_EPSILON * (double) pa->npoints * extent) * extent;
-  return fabs(ptarray_signed_area(pa)) <= tol;
+  return fabs(ptarray_signed_area(pa)) * scale * scale <= tol;
 }
 
 /**
@@ -182,20 +190,20 @@ ring_encloses_no_area(const POINTARRAY *pa)
  * none: its linework already lies in that surface.
  */
 static void
-extract_poly(const LWPOLY *poly, MeosArray *edges)
+extract_poly(const LWPOLY *poly, MeosArray *edges, double scale)
 {
   if (poly->nrings == 0)
     return;
-  if (ring_encloses_no_area(poly->rings[0]))
+  if (ring_encloses_no_area(poly->rings[0], scale))
   {
-    emit_ring_edges(poly->rings[0], edges, EDGE_LINESEG);
+    emit_ring_edges(poly->rings[0], edges, EDGE_LINESEG, scale);
     return;
   }
   for (int r = 0; r < (int) poly->nrings; r++)
   {
-    if (r > 0 && ring_encloses_no_area(poly->rings[r]))
+    if (r > 0 && ring_encloses_no_area(poly->rings[r], scale))
       continue;
-    emit_ring_edges(poly->rings[r], edges, EDGE_POLYSEG);
+    emit_ring_edges(poly->rings[r], edges, EDGE_POLYSEG, scale);
   }
   return;
 }
@@ -205,10 +213,10 @@ extract_poly(const LWPOLY *poly, MeosArray *edges)
  * from a multipolygon
  */
 static void
-extract_mpoly(const LWMPOLY *mp, MeosArray *edges)
+extract_mpoly(const LWMPOLY *mp, MeosArray *edges, double scale)
 {
   for (int i = 0; i < (int) mp->ngeoms; i++)
-    extract_poly(mp->geoms[i], edges);
+    extract_poly(mp->geoms[i], edges, scale);
   return;
 }
 
@@ -219,10 +227,11 @@ extract_mpoly(const LWMPOLY *mp, MeosArray *edges)
  * POINTARRAY, which is already closed or implicitly closed
  */
 static void
-extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
+extract_triangle(const LWTRIANGLE *tri, MeosArray *edges, double scale)
 {
   emit_ring_edges(tri->points, edges,
-    ring_encloses_no_area(tri->points) ? EDGE_LINESEG : EDGE_POLYSEG);
+    ring_encloses_no_area(tri->points, scale) ? EDGE_LINESEG : EDGE_POLYSEG,
+    scale);
   return;
 }
 
@@ -346,18 +355,25 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
  * @p line_etype and genuine arcs with @p arc_etype. A standalone circular
  * string uses the 1D types (#EDGE_LINESEG / #EDGE_LINEARC); a circular string that
  * bounds a curve polygon ring uses the region types (#EDGE_POLYSEG /
- * #EDGE_POLYARC)
+ * #EDGE_POLYARC). The three points of an arc reach #emit_arc_edge already
+ * scaled, so that whether it reads them as a chord or as a whole circle is
+ * decided at the size the edge is built at
  */
 static void
 emit_circstring_edges(const LWCIRCSTRING *circ, MeosArray *edges,
-  EdgeType line_etype, EdgeType arc_etype)
+  EdgeType line_etype, EdgeType arc_etype, double scale)
 {
   const POINTARRAY *pa = circ->points;
   int np = (int) pa->npoints;
   for (int i = 0; i + 2 < np; i += 2)
   {
-    emit_arc_edge(getPoint2d_cp(pa, i), getPoint2d_cp(pa, i + 1),
-      getPoint2d_cp(pa, i + 2), edges, line_etype, arc_etype);
+    POINT2D p[3];
+    for (int j = 0; j < 3; j++)
+    {
+      const POINT2D *q = getPoint2d_cp(pa, i + j);
+      p[j].x = q->x * scale; p[j].y = q->y * scale;
+    }
+    emit_arc_edge(&p[0], &p[1], &p[2], edges, line_etype, arc_etype);
   }
   return;
 }
@@ -367,9 +383,9 @@ emit_circstring_edges(const LWCIRCSTRING *circ, MeosArray *edges,
  * from a circular string
  */
 static void
-extract_circstring(const LWCIRCSTRING *circ, MeosArray *edges)
+extract_circstring(const LWCIRCSTRING *circ, MeosArray *edges, double scale)
 {
-  emit_circstring_edges(circ, edges, EDGE_LINESEG, EDGE_LINEARC);
+  emit_circstring_edges(circ, edges, EDGE_LINESEG, EDGE_LINEARC, scale);
   return;
 }
 
@@ -382,17 +398,18 @@ extract_circstring(const LWCIRCSTRING *circ, MeosArray *edges)
  * #point_in_polygon treats it as a boundary rather than a 1D feature
  */
 static void
-extract_curvepoly_ring(const LWGEOM *ring, MeosArray *edges)
+extract_curvepoly_ring(const LWGEOM *ring, MeosArray *edges, double scale)
 {
   switch (ring->type)
   {
     case LINETYPE:
-      emit_ring_edges(((const LWLINE *) ring)->points, edges, EDGE_POLYSEG);
+      emit_ring_edges(((const LWLINE *) ring)->points, edges, EDGE_POLYSEG,
+        scale);
       break;
 
     case CIRCSTRINGTYPE:
       emit_circstring_edges((const LWCIRCSTRING *) ring, edges, EDGE_POLYSEG,
-        EDGE_POLYARC);
+        EDGE_POLYARC, scale);
       break;
 
     /* A compound curve is a chain of line strings and circular strings; it
@@ -402,7 +419,7 @@ extract_curvepoly_ring(const LWGEOM *ring, MeosArray *edges)
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) ring;
       for (int i = 0; i < (int) col->ngeoms; i++)
-        extract_curvepoly_ring(col->geoms[i], edges);
+        extract_curvepoly_ring(col->geoms[i], edges, scale);
       break;
     }
 
@@ -420,10 +437,10 @@ extract_curvepoly_ring(const LWGEOM *ring, MeosArray *edges)
  * from a curve polygon
  */
 static void
-extract_curvepoly(const LWCURVEPOLY *cp, MeosArray *edges)
+extract_curvepoly(const LWCURVEPOLY *cp, MeosArray *edges, double scale)
 {
   for (int r = 0; r < (int) cp->nrings; r++)
-    extract_curvepoly_ring(cp->rings[r], edges);
+    extract_curvepoly_ring(cp->rings[r], edges, scale);
   return;
 }
 
@@ -431,7 +448,7 @@ extract_curvepoly(const LWCURVEPOLY *cp, MeosArray *edges)
  * @brief Return the edges of a geometry in a dynamic array (iterator)
  */
 static void
-geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
+geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges, double scale)
 {
   /* Skip empty (sub-)geometries: an empty component contributes no edges, and
    * extracting one would read vertex 0 of an empty point array. This covers
@@ -442,31 +459,31 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
   switch (geom->type)
   {
     case POINTTYPE:
-      extract_point((const LWPOINT *) geom, edges);
+      extract_point((const LWPOINT *) geom, edges, scale);
       break;
 
     case MULTIPOINTTYPE:
-      extract_mpoint((const LWMPOINT *) geom, edges);
+      extract_mpoint((const LWMPOINT *) geom, edges, scale);
       break;
 
     case LINETYPE:
-      extract_line((const LWLINE *) geom, edges);
+      extract_line((const LWLINE *) geom, edges, scale);
       break;
 
     case MULTILINETYPE:
-      extract_mline((const LWMLINE *) geom, edges);
+      extract_mline((const LWMLINE *) geom, edges, scale);
       break;
 
     case POLYGONTYPE:
-      extract_poly((const LWPOLY *) geom, edges);
+      extract_poly((const LWPOLY *) geom, edges, scale);
       break;
 
     case MULTIPOLYGONTYPE:
-      extract_mpoly((const LWMPOLY *) geom, edges);
+      extract_mpoly((const LWMPOLY *) geom, edges, scale);
       break;
 
     case TRIANGLETYPE:
-      extract_triangle((const LWTRIANGLE *) geom, edges);
+      extract_triangle((const LWTRIANGLE *) geom, edges, scale);
       break;
 
     /* A compound curve (chain of line/circular strings), a multicurve
@@ -484,16 +501,16 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
       for (int i = 0; i < (int) col->ngeoms; i++)
-        geom_extract_edges_iter(col->geoms[i], edges);
+        geom_extract_edges_iter(col->geoms[i], edges, scale);
       break;
     }
 
     case CIRCSTRINGTYPE:
-      extract_circstring((const LWCIRCSTRING *) geom, edges);
+      extract_circstring((const LWCIRCSTRING *) geom, edges, scale);
       break;
 
     case CURVEPOLYTYPE:
-      extract_curvepoly((const LWCURVEPOLY *) geom, edges);
+      extract_curvepoly((const LWCURVEPOLY *) geom, edges, scale);
       break;
 
     /* Unsupported type */
@@ -506,14 +523,28 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
 }
 
 /**
- * @brief Return the edges of a geometry in a dynamic array 
+ * @brief Return the edges of a geometry read at a scale, in a dynamic array
+ * @details Every coordinate is multiplied by @p scale as it is read, so the
+ * edges are those of the scaled geometry, built without copying it. A power
+ * of two scales every coordinate exactly
+ * @param[in] geom Geometry
+ * @param[in] scale Factor every coordinate is read at, a power of two
+ */
+static MeosArray *
+geom_extract_edges_scaled(const LWGEOM *geom, double scale)
+{
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  geom_extract_edges_iter(geom, edges, scale);
+  return edges;
+}
+
+/**
+ * @brief Return the edges of a geometry in a dynamic array
  */
 MeosArray *
 geom_extract_edges(const LWGEOM *geom)
 {
-  MeosArray *edges = meos_array_create(sizeof(Edge));
-  geom_extract_edges_iter(geom, edges);
-  return edges;
+  return geom_extract_edges_scaled(geom, 1.0);
 }
 
 /**
@@ -3892,7 +3923,7 @@ de9im_init(MeosDE9IM *m)
 
 static POINT2D *relate_linear_boundary_points(Edge **edges, int nedges,
   int *count);
-static MeosArray *relate_extract_edges(const LWGEOM *geom);
+static MeosArray *relate_extract_edges(const LWGEOM *geom, double scale);
 static bool relate_area_boundary_edge(const Edge *e);
 static void relate_area_edge_point(const Edge *e, double t, double *x,
   double *y);
@@ -3919,23 +3950,29 @@ typedef struct
  * geometries, and reading the edges of a multi-surface as those of the union
  * of its members is what a call on such a geometry mostly costs. The two
  * operands are therefore extracted ONCE where the relationship begins, and
- * each step borrows the edges from here rather than extracting them again
+ * each step borrows the edges from here rather than extracting them again.
+ * Every coordinate the relationship reads is read at one scale, which
+ * #relate_scale_factor sets from the two operands together
  */
 typedef struct
 {
   RelateOperand op[2];  /**< The two operands, in the order asked about */
+  double scale;         /**< Factor every coordinate is read at */
 } RelateOperands;
 
 /**
- * @brief Extract the edges of both operands of a relationship
+ * @brief Extract the edges of both operands of a relationship, reading every
+ * coordinate at a scale
  */
 static void
-relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
+relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2,
+  double scale)
 {
+  ops->scale = scale;
   ops->op[0].geom = g1;
-  ops->op[0].arr = relate_extract_edges(g1);
+  ops->op[0].arr = relate_extract_edges(g1, scale);
   ops->op[1].geom = g2;
-  ops->op[1].arr = relate_extract_edges(g2);
+  ops->op[1].arr = relate_extract_edges(g2, scale);
   return;
 }
 
@@ -3953,8 +3990,9 @@ relate_operands_free(RelateOperands *ops)
 /**
  * @brief Return the edges of a geometry, reading the ones a relationship has
  * already extracted where the geometry is one of its two operands
- * @param[in] ops Operands of the relationship, NULL where the caller stands
- * outside one, in which case the edges are extracted as before
+ * @param[in] ops Operands of the relationship. An operand carrying no edges,
+ * as where the matrix is asked for on its own, and a geometry that is not an
+ * operand have their edges extracted here, at the scale of the relationship
  * @param[in] geom Geometry
  * @return The edges, which the caller gives back with #relate_return_edges
  * rather than releasing itself
@@ -3962,11 +4000,10 @@ relate_operands_free(RelateOperands *ops)
 static MeosArray *
 relate_borrow_edges(const RelateOperands *ops, const LWGEOM *geom)
 {
-  if (ops)
-    for (int i = 0; i < 2; i++)
-      if (ops->op[i].geom == geom)
-        return ops->op[i].arr;
-  return relate_extract_edges(geom);
+  for (int i = 0; i < 2; i++)
+    if (ops->op[i].geom == geom && ops->op[i].arr)
+      return ops->op[i].arr;
+  return relate_extract_edges(geom, ops->scale);
 }
 
 /**
@@ -3977,10 +4014,9 @@ relate_borrow_edges(const RelateOperands *ops, const LWGEOM *geom)
 static void
 relate_return_edges(const RelateOperands *ops, MeosArray *arr)
 {
-  if (ops)
-    for (int i = 0; i < 2; i++)
-      if (ops->op[i].arr == arr)
-        return;
+  for (int i = 0; i < 2; i++)
+    if (ops->op[i].arr == arr)
+      return;
   meos_array_destroy(arr);
   return;
 }
@@ -4335,13 +4371,16 @@ relate_count_points(const LWGEOM *geom)
  * @brief Append the points of a point geometry to an array
  */
 static void
-relate_extract_points_iter(const LWGEOM *geom, POINT2D *result, int *count)
+relate_extract_points_iter(const LWGEOM *geom, POINT2D *result, int *count,
+  double scale)
 {
   if (! geom || lwgeom_is_empty(geom))
     return;
   if (geom->type == POINTTYPE)
   {
-    result[*count] = *getPoint2d_cp(((const LWPOINT *) geom)->point, 0);
+    const POINT2D *p = getPoint2d_cp(((const LWPOINT *) geom)->point, 0);
+    result[*count].x = p->x * scale;
+    result[*count].y = p->y * scale;
     (*count)++;
     return;
   }
@@ -4349,7 +4388,7 @@ relate_extract_points_iter(const LWGEOM *geom, POINT2D *result, int *count)
     return;
   const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
   for (uint32_t i = 0; i < col->ngeoms; i++)
-    relate_extract_points_iter(col->geoms[i], result, count);
+    relate_extract_points_iter(col->geoms[i], result, count, scale);
   return;
 }
 
@@ -4359,14 +4398,16 @@ relate_extract_points_iter(const LWGEOM *geom, POINT2D *result, int *count)
  * one of them holding a single element, so both are related by the same code
  * @param[in] geom Point geometry
  * @param[out] count Number of points, zero for an empty geometry
+ * @param[in] scale Factor every coordinate is read at, the one the edges the
+ * points are located against are read at
  */
 static POINT2D *
-relate_extract_points(const LWGEOM *geom, int *count)
+relate_extract_points(const LWGEOM *geom, int *count, double scale)
 {
   POINT2D *result = palloc(sizeof(POINT2D) *
     (size_t) (relate_count_points(geom) + 1));
   *count = 0;
-  relate_extract_points_iter(geom, result, count);
+  relate_extract_points_iter(geom, result, count, scale);
   return result;
 }
 
@@ -4393,11 +4434,12 @@ relate_point_in_points(double x, double y, const POINT2D *points, int count)
  * compared element by element
  */
 static void
-relate_point_point(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
+relate_point_point(const LWGEOM *g1, const LWGEOM *g2, double scale,
+  MeosDE9IM *m)
 {
   int n1, n2;
-  POINT2D *p1 = relate_extract_points(g1, &n1);
-  POINT2D *p2 = relate_extract_points(g2, &n2);
+  POINT2D *p1 = relate_extract_points(g1, &n1, scale);
+  POINT2D *p2 = relate_extract_points(g2, &n2, scale);
 
   for (int i = 0; i < n1; i++)
   {
@@ -4425,7 +4467,7 @@ relate_point_linear(const LWGEOM *point_geom, const LWGEOM *line_geom,
   const RelateOperands *ops, MeosDE9IM *m)
 {
   int np;
-  POINT2D *points = relate_extract_points(point_geom, &np);
+  POINT2D *points = relate_extract_points(point_geom, &np, ops->scale);
   MeosArray *arr = relate_borrow_edges(ops, line_geom);
   int nedges = (int) arr->count;
   Edge **edges = palloc(sizeof(Edge *) * (size_t) (nedges + 1));
@@ -4481,7 +4523,7 @@ relate_point_area(const LWGEOM *point_geom, const LWGEOM *area_geom,
   const RelateOperands *ops, MeosDE9IM *m)
 {
   int np;
-  POINT2D *points = relate_extract_points(point_geom, &np);
+  POINT2D *points = relate_extract_points(point_geom, &np, ops->scale);
   MeosArray *arr = relate_borrow_edges(ops, area_geom);
   int nedges = (int) arr->count;
   Edge **edges = palloc(sizeof(Edge *) * (size_t) (nedges + 1));
@@ -6640,7 +6682,7 @@ typedef struct
  */
 static void
 relate_area_comps_iter(const LWGEOM *geom, RelateComp **comps, int *ncomp,
-  int *maxcomp, bool index)
+  int *maxcomp, bool index, double scale)
 {
   if (! geom || lwgeom_is_empty(geom))
     return;
@@ -6654,7 +6696,8 @@ relate_area_comps_iter(const LWGEOM *geom, RelateComp **comps, int *ncomp,
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
       for (uint32_t i = 0; i < col->ngeoms; i++)
-        relate_area_comps_iter(col->geoms[i], comps, ncomp, maxcomp, index);
+        relate_area_comps_iter(col->geoms[i], comps, ncomp, maxcomp, index,
+          scale);
       return;
     }
     case POLYGONTYPE:
@@ -6670,7 +6713,7 @@ relate_area_comps_iter(const LWGEOM *geom, RelateComp **comps, int *ncomp,
     *comps = repalloc(*comps, sizeof(RelateComp) * (*maxcomp));
   }
   RelateComp *c = &(*comps)[(*ncomp)++];
-  c->arr = geom_extract_edges(geom);
+  c->arr = geom_extract_edges_scaled(geom, scale);
   c->nedges = (int) c->arr->count;
   c->edges = palloc(sizeof(Edge *) * Max(c->nedges, 1));
   for (int i = 0; i < c->nedges; i++)
@@ -6937,9 +6980,9 @@ relate_same_portion(const Edge *a, const Edge *b)
  * a multi-geometry
  */
 static MeosArray *
-relate_union_edges(const LWGEOM *geom)
+relate_union_edges(const LWGEOM *geom, double scale)
 {
-  MeosArray *all = geom_extract_edges(geom);
+  MeosArray *all = geom_extract_edges_scaled(geom, scale);
   int nall = (int) all->count;
   /* Every edge is located against every component, so a component is read
    * once for each edge and the two indexes below are worth what the same
@@ -6948,7 +6991,7 @@ relate_union_edges(const LWGEOM *geom)
 
   int ncomp = 0, maxcomp = 8;
   RelateComp *comps = palloc(sizeof(RelateComp) * maxcomp);
-  relate_area_comps_iter(geom, &comps, &ncomp, &maxcomp, index);
+  relate_area_comps_iter(geom, &comps, &ncomp, &maxcomp, index, scale);
 
   /* A collection holding at most one surface has no overlap to resolve */
   if (ncomp < 2)
@@ -7075,9 +7118,11 @@ relate_union_edges(const LWGEOM *geom)
  * multipolygon may share a boundary edge -- edge-adjacent polygons are a valid
  * multipolygon -- and that edge lies in the interior of what they cover
  * together, so reading the members' own edges reports it as boundary
+ * @param[in] geom Geometry
+ * @param[in] scale Factor every coordinate is read at, a power of two
  */
 static MeosArray *
-relate_extract_edges(const LWGEOM *geom)
+relate_extract_edges(const LWGEOM *geom, double scale)
 {
   switch (geom->type)
   {
@@ -7086,9 +7131,9 @@ relate_extract_edges(const LWGEOM *geom)
     case TINTYPE:
     case POLYHEDRALSURFACETYPE:
     case COLLECTIONTYPE:
-      return relate_union_edges(geom);
+      return relate_union_edges(geom, scale);
     default:
-      return geom_extract_edges(geom);
+      return geom_extract_edges_scaled(geom, scale);
   }
 }
 
@@ -7104,9 +7149,12 @@ relate_extract_edges(const LWGEOM *geom)
  * each dimension with a separate predicate cannot distinguish such a
  * collection from a homogeneous one, and routes it to whichever predicate is
  * tried first
+ * @param[in] geom Geometry
+ * @param[in] scale Factor every coordinate is read at, the one its edges are
+ * read at, so that a ring the edges read as enclosing no area is read so here
  */
 static int
-relate_dim_mask(const LWGEOM *geom)
+relate_dim_mask(const LWGEOM *geom, double scale)
 {
   if (! geom || lwgeom_is_empty(geom))
     return 0;
@@ -7124,10 +7172,11 @@ relate_dim_mask(const LWGEOM *geom)
     case POLYGONTYPE:
       /* A ring enclosing no area bounds no region, so what the surface draws
        * is its own linework and the dimension follows what it draws */
-      return ring_encloses_no_area(((const LWPOLY *) geom)->rings[0]) ? 2 : 4;
+      return ring_encloses_no_area(((const LWPOLY *) geom)->rings[0],
+        scale) ? 2 : 4;
     case TRIANGLETYPE:
-      return ring_encloses_no_area(((const LWTRIANGLE *) geom)->points) ?
-        2 : 4;
+      return ring_encloses_no_area(((const LWTRIANGLE *) geom)->points,
+        scale) ? 2 : 4;
     case CURVEPOLYTYPE:
     case MULTISURFACETYPE:
       return 4;
@@ -7145,7 +7194,7 @@ relate_dim_mask(const LWGEOM *geom)
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
       int mask = 0;
       for (uint32_t i = 0; i < col->ngeoms; i++)
-        mask |= relate_dim_mask(col->geoms[i]);
+        mask |= relate_dim_mask(col->geoms[i], scale);
       return (mask & 4) ? 4 : mask;
     }
     case COLLECTIONTYPE:
@@ -7153,7 +7202,7 @@ relate_dim_mask(const LWGEOM *geom)
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
       int mask = 0;
       for (uint32_t i = 0; i < col->ngeoms; i++)
-        mask |= relate_dim_mask(col->geoms[i]);
+        mask |= relate_dim_mask(col->geoms[i], scale);
       return mask;
     }
     default:
@@ -7170,13 +7219,13 @@ relate_dim_mask(const LWGEOM *geom)
  * @return The dimension, or -1 when the boundary is empty
  */
 static int8_t
-relate_boundary_dimension(const LWGEOM *geom)
+relate_boundary_dimension(const LWGEOM *geom, double scale)
 {
   if (relate_is_areal(geom))
     return 1;
   if (! relate_is_linear(geom))
     return -1;
-  MeosArray *arr = relate_extract_edges(geom);
+  MeosArray *arr = relate_extract_edges(geom, scale);
   int nedges = (int) arr->count;
   Edge **edges = palloc(sizeof(Edge *) * (size_t) (nedges + 1));
   for (int i = 0; i < nedges; i++)
@@ -7195,7 +7244,8 @@ relate_boundary_dimension(const LWGEOM *geom)
  * @brief Collect the components of a geometry having a given dimension
  */
 static void
-relate_stratum_iter(const LWGEOM *geom, int dim, LWGEOM **comps, int *ncomp)
+relate_stratum_iter(const LWGEOM *geom, int dim, LWGEOM **comps, int *ncomp,
+  double scale)
 {
   if (! geom || lwgeom_is_empty(geom))
     return;
@@ -7203,10 +7253,10 @@ relate_stratum_iter(const LWGEOM *geom, int dim, LWGEOM **comps, int *ncomp)
   {
     const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
     for (uint32_t i = 0; i < col->ngeoms; i++)
-      relate_stratum_iter(col->geoms[i], dim, comps, ncomp);
+      relate_stratum_iter(col->geoms[i], dim, comps, ncomp, scale);
     return;
   }
-  if (relate_dim_mask(geom) == (1 << dim))
+  if (relate_dim_mask(geom, scale) == (1 << dim))
     comps[(*ncomp)++] = (LWGEOM *) geom;
   return;
 }
@@ -7265,9 +7315,9 @@ relate_any_edge_intersection(const Edge *a, const Edge *b, double ix[2],
  */
 static bool
 relate_comp_covered(const LWGEOM *comp, const RelateComp *comps, int ncomp,
-  Edge **ledges, int nledges)
+  Edge **ledges, int nledges, double scale)
 {
-  MeosArray *arr = geom_extract_edges(comp);
+  MeosArray *arr = geom_extract_edges_scaled(comp, scale);
   int n = (int) arr->count;
   bool result = (n > 0);
   for (int i = 0; i < n && result; i++)
@@ -7322,11 +7372,11 @@ relate_comp_covered(const LWGEOM *comp, const RelateComp *comps, int ncomp,
  */
 static LWGEOM *
 relate_stratum(const LWGEOM *geom, int dim, int ncomps, const LWGEOM *area,
-  const LWGEOM *line)
+  const LWGEOM *line, double scale)
 {
   LWGEOM **comps = palloc(sizeof(LWGEOM *) * ncomps);
   int ncomp = 0;
-  relate_stratum_iter(geom, dim, comps, &ncomp);
+  relate_stratum_iter(geom, dim, comps, &ncomp, scale);
 
   /* Leave out every component a stratum of a larger dimension already
    * answers for */
@@ -7335,15 +7385,16 @@ relate_stratum(const LWGEOM *geom, int dim, int ncomps, const LWGEOM *area,
     int nareal = 0, maxareal = 8;
     RelateComp *areal = palloc(sizeof(RelateComp) * maxareal);
     if (area)
-      relate_area_comps_iter(area, &areal, &nareal, &maxareal, false);
-    MeosArray *larr = line ? geom_extract_edges(line) : NULL;
+      relate_area_comps_iter(area, &areal, &nareal, &maxareal, false, scale);
+    MeosArray *larr = line ? geom_extract_edges_scaled(line, scale) : NULL;
     int nledges = larr ? (int) larr->count : 0;
     Edge **ledges = palloc(sizeof(Edge *) * Max(nledges, 1));
     for (int i = 0; i < nledges; i++)
       ledges[i] = (Edge *) meos_array_get(larr, i);
     int nkept = 0;
     for (int i = 0; i < ncomp; i++)
-      if (! relate_comp_covered(comps[i], areal, nareal, ledges, nledges))
+      if (! relate_comp_covered(comps[i], areal, nareal, ledges, nledges,
+          scale))
         comps[nkept++] = comps[i];
     ncomp = nkept;
     pfree(ledges);
@@ -7416,7 +7467,7 @@ relate_simple(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
   const RelateOperands *ops, MeosDE9IM *m)
 {
   if (mask1 == 1 && mask2 == 1)
-    relate_point_point(g1, g2, m);
+    relate_point_point(g1, g2, ops->scale, m);
   else if (mask1 == 1 && mask2 == 2)
     relate_point_linear(g1, g2, ops, m);
   else if (mask1 == 2 && mask2 == 1)
@@ -7467,10 +7518,10 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
    * larger ones already answer for */
   for (int j = 2; j >= 0; j--)
   {
-    s1[j] = (mask1 & (1 << j)) ?
-      relate_stratum(g1, j, ncomp1, s1[2], j == 0 ? s1[1] : NULL) : NULL;
-    s2[j] = (mask2 & (1 << j)) ?
-      relate_stratum(g2, j, ncomp2, s2[2], j == 0 ? s2[1] : NULL) : NULL;
+    s1[j] = (mask1 & (1 << j)) ? relate_stratum(g1, j, ncomp1, s1[2],
+      j == 0 ? s1[1] : NULL, ops->scale) : NULL;
+    s2[j] = (mask2 & (1 << j)) ? relate_stratum(g2, j, ncomp2, s2[2],
+      j == 0 ? s2[1] : NULL, ops->scale) : NULL;
   }
   /* Leaving a stratum out may leave a single dimension on a side */
   mask1 = (s1[0] ? 1 : 0) | (s1[1] ? 2 : 0) | (s1[2] ? 4 : 0);
@@ -7550,8 +7601,9 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
  * @brief Compute the DE-9IM intersection matrix, reading the edges a
  * relationship has already extracted where it has any
  * @param[in] g1,g2 Geometries
- * @param[in] ops Operands of the relationship the matrix answers a step of,
- * NULL where the matrix is asked for on its own
+ * @param[in] ops Operands of the relationship, carrying the scale every
+ * coordinate is read at and, where the matrix answers a step of a
+ * relationship, the edges it has already extracted
  * @param[out] result The matrix
  * @return true if the geometry pair is supported, which is what
  * #geom_meos_coverage answers 1 for each geometry
@@ -7580,24 +7632,69 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
     if (! empty2)
     {
       de9im_add(&m.ei, (int8_t) relate_dimension(g2));
-      de9im_add(&m.eb, relate_boundary_dimension(g2));
+      de9im_add(&m.eb, relate_boundary_dimension(g2, ops->scale));
     }
     if (! empty1)
     {
       de9im_add(&m.ie, (int8_t) relate_dimension(g1));
-      de9im_add(&m.be, relate_boundary_dimension(g1));
+      de9im_add(&m.be, relate_boundary_dimension(g1, ops->scale));
     }
     de9im_add(&m.ee, 2);
     de9im_to_string(&m, result);
     return true;
   }
 
-  int mask1 = relate_dim_mask(g1);
-  int mask2 = relate_dim_mask(g2);
+  int mask1 = relate_dim_mask(g1, ops->scale);
+  int mask2 = relate_dim_mask(g2, ops->scale);
   relate_dispatch(g1, g2, mask1, mask2, ops, &m);
 
   de9im_to_string(&m, result);
   return true;
+}
+
+/**
+ * @brief Return the scale a relationship reads the coordinates of two
+ * geometries at: the power of two bringing a joint extent below 1 into
+ * [1, 2), and 1 otherwise
+ * @details The relationship of two geometries does not change when both are
+ * scaled by the same factor, and a power of two scales every coordinate
+ * exactly, so the engine reading both at the scale answers as it would on the
+ * originals. The engine compares against bounds of a fixed size, which decide
+ * the shape of the edges it reads once the geometries are small against them:
+ * a curve and its buffer of radius 2^-20 read as meeting outside the buffer.
+ * Geometries spanning a unit or more are read as they are
+ * @return 1 where either geometry is geodetic or empty, where the joint
+ * extent is zero or a unit or more, or where a scaled coordinate would not be
+ * finite
+ */
+static double
+relate_scale_factor(const LWGEOM *g1, const LWGEOM *g2)
+{
+  /* A geodetic box is geocentric and says nothing of the coordinates */
+  if (FLAGS_GET_GEODETIC(g1->flags) || FLAGS_GET_GEODETIC(g2->flags) ||
+      lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
+    return 1.0;
+  /* The box a geometry caches, or else one computed here and not kept, so
+   * that neither geometry is written to. The two are joined on the plane
+   * whatever dimensions each carries */
+  GBOX c1, c2;
+  if (g1->bbox)
+    c1 = *g1->bbox;
+  else if (lwgeom_calculate_gbox(g1, &c1) != LW_SUCCESS)
+    return 1.0;
+  if (g2->bbox)
+    c2 = *g2->bbox;
+  else if (lwgeom_calculate_gbox(g2, &c2) != LW_SUCCESS)
+    return 1.0;
+  double xmin = Min(c1.xmin, c2.xmin), xmax = Max(c1.xmax, c2.xmax);
+  double ymin = Min(c1.ymin, c2.ymin), ymax = Max(c1.ymax, c2.ymax);
+  double ext = Max(xmax - xmin, ymax - ymin);
+  if (! (ext > 0.0 && ext < 1.0))
+    return 1.0;
+  double f = scalbn(1.0, - ilogb(ext));
+  double reach = Max(Max(fabs(xmin), fabs(xmax)), Max(fabs(ymin),
+    fabs(ymax)));
+  return isfinite(reach * f) ? f : 1.0;
 }
 
 /**
@@ -7611,7 +7708,13 @@ relate_matrix(const LWGEOM *g1, const LWGEOM *g2, const RelateOperands *ops,
 bool
 meos_relate(const LWGEOM *g1, const LWGEOM *g2, char result[10])
 {
-  return relate_matrix(g1, g2, NULL, result);
+  /* The matrix is asked for on its own, so each cell extracts the edges it
+   * reads, at the scale of the pair */
+  RelateOperands ops;
+  ops.op[0].geom = g1; ops.op[0].arr = NULL;
+  ops.op[1].geom = g2; ops.op[1].arr = NULL;
+  ops.scale = relate_scale_factor(g1, g2);
+  return relate_matrix(g1, g2, &ops, result);
 }
 
 /**
@@ -8157,7 +8260,7 @@ relate_ctx_make(const LWGEOM *geom)
     return NULL;
   struct RelateCtx *ctx = palloc(sizeof(struct RelateCtx));
   ctx->op.geom = geom;
-  ctx->op.arr = relate_extract_edges(geom);
+  ctx->op.arr = relate_extract_edges(geom, 1.0);
   return ctx;
 }
 
@@ -8208,9 +8311,11 @@ meos_spatialrel_ctx(const void *ctx1, const void *ctx2, spatialRel rel,
     return true;
   }
 
+  /* Each context extracted the edges of its geometry as they are */
   RelateOperands ops;
   ops.op[0] = c1->op;
   ops.op[1] = c2->op;
+  ops.scale = 1.0;
   return relate_spatialrel_ops(&ops, rel, result);
 }
 
@@ -8245,7 +8350,7 @@ meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
    * of a multi-surface as those of the union of its members is what a call on
    * such a geometry mostly costs, and it was paid once per step */
   RelateOperands ops;
-  relate_operands_init(&ops, g1, g2);
+  relate_operands_init(&ops, g1, g2, relate_scale_factor(g1, g2));
   bool covered = relate_spatialrel_ops(&ops, rel, result);
   relate_operands_free(&ops);
   return covered;

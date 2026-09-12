@@ -732,6 +732,35 @@ int main(void)
   assert(seg_ok == 41);
   meos_errno_reset();
 
+  /* The relationship of a curve to its own buffer takes nothing from the size
+   * of the pair. The compound curve from (0 0) to (10s 0) closed by the arc
+   * through (5s 2s), buffered by s, covers the curve, with the matrix
+   * 1F2FF1FF2, at every scale from 1 to 2^-23. A comparison against a bound of
+   * a fixed size puts a stretch of the curve outside its buffer, EI = 1, at
+   * 2^-20 and 2^-22 */
+  double cov_s = 1.0;
+  int cov_ok = 0;
+  for (int k = 0; k >= -23; k--, cov_s *= 0.5)
+  {
+    char curve_wkt[256];
+    snprintf(curve_wkt, sizeof curve_wkt,
+      "COMPOUNDCURVE((0 0,%.17g 0),CIRCULARSTRING(%.17g 0,%.17g %.17g,0 0))",
+      10 * cov_s, 10 * cov_s, 5 * cov_s, 2 * cov_s);
+    GSERIALIZED *curve = geom_in(curve_wkt, -1);
+    assert(curve != NULL);
+    GSERIALIZED *cbuf = geom_buffer(curve, cov_s, "");
+    assert(cbuf != NULL);
+    char *cm = geom_relate(cbuf, curve);
+    assert(cm != NULL && strcmp(cm, "1F2FF1FF2") == 0);
+    assert(geom_covers(cbuf, curve));
+    cov_ok++;
+    free(cm); free(cbuf); free(curve);
+  }
+  printf("the buffer of a curve covers the curve at %d scales from 1 to "
+    "2^-23\n", cov_ok);
+  assert(cov_ok == 24);
+  meos_errno_reset();
+
   /* The distance between curves is checked on the cases PostGIS gives its
    * own unit tests for the distance fixes of its 3.6 line (ticket 5989): a
    * point outside a curve polygon beside its arc, a point beside the arc of a
