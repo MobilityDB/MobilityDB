@@ -390,6 +390,38 @@ lw_dist2d_recursive(const LWGEOM *lwg1, const LWGEOM *lwg2, DISTPTS *dl)
 	return LW_TRUE;
 }
 
+/* MEOS: the walk above records the two ends of the shortest line in the order
+ * of its own two arguments, which is what dl->twisted states for each pair it
+ * measures. A curve polygon measures one of its rings against the other
+ * geometry by that walk, in the order the two reach the curve polygon's own
+ * function, which is the order of the pair being measured only where
+ * dl->twisted is positive. Where it is negative, the ends are read in the
+ * other order on the way in and on the way out, and dl->twisted is restored
+ * for the caller */
+static int
+lw_dist2d_recursive_oriented(const LWGEOM *lwg1, const LWGEOM *lwg2, DISTPTS *dl)
+{
+	int twisted = dl->twisted;
+	POINT2D p;
+	int rv;
+
+	if (twisted < 0)
+	{
+		p = dl->p1;
+		dl->p1 = dl->p2;
+		dl->p2 = p;
+	}
+	rv = lw_dist2d_recursive(lwg1, lwg2, dl);
+	if (twisted < 0)
+	{
+		p = dl->p1;
+		dl->p1 = dl->p2;
+		dl->p2 = p;
+	}
+	dl->twisted = twisted;
+	return rv;
+}
+
 int
 lw_dist2d_distribute_bruteforce(const LWGEOM *lwg1, const LWGEOM *lwg2, DISTPTS *dl)
 {
@@ -694,7 +726,7 @@ lw_dist2d_point_curvepoly(LWPOINT *point, LWCURVEPOLY *poly, DISTPTS *dl)
 
 	/* Return distance to outer ring if not inside it */
 	if (lwgeom_contains_point(poly->rings[0], p) == LW_OUTSIDE)
-		return lw_dist2d_recursive((LWGEOM *)point, poly->rings[0], dl);
+		return lw_dist2d_recursive_oriented((LWGEOM *)point, poly->rings[0], dl);
 
 	/* Inside the outer ring.
 	 * Scan though each of the inner rings looking to see if its inside.  If not, distance==0.
@@ -702,7 +734,7 @@ lw_dist2d_point_curvepoly(LWPOINT *point, LWCURVEPOLY *poly, DISTPTS *dl)
 	 */
 	for (uint32_t i = 1; i < poly->nrings; i++)
 		if (lwgeom_contains_point(poly->rings[i], p) == LW_INSIDE)
-			return lw_dist2d_recursive((LWGEOM *)point, poly->rings[i], dl);
+			return lw_dist2d_recursive_oriented((LWGEOM *)point, poly->rings[i], dl);
 
 	/* Is inside the polygon */
 	lw_dist2d_distpts_set(dl, 0.0, p, p);
@@ -788,11 +820,11 @@ lw_dist2d_line_curvepoly(LWLINE *line, LWCURVEPOLY *poly, DISTPTS *dl)
 
 	/* Line has a point outside curvepoly. Check distance to outer ring only. */
 	if (lwgeom_contains_point(poly->rings[0], pt) == LW_OUTSIDE)
-		return lw_dist2d_recursive((LWGEOM *)line, poly->rings[0], dl);
+		return lw_dist2d_recursive_oriented((LWGEOM *)line, poly->rings[0], dl);
 
 	for (uint32_t i = 1; i < poly->nrings; i++)
 	{
-		if (!lw_dist2d_recursive((LWGEOM *)line, poly->rings[i], dl))
+		if (!lw_dist2d_recursive_oriented((LWGEOM *)line, poly->rings[i], dl))
 			return LW_FALSE;
 
 		/* just a check if the answer is already given */
@@ -911,12 +943,12 @@ lw_dist2d_tri_curvepoly(LWTRIANGLE *tri, LWCURVEPOLY *poly, DISTPTS *dl)
 
 	/* If we are looking for maxdistance, just check the outer rings.*/
 	if (dl->mode == DIST_MAX)
-		return lw_dist2d_recursive((LWGEOM *)tri, poly->rings[0], dl);
+		return lw_dist2d_recursive_oriented((LWGEOM *)tri, poly->rings[0], dl);
 
 	/* Line has a point outside curvepoly. Check distance to outer ring only. */
 	if (lwgeom_contains_point(poly->rings[0], pt) == LW_OUTSIDE)
 	{
-		if (lw_dist2d_recursive((LWGEOM *)tri, poly->rings[0], dl))
+		if (lw_dist2d_recursive_oriented((LWGEOM *)tri, poly->rings[0], dl))
 			return LW_TRUE;
 		/* Maybe poly is inside triangle? */
 		if (lwgeom_contains_point((LWGEOM *)tri, lw_curvering_getfirstpoint2d_cp(poly->rings[0])) != LW_OUTSIDE)
@@ -928,7 +960,7 @@ lw_dist2d_tri_curvepoly(LWTRIANGLE *tri, LWCURVEPOLY *poly, DISTPTS *dl)
 
 	for (uint32_t i = 1; i < poly->nrings; i++)
 	{
-		if (!lw_dist2d_recursive((LWGEOM *)tri, poly->rings[i], dl))
+		if (!lw_dist2d_recursive_oriented((LWGEOM *)tri, poly->rings[i], dl))
 			return LW_FALSE;
 
 		/* just a check if the answer is already given */
@@ -1061,7 +1093,7 @@ lw_dist2d_curvepoly_curvepoly(LWCURVEPOLY *poly1, LWCURVEPOLY *poly2, DISTPTS *d
 
 	/*1	if we are looking for maxdistance, just check the outer rings.*/
 	if (dl->mode == DIST_MAX)
-		return lw_dist2d_recursive(poly1->rings[0], poly2->rings[0], dl);
+		return lw_dist2d_recursive_oriented(poly1->rings[0], poly2->rings[0], dl);
 
 	/* 2	check if poly1 has first point outside poly2 and vice versa, if so, just check outer rings
 	here it would be possible to handle the information about which one is inside which one and only search for the
@@ -1071,7 +1103,7 @@ lw_dist2d_curvepoly_curvepoly(LWCURVEPOLY *poly1, LWCURVEPOLY *poly2, DISTPTS *d
 	{
 		pt = lw_curvering_getfirstpoint2d_cp(poly2->rings[0]);
 		if (lwgeom_contains_point(poly1->rings[0], pt) == LW_OUTSIDE)
-			return lw_dist2d_recursive(poly1->rings[0], poly2->rings[0], dl);
+			return lw_dist2d_recursive_oriented(poly1->rings[0], poly2->rings[0], dl);
 	}
 
 	/*3	check if first point of poly2 is in a hole of poly1. If so check outer ring of poly2 against that hole
@@ -1079,14 +1111,14 @@ lw_dist2d_curvepoly_curvepoly(LWCURVEPOLY *poly1, LWCURVEPOLY *poly2, DISTPTS *d
 	pt = lw_curvering_getfirstpoint2d_cp(poly2->rings[0]);
 	for (uint32_t i = 1; i < poly1->nrings; i++)
 		if (lwgeom_contains_point(poly1->rings[i], pt) != LW_OUTSIDE)
-			return lw_dist2d_recursive(poly1->rings[i], poly2->rings[0], dl);
+			return lw_dist2d_recursive_oriented(poly1->rings[i], poly2->rings[0], dl);
 
 	/*4	check if first point of poly1 is in a hole of poly2. If so check outer ring of poly1 against that hole
 	 * of poly2*/
 	pt = lw_curvering_getfirstpoint2d_cp(poly1->rings[0]);
 	for (uint32_t i = 1; i < poly2->nrings; i++)
 		if (lwgeom_contains_point(poly2->rings[i], pt) != LW_OUTSIDE)
-			return lw_dist2d_recursive(poly1->rings[0], poly2->rings[i], dl);
+			return lw_dist2d_recursive_oriented(poly1->rings[0], poly2->rings[i], dl);
 
 	/*5	If we have come all the way here we know that the first point of one of them is inside the other ones
 	 * outer ring and not in holes so we check which one is inside.*/
@@ -1497,8 +1529,13 @@ lw_dist2d_seg_arc(const POINT2D *A1,
 	/* or, one of the arc end points is the closest */
 	else if (pt_in_seg && !pt_in_arc)
 	{
+		/* MEOS: an end of the arc measured against the segment reads the two
+		 * geometries in the other order, which dl->twisted records, as in
+		 * lw_dist2d_seg_seg */
+		dl->twisted = -dl->twisted;
 		lw_dist2d_pt_seg(B1, A1, A2, dl);
 		lw_dist2d_pt_seg(B3, A1, A2, dl);
+		dl->twisted = -dl->twisted;
 		return LW_TRUE;
 	}
 	/* Finally, one of the end-point to end-point combos is the closest. */
@@ -1583,7 +1620,7 @@ lw_dist2d_pt_arc(const POINT2D *P, const POINT2D *A1, const POINT2D *A2, const P
 		POINT2D X;
 		if (d == 0.0)
 		{
-			lw_dist2d_pt_pt_at(A1, P, r, dl);
+			lw_dist2d_pt_pt_at(P, A1, r, dl); /* MEOS: P, of the first geometry, first */
 			return LW_TRUE;
 		}
 		X.x = P->x - (d - r) * dx / d;
@@ -1614,7 +1651,7 @@ lw_dist2d_pt_arc(const POINT2D *P, const POINT2D *A1, const POINT2D *A2, const P
 	/* P is the centre of the circle, every point of the arc at the radius */
 	if (pc == 0.0)
 	{
-		lw_dist2d_pt_pt_at(A1, P, radius, dl);
+		lw_dist2d_pt_pt_at(P, A1, radius, dl); /* MEOS: P, of the first geometry, first */
 		return LW_TRUE;
 	}
 
@@ -1633,9 +1670,10 @@ lw_dist2d_pt_arc(const POINT2D *P, const POINT2D *A1, const POINT2D *A2, const P
 	}
 	else
 	{
-		/* Distance is the minimum of the distances to the arc end points */
-		lw_dist2d_pt_pt(A1, P, dl);
-		lw_dist2d_pt_pt(A3, P, dl);
+		/* Distance is the minimum of the distances to the arc end points;
+		 * MEOS: each measured from P, the point of the first geometry */
+		lw_dist2d_pt_pt(P, A1, dl);
+		lw_dist2d_pt_pt(P, A3, dl);
 	}
 	return LW_TRUE;
 }
@@ -1795,9 +1833,18 @@ lw_dist2d_arc_arc(
 
 	/* What if one or both of our "arcs" is actually a point? */
 	if (lw_arc_is_pt(B1, B2, B3) && lw_arc_is_pt(A1, A2, A3))
-		return lw_dist2d_pt_pt(B1, A1, dl);
+		return lw_dist2d_pt_pt(A1, B1, dl); /* MEOS: the point of A first */
 	else if (lw_arc_is_pt(B1, B2, B3))
-		return lw_dist2d_pt_arc(B1, A1, A2, A3, dl);
+	{
+		/* MEOS: the point B1 measured against the arc A reads the two
+		 * geometries in the other order, which dl->twisted records, as in
+		 * lw_dist2d_seg_seg */
+		int rv;
+		dl->twisted = -dl->twisted;
+		rv = lw_dist2d_pt_arc(B1, A1, A2, A3, dl);
+		dl->twisted = -dl->twisted;
+		return rv;
+	}
 	else if (lw_arc_is_pt(A1, A2, A3))
 		return lw_dist2d_pt_arc(A1, B1, B2, B3, dl);
 
@@ -1815,7 +1862,15 @@ lw_dist2d_arc_arc(
 
 	/* B is co-linear, delegate to lw_dist_seg_arc here. */
 	if (radius_B < 0)
-		return lw_dist2d_seg_arc(B1, B3, A1, A2, A3, dl);
+	{
+		/* MEOS: the segment B1-B3 measured against the arc A reads the two
+		 * geometries in the other order, which dl->twisted records */
+		int rv;
+		dl->twisted = -dl->twisted;
+		rv = lw_dist2d_seg_arc(B1, B3, A1, A2, A3, dl);
+		dl->twisted = -dl->twisted;
+		return rv;
+	}
 
 	/* Circle relationships */
 	d = distance2d_pt_pt(&center_A, &center_B);
