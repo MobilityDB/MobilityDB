@@ -3810,8 +3810,8 @@ tsequenceset_after_timestamptz(const TSequenceSet *ss, TimestampTz t,
 Temporal *
 temporal_before_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
 {
-  assert(temp);
-  assert(temptype_subtype(temp->subtype));
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
   switch (temp->subtype)
   {
     case TINSTANT:
@@ -3839,8 +3839,8 @@ temporal_before_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
 Temporal *
 temporal_after_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
 {
-  assert(temp);
-  assert(temptype_subtype(temp->subtype));
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
   switch (temp->subtype)
   {
     case TINSTANT:

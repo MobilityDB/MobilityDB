@@ -2037,7 +2037,8 @@ boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 bool
 temporal_time_overlaps(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp1, false); VALIDATE_NOT_NULL(temp2, false);
   /* Cheap bounding-span reject first (no allocation). The bounding span is also
    * the exact time of an instant or a single sequence, which have no gaps. */
   Span s1, s2;
