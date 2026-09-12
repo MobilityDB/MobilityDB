@@ -292,16 +292,36 @@ SELECT set(ARRAY[pcpoint(1, 1.0, 1.0, 1.0), pcpoint(4, 2.0, 2.0, 2.0)]);
 
 
 -- The plain binary form omits the SRID and round-trips under a schema that
--- declares one. The extended form has no SQL surface here: tpcpoint deploys
--- asBinary and asHexWKB and neither extended spelling, so what a
--- spatiotemporal value writes into the extended form is not observable from
--- SQL for this family.
+-- declares one; the extended forms state the SRID of the schema and
+-- round-trip as well.
 WITH t AS (SELECT tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz),
   tpcpoint(pcpoint(4, 2.0, 2.0, 2.0), '2024-01-02'::timestamptz)]) AS temp)
 SELECT tpcpointFromBinary(asBinary(temp)) = temp AS wkb_roundtrips,
+  tpcpointFromEWKB(asEWKB(temp)) = temp AS ewkb_roundtrips,
+  tpcpointFromHexEWKB(asHexEWKB(temp)) = temp AS hexewkb_roundtrips,
+  tpcpointFromText(asText(temp)) = temp AS text_roundtrips,
+  tpcpointFromEWKT(asEWKT(temp)) = temp AS ewkt_roundtrips,
+  octet_length(asEWKB(temp)) - octet_length(asBinary(temp)) AS extra_bytes,
+  split_part(asEWKT(temp), ';', 1) AS ewkt_srid,
   SRID(temp) AS srid
 FROM t;
+-- A stated SRID other than the one of the schema is refused, in text and in
+-- binary
+SELECT tpcpointFromEWKT('SRID=3857;' ||
+  asText(tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz)));
+SELECT tpcpointFromHexEWKB(replace(asHexEWKB(
+  tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz), 'XDR'),
+  '000010E6', '00000F11'));
+-- The array form states the SRID of each element, as the element-wise form does
+WITH a AS (SELECT ARRAY[
+  tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(4, 2.0, 2.0, 2.0), '2024-01-02'::timestamptz)] AS arr)
+SELECT asEWKT(arr) = ARRAY[asEWKT(arr[1]), asEWKT(arr[2])] AS elementwise,
+  split_part((asEWKT(arr))[1], ';', 1) AS ewkt_srid
+FROM a;
+-- A schema declaring no SRID refuses a stated one
+SELECT tpcpointFromEWKT('SRID=4326;' || asText(:inst1));
 
 DELETE FROM pointcloud_formats WHERE pcid = 4;
 

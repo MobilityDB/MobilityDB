@@ -83,6 +83,27 @@ SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-0
 SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05] }', 'XDR'));
 
 -------------------------------------------------------------------------------
+-- Extended forms
+-- A network point takes the SRID of the routes of the ways table, so the
+-- extended forms state it and a stated SRID is refused unless it is that one
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(tnpoint 'Npoint(1, 0.5)@2001-01-01');
+SELECT asEWKT(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}');
+SELECT asEWKT(ARRAY[tnpoint 'Npoint(1, 0.5)@2001-01-01', 'Npoint(2, 0.6)@2001-01-02']);
+SELECT tnpointFromText(asText(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]'));
+SELECT tnpointFromEWKT(asEWKT(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]'));
+SELECT tnpointFromEWKB(asEWKB(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]'));
+SELECT tnpointFromEWKB(asEWKB(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02}', 'XDR'));
+SELECT tnpointFromHexEWKB(asHexEWKB(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'));
+SELECT tnpointFromEWKT('SRID=5676;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]');
+-- The extended binary form states the SRID of the network
+SELECT asHexEWKB(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'XDR') LIKE '%0000162C%';
+-- An SRID other than the one of the network is refused, in text and in binary
+SELECT tnpointFromEWKT('SRID=4326;Npoint(1, 0.5)@2001-01-01');
+SELECT tnpointFromHexEWKB(replace(asHexEWKB(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'XDR'), '0000162C', '000010E6'));
+
+-------------------------------------------------------------------------------
 
 SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Npoint(1, 0.5)@2001-01-01'));
 SELECT tnpointFromHexWKB(asHexWKB(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'));

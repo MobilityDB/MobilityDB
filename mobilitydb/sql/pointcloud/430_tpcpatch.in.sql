@@ -100,7 +100,21 @@ CREATE CAST (tpcpatch AS tpcpatch)
  * WKB / HexWKB helpers
  ******************************************************************************/
 
+CREATE FUNCTION tpcpatchFromText(text)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpcpatchFromEWKT(text)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tpcpatchFromBinary(bytea)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcpatchFromEWKB(bytea)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -108,13 +122,25 @@ CREATE FUNCTION tpcpatchFromHexWKB(text)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcpatchFromHexEWKB(text)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tpcpatch, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKB(tpcpatch, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(tpcpatch, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexEWKB(tpcpatch, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- asMFJSON is output-only: the JSON form summarises a tpcpatch by
 -- (pcid, npoints, bounds) per instant without carrying the per-point
@@ -138,6 +164,14 @@ CREATE FUNCTION asText(tpcpatch)
 CREATE FUNCTION asText(tpcpatch[])
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(tpcpatch)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(tpcpatch[])
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tpcpatch AS text) WITH FUNCTION asText(tpcpatch);

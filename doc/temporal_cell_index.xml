@@ -116,18 +116,28 @@ SELECT ts2cell '{[47c3c@2001-01-01, 47c4@2001-01-02]}';
 
 			<listitem xml:id="tcell_astext">
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-				<para>Serialize a temporal cell as text, as binary, as hexadecimal well-known binary, or as MF-JSON</para>
+				<para>Serialize a temporal cell as text, as binary, or as hexadecimal well-known binary, with or without its SRID, or as MF-JSON</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(tcell) → text
+asEWKT(tcell) → text
 asBinary(tcell,endian text='') → bytea
+asEWKB(tcell,endian text='') → bytea
 asHexWKB(tcell,endian text='') → text
+asHexEWKB(tcell,endian text='') → text
 asMFJSON(tcell) → text
 </programlisting>
-				<para>The hexadecimal well-known binary form lets a temporal cell column round-trip through a text-based <varname>COPY</varname>. In MF-JSON the cell payload renders as the int64 cell identifier in the <varname>values</varname> array, the same representation <varname>tbigint</varname> carries.</para>
+				<para>The extended forms <varname>asEWKT</varname>, <varname>asEWKB</varname> and <varname>asHexEWKB</varname> state the SRID 4326 of a cell, which the other forms omit. The hexadecimal well-known binary form lets a temporal cell column round-trip through a text-based <varname>COPY</varname>. In MF-JSON the cell payload renders as the int64 cell identifier in the <varname>values</varname> array, the same representation <varname>tbigint</varname> carries.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(th3index '831c02fffffffff@2001-01-01');
+-- SRID=4326;831c02fffffffff@2001-01-01
+SELECT asHexEWKB(th3index '831c02fffffffff@2001-01-01');
+-- 01460061E6100000FFFFFFFF2FC031080060885EC91C0000
 SELECT asHexWKB(th3index '831c02fffffffff@2001-01-01');
 -- 01460021FFFFFFFF2FC031080060885EC91C0000
 SELECT asHexWKB(tquadbin '48a6227affffffff@2001-01-01');
@@ -138,16 +148,31 @@ SELECT asHexWKB(ts2cell '47c3c@2001-01-01');
 			</listitem>
 
 			<listitem xml:id="tcell_frombinary">
+				<indexterm significance="normal"><primary><varname>tcellFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellFromEWKT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcellFromBinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellFromEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcellFromHexWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellFromHexEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcellFromMFJSON</varname></primary></indexterm>
-				<para>Reconstruct a temporal cell from its binary, hexadecimal, or MF-JSON representation</para>
+				<para>Reconstruct a temporal cell from its text, binary, hexadecimal, or MF-JSON representation</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcellFromText(text) → tcell
+tcellFromEWKT(text) → tcell
 tcellFromBinary(bytea) → tcell
+tcellFromEWKB(bytea) → tcell
 tcellFromHexWKB(text) → tcell
+tcellFromHexEWKB(text) → tcell
 tcellFromMFJSON(text) → tcell
 </programlisting>
+				<para>An SRID stated by an extended input must be 4326, the SRID of a cell.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ts2cellFromText('47c3c@2001-01-01');
+-- 47c3c@2001-01-01
+SELECT th3indexFromEWKT('SRID=4326;831c02fffffffff@2001-01-01');
+-- 831c02fffffffff@2001-01-01
+SELECT tquadbinFromEWKB(asEWKB(tquadbin '48a6227affffffff@2001-01-01'));
+-- 48a6227affffffff@2001-01-01
 SELECT th3indexFromHexWKB(asHexWKB(th3index '831c02fffffffff@2001-01-01'));
 -- 831c02fffffffff@2001-01-01
 SELECT tquadbinFromHexWKB(asHexWKB(tquadbin '48a6227affffffff@2001-01-01'));

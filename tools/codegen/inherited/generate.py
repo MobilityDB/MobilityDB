@@ -971,14 +971,17 @@ def bootstrap_io_type(filetext: str, fam: dict, rendered: str) -> str:
 # is data in the manifest `representation_families` table.
 #
 # The base shape (asText/asBinary/asHexWKB/asMFJSON + From{Text,Binary,HexWKB,MFJSON})
-# is uniform; two orthogonal capability axes vary it, exactly as the ground-truth
-# matrix shows (NOT "all spatial" — the flags are per family):
-#   * ewkt_ewkb : a family that carries the E-forms lists asEWKT/asEWKB +
-#     From{EWKT,EWKB,HexEWKB} in its op sequence (tgeo/tpoint/tcbuffer/tpose/trgeo);
-#     tnpoint and th3index are spatial yet carry NONE of them, so it is opt-in data,
-#     not a class rule.
-#   * text form : pointcloud (tpcpoint/tpcpatch) withholds asText/FromText/FromMFJSON
-#     (a base-type capability); such a family simply omits those ops from its sequence.
+# is uniform, and the EWKT/EWKB forms are a class rule:
+#   * ewkt_ewkb : EWKT/EWKB are inherited by every TSpatial<T>. A family whose temporal
+#     types all belong to tspatial_type() carries the E twin of every plain form it
+#     lists (asEWKT beside asText, asEWKB beside asBinary, asHexEWKB beside asHexWKB,
+#     FromEWKT/FromEWKB/FromHexEWKB beside FromText/FromBinary/FromHexWKB); --validate
+#     refuses one that lacks a twin, and the twins default to the generic Tspatial_*
+#     kernels. Setting the SRID is a different capability: a type whose SRID comes from
+#     a table (tnpoint from ways, the point clouds from their schema) or from its grid
+#     (the cell indexes) has no setSRID, yet it writes and reads the SRID it has.
+#   * text form : a family simply omits from its sequence an op its base type cannot
+#     answer (the pointcloud asMFJSON is output-only, as its comment in the file says).
 # The endian argument `endian text DEFAULT ''` (asBinary/asEWKB/asHexWKB/asHexEWKB) and
 # `maxdecimaldigits integer DEFAULT 15` (only float/coordinate-bearing types, per-type
 # via the `maxdd` token) are reproduced verbatim.
@@ -1019,6 +1022,71 @@ _REPR_DEFAULT_SYM = {
     "asMFJSON": "Temporal_as_mfjson", "asBinary": "Temporal_as_wkb",
     "asHexWKB": "Temporal_as_hexwkb", "asHexEWKB": "Temporal_as_hexwkb",
 }
+# The E forms of a TSpatial<T> family default to the generic spatiotemporal kernels, so
+# a family lists the ops it carries and overrides a symbol only where its own kernel
+# answers (tpoint's FromText/FromEWKT read through Tpoint_from_ewkt).
+_REPR_SPATIAL_SYM = {
+    "FromText": "Tspatial_from_ewkt", "FromEWKT": "Tspatial_from_ewkt",
+    "asEWKT": "Tspatial_as_ewkt", "asEWKB": "Tspatial_as_ewkb",
+    "asHexEWKB": "Tspatial_as_hexewkb",
+}
+# The E twin of each plain representation op.
+_REPR_E_TWIN = {
+    "asText": "asEWKT", "asBinary": "asEWKB", "asHexWKB": "asHexEWKB",
+    "FromText": "FromEWKT", "FromBinary": "FromEWKB", "FromHexWKB": "FromHexEWKB",
+}
+
+
+@functools.lru_cache(maxsize=None)
+def _tspatial_temps() -> frozenset:
+    """The temporal types tspatial_type() accepts, read from the catalog predicate."""
+    return frozenset(parse_class_members("tspatial_type", catalog_type_names()))
+
+
+def _repr_spatial(fam: dict) -> bool:
+    """True when every temporal type of the family is a TSpatial<T> type."""
+    return all(t["temp"] in _tspatial_temps() for t in fam["temps"])
+
+
+def _repr_sym(op: str, fam: dict) -> str:
+    """The backing symbol of a scalar op: the family's own, else the spatiotemporal
+    default of a TSpatial<T> family, else the shared default."""
+    syms = fam.get("syms", {})
+    if op in syms:
+        return syms[op]
+    if op in _REPR_SPATIAL_SYM and _repr_spatial(fam):
+        return _REPR_SPATIAL_SYM[op]
+    return _REPR_DEFAULT_SYM.get(op)
+
+
+def _repr_listed_ops(fam: dict) -> set:
+    """Every op name a family's block sequence lists, fused groups included."""
+    out = set()
+
+    def walk(item):
+        if isinstance(item, list):
+            for x in item:
+                walk(x)
+        elif isinstance(item, str):
+            out.add(item)
+    for blk in fam["blocks"]:
+        for item in blk.get("ops", []):
+            walk(item)
+    return out
+
+
+def repr_missing_e_twins(fam: dict) -> list:
+    """The E forms a TSpatial<T> family lacks beside the plain forms it lists, the
+    `[]` overload of an array-bearing op included."""
+    if not _repr_spatial(fam):
+        return []
+    ops = _repr_listed_ops(fam)
+    arrsyms = fam.get("arrsyms", {})
+    missing = [e for plain, e in _REPR_E_TWIN.items() if plain in ops and e not in ops]
+    missing += [f"{_REPR_E_TWIN[plain]}[]" for plain in sorted(_REPR_ARRAY_OPS)
+                if plain in _REPR_E_TWIN and plain in arrsyms
+                and _REPR_E_TWIN[plain] not in arrsyms]
+    return missing
 
 
 def _repr_skeleton(sig: str, ret: str, sym: str) -> str:
@@ -1047,7 +1115,7 @@ def _repr_fn(op: str, t: dict, fam: dict, array: bool) -> str:
     """Render one representation function for op `op`, type `t`. `array` selects the
     `[]` overload of an array-bearing output op."""
     if op in _REPR_FROM_ARG:                                   # <temp>From<Fmt>(arg)
-        sym = fam.get("syms", {}).get(op, _REPR_DEFAULT_SYM.get(op))
+        sym = _repr_sym(op, fam)
         return _repr_skeleton(f"{t['temp']}{op}({_REPR_FROM_ARG[op]})", t["temp"], sym)
     if op == "asMFJSON":
         sym = fam.get("syms", {}).get(op, _REPR_DEFAULT_SYM[op])
@@ -1065,7 +1133,7 @@ def _repr_fn(op: str, t: dict, fam: dict, array: bool) -> str:
     if array:
         sym = fam.get("arrsyms", {})[op]
     else:
-        sym = fam.get("syms", {}).get(op, _REPR_DEFAULT_SYM.get(op))
+        sym = _repr_sym(op, fam)
     return _repr_skeleton(f"{op}({ttype}{tail})", ret, sym)
 
 
@@ -4147,6 +4215,12 @@ def main() -> int:
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("representation_families", []):
+            missing = repr_missing_e_twins(fam)
+            if missing:
+                ok = False
+                print(f"[DIFF] representations {fam['family']}: a TSpatial<T> family "
+                      f"carries the E twin of every plain form; it lacks "
+                      f"{', '.join(missing)}")
             if not fam.get("reference"):
                 continue
             p = ROOT / fam["file"]

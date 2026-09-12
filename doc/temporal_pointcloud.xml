@@ -577,15 +577,21 @@ INSERT INTO scans VALUES (1,
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_asText">
 					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
-					<para>Return the text representation of a tpcpoint, or of an array of them, and cast a tpcpoint to text</para>
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Return the text representation of a tpcpoint, or of an array of them, with or without its SRID, and cast a tpcpoint to text</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(tpcpoint) → text
 asText(tpcpoint[]) → text[]
+asEWKT(tpcpoint) → text
+asEWKT(tpcpoint[]) → text[]
 tpcpoint::text → text
 </programlisting>
+					<para><varname>asEWKT</varname> prefixes the SRID the schema of the <varname>pcid</varname> declares, and writes the text form alone under a schema declaring none, as pcid 1 does below.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The pcpoint payload renders as hex-encoded WKB.
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
+-- 5C00000001000000640000006400000064000000000000@2001-01-01
+SELECT asEWKT(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 -- 5C00000001000000640000006400000064000000000000@2001-01-01
 </programlisting>
 				</listitem>
@@ -602,8 +608,52 @@ SELECT asMFJSON(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
    "datetimes":["2001-01-01T00:00:00"],"interpolation":"None"} */
 </programlisting>
 				</listitem>
+				<listitem xml:id="tpcpoint_asBinary">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Return the binary or hexadecimal well-known binary representation of a tpcpoint, with or without its SRID</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asBinary(tpcpoint,endian text='') → bytea
+asEWKB(tpcpoint,endian text='') → bytea
+asHexWKB(tpcpoint,endian text='') → text
+asHexEWKB(tpcpoint,endian text='') → text
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpointFromEWKB(asEWKB(t)) = t
+FROM (SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) AS t) s;
+-- t
+</programlisting>
+				</listitem>
+				<listitem xml:id="tpcpoint_fromText">
+					<indexterm significance="normal"><primary><varname>tpcpointFromText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpointFromEWKT</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpointFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpointFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpointFromHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpointFromHexEWKB</varname></primary></indexterm>
+					<para>Return a tpcpoint from its text, binary, or hexadecimal well-known binary representation, with or without its SRID</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcpointFromText(text) → tpcpoint
+tpcpointFromEWKT(text) → tpcpoint
+tpcpointFromBinary(bytea) → tpcpoint
+tpcpointFromEWKB(bytea) → tpcpoint
+tpcpointFromHexWKB(text) → tpcpoint
+tpcpointFromHexEWKB(text) → tpcpoint
+</programlisting>
+					<para>The <varname>pcid</varname> each point carries names its schema, so the text form reads back as the binary one does, and an SRID the input states must be the one that schema declares.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpointFromText(asText(t)) = t
+FROM (SELECT tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) AS t) s;
+-- t
+SELECT tpcpointFromEWKT('SRID=4326;' ||
+  asText(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)));
+-- ERROR:  The SRID of a pcpoint is the one its schema declares and cannot be set
+</programlisting>
+				</listitem>
 			</itemizedlist>
-			<para><varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument, a <varname>pcpoint</varname> printing as the hex-WKB of its serialized form, which has no decimal places to round, and there is no <varname>tpcpointFromText</varname>, pgPointCloud's <varname>pcpoint_in</varname> accepting hex-WKB only and the schema not being reconstructible from the text form. MF-JSON is output-only for the same reason, and carries a <varname>"bbox"</varname> key when <varname>options</varname> is 1, a TPCBox JSON object adding a <varname>"pcid"</varname> field next to the standard stbox-shaped <varname>"bbox"</varname> array. For a lossless round trip use <varname>asBinary</varname> / <varname>tpcpointFromBinary</varname> or <varname>asHexWKB</varname> / <varname>tpcpointFromHexWKB</varname>.</para>
+			<para><varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument, a <varname>pcpoint</varname> printing as the hex-WKB of its serialized form, which has no decimal places to round. MF-JSON is output-only, since it states the X, Y and Z of each point and not the other dimensions of its schema, and carries a <varname>"bbox"</varname> key when <varname>options</varname> is 1, a TPCBox JSON object adding a <varname>"pcid"</varname> field next to the standard stbox-shaped <varname>"bbox"</varname> array.</para>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_constructors">
@@ -1335,17 +1385,70 @@ SELECT tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_asText">
 					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
-					<para>Return the text representation of a tpcpatch, or of an array of them, and cast a tpcpatch to text</para>
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Return the text representation of a tpcpatch, or of an array of them, with or without its SRID, and cast a tpcpatch to text</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(tpcpatch) → text
 asText(tpcpatch[]) → text[]
+asEWKT(tpcpatch) → text
+asEWKT(tpcpatch[]) → text[]
 tpcpatch::text → text
 </programlisting>
+					<para>As for a <varname>tpcpoint</varname>, <varname>asEWKT</varname> prefixes the SRID the schema of the <varname>pcid</varname> declares, and writes the text form alone under a schema declaring none.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The pcpatch payload renders as hex-encoded WKB.
 SELECT left(asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)), 24);
 -- EC0100000100000000000000
+SELECT left(asEWKT(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)), 24);
+-- EC0100000100000000000000
+</programlisting>
+				</listitem>
+				<listitem xml:id="tpcpatch_asBinary">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Return the binary or hexadecimal well-known binary representation of a tpcpatch, with or without its SRID</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asBinary(tpcpatch,endian text='') → bytea
+asEWKB(tpcpatch,endian text='') → bytea
+asHexWKB(tpcpatch,endian text='') → text
+asHexEWKB(tpcpatch,endian text='') → text
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpatchFromHexEWKB(asHexEWKB(t)) = t
+FROM (SELECT tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+  '2001-01-01'::timestamptz) AS t) s;
+-- t
+</programlisting>
+				</listitem>
+				<listitem xml:id="tpcpatch_fromText">
+					<indexterm significance="normal"><primary><varname>tpcpatchFromText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpatchFromEWKT</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpatchFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpatchFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpatchFromHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpatchFromHexEWKB</varname></primary></indexterm>
+					<para>Return a tpcpatch from its text, binary, or hexadecimal well-known binary representation, with or without its SRID</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcpatchFromText(text) → tpcpatch
+tpcpatchFromEWKT(text) → tpcpatch
+tpcpatchFromBinary(bytea) → tpcpatch
+tpcpatchFromEWKB(bytea) → tpcpatch
+tpcpatchFromHexWKB(text) → tpcpatch
+tpcpatchFromHexEWKB(text) → tpcpatch
+</programlisting>
+					<para>The <varname>pcid</varname> each patch carries names its schema, so the text form reads back as the binary one does, and an SRID the input states must be the one that schema declares.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpatchFromText(asText(t)) = t
+FROM (SELECT tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+  '2001-01-01'::timestamptz) AS t) s;
+-- t
+SELECT tpcpatchFromEWKT('SRID=4326;' || asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)));
+-- ERROR:  The SRID of a pcpatch is the one its schema declares and cannot be set
 </programlisting>
 				</listitem>
 				<listitem xml:id="tpcpatch_asMFJSON">
@@ -1363,7 +1466,7 @@ SELECT asMFJSON(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 </programlisting>
 				</listitem>
 			</itemizedlist>
-			<para>As for a <varname>tpcpoint</varname>, <varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument and there is no <varname>tpcpatchFromText</varname>. MF-JSON is output-only, its per-instant summary dropping the per-point payload; for a lossless round trip use <varname>asBinary</varname> / <varname>tpcpatchFromBinary</varname> or <varname>asHexWKB</varname> / <varname>tpcpatchFromHexWKB</varname>.</para>
+			<para>As for a <varname>tpcpoint</varname>, <varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument. MF-JSON is output-only, its per-instant summary dropping the per-point payload.</para>
 		</sect2>
 
 		<sect2 xml:id="tpcpatch_constructors">

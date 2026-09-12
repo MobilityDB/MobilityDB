@@ -45,6 +45,29 @@ SELECT asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
 SELECT asText(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}');
 
 -------------------------------------------------------------------------------
+-- WKB / HexWKB round-trips and the extended forms
+-- A cell states SRID 4326, so the extended forms state it and a stated SRID
+-- is refused unless it is that one
+-------------------------------------------------------------------------------
+
+SELECT asText(ts2cellFromBinary(asBinary(ts2cell '47c3c3@2001-01-01')));
+SELECT asText(ts2cellFromBinary(asBinary(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}')));
+SELECT asText(ts2cellFromBinary(asBinary(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 'NDR')));
+SELECT asText(ts2cellFromHexWKB(asHexWKB(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}')));
+SELECT asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+SELECT asText(ts2cellFromText(asText(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')));
+SELECT asEWKT(ts2cellFromEWKT(asEWKT(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]')));
+SELECT asEWKT(ts2cellFromEWKB(asEWKB(ts2cell '{47c3c3@2001-01-01, 54b5c9@2001-01-02}')));
+SELECT asEWKT(ts2cellFromEWKB(asEWKB(ts2cell '47c3c3@2001-01-01', 'NDR')));
+SELECT asEWKT(ts2cellFromHexEWKB(asHexEWKB(ts2cell '{[47c3c3@2001-01-01, 54b5c9@2001-01-02],[47c3c3@2001-01-03]}')));
+SELECT asEWKT(ts2cellFromEWKT('SRID=4326;47c3c3@2001-01-01'));
+-- The extended binary form states SRID 4326
+SELECT asHexEWKB(ts2cell '47c3c3@2001-01-01', 'XDR') LIKE '%000010E6%';
+-- Another SRID is refused, in text and in binary
+SELECT ts2cellFromEWKT('SRID=3857;47c3c3@2001-01-01');
+SELECT ts2cellFromHexEWKB(replace(asHexEWKB(ts2cell '47c3c3@2001-01-01', 'XDR'), '000010E6', '00000F11'));
+
+-------------------------------------------------------------------------------
 -- MF-JSON
 --
 -- An s2cell is a scalar cell id carried with a bounding box, so its MF-JSON

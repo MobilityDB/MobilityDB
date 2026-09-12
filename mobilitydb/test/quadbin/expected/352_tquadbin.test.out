@@ -188,6 +188,58 @@ SELECT asText(tquadbinFromHexWKB(asHexWKB(tquadbin '480fffffffffffff@2001-01-01'
  480fffffffffffff@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+SELECT asEWKT(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
+                                                  asewkt                                                  
+----------------------------------------------------------------------------------------------------------
+ SRID=4326;[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(tquadbinFromText(asText(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]')));
+                                             astext                                             
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(tquadbinFromEWKT(asEWKT(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]')));
+                                                  asewkt                                                  
+----------------------------------------------------------------------------------------------------------
+ SRID=4326;[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(tquadbinFromEWKB(asEWKB(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}')));
+                                                  asewkt                                                  
+----------------------------------------------------------------------------------------------------------
+ SRID=4326;{480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT asEWKT(tquadbinFromEWKB(asEWKB(tquadbin '480fffffffffffff@2001-01-01', 'NDR')));
+                         asewkt                          
+---------------------------------------------------------
+ SRID=4326;480fffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tquadbinFromHexEWKB(asHexEWKB(tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}')));
+                                                                                                   asewkt                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST], [48a6227affffffff@Wed Jan 03 00:00:00 2001 PST, 48a6227affffffff@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(tquadbinFromEWKT('SRID=4326;480fffffffffffff@2001-01-01'));
+                         asewkt                          
+---------------------------------------------------------
+ SRID=4326;480fffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asHexEWKB(tquadbin '480fffffffffffff@2001-01-01', 'XDR') LIKE '%000010E6%';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbinFromEWKT('SRID=3857;480fffffffffffff@2001-01-01');
+ERROR:  The SRID of the quadbin (4326) does not match the SRID of the tquadbin (3857)
+SELECT tquadbinFromHexEWKB(replace(asHexEWKB(tquadbin '480fffffffffffff@2001-01-01', 'XDR'), '000010E6', '00000F11'));
+ERROR:  The SRID of the WKB (3857) does not match the SRID of the tquadbin (4326)
 SELECT (tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint;
                      tbigint                      
 --------------------------------------------------

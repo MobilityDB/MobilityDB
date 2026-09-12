@@ -109,6 +109,25 @@ SELECT asText(th3indexFromBinary(asBinary(th3index '880326b885fffff@2001-01-01',
 SELECT asText(th3indexFromHexWKB(asHexWKB(th3index '880326b885fffff@2001-01-01')));
 
 -------------------------------------------------------------------------------
+-- Extended forms
+-- A cell states SRID 4326, so the extended forms state it and a stated SRID
+-- is refused unless it is that one
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]');
+SELECT asText(th3indexFromText(asText(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]')));
+SELECT asEWKT(th3indexFromEWKT(asEWKT(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]')));
+SELECT asEWKT(th3indexFromEWKB(asEWKB(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}')));
+SELECT asEWKT(th3indexFromEWKB(asEWKB(th3index '880326b885fffff@2001-01-01', 'NDR')));
+SELECT asEWKT(th3indexFromHexEWKB(asHexEWKB(th3index '{[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b885fffff@2001-01-04]}')));
+SELECT asEWKT(th3indexFromEWKT('SRID=4326;880326b885fffff@2001-01-01'));
+-- The extended binary form states SRID 4326
+SELECT asHexEWKB(th3index '880326b885fffff@2001-01-01', 'XDR') LIKE '%000010E6%';
+-- Another SRID is refused, in text and in binary
+SELECT th3indexFromEWKT('SRID=3857;880326b885fffff@2001-01-01');
+SELECT th3indexFromHexEWKB(replace(asHexEWKB(th3index '880326b885fffff@2001-01-01', 'XDR'), '000010E6', '00000F11'));
+
+-------------------------------------------------------------------------------
 -- Assignment casts to/from tbigint
 --
 -- Casts are explicit (AS ASSIGNMENT) and bidirectional. Binary-coercion

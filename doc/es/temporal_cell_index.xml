@@ -116,18 +116,28 @@ SELECT ts2cell '{[47c3c@2001-01-01, 47c4@2001-01-02]}';
 
 			<listitem xml:id="tcell_astext">
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-				<para>Serializar una celda temporal como texto, como binario, como binario bien conocido hexadecimal o como MF-JSON</para>
+				<para>Serializar una celda temporal como texto, como binario o como binario bien conocido hexadecimal, con o sin su SRID, o como MF-JSON</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(tcell) → text
+asEWKT(tcell) → text
 asBinary(tcell,endian text='') → bytea
+asEWKB(tcell,endian text='') → bytea
 asHexWKB(tcell,endian text='') → text
+asHexEWKB(tcell,endian text='') → text
 asMFJSON(tcell) → text
 </programlisting>
-				<para>La forma binaria bien conocida hexadecimal permite que una columna de celdas temporales se transfiera de ida y vuelta mediante un <varname>COPY</varname> basado en texto. En MF-JSON la carga útil de la celda se representa como el identificador de celda int64 en el arreglo <varname>values</varname>, la misma representación que lleva <varname>tbigint</varname>.</para>
+				<para>Las formas extendidas <varname>asEWKT</varname>, <varname>asEWKB</varname> y <varname>asHexEWKB</varname> indican el SRID 4326 de una celda, que las demás formas omiten. La forma binaria bien conocida hexadecimal permite que una columna de celdas temporales se transfiera de ida y vuelta mediante un <varname>COPY</varname> basado en texto. En MF-JSON la carga útil de la celda se representa como el identificador de celda int64 en el arreglo <varname>values</varname>, la misma representación que lleva <varname>tbigint</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(th3index '831c02fffffffff@2001-01-01');
+-- SRID=4326;831c02fffffffff@2001-01-01
+SELECT asHexEWKB(th3index '831c02fffffffff@2001-01-01');
+-- 01460061E6100000FFFFFFFF2FC031080060885EC91C0000
 SELECT asHexWKB(th3index '831c02fffffffff@2001-01-01');
 -- 01460021FFFFFFFF2FC031080060885EC91C0000
 SELECT asHexWKB(tquadbin '48a6227affffffff@2001-01-01');
@@ -138,16 +148,31 @@ SELECT asHexWKB(ts2cell '47c3c@2001-01-01');
 			</listitem>
 
 			<listitem xml:id="tcell_frombinary">
+				<indexterm significance="normal"><primary><varname>tcellFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellFromEWKT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcellFromBinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellFromEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcellFromHexWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcellFromHexEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcellFromMFJSON</varname></primary></indexterm>
-				<para>Reconstruir una celda temporal a partir de su representación binaria, hexadecimal o MF-JSON</para>
+				<para>Reconstruir una celda temporal a partir de su representación textual, binaria, hexadecimal o MF-JSON</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tcellFromText(text) → tcell
+tcellFromEWKT(text) → tcell
 tcellFromBinary(bytea) → tcell
+tcellFromEWKB(bytea) → tcell
 tcellFromHexWKB(text) → tcell
+tcellFromHexEWKB(text) → tcell
 tcellFromMFJSON(text) → tcell
 </programlisting>
+				<para>Un SRID indicado por una entrada extendida debe ser 4326, el SRID de una celda.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ts2cellFromText('47c3c@2001-01-01');
+-- 47c3c@2001-01-01
+SELECT th3indexFromEWKT('SRID=4326;831c02fffffffff@2001-01-01');
+-- 831c02fffffffff@2001-01-01
+SELECT tquadbinFromEWKB(asEWKB(tquadbin '48a6227affffffff@2001-01-01'));
+-- 48a6227affffffff@2001-01-01
 SELECT th3indexFromHexWKB(asHexWKB(th3index '831c02fffffffff@2001-01-01'));
 -- 831c02fffffffff@2001-01-01
 SELECT tquadbinFromHexWKB(asHexWKB(tquadbin '48a6227affffffff@2001-01-01'));
