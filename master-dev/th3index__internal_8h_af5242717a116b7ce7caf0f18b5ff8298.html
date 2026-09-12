@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: datum_h3_is_valid_cell</title>
+<title>MobilityDB: h3index_cell_to_geog</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -103,7 +103,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a927289cc462e02b44b4ed3b3bf249682.html#a927289cc462e02b44b4ed3b3bf249682">datum_h3_grid_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a4982b7edb5dbfbc5ca40db80a53c7d97.html#a4982b7edb5dbfbc5ca40db80a53c7d97">datum_h3_is_pentagon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_aedbf728eb1157854f19ea232a8253990.html#aedbf728eb1157854f19ea232a8253990">datum_h3_is_res_class_iii</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="th3index__internal_8h_a6268b7cbbcfeea048d82a6ac9dec8de1.html#a6268b7cbbcfeea048d82a6ac9dec8de1">datum_h3_is_valid_cell</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a6268b7cbbcfeea048d82a6ac9dec8de1.html#a6268b7cbbcfeea048d82a6ac9dec8de1">datum_h3_is_valid_cell</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_ad68778c76276916a9333c8173c229be0.html#ad68778c76276916a9333c8173c229be0">datum_h3_is_valid_directed_edge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a9b067f21a98de734e00b5600560a6a46.html#a9b067f21a98de734e00b5600560a6a46">datum_h3_is_valid_vertex</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_aa8e9dbb93ab3b8739b9551669a8d9106.html#aa8e9dbb93ab3b8739b9551669a8d9106">datum_h3_latlng_to_cell</a></td></tr>
@@ -121,30 +121,36 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a75160df8cabf5a687097f055d00db721.html#a75160df8cabf5a687097f055d00db721">h3_sample_step_deg</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a6710084a38bb6438487aec2863cef7b1.html#a6710084a38bb6438487aec2863cef7b1">h3_segment_cells</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a209c0e4682b747f65b7458d8e8f90a3b.html#a209c0e4682b747f65b7458d8e8f90a3b">h3_vertex_to_gs_point</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_af5242717a116b7ce7caf0f18b5ff8298.html#af5242717a116b7ce7caf0f18b5ff8298">h3index_cell_to_geog</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="th3index__internal_8h_af5242717a116b7ce7caf0f18b5ff8298.html#af5242717a116b7ce7caf0f18b5ff8298">h3index_cell_to_geog</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a71d6cedbc606c46ee19667521e5a5350.html#a71d6cedbc606c46ee19667521e5a5350">h3index_cell_to_geogpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a42163dde6d2a853976e074583263b4fe.html#a42163dde6d2a853976e074583263b4fe">H3Unit</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a6268b7cbbcfeea048d82a6ac9dec8de1" name="a6268b7cbbcfeea048d82a6ac9dec8de1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6268b7cbbcfeea048d82a6ac9dec8de1">&#9670;&#160;</a></span>datum_h3_is_valid_cell()</h2>
+<a id="af5242717a116b7ce7caf0f18b5ff8298" name="af5242717a116b7ce7caf0f18b5ff8298"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5242717a116b7ce7caf0f18b5ff8298">&#9670;&#160;</a></span>h3index_cell_to_geog()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> datum_h3_is_valid_cell </td>
+          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * h3index_cell_to_geog </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>d</em></td><td>)</td>
+          <td class="paramtype">H3Index&#160;</td>
+          <td class="paramname"><em>cell</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a value is a valid H3 cell. </p>
+<p>Return the boundary of an H3 cell as a geodetic polygon. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cell</td><td>H3 cell </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
