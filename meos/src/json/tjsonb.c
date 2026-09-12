@@ -286,7 +286,7 @@ Temporal *
 tjsonb_to_ttext(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  assert(temp); assert(temp->temptype == T_TJSONB);
+  VALIDATE_TJSONB(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -306,7 +306,7 @@ Temporal *
 ttext_to_tjsonb(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  assert(temp); assert(temp->temptype == T_TTEXT);
+  VALIDATE_TTEXT(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
