@@ -1677,6 +1677,10 @@ bool
 boxop_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBox *, const STBox *))
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp1, false); VALIDATE_TSPATIAL(temp2, false);
+  VALIDATE_NOT_NULL(func, false);
+
   STBox box1, box2;
   tspatial_set_stbox(temp1, &box1);
   tspatial_set_stbox(temp2, &box2);
