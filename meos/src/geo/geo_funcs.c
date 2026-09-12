@@ -3213,6 +3213,18 @@ ensure_srid_known(int32_t srid)
   return false;
 }
 /**
+ * @brief Ensure that the SRID is valid
+ */
+bool
+ensure_srid_valid(int32_t srid)
+{
+  if (srid != SRID_INVALID)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The SRID is invalid");
+  return false;
+}
+/**
  * @brief Reconcile the SRID of two spatial components: copy the known SRID onto
  * the one that is unknown, and ensure that two known SRIDs are equal
  * @details This is the single construction-time SRID resolution used by the

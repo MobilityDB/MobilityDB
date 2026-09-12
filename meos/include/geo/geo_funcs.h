@@ -276,6 +276,7 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 extern bool ensure_srid_known(int32_t srid);
+extern bool ensure_srid_valid(int32_t srid);
 /**
  * @brief Ensure that two values have the same SRID
  */

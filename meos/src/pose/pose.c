@@ -1914,7 +1914,7 @@ pose_set_srid(const Pose *pose, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
-  if (srid == SRID_INVALID)
+  if (! ensure_srid_valid(srid))
     return NULL;
   Pose *result = pose_copy(pose);
   pose_set_srid_int(result, srid);

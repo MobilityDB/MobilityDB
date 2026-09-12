@@ -980,7 +980,7 @@ posechain_set_srid(const PoseChain *pc, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pc, NULL);
-  if (srid == SRID_INVALID)
+  if (! ensure_srid_valid(srid))
     return NULL;
   PoseChain *result = posechain_copy(pc);
   posechain_set_srid_int(result, srid);

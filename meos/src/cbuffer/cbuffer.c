@@ -859,7 +859,7 @@ cbuffer_set_srid(const Cbuffer *cb, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cb, NULL);
-  if (srid == SRID_INVALID)
+  if (! ensure_srid_valid(srid))
     return NULL;
   Cbuffer *result = cbuffer_copy(cb);
   result->srid = srid;
