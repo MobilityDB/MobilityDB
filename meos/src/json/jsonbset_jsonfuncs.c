@@ -449,7 +449,7 @@ Set *
 jsonbset_strip_nulls(const Set *set, bool strip_in_arrays)
 {
   /* Ensure the validity of the arguments */
-  assert(set); assert(set->settype == T_JSONBSET);
+  VALIDATE_JSONBSET(set, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -473,7 +473,7 @@ Set *
 jsonbset_pretty(const Set *set)
 {
   /* Ensure the validity of the arguments */
-  assert(set); assert(set->settype == T_JSONBSET);
+  VALIDATE_JSONBSET(set, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
