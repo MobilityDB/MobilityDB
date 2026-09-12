@@ -359,8 +359,9 @@ jsonbset_to_alphanumset(const Set *set, const char *key, MeosType resbasetype,
   nullHandleType null_handle)
 {
   /* Ensure the validity of the arguments */
-  assert(set); assert(key); assert(set->settype == T_JSONBSET);
-  assert(alphanum_basetype(resbasetype));
+  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(key, NULL);
+  if (! ensure_alphanum_basetype(resbasetype))
+    return NULL;
 
   MeosType restype = basetype_settype(resbasetype);
   LiftedFunctionInfo lfinfo;

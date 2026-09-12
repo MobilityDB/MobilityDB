@@ -246,6 +246,7 @@ extern bool tnumber_basetype(MeosType type);
 extern bool geo_basetype(MeosType type);
 extern bool meos_basetype(MeosType type);
 extern bool alphanum_basetype(MeosType type);
+extern bool ensure_alphanum_basetype(MeosType type);
 extern bool alphanum_temptype(MeosType type);
 
 extern bool time_type(MeosType type);

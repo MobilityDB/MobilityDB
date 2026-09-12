@@ -39,10 +39,12 @@
  * binding links against with no check at all.
  *
  * The program verifies that #tjsonb_to_ttext, #ttext_to_tjsonb,
- * #tjsonb_pretty, #tjsonb_strip_nulls, #tjson_strip_nulls, #jsonbset_pretty
- * and #jsonbset_strip_nulls report a null argument and an argument of another
- * type by returning NULL and setting #meos_errno, and that a valid call still
- * answers with no error left behind.
+ * #tjsonb_pretty, #tjsonb_strip_nulls, #tjson_strip_nulls, #jsonbset_pretty,
+ * #jsonbset_strip_nulls and #jsonbset_to_alphanumset report a null argument
+ * and an argument of another type by returning NULL and setting #meos_errno,
+ * that #jsonbset_to_alphanumset reports a result base type that is not
+ * alphanumeric the same way, and that a valid call still answers with no error
+ * left behind.
  *
  * The program can be build as follows
  * @code
@@ -113,6 +115,10 @@ int main(void)
     "jsonbset_pretty(NULL)");
   expect_error(jsonbset_strip_nulls(NULL, true), MEOS_ERR_INVALID_ARG,
     "jsonbset_strip_nulls(NULL, true)");
+  expect_error(jsonbset_to_alphanumset(NULL, "a", T_INT4, NULL_RETURN),
+    MEOS_ERR_INVALID_ARG, "jsonbset_to_alphanumset(NULL, a, int4)");
+  expect_error(jsonbset_to_alphanumset(jsonbset, NULL, T_INT4, NULL_RETURN),
+    MEOS_ERR_INVALID_ARG, "jsonbset_to_alphanumset(jsonbset, NULL, int4)");
 
   /* An argument of another type is reported as a type error: each function
    * reads the values of its argument as JSON or text, so accepting an integer
@@ -131,6 +137,12 @@ int main(void)
     "jsonbset_pretty({1, 2})");
   expect_error(jsonbset_strip_nulls(intset, true), MEOS_ERR_INVALID_ARG_TYPE,
     "jsonbset_strip_nulls({1, 2}, true)");
+  expect_error(jsonbset_to_alphanumset(intset, "a", T_INT4, NULL_RETURN),
+    MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_to_alphanumset({1, 2}, a, int4)");
+  /* A result base type that is not alphanumeric is reported alike: the values
+   * extracted from the JSON are converted to that type */
+  expect_error(jsonbset_to_alphanumset(jsonbset, "a", T_TSTZSPAN, NULL_RETURN),
+    MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_to_alphanumset(jsonbset, a, tstzspan)");
 
   /* A valid call still answers, and the guards leave no error behind */
   expect_value(tjsonb_to_ttext(tjsonb), "tjsonb_to_ttext(tjsonb)");
@@ -142,6 +154,8 @@ int main(void)
   expect_value(jsonbset_pretty(jsonbset), "jsonbset_pretty(jsonbset)");
   expect_value(jsonbset_strip_nulls(jsonbset, true),
     "jsonbset_strip_nulls(jsonbset, true)");
+  expect_value(jsonbset_to_alphanumset(jsonbset, "a", T_INT4, NULL_RETURN),
+    "jsonbset_to_alphanumset(jsonbset, a, int4)");
 
   free(tjsonb); free(tjson); free(jsonbset); free(tint); free(intset);
 
