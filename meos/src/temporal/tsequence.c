@@ -1187,7 +1187,11 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
   bool geodetic, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize)
 {
-  assert(xcoords); assert(ycoords); assert(times); assert(count > 0);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(xcoords, NULL); VALIDATE_NOT_NULL(ycoords, NULL);
+  VALIDATE_NOT_NULL(times, NULL);
+  if (! ensure_positive(count))
+    return NULL;
   bool hasz = (zcoords != NULL);
   MeosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
   TInstant **instants = palloc(sizeof(TInstant *) * count);

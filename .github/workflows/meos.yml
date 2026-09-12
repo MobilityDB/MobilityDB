@@ -134,6 +134,8 @@ jobs:
           ./temporal_validity_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
           ./geo_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geo_validity_test geo_validity_test.c -L/usr/local/lib -lmeos
+          ./geo_validity_test
           # Every program under meos/test is a check of the installed library, and
           # one that is compiled nowhere is a check nobody makes: it keeps calling
           # whatever it called when it was written while the surface moves under it.
