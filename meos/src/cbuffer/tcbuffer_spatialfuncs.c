@@ -502,7 +502,7 @@ tcbufferseq_traversed_area(const TSequence *seq, bool unary_union)
 }
 
 /**
- * @ingroup meos_cbuffer_spatial_accessor
+ * @ingroup meos_internal_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer sequence set
  * with step interpolation
  * @param[in] ss Temporal circular buffer
@@ -517,7 +517,9 @@ tcbufferseqset_step_traversed_area(const TSequenceSet *ss, GSERIALIZED **result)
   assert(MEOS_FLAGS_GET_INTERP(ss->flags) == STEP);
   int ninsts;
   const TInstant **instants = tsequenceset_insts_p(ss, &ninsts);
-  return cbufferarr_circles((TInstant **) instants, ss->count, result);
+  int res = cbufferarr_circles((TInstant **) instants, ninsts, result);
+  pfree(instants);
+  return res;
 }
 
 /**
@@ -553,7 +555,7 @@ tcbufferseqset_linear_traversed_area(const TSequenceSet *ss, GSERIALIZED **resul
 GSERIALIZED *
 tcbufferseqset_traversed_area(const TSequenceSet *ss, bool unary_union)
 {
-  assert(ss); assert(MEOS_FLAGS_GET_INTERP(ss->flags) == LINEAR);
+  assert(ss);
   
   /* Singleton sequence set */
   if (ss->count == 1)
