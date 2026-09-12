@@ -1510,6 +1510,48 @@ lw_dist2d_ptarrayarc_ptarrayarc(const POINTARRAY *pa, const POINTARRAY *pb, DIST
 	return LW_TRUE;
 }
 
+/* MEOS: the cross product of coordinate differences, computed exactly and
+ * rounded once, from meos/src/geo/geo_funcs.c */
+extern double cross_product_exact(double ax, double ay, double bx, double by,
+	double cx, double cy, double dx, double dy);
+
+/* MEOS: the circle of an arc as lw_arc_center computes it, decided on the
+ * input vertices as lw_dist2d_pt_arc decides it rather than against bounds of
+ * a fixed size. An arc whose ends are the same vertex is the whole circle on
+ * the diameter A1-A2. Three points whose turn, the cross product of A2 - A1
+ * and A3 - A1, is zero are collinear, A2 on an end included, and the arc is
+ * the segment A1-A3, for which the function returns -1. The rounded turn is
+ * nonzero, and of the sign of the exact one, where it exceeds the error bound
+ * of Shewchuk's orient2d filter, (3 + 16u) u (|left| + |right|) with u the
+ * unit roundoff; only below it is the turn computed exactly. Every term of
+ * the circumcentre, and the bound, scales with the arc, so the circle does
+ * too */
+static double
+lw_dist2d_arc_circle(const POINT2D *A1, const POINT2D *A2, const POINT2D *A3, POINT2D *C)
+{
+	double dx21 = A2->x - A1->x, dy21 = A2->y - A1->y;
+	if (A1->x == A3->x && A1->y == A3->y)
+	{
+		C->x = A1->x + dx21 / 2.0;
+		C->y = A1->y + dy21 / 2.0;
+		return sqrt((C->x - A1->x) * (C->x - A1->x) + (C->y - A1->y) * (C->y - A1->y));
+	}
+	double dx31 = A3->x - A1->x, dy31 = A3->y - A1->y;
+	double left = dx21 * dy31, right = dx31 * dy21;
+	double cross = left - right;
+	double u = DBL_EPSILON / 2.0;
+	if (! (fabs(cross) > (3.0 + 16.0 * u) * u * (fabs(left) + fabs(right))))
+		cross = cross_product_exact(A1->x, A1->y, A2->x, A2->y,
+			A1->x, A1->y, A3->x, A3->y);
+	if (cross == 0.0)
+		return -1.0;
+	double h21 = dx21 * dx21 + dy21 * dy21, h31 = dx31 * dx31 + dy31 * dy31;
+	double d = 2.0 * cross;
+	C->x = A1->x + (h21 * dy31 - h31 * dy21) / d;
+	C->y = A1->y - (h21 * dx31 - h31 * dx21) / d;
+	return sqrt((C->x - A1->x) * (C->x - A1->x) + (C->y - A1->y) * (C->y - A1->y));
+}
+
 /**
  * Calculate the shortest distance between an arc and an edge.
  * Line/circle approach from http://stackoverflow.com/questions/1073336/circle-line-collision-detection
@@ -1541,7 +1583,7 @@ lw_dist2d_seg_arc(const POINT2D *A1,
 		return lw_dist2d_pt_seg(B1, A1, A2, dl);
 
 	/* Calculate center and radius of the circle. */
-	radius_C = lw_arc_center(B1, B2, B3, &C);
+	radius_C = lw_dist2d_arc_circle(B1, B2, B3, &C); /* MEOS */
 
 	/* This "arc" is actually a line (B2 is collinear with B1,B3) */
 	if (radius_C < 0.0)
@@ -1861,7 +1903,8 @@ lw_dist2d_circle_intersections(
 
 	// If the test point is on the center of the other
 	// arc, some other point has to be closer, by definition.
-	if (p2d_same(center_A, P))
+	/* MEOS: exactly the centre, the one point with no direction to it */
+	if (center_A->x == P->x && center_A->y == P->y)
 		return 0;
 
 	// Calculate vector from the center to the pt
@@ -1947,8 +1990,10 @@ lw_dist2d_circle_circle_intersections(
 	I[0].x = Px - h * (dy / d);
 	I[0].y = Py + h * (dx / d);
 
-	// If h is very close to 0, the circles are tangent and there's only one intersection point.
-	if (FP_IS_ZERO(h))
+	/* MEOS: the circles are tangent, with one point in common, where h is 0;
+	 * a small h still gives two points, each on both circles to within
+	 * rounding */
+	if (h == 0.0)
 		return 1;
 
 	// Intersection point 2
@@ -1997,8 +2042,8 @@ lw_dist2d_arc_arc(
 		return lw_dist2d_pt_arc(A1, B1, B2, B3, dl);
 
 	/* Calculate centers and radii of circles. */
-	radius_A = lw_arc_center(A1, A2, A3, &center_A);
-	radius_B = lw_arc_center(B1, B2, B3, &center_B);
+	radius_A = lw_dist2d_arc_circle(A1, A2, A3, &center_A); /* MEOS */
+	radius_B = lw_dist2d_arc_circle(B1, B2, B3, &center_B); /* MEOS */
 
 	/* Two co-linear arcs?!? That's two segments. */
 	if (radius_A < 0 && radius_B < 0)
@@ -2024,7 +2069,9 @@ lw_dist2d_arc_arc(
 	d = distance2d_pt_pt(&center_A, &center_B);
 	is_disjoint = (d > (radius_A + radius_B));
 	is_contained = (d < fabs(radius_A - radius_B));
-	is_same_center = p2d_same(&center_A, &center_B);
+	/* MEOS: the same centre exactly, the one case with no line through the
+	 * two centres */
+	is_same_center = (center_A.x == center_B.x && center_A.y == center_B.y);
 	is_overlapping = ! (is_disjoint || is_contained || is_same_center);
 
 	/*

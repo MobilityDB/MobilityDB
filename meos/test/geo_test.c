@@ -697,6 +697,41 @@ int main(void)
   assert(dist_ok == 41);
   meos_errno_reset();
 
+  /* A segment and an arc take their distance to an arc from its size in the
+   * same way. The segment from (0 2s) to (2s 2s) and the arc through (0 3s),
+   * (s 2s) and (2s 3s), whose centre is (s 3s) and whose lowest point is
+   * (s 2s), each lie at distance s from the semicircle, exactly: the nearest
+   * point of the semicircle is its top (s s). A circle read as its chord below
+   * an absolute bound on twice the area of the arc, 4s^2 against 1e-8 from
+   * s = 2^-16, puts them at 2s and 3s, and a whole circle read from ends
+   * closer than 1e-8, from s = 2^-28, at 0.79s and 0.59s */
+  double seg_s = 1.0;
+  int seg_ok = 0;
+  for (int k = 0; k >= -40; k--, seg_s *= 0.5)
+  {
+    char semi_wkt[160], seg_wkt[128], arc_wkt[160];
+    snprintf(semi_wkt, sizeof semi_wkt,
+      "CIRCULARSTRING(0 0,%.17g %.17g,%.17g 0)", seg_s, seg_s, 2 * seg_s);
+    snprintf(seg_wkt, sizeof seg_wkt, "LINESTRING(0 %.17g,%.17g %.17g)",
+      2 * seg_s, 2 * seg_s, 2 * seg_s);
+    snprintf(arc_wkt, sizeof arc_wkt,
+      "CIRCULARSTRING(0 %.17g,%.17g %.17g,%.17g %.17g)", 3 * seg_s, seg_s,
+      2 * seg_s, 2 * seg_s, 3 * seg_s);
+    GSERIALIZED *semi = geom_in(semi_wkt, -1);
+    GSERIALIZED *seg = geom_in(seg_wkt, -1);
+    GSERIALIZED *arc = geom_in(arc_wkt, -1);
+    assert(semi != NULL); assert(seg != NULL); assert(arc != NULL);
+    assert(geom_distance2d(semi, seg) == seg_s);
+    assert(geom_distance2d(seg, semi) == seg_s);
+    assert(geom_distance2d(semi, arc) == seg_s);
+    seg_ok++;
+    free(semi); free(seg); free(arc);
+  }
+  printf("the distance from a segment and from an arc to a semicircle is its "
+    "closed form at %d scales from 1 to 2^-40\n", seg_ok);
+  assert(seg_ok == 41);
+  meos_errno_reset();
+
   /* The distance between curves is checked on the cases PostGIS gives its
    * own unit tests for the distance fixes of its 3.6 line (ticket 5989): a
    * point outside a curve polygon beside its arc, a point beside the arc of a
