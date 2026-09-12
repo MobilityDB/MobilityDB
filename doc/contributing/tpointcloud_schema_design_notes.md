@@ -17,7 +17,7 @@ A `pcpoint` and a `pcpatch` carry a `pcid` and nothing else about their own layo
 
 ## What a schema states, and what it derives
 
-`PCDIMENSION` (`pointcloud-pg/lib/pc_api.h:64-75`) carries nine fields and `PCSCHEMA` (`:77-90`) eleven. Only some are stated; the rest are computed. `pc_schema.c:180-190` is explicit:
+`PCDIMENSION` (`pointcloud-pg/lib/pc_api.h`) carries nine fields and `PCSCHEMA` eleven. Only some are stated; the rest are computed. `pc_schema_calculate_byteoffsets()` in `pc_schema.c` is explicit:
 
 ```c
 pcs->dims[i]->byteoffset = byteoffset;
@@ -65,7 +65,7 @@ CREATE TABLE pointcloud_dimensions (
 
 **`UNIQUE (pcid, name)`** is what makes `pc_schema_check_xyzm` unambiguous: the X, Y, Z and M dimensions are found by name, so two dimensions sharing one name would leave the choice to array order.
 
-The domains are libpc's own. The interpretation names are the ten of `pc_schema.c:21-22`. `unknown`, the eleventh, sits **outside** the domain: it is what the parser answers for a value it does not recognise, not a storage a schema states. The compression names are those of `pc_compression_name` (`pc_schema.c:84-93`).
+The domains are libpc's own. The interpretation names are the ten that `INTERPRETATION_STRINGS` in `pc_schema.c` lists after `unknown`. `unknown`, the eleventh, sits **outside** the domain: it is what the parser answers for a value it does not recognise, not a storage a schema states. The compression names are those of `pc_compression_name` in `pc_schema.c`.
 
 ## The example of the manual, stated in SQL
 
@@ -136,7 +136,7 @@ the two paths therefore states `active` on both sides, or it compares a statemen
 
 ## What does not change
 
-- **`pointcloud_formats` is pgPointCloud's**, created by that extension and read by `schema_cache.c:107` through a heap scan that errors when the relation is absent. Nothing here modifies it, and a database already registering schemas that way keeps working.
+- **`pointcloud_formats` is pgPointCloud's**, created by that extension and read by `fetch_schema_row()` in `schema_cache.c` through a heap scan that errors when the relation is absent. Nothing here modifies it, and a database already registering schemas that way keeps working.
 - **The XML path stays.** A WKB blob may carry an embedded schema document for a `pcid` the backend has not seen, which `meos_pc_parse_xml_fn` handles; data written by other pgPointCloud tools stays readable.
 - ⇒ the two are alternative ways to state the same schema, and the SQL one is what a binding without a PostgreSQL catalog can offer.
 ## Why this reaches the bindings: one fact, two front ends
@@ -173,7 +173,7 @@ these two front ends, which is the strongest argument that a third should not in
 | road network (`npoint`) | `public.ways` | `meos/examples/data/ways1000.csv`, `meos_set_ways_csv` |
 | point cloud schemas | `pointcloud_schemas` / `pointcloud_dimensions` | a vendored document |
 
-`ways_meos.c:58` states the second row in the code itself — the entry is described there as
+`ways_meos.c` states the second row in the code itself, in the comment on its default ways path — the entry is described there as
 `meos_set_ways_csv()`, *"mirroring `meos_set_spatial_ref_sys_csv()`"*, each holding a default path
 (`/usr/local/share/ways1000.csv`, `/usr/local/share/spatial_ref_sys.csv`) that the entry overrides.
 

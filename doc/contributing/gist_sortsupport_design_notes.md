@@ -159,7 +159,7 @@ normalisation then fits the degrees it actually holds. This is what
 ### 2.1 The constant hiding inside it
 
 ```c
-/* mobilitydb/pg_include/pg_temporal/index_sortsupport.h:71 */
+/* mobilitydb/pg_include/pg_temporal/index_sortsupport.h */
 #define MEOS_SORT_TIME_SHIFT 24
 ```
 
