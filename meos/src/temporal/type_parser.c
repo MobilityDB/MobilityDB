@@ -558,7 +558,20 @@ set_parse(const char **str, MeosType settype)
   if (set_srid != SRID_UNKNOWN)
   {
     for (int i = 0; i < (int) array->count; i++)
-      spatial_set_srid(values[i], basetype, set_srid);
+    {
+      if (! spatial_set_srid(values[i], basetype, set_srid))
+      {
+        if (! basetype_byvalue(basetype))
+          pfree_array((void **) values, array->count);
+        else
+          pfree(values);
+        meos_array_destroy(array);
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "The SRID %d cannot be stated for the %s", set_srid,
+          meostype_name(basetype));
+        return NULL;
+      }
+    }
   }
   result = set_make(values, array->count, basetype, ORDER);
   /* set_make copies each value into the set, so the parsed values are ours to
