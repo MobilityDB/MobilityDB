@@ -35,6 +35,7 @@ SELECT traversedArea(NULL::tcbuffer);
 SELECT ST_AsText(traversedArea(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01'));
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02]'));
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(1 1),0.3)@2001-01-02]'));
+SELECT ST_AsText(traversedArea(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(5 5),0.5)@2001-01-02], [Cbuffer(Point(9 9),0.5)@2001-01-03, Cbuffer(Point(12 12),0.5)@2001-01-04]}'));
 
 -------------------------------------------------------------------------------
 -- Restriction to a geometry (atGeometry / minusGeometry)
