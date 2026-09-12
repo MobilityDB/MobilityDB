@@ -130,6 +130,8 @@ jobs:
           ./restrict_tstzset_validity_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o json_validity_test json_validity_test.c -L/usr/local/lib -lmeos
           ./json_validity_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o temporal_validity_test temporal_validity_test.c -L/usr/local/lib -lmeos
+          ./temporal_validity_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
           ./geo_test
           # Every program under meos/test is a check of the installed library, and
