@@ -80,7 +80,22 @@ CREATE TYPE s2cellset (
  * WKB / HexWKB helpers
  ******************************************************************************/
 
+CREATE FUNCTION s2cellsetFromText(text)
+  RETURNS s2cellset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION s2cellsetFromEWKT(text)
+  RETURNS s2cellset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION s2cellsetFromBinary(bytea)
+  RETURNS s2cellset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION s2cellsetFromEWKB(bytea)
   RETURNS s2cellset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -90,9 +105,19 @@ CREATE FUNCTION s2cellsetFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION s2cellsetFromHexEWKB(text)
+  RETURNS s2cellset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asText(s2cellset)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKT(s2cellset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(s2cellset, endian text DEFAULT '')
@@ -100,9 +125,19 @@ CREATE FUNCTION asBinary(s2cellset, endian text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asEWKB(s2cellset, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asHexWKB(s2cellset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(s2cellset, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

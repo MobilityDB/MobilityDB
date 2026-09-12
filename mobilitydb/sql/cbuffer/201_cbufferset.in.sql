@@ -68,14 +68,31 @@ CREATE TYPE cbufferset (
 
 /******************************************************************************/
 
--- Input/output in WKB and HexWKB representation
+-- Input/output in WKT, WKB, and HexWKB representation
+
+CREATE FUNCTION cbuffersetFromText(text)
+  RETURNS cbufferset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cbuffersetFromEWKT(text)
+  RETURNS cbufferset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION cbuffersetFromBinary(bytea)
   RETURNS cbufferset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cbuffersetFromEWKB(bytea)
+  RETURNS cbufferset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION cbuffersetFromHexWKB(text)
+  RETURNS cbufferset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cbuffersetFromHexEWKB(text)
   RETURNS cbufferset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -79,7 +79,22 @@ CREATE TYPE quadbinset (
  * WKB / HexWKB helpers
  ******************************************************************************/
 
+CREATE FUNCTION quadbinsetFromText(text)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION quadbinsetFromEWKT(text)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION quadbinsetFromBinary(bytea)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION quadbinsetFromEWKB(bytea)
   RETURNS quadbinset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -89,9 +104,19 @@ CREATE FUNCTION quadbinsetFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION quadbinsetFromHexEWKB(text)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asText(quadbinset)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKT(quadbinset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(quadbinset, endian text DEFAULT '')
@@ -99,9 +124,19 @@ CREATE FUNCTION asBinary(quadbinset, endian text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asEWKB(quadbinset, endian text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asHexWKB(quadbinset, endian text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(quadbinset, endian text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

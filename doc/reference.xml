@@ -189,6 +189,9 @@
 					<para><link linkend="setspan_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="setspan_asEWKT"><varname>asEWKT</varname></link>: Return the Extended Well-Known Text (EWKT) representation of a spatial set</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="setspan_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 				<listitem>
@@ -199,6 +202,12 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="setspan_FromHexWKB"><varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Input from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="setspan_FromEWKT"><varname>spatialsettypeFromText</varname>, <varname>spatialsettypeFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation of a spatial set</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="setspan_FromEWKB"><varname>spatialsettypeFromEWKB</varname>, <varname>spatialsettypeFromHexEWKB</varname></link>: Input from the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a spatial set</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

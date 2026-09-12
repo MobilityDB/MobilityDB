@@ -924,7 +924,7 @@ declarations under `mobilitydb/sql/`:
 |---|---|---|
 | `SRID` `setSRID` `transform` `transformPipeline` | identity of the reference system | 5/11 — absent from `npointset`, `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`, whose types IMPOSE or INHERIT the system (§9.1) |
 | `stbox` | the spatial bounding extent | 6/11 — absent from `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset` |
-| `asEWKT` `asEWKB` `asHexEWKB` | the SRID-CARRYING representations | `asEWKT` 6/11, absent from `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`; `asEWKB` and `asHexEWKB` 8/11, absent from the three cell sets only |
+| `asEWKT` `asEWKB` `asHexEWKB`, `FromEWKT` `FromEWKB` `FromHexEWKB` | the SRID-CARRYING representations | 11/11 — a spatial set carries the E twin of every plain form it lists, and `generate.py --validate` refuses a set I/O family that does not (`set_missing_e_twins`), as it does for a `TSpatial<T>` family |
 | `round` | rounding of COORDINATES | 6/11 — the same five; a cell id carries no coordinates to round |
 | `distance` | ⭐ the OVERRIDE, below | 5/11 — absent from `posechainset`, `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset` |
 

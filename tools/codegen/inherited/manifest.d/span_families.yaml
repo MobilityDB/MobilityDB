@@ -2838,6 +2838,7 @@ span_families:
     - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
     - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
     - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+    - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
     sep: "\n"
   - lit: "\n"
   - group:
@@ -2878,6 +2879,43 @@ span_families:
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
+  - {sig: "asEWKT({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
+  - lit: "\n"
+  - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
+  - lit: "\n"
+
+- family: posechainset_io
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructors"
+  order: [posechain]
+  insts:
+    posechain: {v: posechain, vs: posechainset}
+  blocks:
+  - lit: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
+  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKT, WKB, and HexWKB representation\n\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
   - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
   - {sig: "asEWKT({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
@@ -2913,6 +2951,7 @@ span_families:
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
   - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Set_as_text}
   - {sig: "asEWKT({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
@@ -2941,10 +2980,15 @@ span_families:
   - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
   - lit: "\n"
   - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
-  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKB and HexWKB representation\n\n"
+  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKT, WKB, and HexWKB representation\n\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - lit: "\n"
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
   - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
@@ -3009,15 +3053,29 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
   - lit: "\n/******************************************************************************\n * WKB / HexWKB helpers\n ******************************************************************************/\n\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
+  - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - lit: "\n"
+  - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - lit: "\n"
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
+  - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
+  - lit: "\n"
+  - {sig: "asEWKT({vs})", ret: "text", sym: Spatialset_as_ewkt}
   - lit: "\n"
   - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - lit: "\n"
+  - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - lit: "\n"
   - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+  - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
   - lit: "\n"
 
 - family: quadbinset_io
@@ -3042,15 +3100,29 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
   - lit: "\n/******************************************************************************\n * WKB / HexWKB helpers\n ******************************************************************************/\n\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
+  - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - lit: "\n"
+  - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - lit: "\n"
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
+  - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
+  - lit: "\n"
+  - {sig: "asEWKT({vs})", ret: "text", sym: Spatialset_as_ewkt}
   - lit: "\n"
   - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - lit: "\n"
+  - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - lit: "\n"
   - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+  - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
   - lit: "\n"
 
 - family: s2cellset_io
@@ -3075,15 +3147,29 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
   - lit: "\n/******************************************************************************\n * WKB / HexWKB helpers\n ******************************************************************************/\n\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
+  - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - lit: "\n"
+  - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - lit: "\n"
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
+  - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
+  - lit: "\n"
+  - {sig: "asEWKT({vs})", ret: "text", sym: Spatialset_as_ewkt}
   - lit: "\n"
   - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - lit: "\n"
+  - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - lit: "\n"
   - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+  - {sig: "asHexEWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
   - lit: "\n"
 
 - family: pcpointset_io
@@ -3105,8 +3191,17 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n);"}
   - lit: "\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs})", ret: "text", sym: Spatialset_as_text}
+  - {sig: "asEWKT({vs})", ret: "text", sym: Spatialset_as_ewkt}
+  - lit: "\n"
   - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
   - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
@@ -3132,8 +3227,17 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n);"}
   - lit: "\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
   - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - {sig: "{vs}FromHexEWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs})", ret: "text", sym: Spatialset_as_text}
+  - {sig: "asEWKT({vs})", ret: "text", sym: Spatialset_as_ewkt}
+  - lit: "\n"
   - {sig: "asBinary({vs}, endian text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - {sig: "asEWKB({vs}, endian text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
   - {sig: "asHexWKB({vs}, endian text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}

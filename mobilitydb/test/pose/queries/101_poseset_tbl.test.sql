@@ -53,6 +53,7 @@ SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromBinary(asEWKB(s)) <> s;
 -- asHexWKB emits plain WKB (no SRID); setSRID reapplies it before comparing
 SELECT COUNT(*) FROM tbl_poseset2d WHERE setSRID(posesetFromHexWKB(asHexWKB(s)), 3812) <> s;
 SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromHexWKB(asHexEWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromHexEWKB(asHexEWKB(s)) <> s;
 
 -------------------------------------------------------------------------------
 -- Constructor

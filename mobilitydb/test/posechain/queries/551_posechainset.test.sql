@@ -52,6 +52,8 @@ SELECT posechainsetFromEWKB(asEWKB(posechainset '{"SRID=3812;PoseChain(Pose(Poin
   posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0))"}';
 SELECT posechainsetFromHexWKB(asHexWKB(posechainset '{"PoseChain(Pose(Point(1 2), 0.5))"}')) =
   posechainset '{"PoseChain(Pose(Point(1 2), 0.5))"}';
+SELECT posechainsetFromHexEWKB(asHexEWKB(posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0))"}')) =
+  posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0))"}';
 
 -------------------------------------------------------------------------------
 -- Errors

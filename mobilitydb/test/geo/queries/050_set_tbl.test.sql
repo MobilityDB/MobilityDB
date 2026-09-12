@@ -68,6 +68,8 @@ SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
 SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexWKB(g)) <> g;
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexEWKB(g)) <> g;
 SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexEWKB(g)) <> g;
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexEWKB(asHexEWKB(g)) <> g;
+SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexEWKB(asHexEWKB(g)) <> g;
 
 -- Coverage
 SELECT asText(geomsetFromHexWKB(asHexWKB(geomset '{"Point(1 1 1)"}')));

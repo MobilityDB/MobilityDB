@@ -55,6 +55,62 @@ SELECT COUNT(*) FROM tbl_pcpatchset WHERE s IS NULL;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromText(asText(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromEWKT(asEWKT(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromEWKB(asEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromHexEWKB(asHexEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromText(asText(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromEWKT(asEWKT(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromEWKB(asEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromHexEWKB(asHexEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpointset
 WHERE s IS NOT NULL AND pcpointsetFromBinary(asBinary(s)) <> s;
  count 
 -------
@@ -139,5 +195,20 @@ FROM t;
  t      |           4 | t               | t
 (1 row)
 
+WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0),
+  pcpoint(3, 2.0, 2.0, 2.0)]) AS s)
+SELECT left(asEWKT(s), 10) AS prefix, pcpointsetFromEWKT(asEWKT(s)) = s AS ewkt_roundtrips
+FROM t;
+   prefix   | ewkt_roundtrips 
+------------+-----------------
+ SRID=4326; | t
+(1 row)
+
+WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0)]) AS s)
+SELECT pcpointsetFromEWKT(replace(asEWKT(s), 'SRID=4326', 'SRID=3857')) FROM t;
+ERROR:  The SRID of a pcpoint is the one its schema declares and cannot be set
+WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0)]) AS s)
+SELECT pcpointsetFromHexEWKB(replace(asHexEWKB(s, 'XDR'), '000010E6', '00000F11')) FROM t;
+ERROR:  The SRID of the WKB (3857) does not match the SRID of the pcpointset (4326)
 DELETE FROM pointcloud_formats WHERE pcid = 3;
 DELETE 1

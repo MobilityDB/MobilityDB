@@ -91,6 +91,10 @@ CREATE FUNCTION posechainsetFromHexWKB(text)
   RETURNS posechainset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION posechainsetFromHexEWKB(text)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(posechainset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text

@@ -208,6 +208,21 @@ SELECT asText(floatspanset '{[1.55,2.55],[4,5]}',0);
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="setspan_asEWKT">
+				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+				<para>Devuelve la representación extendida de texto conocido (EWKT) de un conjunto espacial</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asEWKT(spatialset,maxdecimaldigits integer=15) → text
+</programlisting>
+				<para>El SRID del conjunto precede a sus elementos. Un conjunto de índices de celda indica el SRID 4326 y un conjunto de nubes de puntos el SRID que declara su esquema, y ninguno de los dos toma el argumento <varname>maxdecimaldigits</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(geomset 'SRID=5676;{"Point(1 1)", "Point(2 2)"}');
+-- SRID=5676;{"POINT(1 1)", "POINT(2 2)"}
+SELECT asEWKT(h3indexset '{8928308280fffff, 8928308280bffff}');
+-- SRID=4326;{"8928308280bffff", "8928308280fffff"}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="setspan_asBinary">
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
@@ -238,12 +253,10 @@ SELECT asHexWKB(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
 				<para>Devuelve la representación extendida binaria conocida (EWKB) o la representación hexadecimal extendida binaria conocida (HexEWKB) de un conjunto espacial</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-asEWKB({geomset,geogset,cbufferset,npointset,poseset,posechainset,pcpointset,pcpatchset},
-  endian text='') → bytea
-asHexEWKB({geomset,geogset,cbufferset,npointset,poseset,posechainset,pcpointset,
-  pcpatchset},endian text='') → text
+asEWKB(spatialset,endian text='') → bytea
+asHexEWKB(spatialset,endian text='') → text
 </programlisting>
-				<para>Para <varname>geomset</varname>, <varname>geogset</varname>, <varname>cbufferset</varname>, <varname>npointset</varname>, <varname>poseset</varname> y <varname>posechainset</varname> el SRID (cuando se conoce) se incluye una única vez en la cabecera del conjunto: <varname>asEWKB</varname> y <varname>asHexEWKB</varname> lo incluyen, mientras que <varname>asBinary</varname> y <varname>asHexWKB</varname> devuelven la representación binaria conocida (WKB) sin él, siguiendo la convención OGC y el <varname>asBinary</varname>/<varname>asHexWKB</varname> de los tipos base <varname>cbuffer</varname>, <varname>npoint</varname> y <varname>pose</varname>. Para <varname>pcpointset</varname> y <varname>pcpatchset</varname> el esquema, y su SRID, se resuelve fuera de banda a partir del catálogo <varname>pointcloud_formats</varname> en lugar de incluirse en el valor, por lo que las cuatro funciones siempre devuelven los mismos bytes para estos dos tipos.</para>
+				<para>El SRID del conjunto, cuando se conoce, se incluye una única vez en la cabecera del conjunto: <varname>asEWKB</varname> y <varname>asHexEWKB</varname> lo incluyen, mientras que <varname>asBinary</varname> y <varname>asHexWKB</varname> devuelven la representación binaria conocida (WKB) sin él, siguiendo la convención OGC y el <varname>asBinary</varname>/<varname>asHexWKB</varname> de los tipos base <varname>cbuffer</varname>, <varname>npoint</varname> y <varname>pose</varname>. Un conjunto de índices de celda indica el SRID 4326, y un conjunto de nubes de puntos el SRID que su esquema declara en el catálogo <varname>pointcloud_formats</varname>, por lo que las formas extendidas y simples de un conjunto de nubes de puntos coinciden cuando su esquema no declara ningún SRID.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(geomset 'SRID=4326;{Point(1 1)}');
 -- \x012b0001010000000101000000000000000000f03f000000000000f03f
@@ -257,6 +270,8 @@ SELECT asEWKB(cbufferset 'SRID=4326;{"Cbuffer(Point(1 1),0.5)"}');
 -- \x013a0041e610000001000000000000000000f03f000000000000f03f000000000000e03f
 SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
 -- 01310041E61000000100000041E61000000100000000000000000000000000E03F
+SELECT asHexEWKB(h3indexset '{8a2a1072b59ffff}', 'XDR');
+-- 00004561000010E60000000108A2A1072B59FFFF
 </programlisting>
 			</listitem>
 
@@ -303,6 +318,44 @@ SELECT floatspanFromHexWKB('01060001000000000000F83F0000000000000440');
 SELECT floatspansetFromHexWKB(
   '00000E00000002033FF000000000000040000000000000000340100000000000004014000000000000');
 -- {[1, 2], [4, 5]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="setspan_FromEWKT">
+				<indexterm significance="normal"><primary><varname>spatialsettypeFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spatialsettypeFromEWKT</varname></primary></indexterm>
+				<para>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT) de un conjunto espacial</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+spatialsettypeFromText(text) → spatialset
+spatialsettypeFromEWKT(text) → spatialset
+</programlisting>
+				<para>Hay una función por tipo de conjunto espacial, el nombre de la función tiene como prefijo el nombre del tipo. Un SRID indicado debe ser el que lleva un conjunto de índices de celda o de nubes de puntos, de lo contrario se genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(geomsetFromText('{"Point(1 1)", "Point(2 2)"}'));
+-- {"POINT(1 1)", "POINT(2 2)"}
+SELECT asEWKT(geomsetFromEWKT('SRID=5676;{"Point(1 1)", "Point(2 2)"}'));
+-- SRID=5676;{"POINT(1 1)", "POINT(2 2)"}
+SELECT asEWKT(h3indexsetFromEWKT('SRID=4326;{8928308280fffff}'));
+-- SRID=4326;{"8928308280fffff"}
+SELECT h3indexsetFromEWKT('SRID=3857;{8928308280fffff}');
+-- ERROR:  The SRID 3857 cannot be stated for the h3index
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="setspan_FromEWKB">
+				<indexterm significance="normal"><primary><varname>spatialsettypeFromEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spatialsettypeFromHexEWKB</varname></primary></indexterm>
+				<para>Entrada desde la representación extendida binaria conocida (EWKB) o desde la representación hexadecimal extendida binaria conocida (HexEWKB) de un conjunto espacial</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+spatialsettypeFromEWKB(bytea) → spatialset
+spatialsettypeFromHexEWKB(text) → spatialset
+</programlisting>
+				<para>Hay una función por tipo de conjunto espacial, el nombre de la función tiene como prefijo el nombre del tipo. El SRID que indica la cabecera debe ser el que lleva un conjunto de índices de celda o de nubes de puntos, de lo contrario se genera un error.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(geomsetFromEWKB(asEWKB(geomset 'SRID=5676;{"Point(1 1)"}')));
+-- SRID=5676;{"POINT(1 1)"}
+SELECT asEWKT(quadbinsetFromHexEWKB('01480041E610000001000000FFFFFFFFFFFF0F48'));
+-- SRID=4326;{"480fffffffffffff"}
 </programlisting>
 			</listitem>
 

@@ -1089,6 +1089,42 @@ def repr_missing_e_twins(fam: dict) -> list:
     return missing
 
 
+@functools.lru_cache(maxsize=None)
+def _spatialset_types() -> frozenset:
+    """The set types spatialset_type() accepts, read from the catalog predicate."""
+    return frozenset(parse_class_members("spatialset_type", catalog_type_names()))
+
+
+# The representation form a set I/O signature declares: `{vs}FromText(text)` reads,
+# `asEWKT({vs}, ...)` writes.
+_SET_SIG_OP = re.compile(r"^(?:\{vs\}(?P<frm>From[A-Za-z]+)|(?P<as>as[A-Za-z]+))\(")
+
+
+def _spanfile_sigs(fam: dict):
+    """Every signature a span/set family's blocks declare, grouped ones included."""
+    for blk in fam["blocks"]:
+        if "sig" in blk:
+            yield blk["sig"]
+        for item in blk.get("group", []):
+            if isinstance(item, dict) and "sig" in item:
+                yield item["sig"]
+
+
+def set_missing_e_twins(fam: dict) -> list:
+    """The E forms a spatial set family lacks beside the plain forms it lists. A family
+    whose set types all belong to spatialset_type() carries the E twin of every plain
+    representation form, as a TSpatial<T> family does (repr_missing_e_twins)."""
+    sets = [inst.get("vs") for inst in (fam.get("insts") or {}).values()]
+    if not sets or not all(s in _spatialset_types() for s in sets):
+        return []
+    ops = set()
+    for sig in _spanfile_sigs(fam):
+        m = _SET_SIG_OP.match(sig)
+        if m:
+            ops.add(m.group("frm") or m.group("as"))
+    return [e for plain, e in _REPR_E_TWIN.items() if plain in ops and e not in ops]
+
+
 def _repr_skeleton(sig: str, ret: str, sym: str) -> str:
     """One representation CREATE FUNCTION from the shared skeleton (no trailing
     newline, so groups/blocks can be joined with explicit blank-line control)."""
@@ -4527,6 +4563,11 @@ def main() -> int:
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("span_families", []):
+            missing = set_missing_e_twins(fam)
+            if missing:
+                ok = False
+                print(f"[DIFF] spanfile {fam['family']}: a spatial set family carries the "
+                      f"E twin of every plain form; it lacks {', '.join(missing)}")
             if not fam.get("reference"):
                 continue
             p = ROOT / fam["file"]

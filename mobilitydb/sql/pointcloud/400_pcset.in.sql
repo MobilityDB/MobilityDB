@@ -345,7 +345,20 @@ CREATE TYPE pcpointset (
   storage = extended
 );
 
+CREATE FUNCTION pcpointsetFromText(text)
+  RETURNS pcpointset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pcpointsetFromEWKT(text)
+  RETURNS pcpointset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION pcpointsetFromBinary(bytea)
+  RETURNS pcpointset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pcpointsetFromEWKB(bytea)
   RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -353,6 +366,20 @@ CREATE FUNCTION pcpointsetFromHexWKB(text)
   RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pcpointsetFromHexEWKB(text)
+  RETURNS pcpointset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(pcpointset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(pcpointset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asBinary(pcpointset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
@@ -727,7 +754,20 @@ CREATE TYPE pcpatchset (
   storage = extended
 );
 
+CREATE FUNCTION pcpatchsetFromText(text)
+  RETURNS pcpatchset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pcpatchsetFromEWKT(text)
+  RETURNS pcpatchset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION pcpatchsetFromBinary(bytea)
+  RETURNS pcpatchset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pcpatchsetFromEWKB(bytea)
   RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -735,6 +775,20 @@ CREATE FUNCTION pcpatchsetFromHexWKB(text)
   RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pcpatchsetFromHexEWKB(text)
+  RETURNS pcpatchset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(pcpatchset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(pcpatchset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asBinary(pcpatchset, endian text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'

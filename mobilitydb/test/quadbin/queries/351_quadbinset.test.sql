@@ -74,6 +74,23 @@ SELECT quadbinsetFromHexWKB(asHexWKB(quadbinset '{480fffffffffffff, 48427fffffff
   = quadbinset '{480fffffffffffff, 48427fffffffffff}';
 SELECT asText(quadbinset '{480fffffffffffff, 48427fffffffffff}');
 
+-- EWKT, EWKB and HexEWKB state the SRID 4326 of a cell, and every form reads back
+SELECT asEWKT(quadbinset '{480fffffffffffff, 48427fffffffffff}');
+SELECT asHexEWKB(quadbinset '{480fffffffffffff}', 'XDR');
+SELECT quadbinsetFromText(asText(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+SELECT quadbinsetFromEWKT(asEWKT(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+SELECT quadbinsetFromEWKB(asEWKB(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+SELECT quadbinsetFromHexEWKB(asHexEWKB(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+
+-- A cell states SRID 4326, so another SRID is refused in every input form
+SELECT quadbinsetFromEWKT('SRID=3857;{480fffffffffffff}');
+SELECT quadbinsetFromHexEWKB(replace(asHexEWKB(quadbinset '{480fffffffffffff}', 'XDR'),
+  '000010E6', '00000F11'));
+
 -------------------------------------------------------------------------------
 -- Comparison operators + opclasses
 -------------------------------------------------------------------------------
