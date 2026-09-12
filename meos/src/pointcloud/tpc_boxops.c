@@ -323,6 +323,10 @@ bool
 boxop_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box,
   bool (*func)(const TPCBox *, const TPCBox *), bool inverted)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, false);
+  VALIDATE_NOT_NULL(func, false);
+
   TPCBox box1;
   temporal_set_bbox(temp, &box1);
   return inverted ? func(box, &box1) : func(&box1, box);
@@ -337,6 +341,10 @@ bool
 boxop_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TPCBox *, const TPCBox *))
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp1, false); VALIDATE_TPOINTCLOUD(temp2, false);
+  VALIDATE_NOT_NULL(func, false);
+
   TPCBox box1, box2;
   temporal_set_bbox(temp1, &box1);
   temporal_set_bbox(temp2, &box2);

@@ -171,6 +171,8 @@ jobs:
           # catalog. The POINTCLOUD family is built and installed above.
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tpointcloud_test tpointcloud_test.c -L/usr/local/lib -lmeos
           ./tpointcloud_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o box_validity_test box_validity_test.c -L/usr/local/lib -lmeos
+          ./box_validity_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geopose_test geopose_test.c -L/usr/local/lib -lmeos
           ./geopose_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o numeric_test numeric_test.c -L/usr/local/lib -lmeos
