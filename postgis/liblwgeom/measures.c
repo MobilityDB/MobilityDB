@@ -293,6 +293,39 @@ lw_dist2d_check_overlap(const LWGEOM *lwg1, const LWGEOM *lwg2)
 	return LW_TRUE;
 }
 
+/* MEOS: the largest magnitude of a coordinate of a box */
+static inline double
+lw_dist2d_gbox_reach(const GBOX *b)
+{
+	return FP_MAX(FP_MAX(fabs(b->xmin), fabs(b->xmax)),
+		FP_MAX(fabs(b->ymin), fabs(b->ymax)));
+}
+
+/* MEOS: whether two boxes lie further apart than a distance already found,
+ * reach bounding the magnitude of their coordinates. Every distance the walk
+ * computes between what the boxes hold is at least the distance between the
+ * boxes, up to the rounding of the boxes and of the distance itself, which
+ * the margin covers. A pair apart in that sense cannot return a distance
+ * below the one found, and the walk replaces its answer only with a strictly
+ * smaller one, so skipping the pair leaves both the distance and the pair of
+ * points it is read from as the full walk finds them */
+static inline int
+lw_dist2d_gbox_apart(const GBOX *b1, const GBOX *b2, double dist, double reach)
+{
+	double dx = FP_MAX(0.0, FP_MAX(b1->xmin - b2->xmax, b2->xmin - b1->xmax));
+	double dy = FP_MAX(0.0, FP_MAX(b1->ymin - b2->ymax, b2->ymin - b1->ymax));
+	double lim = dist + 16 * DBL_EPSILON * (dist + reach);
+	return dx * dx + dy * dy > lim * lim;
+}
+
+/* MEOS: whether two parts lie further apart than a distance already found */
+static int
+lw_dist2d_boxes_apart(const GBOX *b1, const GBOX *b2, double dist)
+{
+	return lw_dist2d_gbox_apart(b1, b2, dist,
+		FP_MAX(lw_dist2d_gbox_reach(b1), lw_dist2d_gbox_reach(b2)));
+}
+
 /**
 This is a recursive function delivering every possible combination of subgeometries
 */
@@ -367,6 +400,15 @@ lw_dist2d_recursive(const LWGEOM *lwg1, const LWGEOM *lwg2, DISTPTS *dl)
 
 			/* If one of geometries is empty, skip */
 			if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
+				continue;
+
+			/* MEOS: a pair further apart than the distance found holds no
+			 * nearer pair of points. Nothing is skipped once the distance is
+			 * within the tolerance: a pair the full walk measures then can
+			 * still set the points it reports */
+			if (dl->mode == DIST_MIN && dl->distance > dl->tolerance &&
+			    g1->bbox && g2->bbox &&
+			    lw_dist2d_boxes_apart(g1->bbox, g2->bbox, dl->distance))
 				continue;
 
 			if ((dl->mode != DIST_MAX) && (!lw_dist2d_check_overlap(g1, g2)) &&
