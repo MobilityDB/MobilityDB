@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: apply_pose_point4d</title>
+<title>MobilityDB: compute_s</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,8 +79,8 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="trgeo__vclip_8h_a122e66b7f364587919cd860a04bdc611.html#a122e66b7f364587919cd860a04bdc611">apply_pose_point4d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="trgeo__vclip_8h_a768da42117ab2b9f45c2c7acd4f89457.html#a768da42117ab2b9f45c2c7acd4f89457">compute_s</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__vclip_8h_a66e358a1cfae3d9220cb43ef3082c2f7.html#a66e358a1cfae3d9220cb43ef3082c2f7">apply_pose_point2d</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="trgeo__vclip_8h_a174f101a50288fdea72a70e104510531.html#a174f101a50288fdea72a70e104510531">compute_s</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__vclip_8h_a572cfbef70875067b02b39bf26fe5be0.html#a572cfbef70875067b02b39bf26fe5be0">MEOS_CONTINUE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__vclip_8h_a0cf77793ea9436b3aebdd7b01e1cc8c7.html#a0cf77793ea9436b3aebdd7b01e1cc8c7">MEOS_DISJOINT</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__vclip_8h_ac63282f31016c2f100bc84a58a33f69d.html#ac63282f31016c2f100bc84a58a33f69d">MEOS_INTERSECT</a></td></tr>
@@ -93,23 +93,32 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a122e66b7f364587919cd860a04bdc611" name="a122e66b7f364587919cd860a04bdc611"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a122e66b7f364587919cd860a04bdc611">&#9670;&#160;</a></span>apply_pose_point4d()</h2>
+<a id="a174f101a50288fdea72a70e104510531" name="a174f101a50288fdea72a70e104510531"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a174f101a50288fdea72a70e104510531">&#9670;&#160;</a></span>compute_s()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void apply_pose_point4d </td>
+          <td class="memname">static double compute_s </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structPOINT4D.html">POINT4D</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
           <td class="paramname"><em>p</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structPose.html">Pose</a> *&#160;</td>
-          <td class="paramname"><em>pose</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>vs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>ve</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -117,9 +126,15 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Apply a pose to a point, that is rotate it and then translate it. </p>
+<p>Return the relative position of a point on a segment. </p>
+<p >s &lt; 0 -&gt; p before point vs s = 0 -&gt; p = vs 0 &lt; s &lt; 1 -&gt; p = vs * (1 - s) + ve * s s = 1 -&gt; p = ve 1 &lt; s -&gt; p after point ve </p>
 
 </div>
 </div>
