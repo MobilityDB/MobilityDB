@@ -5153,6 +5153,8 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
 /**
  * @ingroup meos_geo_base_comp
  * @brief Return true if the geometries/geographies are the same
+ * @details Two values in different spatial reference systems are not the
+ * same whatever their coordinates, as for the circular buffers and the poses
  * @param[in] gs1,gs2 Geometries/geographies
  */
 bool
@@ -5160,6 +5162,10 @@ geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+
+  /* The vertex comparison below reads the coordinates alone */
+  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2))
+    return false;
 
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);

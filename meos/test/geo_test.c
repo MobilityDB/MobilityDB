@@ -3282,6 +3282,39 @@ int main(void)
     meos_errno_reset();
   }
 
+  /* The coordinates of a value are read in its reference system. One point
+   * stated in two systems is two different geometries, and a distance between
+   * boxes in two systems has no answer, so it reports the mixture */
+  GSERIALIZED *sr1 = geom_in("SRID=4326;Point(1 1)", -1);
+  GSERIALIZED *sr2 = geom_in("SRID=5676;Point(1 1)", -1);
+  assert(sr1 != NULL); assert(sr2 != NULL);
+  meos_errno_reset();
+  assert(geo_same(sr1, sr1));
+  assert(! geo_same(sr1, sr2));
+  assert(meos_errno() == 0);
+  printf("geo_same on one point stated in two reference systems: false\n");
+  free(sr1); free(sr2);
+
+  STBox *sb1 = stbox_in("SRID=4326;STBOX X((0,0),(2,2))");
+  STBox *sb2 = stbox_in("SRID=4326;STBOX X((5,5),(7,7))");
+  STBox *sb3 = stbox_in("SRID=5676;STBOX X((5,5),(7,7))");
+  STBox *sbt = stbox_in("STBOX T([2001-01-01, 2001-01-02])");
+  assert(sb1 != NULL); assert(sb2 != NULL); assert(sb3 != NULL);
+  assert(sbt != NULL);
+  meos_errno_reset();
+  double sbd = stbox_spatial_distance(sb1, sb2);
+  assert(fabs(sbd * sbd - 18.0) < 1e-9);
+  assert(meos_errno() == 0);
+  assert(stbox_spatial_distance(sb1, sb3) == DBL_MAX);
+  printf("stbox_spatial_distance across two reference systems: errno %d\n",
+    meos_errno());
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(stbox_spatial_distance(sb1, sbt) == DBL_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  free(sb1); free(sb2); free(sb3); free(sbt);
+
   /* Finalize MEOS */
   meos_finalize();
 
