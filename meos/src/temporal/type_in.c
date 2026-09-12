@@ -2460,7 +2460,23 @@ set_from_wkb_state(meos_wkb_parse_state *s)
   /* Read and create the set */
   for (int i = 0; i < count; i++)
     values[i] = base_from_wkb_state(s);
-  return set_make_free(values, count, s->basetype, ORDER_NO);
+  Set *result = set_make_free(values, count, s->basetype, ORDER_NO);
+  /* A spatial set whose elements carry no SRID of their own (a cell, a network
+   * point, a point cloud value) has the one its type fixes, not the one read
+   * from the header, so a header stating another one contradicts the value */
+  if (result && s->has_srid && spatialset_type(s->type))
+  {
+    int32_t srid = spatialset_srid(result);
+    if (srid != SRID_UNKNOWN && srid != s->srid)
+    {
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        "The SRID of the WKB (%d) does not match the SRID of the %s (%d)",
+        s->srid, meostype_name(s->type), srid);
+      pfree(result);
+      return NULL;
+    }
+  }
+  return result;
 }
 
 /*****************************************************************************/

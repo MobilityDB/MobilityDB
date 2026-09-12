@@ -178,7 +178,10 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
     case T_PCPOINT:
     case T_PCPATCH:
       /* A point cloud value holds its SRID by reference: the schema its pcid
-       * names declares it, so there is nothing in the value to set */
+       * names declares it, so there is nothing in the value to set, and a
+       * stated SRID is accepted when it is that one */
+      if (spatial_srid(d, basetype) == srid)
+        return true;
       meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
         "The SRID of a %s is the one its schema declares and cannot be set",
         meostype_name(basetype));
