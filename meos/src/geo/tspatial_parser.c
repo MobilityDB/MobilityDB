@@ -370,22 +370,31 @@ spatial_parse_elem(const char **str, MeosType temptype, char delim,
     *temp_srid = base_srid;
   else if (*temp_srid != SRID_UNKNOWN && (base_srid == SRID_UNKNOWN ||
     (basetype == T_GEOGRAPHY && ! srid_written && base_srid == SRID_DEFAULT)))
-      spatial_set_srid(d, basetype, *temp_srid);
+  {
+    if (! spatial_set_srid(d, basetype, *temp_srid))
+    {
+      DATUM_FREE(d, basetype);
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "The SRID %d cannot be stated for the %s", *temp_srid,
+        meostype_name(basetype));
+      return false;
+    }
+  }
   /* If the SRID of the spatiotemporal value and of the spatial value
    * do not match */
   else if (*temp_srid != SRID_UNKNOWN && base_srid != SRID_UNKNOWN &&
     *temp_srid != base_srid)
   {
+    DATUM_FREE(d, basetype);
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "The SRID of the %s (%d) does not match the SRID of the %s (%d)",
       meostype_name(basetype), base_srid, meostype_name(temptype), *temp_srid);
-    pfree(DatumGetPointer(d));
     return false;
   }
   if (result)
     *result = d;
-  else 
-    pfree(DatumGetPointer(d));
+  else
+    DATUM_FREE(d, basetype);
   return true;
 }
 
@@ -410,17 +419,18 @@ tspatialinst_parse(const char **str, MeosType temptype, bool end,
 
   p_delimchar(str, '@');
 
+  MeosType basetype = temptype_basetype(temptype);
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */
     (end && ! ensure_end_input(str, meostype_name(temptype))))
   {
-    pfree(DatumGetPointer(base));
+    DATUM_FREE(base, basetype);
     return NULL;
   }
 
   TInstant *result = tinstant_make(base, temptype, t);
-  pfree(DatumGetPointer(base));
+  DATUM_FREE(base, basetype);
   return result;
 }
 
@@ -600,7 +610,6 @@ tspatial_parse(const char **str, MeosType temptype)
   /* Ensure the validity of the arguments */
    VALIDATE_NOT_NULL(str, NULL);
 
-  const char *bak = *str;
   p_whitespace(str);
 
   /* Get the SRID if it is given */
@@ -624,7 +633,9 @@ tspatial_parse(const char **str, MeosType temptype)
    * function corresponding to the subtype passing the SRID */
   if (**str != '{' && **str != '[' && **str != '(')
   {
-    *str = bak;
+    /* The SRID read above is the one of the spatiotemporal value, as for the
+     * other subtypes, so the base value is read without it: not every base
+     * type reads an SRID prefix of its own */
     TInstant *inst = tspatialinst_parse(str, temptype, true, &temp_srid);
     if (! inst)
       return NULL;
@@ -640,7 +651,7 @@ tspatial_parse(const char **str, MeosType temptype)
   }
   else if (**str == '{')
   {
-    bak = *str;
+    const char *bak = *str;
     p_obrace(str);
     p_whitespace(str);
     if (**str == '[' || **str == '(')

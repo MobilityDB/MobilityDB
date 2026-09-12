@@ -158,6 +158,8 @@ SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
  NPoint(1,0.5)
 (1 row)
 
+SELECT npointFromHexEWKB(replace(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)', 'XDR'), '0000162C', '000010E6'));
+ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
 SELECT npoint(1, 0.5);
     npoint     
 ---------------

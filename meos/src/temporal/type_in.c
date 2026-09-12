@@ -2036,15 +2036,25 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
   npoint_flags_from_wkb_state(s, wkb_flags);
   /* Read the SRID, if necessary */
   int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
-  /* Disable the warning unused variable ‘srid’ */
-  if (srid)
-  {
-    ;
-  }
   int64 rid = int64_from_wkb_state(s);
   double pos = double_from_wkb_state(s);
   Npoint *result = palloc(sizeof(Npoint));
   npoint_set(rid, pos, result);
+  /* A network point holds no SRID: it has the one of the routes of the ways
+   * table. A stated SRID is checked against it when the network states one,
+   * and accepted when no network is loaded */
+  if (srid != SRID_UNKNOWN)
+  {
+    int32_t ways_srid = npoint_srid(result);
+    if (ways_srid != SRID_UNKNOWN && ways_srid != srid)
+    {
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        "The SRID of the WKB (%d) does not match the SRID of the network (%d)",
+        srid, ways_srid);
+      pfree(result);
+      return NULL;
+    }
+  }
   return result;
 }
 #endif /* NPOINT */
@@ -2794,6 +2804,22 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
       break;
     default: /* TSEQUENCESET */
       res = (Temporal *) tsequenceset_from_wkb_state(s);
+  }
+
+  /* A header that states an SRID states the one of the value. The values of
+   * the network points, the cell indexes and the point clouds take no SRID
+   * from the header, so a header stating another one contradicts the value */
+  if (res && s->has_srid && tspatial_type(s->temptype))
+  {
+    int32_t srid = tspatial_srid(res);
+    if (srid != SRID_UNKNOWN && srid != s->srid)
+    {
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        "The SRID of the WKB (%d) does not match the SRID of the %s (%d)",
+        s->srid, meostype_name(s->temptype), srid);
+      pfree(res);
+      return NULL;
+    }
   }
 
 #if RGEO
