@@ -761,6 +761,19 @@ alphanum_basetype(MeosType type)
 }
 
 /**
+ * @brief Ensure that a type is an alphanumeric base type
+ */
+bool
+ensure_alphanum_basetype(MeosType type)
+{
+  if (alphanum_basetype(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The value must be of an alphanumeric base type");
+  return false;
+}
+
+/**
  * @brief Return true if the type is an alphanumeric base type
  */
 bool
