@@ -788,6 +788,56 @@ int main(void)
   assert(curve_ok == 6);
   meos_errno_reset();
 
+  /* The shortest line between two geometries runs from the first to the
+   * second, whichever of the two a curve kernel measures first: the ring of a
+   * curve polygon against a line, a point against the nearest end of an arc
+   * in either order, a segment against the end of an arc, a point arc at the
+   * centre of another arc, an arc against a straight arc and against a point
+   * arc, and two point arcs. The last three pairs are the same shapes in the
+   * order the kernels already record them, which the line keeps */
+  static const struct { const char *a, *b, *line; } curve_line[] =
+  {
+    {"CURVEPOLYGON(CIRCULARSTRING(0 0,1 1,2 0,1 -1,0 0))",
+       "LINESTRING(1 3,2 3)", "LINESTRING(1 1,1 3)"},
+    {"POINT(3 -1)", "CIRCULARSTRING(0 0,1 1,2 0)", "LINESTRING(3 -1,2 0)"},
+    {"CIRCULARSTRING(0 0,1 1,2 0)", "POINT(3 -1)", "LINESTRING(2 0,3 -1)"},
+    {"LINESTRING(1 2,3 2)",
+       "CIRCULARSTRING(-1 0,-0.70710678 0.70710678,0 1)",
+       "LINESTRING(1 2,0 1)"},
+    {"CIRCULARSTRING(1 0,1 0,1 0)", "CIRCULARSTRING(0 0,1 1,2 0)",
+       "LINESTRING(1 0,0 0)"},
+    {"CIRCULARSTRING(0 0,1 1,2 0)", "CIRCULARSTRING(5 0,6 0,7 0)",
+       "LINESTRING(2 0,5 0)"},
+    {"CIRCULARSTRING(0 0,1 1,2 0)", "CIRCULARSTRING(5 0,5 0,5 0)",
+       "LINESTRING(2 0,5 0)"},
+    {"CIRCULARSTRING(0 0,0 0,0 0)", "CIRCULARSTRING(5 0,5 0,5 0)",
+       "LINESTRING(0 0,5 0)"},
+    {"LINESTRING(1 3,2 3)",
+       "CURVEPOLYGON(CIRCULARSTRING(0 0,1 1,2 0,1 -1,0 0))",
+       "LINESTRING(1 3,1 1)"},
+    {"CIRCULARSTRING(5 0,6 0,7 0)", "CIRCULARSTRING(0 0,1 1,2 0)",
+       "LINESTRING(5 0,2 0)"},
+    {"CIRCULARSTRING(5 0,5 0,5 0)", "CIRCULARSTRING(0 0,1 1,2 0)",
+       "LINESTRING(5 0,2 0)"},
+  };
+  int line_ok = 0;
+  for (size_t i = 0; i < sizeof curve_line / sizeof curve_line[0]; i++)
+  {
+    GSERIALIZED *ga = geom_in(curve_line[i].a, -1);
+    GSERIALIZED *gb = geom_in(curve_line[i].b, -1);
+    assert(ga != NULL); assert(gb != NULL);
+    GSERIALIZED *sl = geom_shortestline2d(ga, gb);
+    assert(sl != NULL);
+    char *wkt = geo_as_text(sl, 6);
+    assert(strcmp(wkt, curve_line[i].line) == 0);
+    line_ok++;
+    free(wkt); free(sl); free(ga); free(gb);
+  }
+  printf("the shortest line runs from the first geometry to the second on %d "
+    "pairs of curves\n", line_ok);
+  assert(line_ok == 11);
+  meos_errno_reset();
+
   /* A GEOMETRYCOLLECTION is the union of its components, so what it shares
    * with another geometry is the union of what the components share. The
    * overlay reads it that way now, which is how the matrix has always read a
