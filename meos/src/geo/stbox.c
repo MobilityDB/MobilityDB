@@ -364,14 +364,9 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin,
   const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (srid == SRID_INVALID)
+  if (! ensure_srid_valid(srid) ||
+      (s && ! ensure_span_isof_type(s, T_TSTZSPAN)))
     return NULL;
-#if MEOS
-  if (s && s->spantype != T_TSTZSPAN)
-    return NULL;
-#else
-  assert(! s || s->spantype == T_TSTZSPAN);
-#endif /* MEOS */
 
   /* Note: zero-fill is done in function stbox_set */
   STBox *result = palloc(sizeof(STBox));

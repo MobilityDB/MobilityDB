@@ -178,7 +178,7 @@ box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, int32_t srid)
 {
   /* Ensure the validity of the arguments */
-  if (srid == SRID_INVALID)
+  if (! ensure_srid_valid(srid))
     return NULL;
 
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -487,7 +487,7 @@ GSERIALIZED *
 geompoint_make2d(int32_t srid, double x, double y)
 {
   /* Ensure the validity of the arguments */
-  if (srid == SRID_INVALID)
+  if (! ensure_srid_valid(srid))
     return NULL;
 
   LWPOINT *point = lwpoint_make2d(srid, x, y);
@@ -504,7 +504,7 @@ GSERIALIZED *
 geogpoint_make2d(int32_t srid, double x, double y)
 {
   /* Ensure the validity of the arguments */
-  if (srid == SRID_INVALID)
+  if (! ensure_srid_valid(srid))
     return NULL;
 
   LWPOINT *point = lwpoint_make2d(srid, x, y);
@@ -522,7 +522,7 @@ GSERIALIZED *
 geompoint_make3dz(int32_t srid, double x, double y, double z)
 {
   /* Ensure the validity of the arguments */
-  if (srid == SRID_INVALID)
+  if (! ensure_srid_valid(srid))
     return NULL;
 
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
@@ -539,7 +539,7 @@ GSERIALIZED *
 geogpoint_make3dz(int32_t srid, double x, double y, double z)
 {
   /* Ensure the validity of the arguments */
-  if (srid == SRID_INVALID)
+  if (! ensure_srid_valid(srid))
     return NULL;
 
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
