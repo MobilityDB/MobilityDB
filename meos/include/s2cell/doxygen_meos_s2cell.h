@@ -94,6 +94,10 @@
 /*****************************************************************************/
 
 /**
+ * @defgroup meos_s2cell_set_inout Input and output functions
+ * @ingroup meos_s2cell_set
+ * @brief Input and output functions for S2 cell index sets
+ *
  * @defgroup meos_s2cell_set_conversion Conversion functions
  * @ingroup meos_s2cell_set
  * @brief Conversion functions for S2 cell index sets

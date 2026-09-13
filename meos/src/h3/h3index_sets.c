@@ -53,6 +53,7 @@
 #include "temporal/meos_catalog.h"
 #include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/temporal.h"  /* ORDER / SET_VAL_N */
+#include "temporal/type_parser.h"  /* set_parse */
 #include "h3/h3index.h"
 
 /*****************************************************************************
@@ -98,6 +99,39 @@ h3index_set_from_buffer(H3Index *cells, int64_t max)
     return NULL;
   }
   return set_make_free(datums, count, T_H3INDEX, ORDER);
+}
+
+/*****************************************************************************
+ * Input/output functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_set_inout
+ * @brief Return an H3 cell set from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ * @csqlfn #Set_in()
+ */
+Set *
+h3indexset_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  return set_parse(&str, T_H3INDEXSET);
+}
+
+/**
+ * @ingroup meos_h3_set_inout
+ * @brief Return the string representation of an H3 cell set
+ * @param[in] s Set
+ * @csqlfn #Set_out(), #Set_as_text()
+ */
+char *
+h3indexset_out(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, NULL);
+  return set_out(s, 0);
 }
 
 /*****************************************************************************

@@ -47,7 +47,9 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/meos_catalog.h"
+#include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/temporal.h"  /* ORDER */
+#include "temporal/type_parser.h"  /* set_parse */
 #include "quadbin/quadbin.h"
 
 /*****************************************************************************
@@ -75,6 +77,39 @@ quadbinset_from_buffer(Quadbin *cells, int count)
     datums[i] = QuadbinGetDatum(cells[i]);
   pfree(cells);
   return set_make_free(datums, count, T_QUADBIN, ORDER);
+}
+
+/*****************************************************************************
+ * Input/output functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_quadbin_set_inout
+ * @brief Return a QUADBIN cell set from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ * @csqlfn #Set_in()
+ */
+Set *
+quadbinset_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  return set_parse(&str, T_QUADBINSET);
+}
+
+/**
+ * @ingroup meos_quadbin_set_inout
+ * @brief Return the string representation of a QUADBIN cell set
+ * @param[in] s Set
+ * @csqlfn #Set_out(), #Set_as_text()
+ */
+char *
+quadbinset_out(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, NULL);
+  return set_out(s, 0);
 }
 
 /*****************************************************************************

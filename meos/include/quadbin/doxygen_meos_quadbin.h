@@ -94,6 +94,10 @@
 /*****************************************************************************/
 
 /**
+ * @defgroup meos_quadbin_set_inout Input and output functions
+ * @ingroup meos_quadbin_set
+ * @brief Input and output functions for QUADBIN cell index sets
+ *
  * @defgroup meos_quadbin_set_conversion Conversion functions
  * @ingroup meos_quadbin_set
  * @brief Conversion functions for QUADBIN cell index sets

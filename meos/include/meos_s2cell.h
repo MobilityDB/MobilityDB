@@ -100,6 +100,25 @@ typedef uint64 S2CellId;
     } while (0)
 #endif /* MEOS */
 
+/**
+ * @brief Ensure that the set passed as argument is a set of S2 cells.
+ * Matches the pattern of `VALIDATE_H3INDEXSET` / `VALIDATE_QUADBINSET`.
+ */
+#if MEOS
+  #define VALIDATE_S2CELLSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_S2CELLSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_S2CELLSET(set, ret) \
+    do { \
+      assert(set); \
+      assert(set->settype == T_S2CELLSET); \
+    } while (0)
+#endif /* MEOS */
+
 /*===========================================================================*
  * Functions for S2 cells
  *===========================================================================*/
@@ -188,6 +207,11 @@ extern STBox *s2cell_tstzspan_to_stbox(S2CellId cell, const Span *s);
 
 extern Set *s2cell_edge_neighbors_set(S2CellId cell);
 extern Set *s2cell_cell_to_children_set(S2CellId cell, int children_level);
+
+/* Input and output functions of `s2cellset` */
+
+extern Set *s2cellset_in(const char *str);
+extern char *s2cellset_out(const Set *s);
 
 /*****************************************************************************
  * Temporal `ts2cell` inheritance

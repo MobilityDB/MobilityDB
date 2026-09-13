@@ -142,6 +142,10 @@
 /*****************************************************************************/
 
 /**
+ * @defgroup meos_h3_set_inout Input and output functions
+ * @ingroup meos_h3_set
+ * @brief Input and output functions for H3 cell index sets
+ *
  * @defgroup meos_h3_set_conversion Conversion functions
  * @ingroup meos_h3_set
  * @brief Conversion functions for H3 cell index sets

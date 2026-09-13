@@ -89,6 +89,25 @@ typedef uint64 Quadbin;
     } while (0)
 #endif /* MEOS */
 
+/**
+ * @brief Ensure that the set passed as argument is a set of QUADBIN cells.
+ * Matches the pattern of `VALIDATE_H3INDEXSET` / `VALIDATE_NPOINTSET`.
+ */
+#if MEOS
+  #define VALIDATE_QUADBINSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_QUADBINSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_QUADBINSET(set, ret) \
+    do { \
+      assert(set); \
+      assert(set->settype == T_QUADBINSET); \
+    } while (0)
+#endif /* MEOS */
+
 /*===========================================================================*
  * Functions for quadbins
  *===========================================================================*/
@@ -178,6 +197,11 @@ extern char *quadbin_cell_to_quadkey(Quadbin cell);
 extern Set *quadbin_grid_disk(Quadbin origin, int k);
 extern Set *quadbin_cell_to_children_set(Quadbin origin,
   int children_resolution);
+
+/* Input and output functions of `quadbinset` */
+
+extern Set *quadbinset_in(const char *str);
+extern char *quadbinset_out(const Set *s);
 
 /*****************************************************************************
  * Temporal `tquadbin` inheritance — PENDING IMPLEMENTATION.
