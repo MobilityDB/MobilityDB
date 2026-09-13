@@ -195,7 +195,7 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minDistSimplify(tgeogpoint, float)
-RETURNS tgeompoint
+RETURNS tgeogpoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -204,7 +204,7 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minTimeDeltaSimplify(tgeogpoint, interval)
-RETURNS tgeompoint
+RETURNS tgeogpoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

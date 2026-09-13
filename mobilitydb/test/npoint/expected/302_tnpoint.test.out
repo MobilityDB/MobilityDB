@@ -527,6 +527,24 @@ SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-0
  {[NPoint(1,0.123457)@Sun Jan 01 00:00:00 2012 PST, NPoint(1,0.5)@Mon Jan 02 00:00:00 2012 PST)}
 (1 row)
 
+SELECT round(ARRAY[tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 'NPoint(2, 0.987654321)@2012-01-03'], 6);
+                                                                         round                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"{[NPoint(1,0.123457)@Sun Jan 01 00:00:00 2012 PST, NPoint(1,0.5)@Mon Jan 02 00:00:00 2012 PST)}","NPoint(2,0.987654)@Tue Jan 03 00:00:00 2012 PST"}
+(1 row)
+
+SELECT round(ARRAY[]::tnpoint[], 6);
+ round 
+-------
+ 
+(1 row)
+
+SELECT pg_typeof(round(ARRAY[tnpoint 'NPoint(1, 0.5)@2012-01-01'], 6));
+ pg_typeof 
+-----------
+ tnpoint[]
+(1 row)
+
 SELECT appendInstant(tnpoint 'Npoint(1, 0.5)@2001-01-01', tnpoint 'Npoint(1, 0.7)@2001-01-02');
                                       appendinstant                                       
 ------------------------------------------------------------------------------------------

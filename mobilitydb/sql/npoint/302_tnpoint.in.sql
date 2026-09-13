@@ -252,7 +252,7 @@ CREATE FUNCTION round(tnpoint, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(tnpoint[], integer DEFAULT 0)
-  RETURNS tnpoint
+  RETURNS tnpoint[]
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
