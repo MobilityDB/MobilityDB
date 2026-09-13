@@ -29,9 +29,10 @@
 
 /**
  * @file
- * @brief Temporal pgpointcloud point value surface — the Temporal<T> value bridge
- *   (constructors, accessors, restrictions), generated from the tjsonb reference
- *   by tools/codegen/temporal_basetype/generate.py; DO NOT EDIT BY HAND.
+ * @brief Temporal pgpointcloud point value surface, the Temporal<T> value
+ *   bridge (constructors, accessors, restrictions),
+ *   generated from the tjsonb reference by
+ *   tools/codegen/temporal_basetype/generate.py; DO NOT EDIT BY HAND.
  */
 
 /* C */
@@ -101,7 +102,8 @@ tpcpointseq_from_base_tstzspan(const Pcpoint *pt, const Span *sp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pt, NULL); VALIDATE_TSTZSPAN(sp, NULL);
-  return tsequence_from_base_tstzspan(PointerGetDatum(pt), T_TPCPOINT, sp, STEP);
+  return tsequence_from_base_tstzspan(PointerGetDatum(pt), T_TPCPOINT, sp,
+    STEP);
 }
 
 /**
@@ -117,7 +119,8 @@ tpcpointseqset_from_base_tstzspanset(const Pcpoint *pt, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pt, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
-  /* Delegate to the generic tsequenceset constructor, with STEP interpolation */
+  /* Delegate to the generic tsequenceset constructor, with STEP
+   * interpolation */
   return tsequenceset_from_base_tstzspanset(PointerGetDatum(pt),T_TPCPOINT, ss,
     STEP);
 }
@@ -242,8 +245,8 @@ tpcpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 
 /**
  * @ingroup meos_pointcloud_restrict
- * @brief Return a temporal pgpointcloud point restricted to a pgpointcloud
- * point value
+ * @brief Return a temporal pgpointcloud point restricted to a specific
+ * pgpointcloud point value
  * @param[in] temp Temporal value
  * @param[in] pt pgpointcloud point value
  * @csqlfn #Temporal_at_value()
@@ -261,7 +264,7 @@ tpcpoint_at_value(const Temporal *temp, const Pcpoint *pt)
 /**
  * @ingroup meos_pointcloud_restrict
  * @brief Return a temporal pgpointcloud point restricted to the complement of
- * a pgpointcloud point value
+ * a specific pgpointcloud point value
  * @param[in] temp Temporal value
  * @param[in] pt pgpointcloud point value
  * @csqlfn #Temporal_minus_value()
@@ -271,8 +274,8 @@ tpcpoint_minus_value(const Temporal *temp, const Pcpoint *pt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCPOINT(temp, NULL); VALIDATE_NOT_NULL(pt, NULL);
-  /* Restrict the temporal pgpointcloud point to the instants where it does
-   * not equal the given pt */
+  /* Restrict the temporal pgpointcloud point to the instants where it does not
+   * equal the given pt */
   return temporal_restrict_value(temp, PointerGetDatum(pt), REST_MINUS);
 }
 

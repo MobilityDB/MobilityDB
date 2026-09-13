@@ -29,9 +29,10 @@
 
 /**
  * @file
- * @brief Temporal pgpointcloud patch value surface — the Temporal<T> value bridge
- *   (constructors, accessors, restrictions), generated from the tjsonb reference
- *   by tools/codegen/temporal_basetype/generate.py; DO NOT EDIT BY HAND.
+ * @brief Temporal pgpointcloud patch value surface, the Temporal<T> value
+ *   bridge (constructors, accessors, restrictions),
+ *   generated from the tjsonb reference by
+ *   tools/codegen/temporal_basetype/generate.py; DO NOT EDIT BY HAND.
  */
 
 /* C */
@@ -117,9 +118,9 @@ TSequenceSet *
 tpcpatchseqset_from_base_tstzspanset(const Pcpatch *pa, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pa, NULL);
-  VALIDATE_TSTZSPANSET(ss, NULL);
-  /* Delegate to the generic tsequenceset constructor, with STEP interpolation */
+  VALIDATE_NOT_NULL(pa, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  /* Delegate to the generic tsequenceset constructor, with STEP
+   * interpolation */
   return tsequenceset_from_base_tstzspanset(PointerGetDatum(pa),T_TPCPATCH, ss,
     STEP);
 }
@@ -244,8 +245,8 @@ tpcpatch_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 
 /**
  * @ingroup meos_pointcloud_restrict
- * @brief Return a temporal pgpointcloud patch restricted to a pgpointcloud
- * patch value
+ * @brief Return a temporal pgpointcloud patch restricted to a specific
+ * pgpointcloud patch value
  * @param[in] temp Temporal value
  * @param[in] pa pgpointcloud patch value
  * @csqlfn #Temporal_at_value()
@@ -263,7 +264,7 @@ tpcpatch_at_value(const Temporal *temp, const Pcpatch *pa)
 /**
  * @ingroup meos_pointcloud_restrict
  * @brief Return a temporal pgpointcloud patch restricted to the complement of
- * a pgpointcloud patch value
+ * a specific pgpointcloud patch value
  * @param[in] temp Temporal value
  * @param[in] pa pgpointcloud patch value
  * @csqlfn #Temporal_minus_value()
@@ -279,3 +280,4 @@ tpcpatch_minus_value(const Temporal *temp, const Pcpatch *pa)
 }
 
 /*****************************************************************************/
+

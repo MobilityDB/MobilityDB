@@ -36,9 +36,14 @@ Datum-move that differs only by a small token set. This generator takes the valu
 sections of `meos/src/json/tjsonb.c` as the byte-for-byte REFERENCE, reverse-tokenizes
 them into a template, and re-renders the same sections for every other value-opaque
 type. `--validate` proves that re-rendering the jsonb row reproduces the live reference
-byte for byte (drift guard) and that no `json` token leaks into a target rendering.
+byte for byte (drift guard), that no `json` token leaks into a target rendering, and
+that each target rendering equals the file committed for it. A token longer than the
+jsonb one it replaces can push a line past the 79 columns MEOS sources keep within;
+the rendering re-fills such a comment and breaks such a code line, and leaves every
+other line as the reference writes it.
 
-Modes:  --validate   reference self-reproduces + targets leak-free (exit 1 on mismatch)
+Modes:  --validate   reference self-reproduces + targets leak-free + targets reproduce
+                     their committed files (exit 1 on mismatch)
         --check      list the files that would be written
         (default)    write the target .c files
 """
@@ -109,11 +114,88 @@ def render_sections(fam, tmpl):
         out = out.replace(ph, fam[ph])
     return out
 
+# The column a line of MEOS source stays within.
+WIDTH = 79
+DOX_TEXT = re.compile(r"^ \* (\S.*)$")
+CODE_COMMENT = re.compile(r"^(\s*)/\* (.*\S) \*/$")
+
+def _fill(words, first, cont, tail=""):
+    """Greedy fill: the first line opens with `first`, the others with `cont`, `tail`
+    closes the last one, and every line stays within WIDTH columns."""
+    lines, line, empty = [], first, True
+    for i, w in enumerate(words):
+        end = tail if i == len(words) - 1 else ""
+        cand = line + ("" if empty else " ") + w
+        if not empty and len(cand + end) > WIDTH:
+            lines.append(line)
+            line = cont + w
+        else:
+            line = cand
+        empty = False
+    return lines + [line + tail]
+
+PLACEHOLDER = re.compile(r"\{[A-Z]+\}")
+CODE_OPEN = re.compile(r"^(\s*)/\* (.*)$")
+
+def reflow(text, tmpl):
+    """Re-fill the comments a token substitution pushes past WIDTH columns. `text` renders
+    `tmpl` line for line, so a comment is re-filled only where its template carries a
+    token and its rendering runs past WIDTH; every other comment stays exactly as the
+    reference writes it. A comment is a doxygen paragraph (a ` * ` line and the ` * `
+    lines continuing it up to the next tag, empty line or block end) or a code comment
+    (`/* ... */` over one or more lines)."""
+    src, ref, out, i = text.split("\n"), tmpl.split("\n"), [], 0
+    assert len(src) == len(ref)
+
+    def touched(a, b):
+        return (any(len(l) > WIDTH for l in src[a:b])
+                and any(PLACEHOLDER.search(l) for l in ref[a:b]))
+
+    while i < len(src):
+        line = src[i]
+        m = CODE_OPEN.match(line)
+        if m:
+            j = i
+            while "*/" not in src[j]:
+                j += 1
+            j += 1
+            if touched(i, j):
+                body = " ".join([m.group(2)] + [l.strip().lstrip("*").strip()
+                                                for l in src[i + 1:j]])
+                ind = m.group(1)
+                out += _fill(body.rsplit("*/", 1)[0].split(), ind + "/* ", ind + " * ",
+                             " */")
+            else:
+                out += src[i:j]
+            i = j
+            continue
+        if DOX_TEXT.match(line):
+            j = i + 1
+            while (j < len(src) and DOX_TEXT.match(src[j])
+                   and not src[j].startswith(" * @")):
+                j += 1
+            if touched(i, j):
+                out += _fill(" ".join(l[3:] for l in src[i:j]).split(), " * ", " * ")
+            else:
+                out += src[i:j]
+            i = j
+            continue
+        if touched(i, i + 1):
+            cut = max((k for k in range(len(line) - 1)
+                       if line[k:k + 2] == ", " and k + 1 <= WIDTH), default=-1)
+            if cut > 0:
+                ind = line[:len(line) - len(line.lstrip())]
+                out += [line[:cut + 1], ind + "  " + line[cut + 2:]]
+                i += 1
+                continue
+        out.append(line)
+        i += 1
+    return "\n".join(out)
+
 def render_file(fam, tmpl):
     inc = "\n".join([
         "/* C */", "#include <assert.h>", "#include <float.h>",
-        "/* PostgreSQL */", "#include <postgres.h>",
-        "#if POSTGRESQL_VERSION_NUMBER >= 160000", '  #include "varatt.h"', "#endif",
+        "/* PostgreSQL */", "#include <postgres.h>", "#include <varatt.h>",
         "/* MEOS */", "#include <meos.h>", "#include <meos_internal.h>",
         "#include <meos_pointcloud.h>",
         '#include "temporal/meos_catalog.h"', '#include "temporal/set.h"',
@@ -121,11 +203,12 @@ def render_file(fam, tmpl):
         '#include "temporal/temporal.h"', '#include "temporal/type_util.h"',
         f'#include "{fam["valheader"]}"',
     ])
-    brief = (f"/**\n * @file\n * @brief Temporal {fam['{DOCNOUN}']} value surface — the "
-             f"Temporal<T> value bridge\n *   (constructors, accessors, restrictions), "
-             f"generated from the tjsonb reference\n *   by tools/codegen/temporal_basetype/"
-             f"generate.py; DO NOT EDIT BY HAND.\n */\n")
-    return COPYRIGHT + "\n" + brief + "\n" + inc + "\n" + render_sections(fam, tmpl)
+    brief = (f"/**\n * @file\n * @brief Temporal {fam['{DOCNOUN}']} value surface, the "
+             f"Temporal<T> value\n *   bridge (constructors, accessors, restrictions),\n"
+             f" *   generated from the tjsonb reference by\n"
+             f" *   tools/codegen/temporal_basetype/generate.py; DO NOT EDIT BY HAND.\n */\n")
+    return (COPYRIGHT + "\n" + brief + "\n" + inc + "\n\n"
+            + reflow(render_sections(fam, tmpl), tmpl))
 
 def main():
     ap = argparse.ArgumentParser()
@@ -152,6 +235,14 @@ def main():
                 ok = ok and clean
                 print(f"[{'OK ' if clean else 'LEAK'}] target leak-free {fam['name']} "
                       f"({len(leaks)} residual 'json')")
+                got, live = render_file(fam, tmpl), (ROOT / fam["file"]).read_text()
+                same = got == live
+                ok = ok and same
+                print(f"[{'OK ' if same else 'DIFF'}] target reproduces {fam['file']}")
+                if not same:
+                    for n, (a, b) in enumerate(zip(got.splitlines(), live.splitlines()), 1):
+                        if a != b:
+                            print(f"     first diff line {n}: {a!r} vs {b!r}"); break
         return 0 if ok else 1
     for fam in FAMILIES:
         if fam.get("reference"):

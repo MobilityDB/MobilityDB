@@ -82,7 +82,8 @@ tjsonbinst_in(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
-  /* Parse the WKT into a TInstant, telling the parser this is a JSONB instant */
+  /* Parse the WKT into a TInstant, telling the parser this is a JSONB
+   * instant */
   return tinstant_parse(&str, T_TJSONB, true);
 }
 
@@ -252,9 +253,9 @@ TSequenceSet *
 tjsonbseqset_from_base_tstzspanset(const Jsonb *jb, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(jb, NULL);
-  VALIDATE_TSTZSPANSET(ss, NULL);
-  /* Delegate to the generic tsequenceset constructor, with STEP interpolation */
+  VALIDATE_NOT_NULL(jb, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  /* Delegate to the generic tsequenceset constructor, with STEP
+   * interpolation */
   return tsequenceset_from_base_tstzspanset(PointerGetDatum(jb),T_TJSONB, ss,
     STEP);
 }
@@ -437,7 +438,8 @@ tjsonb_at_value(const Temporal *temp, const Jsonb *jb)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jb, NULL);
-  /* Restrict the temporal JSONB to the instants where it equals the given jb */
+  /* Restrict the temporal JSONB to the instants where it equals the
+   * given jb */
   return temporal_restrict_value(temp, PointerGetDatum(jb), REST_AT);
 }
 
