@@ -217,7 +217,7 @@ spanset_in(const char *str, MeosType spansettype)
  * @brief Return the Well-Known Text (WKT) representation of a span set
  * @param[in] ss Span set
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Spanset_out()
+ * @csqlfn #Spanset_out(), #Spanset_as_text()
  */
 char *
 spanset_out(const SpanSet *ss, int maxdd)

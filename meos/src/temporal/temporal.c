@@ -882,7 +882,7 @@ temporal_in(const char *str, MeosType temptype)
  * @brief Return the Well-Known Text (WKT) representation of a temporal value
  * @param[in] temp Temporal value
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Temporal_out()
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
 temporal_out(const Temporal *temp, int maxdd)
@@ -913,6 +913,7 @@ temporal_out(const Temporal *temp, int maxdd)
  * @param[in] temparr Array of temporal value
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Number of decimal digits
+ * @csqlfn #Temporalarr_as_text()
  */
 char **
 temparr_out(Temporal **temparr, int count, int maxdd)

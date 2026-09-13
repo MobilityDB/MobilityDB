@@ -213,7 +213,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
  * @brief Return the Well-Known Text (WKT) representation of a set
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Set_out()
+ * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
 set_out(const Set *s, int maxdd)

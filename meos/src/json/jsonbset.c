@@ -71,7 +71,7 @@ jsonbset_in(const char *str)
  * @brief Return the string representation of a JSONB set
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Set_out()
+ * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
 jsonbset_out(const Set *s, int maxdd UNUSED)

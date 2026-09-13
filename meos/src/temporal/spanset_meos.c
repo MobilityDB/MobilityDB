@@ -133,7 +133,7 @@ tstzspanset_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of an integer span set
  * @param[in] ss Span set
- * @csqlfn #Spanset_out()
+ * @csqlfn #Spanset_out(), #Spanset_as_text()
  */
 char *
 intspanset_out(const SpanSet *ss)
@@ -147,7 +147,7 @@ intspanset_out(const SpanSet *ss)
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a big integer span set
  * @param[in] ss Span set
- * @csqlfn #Spanset_out()
+ * @csqlfn #Spanset_out(), #Spanset_as_text()
  */
 char *
 bigintspanset_out(const SpanSet *ss)
@@ -162,7 +162,7 @@ bigintspanset_out(const SpanSet *ss)
  * @brief Return the Well-Known Text (WKT) representation of a float span set
  * @param[in] ss Span set
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Spanset_out()
+ * @csqlfn #Spanset_out(), #Spanset_as_text()
  */
 char *
 floatspanset_out(const SpanSet *ss, int maxdd)
@@ -176,7 +176,7 @@ floatspanset_out(const SpanSet *ss, int maxdd)
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a date span set
  * @param[in] ss Span set
- * @csqlfn #Spanset_out()
+ * @csqlfn #Spanset_out(), #Spanset_as_text()
  */
 char *
 datespanset_out(const SpanSet *ss)
@@ -190,7 +190,7 @@ datespanset_out(const SpanSet *ss)
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a timpespantz span set
  * @param[in] ss Span set
- * @csqlfn #Spanset_out()
+ * @csqlfn #Spanset_out(), #Spanset_as_text()
  */
 char *
 tstzspanset_out(const SpanSet *ss)

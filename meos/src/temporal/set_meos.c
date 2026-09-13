@@ -144,7 +144,7 @@ tstzset_in(const char *str)
  * @ingroup meos_setspan_inout
  * @brief Return the string representation of an integer set
  * @param[in] s Set
- * @csqlfn #Set_out()
+ * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
 intset_out(const Set *s)
@@ -158,7 +158,7 @@ intset_out(const Set *s)
  * @ingroup meos_setspan_inout
  * @brief Return the string representation of a big integer set
  * @param[in] s Set
- * @csqlfn #Set_out()
+ * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
 bigintset_out(const Set *s)
@@ -173,7 +173,7 @@ bigintset_out(const Set *s)
  * @brief Return the string representation of a float set
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Set_out()
+ * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
 floatset_out(const Set *s, int maxdd)
@@ -187,7 +187,7 @@ floatset_out(const Set *s, int maxdd)
  * @ingroup meos_setspan_inout
  * @brief Return the string representation of a text set
  * @param[in] s Set
- * @csqlfn #Set_out()
+ * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
 textset_out(const Set *s)
@@ -201,7 +201,7 @@ textset_out(const Set *s)
  * @ingroup meos_setspan_inout
  * @brief Return the string representation of a date set
  * @param[in] s Set
- * @csqlfn #Set_out()
+ * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
 dateset_out(const Set *s)
@@ -215,7 +215,7 @@ dateset_out(const Set *s)
  * @ingroup meos_setspan_inout
  * @brief Return the string representation of a timestamptz set
  * @param[in] s Set
- * @csqlfn #Set_out()
+ * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
 tstzset_out(const Set *s)
