@@ -445,7 +445,7 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
   MeosPixType pixtype, double nodata, bool has_nodata)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pixels, NULL);
+  VALIDATE_TGEOMPOINT(traj, NULL); VALIDATE_NOT_NULL(pixels, NULL);
   /* The dimensions are taken in the type the SQL surface uses and validated
    * before the narrowing to the tile's uint16 fields, so that a value outside
    * that range is rejected here instead of wrapping to a different tile than
@@ -1217,7 +1217,8 @@ quadbin_segment_cells_add(uint64 *cells, int *ncells, double lon1, double lat1,
 uint64 *
 trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
 {
-  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(count, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(traj, NULL); VALIDATE_NOT_NULL(count, NULL);
   /* The zoom bounds the shift building the tile grid below. A caller passing a
    * negative zoom reaches this as a large unsigned value, so the upper test
    * covers both ends of the documented range */
