@@ -69,6 +69,7 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_h3.h>
+#include <meos_quadbin.h>
 #include <meos_raster.h>
 #include <meos_internal.h>
 
@@ -271,6 +272,80 @@ h3_geodetic_missing(const char *seg_wkt, const char *dense_wkt,
   return missing;
 }
 
+/**
+ * @brief Count the timestamps at which the temporal quadbin cell of a linear
+ * segment holds a cell other than the one holding the position of the segment
+ * then, and the cells it holds that no such position reaches nor borders
+ * @details The position at each timestamp is read from the temporal point
+ * itself and its cell through the static adapter, which shares the encoder
+ * with the value under test. An entry time is a crossing rounded to whole
+ * microseconds, so the segment spans an hour: a sampled timestamp then falls
+ * within a microsecond of a crossing with a chance far below one in a
+ * million.
+ */
+static void
+tquadbin_check(double lon0, double lat0, double lon1, double lat1,
+  int32 resolution, long *wrong, long *offpath, long *none)
+{
+  char wkt[256];
+  snprintf(wkt, sizeof(wkt), "SRID=4326;[Point(%.9f %.9f)@2020-01-01 00:00:00, "
+    "Point(%.9f %.9f)@2020-01-01 01:00:00]", lon0, lat0, lon1, lat1);
+  Temporal *seg = tgeompoint_in(wkt);
+  Temporal *cover = (seg != NULL) ?
+    tgeompoint_to_tquadbin(seg, resolution) : NULL;
+  if (cover == NULL)
+  {
+    (*none)++;
+    free(seg);
+    return;
+  }
+  int ncover = 0;
+  Quadbin *cells = tquadbin_values(cover, &ncover);
+  Quadbin *truth = malloc(sizeof(Quadbin) * (DENSE_POSITIONS + 1));
+  int ntruth = 0;
+  TimestampTz t0 = temporal_start_timestamptz(seg);
+  TimestampTz t1 = temporal_end_timestamptz(seg);
+  for (int s = 0; s <= DENSE_POSITIONS; s++)
+  {
+    TimestampTz t = t0 + (t1 - t0) * s / DENSE_POSITIONS;
+    GSERIALIZED *pos = NULL;
+    Quadbin held = 0;
+    if (! tgeo_value_at_timestamptz(seg, t, true, &pos) ||
+        ! tquadbin_value_at_timestamptz(cover, t, true, &held))
+    {
+      (*wrong)++;
+      free(pos);
+      continue;
+    }
+    Quadbin cell = geo_to_quadbin_cell(pos, resolution);
+    free(pos);
+    if (held != cell)
+      (*wrong)++;
+    if (! holds(truth, ntruth, cell))
+      truth[ntruth++] = cell;
+  }
+  /* A held cell the sampled positions do not reach is a corner the path clips
+   * between two of them, so it borders a cell they reach */
+  for (int i = 0; i < ncover; i++)
+  {
+    if (holds(truth, ntruth, cells[i]))
+      continue;
+    uint32_t x, y, z;
+    quadbin_cell_to_tile(cells[i], &x, &y, &z);
+    bool near = false;
+    for (int j = 0; j < ntruth && ! near; j++)
+    {
+      uint32_t tx, ty, tz;
+      quadbin_cell_to_tile(truth[j], &tx, &ty, &tz);
+      near = (x + 1 >= tx && tx + 1 >= x && y + 1 >= ty && ty + 1 >= y);
+    }
+    if (! near)
+      (*offpath)++;
+  }
+  free(truth); free(cells); free(cover); free(seg);
+  return;
+}
+
 int main(void)
 {
   meos_initialize();
@@ -434,6 +509,32 @@ int main(void)
       if (miss > 0 || offpath > 0 || none > 0)
         failures++;
     }
+  }
+
+  /* A temporal quadbin cell holds at every timestamp the cell of the position
+   * of its trajectory then, and no cell away from the path, over the sites
+   * and at the scale of the quadbin covers above */
+  for (int k = 0; k < 3; k++)
+  {
+    long wrong = 0, offpath = 0, none = 0;
+    unsigned seed = 20260914u + (unsigned) k;
+    double span = 360.0 / (double) (1ULL << zoom);
+    for (int t = 0; t < NSEGMENTS; t++)
+    {
+      double j1 = (rand_r(&seed) / (double) RAND_MAX - 0.5) * span * 4.0;
+      double j2 = (rand_r(&seed) / (double) RAND_MAX - 0.5) * span * 4.0;
+      double ang = (rand_r(&seed) / (double) RAND_MAX) * 2.0 * M_PI;
+      double len = span * (1.0 + (rand_r(&seed) / (double) RAND_MAX) * 4.0);
+      double lat0 = site[k][0] + j1, lon0 = site[k][1] + j2;
+      double lat1 = lat0 + len * sin(ang), lon1 = lon0 + len * cos(ang);
+      tquadbin_check(lon0, lat0, lon1, lat1, zoom, &wrong, &offpath, &none);
+    }
+    printf("%-20s tquadbin positions in another cell %ld, off the path %ld\n",
+      name[k], wrong, offpath);
+    if (none > 0)
+      printf("  %ld tquadbin value(s) were not built at all\n", none);
+    if (wrong > 0 || offpath > 0 || none > 0)
+      failures++;
   }
 
   if (failures > 0)
