@@ -184,6 +184,17 @@ SELECT numInstants(th3index(tgeompoint
   'SRID=4326;{Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02}',
   10));
 
+-- It keeps its interpolation, discrete or stepwise, since it states nothing
+-- between its instants
+SELECT interp(th3index(tgeompoint
+  'SRID=4326;{Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02}',
+  10));
+SELECT interp(th3index(tgeogpoint
+  '{Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02}', 10));
+SELECT interp(th3index(setSRID(tgeompoint
+  'Interp=Step;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
+  4326), 10));
+
 -- One that moves between them holds every cell along the way, and the count
 -- is the cells the segment enters rather than a function of any sampling
 -- rate. A cell is entered where the path leaves the previous one, so the
