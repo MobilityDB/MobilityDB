@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: h3_segment_cells</title>
+<title>MobilityDB: h3_segment_length_deg</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -119,7 +119,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a1eeafbadc7259e2473e13b042be7088e.html#a1eeafbadc7259e2473e13b042be7088e">h3_latlng_deg_to_cell</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a12e93d968a5c09f98309b2ef7fc2710b.html#a12e93d968a5c09f98309b2ef7fc2710b">h3_local_ij_to_cell_meos</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a75160df8cabf5a687097f055d00db721.html#a75160df8cabf5a687097f055d00db721">h3_sample_step_deg</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="th3index__internal_8h_a6710084a38bb6438487aec2863cef7b1.html#a6710084a38bb6438487aec2863cef7b1">h3_segment_cells</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a77e682bb2d9696c9ff73149a101da9ce.html#a77e682bb2d9696c9ff73149a101da9ce">h3_segment_cells</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="th3index__internal_8h_a7bc24075d41ed7bd3280d33408352ca8.html#a7bc24075d41ed7bd3280d33408352ca8">h3_segment_length_deg</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a209c0e4682b747f65b7458d8e8f90a3b.html#a209c0e4682b747f65b7458d8e8f90a3b">h3_vertex_to_gs_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_af5242717a116b7ce7caf0f18b5ff8298.html#af5242717a116b7ce7caf0f18b5ff8298">h3index_cell_to_geog</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="th3index__internal_8h_a71d6cedbc606c46ee19667521e5a5350.html#a71d6cedbc606c46ee19667521e5a5350">h3index_cell_to_geogpoint</a></td></tr>
@@ -128,14 +129,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a6710084a38bb6438487aec2863cef7b1" name="a6710084a38bb6438487aec2863cef7b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6710084a38bb6438487aec2863cef7b1">&#9670;&#160;</a></span>h3_segment_cells()</h2>
+<a id="a7bc24075d41ed7bd3280d33408352ca8" name="a7bc24075d41ed7bd3280d33408352ca8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7bc24075d41ed7bd3280d33408352ca8">&#9670;&#160;</a></span>h3_segment_length_deg()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int h3_segment_cells </td>
+          <td class="memname">double h3_segment_length_deg </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>lon1</em>, </td>
@@ -161,26 +162,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int32&#160;</td>
-          <td class="paramname"><em>resolution</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">H3Index *&#160;</td>
-          <td class="paramname"><em>cells</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>enter</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>maxout</em>&#160;</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>geodetic</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -190,17 +173,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Fill <code>cells</code> with every cell the segment crosses, and <code>enter</code> with the segment parameter at which it reaches each. </p>
-<p >A traversal, not a sampling walk: from the cell in hand the walk leaves through its boundary, and the cell just beyond that crossing is a NEIGHBOUR of it, so no cell between the two can be passed over. A sampling walk has no such property at any spacing, because a segment clips a cell corner over an arbitrarily short chord and every spacing is longer than some chord. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the length in degrees of the path between two positions: of the straight line in longitude and latitude for a planar point, of the great-circle arc for a geodetic one. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">lon1,lat1,lon2,lat2</td><td>Segment endpoints in degrees </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">resolution</td><td>H3 resolution </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">cells,enter</td><td>Arrays of at least <code>maxout</code> entries; <code>enter[0]</code> is always 0, the parameter of the first endpoint </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">maxout</td><td>Capacity of both arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lon1,lat1,lon2,lat2</td><td>Positions in degrees </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">geodetic</td><td>True when the positions are geodetic </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Number of cells written, or 0 when the first lookup fails </dd></dl>
 
 </div>
 </div>
