@@ -81,21 +81,21 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 -- {[2001-01-01 08:00:00,2001-01-01 08:20:00]}
 </pre><p>
 			Damos a continuación las funciones de entrada y salida de tipos de conjunto y de rango en formato Well-Known Text (WKT) y Well-Known Binary (WKB). El formato de salida predeterminado de todos los tipos de conjuntos y de rango es el formato de texto conocido. La función <code class="varname">asText</code> que se da a continuación permite determinar la salida de valores de punto flotante.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_asText"></a><a class="indexterm" name="id1694"></a><p>Devuelve la representación de texto conocido (WKT)</p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_asText"></a><a class="indexterm" name="id1788"></a><p>Devuelve la representación de texto conocido (WKT)</p><pre class="programlisting">
 asText({floatset,floatspans},maxdecimaldigits integer=15) → text
 </pre><p>El argumento <code class="varname">maxdecimaldigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
 SELECT asText(floatset '{1.123456789,2.123456789}', 3);
 -- {1.123, 2.123}
 SELECT asText(floatspanset '{[1.55,2.55],[4,5]}',0);
 -- {[2, 3], [4, 5]}
-</pre></li><li class="listitem"><a name="setspan_asEWKT"></a><a class="indexterm" name="id1703"></a><p>Devuelve la representación extendida de texto conocido (EWKT) de un conjunto espacial</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_asEWKT"></a><a class="indexterm" name="id1797"></a><p>Devuelve la representación extendida de texto conocido (EWKT) de un conjunto espacial</p><pre class="programlisting">
 asEWKT(spatialset,maxdecimaldigits integer=15) → text
 </pre><p>El SRID del conjunto precede a sus elementos. Un conjunto de índices de celda indica el SRID 4326 y un conjunto de nubes de puntos el SRID que declara su esquema, y ninguno de los dos toma el argumento <code class="varname">maxdecimaldigits</code>.</p><pre class="programlisting">
 SELECT asEWKT(geomset 'SRID=5676;{"Point(1 1)", "Point(2 2)"}');
 -- SRID=5676;{"POINT(1 1)", "POINT(2 2)"}
 SELECT asEWKT(h3indexset '{8928308280fffff, 8928308280bffff}');
 -- SRID=4326;{"8928308280bffff", "8928308280fffff"}
-</pre></li><li class="listitem"><a name="setspan_asBinary"></a><a class="indexterm" name="id1712"></a><a class="indexterm" name="id1715"></a><p>Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_asBinary"></a><a class="indexterm" name="id1806"></a><a class="indexterm" name="id1809"></a><p>Devuelve la representación binaria conocida (WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
 asBinary({set,spans},endian text='') → bytea
 asHexWKB({set,spans},endian text='') → text
 </pre><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
@@ -111,7 +111,7 @@ SELECT asHexWKB(intspan '[1, 3)');
 -- 011300010100000003000000
 SELECT asHexWKB(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 -- 00000E00000002033FF000000000000040000000000000000340100000000000004014000000000000
-</pre></li><li class="listitem"><a name="setspan_asEWKB"></a><a class="indexterm" name="id1723"></a><a class="indexterm" name="id1726"></a><p>Devuelve la representación extendida binaria conocida (EWKB) o la representación hexadecimal extendida binaria conocida (HexEWKB) de un conjunto espacial</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_asEWKB"></a><a class="indexterm" name="id1817"></a><a class="indexterm" name="id1820"></a><p>Devuelve la representación extendida binaria conocida (EWKB) o la representación hexadecimal extendida binaria conocida (HexEWKB) de un conjunto espacial</p><pre class="programlisting">
 asEWKB(spatialset,endian text='') → bytea
 asHexEWKB(spatialset,endian text='') → text
 </pre><p>El SRID del conjunto, cuando se conoce, se incluye una única vez en la cabecera del conjunto: <code class="varname">asEWKB</code> y <code class="varname">asHexEWKB</code> lo incluyen, mientras que <code class="varname">asBinary</code> y <code class="varname">asHexWKB</code> devuelven la representación binaria conocida (WKB) sin él, siguiendo la convención OGC y el <code class="varname">asBinary</code>/<code class="varname">asHexWKB</code> de los tipos base <code class="varname">cbuffer</code>, <code class="varname">npoint</code> y <code class="varname">pose</code>. Un conjunto de índices de celda indica el SRID 4326, y un conjunto de nubes de puntos el SRID que su esquema declara en el catálogo <code class="varname">pointcloud_formats</code>, por lo que las formas extendidas y simples de un conjunto de nubes de puntos coinciden cuando su esquema no declara ningún SRID.</p><pre class="programlisting">
@@ -129,7 +129,7 @@ SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
 -- 01310041E61000000100000041E61000000100000000000000000000000000E03F
 SELECT asHexEWKB(h3indexset '{8a2a1072b59ffff}', 'XDR');
 -- 00004561000010E60000000108A2A1072B59FFFF
-</pre></li><li class="listitem"><a name="setspan_FromBinary"></a><a class="indexterm" name="id1744"></a><a class="indexterm" name="id1747"></a><a class="indexterm" name="id1750"></a><p>Entrada desde la representación binaria conocida (WKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_FromBinary"></a><a class="indexterm" name="id1838"></a><a class="indexterm" name="id1841"></a><a class="indexterm" name="id1844"></a><p>Entrada desde la representación binaria conocida (WKB)</p><pre class="programlisting">
 settypeFromBinary(bytea) → set
 spantypeFromBinary(bytea) → span
 spansettypeFromBinary(bytea) → spanset
@@ -141,7 +141,7 @@ SELECT intspanFromBinary('\x011300010100000003000000');
 SELECT floatspansetFromBinary(
   '\x00000e00000002033ff000000000000040000000000000000340100000000000004014000000000000');
 -- {[1, 2], [4, 5]}
-</pre></li><li class="listitem"><a name="setspan_FromHexWKB"></a><a class="indexterm" name="id1758"></a><a class="indexterm" name="id1761"></a><a class="indexterm" name="id1764"></a><p>Entrada desde la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_FromHexWKB"></a><a class="indexterm" name="id1852"></a><a class="indexterm" name="id1855"></a><a class="indexterm" name="id1858"></a><p>Entrada desde la representación hexadecimal binaria conocida (HexWKB)</p><pre class="programlisting">
 settypeFromHexWKB(text) → set
 spantypeFromHexWKB(text) → span
 spansettypeFromHexWKB(text) → spanset
@@ -155,7 +155,7 @@ SELECT floatspanFromHexWKB('01060001000000000000F83F0000000000000440');
 SELECT floatspansetFromHexWKB(
   '00000E00000002033FF000000000000040000000000000000340100000000000004014000000000000');
 -- {[1, 2], [4, 5]}
-</pre></li><li class="listitem"><a name="setspan_FromEWKT"></a><a class="indexterm" name="id1772"></a><a class="indexterm" name="id1775"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT) de un conjunto espacial</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_FromEWKT"></a><a class="indexterm" name="id1866"></a><a class="indexterm" name="id1869"></a><p>Entrada desde la representación de texto conocido (WKT) o desde la representación extendida de texto conocido (EWKT) de un conjunto espacial</p><pre class="programlisting">
 spatialsettypeFromText(text) → spatialset
 spatialsettypeFromEWKT(text) → spatialset
 </pre><p>Hay una función por tipo de conjunto espacial, el nombre de la función tiene como prefijo el nombre del tipo. Un SRID indicado debe ser el que lleva un conjunto de índices de celda o de nubes de puntos, de lo contrario se genera un error.</p><pre class="programlisting">
@@ -167,7 +167,7 @@ SELECT asEWKT(h3indexsetFromEWKT('SRID=4326;{8928308280fffff}'));
 -- SRID=4326;{"8928308280fffff"}
 SELECT h3indexsetFromEWKT('SRID=3857;{8928308280fffff}');
 -- ERROR:  The SRID 3857 cannot be stated for the h3index
-</pre></li><li class="listitem"><a name="setspan_FromEWKB"></a><a class="indexterm" name="id1783"></a><a class="indexterm" name="id1786"></a><p>Entrada desde la representación extendida binaria conocida (EWKB) o desde la representación hexadecimal extendida binaria conocida (HexEWKB) de un conjunto espacial</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_FromEWKB"></a><a class="indexterm" name="id1877"></a><a class="indexterm" name="id1880"></a><p>Entrada desde la representación extendida binaria conocida (EWKB) o desde la representación hexadecimal extendida binaria conocida (HexEWKB) de un conjunto espacial</p><pre class="programlisting">
 spatialsettypeFromEWKB(bytea) → spatialset
 spatialsettypeFromHexEWKB(text) → spatialset
 </pre><p>Hay una función por tipo de conjunto espacial, el nombre de la función tiene como prefijo el nombre del tipo. El SRID que indica la cabecera debe ser el que lleva un conjunto de índices de celda o de nubes de puntos, de lo contrario se genera un error.</p><pre class="programlisting">
