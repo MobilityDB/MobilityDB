@@ -317,10 +317,14 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
       have_last = true;
     }
 
+    /* A geodetic segment follows its great circle, a planar one its straight
+     * line in longitude and latitude */
+    bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
+
     /* The traversal writes one entry per cell a segment crosses, so the
      * longest segment sizes the buffer for every one of them: a segment
-     * spans at most its own length in cell widths, and a cell is never
-     * narrower than its own edge */
+     * spans at most the length of its path in cell widths, and a cell is
+     * never narrower than its own edge */
     double edge_m;
     if (getHexagonEdgeLengthAvgM(resolution, &edge_m) != E_SUCCESS)
       edge_m = 1000.0;
@@ -332,8 +336,7 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
         tinstant_value_p(TSEQUENCE_INST_N(seq, i))));
       const POINT2D *qb = GSERIALIZED_POINT2D_P(DatumGetGserializedP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, i + 1))));
-      double ddx = qb->x - qa->x, ddy = qb->y - qa->y;
-      double d = sqrt(ddx * ddx + ddy * ddy);
+      double d = h3_segment_length_deg(qa->x, qa->y, qb->x, qb->y, geodetic);
       if (d > longest)
         longest = d;
     }
@@ -357,8 +360,8 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
        * cells[k], which the timestamp is interpolated from. The first
        * entry repeats the cell the previous segment ended in and is
        * dropped by the same-cell test below. */
-      int nx = h3_segment_cells(pa->x, pa->y, pb->x, pb->y, resolution,
-        xcells, xenter, xcap);
+      int nx = h3_segment_cells(pa->x, pa->y, pb->x, pb->y, geodetic,
+        resolution, xcells, xenter, xcap);
       for (int k = 0; k < nx; k++)
       {
         H3Index cell = xcells[k];

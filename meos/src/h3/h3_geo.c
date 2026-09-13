@@ -51,12 +51,14 @@
 
 /* C */
 #include <math.h>
+#include <string.h>
 /* MEOS */
 #include <postgres.h>
 /* H3 */
 #include <h3api.h>
 /* PostGIS */
 #include <liblwgeom.h>
+#include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
@@ -276,6 +278,184 @@ h3_cell_exit_param(H3Index cell, double lon1, double lat1, double dlon,
 }
 
 /**
+ * @brief Path a segment follows between its two endpoints
+ * @details A planar point moves along the straight line in longitude and
+ * latitude, a geodetic one along the great circle through its endpoints, as
+ * `pointsegm_interpolate` places a temporal point between two instants.
+ */
+typedef struct
+{
+  bool geodetic;          /**< True when the path is a great circle */
+  double lon1, lat1;      /**< First endpoint, in degrees */
+  double dlon, dlat;      /**< Planar path: the step to the second endpoint */
+  GEOGRAPHIC_POINT g1;    /**< Geodetic path: the first endpoint */
+  double dist;            /**< Geodetic path: its angle, in radians */
+  double azimuth;         /**< Geodetic path: its azimuth at the first endpoint */
+  POINT3D a;              /**< Geodetic path: the first endpoint, a unit vector */
+  POINT3D normal;         /**< Geodetic path: the unit normal of its circle */
+} H3SegmentPath;
+
+/**
+ * @brief Return the dot product of two vectors
+ */
+static double
+h3_vec_dot(const POINT3D *p, const POINT3D *q)
+{
+  return p->x * q->x + p->y * q->y + p->z * q->z;
+}
+
+/**
+ * @brief Set the last argument to the cross product of the first two
+ */
+static void
+h3_vec_cross(const POINT3D *p, const POINT3D *q, POINT3D *r)
+{
+  r->x = p->y * q->z - p->z * q->y;
+  r->y = p->z * q->x - p->x * q->z;
+  r->z = p->x * q->y - p->y * q->x;
+}
+
+/**
+ * @brief Return the length in degrees of the path between two positions: of
+ * the straight line in longitude and latitude for a planar point, of the
+ * great-circle arc for a geodetic one
+ * @param[in] lon1,lat1,lon2,lat2 Positions in degrees
+ * @param[in] geodetic True when the positions are geodetic
+ */
+double
+h3_segment_length_deg(double lon1, double lat1, double lon2, double lat2,
+  bool geodetic)
+{
+  if (! geodetic)
+  {
+    double dlon = lon2 - lon1, dlat = lat2 - lat1;
+    return sqrt(dlon * dlon + dlat * dlat);
+  }
+  GEOGRAPHIC_POINT g1, g2;
+  geographic_point_init(lon1, lat1, &g1);
+  geographic_point_init(lon2, lat2, &g2);
+  return rad2deg(sphere_distance(&g1, &g2));
+}
+
+/**
+ * @brief Return in the last argument the path between two positions
+ * @return False when the path has no length, since it then leaves no cell
+ */
+static bool
+h3_segment_path_init(double lon1, double lat1, double lon2, double lat2,
+  bool geodetic, H3SegmentPath *path)
+{
+  memset(path, 0, sizeof(H3SegmentPath));
+  path->geodetic = geodetic;
+  path->lon1 = lon1; path->lat1 = lat1;
+  path->dlon = lon2 - lon1; path->dlat = lat2 - lat1;
+  if (! geodetic)
+    return path->dlon != 0.0 || path->dlat != 0.0;
+  GEOGRAPHIC_POINT g2, gm;
+  geographic_point_init(lon1, lat1, &path->g1);
+  geographic_point_init(lon2, lat2, &g2);
+  path->dist = sphere_distance(&path->g1, &g2);
+  if (path->dist <= 0.0)
+    return false;
+  path->azimuth = sphere_direction(&path->g1, &g2, path->dist);
+  geog2cart(&path->g1, &path->a);
+  /* The circle is the one the path follows: through its first endpoint and
+   * the point it reaches halfway, which also fixes it where the endpoints are
+   * antipodal and every great circle joins them */
+  if (sphere_project(&path->g1, path->dist / 2.0, path->azimuth, &gm) !=
+      LW_SUCCESS)
+    return false;
+  POINT3D mid;
+  geog2cart(&gm, &mid);
+  h3_vec_cross(&path->a, &mid, &path->normal);
+  if (path->normal.x == 0.0 && path->normal.y == 0.0 && path->normal.z == 0.0)
+    return false;
+  normalize(&path->normal);
+  return true;
+}
+
+/**
+ * @brief Return the cell holding the position a path reaches at a parameter
+ * @details A geodetic position is the point `sphere_project` reaches along
+ * the great circle at that fraction of the path's angle, the one
+ * `pointsegm_interpolate` answers for a temporal geodetic point.
+ */
+static H3Index
+h3_segment_path_cell(const H3SegmentPath *path, double t, int32 resolution)
+{
+  if (! path->geodetic)
+    return h3_latlng_deg_to_cell(path->lat1 + t * path->dlat,
+      path->lon1 + t * path->dlon, resolution);
+  GEOGRAPHIC_POINT g;
+  if (sphere_project(&path->g1, path->dist * t, path->azimuth, &g) !=
+      LW_SUCCESS)
+    return (H3Index) 0;
+  LatLng ll = { .lat = g.lat, .lng = longitude_radians_normalize(g.lon) };
+  H3Index cell;
+  if (latLngToCell(&ll, resolution, &cell) != E_SUCCESS)
+    return (H3Index) 0;
+  return cell;
+}
+
+/**
+ * @brief Return where a geodetic path leaves the cell holding it
+ * @details A cell edge is an arc of a great circle, as the path is, so the
+ * circle of each edge meets the circle of the path at two antipodal points,
+ * along the intersection of their planes. The exit is the nearest of those
+ * points that lies on its edge and strictly ahead of `tmin` on the path; its
+ * parameter is the fraction of the path's angle reached there.
+ * @return the path parameter of the exit, or a value above 1 when the path
+ * ends inside the cell
+ */
+static double
+h3_cell_exit_param_geodetic(H3Index cell, const H3SegmentPath *path,
+  double tmin)
+{
+  CellBoundary bnd;
+  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
+    return 2.0;
+  POINT3D v[MAX_CELL_BNDRY_VERTS];
+  for (int i = 0; i < bnd.numVerts; i++)
+  {
+    GEOGRAPHIC_POINT g = { .lat = bnd.verts[i].lat, .lon = bnd.verts[i].lng };
+    geog2cart(&g, &v[i]);
+  }
+  double best = 2.0;
+  for (int i = 0; i < bnd.numVerts; i++)
+  {
+    int j = (i + 1) % bnd.numVerts;
+    POINT3D m, d, c;
+    h3_vec_cross(&v[i], &v[j], &m);
+    h3_vec_cross(&path->normal, &m, &d);
+    if (d.x == 0.0 && d.y == 0.0 && d.z == 0.0)
+      continue;              /* the edge lies on the circle of the path */
+    for (int s = 0; s < 2; s++)
+    {
+      POINT3D p = d;
+      if (s)
+      {
+        p.x = -d.x; p.y = -d.y; p.z = -d.z;
+      }
+      /* On the edge: between its two vertices along the circle of the edge */
+      h3_vec_cross(&v[i], &p, &c);
+      if (h3_vec_dot(&c, &m) < 0.0)
+        continue;
+      h3_vec_cross(&p, &v[j], &c);
+      if (h3_vec_dot(&c, &m) < 0.0)
+        continue;
+      /* Ahead on the path: the angle from its first endpoint, measured in the
+       * direction the path travels */
+      h3_vec_cross(&path->a, &p, &c);
+      double t = atan2(h3_vec_dot(&c, &path->normal),
+        h3_vec_dot(&path->a, &p)) / path->dist;
+      if (t > tmin && t <= 1.0 && t < best)
+        best = t;
+    }
+  }
+  return best;
+}
+
+/**
  * @brief Fill `cells` with every cell the segment crosses, and `enter` with
  * the segment parameter at which it reaches each
  * @details A traversal, not a sampling walk: from the cell in hand the walk
@@ -284,7 +464,13 @@ h3_cell_exit_param(H3Index cell, double lon1, double lat1, double dlon,
  * walk has no such property at any spacing, because a segment clips a cell
  * corner over an arbitrarily short chord and every spacing is longer than
  * some chord.
+ *
+ * The walk follows the path the point moves along: the straight line in
+ * longitude and latitude of a planar point, the great circle of a geodetic
+ * one. A geodetic crossing is found on the sphere, where a path across the
+ * antimeridian or over a pole is an arc like any other.
  * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] geodetic True when the segment is geodetic
  * @param[in] resolution H3 resolution
  * @param[out] cells,enter Arrays of at least `maxout` entries; `enter[0]` is
  *   always 0, the parameter of the first endpoint
@@ -293,7 +479,7 @@ h3_cell_exit_param(H3Index cell, double lon1, double lat1, double dlon,
  */
 int
 h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
-  int32 resolution, H3Index *cells, double *enter, int maxout)
+  bool geodetic, int32 resolution, H3Index *cells, double *enter, int maxout)
 {
   assert(cells); assert(enter);
   if (maxout < 1)
@@ -304,10 +490,12 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
   cells[0] = cur; enter[0] = 0.0;
   int n = 1;
 
-  double dlon = lon2 - lon1, dlat = lat2 - lat1;
-  double seg = sqrt(dlon * dlon + dlat * dlat);
-  if (seg <= 0.0)
+  H3SegmentPath path;
+  if (! h3_segment_path_init(lon1, lat1, lon2, lat2, geodetic, &path))
     return n;
+  /* The length of the path in degrees */
+  double seg = geodetic ? rad2deg(path.dist) :
+    sqrt(path.dlon * path.dlon + path.dlat * path.dlat);
   /* A nudge past the crossing lands inside the next cell without reaching
    * the one after it: a ten-thousandth of a cell edge is far below the
    * width of any cell and far above the rounding of the crossing itself */
@@ -318,18 +506,19 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
   if (nudge <= 0.0 || nudge >= 1.0)
     nudge = 1e-9;
 
-  /* A cell is convex, so a straight segment whose far endpoint lies in the
-   * same cell as its near one never leaves it and there is no boundary to
-   * find. That is the common case wherever the positions are closer together
-   * than a cell is wide, and reading the boundary for it costs more than the
-   * whole answer is worth */
+  /* A cell is convex, on the plane and on the sphere, so a path whose far
+   * endpoint lies in the same cell as its near one never leaves it and there
+   * is no boundary to find. That is the common case wherever the positions
+   * are closer together than a cell is wide, and reading the boundary for it
+   * costs more than the whole answer is worth */
   if (h3_latlng_deg_to_cell(lat2, lon2, resolution) == cur)
     return n;
 
   double t = 0.0;
   while (n < maxout)
   {
-    double texit = h3_cell_exit_param(cur, lon1, lat1, dlon, dlat, t);
+    double texit = geodetic ? h3_cell_exit_param_geodetic(cur, &path, t) :
+      h3_cell_exit_param(cur, lon1, lat1, path.dlon, path.dlat, t);
     if (texit > 1.0)
       break;                 /* the segment ends inside this cell */
     double tn = texit + nudge;
@@ -338,8 +527,7 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
      * within its own rounding, so widen it rather than stall */
     for (int k = 0; k < 8 && tn < 1.0; k++)
     {
-      next = h3_latlng_deg_to_cell(lat1 + tn * dlat, lon1 + tn * dlon,
-        resolution);
+      next = h3_segment_path_cell(&path, tn, resolution);
       if (next != (H3Index) 0 && next != cur)
         break;
       tn += nudge * (double) (1 << k);

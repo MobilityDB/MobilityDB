@@ -174,4 +174,25 @@ SELECT numInstants(t) = numValues(getValues(t)) FROM (SELECT th3index(tgeompoint
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
   10) AS t) AS q;
 
+-- A geodetic trajectory moves along the great circle between its instants, so
+-- one crossing the antimeridian enters the cells along its shortest route.
+-- The planar trajectory between the same positions moves along the straight
+-- line in longitude and latitude, through every longitude between them.
+SELECT numInstants(th3index(tgeogpoint
+  '[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]', 3));
+SELECT numInstants(th3index(tgeompoint
+  'SRID=4326;[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]', 3));
+
+-- At every instant a geodetic trajectory holds the cell of its own position:
+-- across the antimeridian, and along the arc between two positions on the
+-- 70th parallel, which rises toward the pole between them.
+SELECT count(*) FILTER (WHERE valueAtTimestamp(c, t) IS NOT NULL) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    startValue(th3index(atTime(p, t), 3))) AS other_cell
+FROM (SELECT p, th3index(p, 3) AS c FROM (VALUES
+  (tgeogpoint '[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]'),
+  (tgeogpoint '[Point(-60 70)@2001-01-01, Point(60 70)@2001-01-03]')) AS v(p))
+  AS q, generate_series(timestamptz '2001-01-01 00:17',
+    '2001-01-02 23:43', interval '37 minutes') AS t;
+
 -------------------------------------------------------------------------------
