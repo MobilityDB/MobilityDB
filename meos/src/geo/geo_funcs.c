@@ -169,36 +169,83 @@ extract_mline(const LWMLINE *ml, MeosArray *edges)
   return;
 }
 
+static inline void two_product(double a, double b, double *x, double *y);
+static inline int grow_expansion(int elen, const double *e, double b,
+  double *h);
+
+/**
+ * @brief Return the sign of the area a ring encloses, decided exactly
+ * @details The shoelace sum of x_i y_{i+1} - x_{i+1} y_i over the edges of a
+ * ring is twice the signed area it encloses. The sum taken in floating point
+ * answers wherever it stands clear of the bound its rounding reaches: the
+ * rounding of each product and of each addition is at most a unit in the last
+ * place of the running magnitude, and twice n + 1 of them bound it generously.
+ * Within that bound every product is split into the two doubles that hold it
+ * exactly (#two_product) and the parts are summed into an expansion
+ * (#grow_expansion), whose largest component carries the exact sign.
+ */
+static int
+ring_area_sign(const POINTARRAY *pa)
+{
+  uint32_t n = pa->npoints;
+  double sum = 0.0, mag = 0.0;
+  for (uint32_t i = 0; i + 1 < n; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    double l = a->x * b->y, r = b->x * a->y;
+    sum += l - r;
+    mag += fabs(l) + fabs(r);
+  }
+  double bound = 2.0 * ((double) n + 1.0) * DBL_EPSILON * mag;
+  if (sum > bound)
+    return 1;
+  if (sum < - bound)
+    return -1;
+  size_t cap = 4 * (size_t) n + 2;
+  double *e = palloc(sizeof(double) * cap);
+  double *h = palloc(sizeof(double) * cap);
+  double *swap;
+  int elen = 0;
+  for (uint32_t i = 0; i + 1 < n; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    double x, y;
+    two_product(a->x, b->y, &x, &y);
+    elen = grow_expansion(elen, e, x, h);
+    swap = e; e = h; h = swap;
+    elen = grow_expansion(elen, e, y, h);
+    swap = e; e = h; h = swap;
+    two_product(b->x, a->y, &x, &y);
+    elen = grow_expansion(elen, e, - x, h);
+    swap = e; e = h; h = swap;
+    elen = grow_expansion(elen, e, - y, h);
+    swap = e; e = h; h = swap;
+  }
+  int result = (elen == 0) ? 0 :
+    ((e[elen - 1] > 0.0) ? 1 : ((e[elen - 1] < 0.0) ? -1 : 0));
+  pfree(e); pfree(h);
+  return result;
+}
+
 /**
  * @brief Return true if a ring encloses no area
  * @details A ring that runs out and back along itself, or whose vertices are
  * collinear, bounds no region: the point set it draws is its own linework.
  * Real survey data carries them, so this is not a synthetic case.
- * @note The shoelace sum is an AREA, so what reads it as zero is an area too:
- * a distance times the extent the ring occupies. Reading it against a length
- * would make the answer depend on the unit the coordinates are expressed in.
- * #ptarray_signed_area accumulates DIFFERENCES of coordinates rather than the
- * coordinates themselves, so its rounding grows with that extent and not with
- * the distance of the ring from the origin.
+ * @note Whether the ring encloses area is a question on its input vertices, so
+ * it is the exact sign of its shoelace sum (#ring_area_sign) and not that sum
+ * read against a band: a band of any size reads a ring enclosing an area below
+ * it as linework, and which rings those are changes with the scale of the
+ * coordinates.
  */
 static bool
 ring_encloses_no_area(const POINTARRAY *pa)
 {
   if (! pa || pa->npoints < 3)
     return true;
-  double xmin, xmax, ymin, ymax;
-  const POINT2D *p = getPoint2d_cp(pa, 0);
-  xmin = xmax = p->x; ymin = ymax = p->y;
-  for (uint32_t i = 1; i < pa->npoints; i++)
-  {
-    p = getPoint2d_cp(pa, i);
-    xmin = Min(xmin, p->x); xmax = Max(xmax, p->x);
-    ymin = Min(ymin, p->y); ymax = Max(ymax, p->y);
-  }
-  double extent = Max(xmax - xmin, ymax - ymin);
-  double tol = (MEOS_GEOM_TOLERANCE +
-    4.0 * DBL_EPSILON * (double) pa->npoints * extent) * extent;
-  return fabs(ptarray_signed_area(pa)) <= tol;
+  return ring_area_sign(pa) == 0;
 }
 
 /**
