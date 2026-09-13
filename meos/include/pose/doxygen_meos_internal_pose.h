@@ -128,3 +128,23 @@
  * @ingroup meos_internal_pose
  * @brief Distance functions for temporal poses
  */
+
+/*****************************************************************************/
+
+/**
+ * @defgroup meos_internal_posechain_base Functions for static pose chains
+ * @ingroup meos_internal_posechain
+ * @brief Functions for static pose chains
+ *
+ * @defgroup meos_internal_posechain_inout Input and output functions
+ * @ingroup meos_internal_posechain
+ * @brief Input and output functions for temporal pose chains
+ */
+
+/*****************************************************************************/
+
+/**
+ * @defgroup meos_internal_posechain_base_srid Spatial reference system functions
+ * @ingroup meos_internal_posechain_base
+ * @brief Spatial reference system functions for static pose chains
+ */

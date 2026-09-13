@@ -72,6 +72,10 @@
  * @ingroup mobilitydb_api
  * @brief Functions for temporal poses
  *
+ * @defgroup mobilitydb_posechain Functions for pose chains
+ * @ingroup mobilitydb_api
+ * @brief Functions for pose chains
+ *
  * @defgroup mobilitydb_rgeo Functions for temporal rigid geometries
  * @ingroup mobilitydb_api
  * @brief Functions for temporal rigid geometries

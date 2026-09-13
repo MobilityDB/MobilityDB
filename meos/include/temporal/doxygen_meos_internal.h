@@ -65,6 +65,10 @@
  * @ingroup meos_internal
  * @brief Functions for temporal poses
  *
+ * @defgroup meos_internal_posechain Functions for pose chains
+ * @ingroup meos_internal
+ * @brief Functions for pose chains
+ *
  * @defgroup meos_internal_rgeo Functions for temporal rigid geometries
  * @ingroup meos_internal
  * @brief Functions for temporal rigid geometries
@@ -172,6 +176,18 @@
  * @defgroup meos_internal_box_set Set functions
  * @ingroup meos_internal_box
  * @brief Set functions for box types
+ *
+ * @defgroup meos_internal_box_bbox Bounding box functions
+ * @ingroup meos_internal_box
+ * @brief Bounding box functions for box types
+ *
+ *   @defgroup meos_internal_box_bbox_topo Topological functions
+ *   @ingroup meos_internal_box_bbox
+ *   @brief Topological functions for box types
+ *
+ *   @defgroup meos_internal_box_bbox_pos Position functions
+ *   @ingroup meos_internal_box_bbox
+ *   @brief Position functions for box types
   */
 
 /*****************************************************************************/

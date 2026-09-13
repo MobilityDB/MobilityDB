@@ -52,6 +52,10 @@
  * @ingroup meos_pose
  * @brief Accessor functions for temporal poses
  *
+ * @defgroup meos_pose_transf Transformation functions
+ * @ingroup meos_pose
+ * @brief Transformation functions for temporal poses
+ *
  * @defgroup meos_pose_restrict Restriction functions
  * @ingroup meos_pose
  * @brief Restriction functions for temporal poses

@@ -146,7 +146,7 @@
  *
  * @defgroup meos_geo_base_srid Spatial reference system functions
  * @ingroup meos_geo_base
- * @brief Spatial reference system functions for temporal geos
+ * @brief Spatial reference system functions for static geometries
  *
  * @defgroup meos_geo_base_spatial Spatial processing functions
  * @ingroup meos_geo_base
@@ -154,7 +154,7 @@
  *
  * @defgroup meos_geo_base_rel Spatial relationship functions
  * @ingroup meos_geo_base
- * @brief Spatial relationship functions for temporal geos
+ * @brief Spatial relationship functions for static geometries
  *
  * @defgroup meos_geo_base_bbox Bounding box functions
  * @ingroup meos_geo_base
