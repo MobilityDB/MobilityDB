@@ -99,6 +99,15 @@ SELECT geoToQuadbinCell(cellToPoint(quadbin '48a6227affffffff'), 10)
  t
 (1 row)
 
+/* Errors */
+SELECT geoToQuadbinCell(geometry 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 10);
+ERROR:  Only point geometries accepted
+SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT EMPTY', 10);
+ERROR:  Only non-empty geometries accepted
+SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 27);
+ERROR:  The resolution must be between 0 and 26
+SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
+ERROR:  The resolution must be between 0 and 26
 SELECT round(ST_X(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6);
   round   
 ----------

@@ -84,6 +84,14 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 0)
 SELECT geoToQuadbinCell(cellToPoint(quadbin '48a6227affffffff'), 10)
   = quadbin '48a6227affffffff';
 
+-- A geometry other than a point, an empty point and a resolution outside 0 to
+-- 26 are refused
+/* Errors */
+SELECT geoToQuadbinCell(geometry 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 10);
+SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT EMPTY', 10);
+SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 27);
+SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
+
 -- Centroid coordinates (SRID 4326)
 SELECT round(ST_X(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6);
 SELECT round(ST_Y(cellToPoint(quadbin '48a6227affffffff'))::numeric, 6);

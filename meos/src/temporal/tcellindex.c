@@ -123,6 +123,26 @@ dggs_cellops(MeosType temptype)
   }
 }
 
+/**
+ * @brief Ensure that a resolution lies in the range of the grid of a temporal
+ * cell-index type, or raise an error
+ * @param[in] temptype Temporal cell-index type naming the grid
+ * @param[in] resolution Resolution
+ */
+bool
+ensure_valid_cell_resolution(MeosType temptype, int32 resolution)
+{
+  const DggsCellOps *ops = dggs_cellops(temptype);
+  if (ops == NULL)
+    return false;
+  if (resolution >= ops->min_resolution && resolution <= ops->max_resolution)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The resolution must be between %d and %d", ops->min_resolution,
+    ops->max_resolution);
+  return false;
+}
+
 /*****************************************************************************
  * Generic lifting helpers
  *****************************************************************************/

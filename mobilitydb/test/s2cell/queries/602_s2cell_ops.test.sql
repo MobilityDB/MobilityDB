@@ -43,6 +43,14 @@ SELECT getResolution(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 20));
 SELECT s2GetFace(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 10));
 SELECT s2GetFace(geoToS2Cell(geography 'SRID=4326;Point(-122.4 37.8)', 10));
 
+-- A geography other than a point, an empty point and a level outside 0 to 30
+-- are refused
+/* Errors */
+SELECT geoToS2Cell(geography 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 10);
+SELECT geoToS2Cell(geography 'SRID=4326;POINT EMPTY', 10);
+SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 31);
+SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', -1);
+
 -------------------------------------------------------------------------------
 -- Hierarchy
 --

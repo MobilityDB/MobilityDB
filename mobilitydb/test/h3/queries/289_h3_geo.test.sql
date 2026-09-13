@@ -41,8 +41,13 @@ SELECT latLngToCell(geometry 'SRID=4326;POINT(4.35 50.85)', 7);
 -- Same point at resolution 0 (coarse) gives a base cell
 SELECT latLngToCell(geometry 'SRID=4326;POINT(4.35 50.85)', 0);
 
--- Non-POINT input: returns first point's cell (use geoToH3IndexSet for the full set)
+-- A geometry other than a point, an empty point and a resolution outside 0 to
+-- 15 are refused (geoToH3IndexSet covers any geometry)
+/* Errors */
 SELECT latLngToCell(geometry 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 7);
+SELECT latLngToCell(geometry 'SRID=4326;POINT EMPTY', 7);
+SELECT latLngToCell(geometry 'SRID=4326;POINT(4.35 50.85)', 16);
+SELECT latLngToCell(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
 
 -------------------------------------------------------------------------------
 -- POINT → single-element set  (geoToH3IndexSet)

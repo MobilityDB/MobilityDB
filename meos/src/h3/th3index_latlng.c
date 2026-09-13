@@ -57,6 +57,7 @@
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
+#include "temporal/tcellindex.h"
 #include "h3/h3index.h"
 #include "h3/th3index_internal.h"
 
@@ -76,7 +77,9 @@ geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(point,  (H3Index) 0);
-  if (! ensure_srid_is_latlong(gserialized_get_srid(point)))
+  if (! ensure_point_type(point) || ! ensure_not_empty(point) ||
+      ! ensure_srid_is_latlong(gserialized_get_srid(point)) ||
+      ! ensure_valid_cell_resolution(T_TH3INDEX, resolution))
     return (H3Index) 0;
   const POINT2D *p = GSERIALIZED_POINT2D_P(point);
   LatLng ll = { .lat = degsToRads(p->y), .lng = degsToRads(p->x) };
