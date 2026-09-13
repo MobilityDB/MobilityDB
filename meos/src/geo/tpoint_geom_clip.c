@@ -176,11 +176,15 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
         /* Cast a ray towards +x. The horizontal line at height ry meets the
          * supporting circle at cx +/- sqrt(r^2 - (ry - cy)^2); flip the parity
          * for each crossing that lies strictly to the right of the point and
-         * within the arc's angular span. A ray that only grazes the circle
-         * tangentially (h2 ~ 0) does not cross the boundary */
+         * within the arc's angular span. A ray that misses the circle or only
+         * grazes it (h2 <= 0) does not cross the boundary. h2 is the square of
+         * a half-chord, as #arcarc_cross reads it: a bound on it in length
+         * units drops every ray within the square root of that bound of the
+         * top or bottom of a circle, which for a small circle is a ray well
+         * inside it */
         const double dyc = ry - e->cy;
         const double h2 = e->radius * e->radius - dyc * dyc;
-        if (h2 <= MEOS_GEOM_TOLERANCE)
+        if (h2 <= 0.0)
           continue;
         const double h = sqrt(h2);
         const double xhit[2] = {e->cx - h, e->cx + h};
