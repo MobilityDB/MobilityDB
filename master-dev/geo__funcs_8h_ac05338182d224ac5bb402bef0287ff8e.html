@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: relate_arc_arc_points</title>
+<title>MobilityDB: coordinate_rounding</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -96,7 +96,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a9e3ee55e0b148d82098c9f8899917bdc.html#a9e3ee55e0b148d82098c9f8899917bdc">circle_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a7421ea3ef74a6c7d49fa89567c7382f4.html#a7421ea3ef74a6c7d49fa89567c7382f4">closest_point2d_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af03bf902980a6c21f0c87c493c0fcbdc.html#af03bf902980a6c21f0c87c493c0fcbdc">closest_point3dz_on_segment_ratio</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac05338182d224ac5bb402bef0287ff8e.html#ac05338182d224ac5bb402bef0287ff8e">coordinate_rounding</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_ac05338182d224ac5bb402bef0287ff8e.html#ac05338182d224ac5bb402bef0287ff8e">coordinate_rounding</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b">coordinate_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a27db8b42fe2f974d5db3d3e21fa10f1f.html#a27db8b42fe2f974d5db3d3e21fa10f1f">cross_product_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393">cross_product_sign</a></td></tr>
@@ -163,7 +163,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a7202a335b7d2cbbe530cc956d5e1ed66.html#a7202a335b7d2cbbe530cc956d5e1ed66">point_on_segment_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8639632d586c3c1cb6acf37a16ed47d8.html#a8639632d586c3c1cb6acf37a16ed47d8">point_on_segment_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aecc42cfe8cf4803e172f193076c67860.html#aecc42cfe8cf4803e172f193076c67860">pointarr_find_splits</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a53dd67ea99aeba4e9e7bf12ebb444598.html#a53dd67ea99aeba4e9e7bf12ebb444598">relate_arc_arc_points</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a53dd67ea99aeba4e9e7bf12ebb444598.html#a53dd67ea99aeba4e9e7bf12ebb444598">relate_arc_arc_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a1735a0debf7487b606e964192e1ba587.html#a1735a0debf7487b606e964192e1ba587">relate_ctx_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a233a6be8421102c31ba191861b90209f.html#a233a6be8421102c31ba191861b90209f">relate_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a04aa47ace253b8c9b85465d7e1eebd0d.html#a04aa47ace253b8c9b85465d7e1eebd0d">relate_edges_clear</a></td></tr>
@@ -178,41 +178,26 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a53dd67ea99aeba4e9e7bf12ebb444598" name="a53dd67ea99aeba4e9e7bf12ebb444598"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a53dd67ea99aeba4e9e7bf12ebb444598">&#9670;&#160;</a></span>relate_arc_arc_points()</h2>
+<a id="ac05338182d224ac5bb402bef0287ff8e" name="ac05338182d224ac5bb402bef0287ff8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac05338182d224ac5bb402bef0287ff8e">&#9670;&#160;</a></span>coordinate_rounding()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int relate_arc_arc_points </td>
+          <td class="memname">static double coordinate_rounding </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>c1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>[2], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>[2], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>overlap</em>&#160;</td>
+          <td class="paramname"><em>c2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -220,10 +205,15 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Add the intersection points of two circular arcs. </p>
-<p >Returns the number of point intersections added to x/y. If the arcs overlap over a non-zero-length portion, overlap is set to true and no point is required for the one-dimensional component. </p>
+<p>Return the distance a point constructed from coordinates of this size misses by. </p>
+<p >The points a native implementation classifies are CONSTRUCTED: the midpoint of an edge, the point at a parameter along it, the intersection of two edges. None of them lands exactly where it should, and the distance it misses by is not a property of the geometry but of the arithmetic &ndash; a few units in the last place of the largest coordinate involved &ndash; so it scales with the coordinates. </p>
 
 </div>
 </div>
