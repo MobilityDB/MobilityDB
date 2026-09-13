@@ -176,6 +176,8 @@ floatspan_out(const Span *s, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return span_out(s, maxdd);
 }
 

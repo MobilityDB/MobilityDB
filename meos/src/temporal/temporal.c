@@ -918,7 +918,11 @@ temporal_out(const Temporal *temp, int maxdd)
 char **
 temparr_out(Temporal **temparr, int count, int maxdd)
 {
-  assert(temparr); assert(count > 0); assert(maxdd >=0);
+  assert(temparr); assert(count > 0);
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
     result[i] = temporal_out(temparr[i], maxdd);
@@ -1426,6 +1430,8 @@ temporal_round(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
 
   const GSERIALIZED *geom;
   Temporal *work = temporal_strip_geom(temp, &geom);
@@ -1484,25 +1490,18 @@ temparr_round(Temporal **temparr, int count, int maxdd)
 /**
  * @ingroup meos_base_types
  * @brief Return a float number rounded to a given number of decimal places
+ * @param[in] d Value
+ * @param[in] maxdd Maximum number of decimal digits
+ * @errval DBL_MAX
  * @csqlfn #Float_round()
  */
 double
 float_round(double d, int maxdd)
 {
-  assert(maxdd >= 0);
-  double inf = get_float8_infinity();
-  double result = d;
-  if (d != -1 * inf && d != inf)
-  {
-    if (maxdd == 0)
-      result = round(d);
-    else
-    {
-      double power10 = pow(10.0, maxdd);
-      result = round(d * power10) / power10;
-    }
-  }
-  return result;
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_negative(maxdd))
+    return DBL_MAX;
+  return float8_round(d, maxdd);
 }
 
 /**
@@ -1511,7 +1510,7 @@ float_round(double d, int maxdd)
 Datum
 datum_float_round(Datum value, Datum size)
 {
-  return Float8GetDatum(float_round(DatumGetFloat8(value),
+  return Float8GetDatum(float8_round(DatumGetFloat8(value),
     DatumGetInt32(size)));
 }
 

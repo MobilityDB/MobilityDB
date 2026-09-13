@@ -199,10 +199,7 @@ trgeometry_out(const Temporal *temp)
 char *
 trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
+  assert(temp); assert(temp->temptype == T_TRGEOMETRY); assert(maxdd >= 0);
 
   /* Write the geometry */
   LWGEOM *geom = lwgeom_from_gserialized(trgeo_geom_p(temp));
@@ -230,6 +227,10 @@ trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended)
 char *
 trgeometry_as_text(const Temporal *temp, int maxdd)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return trgeo_wkt_out(temp, maxdd, false);
 }
 
@@ -244,6 +245,10 @@ trgeometry_as_text(const Temporal *temp, int maxdd)
 char *
 trgeometry_as_ewkt(const Temporal *temp, int maxdd)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return trgeo_wkt_out(temp, maxdd, true);
 }
 

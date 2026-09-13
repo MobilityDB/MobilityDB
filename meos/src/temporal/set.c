@@ -195,10 +195,7 @@ set_basetype_quotes(MeosType type)
 char *
 set_out_fn(const Set *s, int maxdd, outfunc value_out)
 {
-  assert(s);
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_negative(maxdd))
-    return NULL;
+  assert(s); assert(maxdd >= 0);
 
   char **strings = palloc(sizeof(char *) * s->count);
   for (int i = 0; i < s->count; i++)

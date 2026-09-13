@@ -88,6 +88,8 @@ poseset_out(const Set *s, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_POSESET(s, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return set_out(s, maxdd);
 }
 

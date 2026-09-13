@@ -1023,6 +1023,8 @@ npoint_round(const Npoint *np, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(np, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   /* Set precision of position */
   double pos = float8_round(np->pos, maxdd);
   return npoint_make(np->rid, pos);
@@ -1050,7 +1052,10 @@ datum_npoint_round(Datum npoint, Datum size)
 Nsegment *
 nsegment_round(const Nsegment *ns, int maxdd)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ns, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   /* Set precision of positions */
   double pos1 = float8_round(ns->pos1, maxdd);
   double pos2 = float8_round(ns->pos2, maxdd);

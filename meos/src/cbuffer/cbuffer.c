@@ -385,6 +385,8 @@ cbuffer_as_ewkt(const Cbuffer *cb, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cb, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return spatialbase_as_ewkt(PointerGetDatum(cb), T_CBUFFER, maxdd);
 }
 

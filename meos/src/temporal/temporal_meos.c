@@ -193,7 +193,9 @@ char *
 tfloat_out(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, NULL); 
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return temporal_out(temp, maxdd);
 }
 

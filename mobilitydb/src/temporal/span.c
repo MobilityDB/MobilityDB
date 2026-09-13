@@ -87,7 +87,7 @@ Datum
 Span_out(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_CSTRING(span_out(s, Int32GetDatum(OUT_DEFAULT_DECIMAL_DIGITS)));
+  PG_RETURN_CSTRING(span_out(s, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
 PGDLLEXPORT Datum Span_recv(PG_FUNCTION_ARGS);
@@ -145,7 +145,7 @@ Span_as_text(PG_FUNCTION_ARGS)
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = span_out(s, Int32GetDatum(dbl_dig_for_wkt));
+  char *str = span_out(s, dbl_dig_for_wkt);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
@@ -782,7 +782,7 @@ Float_round(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   int maxdd = PG_GETARG_INT32(1);
-  PG_RETURN_FLOAT8(float8_round(d, maxdd));
+  PG_RETURN_FLOAT8(float_round(d, maxdd));
 }
 
 PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);

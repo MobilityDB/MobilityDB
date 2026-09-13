@@ -189,11 +189,8 @@ spatialbase_as_ewkt(Datum value, MeosType type, int maxdd)
 char *
 spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_SPATIALSET(s, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-  
+  assert(s); assert(spatialset_type(s->settype)); assert(maxdd >= 0);
+
   char *set_str = set_out_fn(s, maxdd, wkt_out);
   if (! extended)
     return set_str;
@@ -224,6 +221,10 @@ spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
 char *
 spatialset_as_text(const Set *s, int maxdd)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_SPATIALSET(s, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return spatialset_out_fn(s, maxdd, &spatialbase_as_text, false);
 }
 
@@ -237,6 +238,10 @@ spatialset_as_text(const Set *s, int maxdd)
 char *
 spatialset_as_ewkt(const Set *s, int maxdd)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_SPATIALSET(s, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   /* The SRID will be output as prefix, the elements will output the SRID */
   return spatialset_out_fn(s, maxdd, &spatialbase_as_text, true);
 }

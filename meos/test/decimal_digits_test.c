@@ -29,17 +29,28 @@
 
 /**
  * @file
- * @brief A program that tests that a count of zero decimal digits is
- * accepted wherever a function tests a decimal-digit count.
+ * @brief A program that tests how the functions taking a count of decimal
+ * digits treat a count of zero and a negative count.
  *
  * A count of decimal digits says how many digits a value keeps after the
- * decimal point, and zero keeps none; tspatial_as_text, geo_round and
- * posearr_round accept it, as every output and rounding function of MEOS
- * does. The program verifies that pcpoint_as_hexwkb and pcpatch_as_hexwkb,
- * which hand their hex output a count of zero, answer the hex their input
- * reads back with no error left behind; that tspatial_out and pose_round
- * answer for a count of zero; and that a negative count is still reported
- * with MEOS_ERR_INVALID_ARG_VALUE.
+ * decimal point, and zero keeps none; every output and rounding function of
+ * MEOS accepts it. A negative count is an erroneous argument, which the
+ * public function taking it reports at its entry, as it reports a null
+ * value, so that every binding calling the function receives the error
+ * instead of a value rounded to tens or an assertion failure in an internal
+ * function.
+ *
+ * The program verifies that pcpoint_as_hexwkb and pcpatch_as_hexwkb, which
+ * hand their hex output a count of zero, answer the hex their input reads
+ * back with no error left behind; that tspatial_out, pose_round, geo_as_text
+ * and float_round answer for a count of zero, and pose_as_geopose for the
+ * negative precision GeoPose reads as its lossless form; that the text,
+ * EWKT, GeoJSON and MF-JSON outputs and the rounding functions report a
+ * negative count with MEOS_ERR_INVALID_ARG_VALUE, as do the internal outputs of a
+ * temporal value, an array of them, a set, a span and a span set, which the
+ * PostgreSQL wrappers of every type call with the count a user writes; and
+ * that an MF-JSON precision above the default writes the default number of
+ * decimal digits.
  *
  * The program can be build as follows
  * @code
@@ -48,11 +59,15 @@
  */
 
 #include <assert.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <meos.h>
+#include <meos_internal.h>
+#include <meos_cbuffer.h>
 #include <meos_geo.h>
+#include <meos_npoint.h>
 #include <meos_pointcloud.h>
 #include <meos_pose.h>
 
@@ -131,7 +146,160 @@ int main(void)
     meos_errno());
   assert(rounded == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
+
+  /* A pose is written with a negative count refused */
+  str = pose_as_text(pose, -1);
+  printf("pose_as_text(pose, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  str = pose_as_ewkt(pose, -1);
+  printf("pose_as_ewkt(pose, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
   free(pose);
+
+  /* GeoPose, which writes a geodetic pose, reads a negative precision as its
+   * lossless form, the default of every asGeoPose declaration */
+  Pose *gpose = pose_in("Geodpose(Point(1 1),0.5)");
+  assert(gpose);
+  str = pose_as_geopose(gpose, 0, -1);
+  printf("pose_as_geopose(gpose, 0, -1): %s, errno %d\n",
+    str ? str : "NULL", meos_errno());
+  assert(str && meos_errno() == 0);
+  free(str); free(gpose);
+
+  /* So is a circular buffer */
+  Cbuffer *cb = cbuffer_in("Cbuffer(Point(1 1),0.5)");
+  assert(cb);
+  str = cbuffer_as_ewkt(cb, -1);
+  printf("cbuffer_as_ewkt(cb, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  free(cb);
+
+  /* A geometry is written with no decimal digits, and a negative count is
+   * refused */
+  GSERIALIZED *gs = geom_in("Point(1.25 2.75)", -1);
+  assert(gs);
+  str = geo_as_text(gs, 0);
+  printf("geo_as_text(gs, 0): %s, errno %d\n", str ? str : "NULL",
+    meos_errno());
+  assert(str && meos_errno() == 0);
+  free(str);
+  str = geo_as_text(gs, -1);
+  printf("geo_as_text(gs, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  str = geo_as_geojson(gs, 0, -1, NULL);
+  printf("geo_as_geojson(gs, 0, -1, NULL): %s, errno %d\n",
+    str ? "a value" : "NULL", meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  free(gs);
+
+  /* The float set, span, span set and temporal float outputs refuse a
+   * negative count */
+  Set *fset = floatset_in("{1.25, 2.5}");
+  Span *fspan = floatspan_in("[1.25, 2.5]");
+  SpanSet *fspanset = floatspanset_in("{[1.25, 2.5]}");
+  Temporal *tfloat = tfloat_in("1.26@2001-01-01");
+  assert(fset && fspan && fspanset && tfloat);
+  str = floatset_out(fset, -1);
+  printf("floatset_out(s, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  str = floatspan_out(fspan, -1);
+  printf("floatspan_out(s, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  str = floatspanset_out(fspanset, -1);
+  printf("floatspanset_out(ss, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  str = tfloat_out(tfloat, -1);
+  printf("tfloat_out(temp, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  str = temporal_as_mfjson(tfloat, false, 0, -1, NULL);
+  printf("temporal_as_mfjson(temp, false, 0, -1, NULL): %s, errno %d\n",
+    str ? "a value" : "NULL", meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+
+  /* The rounding functions refuse a negative count */
+  Temporal *trounded = temporal_round(tfloat, -1);
+  printf("temporal_round(temp, -1): %s, errno %d\n",
+    trounded ? "a value" : "NULL", meos_errno());
+  assert(trounded == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  double d = float_round(1.26, 0);
+  printf("float_round(1.26, 0): %g, errno %d\n", d, meos_errno());
+  assert(d == 1.0 && meos_errno() == 0);
+  d = float_round(1.26, -1);
+  printf("float_round(1.26, -1): %s, errno %d\n",
+    d == DBL_MAX ? "DBL_MAX" : "a value", meos_errno());
+  assert(d == DBL_MAX && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  Npoint *np = npoint_make(1, 0.26);
+  Nsegment *ns = nsegment_make(1, 0.26, 0.74);
+  assert(np && ns);
+  Npoint *nprounded = npoint_round(np, -1);
+  printf("npoint_round(np, -1): %s, errno %d\n",
+    nprounded ? "a value" : "NULL", meos_errno());
+  assert(nprounded == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  Nsegment *nsrounded = nsegment_round(ns, -1);
+  printf("nsegment_round(ns, -1): %s, errno %d\n",
+    nsrounded ? "a value" : "NULL", meos_errno());
+  assert(nsrounded == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  /* The internal outputs of a temporal value, an array of them, a set, a
+   * span and a span set, which the PostgreSQL wrappers call with the count a
+   * user writes, report a negative count */
+  str = temporal_out(tfloat, -1);
+  printf("temporal_out(temp, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  Temporal *temparr[1] = {tfloat};
+  char **strarr = temparr_out(temparr, 1, -1);
+  printf("temparr_out(temparr, 1, -1): %s, errno %d\n",
+    strarr ? "a value" : "NULL", meos_errno());
+  assert(strarr == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  str = set_out(fset, -1);
+  printf("set_out(s, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  str = span_out(fspan, -1);
+  printf("span_out(s, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  str = spanset_out(fspanset, -1);
+  printf("spanset_out(ss, -1): %s, errno %d\n", str ? "a value" : "NULL",
+    meos_errno());
+  assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+
+  /* An MF-JSON precision above the default writes the default number of
+   * decimal digits */
+  str = temporal_as_mfjson(tfloat, false, 0, 20, NULL);
+  char *str15 = temporal_as_mfjson(tfloat, false, 0, 15, NULL);
+  printf("temporal_as_mfjson(temp, false, 0, 20, NULL): %s, errno %d\n",
+    str ? str : "NULL", meos_errno());
+  assert(str && str15 && strcmp(str, str15) == 0 && meos_errno() == 0);
+  free(str); free(str15);
+  free(fset); free(fspan); free(fspanset); free(tfloat); free(np); free(ns);
 
   /* Finalize MEOS */
   meos_finalize();

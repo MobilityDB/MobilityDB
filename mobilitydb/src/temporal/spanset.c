@@ -86,7 +86,7 @@ Datum
 Spanset_out(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  char *result = spanset_out(ss, Int32GetDatum(OUT_DEFAULT_DECIMAL_DIGITS));
+  char *result = spanset_out(ss, OUT_DEFAULT_DECIMAL_DIGITS);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_CSTRING(result);
 }
@@ -145,7 +145,7 @@ Spanset_as_text(PG_FUNCTION_ARGS)
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = spanset_out(ss, Int32GetDatum(dbl_dig_for_wkt));
+  char *str = spanset_out(ss, dbl_dig_for_wkt);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(ss, 0);

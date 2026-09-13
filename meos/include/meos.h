@@ -1520,6 +1520,7 @@ extern text **ttext_values(const Temporal *temp, int *count);
  *****************************************************************************/
 
 extern double float_degrees(double value, bool normalize);
+extern double float_round(double d, int maxdd);
 extern Temporal **temparr_round(Temporal **temp, int count, int maxdd);
 extern Temporal *temporal_round(const Temporal *temp, int maxdd);
 extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);

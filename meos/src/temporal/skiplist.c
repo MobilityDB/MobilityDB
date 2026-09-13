@@ -387,8 +387,8 @@ skiplist_print(const SkipList *list)
     {
       Span s;
       temporal_set_tstzspan(elem->value, &s);
-      /* The second argument of span_out is not used for spans */
-      char *val = span_out(&s, Int32GetDatum(0));
+      /* A span of timestamps has no decimal digits to write */
+      char *val = span_out(&s, 0);
       len +=  snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "<p0>%s\"];\n",
         val);
       pfree(val);
