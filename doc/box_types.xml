@@ -981,6 +981,25 @@ SELECT cmp(tbox 'TBOXFLOAT XT([1,1],[2001-01-01,2001-01-04])',
 -- -1
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="box_hash">
+				<indexterm significance="normal"><primary><varname>hash</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
+				<para>Hash values</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+hash(box) → int
+hashExtended(box,seed bigint) → bigint
+</programlisting>
+				<para>Function <varname>hash</varname> returns a 32-bit hash value and function <varname>hashExtended</varname> a 64-bit hash value computed with the given seed. Equal values have equal hash values, which is what hash indexes, hash joins, and hash aggregation rely on.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT hash(tbox 'TBOXINT XT([1,1],[2001-01-01,2001-01-04])') =
+  hash(tbox 'TBOXINT XT([1,2),[2001-01-01,2001-01-04])');
+-- true
+SELECT hashExtended(stbox 'STBOX X((1,1),(2,2))', 0) &lt;&gt;
+  hashExtended(stbox 'STBOX X((1,1),(2,2))', 1);
+-- true
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

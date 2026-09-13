@@ -527,6 +527,29 @@ SELECT cmp(tfloat '[1@2001-01-01, 1@2001-01-04)', '[2@2001-01-03, 2@2001-01-05)'
 -- -1
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="ttype_hash">
+					<indexterm significance="normal"><primary><varname>hash</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
+					<para>Hash values</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+hash(ttype) → int
+hashExtended(ttype,seed bigint) → bigint
+</programlisting>
+					<para>Function <varname>hash</varname> returns a 32-bit hash value and function <varname>hashExtended</varname> a 64-bit hash value computed with the given seed. Equal values have equal hash values, which is what hash indexes, hash joins, and hash aggregation rely on; this holds across subtypes, so that an instant has the hash value of a sequence or sequence set holding only that instant.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT hash(tint '1@2001-01-01') = hash(tint '{1@2001-01-01}');
+-- true
+SELECT hash(tfloat '1.5@2001-01-01') = hash(tfloat '{[1.5@2001-01-01]}');
+-- true
+SELECT hash(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02}') =
+  hash(tgeompoint '{[Point(1 1)@2001-01-01], [Point(2 2)@2001-01-02]}');
+-- true
+SELECT hashExtended(tint '[1@2001-01-01, 2@2001-01-02]', 0) &lt;&gt;
+  hashExtended(tint '[1@2001-01-01, 2@2001-01-02]', 1);
+-- true
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

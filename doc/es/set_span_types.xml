@@ -1503,6 +1503,29 @@ SELECT cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
 -- -1
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="setspan_hash">
+				<indexterm significance="normal"><primary><varname>hash</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
+				<para>Valores hash</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+hash({set,span,spanset}) → int
+hashExtended({set,span,spanset},seed bigint) → bigint
+</programlisting>
+				<para>La función <varname>hash</varname> devuelve un valor hash de 32 bits y la función <varname>hashExtended</varname> un valor hash de 64 bits calculado con la semilla dada. Los valores iguales tienen valores hash iguales, que es en lo que se basan los índices hash, las uniones hash y la agregación hash.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT hash(intspan '[1,3]') = hash(intspan '[1,4)');
+-- true
+SELECT hash(intspanset '{[1,2],[3,4]}') = hash(intspanset '{[1,3),[3,5)}');
+-- true
+SELECT hash(tstzset '{2001-01-01, 2001-01-04}') =
+  hash(tstzset '{2001-01-04, 2001-01-01}');
+-- true
+SELECT hashExtended(tstzspan '[2001-01-01, 2001-01-04)', 0) &lt;&gt;
+  hashExtended(tstzspan '[2001-01-01, 2001-01-04)', 1);
+-- true
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

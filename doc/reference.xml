@@ -408,6 +408,9 @@
 				<listitem>
 					<para><link linkend="setspan_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>cmp</varname></link>: Traditional comparisons</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="setspan_hash"><varname>hash</varname>, <varname>hashExtended</varname></link>: Hash values</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -589,6 +592,9 @@
 				<listitem>
 					<para><link linkend="box_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>cmp</varname></link>: Traditional comparisons</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="box_hash"><varname>hash</varname>, <varname>hashExtended</varname></link>: Hash values</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -768,6 +774,9 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="ttype_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>cmp</varname></link>: Traditional comparisons</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="ttype_hash"><varname>hash</varname>, <varname>hashExtended</varname></link>: Hash values</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3077,6 +3086,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="raquet_comparison"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>&gt;</varname>, <varname>cmp</varname></link>: Compare two Raquet tiles</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tcell_hash"><varname>hash</varname>, <varname>hashExtended</varname></link>: Hash values</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

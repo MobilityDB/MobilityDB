@@ -1531,6 +1531,27 @@ SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512,
 SELECT DISTINCT tile FROM elevation_tiles;
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tcell_hash">
+				<indexterm significance="normal"><primary><varname>hash</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>hashExtended</varname></primary></indexterm>
+				<para>Valores hash</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+hash({quadbin,s2cell,cellset,tcell,raquet}) → int
+hashExtended({quadbin,s2cell,cellset,tcell,raquet},seed bigint) → bigint
+</programlisting>
+				<para>La función <varname>hash</varname> devuelve un valor hash de 32 bits y la función <varname>hashExtended</varname> un valor hash de 64 bits calculado con la semilla dada, y los valores iguales tienen valores hash iguales. El tipo <varname>h3index</varname> pertenece a la extensión <varname>h3</varname>, que nombra estas funciones <varname>h3index_hash</varname> y <varname>h3index_hash_extended</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT hash(th3index '831c02fffffffff@2001-01-01') =
+  hash(th3index '{831c02fffffffff@2001-01-01}');
+-- t
+SELECT hash(quadbinset '{48a6227affffffff, 485623ffffffffff}') =
+  hash(quadbinset '{485623ffffffffff, 48a6227affffffff}');
+-- t
+SELECT hashExtended(s2cell '47c3c', 0) &lt;&gt; hashExtended(s2cell '47c3c', 1);
+-- t
+</programlisting>
+			</listitem>
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_aggregations">
 		<title>Agregaciones</title>
