@@ -258,7 +258,7 @@ pcpoint_hex_out(const Pcpoint *pt, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pt, NULL);
-  if (! ensure_positive(maxdd))
+  if (! ensure_not_negative(maxdd))
     return NULL;
 
   size_t byte_len = VARSIZE(pt);
