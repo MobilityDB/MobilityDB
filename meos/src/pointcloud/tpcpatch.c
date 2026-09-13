@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Temporal pgpointcloud patch value surface, the Temporal<T> value
- *   bridge (constructors, accessors, restrictions),
+ *   bridge (input and output, constructors, accessors, restrictions),
  *   generated from the tjsonb reference by
  *   tools/codegen/temporal_basetype/generate.py; DO NOT EDIT BY HAND.
  */
@@ -50,8 +50,96 @@
 #include "temporal/span.h"
 #include "temporal/spanset.h"
 #include "temporal/temporal.h"
+#include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "pointcloud/pcpatch.h"
+
+/*****************************************************************************
+ * Input/output functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_inout
+ * @brief Return a temporal pgpointcloud patch from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ * @csqlfn #Temporal_in()
+ */
+Temporal *
+tpcpatch_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  return temporal_in(str, T_TPCPATCH);
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_inout
+ * @brief Return a temporal pgpointcloud patch instant from its Well-Known Text
+ * (WKT) representation
+ * @param[in] str String
+ */
+TInstant *
+tpcpatchinst_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  /* Parse the WKT into a TInstant, telling the parser this is a pgpointcloud
+   * patch instant */
+  return tinstant_parse(&str, T_TPCPATCH, true);
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_inout
+ * @brief Return a temporal pgpointcloud patch sequence from its Well-Known
+ * Text (WKT) representation
+ * @param[in] str String
+ * @param[in] interp Interpolation
+ */
+inline TSequence *
+tpcpatchseq_in(const char *str, interpType interp UNUSED)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  /* Call the superclass function */
+  Temporal *temp = temporal_parse(&str, T_TPCPATCH);
+  assert(temp->subtype == TSEQUENCE);
+  return (TSequence *) temp;
+}
+
+/**
+ * @ingroup meos_internal_pointcloud_inout
+ * @brief Return a temporal pgpointcloud patch sequence set from its Well-Known
+ * Text (WKT) representation
+ * @param[in] str String
+ */
+TSequenceSet *
+tpcpatchseqset_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  /* Call the superclass function */
+  Temporal *temp = temporal_parse(&str, T_TPCPATCH);
+  assert(temp->subtype == TSEQUENCESET);
+  return (TSequenceSet *) temp;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal
+ * pgpointcloud patch
+ * @param[in] temp Temporal pgpointcloud patch
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
+ */
+char *
+tpcpatch_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, NULL);
+  return temporal_out(temp, 0);
+}
 
 /*****************************************************************************
  * Constructor functions

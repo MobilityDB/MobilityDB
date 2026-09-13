@@ -156,11 +156,12 @@ extern double h3index_cell_area(H3Index cell);
  * Type inheritance (analogue of meos_cbuffer.h's tcbuffer section)
  *****************************************************************************/
 
-/* Input */
+/* Input and output */
 extern Temporal *th3index_in(const char *str);
 extern TInstant *th3indexinst_in(const char *str);
 extern TSequence *th3indexseq_in(const char *str, interpType interp);
 extern TSequenceSet *th3indexseqset_in(const char *str);
+extern char *th3index_out(const Temporal *temp);
 
 /* Constructors */
 extern Temporal *th3index_make(H3Index value, TimestampTz t);

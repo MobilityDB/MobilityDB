@@ -473,6 +473,21 @@ extern bool overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
       assert(tpointcloud_temptype(((Temporal *) (temp))->temptype)); } while (0)
 #endif
 
+/* Input and output */
+
+extern Temporal *tpcpoint_in(const char *str);
+extern char *tpcpoint_out(const Temporal *temp);
+extern Temporal *tpcpatch_in(const char *str);
+extern char *tpcpatch_out(const Temporal *temp);
+
+// Internal
+extern TInstant *tpcpointinst_in(const char *str);
+extern TSequence *tpcpointseq_in(const char *str, interpType interp);
+extern TSequenceSet *tpcpointseqset_in(const char *str);
+extern TInstant *tpcpatchinst_in(const char *str);
+extern TSequence *tpcpatchseq_in(const char *str, interpType interp);
+extern TSequenceSet *tpcpatchseqset_in(const char *str);
+
 /* Conversion */
 
 extern Temporal *tpointcloud_to_tgeompoint(const Temporal *temp);
