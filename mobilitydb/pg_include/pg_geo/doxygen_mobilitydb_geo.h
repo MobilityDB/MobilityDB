@@ -39,6 +39,10 @@
  *****************************************************************************/
 
 /**
+ * @defgroup mobilitydb_geo_base Functions for static geometries
+ * @ingroup mobilitydb_geo
+ * @brief Functions for static geometries
+ *
  * @defgroup mobilitydb_geo_set Functions for geometry sets
  * @ingroup mobilitydb_geo
  * @brief Functions for geometry sets
@@ -61,7 +65,7 @@
  *
  * @defgroup mobilitydb_geo_box Functions for spatiotemporal boxes
  * @ingroup mobilitydb_geo
- * @brief Functions for geometry sets
+ * @brief Functions for spatiotemporal boxes
  *
  * @defgroup mobilitydb_geo_inout Input and output functions
  * @ingroup mobilitydb_geo
@@ -142,6 +146,22 @@
  * @defgroup mobilitydb_geo_tile Tile functions
  * @ingroup mobilitydb_geo
  * @brief Tile functions for temporal geometries
+ */
+
+/*****************************************************************************/
+
+/**
+ * @defgroup mobilitydb_geo_base_accessor Accessor functions
+ * @ingroup mobilitydb_geo_base
+ * @brief Accessor functions for static geometries
+ *
+ * @defgroup mobilitydb_geo_base_spatial Spatial processing functions
+ * @ingroup mobilitydb_geo_base
+ * @brief Spatial processing functions for static geometries
+ *
+ * @defgroup mobilitydb_geo_base_rel Spatial relationship functions
+ * @ingroup mobilitydb_geo_base
+ * @brief Spatial relationship functions for static geometries
  */
 
 /*****************************************************************************/

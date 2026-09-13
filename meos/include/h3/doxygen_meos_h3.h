@@ -46,6 +46,10 @@
  * @ingroup meos_h3
  * @brief Functions for static H3 cell indices
  *
+ * @defgroup meos_h3_set Functions for H3 cell index sets
+ * @ingroup meos_h3
+ * @brief Functions for H3 cell index sets
+ *
  * @defgroup meos_h3_inout Input and output functions
  * @ingroup meos_h3
  * @brief Input and output functions for temporal H3 cell indices
@@ -133,6 +137,14 @@
  * @defgroup meos_h3_base_metrics Metric functions
  * @ingroup meos_h3_base
  * @brief Metric functions for static H3 cell indices
+ */
+
+/*****************************************************************************/
+
+/**
+ * @defgroup meos_h3_set_conversion Conversion functions
+ * @ingroup meos_h3_set
+ * @brief Conversion functions for H3 cell index sets
  */
 
 /*****************************************************************************/

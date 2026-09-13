@@ -169,7 +169,7 @@ const DggsCellOps s2_cellops =
  *****************************************************************************/
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the canonical token of each cell in a temporal S2 value
  * @param[in] temp Temporal value
  * @csqlfn #Ts2cell_cell_to_token()

@@ -140,7 +140,7 @@ s2cell_lsb_for_level(uint32_t level)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return true if @p cell is a structurally valid S2 cell identifier
  * @details The face must be one of the six, and the trailing sentinel bit must
  * sit at an even position no higher than `2 * 30`, so that it records a level
@@ -155,7 +155,7 @@ s2cell_is_valid_cell(S2CellId cell)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the level in `[0, 30]` of an S2 cell
  * @csqlfn #S2cell_get_resolution()
  */
@@ -170,7 +170,7 @@ s2cell_get_resolution(S2CellId cell)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the cube face in `[0, 5]` containing an S2 cell
  * @csqlfn #S2cell_get_face()
  */
@@ -185,7 +185,7 @@ s2cell_get_face(S2CellId cell)
  *****************************************************************************/
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the smallest cell identifier among the descendants of @p cell
  * @csqlfn #S2cell_range_min()
  */
@@ -196,7 +196,7 @@ s2cell_range_min(S2CellId cell)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the largest cell identifier among the descendants of @p cell
  * @csqlfn #S2cell_range_max()
  */
@@ -207,7 +207,7 @@ s2cell_range_max(S2CellId cell)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return true if @p cell contains @p other in the S2 hierarchy
  * @details A cell contains exactly the identifiers of the contiguous Hilbert
  * interval `[range_min, range_max]`, which is what makes an S2 ancestor test
@@ -221,7 +221,7 @@ s2cell_cell_contains(S2CellId cell, S2CellId other)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the ancestor of @p cell at @p level
  * @param[in] cell S2 cell
  * @param[in] level Level of the result, no finer than the level of @p cell
@@ -248,7 +248,7 @@ s2cell_cell_to_parent(S2CellId cell, uint32_t level)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the child of @p cell at @p level and Hilbert @p position
  * @param[in] cell S2 cell
  * @param[in] level Level of the result, exactly one finer than @p cell
@@ -283,7 +283,7 @@ s2cell_cell_to_child(S2CellId cell, uint32_t level, uint32_t position)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the descendants of @p cell at @p level
  * @param[in] cell S2 cell
  * @param[in] level Level of the results, no finer than 30
@@ -334,7 +334,7 @@ s2cell_cell_to_children(S2CellId cell, uint32_t level, int *count)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the level of the lowest common ancestor of two S2 cells, or
  * -1 if they lie on different cube faces
  * @csqlfn #S2cell_common_ancestor_level()
@@ -545,7 +545,7 @@ s2cell_xyz_to_lonlat(const double xyz[3], double *longitude, double *latitude)
  *****************************************************************************/
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the S2 cell of @p level containing a geodetic position
  * @param[in] longitude,latitude Position in degrees
  * @param[in] level Level of the result, in `[0, 30]`
@@ -719,7 +719,7 @@ s2cell_triangle_area(const double a[3], const double b[3], const double c[3])
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the area in square metres of an S2 cell on the WGS84 sphere
  * @details The cell is a spherical quadrilateral bounded by four geodesic
  * edges; its area is the sum of the areas of the two spherical triangles that
@@ -748,7 +748,7 @@ s2cell_cell_area(S2CellId cell)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the length in metres of an edge of an S2 cell on the WGS84
  * sphere
  * @param[in] cell S2 cell
@@ -825,7 +825,7 @@ s2cell_from_face_ij_wrap(uint32_t face, int64 i, int64 j, uint32_t level)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the four cells sharing an edge with @p cell
  * @param[in] cell S2 cell
  * @param[out] count Number of neighbours returned, always four
@@ -868,7 +868,7 @@ s2cell_edge_neighbors(S2CellId cell, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the canonical token of an S2 cell
  * @return A palloc'd, null-terminated string (caller frees)
  * @csqlfn #S2cell_cell_to_token()
@@ -888,7 +888,7 @@ s2cell_cell_to_token(S2CellId cell)
 }
 
 /**
- * @ingroup meos_s2
+ * @ingroup meos_s2cell
  * @brief Return the S2 cell of a canonical token
  * @csqlfn #S2cell_token_to_cell()
  */
@@ -968,7 +968,7 @@ s2cell_parse(const char *str)
 }
 
 /**
- * @ingroup meos_s2_base_inout
+ * @ingroup meos_s2cell_base_inout
  * @brief Return an S2 cell from its string representation
  * @param[in] str String
  * @csqlfn #S2cell_in()
@@ -982,7 +982,7 @@ s2cell_in(const char *str)
 }
 
 /**
- * @ingroup meos_s2_base_inout
+ * @ingroup meos_s2cell_base_inout
  * @brief Return the string representation of an S2 cell
  * @param[in] cell S2 cell
  * @return A palloc'd, null-terminated string (caller frees)
@@ -1002,7 +1002,7 @@ s2cell_out(S2CellId cell)
  *****************************************************************************/
 
 /**
- * @ingroup meos_s2_base_comp
+ * @ingroup meos_s2cell_base_comp
  * @brief Return true if two S2 cells are equal
  * @csqlfn #S2cell_eq()
  */
@@ -1013,7 +1013,7 @@ s2cell_eq(S2CellId a, S2CellId b)
 }
 
 /**
- * @ingroup meos_s2_base_comp
+ * @ingroup meos_s2cell_base_comp
  * @brief Return true if two S2 cells are different
  * @csqlfn #S2cell_ne()
  */
@@ -1024,7 +1024,7 @@ s2cell_ne(S2CellId a, S2CellId b)
 }
 
 /**
- * @ingroup meos_s2_base_comp
+ * @ingroup meos_s2cell_base_comp
  * @brief Return true if the first S2 cell is less than the second one
  * @csqlfn #S2cell_lt()
  */
@@ -1035,7 +1035,7 @@ s2cell_lt(S2CellId a, S2CellId b)
 }
 
 /**
- * @ingroup meos_s2_base_comp
+ * @ingroup meos_s2cell_base_comp
  * @brief Return true if the first S2 cell is less than or equal to the second
  * one
  * @csqlfn #S2cell_le()
@@ -1047,7 +1047,7 @@ s2cell_le(S2CellId a, S2CellId b)
 }
 
 /**
- * @ingroup meos_s2_base_comp
+ * @ingroup meos_s2cell_base_comp
  * @brief Return true if the first S2 cell is greater than the second one
  * @csqlfn #S2cell_gt()
  */
@@ -1058,7 +1058,7 @@ s2cell_gt(S2CellId a, S2CellId b)
 }
 
 /**
- * @ingroup meos_s2_base_comp
+ * @ingroup meos_s2cell_base_comp
  * @brief Return true if the first S2 cell is greater than or equal to the
  * second one
  * @csqlfn #S2cell_ge()
@@ -1070,7 +1070,7 @@ s2cell_ge(S2CellId a, S2CellId b)
 }
 
 /**
- * @ingroup meos_s2_base_comp
+ * @ingroup meos_s2cell_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first S2 cell is less
  * than, equal to, or greater than the second one
  * @csqlfn #S2cell_cmp()
@@ -1090,7 +1090,7 @@ s2cell_cmp(S2CellId a, S2CellId b)
  *****************************************************************************/
 
 /**
- * @ingroup meos_s2_base_accessor
+ * @ingroup meos_s2cell_base_accessor
  * @brief Return the 32-bit hash of an S2 cell
  * @csqlfn #S2cell_hash()
  */
@@ -1101,7 +1101,7 @@ s2cell_hash(S2CellId cell)
 }
 
 /**
- * @ingroup meos_s2_base_accessor
+ * @ingroup meos_s2cell_base_accessor
  * @brief Return the 64-bit hash of an S2 cell using a seed
  * @csqlfn #S2cell_hash_extended()
  */

@@ -42,6 +42,10 @@
  * @ingroup meos_quadbin
  * @brief Functions for static QUADBIN cell indices
  *
+ * @defgroup meos_quadbin_set Functions for QUADBIN cell index sets
+ * @ingroup meos_quadbin
+ * @brief Functions for QUADBIN cell index sets
+ *
  * @defgroup meos_quadbin_inout Input and output functions
  * @ingroup meos_quadbin
  * @brief Input and output functions for temporal QUADBIN cell indices
@@ -85,6 +89,26 @@
  * @defgroup meos_quadbin_base_comp Comparison functions
  * @ingroup meos_quadbin_base
  * @brief Comparison functions for static QUADBIN cell indices
+ */
+
+/*****************************************************************************/
+
+/**
+ * @defgroup meos_quadbin_set_conversion Conversion functions
+ * @ingroup meos_quadbin_set
+ * @brief Conversion functions for QUADBIN cell index sets
+ */
+
+/*****************************************************************************/
+
+/**
+ * @defgroup meos_internal_quadbin Functions for temporal QUADBIN cell indices
+ * @ingroup meos_internal
+ * @brief Functions for temporal QUADBIN cell indices
+ *
+ *   @defgroup meos_internal_quadbin_inout Input and output functions
+ *   @ingroup meos_internal_quadbin
+ *   @brief Input and output functions for temporal QUADBIN cell indices
  */
 
 /*****************************************************************************/

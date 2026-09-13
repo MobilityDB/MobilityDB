@@ -178,6 +178,10 @@
  * @ingroup meos_api
  * @brief Functions for temporal CARTO QUADBIN cell indices
  *
+ * @defgroup meos_s2cell Functions for temporal Google S2 cell indices
+ * @ingroup meos_api
+ * @brief Functions for temporal Google S2 cell indices
+ *
  * @defgroup meos_cellindex Functions for temporal cell indices
  * @ingroup meos_api
  * @brief Functions for temporal cell indices common to H3 and QUADBIN

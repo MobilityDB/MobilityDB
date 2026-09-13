@@ -71,9 +71,6 @@
  * @ingroup mobilitydb_pose
  * @brief Restriction functions for temporal poses
  *
- * @ingroup mobilitydb_pose
- * @brief Distance functions for temporal poses
- *
  * @defgroup mobilitydb_pose_comp Comparison functions
  * @ingroup mobilitydb_pose
  * @brief Comparison functions for temporal poses
@@ -153,4 +150,72 @@
  * @defgroup mobilitydb_pose_base_geopose OGC GeoPose support
  * @ingroup mobilitydb_pose_base
  * @brief Functions implementing the OGC GeoPose v1.0 standard for static poses
+ */
+
+/*****************************************************************************/
+
+/**
+ * @defgroup mobilitydb_posechain_base Functions for static pose chains
+ * @ingroup mobilitydb_posechain
+ * @brief Functions for static pose chains
+ *
+ * @defgroup mobilitydb_posechain_inout Input and output functions
+ * @ingroup mobilitydb_posechain
+ * @brief Input and output functions for temporal pose chains
+ *
+ * @defgroup mobilitydb_posechain_conversion Conversion functions
+ * @ingroup mobilitydb_posechain
+ * @brief Conversion functions for temporal pose chains
+ *
+ * @defgroup mobilitydb_posechain_accessor Accessor functions
+ * @ingroup mobilitydb_posechain
+ * @brief Accessor functions for temporal pose chains
+ *
+ * @defgroup mobilitydb_posechain_comp Comparison functions
+ * @ingroup mobilitydb_posechain
+ * @brief Comparison functions for temporal pose chains
+ *
+ *   @defgroup mobilitydb_posechain_comp_ever Ever and always comparison functions
+ *   @ingroup mobilitydb_posechain_comp
+ *   @brief Ever and always comparison functions for temporal pose chains
+ *
+ *   @defgroup mobilitydb_posechain_comp_temp Temporal comparison functions
+ *   @ingroup mobilitydb_posechain_comp
+ *   @brief Temporal comparison functions for temporal pose chains
+ */
+
+/*****************************************************************************/
+
+/**
+ * @defgroup mobilitydb_posechain_base_inout Input and output functions
+ * @ingroup mobilitydb_posechain_base
+ * @brief Input and output functions for static pose chains
+ *
+ * @defgroup mobilitydb_posechain_base_constructor Constructor functions
+ * @ingroup mobilitydb_posechain_base
+ * @brief Constructor functions for static pose chains
+ *
+ * @defgroup mobilitydb_posechain_base_conversion Conversion functions
+ * @ingroup mobilitydb_posechain_base
+ * @brief Conversion functions for static pose chains
+ *
+ * @defgroup mobilitydb_posechain_base_accessor Accessor functions
+ * @ingroup mobilitydb_posechain_base
+ * @brief Accessor functions for static pose chains
+ *
+ * @defgroup mobilitydb_posechain_base_transf Transformation functions
+ * @ingroup mobilitydb_posechain_base
+ * @brief Transformation functions for static pose chains
+ *
+ * @defgroup mobilitydb_posechain_base_box Bounding box functions
+ * @ingroup mobilitydb_posechain_base
+ * @brief Bounding box functions for static pose chains
+ *
+ * @defgroup mobilitydb_posechain_base_srid Spatial reference system functions
+ * @ingroup mobilitydb_posechain_base
+ * @brief Spatial reference system functions for static pose chains
+ *
+ * @defgroup mobilitydb_posechain_base_comp Comparison functions
+ * @ingroup mobilitydb_posechain_base
+ * @brief Comparison functions for static pose chains
  */

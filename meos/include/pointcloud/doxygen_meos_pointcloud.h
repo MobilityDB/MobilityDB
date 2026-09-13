@@ -162,6 +162,10 @@
 /*****************************************************************************/
 
 /**
+ * @defgroup meos_pointcloud_inout Input and output functions
+ * @ingroup meos_pointcloud
+ * @brief Input and output functions for temporal pgpointcloud types
+ *
  * @defgroup meos_pointcloud_constructor Constructor functions
  * @ingroup meos_pointcloud
  * @brief Constructor functions for temporal pgpointcloud types
@@ -211,7 +215,19 @@
  * @ingroup meos_internal
  * @brief Functions for temporal pgpointcloud types
  *
+ *   @defgroup meos_internal_pointcloud_inout Input and output functions
+ *   @ingroup meos_internal_pointcloud
+ *   @brief Input and output functions for temporal pgpointcloud types
+ *
  *   @defgroup meos_internal_pointcloud_box_setops Set functions
  *   @ingroup meos_internal_pointcloud
  *   @brief Set functions for pgpointcloud boxes
+ *
+ *   @defgroup meos_internal_pointcloud_box_topo Topological predicates
+ *   @ingroup meos_internal_pointcloud
+ *   @brief Topological predicates for pgpointcloud boxes
+ *
+ *   @defgroup meos_internal_pointcloud_box_pos Position predicates
+ *   @ingroup meos_internal_pointcloud
+ *   @brief Position predicates for pgpointcloud boxes
  */

@@ -94,11 +94,11 @@
  *
  * @defgroup meos_internal_geo_srid Spatial reference system functions
  * @ingroup meos_internal_geo
- * @brief Spatial reference system functions for temporal geos
+ * @brief Spatial reference system functions for temporal geometries
  *
  * @defgroup meos_internal_geo_rel Spatial relationship functions
  * @ingroup meos_internal_geo
- * @brief Spatial relationship functions for temporal geos
+ * @brief Spatial relationship functions for temporal geometries
  *
  *   @defgroup meos_internal_geo_rel_ever Ever/always relationship functions
  *   @ingroup meos_internal_geo_rel
@@ -142,7 +142,7 @@
  *
  * @defgroup meos_internal_geo_base_srid Spatial reference system functions
  * @ingroup meos_internal_geo_base
- * @brief Spatial reference system functions for temporal geos
+ * @brief Spatial reference system functions for static geometries
  *
  * @defgroup meos_internal_geo_base_spatial Spatial processing functions
  * @ingroup meos_internal_geo_base
@@ -150,7 +150,7 @@
  *
  * @defgroup meos_internal_geo_base_rel Spatial relationship functions
  * @ingroup meos_internal_geo_base
- * @brief Spatial relationship functions for temporal geos
+ * @brief Spatial relationship functions for static geometries
  *
  * @defgroup meos_internal_geo_base_bbox Bounding box functions
  * @ingroup meos_internal_geo_base
