@@ -405,10 +405,12 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
 
   #undef PUSH_INSTANT
 
-  /* STEP interpolation: each instant marks the time the trajectory
-   * entered that cell. lower_inc / upper_inc inherited from the input. */
+  /* A linear trajectory gives a STEP sequence, each instant marking the time
+   * the trajectory entered that cell; a discrete or stepwise one keeps its
+   * interpolation, since it states nothing between its instants.
+   * lower_inc / upper_inc inherited from the input. */
   return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
-    seq->period.upper_inc, STEP, NORMALIZE);
+    seq->period.upper_inc, densify ? STEP : in_interp, NORMALIZE);
 }
 
 /**

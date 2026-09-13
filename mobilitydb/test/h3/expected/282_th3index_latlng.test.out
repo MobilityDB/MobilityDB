@@ -198,6 +198,29 @@ SELECT numInstants(th3index(tgeompoint
            2
 (1 row)
 
+SELECT interp(th3index(tgeompoint
+  'SRID=4326;{Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02}',
+  10));
+  interp  
+----------
+ Discrete
+(1 row)
+
+SELECT interp(th3index(tgeogpoint
+  '{Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02}', 10));
+  interp  
+----------
+ Discrete
+(1 row)
+
+SELECT interp(th3index(setSRID(tgeompoint
+  'Interp=Step;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
+  4326), 10));
+ interp 
+--------
+ Step
+(1 row)
+
 SELECT numValues(getValues(th3index(tgeompoint
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
   10)));
