@@ -155,6 +155,8 @@ jobs:
           ./tzdata_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
           ./npoint_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o npoint_validity_test npoint_validity_test.c -L/usr/local/lib -lmeos
+          ./npoint_validity_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o trajclip_test trajclip_test.c -L/usr/local/lib -lmeos
           ./trajclip_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o threaded_geos_test threaded_geos_test.c -L/usr/local/lib -lmeos

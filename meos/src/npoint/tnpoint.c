@@ -315,6 +315,8 @@ tnpointseqset_in(const char *str)
 TInstant *
 tnpointinst_make(const Npoint *np, TimestampTz t)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL);
   return tinstant_make(PointerGetDatum(np), T_TNPOINT, t);
 }
 
@@ -833,11 +835,13 @@ tnpointinst_route(const TInstant *inst)
 int64
 tnpoint_route(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, INT64_MAX);
   if (temp->subtype != TINSTANT && MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Input must be a temporal instant or a temporal sequence with continuous interpolation");
-    return INT_MAX;
+    return INT64_MAX;
   }
   const TInstant *inst = (temp->subtype == TINSTANT) ?
     (const TInstant *) temp : TSEQUENCE_INST_N((const TSequence *) temp, 0);
