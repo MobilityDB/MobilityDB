@@ -88,7 +88,14 @@ SELECT asText(floatset '{1.123456789,2.123456789}', 3);
 -- {1.123, 2.123}
 SELECT asText(floatspanset '{[1.55,2.55],[4,5]}',0);
 -- {[2, 3], [4, 5]}
-</pre></li><li class="listitem"><a name="setspan_asBinary"></a><a class="indexterm" name="id2235"></a><a class="indexterm" name="id2238"></a><p>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_asEWKT"></a><a class="indexterm" name="id2235"></a><p>Return the Extended Well-Known Text (EWKT) representation of a spatial set</p><pre class="programlisting">
+asEWKT(spatialset,maxdecimaldigits integer=15) → text
+</pre><p>The SRID of the set prefixes its elements. A cell index set states SRID 4326 and a point cloud set the SRID its schema declares, and neither takes the <code class="varname">maxdecimaldigits</code> argument.</p><pre class="programlisting">
+SELECT asEWKT(geomset 'SRID=5676;{"Point(1 1)", "Point(2 2)"}');
+-- SRID=5676;{"POINT(1 1)", "POINT(2 2)"}
+SELECT asEWKT(h3indexset '{8928308280fffff, 8928308280bffff}');
+-- SRID=4326;{"8928308280bffff", "8928308280fffff"}
+</pre></li><li class="listitem"><a name="setspan_asBinary"></a><a class="indexterm" name="id2244"></a><a class="indexterm" name="id2247"></a><p>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</p><pre class="programlisting">
 asBinary({set,spans},endian text='') → bytea
 asHexWKB({set,spans},endian text='') → text
 </pre><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
@@ -104,12 +111,10 @@ SELECT asHexWKB(intspan '[1, 3)');
 -- 011300010100000003000000
 SELECT asHexWKB(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 -- 00000E00000002033FF000000000000040000000000000000340100000000000004014000000000000
-</pre></li><li class="listitem"><a name="setspan_asEWKB"></a><a class="indexterm" name="id2246"></a><a class="indexterm" name="id2249"></a><p>Return the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a spatial set</p><pre class="programlisting">
-asEWKB({geomset,geogset,cbufferset,npointset,poseset,posechainset,pcpointset,pcpatchset},
-  endian text='') → bytea
-asHexEWKB({geomset,geogset,cbufferset,npointset,poseset,posechainset,pcpointset,
-  pcpatchset},endian text='') → text
-</pre><p>For <code class="varname">geomset</code>, <code class="varname">geogset</code>, <code class="varname">cbufferset</code>, <code class="varname">npointset</code>, <code class="varname">poseset</code>, and <code class="varname">posechainset</code> the SRID (when known) is embedded once in the set header: <code class="varname">asEWKB</code> and <code class="varname">asHexEWKB</code> include it, while <code class="varname">asBinary</code> and <code class="varname">asHexWKB</code> emit the plain Well-Known Binary representation without it, matching the OGC convention and the <code class="varname">cbuffer</code>, <code class="varname">npoint</code>, and <code class="varname">pose</code> base-type <code class="varname">asBinary</code>/<code class="varname">asHexWKB</code>. For <code class="varname">pcpointset</code> and <code class="varname">pcpatchset</code> the schema, and its SRID, is resolved out-of-band from the <code class="varname">pointcloud_formats</code> catalog rather than embedded in the value, so all four functions always return the same bytes for those two types.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_asEWKB"></a><a class="indexterm" name="id2255"></a><a class="indexterm" name="id2258"></a><p>Return the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a spatial set</p><pre class="programlisting">
+asEWKB(spatialset,endian text='') → bytea
+asHexEWKB(spatialset,endian text='') → text
+</pre><p>The SRID of the set, when known, is embedded once in the set header: <code class="varname">asEWKB</code> and <code class="varname">asHexEWKB</code> include it, while <code class="varname">asBinary</code> and <code class="varname">asHexWKB</code> emit the plain Well-Known Binary representation without it, matching the OGC convention and the <code class="varname">cbuffer</code>, <code class="varname">npoint</code>, and <code class="varname">pose</code> base-type <code class="varname">asBinary</code>/<code class="varname">asHexWKB</code>. A cell index set states SRID 4326, and a point cloud set the SRID its schema declares in the <code class="varname">pointcloud_formats</code> catalog, so the extended and plain forms of a point cloud set coincide when its schema declares no SRID.</p><pre class="programlisting">
 SELECT asBinary(geomset 'SRID=4326;{Point(1 1)}');
 -- \x012b0001010000000101000000000000000000f03f000000000000f03f
 SELECT asHexWKB(geomset 'SRID=4326;{Point(1 1)}');
@@ -122,7 +127,9 @@ SELECT asEWKB(cbufferset 'SRID=4326;{"Cbuffer(Point(1 1),0.5)"}');
 -- \x013a0041e610000001000000000000000000f03f000000000000f03f000000000000e03f
 SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
 -- 01310041E61000000100000041E61000000100000000000000000000000000E03F
-</pre></li><li class="listitem"><a name="setspan_FromBinary"></a><a class="indexterm" name="id2275"></a><a class="indexterm" name="id2278"></a><a class="indexterm" name="id2281"></a><p>Input from the Well-Known Binary (WKB) representation</p><pre class="programlisting">
+SELECT asHexEWKB(h3indexset '{8a2a1072b59ffff}', 'XDR');
+-- 00004561000010E60000000108A2A1072B59FFFF
+</pre></li><li class="listitem"><a name="setspan_FromBinary"></a><a class="indexterm" name="id2276"></a><a class="indexterm" name="id2279"></a><a class="indexterm" name="id2282"></a><p>Input from the Well-Known Binary (WKB) representation</p><pre class="programlisting">
 settypeFromBinary(bytea) → set
 spantypeFromBinary(bytea) → span
 spansettypeFromBinary(bytea) → spanset
@@ -134,7 +141,7 @@ SELECT intspanFromBinary('\x011300010100000003000000');
 SELECT floatspansetFromBinary(
   '\x00000e00000002033ff000000000000040000000000000000340100000000000004014000000000000');
 -- {[1, 2], [4, 5]}
-</pre></li><li class="listitem"><a name="setspan_FromHexWKB"></a><a class="indexterm" name="id2289"></a><a class="indexterm" name="id2292"></a><a class="indexterm" name="id2295"></a><p>Input from the Hexadecimal Well-Known Binary (HexWKB) representation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_FromHexWKB"></a><a class="indexterm" name="id2290"></a><a class="indexterm" name="id2293"></a><a class="indexterm" name="id2296"></a><p>Input from the Hexadecimal Well-Known Binary (HexWKB) representation</p><pre class="programlisting">
 settypeFromHexWKB(text) → set
 spantypeFromHexWKB(text) → span
 spansettypeFromHexWKB(text) → spanset
@@ -148,4 +155,24 @@ SELECT floatspanFromHexWKB('01060001000000000000F83F0000000000000440');
 SELECT floatspansetFromHexWKB(
   '00000E00000002033FF000000000000040000000000000000340100000000000004014000000000000');
 -- {[1, 2], [4, 5]}
+</pre></li><li class="listitem"><a name="setspan_FromEWKT"></a><a class="indexterm" name="id2304"></a><a class="indexterm" name="id2307"></a><p>Input from the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation of a spatial set</p><pre class="programlisting">
+spatialsettypeFromText(text) → spatialset
+spatialsettypeFromEWKT(text) → spatialset
+</pre><p>There is one function per spatial set type, the name of the function has as prefix the name of the type. A stated SRID must be the one a cell index or point cloud set carries, and an error is raised otherwise.</p><pre class="programlisting">
+SELECT asText(geomsetFromText('{"Point(1 1)", "Point(2 2)"}'));
+-- {"POINT(1 1)", "POINT(2 2)"}
+SELECT asEWKT(geomsetFromEWKT('SRID=5676;{"Point(1 1)", "Point(2 2)"}'));
+-- SRID=5676;{"POINT(1 1)", "POINT(2 2)"}
+SELECT asEWKT(h3indexsetFromEWKT('SRID=4326;{8928308280fffff}'));
+-- SRID=4326;{"8928308280fffff"}
+SELECT h3indexsetFromEWKT('SRID=3857;{8928308280fffff}');
+-- ERROR:  The SRID 3857 cannot be stated for the h3index
+</pre></li><li class="listitem"><a name="setspan_FromEWKB"></a><a class="indexterm" name="id2315"></a><a class="indexterm" name="id2318"></a><p>Input from the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a spatial set</p><pre class="programlisting">
+spatialsettypeFromEWKB(bytea) → spatialset
+spatialsettypeFromHexEWKB(text) → spatialset
+</pre><p>There is one function per spatial set type, the name of the function has as prefix the name of the type. The SRID the header states must be the one a cell index or point cloud set carries, and an error is raised otherwise.</p><pre class="programlisting">
+SELECT asEWKT(geomsetFromEWKB(asEWKB(geomset 'SRID=5676;{"Point(1 1)"}')));
+-- SRID=5676;{"POINT(1 1)"}
+SELECT asEWKT(quadbinsetFromHexEWKB('01480041E610000001000000FFFFFFFFFFFF0F48'));
+-- SRID=4326;{"480fffffffffffff"}
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01s09.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch02s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Migrating from Version 1.3 to Version 1.4 </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>
