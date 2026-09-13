@@ -354,7 +354,7 @@ transformation_families:
       ret: tnpoint
       sym: Temporal_round
     - sig: round(tnpoint[], integer DEFAULT 0)
-      ret: tnpoint
+      ret: tnpoint[]
       sym: Temporalarr_round
   - ops:
     - tsample

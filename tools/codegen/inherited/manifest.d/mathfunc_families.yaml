@@ -83,12 +83,12 @@ mathfunc_families:
     - {sig: "tDiv(tfloat, tfloat)", ret: "tfloat", sym: "Div_tnumber_tnumber"}
   - lit: "\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tfloat, RIGHTARG = float\n);\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tfloat, RIGHTARG = tfloat\n);\n\n/******************************************************************************/\n\n"
   - fns:
-    - {sig: "abs(tbigint)", ret: "tint", sym: "Tnumber_abs"}
+    - {sig: "abs(tbigint)", ret: "tbigint", sym: "Tnumber_abs"}
     - {sig: "abs(tint)", ret: "tint", sym: "Tnumber_abs"}
     - {sig: "abs(tfloat)", ret: "tfloat", sym: "Tnumber_abs"}
   - lit: "\n"
   - fns:
-    - {sig: "deltaValue(tbigint)", ret: "tint", sym: "Tnumber_delta_value"}
+    - {sig: "deltaValue(tbigint)", ret: "tbigint", sym: "Tnumber_delta_value"}
     - {sig: "deltaValue(tint)", ret: "tint", sym: "Tnumber_delta_value"}
     - {sig: "deltaValue(tfloat)", ret: "tfloat", sym: "Tnumber_delta_value"}
   - lit: "\n"

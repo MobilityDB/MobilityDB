@@ -168,6 +168,10 @@ SELECT setInterp(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)
 SELECT setInterp(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'linear');
 
 SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 6);
+SELECT round(ARRAY[tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 'NPoint(2, 0.987654321)@2012-01-03'], 6);
+SELECT round(ARRAY[]::tnpoint[], 6);
+-- An array of temporal network points rounds to an array of them
+SELECT pg_typeof(round(ARRAY[tnpoint 'NPoint(1, 0.5)@2012-01-01'], 6));
 
 -------------------------------------------------------------------------------
 -- Append functions

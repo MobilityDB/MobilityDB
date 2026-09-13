@@ -189,6 +189,14 @@ SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]',
 
 -------------------------------------------------------------------------------
 
+-- A simplified temporal point keeps the type of its argument
+SELECT asText(minDistSimplify(tgeogpoint '[Point(1 1)@2001-01-01, Point(1.000001 1)@2001-01-02, Point(3 3)@2001-01-03]', 1), 6);
+SELECT pg_typeof(minDistSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 1));
+SELECT pg_typeof(minDistSimplify(tgeogpoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 1));
+SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]', interval '2 days'), 6);
+SELECT pg_typeof(minTimeDeltaSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', interval '1 day'));
+SELECT pg_typeof(minTimeDeltaSimplify(tgeogpoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', interval '1 day'));
+
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2001-01-01, 1@2001-01-02, 3@2001-01-03, 1@2001-01-04, 3@2001-01-05, 0@2001-01-06, 4@2001-01-07]', 1));
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2001-01-01, 1@2001-01-02, 3@2001-01-03, 1@2001-01-04, 3@2001-01-05, 0@2001-01-06, 4@2001-01-07]', 2));
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2001-01-01, 1@2001-01-02, 3@2001-01-03, 1@2001-01-04, 3@2001-01-05, 0@2001-01-06, 4@2001-01-07]', 4));

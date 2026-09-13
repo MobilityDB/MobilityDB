@@ -446,7 +446,7 @@ CREATE OPERATOR / (
 /******************************************************************************/
 
 CREATE FUNCTION abs(tbigint)
-  RETURNS tint
+  RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_abs'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION abs(tint)
@@ -459,7 +459,7 @@ CREATE FUNCTION abs(tfloat)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION deltaValue(tbigint)
-  RETURNS tint
+  RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_delta_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deltaValue(tint)

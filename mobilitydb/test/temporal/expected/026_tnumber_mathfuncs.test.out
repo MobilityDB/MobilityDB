@@ -2009,6 +2009,24 @@ SELECT deltaValue(tbigint '[-3@2001-01-01, 4@2001-01-02]');
  [7@Mon Jan 01 00:00:00 2001 PST, 7@Tue Jan 02 00:00:00 2001 PST)
 (1 row)
 
+SELECT deltaValue(tbigint '[-3000000000@2001-01-01, 4000000000@2001-01-02]');
+                                     deltavalue                                     
+------------------------------------------------------------------------------------
+ [7000000000@Mon Jan 01 00:00:00 2001 PST, 7000000000@Tue Jan 02 00:00:00 2001 PST)
+(1 row)
+
+SELECT pg_typeof(deltaValue(tint '[5@2001-01-01, 2@2001-01-02]'));
+ pg_typeof 
+-----------
+ tint
+(1 row)
+
+SELECT pg_typeof(deltaValue(tbigint '[5@2001-01-01, 2@2001-01-02]'));
+ pg_typeof 
+-----------
+ tbigint
+(1 row)
+
 /* NULL */
 SELECT round(deltaValue(tfloat '1@2001-01-01'), 6);
  round 
@@ -2282,6 +2300,18 @@ SELECT abs(tbigint '-9223372036854775807@2001-01-01');
                        abs                        
 --------------------------------------------------
  9223372036854775807@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT pg_typeof(abs(tint '{-2@2001-01-01, 5@2001-01-02}'));
+ pg_typeof 
+-----------
+ tint
+(1 row)
+
+SELECT pg_typeof(abs(tbigint '{-2@2001-01-01, 5@2001-01-02}'));
+ pg_typeof 
+-----------
+ tbigint
 (1 row)
 
 /* Errors */

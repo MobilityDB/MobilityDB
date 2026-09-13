@@ -462,6 +462,10 @@ SELECT round(deltaValue(tfloat '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2
 SELECT deltaValue(tint '[5@2001-01-01, 2@2001-01-02]');
 SELECT deltaValue(tbigint '[5@2001-01-01, 2@2001-01-02]');
 SELECT deltaValue(tbigint '[-3@2001-01-01, 4@2001-01-02]');
+SELECT deltaValue(tbigint '[-3000000000@2001-01-01, 4000000000@2001-01-02]');
+-- The result takes the temporal type of the argument
+SELECT pg_typeof(deltaValue(tint '[5@2001-01-01, 2@2001-01-02]'));
+SELECT pg_typeof(deltaValue(tbigint '[5@2001-01-01, 2@2001-01-02]'));
 /* NULL */
 SELECT round(deltaValue(tfloat '1@2001-01-01'), 6);
 SELECT round(deltaValue(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]'), 6);
@@ -536,6 +540,9 @@ SELECT abs(tfloat '[-1@2001-01-01,1@2001-01-02]');
 SELECT abs(tint '{-2@2001-01-01, 5@2001-01-02, -7@2001-01-03}');
 SELECT abs(tbigint '{-2@2001-01-01, 5@2001-01-02, -7@2001-01-03}');
 SELECT abs(tbigint '-9223372036854775807@2001-01-01');
+-- The result takes the temporal type of the argument
+SELECT pg_typeof(abs(tint '{-2@2001-01-01, 5@2001-01-02}'));
+SELECT pg_typeof(abs(tbigint '{-2@2001-01-01, 5@2001-01-02}'));
 /* Errors */
 -- The most negative value of each integer type has no positive counterpart
 SELECT abs(tint '-2147483648@2001-01-01');
