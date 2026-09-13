@@ -119,15 +119,15 @@ span_families:
   - {sig: "shiftScale(datespan, {v}, {v})", ret: "datespan", sym: Numspan_shift_scale, only: [int]}
   - {sig: "shiftScale({sp}, interval, interval)", ret: "{sp}", sym: Tstzspan_shift_scale, only: [tstz]}
   - lit: "\n"
-  - {sig: "floor({sp})", ret: "{sp}", sym: Floatspan_floor, only: [float]}
-  - {sig: "ceil({sp})", ret: "{sp}", sym: Floatspan_ceil, only: [float]}
+  - {sig: "spanFloor({sp})", ret: "{sp}", sym: Floatspan_floor, only: [float]}
+  - {sig: "spanCeil({sp})", ret: "{sp}", sym: Floatspan_ceil, only: [float]}
   - lit: "\n"
   - {sig: "round(float, {v} DEFAULT 0)", ret: "float", sym: Float_round, only: [int]}
   - lit: "\n"
-  - {sig: "round(floatspan, {v} DEFAULT 0)", ret: "floatspan", sym: Floatspan_round, only: [int]}
+  - {sig: "spanRound(floatspan, {v} DEFAULT 0)", ret: "floatspan", sym: Floatspan_round, only: [int]}
   - lit: "\n"
-  - {sig: "degrees({sp}, boolean DEFAULT FALSE)", ret: "{sp}", sym: Floatspan_degrees, only: [float]}
-  - {sig: "radians({sp})", ret: "{sp}", sym: Floatspan_radians, only: [float]}
+  - {sig: "spanDegrees({sp}, boolean DEFAULT FALSE)", ret: "{sp}", sym: Floatspan_degrees, only: [float]}
+  - {sig: "spanRadians({sp})", ret: "{sp}", sym: Floatspan_radians, only: [float]}
   - lit: "\n/*****************************************************************************\n * Selectivity functions\n *****************************************************************************/\n\n-- Functions span_sel and span_joinsel are defined in the file defining the\n-- set type\n\n-- Functions for debugging the selectivity code\n\n-- Given a table, column, and span returns the estimate of what proportion\n-- of the table would be returned by a query using the given operator.\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    i intspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    b bigintspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    f floatspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    p datespan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    p tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- Given two tables and columns, returns estimate of the proportion of rows a\n-- given join operator will return relative to the number of rows an\n-- unconstrained table join would return\nCREATE OR REPLACE FUNCTION _mobdb_span_joinsel(tbl1 regclass, col1 text,\n    tbl2 regclass, col2 text, oper regoper)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * Comparison operators\n ******************************************************************************/\n\n"
   - {sig: "eq({sp}, {sp})", ret: "boolean", sym: Span_eq}
   - lit: "\n"
@@ -299,13 +299,13 @@ span_families:
   - {sig: "shiftScale(datespanset, {v}, {v})", ret: "datespanset", sym: Numspanset_shift_scale, only: [int]}
   - {sig: "shiftScale({ss}, interval, interval)", ret: "{ss}", sym: Tstzspanset_shift_scale, only: [tstz]}
   - lit: "\n"
-  - {sig: "floor({ss})", ret: "{ss}", sym: Floatspanset_floor, only: [float]}
-  - {sig: "ceil({ss})", ret: "{ss}", sym: Floatspanset_ceil, only: [float]}
+  - {sig: "spansetFloor({ss})", ret: "{ss}", sym: Floatspanset_floor, only: [float]}
+  - {sig: "spansetCeil({ss})", ret: "{ss}", sym: Floatspanset_ceil, only: [float]}
   - lit: "\n"
-  - {sig: "round(floatspanset, {v} DEFAULT 0)", ret: "floatspanset", sym: Floatspanset_round, only: [int]}
+  - {sig: "spansetRound(floatspanset, {v} DEFAULT 0)", ret: "floatspanset", sym: Floatspanset_round, only: [int]}
   - lit: "\n"
-  - {sig: "degrees({ss}, boolean DEFAULT FALSE)", ret: "{ss}", sym: Floatspanset_degrees, only: [float]}
-  - {sig: "radians({ss})", ret: "{ss}", sym: Floatspanset_radians, only: [float]}
+  - {sig: "spansetDegrees({ss}, boolean DEFAULT FALSE)", ret: "{ss}", sym: Floatspanset_degrees, only: [float]}
+  - {sig: "spansetRadians({ss})", ret: "{ss}", sym: Floatspanset_radians, only: [float]}
   - lit: "\n/*****************************************************************************/\n\n"
   - {sig: "spans({ss})", ret: "{sp}[]", sym: Spanset_spans}
   - lit: "\n"
@@ -2273,12 +2273,12 @@ span_families:
   - {sig: "shiftScale(dateset, {v}, {v})", ret: "dateset", sym: Numset_shift_scale, only: [int]}
   - {sig: "shiftScale({vs}, interval, interval)", ret: "{vs}", sym: Tstzset_shift_scale, only: [tstz]}
   - lit: "\n"
-  - {sig: "floor({vs})", ret: "{vs}", sym: Floatset_floor, only: [float]}
-  - {sig: "ceil({vs})", ret: "{vs}", sym: Floatset_ceil, only: [float]}
+  - {sig: "setFloor({vs})", ret: "{vs}", sym: Floatset_floor, only: [float]}
+  - {sig: "setCeil({vs})", ret: "{vs}", sym: Floatset_ceil, only: [float]}
   - lit: "\n"
-  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round, only: [float]}
-  - {sig: "degrees({vs}, boolean DEFAULT FALSE)", ret: "{vs}", sym: Floatset_degrees, only: [float]}
-  - {sig: "radians({vs})", ret: "{vs}", sym: Floatset_radians, only: [float]}
+  - {sig: "setRound({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round, only: [float]}
+  - {sig: "setDegrees({vs}, boolean DEFAULT FALSE)", ret: "{vs}", sym: Floatset_degrees, only: [float]}
+  - {sig: "setRadians({vs})", ret: "{vs}", sym: Floatset_radians, only: [float]}
   - lit: "\n"
   - {sig: "lower({vs})", ret: "{vs}", sym: Textset_lower, only: [text]}
   - {sig: "upper({vs})", ret: "{vs}", sym: Textset_upper, only: [text]}
@@ -2304,7 +2304,7 @@ span_families:
     geog: {v: geography, vs: geogset}
   blocks:
   - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
-  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - {sig: "setRound({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
   - lit: "\n/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n\n"
   - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
   - lit: "\n"
@@ -2319,7 +2319,7 @@ span_families:
     pose: {v: pose, vs: poseset}
   blocks:
   - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
-  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - {sig: "setRound({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
   - lit: "\n"
 
 - family: posechainset_transformations
@@ -2332,7 +2332,7 @@ span_families:
     posechain: {v: posechain, vs: posechainset}
   blocks:
   - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
-  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - {sig: "setRound({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
   - lit: "\n"
 
 - family: poseset_unnest
@@ -2371,7 +2371,7 @@ span_families:
     cbuffer: {v: cbuffer, vs: cbufferset}
   blocks:
   - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
-  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - {sig: "setRound({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
   - lit: "\n"
 
 - family: cbufferset_unnest
@@ -2397,7 +2397,7 @@ span_families:
     npoint: {v: npoint, vs: npointset}
   blocks:
   - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
-  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - {sig: "setRound({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
   - lit: "\n"
 
 - family: npointset_unnest

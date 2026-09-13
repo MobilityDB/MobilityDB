@@ -677,50 +677,50 @@ SELECT shiftScale(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}', '1 day', '1 ho
  {"Tue Jan 02 00:00:00 2001 PST", "Tue Jan 02 00:30:00 2001 PST", "Tue Jan 02 01:00:00 2001 PST"}
 (1 row)
 
-SELECT floor(floatset '{0.5, 1.5, 2.5}');
-   floor   
+SELECT setFloor(floatset '{0.5, 1.5, 2.5}');
+ setfloor  
 -----------
  {0, 1, 2}
 (1 row)
 
-SELECT floor(floatset '{0.5, 1.5, 1.6}');
- floor  
---------
+SELECT setFloor(floatset '{0.5, 1.5, 1.6}');
+ setfloor 
+----------
  {0, 1}
 (1 row)
 
-SELECT ceil(floatset '{0.5, 1.5, 2.5}');
-   ceil    
+SELECT setCeil(floatset '{0.5, 1.5, 2.5}');
+  setceil  
 -----------
  {1, 2, 3}
 (1 row)
 
-SELECT ceil(floatset '{0.5, 1.5, 1.6}');
-  ceil  
---------
+SELECT setCeil(floatset '{0.5, 1.5, 1.6}');
+ setceil 
+---------
  {1, 2}
 (1 row)
 
-SELECT round(floatset '{0.12345, 1.12345, 2.12345}', 3);
-         round         
+SELECT setRound(floatset '{0.12345, 1.12345, 2.12345}', 3);
+       setround        
 -----------------------
  {0.123, 1.123, 2.123}
 (1 row)
 
-SELECT degrees(floatset '{0, 0.5, 1}');
-                  degrees                  
+SELECT setDegrees(floatset '{0, 0.5, 1}');
+                setdegrees                 
 -------------------------------------------
  {0, 28.64788975654116, 57.29577951308232}
 (1 row)
 
-SELECT degrees(floatset '{0, 0.5, 1}', true);
-                  degrees                  
+SELECT setDegrees(floatset '{0, 0.5, 1}', true);
+                setdegrees                 
 -------------------------------------------
  {0, 28.64788975654116, 57.29577951308232}
 (1 row)
 
-SELECT radians(floatset '{0, 45, 90}');
-                  radians                  
+SELECT setRadians(floatset '{0, 45, 90}');
+                setradians                 
 -------------------------------------------
  {0, 0.785398163397448, 1.570796326794897}
 (1 row)

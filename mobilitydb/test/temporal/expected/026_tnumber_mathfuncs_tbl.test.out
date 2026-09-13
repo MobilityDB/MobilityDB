@@ -166,25 +166,25 @@ SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(ss) IS NOT NULL;
     98
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE abs(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint WHERE tAbs(temp) IS NOT NULL;
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE abs(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tAbs(temp) IS NOT NULL;
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_step_seq WHERE abs(seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat_step_seq WHERE tAbs(seq) IS NOT NULL;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE round(temp, 1) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tRound(temp, 1) IS NOT NULL;
  count 
 -------
     96
@@ -196,13 +196,13 @@ SELECT COUNT(*) FROM tbl_float WHERE degrees(f, true) IS NOT NULL;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE degrees(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tDegrees(temp) IS NOT NULL;
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE radians(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tRadians(temp) IS NOT NULL;
  count 
 -------
     96
@@ -214,37 +214,37 @@ SELECT round(MAX(maxValue(derivative(temp))), 6) FROM tbl_tfloat WHERE interp(te
  1.426902
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE exp(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tExp(temp) IS NOT NULL;
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE ln(abs(temp)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tLn(tAbs(temp)) IS NOT NULL;
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE log10(abs(temp)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tLog10(tAbs(temp)) IS NOT NULL;
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE sin(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tSin(temp) IS NOT NULL;
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE cos(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tCos(temp) IS NOT NULL;
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE tan(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tTan(temp) IS NOT NULL;
  count 
 -------
     96
@@ -262,8 +262,8 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
     61
 (1 row)
 
-SELECT round(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS NOT NULL AND k % 20 = 1;
-                                                                         round                                                                         
+SELECT tRound(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+                                                                        tround                                                                         
 -------------------------------------------------------------------------------------------------------------------------------------------------------
  {"73.98@Thu Mar 01 03:42:00 2001 PST","70.99@Fri Sep 14 13:31:00 2001 PDT","65.61@Sat Sep 29 14:47:00 2001 PDT","38.27@Wed Apr 18 14:52:00 2001 PDT"}
 (1 row)

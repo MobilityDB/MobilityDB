@@ -43,8 +43,8 @@ SELECT npoint(1, 0.9999);
 
 -- Interpolating to geometry at the endpoints lands on the route's start
 -- and end points respectively; both are well-defined.
-SELECT round(geometry(npoint(1, 0.0))::geometry, 6);
-SELECT round(geometry(npoint(1, 1.0))::geometry, 6);
+SELECT geometryRound(geometry(npoint(1, 0.0))::geometry, 6);
+SELECT geometryRound(geometry(npoint(1, 1.0))::geometry, 6);
 
 -- Position parameter outside [0, 1] is rejected at construction
 /* Errors */

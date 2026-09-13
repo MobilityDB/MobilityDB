@@ -287,12 +287,12 @@ CREATE FUNCTION SRID(nsegment)
  * Modification functions
  *****************************************************************************/
 
-CREATE FUNCTION round(npoint, integer DEFAULT 0)
+CREATE FUNCTION npointRound(npoint, integer DEFAULT 0)
   RETURNS npoint
   AS 'MODULE_PATHNAME', 'Npoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(nsegment, integer DEFAULT 0)
+CREATE FUNCTION nsegmentRound(nsegment, integer DEFAULT 0)
   RETURNS nsegment
   AS 'MODULE_PATHNAME', 'Nsegment_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -120,7 +120,7 @@ SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox t2 WHERE t1.b <= t2.b;
   5050
 (1 row)
 
-SELECT bool_and(round(round(b, 0), 0) ~= round(b, 0)) FROM tbl_tpcbox;
+SELECT bool_and(tpcboxRound(tpcboxRound(b, 0), 0) ~= tpcboxRound(b, 0)) FROM tbl_tpcbox;
  bool_and 
 ----------
  t

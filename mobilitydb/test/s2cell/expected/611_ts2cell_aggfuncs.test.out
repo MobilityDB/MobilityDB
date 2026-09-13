@@ -1,7 +1,7 @@
-SELECT round(extent(temp), 6) FROM (VALUES
+SELECT stboxRound(extent(temp), 6) FROM (VALUES
   (ts2cell '47c3c3@2001-01-01'),
   (ts2cell '47c3c4@2001-01-02')) t(temp);
-                                                              round                                                              
+                                                           stboxround                                                            
 ---------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX XT(((4.19708,50.762981),(4.421419,50.936164)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)

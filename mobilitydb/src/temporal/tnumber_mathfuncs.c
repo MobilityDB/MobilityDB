@@ -306,7 +306,7 @@ PG_FUNCTION_INFO_V1(Tnumber_abs);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the absolute value of a temporal number
- * @sqlfn abs()
+ * @sqlfn tAbs()
  */
 Datum
 Tnumber_abs(PG_FUNCTION_ARGS)
@@ -340,7 +340,7 @@ PG_FUNCTION_INFO_V1(Tfloat_floor);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return a temporal number rounded down to the nearest integer
- * @sqlfn floor()
+ * @sqlfn tFloor()
  */
 Datum
 Tfloat_floor(PG_FUNCTION_ARGS)
@@ -356,7 +356,7 @@ PG_FUNCTION_INFO_V1(Tfloat_ceil);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return a temporal number rounded up to the nearest integer
- * @sqlfn ceil()
+ * @sqlfn tCeil()
  */
 Datum
 Tfloat_ceil(PG_FUNCTION_ARGS)
@@ -389,7 +389,7 @@ PG_FUNCTION_INFO_V1(Tfloat_degrees);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return a temporal number transformed from radians to degrees
- * @sqlfn degrees()
+ * @sqlfn tDegrees()
  */
 Datum
 Tfloat_degrees(PG_FUNCTION_ARGS)
@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(Tfloat_radians);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return a temporal number transformed from degrees to radians
- * @sqlfn radians()
+ * @sqlfn tRadians()
  */
 Datum
 Tfloat_radians(PG_FUNCTION_ARGS)
@@ -488,7 +488,7 @@ PG_FUNCTION_INFO_V1(Tfloat_exp);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the exponential of a temporal number
- * @sqlfn exp()
+ * @sqlfn tExp()
  */
 Datum
 Tfloat_exp(PG_FUNCTION_ARGS)
@@ -508,7 +508,7 @@ PG_FUNCTION_INFO_V1(Tfloat_ln);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the natural logarithm of a temporal number
- * @sqlfn ln()
+ * @sqlfn tLn()
  */
 Datum
 Tfloat_ln(PG_FUNCTION_ARGS)
@@ -524,7 +524,7 @@ PG_FUNCTION_INFO_V1(Tfloat_log10);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the base 10 logarithm of a temporal number
- * @sqlfn log10()
+ * @sqlfn tLog10()
  */
 Datum
 Tfloat_log10(PG_FUNCTION_ARGS)
@@ -544,7 +544,7 @@ PG_FUNCTION_INFO_V1(Tfloat_sin);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the sine of a temporal float
- * @sqlfn sin()
+ * @sqlfn tSin()
  */
 Datum
 Tfloat_sin(PG_FUNCTION_ARGS)
@@ -560,7 +560,7 @@ PG_FUNCTION_INFO_V1(Tfloat_cos);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the cosine of a temporal float
- * @sqlfn cos()
+ * @sqlfn tCos()
  */
 Datum
 Tfloat_cos(PG_FUNCTION_ARGS)
@@ -576,7 +576,7 @@ PG_FUNCTION_INFO_V1(Tfloat_tan);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the tangent of a temporal float
- * @sqlfn tan()
+ * @sqlfn tTan()
  */
 Datum
 Tfloat_tan(PG_FUNCTION_ARGS)

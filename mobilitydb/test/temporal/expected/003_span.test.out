@@ -708,57 +708,57 @@ SELECT shiftScale(tstzspan '(2001-01-01,2001-01-02)', '5 min', '1 hour');
  (Mon Jan 01 00:05:00 2001 PST, Mon Jan 01 01:05:00 2001 PST)
 (1 row)
 
-SELECT floor(floatspan '[1.5,2.5]');
- floor  
---------
+SELECT spanFloor(floatspan '[1.5,2.5]');
+ spanfloor 
+-----------
  [1, 2]
 (1 row)
 
-SELECT ceil(floatspan '[1.5,2.5]');
-  ceil  
---------
+SELECT spanCeil(floatspan '[1.5,2.5]');
+ spanceil 
+----------
  [2, 3]
 (1 row)
 
-SELECT floor(floatspan '(1.5,1.6)');
- floor  
---------
+SELECT spanFloor(floatspan '(1.5,1.6)');
+ spanfloor 
+-----------
  [1, 1]
 (1 row)
 
-SELECT ceil(floatspan '(1.5,1.6)');
-  ceil  
---------
+SELECT spanCeil(floatspan '(1.5,1.6)');
+ spanceil 
+----------
  [2, 2]
 (1 row)
 
-SELECT round(floatspan '[1.123456789,1.123456789]',6);
-        round         
+SELECT spanRound(floatspan '[1.123456789,1.123456789]',6);
+      spanround       
 ----------------------
  [1.123457, 1.123457]
 (1 row)
 
-SELECT round(floatspan '[1.123456789,2.123456789]',6);
-        round         
+SELECT spanRound(floatspan '[1.123456789,2.123456789]',6);
+      spanround       
 ----------------------
  [1.123457, 2.123457]
 (1 row)
 
-SELECT round(floatspan '[-inf,2.123456789]',6);
-         round         
+SELECT spanRound(floatspan '[-inf,2.123456789]',6);
+       spanround       
 -----------------------
  [-Infinity, 2.123457]
 (1 row)
 
-SELECT round(floatspan '[1.123456789,inf]',6);
-        round         
+SELECT spanRound(floatspan '[1.123456789,inf]',6);
+      spanround       
 ----------------------
  [1.123457, Infinity]
 (1 row)
 
-SELECT round(floatspan '[1.5,1.6]');
- round  
---------
+SELECT spanRound(floatspan '[1.5,1.6]');
+ spanround 
+-----------
  [2, 2]
 (1 row)
 

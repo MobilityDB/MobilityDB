@@ -484,25 +484,25 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
    100
 (1 row)
 
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint;
+SELECT MAX(Xmin(stboxRound(stbox(temp), 6))) FROM tbl_tgeompoint;
     max    
 -----------
  98.055514
 (1 row)
 
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint;
+SELECT MAX(Xmin(stboxRound(stbox(temp), 6))) FROM tbl_tgeogpoint;
     max    
 -----------
  30.050304
 (1 row)
 
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint3D;
+SELECT MAX(Xmin(stboxRound(stbox(temp), 6))) FROM tbl_tgeompoint3D;
    max    
 ----------
  88.83362
 (1 row)
 
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint3D;
+SELECT MAX(Xmin(stboxRound(stbox(temp), 6))) FROM tbl_tgeogpoint3D;
     max    
 -----------
  31.711561

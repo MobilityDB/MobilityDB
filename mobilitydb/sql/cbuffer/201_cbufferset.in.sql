@@ -155,7 +155,7 @@ CREATE CAST (cbufferset AS stbox) WITH FUNCTION stbox(cbufferset);
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION round(cbufferset, integer DEFAULT 0)
+CREATE FUNCTION setRound(cbufferset, integer DEFAULT 0)
   RETURNS cbufferset
   AS 'MODULE_PATHNAME', 'Set_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

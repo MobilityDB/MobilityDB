@@ -802,7 +802,7 @@ PG_FUNCTION_INFO_V1(Pose_round);
  * @ingroup mobilitydb_pose_base_transf
  * @brief Return a pose with the precision of the values set to a number of
  * decimal places
- * @sqlfn round()
+ * @sqlfn poseRound()
  */
 Datum
 Pose_round(PG_FUNCTION_ARGS)
@@ -820,7 +820,7 @@ PG_FUNCTION_INFO_V1(Posearr_round);
  * @ingroup mobilitydb_pose_base_transf
  * @brief Return an array of poses with the precision of the values set to a
  * number of decimal places
- * @sqlfn round()
+ * @sqlfn poseRound()
  */
 Datum
 Posearr_round(PG_FUNCTION_ARGS)

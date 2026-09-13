@@ -1840,8 +1840,8 @@ SELECT stbox(tgeompoint 'Point(1 1)@2001-01-01');
  STBOX XT(((1,1),(1,1)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT round(stbox(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 13);
-                                                   round                                                    
+SELECT stboxRound(stbox(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 13);
+                                                 stboxround                                                 
 ------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX XT(((1.5,1.5),(1.5,1.5)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)

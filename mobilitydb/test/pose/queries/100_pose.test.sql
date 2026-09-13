@@ -131,7 +131,7 @@ SELECT round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).yaw)
 -- Modification functions
 -------------------------------------------------------------------------------
 
-SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
+SELECT asText(poseRound(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
 
 -- A 2D pose is returned unchanged (it stores no quaternion to renormalize).
 SELECT asText(poseNormalize(pose 'Pose(Point(1 1), 0.5)'));
@@ -149,7 +149,7 @@ SELECT asText(pose(ST_PointZ(1,1,1), 1.0005, 0, 0, 0), 12);
 -- Cast functions 
 -------------------------------------------------------------------------------
 
-SELECT ST_AsText(round(pose 'Pose(Point(1 1),0.2)'::geometry, 6));
+SELECT ST_AsText(geometryRound(pose 'Pose(Point(1 1),0.2)'::geometry, 6));
 
 -- SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::pose;
 
@@ -203,13 +203,13 @@ SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
 -- Cross-SRID frame transforms. The orientation correction
 -- between WGS-84 geographic (4326) and WGS-84 ECEF (4978) is the local
 -- East-North-Up basis change at the point. Round-trip lands at the input.
-SELECT asEWKT(round(transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978), 4326), 6));
+SELECT asEWKT(poseRound(transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978), 4326), 6));
 -- A round trip cannot see the direction of the orientation correction, since an
 -- inverse rotation composed with itself restores the input either way. These
 -- one-way transforms can: at the equator-meridian the East, North and Up axes
 -- point along geocentric +Y, +Z and +X, so a body at rest in the local frame
 -- carries that basis change and no other.
-SELECT asEWKT(round(transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+SELECT asEWKT(poseRound(transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
 -- Away from the equator the rotation and its inverse share a yaw and a pitch
 -- and differ in the sign of the roll, which is 90 degrees less the latitude.
 -- The angles are read rather than the quaternion because they bound their own
@@ -322,25 +322,25 @@ SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1 1),1,0,0,0)'));
 -------------------------------------------------------------------------------
 
 -- A sensor one metre ahead of a vehicle that sits at the origin unturned
-SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0), 0)',
   pose 'Pose(Point(0 0), 0)'), 6));
 -- The same vehicle turned a quarter turn: the sensor is now one metre North
-SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0), 0)',
   pose(ST_Point(0,0), pi()/2)), 6));
 -- The vehicle away from the origin as well
-SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0), 0)',
   pose(ST_Point(10,5), pi()/2)), 6));
 -- The orientations add
-SELECT asEWKT(round(applyPose(pose(ST_Point(0,0), pi()/4),
+SELECT asEWKT(poseRound(applyPose(pose(ST_Point(0,0), pi()/4),
   pose(ST_Point(0,0), pi()/4)), 6));
 -- Composing agrees with the pose chain of the same two links, which is the
 -- same operation folded over a chain
-SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0), 0)',
   pose(ST_Point(10,5), pi()/2)), 6)) =
-  asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(10,5), pi()/2),
+  asEWKT(poseRound(pose(posechain(ARRAY[pose(ST_Point(10,5), pi()/2),
     pose 'Pose(Point(1 0), 0)'])), 6));
 -- Three dimensions
-SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
+SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
   pose 'Pose(Point(0 0 5), 1, 0, 0, 0)'), 6));
 -- Mixing the frames of the two poses is an error
 SELECT applyPose(pose 'SRID=3812;Pose(Point(1 0), 0)',
@@ -354,20 +354,20 @@ SELECT applyPose(pose 'Pose(Point(1 0), 0)',
 -- inverse gives the identity.
 -------------------------------------------------------------------------------
 
-SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0), 0)'), 6));
-SELECT asEWKT(round(poseInverse(pose(ST_Point(0,0), pi()/2)), 6));
-SELECT asEWKT(round(poseInverse(pose(ST_Point(10,5), pi()/2)), 6));
+SELECT asEWKT(poseRound(poseInverse(pose 'Pose(Point(1 0), 0)'), 6));
+SELECT asEWKT(poseRound(poseInverse(pose(ST_Point(0,0), pi()/2)), 6));
+SELECT asEWKT(poseRound(poseInverse(pose(ST_Point(10,5), pi()/2)), 6));
 -- A pose composed with its inverse is the identity, in both directions
-SELECT asEWKT(round(applyPose(poseInverse(pose(ST_Point(10,5), pi()/2)),
+SELECT asEWKT(poseRound(applyPose(poseInverse(pose(ST_Point(10,5), pi()/2)),
   pose(ST_Point(10,5), pi()/2)), 6));
-SELECT asEWKT(round(applyPose(pose(ST_Point(10,5), pi()/2),
+SELECT asEWKT(poseRound(applyPose(pose(ST_Point(10,5), pi()/2),
   poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
 -- Three dimensions: a half turn about Z, one metre along X
-SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
-SELECT asEWKT(round(applyPose(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'),
+SELECT asEWKT(poseRound(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
+SELECT asEWKT(poseRound(applyPose(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'),
   pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
 -- The inverse is its own inverse
-SELECT asEWKT(round(poseInverse(poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
+SELECT asEWKT(poseRound(poseInverse(poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
 -- A pose over a geographic frame names no frame of the ellipsoid to reverse
 SELECT poseInverse(pose 'SRID=4326;GeodPose(Point(8 47), 0.5)');
 
@@ -378,36 +378,36 @@ SELECT poseInverse(pose 'SRID=4326;GeodPose(Point(8 47), 0.5)');
 
 -- A fixed sensor one unit ahead of a moving body: the body ends at (10,20)
 -- yawed a quarter turn, so the sensor ends one unit north of it.
-SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(tRound(applyPose(pose 'Pose(Point(1 0), 0)',
   tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
     tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')])), 6));
 
 -- The other order carries the moving body into the fixed frame instead, so
 -- the same unit offset lands east rather than north.
-SELECT asEWKT(round(applyPose(
+SELECT asEWKT(tRound(applyPose(
   tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
     tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')]),
   pose 'Pose(Point(1 0), 0)'), 6));
 
 -- Two moving frames agree with the static body when the body holds still
-SELECT asEWKT(round(applyPose(
+SELECT asEWKT(tRound(applyPose(
   tpose '[Pose(Point(1 0), 0)@2026-01-01, Pose(Point(1 0), 0)@2026-01-02]',
   tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
     tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')])), 6));
 
 -- Two moving frames meet on the time they share
-SELECT asEWKT(round(applyPose(
+SELECT asEWKT(tRound(applyPose(
   tpose '[Pose(Point(1 0), 0)@2026-01-01, Pose(Point(1 0), 0)@2026-01-03]',
   tpose '[Pose(Point(0 0), 0)@2026-01-02, Pose(Point(10 20), 0)@2026-01-04]'), 6));
 
 -- The frame seen from the body, for the whole of the movement
-SELECT asEWKT(round(poseInverse(
+SELECT asEWKT(tRound(poseInverse(
   tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
     tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')])), 6));
 
 -- A temporal pose composed with its own inverse is the identity at every
 -- instant
-SELECT asEWKT(round(applyPose(
+SELECT asEWKT(tRound(applyPose(
   poseInverse(tpose '[Pose(Point(3 4), 0.5)@2026-01-01, Pose(Point(10 20), 1.2)@2026-01-02]'),
   tpose '[Pose(Point(3 4), 0.5)@2026-01-01, Pose(Point(10 20), 1.2)@2026-01-02]'), 6));
 

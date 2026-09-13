@@ -1090,9 +1090,9 @@ SELECT hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
  t                        | t
 (1 row)
 
-SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2,
+SELECT stboxRound(stbox(raquet('\x01020304'::bytea, 2, 2,
   5193776270265024512::bigint, 'UINT8')), 6);
-                  round                   
+                stboxround                
 ------------------------------------------
  SRID=4326;STBOX X((0,0),(180,85.051129))
 (1 row)
@@ -1139,8 +1139,8 @@ CREATE INDEX
 CREATE INDEX test_raquet_tiles_spgist ON test_raquet_tiles
   USING spgist (stbox(tile));
 CREATE INDEX
-SELECT round(extent(stbox(tile)), 6) FROM test_raquet_tiles;
-                   round                    
+SELECT stboxRound(extent(stbox(tile)), 6) FROM test_raquet_tiles;
+                 stboxround                 
 --------------------------------------------
  SRID=4326;STBOX X((-90,0),(180,85.051129))
 (1 row)

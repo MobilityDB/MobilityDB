@@ -63,14 +63,14 @@ SELECT numValues(set(array_agg(DISTINCT pose ORDER BY pose))) FROM tbl_pose2d WH
 -------------------------------------------------------------------------------
 -- Cast
 
-SELECT round(poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)", "Pose(Point(3 3),0.5)"}'::stbox, 6);
+SELECT stboxRound(poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)", "Pose(Point(3 3),0.5)"}'::stbox, 6);
 
 SELECT COUNT(*) FROM tbl_pose2d WHERE pose::poseset IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Transformation functions
 
-SELECT MIN(yaw(startValue(round(s, 3)))) FROM tbl_poseset2d;
+SELECT MIN(yaw(startValue(setRound(s, 3)))) FROM tbl_poseset2d;
 
 -------------------------------------------------------------------------------
 -- Accessor functions

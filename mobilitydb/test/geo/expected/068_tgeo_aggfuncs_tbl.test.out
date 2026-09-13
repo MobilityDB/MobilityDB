@@ -1,119 +1,119 @@
-SELECT round(extent(inst), 6) FROM tbl_tgeometry_inst;
-                                                              round                                                               
+SELECT stboxRound(extent(inst), 6) FROM tbl_tgeometry_inst;
+                                                            stboxround                                                            
 ----------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX XT(((-98.552147,-99.810574),(99.194758,97.632698)),[Sat Jan 06 00:45:00 2001 PST, Fri Dec 28 20:54:00 2001 PST])
 (1 row)
 
-SELECT round(extent(inst), 6) FROM tbl_tgeography_inst;
-                                                                 round                                                                  
+SELECT stboxRound(extent(inst), 6) FROM tbl_tgeography_inst;
+                                                               stboxround                                                               
 ----------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX XT(((-174.757969,-89.388082),(179.199931,87.853573)),[Mon Jan 01 07:16:00 2001 PST, Sat Dec 15 02:36:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ti), 6) FROM tbl_tgeometry_discseq;
-                                                              round                                                               
+SELECT stboxRound(extent(ti), 6) FROM tbl_tgeometry_discseq;
+                                                            stboxround                                                            
 ----------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX XT(((-99.735332,-99.270058),(99.511247,99.306297)),[Tue Jan 02 20:41:00 2001 PST, Wed Dec 26 12:49:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ti), 6) FROM tbl_tgeography_discseq;
-                                                                 round                                                                 
+SELECT stboxRound(extent(ti), 6) FROM tbl_tgeography_discseq;
+                                                              stboxround                                                               
 ---------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX XT(((-179.755281,-89.45372),(177.721126,89.958212)),[Sun Dec 31 23:29:00 2000 PST, Sun Dec 23 22:35:00 2001 PST])
 (1 row)
 
-SELECT round(extent(seq), 6) FROM tbl_tgeometry_seq;
-                                                              round                                                               
+SELECT stboxRound(extent(seq), 6) FROM tbl_tgeometry_seq;
+                                                            stboxround                                                            
 ----------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX XT(((-99.589654,-99.420521),(99.777599,99.966767)),(Tue Jan 02 10:59:00 2001 PST, Thu Dec 27 00:09:00 2001 PST])
 (1 row)
 
-SELECT round(extent(seq), 6) FROM tbl_tgeography_seq;
-                                                                 round                                                                 
+SELECT stboxRound(extent(seq), 6) FROM tbl_tgeography_seq;
+                                                              stboxround                                                               
 ---------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX XT(((-179.85416,-89.315074),(179.613501,89.693867)),[Thu Jan 11 12:58:00 2001 PST, Fri Dec 28 08:39:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ss), 6) FROM tbl_tgeometry_seqset;
-                                                              round                                                               
+SELECT stboxRound(extent(ss), 6) FROM tbl_tgeometry_seqset;
+                                                            stboxround                                                            
 ----------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX XT(((-99.834851,-99.971837),(99.962578,99.941028)),[Thu Jan 04 03:08:00 2001 PST, Thu Dec 27 06:28:00 2001 PST))
 (1 row)
 
-SELECT round(extent(ss), 6) FROM tbl_tgeography_seqset;
-                                                                 round                                                                 
+SELECT stboxRound(extent(ss), 6) FROM tbl_tgeography_seqset;
+                                                              stboxround                                                               
 ---------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX XT(((-179.972847,-89.965104),(179.857597,89.99752)),(Wed Jan 10 06:05:00 2001 PST, Sat Dec 29 14:40:00 2001 PST))
 (1 row)
 
-SELECT round(extent(temp), 6) FROM tbl_tgeometry;
-                                                              round                                                               
+SELECT stboxRound(extent(temp), 6) FROM tbl_tgeometry;
+                                                            stboxround                                                            
 ----------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX XT(((-99.735332,-99.577057),(99.890133,99.941028)),[Fri Jan 05 09:50:00 2001 PST, Thu Dec 27 06:28:00 2001 PST))
 (1 row)
 
-SELECT round(extent(temp), 6) FROM tbl_tgeography;
-                                                                 round                                                                 
+SELECT stboxRound(extent(temp), 6) FROM tbl_tgeography;
+                                                              stboxround                                                               
 ---------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX XT(((-179.85416,-89.143138),(179.737757,89.686877)),[Tue Jan 09 14:58:00 2001 PST, Sat Dec 22 05:09:00 2001 PST])
 (1 row)
 
-SELECT round(extent(inst), 6) FROM tbl_tgeometry3D_inst;
-                                                                         round                                                                         
+SELECT stboxRound(extent(inst), 6) FROM tbl_tgeometry3D_inst;
+                                                                      stboxround                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX ZT(((-98.168412,-97.316813,-99.798958),(97.487645,99.219765,99.495716)),[Sun Jan 07 09:10:00 2001 PST, Mon Dec 24 16:25:00 2001 PST])
 (1 row)
 
-SELECT round(extent(inst), 6) FROM tbl_tgeography3D_inst;
-                                                                           round                                                                           
+SELECT stboxRound(extent(inst), 6) FROM tbl_tgeography3D_inst;
+                                                                        stboxround                                                                         
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX ZT(((-176.801226,-89.232632,0.052802),(178.598503,89.992217,99.982969)),[Wed Jan 03 02:49:00 2001 PST, Fri Dec 28 11:09:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ti), 6) FROM tbl_tgeometry3D_discseq;
-                                                                         round                                                                         
+SELECT stboxRound(extent(ti), 6) FROM tbl_tgeometry3D_discseq;
+                                                                      stboxround                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX ZT(((-99.813385,-99.821995,-99.918561),(99.893878,99.734502,99.888854)),[Thu Jan 04 12:26:00 2001 PST, Sat Dec 22 05:38:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ti), 6) FROM tbl_tgeography3D_discseq;
-                                                                          round                                                                           
+SELECT stboxRound(extent(ti), 6) FROM tbl_tgeography3D_discseq;
+                                                                        stboxround                                                                        
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX ZT(((-179.931736,-89.544173,0.264923),(179.69817,89.923881,99.947817)),[Fri Jan 05 17:10:00 2001 PST, Mon Dec 17 18:51:00 2001 PST])
 (1 row)
 
-SELECT round(extent(seq), 6) FROM tbl_tgeometry3D_seq;
-                                                                         round                                                                         
+SELECT stboxRound(extent(seq), 6) FROM tbl_tgeometry3D_seq;
+                                                                      stboxround                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX ZT(((-99.720803,-99.753706,-99.846433),(99.931615,99.903386,99.989416)),(Sat Jan 06 22:48:00 2001 PST, Tue Dec 18 17:34:00 2001 PST])
 (1 row)
 
-SELECT round(extent(seq), 6) FROM tbl_tgeography3D_seq;
-                                                                           round                                                                           
+SELECT stboxRound(extent(seq), 6) FROM tbl_tgeography3D_seq;
+                                                                        stboxround                                                                         
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX ZT(((-179.771004,-89.970778,0.367675),(179.487073,89.804709,99.814673)),(Tue Jan 02 19:28:00 2001 PST, Wed Dec 26 14:31:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ss), 6) FROM tbl_tgeometry3D_seqset;
-                                                                        round                                                                         
+SELECT stboxRound(extent(ss), 6) FROM tbl_tgeometry3D_seqset;
+                                                                      stboxround                                                                      
 ------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX ZT(((-99.951229,-99.954406,-99.974618),(99.941624,99.877536,99.92672)),(Fri Jan 05 14:51:00 2001 PST, Thu Dec 27 05:39:00 2001 PST))
 (1 row)
 
-SELECT round(extent(ss), 6) FROM tbl_tgeography3D_seqset;
-                                                                           round                                                                           
+SELECT stboxRound(extent(ss), 6) FROM tbl_tgeography3D_seqset;
+                                                                        stboxround                                                                         
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX ZT(((-179.994834,-89.964124,0.011626),(179.969407,89.965007,99.998884)),[Tue Jan 02 18:55:00 2001 PST, Fri Dec 28 01:51:00 2001 PST])
 (1 row)
 
-SELECT round(extent(temp), 6) FROM tbl_tgeometry3D;
-                                                                        round                                                                        
+SELECT stboxRound(extent(temp), 6) FROM tbl_tgeometry3D;
+                                                                     stboxround                                                                      
 -----------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=3812;STBOX ZT(((-99.75443,-99.821486,-99.949598),(99.931615,99.903386,99.92672)),[Thu Jan 04 12:26:00 2001 PST, Thu Dec 27 05:39:00 2001 PST))
 (1 row)
 
-SELECT round(extent(temp), 6) FROM tbl_tgeography3D;
-                                                                           round                                                                           
+SELECT stboxRound(extent(temp), 6) FROM tbl_tgeography3D;
+                                                                        stboxround                                                                         
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=7844;GEODSTBOX ZT(((-179.994834,-89.964124,0.052802),(179.797694,89.965007,99.947817)),[Fri Jan 05 17:10:00 2001 PST, Fri Dec 28 01:51:00 2001 PST])
 (1 row)

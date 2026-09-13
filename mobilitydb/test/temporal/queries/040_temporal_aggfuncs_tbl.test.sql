@@ -37,27 +37,27 @@
 SELECT extent(inst) FROM tbl_tbool_inst;
 SELECT extent(inst) FROM tbl_ttext_inst;
 SELECT extent(inst) FROM tbl_tint_inst;
-SELECT round(extent(inst), 6) FROM tbl_tfloat_inst;
+SELECT tboxRound(extent(inst), 6) FROM tbl_tfloat_inst;
 
 SELECT extent(ti) FROM tbl_tbool_discseq;
 SELECT extent(ti) FROM tbl_ttext_discseq;
 SELECT extent(ti) FROM tbl_tint_discseq;
-SELECT round(extent(ti), 6) FROM tbl_tfloat_discseq;
+SELECT tboxRound(extent(ti), 6) FROM tbl_tfloat_discseq;
 
 SELECT extent(seq) FROM tbl_tbool_seq;
 SELECT extent(seq) FROM tbl_ttext_seq;
 SELECT extent(seq) FROM tbl_tint_seq;
-SELECT round(extent(seq), 6) FROM tbl_tfloat_seq;
+SELECT tboxRound(extent(seq), 6) FROM tbl_tfloat_seq;
 
 SELECT extent(ss) FROM tbl_tbool_seqset;
 SELECT extent(ss) FROM tbl_ttext_seqset;
 SELECT extent(ss) FROM tbl_tint_seqset;
-SELECT round(extent(ss), 6) FROM tbl_tfloat_seqset;
+SELECT tboxRound(extent(ss), 6) FROM tbl_tfloat_seqset;
 
 SELECT extent(temp) FROM tbl_tbool;
 SELECT extent(temp) FROM tbl_ttext;
 SELECT extent(temp) FROM tbl_tint;
-SELECT round(extent(temp), 6) FROM tbl_tfloat;
+SELECT tboxRound(extent(temp), 6) FROM tbl_tfloat;
 
 -------------------------------------------------------------------------------
 -- TemporalInst aggregate functions

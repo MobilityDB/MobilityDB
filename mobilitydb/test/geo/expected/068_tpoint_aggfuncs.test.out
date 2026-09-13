@@ -65,11 +65,11 @@ SELECT extent(temp) FROM (VALUES
  STBOX XT(((1,1),(4,4)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST))
 (1 row)
 
-SELECT round(extent(temp), 13) FROM (VALUES
+SELECT stboxRound(extent(temp), 13) FROM (VALUES
   (tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02)'),
   (tgeogpoint '[Point(3 3 3)@2001-01-03, Point(4 4 4)@2001-01-04)'),
   (tgeogpoint '[Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-03)')) t(temp);
-                                                 round                                                  
+                                               stboxround                                               
 --------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((1,1,1),(4,4,4)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST))
 (1 row)

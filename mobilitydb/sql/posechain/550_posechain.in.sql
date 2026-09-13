@@ -222,7 +222,7 @@ CREATE FUNCTION poses(posechain)
  * Modification functions
  *****************************************************************************/
 
-CREATE FUNCTION round(posechain, integer DEFAULT 0)
+CREATE FUNCTION posechainRound(posechain, integer DEFAULT 0)
   RETURNS posechain
   AS 'MODULE_PATHNAME', 'Posechain_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

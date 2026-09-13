@@ -187,7 +187,7 @@ CREATE FUNCTION radius(cbuffer)
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION round(cbuffer, integer DEFAULT 0)
+CREATE FUNCTION cbufferRound(cbuffer, integer DEFAULT 0)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Cbuffer_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -153,7 +153,7 @@ CREATE CAST (posechainset AS stbox) WITH FUNCTION stbox(posechainset);
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION round(posechainset, integer DEFAULT 0)
+CREATE FUNCTION setRound(posechainset, integer DEFAULT 0)
   RETURNS posechainset
   AS 'MODULE_PATHNAME', 'Set_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

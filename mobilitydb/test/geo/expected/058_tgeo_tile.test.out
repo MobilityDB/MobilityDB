@@ -103,14 +103,14 @@ CONTEXT:  SQL function "getspacetimetile" statement 1
 SELECT getSpaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2001-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
 ERROR:  Operation on mixed SRID
 CONTEXT:  SQL function "getspacetimetile" statement 1
-SELECT round(spaceBoxes(tgeometry '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0), 6);
-                                                                                                                                                                                                                                round                                                                                                                                                                                                                                 
+SELECT stboxRound(spaceBoxes(tgeometry '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0), 6);
+                                                                                                                                                                                                                              stboxround                                                                                                                                                                                                                              
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"STBOX XT(((1,1),(1,1)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST))","STBOX XT(((10,10),(10,10)),[Wed Jan 10 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST])","STBOX XT(((10,10),(10,10)),[Wed Jan 10 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST])","STBOX XT(((10,10),(10,10)),[Wed Jan 10 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST])","STBOX XT(((10,10),(10,10)),[Wed Jan 10 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST])"}
 (1 row)
 
-SELECT round(spaceBoxes(tgeometry 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, geometry 'Point(1 1)'), 6);
-                                                                                                  round                                                                                                  
+SELECT stboxRound(spaceBoxes(tgeometry 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, geometry 'Point(1 1)'), 6);
+                                                                                               stboxround                                                                                                
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"SRID=3812;STBOX XT(((1,1),(1,1)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST))","SRID=3812;STBOX XT(((10,10),(10,10)),[Wed Jan 10 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST])"}
 (1 row)
@@ -122,25 +122,25 @@ CONTEXT:  SQL function "spaceboxes" statement 1
 SELECT spaceBoxes(tgeometry 'SRID=3812;[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
 CONTEXT:  SQL function "spaceboxes" statement 1
-SELECT round(timeBoxes(tgeometry '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', interval '2 days', '2001-01-01'), 6);
-                                                                                                                                                                                                                         round                                                                                                                                                                                                                          
+SELECT stboxRound(timeBoxes(tgeometry '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', interval '2 days', '2001-01-01'), 6);
+                                                                                                                                                                                                                       stboxround                                                                                                                                                                                                                       
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"STBOX XT(((1,1),(1,1)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST))","STBOX XT(((1,1),(1,1)),[Wed Jan 03 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST))","STBOX XT(((1,1),(1,1)),[Fri Jan 05 00:00:00 2001 PST, Sun Jan 07 00:00:00 2001 PST))","STBOX XT(((1,1),(1,1)),[Sun Jan 07 00:00:00 2001 PST, Tue Jan 09 00:00:00 2001 PST))","STBOX XT(((1,1),(10,10)),[Tue Jan 09 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST])"}
 (1 row)
 
 /* Errors */
-SELECT round(timeBoxes(tgeometry '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', interval '2 days', '2001-01-01'));
+SELECT stboxRound(timeBoxes(tgeometry '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', interval '2 days', '2001-01-01'));
 ERROR:  The tgeometry cannot have Z dimension
 SELECT timeBoxes(tgeometry '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', interval '2 months', '2001-01-01');
 ERROR:  Cannot have month intervals: 2 mons
-SELECT round(spaceTimeBoxes(tgeometry '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01'), 6);
-                                                                                                                                                                                                                                                                      round                                                                                                                                                                                                                                                                      
+SELECT stboxRound(spaceTimeBoxes(tgeometry '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01'), 6);
+                                                                                                                                                                                                                                                                   stboxround                                                                                                                                                                                                                                                                    
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"STBOX XT(((1,1),(1,1)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST))","STBOX XT(((1,1),(1,1)),[Wed Jan 03 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST))","STBOX XT(((1,1),(1,1)),[Fri Jan 05 00:00:00 2001 PST, Sun Jan 07 00:00:00 2001 PST))","STBOX XT(((1,1),(1,1)),[Sun Jan 07 00:00:00 2001 PST, Tue Jan 09 00:00:00 2001 PST))","STBOX XT(((1,1),(1,1)),[Tue Jan 09 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST))","STBOX XT(((10,10),(10,10)),[Wed Jan 10 00:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST])"}
 (1 row)
 
 /* Errors */
-SELECT round(spaceTimeBoxes(tgeometry '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1 1)', '2001-01-01'));
+SELECT stboxRound(spaceTimeBoxes(tgeometry '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1 1)', '2001-01-01'));
 ERROR:  The tgeometry cannot have Z dimension
 CONTEXT:  SQL function "spacetimeboxes" statement 1
 SELECT spaceTimeBoxes(tgeometry '[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2001-01-01');

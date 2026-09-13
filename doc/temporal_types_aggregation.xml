@@ -135,7 +135,7 @@ SELECT wMax(NoEmps, interval '2 days') FROM Department;
 SELECT wSum(NoEmps, interval '2 days') FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 26@2001-04-01, 16@2001-04-03, 22@2001-06-01,
    18@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
-SELECT round(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
+SELECT tRound(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
 /*  Interp=Step;{[10@2001-01-01, 7@2001-02-01, 8.667@2001-04-01, 8@2001-04-03, 
    7.333@2001-06-01, 9@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
 </programlisting>

@@ -334,25 +334,25 @@ SELECT MIN(startValue(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzset;
  Mon Jan 01 17:53:00 2001 PST
 (1 row)
 
-SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
+SELECT MIN(startValue(setRound(f, 5))) FROM tbl_floatset;
    min   
 ---------
  3.88624
 (1 row)
 
-SELECT MIN(startValue(degrees(f))) FROM tbl_floatset;
+SELECT MIN(startValue(setDegrees(f))) FROM tbl_floatset;
         min        
 -------------------
  222.6653001294165
 (1 row)
 
-SELECT MIN(startValue(degrees(f, true))) FROM tbl_floatset;
+SELECT MIN(startValue(setDegrees(f, true))) FROM tbl_floatset;
         min         
 --------------------
  10.101307652625337
 (1 row)
 
-SELECT MIN(startValue(radians(f))) FROM tbl_floatset;
+SELECT MIN(startValue(setRadians(f))) FROM tbl_floatset;
          min         
 ---------------------
  0.06782772920145592

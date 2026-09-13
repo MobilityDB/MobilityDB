@@ -558,5 +558,45 @@ SET client_min_messages TO notice;
 				</tbody>
 			</tgroup>
 		</informaltable>
+		<para>
+			Las funciones matemáticas cuyo nombre coincide con una función de Apache Spark o Apache Flink llevan como prefijo el nombre de la clase de su argumento: <varname>set</varname>, <varname>span</varname> o <varname>spanset</varname> para los tipos conjunto, rango y conjunto de rangos, <varname>t</varname> para los tipos temporales, y el nombre del tipo para los cuadros delimitadores y los tipos base. Las funciones <varname>round(float, integer)</varname> y <varname>degrees(float, boolean)</varname> conservan su nombre. La siguiente tabla da las funciones en ambas versiones.
+		</para>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>Versión 1.3</entry>
+						<entry>Versión 1.4</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>floor</varname></entry>
+						<entry><varname>setFloor</varname>, <varname>spanFloor</varname>, <varname>spansetFloor</varname>, <varname>tFloor</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ceil</varname></entry>
+						<entry><varname>setCeil</varname>, <varname>spanCeil</varname>, <varname>spansetCeil</varname>, <varname>tCeil</varname></entry>
+					</row>
+					<row>
+						<entry><varname>round</varname></entry>
+						<entry><varname>setRound</varname>, <varname>spanRound</varname>, <varname>spansetRound</varname>, <varname>tRound</varname>, <varname>tboxRound</varname>, <varname>stboxRound</varname>, <varname>tpcboxRound</varname>, <varname>cbufferRound</varname>, <varname>geometryRound</varname>, <varname>geographyRound</varname>, <varname>npointRound</varname>, <varname>nsegmentRound</varname>, <varname>poseRound</varname>, <varname>posechainRound</varname></entry>
+					</row>
+					<row>
+						<entry><varname>degrees</varname></entry>
+						<entry><varname>setDegrees</varname>, <varname>spanDegrees</varname>, <varname>spansetDegrees</varname>, <varname>tDegrees</varname></entry>
+					</row>
+					<row>
+						<entry><varname>radians</varname></entry>
+						<entry><varname>setRadians</varname>, <varname>spanRadians</varname>, <varname>spansetRadians</varname>, <varname>tRadians</varname></entry>
+					</row>
+					<row>
+						<entry><varname>abs</varname>, <varname>exp</varname>, <varname>ln</varname>, <varname>log10</varname>, <varname>sin</varname>, <varname>cos</varname>, <varname>tan</varname></entry>
+						<entry><varname>tAbs</varname>, <varname>tExp</varname>, <varname>tLn</varname>, <varname>tLog10</varname>, <varname>tSin</varname>, <varname>tCos</varname>, <varname>tTan</varname></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
 	</sect1>
 </chapter>

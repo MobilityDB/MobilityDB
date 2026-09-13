@@ -292,10 +292,10 @@ transformation_families:
   - ops:
     - setInterp
   - fns:
-    - sig: round(tcbuffer, integer DEFAULT 0)
+    - sig: tRound(tcbuffer, integer DEFAULT 0)
       ret: tcbuffer
       sym: Temporal_round
-    - sig: round(tcbuffer[], integer DEFAULT 0)
+    - sig: tRound(tcbuffer[], integer DEFAULT 0)
       ret: tcbuffer[]
       sym: Temporalarr_round
   - ops:
@@ -350,10 +350,10 @@ transformation_families:
   - ops:
     - setInterp
   - fns:
-    - sig: round(tnpoint, integer DEFAULT 0)
+    - sig: tRound(tnpoint, integer DEFAULT 0)
       ret: tnpoint
       sym: Temporal_round
-    - sig: round(tnpoint[], integer DEFAULT 0)
+    - sig: tRound(tnpoint[], integer DEFAULT 0)
       ret: tnpoint[]
       sym: Temporalarr_round
   - ops:
@@ -422,10 +422,10 @@ transformation_families:
   - ops:
     - setInterp
   - fns:
-    - sig: round(tpose, integer DEFAULT 0)
+    - sig: tRound(tpose, integer DEFAULT 0)
       ret: tpose
       sym: Temporal_round
-    - sig: round(tpose[], integer DEFAULT 0)
+    - sig: tRound(tpose[], integer DEFAULT 0)
       ret: tpose[]
       sym: Temporalarr_round
   - ops:
@@ -454,10 +454,10 @@ transformation_families:
   - ops:
     - setInterp
   - fns:
-    - sig: round(tposechain, integer DEFAULT 0)
+    - sig: tRound(tposechain, integer DEFAULT 0)
       ret: tposechain
       sym: Temporal_round
-    - sig: round(tposechain[], integer DEFAULT 0)
+    - sig: tRound(tposechain[], integer DEFAULT 0)
       ret: tposechain[]
       sym: Temporalarr_round
   - ops:
@@ -607,10 +607,10 @@ transformation_families:
   - ops:
     - setInterp
   - fns:
-    - sig: round(trgeometry, integer DEFAULT 0)
+    - sig: tRound(trgeometry, integer DEFAULT 0)
       ret: trgeometry
       sym: Temporal_round
-    - sig: round(trgeometry[], integer DEFAULT 0)
+    - sig: tRound(trgeometry[], integer DEFAULT 0)
       ret: trgeometry[]
       sym: Temporalarr_round
   - ops:

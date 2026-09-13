@@ -70,14 +70,14 @@ SELECT numValues(set(array_agg(DISTINCT cb ORDER BY cb))) FROM tbl_cbuffer WHERE
 -------------------------------------------------------------------------------
 -- Cast
 
-SELECT round(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)", "Cbuffer(Point(3 3),0.5)"}'::stbox, 6);
+SELECT stboxRound(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)", "Cbuffer(Point(3 3),0.5)"}'::stbox, 6);
 
 SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::cbufferset IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Transformation functions
 
-SELECT MIN(radius(startValue(round(s, 3)))) FROM tbl_cbufferset;
+SELECT MIN(radius(startValue(setRound(s, 3)))) FROM tbl_cbufferset;
 
 -------------------------------------------------------------------------------
 -- Accessor functions

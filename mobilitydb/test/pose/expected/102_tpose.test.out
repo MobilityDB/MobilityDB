@@ -531,7 +531,7 @@ SELECT asText(setInterp(tpose 'Interp=Step;{[Pose(Point(1 1), 0.2)@2001-01-01, P
  {[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.2)@Tue Jan 02 00:00:00 2001 PST), [Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Wed Jan 03 00:00:00 2001 PST), [Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(round(tpose '{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
+SELECT asText(tRound(tpose '{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
                                                     astext                                                     
 ---------------------------------------------------------------------------------------------------------------
  {[Pose(POINT(1 1),0.123457)@Sun Jan 01 00:00:00 2012 PST, Pose(POINT(1 1),0.5)@Mon Jan 02 00:00:00 2012 PST)}
@@ -573,25 +573,25 @@ SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Poin
  {[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(1 1),0.6)@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(round(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
+SELECT asText(tRound(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
                  astext                  
 -----------------------------------------
  POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(round(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
+SELECT asText(tRound(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
                                                            astext                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(round(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
+SELECT asText(tRound(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
                                        astext                                       
 ------------------------------------------------------------------------------------
  [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(round(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }'::tgeompoint, 6));
+SELECT asText(tRound(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }'::tgeompoint, 6));
                                                                                   astext                                                                                  
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(2 2)@Thu Jan 04 00:00:00 2001 PST, POINT(2 2)@Fri Jan 05 00:00:00 2001 PST]}
@@ -685,7 +685,7 @@ SELECT asText(roll(tpose '[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(1 1), 0.
  [0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(round(yaw(tpose '[Pose(Point Z(0 0 0), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-02]'), 6));
+SELECT asText(tRound(yaw(tpose '[Pose(Point Z(0 0 0), 1, 0, 0, 0)@2001-01-01, Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-02]'), 6));
                                        astext                                        
 -------------------------------------------------------------------------------------
  Interp=Step;[0@Mon Jan 01 00:00:00 2001 PST, 1.570796@Tue Jan 02 00:00:00 2001 PST]

@@ -30,172 +30,172 @@
 -------------------------------------------------------------------------------
 
 -- NULL
-SELECT round(tgeometry '[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]' <-> tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04}', 6);
-SELECT round(tgeometry '{[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]}' <-> tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04}', 6);
-SELECT round(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],(Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]}' <-> tgeometry '(Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
-SELECT round(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],(Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]}' <-> tgeometry '{(Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]}', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]' <-> tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04}', 6);
+SELECT tRound(tgeometry '{[Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]}' <-> tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04}', 6);
+SELECT tRound(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],(Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]}' <-> tgeometry '(Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
+SELECT tRound(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],(Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]}' <-> tgeometry '{(Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]}', 6);
 
 -- Generic geometries
-SELECT round(geometry 'Linestring(1 1,2 2)' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
-SELECT round(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> geometry 'Linestring(1 1,2 2)', 6);
+SELECT tRound(geometry 'Linestring(1 1,2 2)' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> geometry 'Linestring(1 1,2 2)', 6);
 
 /* Errors */
-SELECT round(geometry 'srid=5676;Point(2 2)' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
-SELECT round(geometry 'Point(2 2 2)' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
-SELECT round(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> geometry 'srid=5676;Point(2 2)', 6);
-SELECT round(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> geometry 'Point(2 2 2)', 6);
-SELECT round(tgeometry 'SRID=5676;[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
-SELECT round(tgeometry '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
+SELECT tRound(geometry 'srid=5676;Point(2 2)' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
+SELECT tRound(geometry 'Point(2 2 2)' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> geometry 'srid=5676;Point(2 2)', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> geometry 'Point(2 2 2)', 6);
+SELECT tRound(tgeometry 'SRID=5676;[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
+SELECT tRound(tgeometry '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
 
 
-SELECT round(geometry 'Point(1 1)' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
-SELECT round(geometry 'Point(1 1)' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
-SELECT round(geometry 'Point(1 1)' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
-SELECT round(geometry 'Point(2 2)' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
-SELECT round(geometry 'Point(1 1)' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
+SELECT tRound(geometry 'Point(1 1)' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
+SELECT tRound(geometry 'Point(1 1)' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
+SELECT tRound(geometry 'Point(1 1)' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
+SELECT tRound(geometry 'Point(2 2)' <-> tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
+SELECT tRound(geometry 'Point(1 1)' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
 
-SELECT round(geometry 'Point empty' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
-SELECT round(geometry 'Point empty' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
-SELECT round(geometry 'Point empty' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
-SELECT round(geometry 'Point empty' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
+SELECT tRound(geometry 'Point empty' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
+SELECT tRound(geometry 'Point empty' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
+SELECT tRound(geometry 'Point empty' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
+SELECT tRound(geometry 'Point empty' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
 
-SELECT round(geometry 'Point(1 1 1)' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
-SELECT round(geometry 'Point(1 1 1)' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
-SELECT round(geometry 'Point(1 1 1)' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
-SELECT round(geometry 'Point(1 1 1)' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
+SELECT tRound(geometry 'Point(1 1 1)' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
+SELECT tRound(geometry 'Point(1 1 1)' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
+SELECT tRound(geometry 'Point(1 1 1)' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
+SELECT tRound(geometry 'Point(1 1 1)' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
 
-SELECT round(geometry 'Point Z empty' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
-SELECT round(geometry 'Point Z empty' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
-SELECT round(geometry 'Point Z empty' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
-SELECT round(geometry 'Point Z empty' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
+SELECT tRound(geometry 'Point Z empty' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
+SELECT tRound(geometry 'Point Z empty' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
+SELECT tRound(geometry 'Point Z empty' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
+SELECT tRound(geometry 'Point Z empty' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
 
-SELECT round(geography 'Point(-90 0)' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
-SELECT round(geography 'Point(-90 0)' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
-SELECT round(geography 'Point(-90 0)' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
-SELECT round(geography 'Point(-90 0)' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
+SELECT tRound(geography 'Point(-90 0)' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
+SELECT tRound(geography 'Point(-90 0)' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
+SELECT tRound(geography 'Point(-90 0)' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
+SELECT tRound(geography 'Point(-90 0)' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
 
-SELECT round(geography 'Point empty' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
-SELECT round(geography 'Point empty' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
-SELECT round(geography 'Point empty' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
-SELECT round(geography 'Point empty' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
+SELECT tRound(geography 'Point empty' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
+SELECT tRound(geography 'Point empty' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
+SELECT tRound(geography 'Point empty' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
+SELECT tRound(geography 'Point empty' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
 
-SELECT round(geography 'Point(-90 0 100)' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
-SELECT round(geography 'Point(-90 0 100)' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
-SELECT round(geography 'Point(-90 0 100)' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
-SELECT round(geography 'Point(-90 0 100)' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
+SELECT tRound(geography 'Point(-90 0 100)' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
+SELECT tRound(geography 'Point(-90 0 100)' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
+SELECT tRound(geography 'Point(-90 0 100)' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
+SELECT tRound(geography 'Point(-90 0 100)' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
 
-SELECT round(geography 'Point Z empty' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
-SELECT round(geography 'Point Z empty' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
-SELECT round(geography 'Point Z empty' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
-SELECT round(geography 'Point Z empty' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
+SELECT tRound(geography 'Point Z empty' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
+SELECT tRound(geography 'Point Z empty' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
+SELECT tRound(geography 'Point Z empty' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
+SELECT tRound(geography 'Point Z empty' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
 
-SELECT round(tgeometry 'Point(1 1)@2001-01-01' <-> geometry 'Point(1 1)', 6);
-SELECT round(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> geometry 'Point(1 1)', 6);
-SELECT round(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
-SELECT round(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> geometry 'Point(1 1)', 6);
+SELECT tRound(tgeometry 'Point(1 1)@2001-01-01' <-> geometry 'Point(1 1)', 6);
+SELECT tRound(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> geometry 'Point(1 1)', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
+SELECT tRound(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> geometry 'Point(1 1)', 6);
 
-SELECT round(tgeometry 'Point(1 1)@2001-01-01' <-> geometry 'Point empty', 6);
-SELECT round(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> geometry 'Point empty', 6);
-SELECT round(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> geometry 'Point empty', 6);
-SELECT round(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> geometry 'Point empty', 6);
+SELECT tRound(tgeometry 'Point(1 1)@2001-01-01' <-> geometry 'Point empty', 6);
+SELECT tRound(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> geometry 'Point empty', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> geometry 'Point empty', 6);
+SELECT tRound(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> geometry 'Point empty', 6);
 
-SELECT round(tgeometry 'Point(1 1 1)@2001-01-01' <-> geometry 'Point(1 1 1)', 6);
-SELECT round(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> geometry 'Point(1 1 1)', 6);
-SELECT round(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> geometry 'Point(1 1 1)', 6);
-SELECT round(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> geometry 'Point(1 1 1)', 6);
+SELECT tRound(tgeometry 'Point(1 1 1)@2001-01-01' <-> geometry 'Point(1 1 1)', 6);
+SELECT tRound(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> geometry 'Point(1 1 1)', 6);
+SELECT tRound(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> geometry 'Point(1 1 1)', 6);
+SELECT tRound(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> geometry 'Point(1 1 1)', 6);
 
-SELECT round(tgeometry 'Point(1 1 1)@2001-01-01' <-> geometry 'Point Z empty', 6);
-SELECT round(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> geometry 'Point Z empty', 6);
-SELECT round(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> geometry 'Point Z empty', 6);
-SELECT round(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> geometry 'Point Z empty', 6);
+SELECT tRound(tgeometry 'Point(1 1 1)@2001-01-01' <-> geometry 'Point Z empty', 6);
+SELECT tRound(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> geometry 'Point Z empty', 6);
+SELECT tRound(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> geometry 'Point Z empty', 6);
+SELECT tRound(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> geometry 'Point Z empty', 6);
 
-SELECT round(tgeography 'Point(-90 0)@2001-01-01' <-> geography 'Point(-90 0)', 6);
-SELECT round(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> geography 'Point(-90 0)', 6);
-SELECT round(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> geography 'Point(-90 0)', 6);
-SELECT round(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> geography 'Point(-90 0)', 6);
+SELECT tRound(tgeography 'Point(-90 0)@2001-01-01' <-> geography 'Point(-90 0)', 6);
+SELECT tRound(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> geography 'Point(-90 0)', 6);
+SELECT tRound(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> geography 'Point(-90 0)', 6);
+SELECT tRound(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> geography 'Point(-90 0)', 6);
 
-SELECT round(tgeography 'Point(-90 0)@2001-01-01' <-> geography 'Point empty', 6);
-SELECT round(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> geography 'Point empty', 6);
-SELECT round(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> geography 'Point empty', 6);
-SELECT round(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> geography 'Point empty', 6);
+SELECT tRound(tgeography 'Point(-90 0)@2001-01-01' <-> geography 'Point empty', 6);
+SELECT tRound(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> geography 'Point empty', 6);
+SELECT tRound(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> geography 'Point empty', 6);
+SELECT tRound(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> geography 'Point empty', 6);
 
-SELECT round(tgeography 'Point(-90 0 100)@2001-01-01' <-> geography 'Point(-90 0 100)', 6);
-SELECT round(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> geography 'Point(-90 0 100)', 6);
-SELECT round(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> geography 'Point(-90 0 100)', 6);
-SELECT round(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> geography 'Point(-90 0 100)', 6);
+SELECT tRound(tgeography 'Point(-90 0 100)@2001-01-01' <-> geography 'Point(-90 0 100)', 6);
+SELECT tRound(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> geography 'Point(-90 0 100)', 6);
+SELECT tRound(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> geography 'Point(-90 0 100)', 6);
+SELECT tRound(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> geography 'Point(-90 0 100)', 6);
 
-SELECT round(tgeography 'Point(-90 0 100)@2001-01-01' <-> geography 'Point Z empty', 6);
-SELECT round(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> geography 'Point Z empty', 6);
-SELECT round(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> geography 'Point Z empty', 6);
-SELECT round(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> geography 'Point Z empty', 6);
+SELECT tRound(tgeography 'Point(-90 0 100)@2001-01-01' <-> geography 'Point Z empty', 6);
+SELECT tRound(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> geography 'Point Z empty', 6);
+SELECT tRound(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> geography 'Point Z empty', 6);
+SELECT tRound(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> geography 'Point Z empty', 6);
 
-SELECT round(tgeometry 'Point(1 1)@2001-01-01' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
-SELECT round(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
-SELECT round(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
-SELECT round(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
-SELECT round(tgeometry 'Point(1 1)@2001-01-01' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
-SELECT round(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
-SELECT round(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
-SELECT round(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
-SELECT round(tgeometry 'Point(1 1)@2001-01-01' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
-SELECT round(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
-SELECT round(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
-SELECT round(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
-SELECT round(tgeometry 'Point(1 1)@2001-01-01' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
-SELECT round(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
-SELECT round(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
-SELECT round(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
+SELECT tRound(tgeometry 'Point(1 1)@2001-01-01' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
+SELECT tRound(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
+SELECT tRound(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> tgeometry 'Point(2 2)@2001-01-01', 6);
+SELECT tRound(tgeometry 'Point(1 1)@2001-01-01' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
+SELECT tRound(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
+SELECT tRound(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> tgeometry '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}', 6);
+SELECT tRound(tgeometry 'Point(1 1)@2001-01-01' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
+SELECT tRound(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
+SELECT tRound(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> tgeometry '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]', 6);
+SELECT tRound(tgeometry 'Point(1 1)@2001-01-01' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
+SELECT tRound(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
+SELECT tRound(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
+SELECT tRound(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' <-> tgeometry '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 6);
 
-SELECT round(tgeometry 'Point(1 1 1)@2001-01-01' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
-SELECT round(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
-SELECT round(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
-SELECT round(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
-SELECT round(tgeometry 'Point(1 1 1)@2001-01-01' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
-SELECT round(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
-SELECT round(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
-SELECT round(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
-SELECT round(tgeometry 'Point(1 1 1)@2001-01-01' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
-SELECT round(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
-SELECT round(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
-SELECT round(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
-SELECT round(tgeometry 'Point(1 1 1)@2001-01-01' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
-SELECT round(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
-SELECT round(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
-SELECT round(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
+SELECT tRound(tgeometry 'Point(1 1 1)@2001-01-01' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
+SELECT tRound(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
+SELECT tRound(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
+SELECT tRound(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> tgeometry 'Point(2 2 2)@2001-01-01', 6);
+SELECT tRound(tgeometry 'Point(1 1 1)@2001-01-01' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
+SELECT tRound(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
+SELECT tRound(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
+SELECT tRound(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> tgeometry '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}', 6);
+SELECT tRound(tgeometry 'Point(1 1 1)@2001-01-01' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
+SELECT tRound(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
+SELECT tRound(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
+SELECT tRound(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> tgeometry '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]', 6);
+SELECT tRound(tgeometry 'Point(1 1 1)@2001-01-01' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
+SELECT tRound(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
+SELECT tRound(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
+SELECT tRound(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' <-> tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 6);
 
-SELECT round(tgeography 'Point(-90 0)@2001-01-01' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
-SELECT round(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
-SELECT round(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
-SELECT round(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
-SELECT round(tgeography 'Point(-90 0)@2001-01-01' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
-SELECT round(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
-SELECT round(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
-SELECT round(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
-SELECT round(tgeography 'Point(-90 0)@2001-01-01' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
-SELECT round(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
-SELECT round(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
-SELECT round(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
-SELECT round(tgeography 'Point(-90 0)@2001-01-01' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
-SELECT round(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
-SELECT round(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
-SELECT round(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
+SELECT tRound(tgeography 'Point(-90 0)@2001-01-01' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
+SELECT tRound(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
+SELECT tRound(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
+SELECT tRound(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> tgeography 'Point(0 -90)@2001-01-01', 6);
+SELECT tRound(tgeography 'Point(-90 0)@2001-01-01' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
+SELECT tRound(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
+SELECT tRound(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
+SELECT tRound(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}', 6);
+SELECT tRound(tgeography 'Point(-90 0)@2001-01-01' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
+SELECT tRound(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
+SELECT tRound(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
+SELECT tRound(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]', 6);
+SELECT tRound(tgeography 'Point(-90 0)@2001-01-01' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
+SELECT tRound(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
+SELECT tRound(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
+SELECT tRound(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}' <-> tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', 6);
 
-SELECT round(tgeography 'Point(-90 0 100)@2001-01-01' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
-SELECT round(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
-SELECT round(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
-SELECT round(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
-SELECT round(tgeography 'Point(-90 0 100)@2001-01-01' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
-SELECT round(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
-SELECT round(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
-SELECT round(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
-SELECT round(tgeography 'Point(-90 0 100)@2001-01-01' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
-SELECT round(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
-SELECT round(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
-SELECT round(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
-SELECT round(tgeography 'Point(-90 0 100)@2001-01-01' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
-SELECT round(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
-SELECT round(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
-SELECT round(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
+SELECT tRound(tgeography 'Point(-90 0 100)@2001-01-01' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
+SELECT tRound(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
+SELECT tRound(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
+SELECT tRound(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> tgeography 'Point(0 -90 100)@2001-01-01', 6);
+SELECT tRound(tgeography 'Point(-90 0 100)@2001-01-01' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
+SELECT tRound(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
+SELECT tRound(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
+SELECT tRound(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}', 6);
+SELECT tRound(tgeography 'Point(-90 0 100)@2001-01-01' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
+SELECT tRound(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
+SELECT tRound(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
+SELECT tRound(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]', 6);
+SELECT tRound(tgeography 'Point(-90 0 100)@2001-01-01' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
+SELECT tRound(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
+SELECT tRound(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
+SELECT tRound(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}' <-> tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', 6);
 
 -------------------------------------------------------------------------------
 
@@ -210,14 +210,14 @@ SELECT asText(NearestApproachInstant(tgeometry '{[Point(1 1)@2001-01-01, Point(2
 
 SELECT asText(NearestApproachInstant(tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]', geometry 'Linestring(1 1,3 3)'));
 
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring(90 0,0 60)'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 60)'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 60)'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 60)'),6));
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring empty'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring empty'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring empty'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring empty'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring(90 0,0 60)'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 60)'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 60)'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 60)'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring empty'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring empty'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring empty'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring empty'),6));
 
 SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeometry 'Point(1 1)@2001-01-01'));
 SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'));
@@ -276,39 +276,39 @@ SELECT asText(NearestApproachInstant(tgeometry '{Point(1 1 1)@2001-01-01, Point(
 SELECT asText(NearestApproachInstant(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'));
 SELECT asText(NearestApproachInstant(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'));
 
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', tgeography 'Point(0 -90)@2001-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography 'Point(0 -90)@2001-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography 'Point(0 -90)@2001-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography 'Point(0 -90)@2001-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-03]', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-03]', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', tgeography 'Point(0 -90)@2001-01-01'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography 'Point(0 -90)@2001-01-01'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography 'Point(0 -90)@2001-01-01'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography 'Point(0 -90)@2001-01-01'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-03]', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0)@2001-01-01', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-03]', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}'),6));
 
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0 100)@2001-01-01', tgeography 'Point(0 -90 100)@2001-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography 'Point(0 -90 100)@2001-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography 'Point(0 -90 100)@2001-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography 'Point(0 -90 100)@2001-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-03]', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-03]', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0 100)@2001-01-01', tgeography 'Point(0 -90 100)@2001-01-01'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography 'Point(0 -90 100)@2001-01-01'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography 'Point(0 -90 100)@2001-01-01'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography 'Point(0 -90 100)@2001-01-01'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-03]', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-03]', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}'),6));
+SELECT asText(tRound(NearestApproachInstant(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}'),6));
 
 /* Errors */
 SELECT NearestApproachInstant(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
@@ -680,9 +680,9 @@ SELECT ST_AsTexT(shortestLine(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@
 SELECT ST_AsTexT(shortestLine(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Linestring Z empty'));
 
 SELECT ST_AsTexT(shortestLine(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring(90 0,0 60)'), 1);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 60)')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 60)')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 60)')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring(90 0,0 60)')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', geography 'Linestring(90 0,0 60)')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', geography 'Linestring(90 0,0 60)')), 6);
 
 SELECT ST_AsTexT(shortestLine(tgeography 'Point(-90 0)@2001-01-01', geography 'Linestring empty'));
 SELECT ST_AsTexT(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', geography 'Linestring empty'));
@@ -710,9 +710,9 @@ SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeometry '[Point(1
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'));
 
 SELECT ST_AsTexT(shortestLine(geography 'Linestring(90 0,0 60)', tgeography 'Point(-90 0)@2001-01-01'), 1);
-SELECT ST_AsTexT(round(shortestLine(geography 'Linestring(90 0,0 60)', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}')), 6);
-SELECT ST_AsTexT(round(shortestLine(geography 'Linestring(90 0,0 60)', tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]')), 6);
-SELECT ST_AsTexT(round(shortestLine(geography 'Linestring(90 0,0 60)', tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(geography 'Linestring(90 0,0 60)', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(geography 'Linestring(90 0,0 60)', tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(geography 'Linestring(90 0,0 60)', tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
 
 SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeography 'Point(-90 0)@2001-01-01'), 1);
 SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}'), 1);
@@ -753,39 +753,39 @@ SELECT ST_AsTexT(shortestLine(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@
 SELECT ST_AsTexT(shortestLine(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'));
 SELECT ST_AsTexT(shortestLine(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeometry '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'));
 
-SELECT ST_AsTexT(round(shortestLine(tgeography 'Point(-90 0)@2001-01-01', tgeography 'Point(0 -90)@2001-01-01')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography 'Point(0 -90)@2001-01-01')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography 'Point(0 -90)@2001-01-01')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography 'Point(0 -90)@2001-01-01')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography 'Point(-90 0)@2001-01-01', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography 'Point(-90 0)@2001-01-01', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography 'Point(-90 0)@2001-01-01', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography 'Point(-90 0)@2001-01-01', tgeography 'Point(0 -90)@2001-01-01')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography 'Point(0 -90)@2001-01-01')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography 'Point(0 -90)@2001-01-01')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography 'Point(0 -90)@2001-01-01')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography 'Point(-90 0)@2001-01-01', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '{Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography 'Point(-90 0)@2001-01-01', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03]')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography 'Point(-90 0)@2001-01-01', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03}', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03]', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{[Point(-90 0)@2001-01-01, Point(0 0)@2001-01-02, Point(-90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}', tgeography '{[Point(90 0)@2001-01-01, Point(-90 0)@2001-01-02, Point(90 0)@2001-01-03],[Point(90 90)@2001-01-04, Point(90 90)@2001-01-05]}')), 6);
 
-SELECT ST_AsTexT(round(shortestLine(tgeography 'Point(-90 0 100)@2001-01-01', tgeography 'Point(0 -90 100)@2001-01-01')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography 'Point(0 -90 100)@2001-01-01')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography 'Point(0 -90 100)@2001-01-01')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography 'Point(0 -90 100)@2001-01-01')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}')), 6);
-SELECT ST_AsTexT(round(shortestLine(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography 'Point(-90 0 100)@2001-01-01', tgeography 'Point(0 -90 100)@2001-01-01')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography 'Point(0 -90 100)@2001-01-01')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography 'Point(0 -90 100)@2001-01-01')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography 'Point(0 -90 100)@2001-01-01')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '{Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03]')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography 'Point(-90 0 100)@2001-01-01', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03}', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03]', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}')), 6);
+SELECT ST_AsTexT(geographyRound(shortestLine(tgeography '{[Point(-90 0 100)@2001-01-01, Point(0 0 100)@2001-01-02, Point(-90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}', tgeography '{[Point(90 0 100)@2001-01-01, Point(-90 0 100)@2001-01-02, Point(90 0 100)@2001-01-03],[Point(90 90 100)@2001-01-04, Point(90 90 100)@2001-01-05]}')), 6);
 
 SELECT ST_AsTexT(shortestLine(tgeometry '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02], (Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', tgeometry '{[Point(3 3)@2001-01-01, Point(3 3)@2001-01-02], (Point(2 2)@2001-01-04, Point(3 3)@2001-01-05]}'));
 SELECT ST_AsText(shortestLine(tgeometry '{[Point(0 0)@2001-01-01, Point(2 0)@2001-01-02]}','{(Point(1 1)@2001-01-01,Point(2 2)@2001-01-02]}'));

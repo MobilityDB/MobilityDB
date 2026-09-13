@@ -693,7 +693,7 @@ SELECT memSize(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02
 SELECT memSize(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}') > 0;
 
 SELECT stbox(tgeompoint 'Point(1 1)@2001-01-01');
-SELECT round(stbox(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 13);
+SELECT stboxRound(stbox(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 13);
 
 SELECT ST_AsEWKT(getValue(tgeompoint 'Point(1 1)@2001-01-01'));
 SELECT ST_AsEWKT(getValue(tgeogpoint 'Point(1.5 1.5)@2001-01-01'));

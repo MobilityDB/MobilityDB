@@ -27,15 +27,15 @@
 --
 -------------------------------------------------------------------------------
 
-SELECT round(stbox 'SRID=5676;STBOX X((1.123456789,1.123456789),(2.123456789,2.123456789))', 6);
-SELECT round(stbox 'SRID=5676;STBOX XT(((1.123456789,1.123456789),(2.123456789,2.123456789)),[2001-01-01,2001-01-02])', 6);
-SELECT round(stbox 'SRID=5676;STBOX Z((1.123456789,1.123456789,1.123456789),(2.123456789,2.123456789,2.123456789))', 6);
-SELECT round(stbox 'SRID=5676;STBOX ZT(((1.123456789,1.123456789,1.123456789),(2.123456789,2.123456789,2.123456789)),[2001-01-01,2001-01-02])', 6);
-SELECT round(stbox 'SRID=4326;GEODSTBOX Z((1.123456789,1.123456789,1.123456789),(2.123456789,2.123456789,2.123456789))', 6);
-SELECT round(stbox 'SRID=4326;GEODSTBOX ZT(((1.123456789,1.123456789,1.123456789),(2.123456789,2.123456789,2.123456789)),[2001-01-01,2001-01-02])', 6);
+SELECT stboxRound(stbox 'SRID=5676;STBOX X((1.123456789,1.123456789),(2.123456789,2.123456789))', 6);
+SELECT stboxRound(stbox 'SRID=5676;STBOX XT(((1.123456789,1.123456789),(2.123456789,2.123456789)),[2001-01-01,2001-01-02])', 6);
+SELECT stboxRound(stbox 'SRID=5676;STBOX Z((1.123456789,1.123456789,1.123456789),(2.123456789,2.123456789,2.123456789))', 6);
+SELECT stboxRound(stbox 'SRID=5676;STBOX ZT(((1.123456789,1.123456789,1.123456789),(2.123456789,2.123456789,2.123456789)),[2001-01-01,2001-01-02])', 6);
+SELECT stboxRound(stbox 'SRID=4326;GEODSTBOX Z((1.123456789,1.123456789,1.123456789),(2.123456789,2.123456789,2.123456789))', 6);
+SELECT stboxRound(stbox 'SRID=4326;GEODSTBOX ZT(((1.123456789,1.123456789,1.123456789),(2.123456789,2.123456789,2.123456789)),[2001-01-01,2001-01-02])', 6);
 
-SELECT round(ARRAY[stbox 'SRID=5676;STBOX X((1.123456789,1.123456789),(2.123456789,2.123456789))'], 6);
-SELECT round(ARRAY[]::stbox[], 6);
+SELECT stboxRound(ARRAY[stbox 'SRID=5676;STBOX X((1.123456789,1.123456789),(2.123456789,2.123456789))'], 6);
+SELECT stboxRound(ARRAY[]::stbox[], 6);
 
 -------------------------------------------------------------------------------
 -- Geoset
@@ -83,18 +83,18 @@ SELECT setSRID(stbox 'STBOX T([2001-01-01,2001-01-02])', 5676);
 SELECT setSRID(stbox 'GEODSTBOX T([2001-01-01,2001-01-02])', 4326);
 
 -- Tests independent of the PROJ version
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 5676), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])', 5676), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 5676), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX Z((1,1,1),(2,2,2))', 4269), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 4269), 4326), 1);
+SELECT stboxRound(transform(transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 5676), 4326), 1);
+SELECT stboxRound(transform(transform(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])', 5676), 4326), 1);
+SELECT stboxRound(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 1);
+SELECT stboxRound(transform(transform(stbox 'SRID=4326;STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 5676), 4326), 1);
+SELECT stboxRound(transform(transform(stbox 'SRID=4326;GEODSTBOX Z((1,1,1),(2,2,2))', 4269), 4326), 1);
+SELECT stboxRound(transform(transform(stbox 'SRID=4326;GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 4269), 4326), 1);
 
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
 SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
 
 SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,5676), 4326), 5676))), 1) FROM tbl_stbox;
-SELECT MIN(xmin(round(transform(transform(setSRID(b,5676), 4326), 5676), 1))) FROM tbl_stbox;
+SELECT MIN(xmin(stboxRound(transform(transform(setSRID(b,5676), 4326), 5676), 1))) FROM tbl_stbox;
 
 -- Noop
 SELECT transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 4326);
@@ -202,75 +202,75 @@ FROM test1, test2;
 --------------------------------------------------------
 
 -- Temporal type
-SELECT asEWKT(round(transformGK(tgeompoint 'Point(13.43593 52.41721)@2018-12-20'), 6));
-SELECT asEWKT(round(transformGK(tgeompoint '{Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00}'), 6));
-SELECT asEWKT(round(transformGK(tgeompoint '[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00]'), 6));
-SELECT asEWKT(round(transformGK(tgeompoint '{[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00],[Point(13.43705 52.41724)@2018-12-20 10:02:00,Point(13.43805 52.41730)@2018-12-20 10:03:00]}'), 6));
+SELECT asEWKT(tRound(transformGK(tgeompoint 'Point(13.43593 52.41721)@2018-12-20'), 6));
+SELECT asEWKT(tRound(transformGK(tgeompoint '{Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00}'), 6));
+SELECT asEWKT(tRound(transformGK(tgeompoint '[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00]'), 6));
+SELECT asEWKT(tRound(transformGK(tgeompoint '{[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00],[Point(13.43705 52.41724)@2018-12-20 10:02:00,Point(13.43805 52.41730)@2018-12-20 10:03:00]}'), 6));
 
 -- PostGIS geometry
-SELECT ST_AsText(round(transformGK(geometry 'Point Empty'), 6));
-SELECT ST_AsText(round(transformGK(geometry 'Point(13.43593 52.41721)'), 6));
-SELECT ST_AsText(round(geometry 'Linestring empty', 6));
-SELECT ST_AsText(round(transformGK(geometry 'Linestring(13.43593 52.41721,13.43593 52.41723)'), 6));
+SELECT ST_AsText(geometryRound(transformGK(geometry 'Point Empty'), 6));
+SELECT ST_AsText(geometryRound(transformGK(geometry 'Point(13.43593 52.41721)'), 6));
+SELECT ST_AsText(geometryRound(geometry 'Linestring empty', 6));
+SELECT ST_AsText(geometryRound(transformGK(geometry 'Linestring(13.43593 52.41721,13.43593 52.41723)'), 6));
 
 /* Error */
-SELECT transformGK(round(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', 6));
+SELECT transformGK(geometryRound(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', 6));
 
 --------------------------------------------------------
 
 -- 2D
-SELECT ST_AsText(round(geometry 'Point(1.123456789 1.123456789)', 6));
-SELECT ST_AsText(round(geometry 'Linestring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789)', 6));
-SELECT ST_AsText(round(geometry 'Triangle((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 1.123456789,1.123456789 1.123456789))', 6));
-SELECT ST_AsText(round(geometry 'Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789)', 6));
-SELECT ST_AsText(round(geometry 'CompoundCurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789, 4.123456789 4.123456789))', 6));
-SELECT ST_AsText(round(geometry 'Multicurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789,2.123456789 2.123456789,1.123456789 1.123456789),CompoundCurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789, 4.123456789 4.123456789)))', 6));
-SELECT ST_AsText(round(geometry 'Polygon((1.123456789 1.123456789,4.123456789 4.123456789,7.123456789 1.123456789,1.123456789 1.123456789),(3.123456789 2.123456789,4.123456789 3.123456789,5.123456789 2.123456789,3.123456789 2.123456789))', 6));
-SELECT ST_AsText(round(geometry 'CurvePolygon(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,1.123456789 1.123456789),(2.123456789 2.123456789,1.123456789 2.123456789,2.123456789 1.123456789,2.123456789 2.123456789))', 6));
-SELECT ST_AsText(round(geometry 'CurvePolygon(CompoundCurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789, 4.123456789 4.123456789,1.123456789 1.123456789)))', 6));
+SELECT ST_AsText(geometryRound(geometry 'Point(1.123456789 1.123456789)', 6));
+SELECT ST_AsText(geometryRound(geometry 'Linestring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789)', 6));
+SELECT ST_AsText(geometryRound(geometry 'Triangle((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 1.123456789,1.123456789 1.123456789))', 6));
+SELECT ST_AsText(geometryRound(geometry 'Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789)', 6));
+SELECT ST_AsText(geometryRound(geometry 'CompoundCurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789, 4.123456789 4.123456789))', 6));
+SELECT ST_AsText(geometryRound(geometry 'Multicurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789,2.123456789 2.123456789,1.123456789 1.123456789),CompoundCurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789, 4.123456789 4.123456789)))', 6));
+SELECT ST_AsText(geometryRound(geometry 'Polygon((1.123456789 1.123456789,4.123456789 4.123456789,7.123456789 1.123456789,1.123456789 1.123456789),(3.123456789 2.123456789,4.123456789 3.123456789,5.123456789 2.123456789,3.123456789 2.123456789))', 6));
+SELECT ST_AsText(geometryRound(geometry 'CurvePolygon(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,1.123456789 1.123456789),(2.123456789 2.123456789,1.123456789 2.123456789,2.123456789 1.123456789,2.123456789 2.123456789))', 6));
+SELECT ST_AsText(geometryRound(geometry 'CurvePolygon(CompoundCurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789, 4.123456789 4.123456789,1.123456789 1.123456789)))', 6));
 -- PostGIS 3.3 changed the output of MULTIPOINT
-SELECT ST_NPoints(round(geometry 'MultiPoint((1.123456789 1.123456789),(2.123456789 2.123456789),(3.123456789 3.123456789))', 6));
-SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(geometry 'MultiPoint((1.123456789 1.123456789),(2.123456789 2.123456789),(3.123456789 3.123456789))', 6))) AS t(dp);
-SELECT ST_AsText(round(geometry 'MultiLinestring((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(4.123456789 4.123456789,5.123456789 5.123456789))', 6));
-SELECT ST_AsText(round(geometry 'MultiPolygon(((1.123456789 1.123456789,4.123456789 4.123456789,7.123456789 1.123456789,1.123456789 1.123456789)),((3.123456789 2.123456789,4.123456789 3.123456789,5.123456789 2.123456789,3.123456789 2.123456789)))', 6));
-SELECT ST_AsText(round(geometry 'GeometryCollection(Point(1.123456789 1.123456789),
+SELECT ST_NPoints(geometryRound(geometry 'MultiPoint((1.123456789 1.123456789),(2.123456789 2.123456789),(3.123456789 3.123456789))', 6));
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geometryRound(geometry 'MultiPoint((1.123456789 1.123456789),(2.123456789 2.123456789),(3.123456789 3.123456789))', 6))) AS t(dp);
+SELECT ST_AsText(geometryRound(geometry 'MultiLinestring((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(4.123456789 4.123456789,5.123456789 5.123456789))', 6));
+SELECT ST_AsText(geometryRound(geometry 'MultiPolygon(((1.123456789 1.123456789,4.123456789 4.123456789,7.123456789 1.123456789,1.123456789 1.123456789)),((3.123456789 2.123456789,4.123456789 3.123456789,5.123456789 2.123456789,3.123456789 2.123456789)))', 6));
+SELECT ST_AsText(geometryRound(geometry 'GeometryCollection(Point(1.123456789 1.123456789),
   Linestring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),
   Triangle((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 1.123456789,1.123456789 1.123456789)),
   Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),
   Polygon((1.123456789 1.123456789,4.123456789 4.123456789,7.123456789 1.123456789,1.123456789 1.123456789),(3.123456789 2.123456789,4.123456789 3.123456789,5.123456789 2.123456789,3.123456789 2.123456789)))', 6));
-SELECT ST_AsText(round(geometry 'GeometryCollection(
+SELECT ST_AsText(geometryRound(geometry 'GeometryCollection(
   MultiPoint(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),
   MultiLinestring((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(4.123456789 4.123456789,5.123456789 5.123456789)),
   MultiPolygon(((1.123456789 1.123456789,4.123456789 4.123456789,7.123456789 1.123456789,1.123456789 1.123456789)),((3.123456789 2.123456789,4.123456789 3.123456789,5.123456789 2.123456789,3.123456789 2.123456789))))', 6));
-SELECT ST_AsText(round(geometry 'GeometryCollection(
+SELECT ST_AsText(geometryRound(geometry 'GeometryCollection(
   Multicurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789,2.123456789 2.123456789,1.123456789 1.123456789)), 
   CompoundCurve(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(3.123456789 3.123456789, 4.123456789 4.123456789)), 
   CurvePolygon(Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,1.123456789 1.123456789)))', 6));
 
-SELECT ST_AsText(round(geometry 'Point Empty', 6));
-SELECT ST_AsText(round(geometry 'Linestring Empty', 6));
-SELECT ST_AsText(round(geometry 'Triangle Empty', 6));
-SELECT ST_AsText(round(geometry 'Circularstring Empty', 6));
-SELECT ST_AsText(round(geometry 'CompoundCurve Empty', 6));
-SELECT ST_AsText(round(geometry 'Polygon Empty', 6));
-SELECT ST_AsText(round(geometry 'CurvePolygon Empty', 6));
-SELECT ST_AsText(round(geometry 'MultiPoint Empty', 6));
-SELECT ST_AsText(round(geometry 'MultiLinestring Empty', 6));
-SELECT ST_AsText(round(geometry 'MultiPolygon Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'Point Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'Linestring Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'Triangle Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'Circularstring Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'CompoundCurve Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'Polygon Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'CurvePolygon Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'MultiPoint Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'MultiLinestring Empty', 6));
+SELECT ST_AsText(geometryRound(geometry 'MultiPolygon Empty', 6));
 -- 3D
-SELECT ST_AsText(round(geometry 'Point Z(1.123456789 1.123456789 1.123456789)', 6));
-SELECT ST_AsText(round(geometry 'Linestring Z(1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789)', 6));
-SELECT ST_AsText(round(geometry 'Triangle Z((1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 1.123456789 1.123456789,1.123456789 1.123456789 1.123456789))', 6));
-SELECT ST_AsText(round(geometry 'Circularstring Z(1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789)', 6));
-SELECT ST_AsText(round(geometry 'Polygon Z((1.123456789 1.123456789 1.123456789,4.123456789 4.123456789 4.123456789,7.123456789 1.123456789 1.123456789,1.123456789 1.123456789 1.123456789),(3.123456789 2.123456789 2.123456789,4.123456789 3.123456789 3.123456789,5.123456789 2.123456789 2.123456789,3.123456789 2.123456789 2.123456789))', 6));
+SELECT ST_AsText(geometryRound(geometry 'Point Z(1.123456789 1.123456789 1.123456789)', 6));
+SELECT ST_AsText(geometryRound(geometry 'Linestring Z(1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789)', 6));
+SELECT ST_AsText(geometryRound(geometry 'Triangle Z((1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 1.123456789 1.123456789,1.123456789 1.123456789 1.123456789))', 6));
+SELECT ST_AsText(geometryRound(geometry 'Circularstring Z(1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789)', 6));
+SELECT ST_AsText(geometryRound(geometry 'Polygon Z((1.123456789 1.123456789 1.123456789,4.123456789 4.123456789 4.123456789,7.123456789 1.123456789 1.123456789,1.123456789 1.123456789 1.123456789),(3.123456789 2.123456789 2.123456789,4.123456789 3.123456789 3.123456789,5.123456789 2.123456789 2.123456789,3.123456789 2.123456789 2.123456789))', 6));
 -- PostGIS 3.3 changed the output of MULTIPOINT
 -- SELECT ST_AsText(round(geometry 'MultiPoint Z(1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789)', 6));
-SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(geometry 'MultiPoint Z(1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789)', 6))) AS t(dp);
-SELECT ST_AsText(round(geometry 'MultiLinestring Z((1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789),(4.123456789 4.123456789 4.123456789,5.123456789 5.123456789 5.123456789))', 6));
-SELECT ST_AsText(round(geometry 'MultiPolygon Z(((1.123456789 1.123456789 1.123456789,4.123456789 4.123456789 4.123456789,7.123456789 1.123456789 1.123456789,1.123456789 1.123456789 1.123456789)),((3.123456789 2.123456789 2.123456789,4.123456789 3.123456789 3.123456789,5.123456789 2.123456789 2.123456789,3.123456789 2.123456789 2.123456789)))', 6));
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geometryRound(geometry 'MultiPoint Z(1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789)', 6))) AS t(dp);
+SELECT ST_AsText(geometryRound(geometry 'MultiLinestring Z((1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789),(4.123456789 4.123456789 4.123456789,5.123456789 5.123456789 5.123456789))', 6));
+SELECT ST_AsText(geometryRound(geometry 'MultiPolygon Z(((1.123456789 1.123456789 1.123456789,4.123456789 4.123456789 4.123456789,7.123456789 1.123456789 1.123456789,1.123456789 1.123456789 1.123456789)),((3.123456789 2.123456789 2.123456789,4.123456789 3.123456789 3.123456789,5.123456789 2.123456789 2.123456789,3.123456789 2.123456789 2.123456789)))', 6));
 
 /* Errors */
-SELECT round(geometry '
+SELECT geometryRound(geometry '
 POLYHEDRALSURFACE Z (
   ((0 0 0, 0 1 0, 1 1 0, 1 0 0, 0 0 0)),
   ((0 0 0, 0 1 0, 0 1 1, 0 0 1, 0 0 0)),
@@ -279,7 +279,7 @@ POLYHEDRALSURFACE Z (
   ((1 1 1, 1 0 1, 1 0 0, 1 1 0, 1 1 1)),
   ((1 1 1, 1 1 0, 0 1 0, 0 1 1, 1 1 1))
 )', 1);
-SELECT round(geometry 'GeometryCollection(
+SELECT geometryRound(geometry 'GeometryCollection(
 Point(1 1 1),
 POLYHEDRALSURFACE Z (
   ((0 0 0, 0 1 0, 1 1 0, 1 0 0, 0 0 0)),
@@ -293,26 +293,26 @@ POLYHEDRALSURFACE Z (
 --------------------------------------------------------
 
 -- 2D
-SELECT asText(round(tgeompoint 'Point(1.12345 1.12345)@2001-01-01', 2));
-SELECT asText(round(tgeompoint '{Point(1.12345 1.12345)@2001-01-01, Point(2 2)@2001-01-02, Point(1.12345 1.12345)@2001-01-03}', 2));
-SELECT asText(round(tgeompoint '[Point(1.12345 1.12345)@2001-01-01, Point(2 2)@2001-01-02, Point(1.12345 1.12345)@2001-01-03]', 2));
-SELECT asText(round(tgeompoint '{[Point(1.12345 1.12345)@2001-01-01, Point(2 2)@2001-01-02, Point(1.12345 1.12345)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2));
-SELECT asText(round(tgeogpoint 'Point(1.12345 1.12345)@2001-01-01', 2));
-SELECT asText(round(tgeogpoint '{Point(1.12345 1.12345)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.12345 1.12345)@2001-01-03}', 2));
-SELECT asText(round(tgeogpoint '[Point(1.12345 1.12345)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.12345 1.12345)@2001-01-03]', 2));
-SELECT asText(round(tgeogpoint '{[Point(1.12345 1.12345)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.12345 1.12345)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', 2));
+SELECT asText(tRound(tgeompoint 'Point(1.12345 1.12345)@2001-01-01', 2));
+SELECT asText(tRound(tgeompoint '{Point(1.12345 1.12345)@2001-01-01, Point(2 2)@2001-01-02, Point(1.12345 1.12345)@2001-01-03}', 2));
+SELECT asText(tRound(tgeompoint '[Point(1.12345 1.12345)@2001-01-01, Point(2 2)@2001-01-02, Point(1.12345 1.12345)@2001-01-03]', 2));
+SELECT asText(tRound(tgeompoint '{[Point(1.12345 1.12345)@2001-01-01, Point(2 2)@2001-01-02, Point(1.12345 1.12345)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2));
+SELECT asText(tRound(tgeogpoint 'Point(1.12345 1.12345)@2001-01-01', 2));
+SELECT asText(tRound(tgeogpoint '{Point(1.12345 1.12345)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.12345 1.12345)@2001-01-03}', 2));
+SELECT asText(tRound(tgeogpoint '[Point(1.12345 1.12345)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.12345 1.12345)@2001-01-03]', 2));
+SELECT asText(tRound(tgeogpoint '{[Point(1.12345 1.12345)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.12345 1.12345)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', 2));
 -- 3D
-SELECT asText(round(tgeompoint 'Point(1.12345 1.12345 1.12345)@2001-01-01', 2));
-SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));
-SELECT asText(round(tgeompoint '[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03]', 2));
-SELECT asText(round(tgeompoint '{[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2));
-SELECT asText(round(tgeogpoint 'Point(1.12345 1.12345 1.12345)@2001-01-01', 2));
-SELECT asText(round(tgeogpoint '{Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));
-SELECT asText(round(tgeogpoint '[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03]', 2));
-SELECT asText(round(tgeogpoint '{[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 2));
+SELECT asText(tRound(tgeompoint 'Point(1.12345 1.12345 1.12345)@2001-01-01', 2));
+SELECT asText(tRound(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));
+SELECT asText(tRound(tgeompoint '[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03]', 2));
+SELECT asText(tRound(tgeompoint '{[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2));
+SELECT asText(tRound(tgeogpoint 'Point(1.12345 1.12345 1.12345)@2001-01-01', 2));
+SELECT asText(tRound(tgeogpoint '{Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));
+SELECT asText(tRound(tgeogpoint '[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03]', 2));
+SELECT asText(tRound(tgeogpoint '{[Point(1.12345 1.12345 1.12345)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', 2));
 
-SELECT asText(round(ARRAY[tgeompoint '[Point(1.55 1.55)@2001-01-01, Point(2.55 2.55)@2001-01-02, Point(1.55 1.55)@2001-01-03]', '[Point(3.55 3.55)@2001-01-04, Point(3.55 3.55)@2001-01-05]'],1));
-SELECT round(ARRAY[]::tgeompoint[]);
+SELECT asText(tRound(ARRAY[tgeompoint '[Point(1.55 1.55)@2001-01-01, Point(2.55 2.55)@2001-01-02, Point(1.55 1.55)@2001-01-03]', '[Point(3.55 3.55)@2001-01-04, Point(3.55 3.55)@2001-01-05]'],1));
+SELECT tRound(ARRAY[]::tgeompoint[]);
 
 --------------------------------------------------------
 
@@ -485,77 +485,77 @@ SELECT round(length(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2001-01-01, Poin
 SELECT round(length(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'), 6);
 
 -- 2D
-SELECT round(cumulativeLength(tgeompoint 'Point(1 1)@2001-01-01'), 6);
-SELECT round(cumulativeLength(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'), 6);
-SELECT round(cumulativeLength(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6);
-SELECT round(cumulativeLength(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6);
-SELECT round(cumulativeLength(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6);
-SELECT round(cumulativeLength(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6);
-SELECT round(cumulativeLength(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 6);
-SELECT round(cumulativeLength(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}'), 6);
-SELECT round(cumulativeLength(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'), 6);
-SELECT round(cumulativeLength(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'), 6);
-SELECT round(cumulativeLength(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'), 6);
-SELECT round(cumulativeLength(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'), 6);
+SELECT tRound(cumulativeLength(tgeompoint 'Point(1 1)@2001-01-01'), 6);
+SELECT tRound(cumulativeLength(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'), 6);
+SELECT tRound(cumulativeLength(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6);
+SELECT tRound(cumulativeLength(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6);
+SELECT tRound(cumulativeLength(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6);
+SELECT tRound(cumulativeLength(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'), 6);
 -- 3D
-SELECT round(cumulativeLength(tgeompoint 'Point(1 1 1)@2001-01-01'), 6);
-SELECT round(cumulativeLength(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}'), 6);
-SELECT round(cumulativeLength(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
-SELECT round(cumulativeLength(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
-SELECT round(cumulativeLength(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
-SELECT round(cumulativeLength(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
-SELECT round(cumulativeLength(tgeogpoint 'Point(1.5 1.5 1.5)@2001-01-01'), 6);
-SELECT round(cumulativeLength(tgeogpoint '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}'), 6);
-SELECT round(cumulativeLength(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]'), 6);
-SELECT round(cumulativeLength(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'), 6);
-SELECT round(cumulativeLength(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]'), 6);
-SELECT round(cumulativeLength(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'), 6);
+SELECT tRound(cumulativeLength(tgeompoint 'Point(1 1 1)@2001-01-01'), 6);
+SELECT tRound(cumulativeLength(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}'), 6);
+SELECT tRound(cumulativeLength(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
+SELECT tRound(cumulativeLength(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
+SELECT tRound(cumulativeLength(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
+SELECT tRound(cumulativeLength(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint 'Point(1.5 1.5 1.5)@2001-01-01'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]'), 6);
+SELECT tRound(cumulativeLength(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'), 6);
 
 -- 2D
-SELECT round(speed(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6);
-SELECT round(speed(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6);
-SELECT round(speed(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'), 6);
-SELECT round(speed(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'), 6);
+SELECT tRound(speed(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6);
+SELECT tRound(speed(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6);
+SELECT tRound(speed(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]'), 6);
+SELECT tRound(speed(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}'), 6);
 -- 3D
-SELECT round(speed(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
-SELECT round(speed(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
-SELECT round(speed(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]'), 6);
-SELECT round(speed(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'), 6);
+SELECT tRound(speed(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
+SELECT tRound(speed(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
+SELECT tRound(speed(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]'), 6);
+SELECT tRound(speed(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'), 6);
 /* Errors */
-SELECT round(speed(tgeompoint 'Point(1 1)@2001-01-01'), 6);
-SELECT round(speed(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'), 6);
-SELECT round(speed(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
-SELECT round(speed(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
-SELECT round(speed(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 6);
-SELECT round(speed(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'), 6);
-SELECT round(speed(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]'), 6);
-SELECT round(speed(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'), 6);
+SELECT tRound(speed(tgeompoint 'Point(1 1)@2001-01-01'), 6);
+SELECT tRound(speed(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'), 6);
+SELECT tRound(speed(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6);
+SELECT tRound(speed(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6);
+SELECT tRound(speed(tgeogpoint 'Point(1.5 1.5)@2001-01-01'), 6);
+SELECT tRound(speed(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'), 6);
+SELECT tRound(speed(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]'), 6);
+SELECT tRound(speed(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}'), 6);
 
 SELECT direction(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]');
 SELECT direction(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]}');
 
 -- 2D
-SELECT ST_AsText(round(twcentroid(tgeompoint 'Point(1 1)@2001-01-01'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint 'Point(1 1)@2001-01-01'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'), 6));
 -- 3D
-SELECT ST_AsText(round(twcentroid(tgeompoint 'Point(1 1 1)@2001-01-01'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6));
-SELECT ST_AsText(round(twcentroid(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint 'Point(1 1 1)@2001-01-01'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]'), 6));
+SELECT ST_AsText(geometryRound(twcentroid(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}'), 6));
 
 -- 2D
-SELECT round(degrees(azimuth(tgeompoint 'Point(1 1)@2001-01-01')), 6);
-SELECT round(degrees(azimuth(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}')), 6);
-SELECT round(degrees(azimuth(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
-SELECT round(degrees(azimuth(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
-SELECT round(degrees(azimuth(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint 'Point(1 1)@2001-01-01')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
 -- Return negative result in PostGIS 2.5.5
 -- SELECT round(degrees(azimuth(tgeogpoint 'Point(1.5 1.5)@2001-01-01')), 6);
 -- SELECT round(degrees(azimuth(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}')), 6);
@@ -564,53 +564,53 @@ SELECT round(degrees(azimuth(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Po
 -- SELECT round(degrees(azimuth(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]')), 6);
 -- SELECT round(degrees(azimuth(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}')), 6);
 -- 3D
-SELECT round(degrees(azimuth(tgeompoint 'Point(1 1 1)@2001-01-01')), 6);
-SELECT round(degrees(azimuth(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}')), 6);
-SELECT round(degrees(azimuth(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
-SELECT round(degrees(azimuth(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]')), 6);
-SELECT round(degrees(azimuth(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint 'Point(1 1 1)@2001-01-01')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint 'Interp=Step;{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
 
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]')), 6);
 
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')), 6);
-SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')), 6);
 
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(1 1)@2001-01-03)')), 6);
-SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(1 1)@2001-01-03)')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(1 1)@2001-01-03)')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(1 1)@2001-01-03)')), 6);
 
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03)')), 6);
-SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03)')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03)')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03)')), 6);
 
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03, Point(0 0)@2001-01-04]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03, Point(0 0)@2001-01-04)')), 6);
-SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03, Point(0 0)@2001-01-04]')), 6);
-SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03, Point(0 0)@2001-01-04)')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03, Point(0 0)@2001-01-04]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03, Point(0 0)@2001-01-04)')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03, Point(0 0)@2001-01-04]')), 6);
+SELECT tRound(tDegrees(azimuth(tgeompoint '(Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03, Point(0 0)@2001-01-04)')), 6);
 
 -- Return negative result in PostGIS 2.5.5, return erroneous value in PostGIS 3.1.1
 -- 2D
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Point(1.5 1.5)@2001-01-01')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint 'Point(1.5 1.5)@2001-01-01')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}')), 6) IS NOT NULL;
 -- 3D
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Point(1.5 1.5 1.5)@2001-01-01')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint 'Point(1.5 1.5 1.5)@2001-01-01')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}')), 6) IS NOT NULL;
 
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]}')), 6) IS NOT NULL;
-SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1 1)@2001-01-01], [Point(2 2)@2001-01-02], [Point(1 1)@2001-01-03]}')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]}')), 6) IS NOT NULL;
+SELECT 1 WHERE tRound(tDegrees(azimuth(tgeogpoint '{[Point(1 1)@2001-01-01], [Point(2 2)@2001-01-02], [Point(1 1)@2001-01-03]}')), 6) IS NOT NULL;
 
 --------------------------------------------------------
 
@@ -636,127 +636,127 @@ SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 -1)')),
 SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 -1)')), 6);
 SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 -1)')), 6);
 
-SELECT round(degrees(bearing(geometry 'Point(1 1)', tgeompoint 'Point(2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(geometry 'Point(1 1)', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(geometry 'Point(1 1)', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(geometry 'Point(2 2)', tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(geometry 'Point(1 1)', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point(1 1)', tgeompoint 'Point(2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point(1 1)', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point(1 1)', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point(2 2)', tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point(1 1)', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(geometry 'Point empty', tgeompoint 'Point(2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(geometry 'Point empty', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(geometry 'Point empty', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(geometry 'Point empty', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point empty', tgeompoint 'Point(2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point empty', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point empty', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point empty', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(geometry 'Point(1 1 1)', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(geometry 'Point(1 1 1)', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(geometry 'Point(1 1 1)', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(geometry 'Point(1 1 1)', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point(1 1 1)', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point(1 1 1)', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point(1 1 1)', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point(1 1 1)', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(geometry 'Point Z empty', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(geometry 'Point Z empty', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(geometry 'Point Z empty', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(geometry 'Point Z empty', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point Z empty', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point Z empty', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point Z empty', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(geometry 'Point Z empty', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(geography 'Point(1 1)', tgeogpoint 'Point(2.5 2.5)@2001-01-01')), 6);
-SELECT round(degrees(bearing(geography 'Point(1 1)', tgeogpoint '{Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(geography 'Point(1 1)', tgeogpoint '[Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(geography 'Point(1 1)', tgeogpoint '{[Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point(1 1)', tgeogpoint 'Point(2.5 2.5)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point(1 1)', tgeogpoint '{Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point(1 1)', tgeogpoint '[Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point(1 1)', tgeogpoint '{[Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(geography 'Point empty', tgeogpoint 'Point(2.5 2.5)@2001-01-01')), 6);
-SELECT round(degrees(bearing(geography 'Point empty', tgeogpoint '{Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(geography 'Point empty', tgeogpoint '[Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(geography 'Point empty', tgeogpoint '{[Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point empty', tgeogpoint 'Point(2.5 2.5)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point empty', tgeogpoint '{Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point empty', tgeogpoint '[Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point empty', tgeogpoint '{[Point(2.5 2.5)@2001-01-01, Point(1.5 1.5)@2001-01-02, Point(2.5 2.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(geography 'Point(1 1 1)', tgeogpoint 'Point(2.5 2.5 2.5)@2001-01-01')), 6);
-SELECT round(degrees(bearing(geography 'Point(1 1 1)', tgeogpoint '{Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(geography 'Point(1 1 1)', tgeogpoint '[Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(geography 'Point(1 1 1)', tgeogpoint '{[Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point(1 1 1)', tgeogpoint 'Point(2.5 2.5 2.5)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point(1 1 1)', tgeogpoint '{Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point(1 1 1)', tgeogpoint '[Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point(1 1 1)', tgeogpoint '{[Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(geography 'Point Z empty', tgeogpoint 'Point(2.5 2.5 2.5)@2001-01-01')), 6);
-SELECT round(degrees(bearing(geography 'Point Z empty', tgeogpoint '{Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(geography 'Point Z empty', tgeogpoint '[Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(geography 'Point Z empty', tgeogpoint '{[Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point Z empty', tgeogpoint 'Point(2.5 2.5 2.5)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point Z empty', tgeogpoint '{Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point Z empty', tgeogpoint '[Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(geography 'Point Z empty', tgeogpoint '{[Point(2.5 2.5 2.5)@2001-01-01, Point(1.5 1.5 1.5)@2001-01-02, Point(2.5 2.5 2.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Point(1 1)')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point(1 1)')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point(1 1)')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point(1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Point(1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point(1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point(1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point(1 1)')), 6);
 
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Point empty')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point empty')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point empty')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Point empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point empty')), 6);
 
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', geometry 'Point(1 1 1)')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', geometry 'Point(1 1 1)')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', geometry 'Point(1 1 1)')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Point(1 1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', geometry 'Point(1 1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', geometry 'Point(1 1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', geometry 'Point(1 1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Point(1 1 1)')), 6);
 
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', geometry 'Point Z empty')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', geometry 'Point Z empty')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', geometry 'Point Z empty')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Point Z empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', geometry 'Point Z empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', geometry 'Point Z empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', geometry 'Point Z empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Point Z empty')), 6);
 
 -- Test for adding a turning point if the point to the North of the line
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', geometry 'Point(2 3)')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', geometry 'Point(2 2)')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', geometry 'Point(2 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', geometry 'Point(2 3)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', geometry 'Point(2 2)')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', geometry 'Point(2 1)')), 6);
 
-SELECT round(degrees(bearing(tgeogpoint 'Point(1.5 1.5)@2001-01-01', geography 'Point(1 1)')), 6);
-SELECT round(degrees(bearing(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', geography 'Point(1 1)')), 6);
-SELECT round(degrees(bearing(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', geography 'Point(1 1)')), 6);
-SELECT round(degrees(bearing(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', geography 'Point(1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint 'Point(1.5 1.5)@2001-01-01', geography 'Point(1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', geography 'Point(1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', geography 'Point(1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', geography 'Point(1 1)')), 6);
 
-SELECT round(degrees(bearing(tgeogpoint 'Point(1.5 1.5)@2001-01-01', geography 'Point empty')), 6);
-SELECT round(degrees(bearing(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', geography 'Point empty')), 6);
-SELECT round(degrees(bearing(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', geography 'Point empty')), 6);
-SELECT round(degrees(bearing(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', geography 'Point empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint 'Point(1.5 1.5)@2001-01-01', geography 'Point empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', geography 'Point empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]', geography 'Point empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}', geography 'Point empty')), 6);
 
-SELECT round(degrees(bearing(tgeogpoint 'Point(1.5 1.5 1.5)@2001-01-01', geography 'Point(1 1 1)')), 6);
-SELECT round(degrees(bearing(tgeogpoint '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', geography 'Point(1 1 1)')), 6);
-SELECT round(degrees(bearing(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', geography 'Point(1 1 1)')), 6);
-SELECT round(degrees(bearing(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', geography 'Point(1 1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint 'Point(1.5 1.5 1.5)@2001-01-01', geography 'Point(1 1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', geography 'Point(1 1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', geography 'Point(1 1 1)')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', geography 'Point(1 1 1)')), 6);
 
-SELECT round(degrees(bearing(tgeogpoint 'Point(1.5 1.5 1.5)@2001-01-01', geography 'Point Z empty')), 6);
-SELECT round(degrees(bearing(tgeogpoint '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', geography 'Point Z empty')), 6);
-SELECT round(degrees(bearing(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', geography 'Point Z empty')), 6);
-SELECT round(degrees(bearing(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', geography 'Point Z empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint 'Point(1.5 1.5 1.5)@2001-01-01', geography 'Point Z empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}', geography 'Point Z empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]', geography 'Point Z empty')), 6);
+SELECT tRound(tDegrees(bearing(tgeogpoint '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}', geography 'Point Z empty')), 6);
 
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint 'Point(2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeompoint 'Point(2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeompoint 'Point(2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeompoint 'Point(2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint 'Point(2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeompoint 'Point(2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeompoint 'Point(2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeompoint 'Point(2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeompoint '{Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1)@2001-01-01', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', tgeompoint '{[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
-SELECT round(degrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
-SELECT round(degrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
-SELECT round(degrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeompoint 'Point(2 2 2)@2001-01-01')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeompoint '{Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeompoint '[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03]')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Point(1 1 1)@2001-01-01', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
 
-SELECT round(degrees(bearing(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeompoint 'Interp=Step;[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02]')), 6);
+SELECT tRound(tDegrees(bearing(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeompoint 'Interp=Step;[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02]')), 6);
 
 -- SELECT round(degrees(bearing(tgeogpoint 'Point(1.5 1.5)@2001-01-01', tgeogpoint 'Point(2.5 2.5)@2001-01-01')), 6);
 -- SELECT round(degrees(bearing(tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}', tgeogpoint 'Point(2.5 2.5)@2001-01-01')), 6);
