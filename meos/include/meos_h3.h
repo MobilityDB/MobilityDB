@@ -65,6 +65,25 @@
 #endif /* MEOS */
 
 /**
+ * @brief Ensure that the set passed as argument is a set of H3 cells.
+ * Matches the pattern of `VALIDATE_NPOINTSET` / `VALIDATE_CBUFFERSET`.
+ */
+#if MEOS
+  #define VALIDATE_H3INDEXSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_H3INDEXSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_H3INDEXSET(set, ret) \
+    do { \
+      assert(set); \
+      assert(set->settype == T_H3INDEXSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
  * @brief Ensure that an h3index is a valid H3 cell.
  * @details An h3index is a mode-tagged identifier, so the operation decides
  * which of the three predicates applies: a cell operation requires a cell, a

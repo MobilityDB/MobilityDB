@@ -213,6 +213,8 @@ jobs:
           ./cellcover_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o temporal_text_io_test temporal_text_io_test.c -L/usr/local/lib -lmeos
           ./temporal_text_io_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o h3_validity_test h3_validity_test.c -L/usr/local/lib -lmeos
+          ./h3_validity_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rasterwalk_test rasterwalk_test.c -L/usr/local/lib -lmeos -lm
           ./rasterwalk_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rasterread_test rasterread_test.c -L/usr/local/lib -lmeos

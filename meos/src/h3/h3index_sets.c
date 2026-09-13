@@ -51,6 +51,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/meos_catalog.h"
+#include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/temporal.h"  /* ORDER / SET_VAL_N */
 #include "h3/h3index.h"
 
@@ -279,6 +280,8 @@ meos_h3_cell_to_children(H3Index origin, int childRes)
 Set *
 h3_compact_cells(const Set *cells)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(cells, NULL);
   return meos_h3_compact_cells(cells);
 }
 #endif
@@ -316,6 +319,8 @@ meos_h3_compact_cells(const Set *cells)
 Set *
 h3_uncompact_cells(const Set *cells, int res)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(cells, NULL);
   return meos_h3_uncompact_cells(cells, res);
 }
 #endif
