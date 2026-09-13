@@ -385,6 +385,22 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
       }
     }
     pfree(xcells); pfree(xenter);
+
+    /* The last cell holds to the end of the trajectory, which the closing
+     * instant states, since a sequence reaches no further than its last
+     * instant. Under an exclusive upper bound, a cell the trajectory reaches
+     * at its end is held for no time and is no part of the value */
+    TimestampTz tend = TSEQUENCE_INST_N(seq, seq->count - 1)->t;
+    if (! seq->period.upper_inc)
+      while (ninsts > 1 && instants[ninsts - 1]->t >= tend)
+        pfree(instants[--ninsts]);
+    last_ts = instants[ninsts - 1]->t;
+    if (last_ts < tend)
+    {
+      H3Index endvalue = DatumGetH3Index(tinstant_value_p(
+        instants[ninsts - 1]));
+      PUSH_INSTANT(endvalue, tend);
+    }
   }
 
   #undef PUSH_INSTANT
