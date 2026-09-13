@@ -43,6 +43,12 @@
  * dense walk is a lower bound on the cells a segment meets, so a traversal
  * legitimately finds a corner clip the walk steps over.
  *
+ * A geodetic segment moves along its great circle, and its dense walk is
+ * placed along that circle. Its cover is also held to the path: a cell the
+ * walk does not reach is a corner the path clips between two positions, so it
+ * borders a cell the walk reaches, and a cover cell bordering none lies off
+ * the path.
+ *
  * The segments are drawn here rather than read from a `tbl_` fixture because
  * the property lives in the geometry: a cell is lost exactly where a segment
  * clips its corner, which needs many short segments at a chosen latitude and
@@ -161,6 +167,110 @@ quadbin_missing(const char *seg_wkt, const char *dense_wkt, uint32_t zoom)
   return missing;
 }
 
+/**
+ * @brief Set the last argument to the unit vector of a longitude and latitude
+ * in degrees
+ */
+static void
+unit_vector(double lon, double lat, double p[3])
+{
+  double lo = lon * M_PI / 180.0, la = lat * M_PI / 180.0;
+  p[0] = cos(la) * cos(lo);
+  p[1] = cos(la) * sin(lo);
+  p[2] = sin(la);
+}
+
+/**
+ * @brief Write a linear two-instant geodetic segment and the dense discrete
+ * sequence of positions along its great circle
+ * @details The positions are placed by spherical linear interpolation of the
+ * unit vectors of the endpoints, which follows the great circle a temporal
+ * geodetic point moves along between two instants.
+ */
+static void
+geodetic_segment_pair(char *seg, size_t segsz, char *dense, size_t densesz,
+  double lon0, double lat0, double lon1, double lat1)
+{
+  snprintf(seg, segsz, "[Point(%.9f %.9f)@2020-01-01 00:00:00, "
+    "Point(%.9f %.9f)@2020-01-01 00:00:04]", lon0, lat0, lon1, lat1);
+  double a[3], b[3];
+  unit_vector(lon0, lat0, a);
+  unit_vector(lon1, lat1, b);
+  double c = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  double omega = acos(c < -1.0 ? -1.0 : (c > 1.0 ? 1.0 : c));
+  int off = snprintf(dense, densesz, "{");
+  for (int s = 0; s <= DENSE_POSITIONS; s++)
+  {
+    double f = (double) s / (double) DENSE_POSITIONS;
+    double wa = sin((1.0 - f) * omega) / sin(omega);
+    double wb = sin(f * omega) / sin(omega);
+    double p[3] = { wa * a[0] + wb * b[0], wa * a[1] + wb * b[1],
+      wa * a[2] + wb * b[2] };
+    double lon = atan2(p[1], p[0]) * 180.0 / M_PI;
+    double lat = atan2(p[2], sqrt(p[0] * p[0] + p[1] * p[1])) * 180.0 / M_PI;
+    off += snprintf(dense + off, densesz - (size_t) off,
+      "%sPoint(%.9f %.9f)@2020-01-01 00:00:%02d.%03d", (s ? ", " : ""),
+      lon, lat, (s / 1000) % 60, s % 1000);
+  }
+  snprintf(dense + off, densesz - (size_t) off, "}");
+}
+
+/**
+ * @brief Return whether two H3 cells are neighbours
+ */
+static bool
+cells_adjacent(H3Index a, H3Index b)
+{
+  Temporal *ta = th3index_make(a, 0);
+  Temporal *tb = th3index_make(b, 0);
+  Temporal *adj = (ta != NULL && tb != NULL) ?
+    th3index_are_neighbor_cells(ta, tb) : NULL;
+  bool result = (adj != NULL) && tbool_start_value(adj);
+  free(ta); free(tb); free(adj);
+  return result;
+}
+
+/**
+ * @brief Return how many cells of the dense walk along a geodetic segment its
+ * th3index cover does not hold, adding to the last argument the cover cells
+ * that neither the walk reaches nor border a cell it reaches, or -1 where a
+ * conversion answers nothing
+ */
+static long
+h3_geodetic_missing(const char *seg_wkt, const char *dense_wkt,
+  int32 resolution, long *offpath)
+{
+  Temporal *dense = tgeogpoint_in(dense_wkt);
+  Temporal *seg = tgeogpoint_in(seg_wkt);
+  if (dense == NULL || seg == NULL)
+    return -1;
+  Temporal *tcover = tgeogpoint_to_th3index(seg, resolution);
+  Temporal *ttruth = tgeogpoint_to_th3index(dense, resolution);
+  long missing = (tcover != NULL && ttruth != NULL) ? 0 : -1;
+  if (tcover != NULL && ttruth != NULL)
+  {
+    int ncover = 0, ntruth = 0;
+    H3Index *cover = th3index_values(tcover, &ncover);
+    H3Index *truth = th3index_values(ttruth, &ntruth);
+    for (int i = 0; i < ntruth; i++)
+      if (! holds((const uint64 *) cover, ncover, (uint64) truth[i]))
+        missing++;
+    for (int i = 0; i < ncover; i++)
+    {
+      if (holds((const uint64 *) truth, ntruth, (uint64) cover[i]))
+        continue;
+      bool near = false;
+      for (int j = 0; j < ntruth && ! near; j++)
+        near = cells_adjacent(cover[i], truth[j]);
+      if (! near)
+        (*offpath)++;
+    }
+    free(cover); free(truth);
+  }
+  free(tcover); free(ttruth); free(seg); free(dense);
+  return missing;
+}
+
 int main(void)
 {
   meos_initialize();
@@ -254,6 +364,76 @@ int main(void)
     if (cells != NULL)
       free(cells);
     free(cover); free(seg);
+  }
+
+  /* A geodetic segment moves along its great circle. The regimes are the ones
+   * a line in longitude and latitude departs from it most: a segment crossing
+   * the antimeridian, at the equator and at 60N, one passing beside the pole,
+   * and arcs of tens of degrees anywhere on the sphere at a coarse resolution,
+   * where a dense walk still steps far below a cell */
+  {
+    const char *gname[4] = { "antimeridian at 0N", "antimeridian at 60N",
+      "beside the pole", "long arcs" };
+    for (int k = 0; k < 4; k++)
+    {
+      long miss = 0, offpath = 0, none = 0;
+      unsigned seed = 20260913u + (unsigned) k;
+      int32 res = (k == 3) ? 3 : resolution;
+      for (int t = 0; t < NSEGMENTS; t++)
+      {
+        double r1 = rand_r(&seed) / (double) RAND_MAX;
+        double r2 = rand_r(&seed) / (double) RAND_MAX;
+        double r3 = rand_r(&seed) / (double) RAND_MAX;
+        double r4 = rand_r(&seed) / (double) RAND_MAX;
+        double lon0, lat0, lon1, lat1;
+        if (k < 2)
+        {
+          double lat = (k == 0) ? 0.5 : 60.0;
+          lon0 = 180.0 - 0.0010 * r1;
+          lon1 = -180.0 + 0.0010 * r2;
+          lat0 = lat + 0.0006 * (r3 - 0.5);
+          lat1 = lat + 0.0006 * (r4 - 0.5);
+        }
+        else if (k == 2)
+        {
+          lon0 = 360.0 * r1 - 180.0;
+          lon1 = 360.0 * r2 - 180.0;
+          lat0 = 89.9990 + 0.0009 * r3;
+          lat1 = 89.9990 + 0.0009 * r4;
+        }
+        else
+        {
+          lon0 = 360.0 * r1 - 180.0;
+          lat0 = 160.0 * r2 - 80.0;
+          lon1 = lon0 + 80.0 * (r3 - 0.5);
+          if (lon1 > 180.0)
+            lon1 -= 360.0;
+          if (lon1 < -180.0)
+            lon1 += 360.0;
+          lat1 = lat0 + 80.0 * (r4 - 0.5);
+          if (lat1 > 85.0)
+            lat1 = 85.0;
+          if (lat1 < -85.0)
+            lat1 = -85.0;
+        }
+        char seg[256];
+        char *dense = malloc(DENSE_BUFSZ);
+        geodetic_segment_pair(seg, sizeof(seg), dense, DENSE_BUFSZ, lon0, lat0,
+          lon1, lat1);
+        long m = h3_geodetic_missing(seg, dense, res, &offpath);
+        if (m < 0)
+          none++;
+        else
+          miss += m;
+        free(dense);
+      }
+      printf("%-20s th3index cells missing %ld, off the path %ld\n", gname[k],
+        miss, offpath);
+      if (none > 0)
+        printf("  %ld th3index cover(s) were not built at all\n", none);
+      if (miss > 0 || offpath > 0 || none > 0)
+        failures++;
+    }
   }
 
   if (failures > 0)
