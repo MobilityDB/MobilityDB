@@ -14,11 +14,12 @@ var searchData=
   ['geo_5fpoly_5fclip_2eh_11',['geo_poly_clip.h',['../geo__poly__clip_8h.html',1,'']]],
   ['geo_5fround_2ec_12',['geo_round.c',['../geo__round_8c.html',1,'']]],
   ['geo_5ftest_2ec_13',['geo_test.c',['../geo__test_8c.html',1,'']]],
-  ['geom_5fnpoint_2ec_14',['geom_npoint.c',['../geom__npoint_8c.html',1,'']]],
-  ['geonames_5fdbscan_2ec_15',['geonames_dbscan.c',['../geonames__dbscan_8c.html',1,'']]],
-  ['geopose_5ftest_2ec_16',['geopose_test.c',['../geopose__test_8c.html',1,'']]],
-  ['geos_5fclip_2ec_17',['geos_clip.c',['../geos__clip_8c.html',1,'']]],
-  ['geos_5fharvest_2epy_18',['geos_harvest.py',['../geos__harvest_8py.html',1,'']]],
-  ['geoset_5fmeos_2ec_19',['geoset_meos.c',['../geoset__meos_8c.html',1,'']]],
-  ['get_5fsrid_5fways_2ec_20',['get_srid_ways.c',['../get__srid__ways_8c.html',1,'']]]
+  ['geo_5fvalidity_5ftest_2ec_14',['geo_validity_test.c',['../geo__validity__test_8c.html',1,'']]],
+  ['geom_5fnpoint_2ec_15',['geom_npoint.c',['../geom__npoint_8c.html',1,'']]],
+  ['geonames_5fdbscan_2ec_16',['geonames_dbscan.c',['../geonames__dbscan_8c.html',1,'']]],
+  ['geopose_5ftest_2ec_17',['geopose_test.c',['../geopose__test_8c.html',1,'']]],
+  ['geos_5fclip_2ec_18',['geos_clip.c',['../geos__clip_8c.html',1,'']]],
+  ['geos_5fharvest_2epy_19',['geos_harvest.py',['../geos__harvest_8py.html',1,'']]],
+  ['geoset_5fmeos_2ec_20',['geoset_meos.c',['../geoset__meos_8c.html',1,'']]],
+  ['get_5fsrid_5fways_2ec_21',['get_srid_ways.c',['../get__srid__ways_8c.html',1,'']]]
 ];
