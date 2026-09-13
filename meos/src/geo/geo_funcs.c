@@ -3777,7 +3777,7 @@ relate_edges_init(RelateEdges *re, Edge **edges, int nedges, bool index)
    * would therefore drop, at projected coordinates, edges whose own tolerance
    * is thousands of times that. The widest tolerance in the array is what
    * makes the index answer what the scan answers at every scale */
-  re->tol = MEOS_GEOM_TOLERANCE;
+  re->tol = 0.0;
   for (int i = 0; i < nedges; i++)
   {
     if (edges[i]->tol > re->tol)
@@ -6397,12 +6397,14 @@ relate_area_edge_interior_point(const Edge *e, const RelateEdges *self,
     /* Take the midpoint of the edge */
     double px, py;
     relate_area_edge_point(e, 0.5, &px, &py);
-    /* Estimate a local tangent */
-    double tx, ty;
+    /* Estimate a local tangent, and read the size of the edge the witness
+     * steps off: its length, or the length of the arc */
+    double tx, ty, size;
     if (e->etype == EDGE_POLYSEG)
     {
       tx = e->x2 - e->x1;
       ty = e->y2 - e->y1;
+      size = hypot(tx, ty);
     }
     else
     {
@@ -6410,6 +6412,7 @@ relate_area_edge_interior_point(const Edge *e, const RelateEdges *self,
       double sweep = e->ccw ?
         angle_normalize(e->theta1 - e->theta0) :
         angle_normalize(e->theta0 - e->theta1);
+      size = e->radius * sweep;
       double theta = e->ccw ?
         e->theta0 + 0.5 * sweep :
         e->theta0 - 0.5 * sweep;
@@ -6425,7 +6428,7 @@ relate_area_edge_interior_point(const Edge *e, const RelateEdges *self,
       }
     }
     double len = hypot(tx, ty);
-    if (len <= MEOS_GEOM_TOLERANCE)
+    if (len == 0.0)
       return false;
     tx /= len;
     ty /= len;
@@ -6436,14 +6439,14 @@ relate_area_edge_interior_point(const Edge *e, const RelateEdges *self,
     double ny =  tx;
 
     /* The witness steps off the edge far enough to leave the band within
-     * which #point_on_segment reads a point as lying on that edge, since
+     * which an edge of the geometry reads a point as lying on it, since
      * #relate_point_in_area answers boundary before it answers interior and a
      * witness inside the band would be taken for a boundary point and the
-     * interior would be reported empty. Ten times the band leaves the margin,
-     * and the step stays small relative to the edge so the witness cannot
-     * cross to the far side of the geometry. */
-    double eps = fmax(MEOS_GEOM_TOLERANCE * 10.0, len * 1e-9);
-    eps = fmax(eps, 10.0 * coordinate_tolerance(px, py));
+     * interior would be reported empty. Ten times the widest band of the
+     * geometry leaves the margin, and the step is sized from the edge itself,
+     * a billionth of its length, so it scales with the geometry and cannot
+     * cross to the far side of it. */
+    double eps = fmax(size * 1e-9, 10.0 * self->tol);
     double qx = px + eps * nx;
     double qy = py + eps * ny;
     if (relate_point_in_area_index(qx, qy, self) == 0)
@@ -6886,7 +6889,7 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
            * a few units in the last place of the largest coordinate -- so an
            * absolute floor leaves a point on its own edge reading as a
            * feature a rounding step away */
-          if (d <= fmax(comps[i].edges[j]->tol, MEOS_GEOM_TOLERANCE))
+          if (d <= comps[i].edges[j]->tol)
             continue;
           if (best < 0 || d < best)
             best = d;
@@ -6911,7 +6914,7 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
        * a few units in the last place of the largest coordinate -- so an
        * absolute floor leaves a point on its own edge reading as a
        * feature a rounding step away */
-      if (d <= fmax(comps[i].edges[j]->tol, MEOS_GEOM_TOLERANCE))
+      if (d <= comps[i].edges[j]->tol)
         continue;
       if (result < 0 || d < result)
         result = d;

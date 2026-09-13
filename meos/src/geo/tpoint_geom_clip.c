@@ -109,7 +109,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
    * height near its own: it is moved until no vertex sits on it, which leaves
    * no crossing for two edges to share and no rule to reconcile */
   double ry = y;
-  double bump = MEOS_GEOM_TOLERANCE * 4.0;
+  double bump = 0.0;
   for (int attempt = 0; attempt < 8; attempt++)
   {
     bool shared = false;
@@ -155,16 +155,25 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
        * held within its span to an angular tolerance, which at a radius of
        * r stands for a distance of r times that tolerance, so an end of a
        * large arc reaches the ray from far further off than an end of a
-       * segment does */
-      double tol = MEOS_GEOM_TOLERANCE;
-      if (e->etype == EDGE_POLYARC && e->radius > 1.0)
-        tol *= e->radius;
+       * segment does, and an end of a small arc from less far. An end of a
+       * segment reaches it within the rounding of the edge's own coordinates.
+       * Neither is a fixed length: a fixed one reads, for a small geometry,
+       * the end of every edge near the ray as lying on it */
+      double tol = e->tol;
+      if (e->etype == EDGE_POLYARC)
+        tol = fmax(tol, MEOS_GEOM_TOLERANCE * e->radius);
       if (fabs(e->y1 - ry) <= tol || fabs(e->y2 - ry) <= tol)
       {
         shared = true;
-        /* The ray has to clear the end by more than that same distance */
+        /* The ray has to clear the end by more than that same distance, and
+         * by at least a few units in the last place of its own height where
+         * that distance is none */
         if (bump < 4.0 * tol)
           bump = 4.0 * tol;
+        if (bump < 4.0 * DBL_EPSILON * fabs(ry))
+          bump = 4.0 * DBL_EPSILON * fabs(ry);
+        if (bump == 0.0)
+          bump = DBL_MIN;
         break;
       }
 
