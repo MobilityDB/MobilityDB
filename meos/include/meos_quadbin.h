@@ -196,6 +196,7 @@ extern Temporal *tquadbin_in(const char *str);
 extern TInstant *tquadbininst_in(const char *str);
 extern TSequence *tquadbinseq_in(const char *str, interpType interp);
 extern TSequenceSet *tquadbinseqset_in(const char *str);
+extern char *tquadbin_out(const Temporal *temp);
 
 /* Constructors */
 

@@ -192,6 +192,20 @@ ts2cellseqset_in(const char *str)
   return (TSequenceSet *) temp;
 }
 
+/**
+ * @ingroup meos_s2cell_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal S2 cell
+ * @param[in] temp Temporal S2 cell
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
+ */
+char *
+ts2cell_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TS2CELL(temp, NULL);
+  return temporal_out(temp, 0);
+}
+
 /*****************************************************************************
  * Constructors
  *****************************************************************************/

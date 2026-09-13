@@ -199,6 +199,21 @@ tquadbinseqset_in(const char *str)
   return (TSequenceSet *) temp;
 }
 
+/**
+ * @ingroup meos_quadbin_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal
+ * quadbin cell index
+ * @param[in] temp Temporal quadbin cell index
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
+ */
+char *
+tquadbin_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TQUADBIN(temp, NULL);
+  return temporal_out(temp, 0);
+}
+
 /*****************************************************************************
  * Constructors
  *****************************************************************************/

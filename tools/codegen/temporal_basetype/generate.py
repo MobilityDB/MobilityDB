@@ -29,10 +29,11 @@
 """Generate the MEOS-C Temporal<T> value surface for value-opaque base types.
 
 A value-opaque base type (jsonb, pcpoint, pcpatch, ...) stores its base value as an
-opaque varlena Datum, so the whole Temporal<T> value bridge — Constructors
-(inst_make / seq_from_base_* / from_base_temp), Accessors (start/end value, value_n,
-values, value_at_timestamptz) and Restrictions (at_value / minus_value) — is a pure
-Datum-move that differs only by a small token set. This generator takes the value
+opaque varlena Datum, so the whole Temporal<T> value bridge — Input and output (the
+typed text input and output, and the instant, sequence and sequence set inputs),
+Constructors (inst_make / seq_from_base_* / from_base_temp), Accessors (start/end
+value, value_n, values, value_at_timestamptz) and Restrictions (at_value /
+minus_value) — is a pure Datum-move that differs only by a small token set. This generator takes the value
 sections of `meos/src/json/tjsonb.c` as the byte-for-byte REFERENCE, reverse-tokenizes
 them into a template, and re-renders the same sections for every other value-opaque
 type. `--validate` proves that re-rendering the jsonb row reproduces the live reference
@@ -59,6 +60,7 @@ TOKENS = [
     ("{COPY}",     "pg_jsonb_copy"),
     ("{VALIDATE}", "VALIDATE_TJSONB"),
     ("{TYPEENUM}", "T_TJSONB"),
+    ("{IGROUP}",   "meos_internal_json_"),
     ("{GROUP}",    "meos_json_"),
     ("{DOCNOUN}",  "JSONB"),
     ("{TEMP}",     "tjsonb"),
@@ -71,16 +73,19 @@ TOKENS = [
 FAMILIES = [
     {"name": "jsonb", "reference": True,
      "{COPY}": "pg_jsonb_copy", "{VALIDATE}": "VALIDATE_TJSONB", "{TYPEENUM}": "T_TJSONB",
+     "{IGROUP}": "meos_internal_json_",
      "{GROUP}": "meos_json_", "{DOCNOUN}": "JSONB", "{TEMP}": "tjsonb",
      "{VALTYPE}": "Jsonb", "{ARG}": "jb"},
     {"name": "pcpoint",
      "{COPY}": "pcpoint_copy", "{VALIDATE}": "VALIDATE_TPCPOINT", "{TYPEENUM}": "T_TPCPOINT",
+     "{IGROUP}": "meos_internal_pointcloud_",
      "{GROUP}": "meos_pointcloud_", "{DOCNOUN}": "pgpointcloud point", "{TEMP}": "tpcpoint",
      "{VALTYPE}": "Pcpoint", "{ARG}": "pt",
      "file": "meos/src/pointcloud/tpcpoint.c",
      "valheader": "pointcloud/pcpoint.h"},
     {"name": "pcpatch",
      "{COPY}": "pcpatch_copy", "{VALIDATE}": "VALIDATE_TPCPATCH", "{TYPEENUM}": "T_TPCPATCH",
+     "{IGROUP}": "meos_internal_pointcloud_",
      "{GROUP}": "meos_pointcloud_", "{DOCNOUN}": "pgpointcloud patch", "{TEMP}": "tpcpatch",
      "{VALTYPE}": "Pcpatch", "{ARG}": "pa",
      "file": "meos/src/pointcloud/tpcpatch.c",
@@ -95,9 +100,12 @@ def _section(src, name, endname):
     return src[beg.start(): end.start() if end else len(src)]
 
 def value_sections():
-    """The three generic value-bridge sections of the reference, concatenated."""
+    """The four generic value-bridge sections of the reference, concatenated: the text
+    input and output up to the MF-JSON input, which is not a value bridge, then the
+    constructors, accessors and restrictions."""
     src = REFERENCE.read_text()
-    return (_section(src, "Constructor functions", "Conversion functions")
+    return (_section(src, "Input/output functions", "Input in MF-JSON representation")
+          + _section(src, "Constructor functions", "Conversion functions")
           + _section(src, "Accessor functions", "Transformation functions")
           + _section(src, "Restriction functions", "\x00none\x00"))
 
@@ -200,12 +208,13 @@ def render_file(fam, tmpl):
         "#include <meos_pointcloud.h>",
         '#include "temporal/meos_catalog.h"', '#include "temporal/set.h"',
         '#include "temporal/span.h"', '#include "temporal/spanset.h"',
-        '#include "temporal/temporal.h"', '#include "temporal/type_util.h"',
+        '#include "temporal/temporal.h"', '#include "temporal/type_parser.h"',
+        '#include "temporal/type_util.h"',
         f'#include "{fam["valheader"]}"',
     ])
     brief = (f"/**\n * @file\n * @brief Temporal {fam['{DOCNOUN}']} value surface, the "
-             f"Temporal<T> value\n *   bridge (constructors, accessors, restrictions),\n"
-             f" *   generated from the tjsonb reference by\n"
+             f"Temporal<T> value\n *   bridge (input and output, constructors, accessors, "
+             f"restrictions),\n *   generated from the tjsonb reference by\n"
              f" *   tools/codegen/temporal_basetype/generate.py; DO NOT EDIT BY HAND.\n */\n")
     return (COPYRIGHT + "\n" + brief + "\n" + inc + "\n\n"
             + reflow(render_sections(fam, tmpl), tmpl))

@@ -203,6 +203,21 @@ th3indexseqset_in(const char *str)
   return (TSequenceSet *) temp;
 }
 
+/**
+ * @ingroup meos_h3_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal H3
+ * cell index
+ * @param[in] temp Temporal H3 cell index
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
+ */
+char *
+th3index_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp, NULL);
+  return temporal_out(temp, 0);
+}
+
 /*****************************************************************************
  * Constructors
  *
