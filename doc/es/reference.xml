@@ -1172,7 +1172,7 @@
 			<title>Simplificación</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Simplifica un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por una cierta distancia o intervalo de tiempo &Z_support; &geography_support;</para>
+					<para><link linkend="ttype_minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Simplifica un flotante o una geometría/geografía temporal asegurándose de que los valores consecutivos estén al menos separados por una cierta distancia o intervalo de tiempo &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_douglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Simplifica un flotante o un punto temporal usando el <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink> &Z_support;</para>

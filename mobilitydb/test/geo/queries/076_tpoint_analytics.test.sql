@@ -197,6 +197,22 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1)@2001-01-01, Point(2 2
 SELECT pg_typeof(minTimeDeltaSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', interval '1 day'));
 SELECT pg_typeof(minTimeDeltaSimplify(tgeogpoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', interval '1 day'));
 
+-- A value without linear interpolation answers a copy of itself, keeping its
+-- interpolation, in the sequence and in the sequence set alike
+SELECT minDistSimplify(tfloat 'Interp=Step;[1@2001-01-01, 1.1@2001-01-02, 3@2001-01-03]', 1);
+SELECT minDistSimplify(tfloat '{1@2001-01-01, 1.1@2001-01-02, 3@2001-01-03}', 1);
+SELECT minDistSimplify(tfloat 'Interp=Step;{[1@2001-01-01, 1.1@2001-01-02], [3@2001-01-03, 3.1@2001-01-04]}', 1);
+SELECT asText(minDistSimplify(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(1 1.1)@2001-01-02, Point(3 3)@2001-01-03]', 1));
+SELECT asText(minDistSimplify(tgeompoint '{Point(1 1)@2001-01-01, Point(1 1.1)@2001-01-02, Point(3 3)@2001-01-03}', 1));
+SELECT minTimeDeltaSimplify(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]}', interval '2 days');
+SELECT maxDistSimplify(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]}', 0.5);
+SELECT douglasPeuckerSimplify(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]}', 0.5);
+-- A linear value simplifies
+SELECT minTimeDeltaSimplify(tfloat '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]', interval '2 days');
+SELECT asText(minTimeDeltaSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]', interval '2 days'));
+
+-------------------------------------------------------------------------------
+
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2001-01-01, 1@2001-01-02, 3@2001-01-03, 1@2001-01-04, 3@2001-01-05, 0@2001-01-06, 4@2001-01-07]', 1));
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2001-01-01, 1@2001-01-02, 3@2001-01-03, 1@2001-01-04, 3@2001-01-05, 0@2001-01-06, 4@2001-01-07]', 2));
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2001-01-01, 1@2001-01-02, 3@2001-01-03, 1@2001-01-04, 3@2001-01-05, 0@2001-01-06, 4@2001-01-07]', 4));
