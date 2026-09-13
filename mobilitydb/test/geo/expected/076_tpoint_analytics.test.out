@@ -562,6 +562,66 @@ SELECT pg_typeof(minTimeDeltaSimplify(tgeogpoint '[Point(1 1)@2001-01-01, Point(
  tgeogpoint
 (1 row)
 
+SELECT minDistSimplify(tfloat 'Interp=Step;[1@2001-01-01, 1.1@2001-01-02, 3@2001-01-03]', 1);
+                                                mindistsimplify                                                 
+----------------------------------------------------------------------------------------------------------------
+ Interp=Step;[1@Mon Jan 01 00:00:00 2001 PST, 1.1@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT minDistSimplify(tfloat '{1@2001-01-01, 1.1@2001-01-02, 3@2001-01-03}', 1);
+                                          mindistsimplify                                           
+----------------------------------------------------------------------------------------------------
+ {1@Mon Jan 01 00:00:00 2001 PST, 1.1@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT minDistSimplify(tfloat 'Interp=Step;{[1@2001-01-01, 1.1@2001-01-02], [3@2001-01-03, 3.1@2001-01-04]}', 1);
+                                                                   mindistsimplify                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST, 1.1@Tue Jan 02 00:00:00 2001 PST], [3@Wed Jan 03 00:00:00 2001 PST, 3.1@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(minDistSimplify(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(1 1.1)@2001-01-02, Point(3 3)@2001-01-03]', 1));
+                                                                  astext                                                                   
+-------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1.1)@Tue Jan 02 00:00:00 2001 PST, POINT(3 3)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(minDistSimplify(tgeompoint '{Point(1 1)@2001-01-01, Point(1 1.1)@2001-01-02, Point(3 3)@2001-01-03}', 1));
+                                                            astext                                                             
+-------------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1.1)@Tue Jan 02 00:00:00 2001 PST, POINT(3 3)@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT minTimeDeltaSimplify(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]}', interval '2 days');
+                                              mintimedeltasimplify                                              
+----------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT maxDistSimplify(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]}', 0.5);
+                                                maxdistsimplify                                                 
+----------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 1@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT douglasPeuckerSimplify(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]}', 0.5);
+                                             douglaspeuckersimplify                                             
+----------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 1@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT minTimeDeltaSimplify(tfloat '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]', interval '2 days');
+                       mintimedeltasimplify                       
+------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(minTimeDeltaSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]', interval '2 days'));
+                                       astext                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(3 3)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2001-01-01, 1@2001-01-02, 3@2001-01-03, 1@2001-01-04, 3@2001-01-05, 0@2001-01-06, 4@2001-01-07]', 1));
  numinstants 
 -------------

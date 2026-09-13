@@ -1900,6 +1900,20 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
 }
 
 /**
+ * @brief Ensure that a type is a temporal number or a temporal geo type, the
+ * types the simplification functions accept
+ */
+static bool
+ensure_tnumber_tgeo_type(MeosType type)
+{
+  if (tnumber_type(type) || tgeo_type_all(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The temporal value must be a temporal number or a temporal geo");
+  return false;
+}
+
+/**
  * @ingroup meos_temporal_analytics_simplify
  * @brief Return a temporal float/point sequence simplified ensuring that
  * consecutive values are at least a given distance apart
@@ -1919,21 +1933,18 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_tnumber_tpoint_type(temp->temptype) ||
+  if (! ensure_tnumber_tgeo_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
+  /* Only a sequence or a sequence set with linear interpolation simplifies */
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return temporal_copy(temp);
-    case TSEQUENCE:
-      return (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_simplify_min_dist((TSequenceSet *) temp,
-        dist);
-  }
+  if (temp->subtype == TSEQUENCE)
+    return (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
+  return (Temporal *) tsequenceset_simplify_min_dist((TSequenceSet *) temp,
+    dist);
 }
 
 /***********************************************************************
@@ -2015,22 +2026,18 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(mint, NULL);
-  if (! ensure_tnumber_tpoint_type(temp->temptype) ||
+  if (! ensure_tnumber_tgeo_type(temp->temptype) ||
       ! ensure_positive_duration(mint))
     return NULL;
 
+  /* Only a sequence or a sequence set with linear interpolation simplifies */
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return temporal_copy(temp);
-    case TSEQUENCE:
-      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temporal_copy(temp) :
-        (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp, mint);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_simplify_min_tdelta((TSequenceSet *) temp,
-        mint);
-  }
+  if (temp->subtype == TSEQUENCE)
+    return (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp, mint);
+  return (Temporal *) tsequenceset_simplify_min_tdelta((TSequenceSet *) temp,
+    mint);
 }
 
 /***********************************************************************
@@ -2356,23 +2363,19 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_tnumber_tpoint_type(temp->temptype) ||
+  if (! ensure_tnumber_tgeo_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
+  /* Only a sequence or a sequence set with linear interpolation simplifies */
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return temporal_copy(temp);
-    case TSEQUENCE:
-      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temporal_copy(temp) :
-        (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
-          syncdist, 2);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_simplify_max_dist((TSequenceSet *) temp,
-        dist, syncdist, 2);
-  }
+  if (temp->subtype == TSEQUENCE)
+    return (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
+      syncdist, 2);
+  return (Temporal *) tsequenceset_simplify_max_dist((TSequenceSet *) temp,
+    dist, syncdist, 2);
 }
 
 /*****************************************************************************/
@@ -2508,22 +2511,19 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_tnumber_tpoint_type(temp->temptype) ||
+  if (! ensure_tnumber_tgeo_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
+  /* Only a sequence or a sequence set with linear interpolation simplifies */
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return temporal_copy(temp);
-    case TSEQUENCE:
-      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temporal_copy(temp) :
-        (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist, syncdist, 2);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp, dist,
-        syncdist, 2);
-  }
+  if (temp->subtype == TSEQUENCE)
+    return (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist,
+      syncdist, 2);
+  return (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp, dist,
+    syncdist, 2);
 }
 
 

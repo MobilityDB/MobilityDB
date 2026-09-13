@@ -1172,7 +1172,7 @@
 			<title>Simplification</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Return a temporal float or a temporal point simplified ensuring that consecutive values are at least a certain distance or time interval apart &Z_support; &geography_support;</para>
+					<para><link linkend="ttype_minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Return a temporal float or a temporal geometry/geography simplified ensuring that consecutive values are at least a certain distance or time interval apart &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="ttype_douglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Return a temporal float or a temporal point simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>

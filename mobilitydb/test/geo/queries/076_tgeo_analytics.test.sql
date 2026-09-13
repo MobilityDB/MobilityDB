@@ -68,6 +68,24 @@ SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
+-- Simplification
+
+-- A temporal geometry or geography has step interpolation, so each
+-- simplification answers a copy of its argument
+SELECT asText(minDistSimplify(tgeometry '[Point(1 1)@2001-01-01, Point(1 1.1)@2001-01-02, Point(3 3)@2001-01-03]', 1));
+SELECT asText(minDistSimplify(tgeography '[Point(1 1)@2001-01-01, Point(1 1.1)@2001-01-02, Point(3 3)@2001-01-03]', 1), 6);
+SELECT asText(minTimeDeltaSimplify(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(3 3)@2001-01-03]}', interval '2 days'));
+SELECT asText(minTimeDeltaSimplify(tgeography '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]', interval '2 days'), 6);
+SELECT asText(maxDistSimplify(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 1)@2001-01-03]', 1));
+SELECT asText(douglasPeuckerSimplify(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 1)@2001-01-03]}', 1));
+SELECT asText(minDistSimplify(tgeometry '[Linestring(1 1,2 2)@2001-01-01, Linestring(1 1,2 2.1)@2001-01-02]', 1));
+SELECT asText(minDistSimplify(tgeometry 'Point(1 1)@2001-01-01', 1));
+/* Errors */
+SELECT minDistSimplify(tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', -1);
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 -- Granularity modification with tsample and tprecision
 
 SELECT asText(tsample(tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));

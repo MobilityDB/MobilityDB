@@ -17,10 +17,10 @@
 			<listitem xml:id="ttype_minDistSimplify">
 				<indexterm significance="normal"><primary><varname>minDistSimplify</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
-				<para>Return a temporal float or a temporal point simplified ensuring that consecutive values are at least a certain distance or time interval apart &Z_support; &geography_support;</para>
+				<para>Return a temporal float or a temporal geometry/geography simplified ensuring that consecutive values are at least a certain distance or time interval apart &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-minDistSimplify({tfloat,tpoint},mindist float) → {tfloat,tpoint}
-minTimeDeltaSimplify({tfloat,tpoint},mint interval) → {tfloat,tpoint}
+minDistSimplify({tfloat,tgeo},mindist float) → {tfloat,tgeo}
+minTimeDeltaSimplify({tfloat,tgeo},mint interval) → {tfloat,tgeo}
 </programlisting>
 				<para>In the case of temporal points, the distance is specified in the units of the coordinate system. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -48,10 +48,10 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
 				<para>Return a temporal float or a temporal point simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-maxDistSimplify({tfloat,tgeompoint},maxdist float,
-  syncdist bool=true) → {tfloat,tgeompoint}
-douglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,
-  syncdist bool=true) → {tfloat,tgeompoint}
+maxDistSimplify({tfloat,tgeompoint,tgeometry},maxdist float,
+  syncdist bool=true) → {tfloat,tgeompoint,tgeometry}
+douglasPeuckerSimplify({tfloat,tgeompoint,tgeometry},maxdist float,
+  syncdist bool=true) → {tfloat,tgeompoint,tgeometry}
 </programlisting>
 				<para>The difference between the two functions is that <varname>maxDistSimplify</varname> uses a single-pass version of the algorithm whereas <varname>douglasPeuckerSimplify</varname> uses the standard recursive algorithm. The function removes values or points that are less than or equal to the distance passed as second argument. In the case of temporal points, the distance is specified in the units of the coordinate system. The third argument applies only for temporal points and specifies whether the spatial or the synchronized distance is used. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
