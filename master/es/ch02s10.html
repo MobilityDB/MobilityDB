@@ -30,4 +30,18 @@ SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
 -- false
 SELECT cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
 -- -1
+</pre></li><li class="listitem"><a name="setspan_hash"></a><a class="indexterm" name="id2359"></a><a class="indexterm" name="id2362"></a><p>Valores hash</p><pre class="programlisting">
+hash({set,span,spanset}) → int
+hashExtended({set,span,spanset},seed bigint) → bigint
+</pre><p>La función <code class="varname">hash</code> devuelve un valor hash de 32 bits y la función <code class="varname">hashExtended</code> un valor hash de 64 bits calculado con la semilla dada. Los valores iguales tienen valores hash iguales, que es en lo que se basan los índices hash, las uniones hash y la agregación hash.</p><pre class="programlisting">
+SELECT hash(intspan '[1,3]') = hash(intspan '[1,4)');
+-- true
+SELECT hash(intspanset '{[1,2],[3,4]}') = hash(intspanset '{[1,3),[3,5)}');
+-- true
+SELECT hash(tstzset '{2001-01-01, 2001-01-04}') =
+  hash(tstzset '{2001-01-04, 2001-01-01}');
+-- true
+SELECT hashExtended(tstzspan '[2001-01-01, 2001-01-04)', 0) &lt;&gt;
+  hashExtended(tstzspan '[2001-01-01, 2001-01-04)', 1);
+-- true
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s09.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch02.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s11.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de distancia </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Agregaciones</td></tr></table></div></body></html>
