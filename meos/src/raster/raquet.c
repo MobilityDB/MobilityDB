@@ -990,7 +990,7 @@ Temporal *
 raster_tile_value(const Temporal *traj, const Raquet *rq)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq, NULL); VALIDATE_NOT_NULL(traj, NULL);
+  VALIDATE_NOT_NULL(rq, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
   return raster_tile_value_quadbin(traj, rq->pixels, raquet_pixels_size(rq),
     rq->width, rq->height, rq->quadbin, (MeosPixType) rq->pixtype, rq->nodata,
     rq->has_nodata);
@@ -1016,7 +1016,7 @@ Temporal *
 raster_tile_value_array(const Temporal *traj, const Raquet **rqarr, int count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rqarr, NULL); VALIDATE_NOT_NULL(traj, NULL);
+  VALIDATE_NOT_NULL(rqarr, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
   if (! ensure_positive(count))
     return NULL;
 

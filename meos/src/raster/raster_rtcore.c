@@ -2225,7 +2225,7 @@ raster_value(const Temporal *traj, const Raster *rast, int band,
   bool exclude_nodata, const char *resample)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
+  VALIDATE_TGEOMPOINT(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
   bool bilinear = false;
   if (resample && ! raster_resample_bilinear(resample, &bilinear))
     return NULL;
@@ -2271,7 +2271,7 @@ raster_at_value(const Temporal *traj, const Raster *rast, int band,
   const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
+  VALIDATE_TGEOMPOINT(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
   RasterSampleState state;
@@ -2306,7 +2306,7 @@ raster_minus_value(const Temporal *traj, const Raster *rast, int band,
   const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
+  VALIDATE_TGEOMPOINT(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
   RasterSampleState state;
@@ -2339,7 +2339,7 @@ eraster_value(const Temporal *traj, const Raster *rast, int band,
   const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL(rast, -1);
+  VALIDATE_TGEOMPOINT(traj, -1); VALIDATE_NOT_NULL(rast, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
   RasterSampleState state;
@@ -2366,7 +2366,7 @@ araster_value(const Temporal *traj, const Raster *rast, int band,
   const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL(rast, -1);
+  VALIDATE_TGEOMPOINT(traj, -1); VALIDATE_NOT_NULL(rast, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
   RasterSampleState state;

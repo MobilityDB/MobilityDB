@@ -61,6 +61,7 @@
 // #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include "temporal/temporal.h"
 #include "raster/raster_quadbin.h"
@@ -607,7 +608,7 @@ Temporal *
 raster_value_gdal(const Temporal *traj, const char *path, int band)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(path, NULL); VALIDATE_NOT_NULL(traj, NULL);
+  VALIDATE_NOT_NULL(path, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
 
   GDALDatasetH ds;
   RasterValueGdalCtx ctx;
@@ -642,7 +643,7 @@ raster_at_value_gdal(const Temporal *traj, const char *path, int band,
   const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(path, NULL); VALIDATE_NOT_NULL(traj, NULL);
+  VALIDATE_NOT_NULL(path, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
   GDALDatasetH ds;
@@ -678,7 +679,7 @@ raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
   const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(path, NULL); VALIDATE_NOT_NULL(traj, NULL);
+  VALIDATE_NOT_NULL(path, NULL); VALIDATE_TGEOMPOINT(traj, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
   GDALDatasetH ds;
@@ -716,7 +717,7 @@ eraster_value_gdal(const Temporal *traj, const char *path, int band,
   const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(path, -1); VALIDATE_NOT_NULL(traj, -1);
+  VALIDATE_NOT_NULL(path, -1); VALIDATE_TGEOMPOINT(traj, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
   GDALDatasetH ds;
@@ -748,7 +749,7 @@ araster_value_gdal(const Temporal *traj, const char *path, int band,
   const Span *vspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(path, -1); VALIDATE_NOT_NULL(traj, -1);
+  VALIDATE_NOT_NULL(path, -1); VALIDATE_TGEOMPOINT(traj, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
   GDALDatasetH ds;
