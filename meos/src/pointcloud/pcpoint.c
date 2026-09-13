@@ -381,7 +381,7 @@ pcpoint_get_pcid(const Pcpoint *pt)
 }
 
 /**
- * @ingroup meos_pointcloud_base_accessor
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return the 32-bit hash of a pcpoint
  * @note Hashes only the meaningful-prefix bytes — pgpointcloud's
  *   struct-tail padding is skipped because it holds uninitialized heap
@@ -399,7 +399,7 @@ pcpoint_hash(const Pcpoint *pt)
 }
 
 /**
- * @ingroup meos_pointcloud_base_accessor
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return the 64-bit seeded hash of a pcpoint
  * @csqlfn #Pcpoint_hash_extended()
  */

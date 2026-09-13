@@ -2200,7 +2200,7 @@ tsequenceset_cmp(const TSequenceSet *ss1, const TSequenceSet *ss2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_accessor
+ * @ingroup meos_internal_temporal_comp_trad
  * @brief Return the 32-bit hash value of a temporal sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Temporal_hash()
@@ -2219,7 +2219,7 @@ tsequenceset_hash(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
+ * @ingroup meos_internal_temporal_comp_trad
  * @brief Return the 64-bit hash of a temporal sequence set using a seed
  * @param[in] ss Temporal sequence set
  * @param[in] seed Seed

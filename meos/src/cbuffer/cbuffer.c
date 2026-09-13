@@ -1505,7 +1505,7 @@ cbuffer_ge(const Cbuffer *cb1, const Cbuffer *cb2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_cbuffer_base_accessor
+ * @ingroup meos_cbuffer_base_comp
  * @brief Return the 32-bit hash value of a circular buffer
  * @param[in] cb Circular buffer
  * @errval UINT32_MAX
@@ -1532,7 +1532,7 @@ cbuffer_hash(const Cbuffer *cb)
 }
 
 /**
- * @ingroup meos_cbuffer_base_accessor
+ * @ingroup meos_cbuffer_base_comp
  * @brief Return the 64-bit hash value of a circular buffer using a seed
  * @param[in] cb Circular buffer
  * @param[in] seed Seed

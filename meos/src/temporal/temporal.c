@@ -3956,7 +3956,7 @@ tinstant_hash_extended_fold(const TInstant *inst, void *state)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_temporal_comp_trad
  * @brief Return the 32-bit hash value of a temporal value
  * @param[in] temp Temporal value
  * @errval UINT32_MAX
@@ -3987,7 +3987,7 @@ temporal_hash(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_temporal_comp_trad
  * @brief Return the 64-bit hash value of a temporal value using a seed
  * @param[in] temp Temporal value
  * @param[in] seed Seed

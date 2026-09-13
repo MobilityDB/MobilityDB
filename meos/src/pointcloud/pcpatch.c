@@ -549,7 +549,7 @@ pcpatch_points(const Pcpatch *pa, int *count)
 }
 
 /**
- * @ingroup meos_pointcloud_base_accessor
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return the 32-bit hash of a pcpatch
  * @errval UINT32_MAX
  * @csqlfn #Pcpatch_hash()
@@ -564,7 +564,7 @@ pcpatch_hash(const Pcpatch *pa)
 }
 
 /**
- * @ingroup meos_pointcloud_base_accessor
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return the 64-bit hash of a pcpatch with a seed
  * @csqlfn #Pcpatch_hash_extended()
  */

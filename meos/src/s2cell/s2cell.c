@@ -1090,7 +1090,7 @@ s2cell_cmp(S2CellId a, S2CellId b)
  *****************************************************************************/
 
 /**
- * @ingroup meos_s2cell_base_accessor
+ * @ingroup meos_s2cell_base_comp
  * @brief Return the 32-bit hash of an S2 cell
  * @csqlfn #S2cell_hash()
  */
@@ -1101,7 +1101,7 @@ s2cell_hash(S2CellId cell)
 }
 
 /**
- * @ingroup meos_s2cell_base_accessor
+ * @ingroup meos_s2cell_base_comp
  * @brief Return the 64-bit hash of an S2 cell using a seed
  * @csqlfn #S2cell_hash_extended()
  */

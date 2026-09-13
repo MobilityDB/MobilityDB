@@ -1393,7 +1393,7 @@ nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_npoint_base_accessor
+ * @ingroup meos_npoint_base_comp
  * @brief Return the 32-bit hash value of a network point
  * @param[in] np Network point
  * @errval UINT32_MAX
@@ -1416,7 +1416,7 @@ npoint_hash(const Npoint *np)
 }
 
 /**
- * @ingroup meos_npoint_base_accessor
+ * @ingroup meos_npoint_base_comp
  * @brief Return the 64-bit hash value of a network point using a seed
  * @param[in] np Network point
  * @param[in] seed Seed

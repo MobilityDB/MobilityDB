@@ -787,7 +787,7 @@ Posechain_gt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Posechain_hash(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Posechain_hash);
 /**
- * @ingroup mobilitydb_posechain_base_accessor
+ * @ingroup mobilitydb_posechain_base_comp
  * @brief Return the 32-bit hash value of a pose chain
  * @sqlfn hash()
  */
@@ -801,7 +801,7 @@ Posechain_hash(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Posechain_hash_extended(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Posechain_hash_extended);
 /**
- * @ingroup mobilitydb_posechain_base_accessor
+ * @ingroup mobilitydb_posechain_base_comp
  * @brief Return the 64-bit hash value of a pose chain using a seed
  * @sqlfn hashExtended()
  */
