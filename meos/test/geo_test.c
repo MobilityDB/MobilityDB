@@ -1540,6 +1540,50 @@ int main(void)
   assert(meos_errno() == 0);
   free(outer); free(plain); free(repeated);
 
+  /* A line whose vertices all coincide draws one point, so it relates to
+   * every geometry exactly as that point does: its interior is the point and
+   * its boundary is empty. The witness is the pair the GEOS validate suite
+   * asserts, a point against a line of no length at the same place, then the
+   * same line against a line through the point, a polygon cornered on it and
+   * an empty geometry, each read in both orders. The point itself is the
+   * control: every spelling of the line answers what the point answers */
+  const char *zl_partners[] = {"POINT(110 200)",
+    "LINESTRING(100 200,120 200)",
+    "POLYGON((110 200,110 220,130 220,130 200,110 200))",
+    "LINESTRING EMPTY"};
+  const char *zl_spellings[] = {"LINESTRING(110 200,110 200)",
+    "LINESTRING(110 200,110 200,110 200)",
+    "MULTILINESTRING((110 200,110 200))",
+    "GEOMETRYCOLLECTION(LINESTRING(110 200,110 200))"};
+  GSERIALIZED *zl_point = geom_in("POINT(110 200)", -1);
+  assert(zl_point != NULL);
+  for (size_t i = 0; i < sizeof(zl_partners) / sizeof(zl_partners[0]); i++)
+  {
+    GSERIALIZED *partner = geom_in(zl_partners[i], -1);
+    assert(partner != NULL);
+    meos_errno_reset();
+    char *want = geom_relate(zl_point, partner);
+    char *want_rev = geom_relate(partner, zl_point);
+    assert(want != NULL); assert(want_rev != NULL);
+    for (size_t j = 0; j < sizeof(zl_spellings) / sizeof(zl_spellings[0]); j++)
+    {
+      GSERIALIZED *line = geom_in(zl_spellings[j], -1);
+      assert(line != NULL);
+      char *got = geom_relate(line, partner);
+      char *got_rev = geom_relate(partner, line);
+      printf("geom_relate(%s, %s): %s, reversed %s, the point %s and %s, "
+        "errno %d\n", zl_spellings[j], zl_partners[i], got, got_rev, want,
+        want_rev, meos_errno());
+      assert(got != NULL); assert(got_rev != NULL);
+      assert(strcmp(got, want) == 0);
+      assert(strcmp(got_rev, want_rev) == 0);
+      assert(meos_errno() == 0);
+      free(got); free(got_rev); free(line);
+    }
+    free(want); free(want_rev); free(partner);
+  }
+  free(zl_point);
+
   /* Equality is read from the native DE-9IM matrix, so two circular strings
    * describing the SAME arc through DIFFERENT defining points are equal. The
    * three points lie on the circle of centre (0 0) and radius 5, which they
