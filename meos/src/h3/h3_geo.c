@@ -68,6 +68,7 @@
 #include "h3/h3index.h"
 #include "geo/tgeo_spatialfuncs.h"  /* ensure_srid_is_latlong */
 #include "temporal/temporal.h"  /* ORDER macro for set_make_free */
+#include "temporal/tcellindex.h"
 
 /*****************************************************************************
  * Growable buffer of H3Index — accumulator for the recursive walker
@@ -798,13 +799,8 @@ geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (resolution < 0 || resolution > 15)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "geo_to_h3index_set: resolution must be in [0..15]");
-    return NULL;
-  }
-  if (! ensure_srid_is_latlong(gserialized_get_srid(gs)))
+  if (! ensure_valid_cell_resolution(T_TH3INDEX, resolution) ||
+      ! ensure_srid_is_latlong(gserialized_get_srid(gs)))
     return NULL;
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);

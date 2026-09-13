@@ -10,12 +10,15 @@ SELECT latLngToCell(geometry 'SRID=4326;POINT(4.35 50.85)', 0);
  801ffffffffffff
 (1 row)
 
+/* Errors */
 SELECT latLngToCell(geometry 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 7);
-  latlngtocell   
------------------
- 871fa4418ffffff
-(1 row)
-
+ERROR:  Only point geometries accepted
+SELECT latLngToCell(geometry 'SRID=4326;POINT EMPTY', 7);
+ERROR:  Only non-empty geometries accepted
+SELECT latLngToCell(geometry 'SRID=4326;POINT(4.35 50.85)', 16);
+ERROR:  The resolution must be between 0 and 15
+SELECT latLngToCell(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
+ERROR:  The resolution must be between 0 and 15
 SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 7);
    geotoh3indexset   
 ---------------------
@@ -135,9 +138,9 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT EMPTY', 7);
 (1 row)
 
 SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
-ERROR:  geo_to_h3index_set: resolution must be in [0..15]
+ERROR:  The resolution must be between 0 and 15
 SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 16);
-ERROR:  geo_to_h3index_set: resolution must be in [0..15]
+ERROR:  The resolution must be between 0 and 15
 WITH t AS (
   SELECT th3index(
     tgeompoint 'SRID=4326;[POINT(4.35 50.85)@2024-01-01,

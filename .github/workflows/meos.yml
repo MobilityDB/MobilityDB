@@ -217,6 +217,8 @@ jobs:
           ./temporal_text_io_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o h3_validity_test h3_validity_test.c -L/usr/local/lib -lmeos
           ./h3_validity_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellpoint_validity_test cellpoint_validity_test.c -L/usr/local/lib -lmeos
+          ./cellpoint_validity_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellset_text_io_test cellset_text_io_test.c -L/usr/local/lib -lmeos
           ./cellset_text_io_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellset_values_test cellset_values_test.c -L/usr/local/lib -lmeos

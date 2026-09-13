@@ -22,6 +22,15 @@ SELECT s2GetFace(geoToS2Cell(geography 'SRID=4326;Point(-122.4 37.8)', 10));
          4
 (1 row)
 
+/* Errors */
+SELECT geoToS2Cell(geography 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 10);
+ERROR:  Only point geometries accepted
+SELECT geoToS2Cell(geography 'SRID=4326;POINT EMPTY', 10);
+ERROR:  Only non-empty geometries accepted
+SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 31);
+ERROR:  The resolution must be between 0 and 30
+SELECT geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', -1);
+ERROR:  The resolution must be between 0 and 30
 SELECT getResolution(cellToParent(geoToS2Cell(geography 'SRID=4326;Point(4.35 50.85)', 15), 8));
  getresolution 
 ---------------

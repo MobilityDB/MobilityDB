@@ -142,6 +142,12 @@ extern bool ensure_tcellindex_type(MeosType type);
  */
 extern const DggsCellOps *dggs_cellops(MeosType temptype);
 
+/**
+ * @brief Ensure that a resolution lies in the range of the grid of a temporal
+ * cell-index type, or raise an error.
+ */
+extern bool ensure_valid_cell_resolution(MeosType temptype, int32 resolution);
+
 /*****************************************************************************
  * Generic temporal entry points — shared by every DGGS.
  *

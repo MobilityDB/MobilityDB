@@ -49,6 +49,7 @@
 #include <meos_internal_geo.h>  /* GSERIALIZED_POINT2D_P */
 #include <meos_quadbin.h>
 #include "geo/tgeo_spatialfuncs.h"
+#include "temporal/tcellindex.h"
 
 /*****************************************************************************
  * Geometry to cell
@@ -66,8 +67,9 @@ geo_to_quadbin_cell(const GSERIALIZED *point, int32 resolution)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(point, (Quadbin) 0);
-
-  if (! ensure_srid_is_latlong(gserialized_get_srid(point)))
+  if (! ensure_point_type(point) || ! ensure_not_empty(point) ||
+      ! ensure_srid_is_latlong(gserialized_get_srid(point)) ||
+      ! ensure_valid_cell_resolution(T_TQUADBIN, resolution))
     return (Quadbin) 0;
   const POINT2D *p = GSERIALIZED_POINT2D_P(point);
   return quadbin_point_to_cell(p->x, p->y, (uint32_t) resolution);
