@@ -417,10 +417,7 @@ posechain_out(const PoseChain *pc, int maxdd)
 char *
 posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pc, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
+  assert(pc); assert(maxdd >= 0);
 
   char **links = palloc(sizeof(char *) * pc->count);
   size_t len = 0;
@@ -463,6 +460,10 @@ posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd)
 char *
 posechain_as_text(const PoseChain *pc, int maxdd)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pc, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return posechain_wkt_out(pc, false, maxdd);
 }
 
@@ -477,6 +478,10 @@ posechain_as_text(const PoseChain *pc, int maxdd)
 char *
 posechain_as_ewkt(const PoseChain *pc, int maxdd)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pc, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return posechain_wkt_out(pc, true, maxdd);
 }
 

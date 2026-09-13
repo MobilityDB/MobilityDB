@@ -848,10 +848,7 @@ pose_out(const Pose *pose, int maxdd)
 char *
 pose_wkt_out(const Pose *pose, bool extended, int maxdd)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pose, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
+  assert(pose); assert(maxdd >= 0);
 
   /* Write the pose */
   bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
@@ -910,6 +907,10 @@ pose_wkt_out(const Pose *pose, bool extended, int maxdd)
 char *
 pose_as_text(const Pose *pose, int maxdd)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return pose_wkt_out(pose, false, maxdd);
 }
 
@@ -925,6 +926,8 @@ pose_as_ewkt(const Pose *pose, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return spatialbase_as_ewkt(PointerGetDatum(pose), T_POSE, maxdd);
 }
 

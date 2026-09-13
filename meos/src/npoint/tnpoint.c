@@ -237,6 +237,8 @@ tnpoint_out(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return temporal_out(temp, maxdd);
 }
 

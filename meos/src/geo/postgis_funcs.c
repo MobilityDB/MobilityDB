@@ -4876,10 +4876,7 @@ geo_from_text(const char *wkt, int32_t srid)
 char *
 geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_positive(precision))
-    return NULL;
+  assert(gs); assert(precision >= 0);
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   char *result = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO,
@@ -4899,6 +4896,10 @@ geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
 char *
 geo_as_text(const GSERIALIZED *gs, int precision)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_negative(precision))
+    return NULL;
   return geo_as_wkt(gs, precision, false);
 }
 
@@ -4915,6 +4916,10 @@ geo_as_text(const GSERIALIZED *gs, int precision)
 char *
 geo_as_ewkt(const GSERIALIZED *gs, int precision)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_negative(precision))
+    return NULL;
   return geo_as_wkt(gs, precision, true);
 }
 
@@ -5103,15 +5108,8 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-
-  // int precision = OUT_DEFAULT_DECIMAL_DIGITS;
-  int output_bbox = LW_FALSE;
-  // int output_long_crs = LW_FALSE;
-  // int output_short_crs = LW_FALSE;
-  // int output_guess_short_srid = LW_FALSE;
-  // const char *srs = NULL;
-
-  // int32_t srid = gserialized_get_srid(gs);
+  if (! ensure_not_negative(precision))
+    return NULL;
 
   /* Retrieve output option
    * 0 = without option
@@ -5120,25 +5118,7 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
    * 4 = long crs
    * 8 = guess if CRS is needed (default)
    */
-  // output_guess_short_srid = (option & 8) ? LW_TRUE : LW_FALSE;
-  // output_short_crs = (option & 2) ? LW_TRUE : LW_FALSE;
-  // output_long_crs = (option & 4) ? LW_TRUE : LW_FALSE;
-  output_bbox = (option & 1) ? LW_TRUE : LW_FALSE;
-
-  // if (output_guess_short_srid && srid != WGS84_SRID && srid != SRID_UNKNOWN)
-    // output_short_crs = LW_TRUE;
-
-  // if (srid != SRID_UNKNOWN && (output_short_crs || output_long_crs))
-  // {
-    // srs = GetSRSCacheBySRID(fcinfo, srid, !output_long_crs);
-
-    // if (!srs)
-    // {
-      // meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          // "SRID %i unknown in spatial_ref_sys table", srid);
-      // return NULL;
-    // }
-  // }
+  int output_bbox = (option & 1) ? LW_TRUE : LW_FALSE;
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *txt = lwgeom_to_geojson(geom, srs, precision, output_bbox);

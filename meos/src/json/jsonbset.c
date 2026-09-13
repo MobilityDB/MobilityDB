@@ -70,16 +70,13 @@ jsonbset_in(const char *str)
  * @ingroup meos_json_set_inout
  * @brief Return the string representation of a JSONB set
  * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
-jsonbset_out(const Set *s, int maxdd UNUSED)
+jsonbset_out(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_JSONBSET))
-    return NULL;
-  /* Delegate to the generic set_out, with zero precision */
+  VALIDATE_JSONBSET(s, NULL);
   return set_out(s, 0);
 }
 

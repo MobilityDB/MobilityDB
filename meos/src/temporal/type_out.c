@@ -1217,8 +1217,9 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
  * @param[in] temp Temporal value
  * @param[in] with_bbox True when the output value has bounding box
  * @param[in] flags Flags
- * @param[in] precision Number of decimal digits. It is only used when the base
- * type has floating point components, such as tfloat or tgeometry
+ * @param[in] precision Number of decimal digits, of which at most
+ * #OUT_DEFAULT_DECIMAL_DIGITS are written. It is only used when the base type
+ * has floating point components, such as tfloat or tgeometry
  * @param[in] srs Spatial reference system, may be `NULL`
  * @errval NULL
  * @csqlfn #Temporal_as_mfjson()
@@ -1229,6 +1230,10 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_not_negative(precision))
+    return NULL;
+  if (precision > OUT_DEFAULT_DECIMAL_DIGITS)
+    precision = OUT_DEFAULT_DECIMAL_DIGITS;
 
   /* Get bounding box if needed */
   bboxunion *box = NULL, tmp;

@@ -169,6 +169,8 @@ floatspanset_out(const SpanSet *ss, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return spanset_out(ss, maxdd);
 }
 

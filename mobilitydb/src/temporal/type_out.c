@@ -106,7 +106,7 @@ Temporalarr_as_text(PG_FUNCTION_ARGS)
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
   Temporal **temparr = temparr_extract(array, &count);
-  char **strarr = temparr_out(temparr, count, Int32GetDatum(dbl_dig_for_wkt));
+  char **strarr = temparr_out(temparr, count, dbl_dig_for_wkt);
   ArrayType *result = strarr_to_textarray(strarr, count);
   /* We cannot use pfree_array */
   pfree(temparr);
@@ -278,13 +278,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
 
   /* Retrieve precision if any (default is max) */
   if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
-  {
     precision = PG_GETARG_INT32(3);
-    if (precision > OUT_DEFAULT_DECIMAL_DIGITS)
-      precision = OUT_DEFAULT_DECIMAL_DIGITS;
-    else if (precision < 0)
-      precision = 0;
-  }
 
   char *mfjson = temporal_as_mfjson(temp, with_bbox, flags, precision, srs);
   text *result = cstring_to_text(mfjson);

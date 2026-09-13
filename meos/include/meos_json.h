@@ -214,7 +214,7 @@ typedef enum
 /* Input and output functions */
 
 extern Set *jsonbset_in(const char *str);
-extern char *jsonbset_out(const Set *s, int maxdd);
+extern char *jsonbset_out(const Set *s);
 
 /* Constructor functions */
 

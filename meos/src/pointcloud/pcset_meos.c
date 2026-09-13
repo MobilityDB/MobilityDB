@@ -135,6 +135,8 @@ pcpointset_out(const Set *s, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_PCPOINTSET(s, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return set_out(s, maxdd);
 }
 
@@ -423,6 +425,8 @@ pcpatchset_out(const Set *s, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_PCPATCHSET(s, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return set_out(s, maxdd);
 }
 
