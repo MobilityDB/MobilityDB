@@ -4170,6 +4170,66 @@ relate_is_linear(const LWGEOM *geom)
 }
 
 /**
+ * @brief Return true if the vertices of a point array are all one point
+ * @details The vertices are input values, so they coincide exactly where their
+ * coordinates are equal
+ */
+static bool
+relate_ptarray_is_point(const POINTARRAY *pa)
+{
+  const POINT2D *p0 = getPoint2d_cp(pa, 0);
+  for (uint32_t i = 1; i < pa->npoints; i++)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, i);
+    if (p->x != p0->x || p->y != p0->y)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if a linear geometry draws points rather than curves
+ * @details A curve whose vertices all coincide draws the one point they
+ * denote, whatever the number of vertices writing it, so a linear geometry
+ * every component of which is such a curve is a point geometry to the
+ * relation: its interior is that set of points and its boundary is empty. A
+ * collection draws points when each of its members is a point geometry or
+ * draws points
+ */
+static bool
+relate_linear_draws_points(const LWGEOM *geom)
+{
+  if (! geom || lwgeom_is_empty(geom))
+    return false;
+  switch (geom->type)
+  {
+    case LINETYPE:
+      return relate_ptarray_is_point(((const LWLINE *) geom)->points);
+    case CIRCSTRINGTYPE:
+      return relate_ptarray_is_point(((const LWCIRCSTRING *) geom)->points);
+    case COMPOUNDTYPE:
+    case MULTILINETYPE:
+    case MULTICURVETYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < col->ngeoms; i++)
+      {
+        const LWGEOM *member = col->geoms[i];
+        if (lwgeom_is_empty(member) ||
+            (geom->type == COLLECTIONTYPE && relate_is_point(member)))
+          continue;
+        if (! relate_linear_draws_points(member))
+          return false;
+      }
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
+/**
  * @brief Return the topological dimension of a geometry
  */
 static int
@@ -4178,7 +4238,7 @@ relate_dimension(const LWGEOM *geom)
   if (relate_is_areal(geom))
     return 2;
   if (relate_is_linear(geom))
-    return 1;
+    return relate_linear_draws_points(geom) ? 0 : 1;
   if (relate_is_point(geom))
     return 0;
   return -1;
@@ -4334,7 +4394,12 @@ relate_count_points(const LWGEOM *geom)
     return 0;
   if (geom->type == POINTTYPE)
     return 1;
-  if (geom->type != MULTIPOINTTYPE && geom->type != COLLECTIONTYPE)
+  /* A curve whose vertices all coincide contributes the one point it draws */
+  if (geom->type == LINETYPE || geom->type == CIRCSTRINGTYPE)
+    return relate_linear_draws_points(geom) ? 1 : 0;
+  if (geom->type != MULTIPOINTTYPE && geom->type != COLLECTIONTYPE &&
+      geom->type != COMPOUNDTYPE && geom->type != MULTILINETYPE &&
+      geom->type != MULTICURVETYPE)
     return 0;
   const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
   int result = 0;
@@ -4357,7 +4422,22 @@ relate_extract_points_iter(const LWGEOM *geom, POINT2D *result, int *count)
     (*count)++;
     return;
   }
-  if (geom->type != MULTIPOINTTYPE && geom->type != COLLECTIONTYPE)
+  /* A curve whose vertices all coincide contributes the one point it draws */
+  if (geom->type == LINETYPE || geom->type == CIRCSTRINGTYPE)
+  {
+    if (relate_linear_draws_points(geom))
+    {
+      const POINTARRAY *pa = (geom->type == LINETYPE) ?
+        ((const LWLINE *) geom)->points :
+        ((const LWCIRCSTRING *) geom)->points;
+      result[*count] = *getPoint2d_cp(pa, 0);
+      (*count)++;
+    }
+    return;
+  }
+  if (geom->type != MULTIPOINTTYPE && geom->type != COLLECTIONTYPE &&
+      geom->type != COMPOUNDTYPE && geom->type != MULTILINETYPE &&
+      geom->type != MULTICURVETYPE)
     return;
   const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
   for (uint32_t i = 0; i < col->ngeoms; i++)
@@ -4368,7 +4448,9 @@ relate_extract_points_iter(const LWGEOM *geom, POINT2D *result, int *count)
 /**
  * @brief Return the points of a point geometry
  * @details A POINT and a MULTIPOINT are the same kind of set to the relation,
- * one of them holding a single element, so both are related by the same code
+ * one of them holding a single element, so both are related by the same code.
+ * So is a linear geometry whose curves each draw a single point, which
+ * contributes those points
  * @param[in] geom Point geometry
  * @param[out] count Number of points, zero for an empty geometry
  */
@@ -7132,7 +7214,9 @@ relate_dim_mask(const LWGEOM *geom)
     case CIRCSTRINGTYPE:
     case COMPOUNDTYPE:
     case MULTICURVETYPE:
-      return 2;
+      /* A curve whose vertices all coincide draws a point, so the dimension
+       * follows what it draws, as it does for a ring enclosing no area */
+      return relate_linear_draws_points(geom) ? 1 : 2;
     case POLYGONTYPE:
       /* A ring enclosing no area bounds no region, so what the surface draws
        * is its own linework and the dimension follows what it draws */
@@ -7727,6 +7811,22 @@ relate_edges_meet(const Edge *a, const Edge *b)
 }
 
 /**
+ * @brief Return true if an edge draws a single point
+ * @details A straight segment whose ends coincide draws the one point they
+ * denote, so it meets another geometry exactly where that point does. The
+ * segment kernel answers about positions along its first segment and a
+ * segment of no length has none, so the point is what is asked about
+ */
+static bool
+relate_edge_is_point(const Edge *e)
+{
+  if (e->etype == EDGE_POINT)
+    return true;
+  return (e->etype == EDGE_LINESEG || e->etype == EDGE_POLYSEG) &&
+    e->x1 == e->x2 && e->y1 == e->y2;
+}
+
+/**
  * @brief Return true if one point of an edge lies inside the surfaces bounded
  * by another geometry's edges
  * @details Read only where no curve of either geometry meets a curve of the
@@ -7867,17 +7967,18 @@ relate_edges_intersect(const RelateEdges *re1, const RelateEdges *re2)
   if (! relate_edges_boxes_overlap(e1, n1, e2, n2))
     return false;
 
-  /* A point of one geometry standing on the other */
+  /* A point of one geometry standing on the other, a segment of no length
+   * being the point it draws */
   for (int i = 0; i < n1; i++)
   {
-    if (e1[i]->etype != EDGE_POINT)
+    if (! relate_edge_is_point(e1[i]))
       continue;
     if (relate_point_on_any_edge(e1[i]->x1, e1[i]->y1, re2))
       return true;
   }
   for (int j = 0; j < n2; j++)
   {
-    if (e2[j]->etype != EDGE_POINT)
+    if (! relate_edge_is_point(e2[j]))
       continue;
     if (relate_point_on_any_edge(e2[j]->x1, e2[j]->y1, re1))
       return true;
@@ -7887,7 +7988,7 @@ relate_edges_intersect(const RelateEdges *re1, const RelateEdges *re2)
    * solving */
   for (int i = 0; i < n1; i++)
   {
-    if (e1[i]->etype == EDGE_POINT)
+    if (relate_edge_is_point(e1[i]))
       continue;
     if (relate_edges_meet_any(e1[i], re2))
       return true;
