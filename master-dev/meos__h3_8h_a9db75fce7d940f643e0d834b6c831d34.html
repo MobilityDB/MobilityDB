@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: VALIDATE_H3INDEX_DIRECTED_EDGE</title>
+<title>MobilityDB: VALIDATE_H3INDEXSET</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -156,25 +156,25 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__h3__comp__temp_ga8468d96976d8e5001410a1462d5593ae.html#ga8468d96976d8e5001410a1462d5593ae">tne_th3index_h3index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__h3__comp__temp_ga40d0ddd05e71fa0aae9018a5560e38c5.html#ga40d0ddd05e71fa0aae9018a5560e38c5">tne_th3index_th3index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__h3_8h_a5ba6a3e0dac17ac1eb3577e83aa0429d.html#a5ba6a3e0dac17ac1eb3577e83aa0429d">VALIDATE_H3INDEX_CELL</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__h3_8h_a0a2eb0e7a18d524ad00dc0215161712d.html#a0a2eb0e7a18d524ad00dc0215161712d">VALIDATE_H3INDEX_DIRECTED_EDGE</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__h3_8h_a0a2eb0e7a18d524ad00dc0215161712d.html#a0a2eb0e7a18d524ad00dc0215161712d">VALIDATE_H3INDEX_DIRECTED_EDGE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__h3_8h_a23738e83f2167c34113eae1edf38b2d5.html#a23738e83f2167c34113eae1edf38b2d5">VALIDATE_H3INDEX_VERTEX</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__h3_8h_a9db75fce7d940f643e0d834b6c831d34.html#a9db75fce7d940f643e0d834b6c831d34">VALIDATE_H3INDEXSET</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__h3_8h_a9db75fce7d940f643e0d834b6c831d34.html#a9db75fce7d940f643e0d834b6c831d34">VALIDATE_H3INDEXSET</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__h3_8h_a22a0c11d1255ee7d5a975f6f7d072396.html#a22a0c11d1255ee7d5a975f6f7d072396">VALIDATE_TH3INDEX</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a0a2eb0e7a18d524ad00dc0215161712d" name="a0a2eb0e7a18d524ad00dc0215161712d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0a2eb0e7a18d524ad00dc0215161712d">&#9670;&#160;</a></span>VALIDATE_H3INDEX_DIRECTED_EDGE</h2>
+<a id="a9db75fce7d940f643e0d834b6c831d34" name="a9db75fce7d940f643e0d834b6c831d34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9db75fce7d940f643e0d834b6c831d34">&#9670;&#160;</a></span>VALIDATE_H3INDEXSET</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define VALIDATE_H3INDEX_DIRECTED_EDGE</td>
+          <td class="memname">#define VALIDATE_H3INDEXSET</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">edge, </td>
+          <td class="paramname"><a class="el" href="meos_2CMakeLists_8txt_a50c962d28d1be08c3cf4bcc093e4a883.html#a50c962d28d1be08c3cf4bcc093e4a883">set</a>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -189,14 +189,18 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">do</span> { \</div>
-<div class="line">    if (! <a class="code hl_function" href="h3index_8h_a2a3ff97d37f1b74efb88a457441f4c47.html#a2a3ff97d37f1b74efb88a457441f4c47">ensure_h3index_directed_edge</a>(edge) ) \</div>
-<div class="line">      return (ret); \</div>
-<div class="line">  } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="ah3index_8h_a2a3ff97d37f1b74efb88a457441f4c47_html_a2a3ff97d37f1b74efb88a457441f4c47"><div class="ttname"><a href="h3index_8h_a2a3ff97d37f1b74efb88a457441f4c47.html#a2a3ff97d37f1b74efb88a457441f4c47">ensure_h3index_directed_edge</a></div><div class="ttdeci">bool ensure_h3index_directed_edge(H3Index edge)</div><div class="ttdoc">Ensure that an h3index is a valid H3 directed edge.</div><div class="ttdef"><b>Definition:</b> h3index.c:155</div></div>
+<b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> { \</div>
+<div class="line">          if (! <a class="code hl_function" href="meos_2include_2temporal_2temporal_8h_a1ca54ea01736c1ce368e71d12ae9434d.html#a1ca54ea01736c1ce368e71d12ae9434d">ensure_not_null</a>((<span class="keywordtype">void</span> *) (<a class="code hl_function" href="meos_2CMakeLists_8txt_a50c962d28d1be08c3cf4bcc093e4a883.html#a50c962d28d1be08c3cf4bcc093e4a883">set</a>)) || \</div>
+<div class="line">              ! <a class="code hl_function" href="set_8h_af11631145b6545ffd2c0ca16ea2df72e.html#af11631145b6545ffd2c0ca16ea2df72e">ensure_set_isof_type</a>((<a class="code hl_function" href="meos_2CMakeLists_8txt_a50c962d28d1be08c3cf4bcc093e4a883.html#a50c962d28d1be08c3cf4bcc093e4a883">set</a>), <a class="code hl_enumvalue" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401a2a775d512e6d2d7e863c81656556bcb4">T_H3INDEXSET</a>) ) \</div>
+<div class="line">           return (ret); \</div>
+<div class="line">    } <span class="keywordflow">while</span> (0)</div>
+<div class="ttc" id="ameos_2CMakeLists_8txt_a50c962d28d1be08c3cf4bcc093e4a883_html_a50c962d28d1be08c3cf4bcc093e4a883"><div class="ttname"><a href="meos_2CMakeLists_8txt_a50c962d28d1be08c3cf4bcc093e4a883.html#a50c962d28d1be08c3cf4bcc093e4a883">set</a></div><div class="ttdeci">set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} &quot;$&lt;TARGET_OBJECTS:pgtypes_objects&gt;&quot;) set(MEOS_STATIC_OBJECTS $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:216</div></div>
+<div class="ttc" id="ameos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401_html_a05df1d1fd2c829ee784b125ed34e8401a2a775d512e6d2d7e863c81656556bcb4"><div class="ttname"><a href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401a2a775d512e6d2d7e863c81656556bcb4">T_H3INDEXSET</a></div><div class="ttdeci">@ T_H3INDEXSET</div><div class="ttdoc">h3index set type</div><div class="ttdef"><b>Definition:</b> meos_catalog.h:125</div></div>
+<div class="ttc" id="ameos_2include_2temporal_2temporal_8h_a1ca54ea01736c1ce368e71d12ae9434d_html_a1ca54ea01736c1ce368e71d12ae9434d"><div class="ttname"><a href="meos_2include_2temporal_2temporal_8h_a1ca54ea01736c1ce368e71d12ae9434d.html#a1ca54ea01736c1ce368e71d12ae9434d">ensure_not_null</a></div><div class="ttdeci">bool ensure_not_null(void *ptr)</div><div class="ttdoc">Ensure that the pointer is not null.</div><div class="ttdef"><b>Definition:</b> temporal.c:99</div></div>
+<div class="ttc" id="aset_8h_af11631145b6545ffd2c0ca16ea2df72e_html_af11631145b6545ffd2c0ca16ea2df72e"><div class="ttname"><a href="set_8h_af11631145b6545ffd2c0ca16ea2df72e.html#af11631145b6545ffd2c0ca16ea2df72e">ensure_set_isof_type</a></div><div class="ttdeci">bool ensure_set_isof_type(const Set *s, MeosType settype)</div><div class="ttdoc">Ensure that a set is of a given set type.</div><div class="ttdef"><b>Definition:</b> set.c:74</div></div>
 </div><!-- fragment -->
-<p>Ensure that an h3index is a valid H3 directed edge. </p>
-<p >Matches the pattern of <code>VALIDATE_H3INDEX_CELL</code> above. </p>
+<p>Ensure that the set passed as argument is a set of H3 cells. </p>
+<p >Matches the pattern of <code>VALIDATE_NPOINTSET</code> / <code>VALIDATE_CBUFFERSET</code>. </p>
 
 </div>
 </div>
