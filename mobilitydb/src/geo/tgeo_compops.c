@@ -97,7 +97,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if a temporal geo is ever equal to a geometry/geography
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -111,7 +111,7 @@ PG_FUNCTION_INFO_V1(Always_eq_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if a temporal geo is always equal to a geometry/geography
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -126,7 +126,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_geo_tgeo);
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if a temporal geo is ever different from a
  * geometry/geography
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -141,7 +141,7 @@ PG_FUNCTION_INFO_V1(Always_ne_geo_tgeo);
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if a temporal geo is always different from a
  * geometry/geography
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -157,7 +157,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if a temporal geo is ever equal to a geometry/geography
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -171,7 +171,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if a temporal geo is always equal to a geometry/geography
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -186,7 +186,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tgeo_geo);
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if a temporal geo is ever different from a
  * geometry/geography
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -201,7 +201,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tgeo_geo);
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if a temporal geo is always different from a
  * geometry/geography
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -217,7 +217,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if two temporal geos are ever equal
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -231,7 +231,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if two temporal geos are always equal
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -245,7 +245,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if two temporal geos are ever different
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -259,7 +259,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_ever
  * @brief Return true if two temporal geos are always different
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -319,7 +319,7 @@ PG_FUNCTION_INFO_V1(Teq_geo_tgeo);
  * @ingroup mobilitydb_geo_comp_temp
  * @brief Return a temporal Boolean that states whether a temporal geo is equal
  * to a geometry/geography
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Tne_geo_tgeo);
  * @brief Return a temporal Boolean that states whether a temporal geo is
  * different from a geometry/geography
  * geometry/geography
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -352,7 +352,7 @@ PG_FUNCTION_INFO_V1(Teq_tgeo_geo);
  * @ingroup mobilitydb_geo_comp_temp
  * @brief Return a temporal Boolean that states whether a temporal geo is
  * equal to a geometry/geography
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -367,7 +367,7 @@ PG_FUNCTION_INFO_V1(Tne_tgeo_geo);
  * @ingroup mobilitydb_geo_comp_temp
  * @brief Return a temporal Boolean that states whether a temporal geo is
  * different from a geometry/geography
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum

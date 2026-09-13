@@ -32,11 +32,11 @@
 -- eacomp_temporal_* / tcomp_temporal_* which are purely generic).
 
 -------------------------------------------------------------------------------
--- eEq / ?= : at least one instant equals the probe
+-- eEqual / ?= : at least one instant equals the probe
 -------------------------------------------------------------------------------
 
 -- (h3index, th3index)
-SELECT eEq(590464338553208831::h3index,
+SELECT eEqual(590464338553208831::h3index,
   th3index '831c02fffffffff@2001-01-01');
 SELECT 590464338553208831::h3index ?=
   th3index '831c02fffffffff@2001-01-01';
@@ -57,7 +57,7 @@ SELECT th3index
   ?= 612544986753269759::h3index;
 
 -------------------------------------------------------------------------------
--- aEq / %= : every instant equals the probe
+-- aEqual / %= : every instant equals the probe
 -------------------------------------------------------------------------------
 
 -- Constant trajectory — always equal
@@ -73,7 +73,7 @@ SELECT th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-02]'
   %= th3index '[831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-02]';
 
 -------------------------------------------------------------------------------
--- eNe / ?<> and aNe / %<>
+-- eNotEqual / ?<> and aNotEqual / %<>
 -------------------------------------------------------------------------------
 
 -- Trajectory has at least one instant ≠ probe

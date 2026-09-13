@@ -156,7 +156,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_pcpoint_tpcpoint);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a pcpoint is ever equal to a temporal pgpointcloud
  * point
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -171,7 +171,7 @@ PG_FUNCTION_INFO_V1(Always_eq_pcpoint_tpcpoint);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a pcpoint is always equal to a temporal pgpointcloud
  * point
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -186,7 +186,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_pcpoint_tpcpoint);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a pcpoint is ever different from a temporal
  * pgpointcloud point
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -201,7 +201,7 @@ PG_FUNCTION_INFO_V1(Always_ne_pcpoint_tpcpoint);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a pcpoint is always different from a temporal
  * pgpointcloud point
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -218,7 +218,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tpcpoint_pcpoint);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a temporal pgpointcloud point is ever equal to a
  * pcpoint
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -233,7 +233,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tpcpoint_pcpoint);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a temporal pgpointcloud point is always equal to a
  * pcpoint
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -248,7 +248,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tpcpoint_pcpoint);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a temporal pgpointcloud point is ever different from a
  * pcpoint
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -263,7 +263,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tpcpoint_pcpoint);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a temporal pgpointcloud point is always different from
  * a pcpoint
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -279,7 +279,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tpcpoint_tpcpoint);
 /**
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if two temporal pgpointcloud points are ever equal
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -293,7 +293,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tpcpoint_tpcpoint);
 /**
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if two temporal pgpointcloud points are always equal
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -307,7 +307,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tpcpoint_tpcpoint);
 /**
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if two temporal pgpointcloud points are ever different
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -321,7 +321,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tpcpoint_tpcpoint);
 /**
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if two temporal pgpointcloud points are always different
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -338,7 +338,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_pcpatch_tpcpatch);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a pcpatch is ever equal to a temporal pgpointcloud
  * patch
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -353,7 +353,7 @@ PG_FUNCTION_INFO_V1(Always_eq_pcpatch_tpcpatch);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a pcpatch is always equal to a temporal pgpointcloud
  * patch
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -368,7 +368,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_pcpatch_tpcpatch);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a pcpatch is ever different from a temporal
  * pgpointcloud patch
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -383,7 +383,7 @@ PG_FUNCTION_INFO_V1(Always_ne_pcpatch_tpcpatch);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a pcpatch is always different from a temporal
  * pgpointcloud patch
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -400,7 +400,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tpcpatch_pcpatch);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a temporal pgpointcloud patch is ever equal to a
  * pcpatch
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -415,7 +415,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tpcpatch_pcpatch);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a temporal pgpointcloud patch is always equal to a
  * pcpatch
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -430,7 +430,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tpcpatch_pcpatch);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a temporal pgpointcloud patch is ever different from a
  * pcpatch
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -445,7 +445,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tpcpatch_pcpatch);
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if a temporal pgpointcloud patch is always different from
  * a pcpatch
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -461,7 +461,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tpcpatch_tpcpatch);
 /**
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if two temporal pgpointcloud patches are ever equal
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -475,7 +475,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tpcpatch_tpcpatch);
 /**
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if two temporal pgpointcloud patches are always equal
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -489,7 +489,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tpcpatch_tpcpatch);
 /**
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if two temporal pgpointcloud patches are ever different
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -503,7 +503,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tpcpatch_tpcpatch);
 /**
  * @ingroup mobilitydb_pointcloud_comp_ever
  * @brief Return true if two temporal pgpointcloud patches are always different
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -600,7 +600,7 @@ PG_FUNCTION_INFO_V1(Teq_pcpoint_tpcpoint);
  * @ingroup mobilitydb_pointcloud_comp_temp
  * @brief Return the temporal equality of a pcpoint and a temporal
  * pgpointcloud point
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -615,7 +615,7 @@ PG_FUNCTION_INFO_V1(Tne_pcpoint_tpcpoint);
  * @ingroup mobilitydb_pointcloud_comp_temp
  * @brief Return the temporal inequality of a pcpoint and a temporal
  * pgpointcloud point
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -630,7 +630,7 @@ PG_FUNCTION_INFO_V1(Teq_tpcpoint_pcpoint);
  * @ingroup mobilitydb_pointcloud_comp_temp
  * @brief Return the temporal equality of a temporal pgpointcloud point and a
  * pcpoint
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -645,7 +645,7 @@ PG_FUNCTION_INFO_V1(Tne_tpcpoint_pcpoint);
  * @ingroup mobilitydb_pointcloud_comp_temp
  * @brief Return the temporal inequality of a temporal pgpointcloud point and a
  * pcpoint
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -662,7 +662,7 @@ PG_FUNCTION_INFO_V1(Teq_pcpatch_tpcpatch);
  * @ingroup mobilitydb_pointcloud_comp_temp
  * @brief Return the temporal equality of a pcpatch and a temporal
  * pgpointcloud patch
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -677,7 +677,7 @@ PG_FUNCTION_INFO_V1(Tne_pcpatch_tpcpatch);
  * @ingroup mobilitydb_pointcloud_comp_temp
  * @brief Return the temporal inequality of a pcpatch and a temporal
  * pgpointcloud patch
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -692,7 +692,7 @@ PG_FUNCTION_INFO_V1(Teq_tpcpatch_pcpatch);
  * @ingroup mobilitydb_pointcloud_comp_temp
  * @brief Return the temporal equality of a temporal pgpointcloud patch and a
  * pcpatch
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -707,7 +707,7 @@ PG_FUNCTION_INFO_V1(Tne_tpcpatch_pcpatch);
  * @ingroup mobilitydb_pointcloud_comp_temp
  * @brief Return the temporal inequality of a temporal pgpointcloud patch and a
  * pcpatch
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum

@@ -1684,16 +1684,16 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.8)@2001-01-0
 </programlisting>
 			</listitem>
 			<listitem xml:id="tposechain_eq">
-				<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eEqual</varname></primary></indexterm>
 				<para>Compare two temporal pose chains, or a temporal pose chain and a pose chain</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eEq({pose,posechain,tpose,tposechain},{pose,posechain,tpose,tposechain}) &#8594; boolean
+eEqual({pose,posechain,tpose,tposechain},{pose,posechain,tpose,tposechain}) &#8594; boolean
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tposechain 'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01' =
   tposechain 'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01';
 -- t
-SELECT eEq(tposechain '{PoseChain(Pose(Point(1 1), 0.5))@2001-01-01,
+SELECT eEqual(tposechain '{PoseChain(Pose(Point(1 1), 0.5))@2001-01-01,
   PoseChain(Pose(Point(2 2), 0.5))@2001-01-02}',
   posechain 'PoseChain(Pose(Point(2 2), 0.5))');
 -- t

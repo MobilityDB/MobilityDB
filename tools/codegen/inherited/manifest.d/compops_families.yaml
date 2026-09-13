@@ -16,7 +16,7 @@
 # meos/src/temporal/temporal_compops.c). A hand-written `base:` key here could
 # name a base type other than the temp type's own (e.g. `temp: tfloat` paired
 # with `base: integer`), which the generator would happily render as
-# `tGt(tfloat, integer)` while the C entry point still derives float8 from the
+# `tGreaterThan(tfloat, integer)` while the C entry point still derives float8 from the
 # temp type alone — an int32 Datum silently misread as an IEEE double. Deriving
 # `base` from `temp` makes that mismatch unrepresentable.
 compops_families:

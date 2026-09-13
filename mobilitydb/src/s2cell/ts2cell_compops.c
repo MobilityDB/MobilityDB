@@ -140,7 +140,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_s2cell_ts2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if a S2CELL cell is ever equal to a temporal S2CELL cell
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -152,7 +152,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_ts2cell_s2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if a temporal S2CELL cell is ever equal to a S2CELL cell
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -165,7 +165,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_ts2cell_ts2cell);
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if two temporal S2CELL cells are ever equal at a shared
  * instant
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -181,7 +181,7 @@ PG_FUNCTION_INFO_V1(Always_eq_s2cell_ts2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if a S2CELL cell is always equal to a temporal S2CELL cell
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -193,7 +193,7 @@ PG_FUNCTION_INFO_V1(Always_eq_ts2cell_s2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if a temporal S2CELL cell is always equal to a S2CELL cell
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -206,7 +206,7 @@ PG_FUNCTION_INFO_V1(Always_eq_ts2cell_ts2cell);
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if two temporal S2CELL cells are always equal across
  * their shared time axis
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -222,7 +222,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_s2cell_ts2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if a S2CELL cell is ever different from a temporal S2CELL cell
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -234,7 +234,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_ts2cell_s2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if a temporal S2CELL cell is ever different from a S2CELL cell
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -247,7 +247,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_ts2cell_ts2cell);
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if two temporal S2CELL cells are ever different at a shared
  * instant
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -263,7 +263,7 @@ PG_FUNCTION_INFO_V1(Always_ne_s2cell_ts2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if a S2CELL cell is always different from a temporal S2CELL cell
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -275,7 +275,7 @@ PG_FUNCTION_INFO_V1(Always_ne_ts2cell_s2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if a temporal S2CELL cell is always different from a S2CELL cell
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -288,7 +288,7 @@ PG_FUNCTION_INFO_V1(Always_ne_ts2cell_ts2cell);
  * @ingroup mobilitydb_s2cell_comp_ever
  * @brief Return true if two temporal S2CELL cells are always different across
  * their shared time axis
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -304,7 +304,7 @@ PG_FUNCTION_INFO_V1(Teq_s2cell_ts2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_temp
  * @brief Return the temporal equality of a S2CELL cell and a temporal S2CELL cell
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -316,7 +316,7 @@ PG_FUNCTION_INFO_V1(Teq_ts2cell_s2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_temp
  * @brief Return the temporal equality of a temporal S2CELL cell and a S2CELL cell
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -329,7 +329,7 @@ PG_FUNCTION_INFO_V1(Teq_ts2cell_ts2cell);
  * @ingroup mobilitydb_s2cell_comp_temp
  * @brief Return the temporal equality of two temporal S2CELL cells across their
  * shared time axis
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -345,7 +345,7 @@ PG_FUNCTION_INFO_V1(Tne_s2cell_ts2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_temp
  * @brief Return the temporal inequality of a S2CELL cell and a temporal S2CELL cell
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -357,7 +357,7 @@ PG_FUNCTION_INFO_V1(Tne_ts2cell_s2cell);
 /**
  * @ingroup mobilitydb_s2cell_comp_temp
  * @brief Return the temporal inequality of a temporal S2CELL cell and a S2CELL cell
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -370,7 +370,7 @@ PG_FUNCTION_INFO_V1(Tne_ts2cell_ts2cell);
  * @ingroup mobilitydb_s2cell_comp_temp
  * @brief Return the temporal inequality of two temporal S2CELL cells across
  * their shared time axis
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum

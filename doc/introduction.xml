@@ -512,6 +512,53 @@ SET client_min_messages TO notice;
 		<para>
 			The two functions answer different questions, which is what the change states. A spatiotemporal box carries a period, so <varname>nearestApproachDistance</varname> answers the least distance over the time that its two arguments share, and answers the null value when they share none. The function <varname>distance</varname> measures its two arguments as sets of points and reads no period. The signatures of <varname>distance</varname> whose arguments carry no period keep the name.
 		</para>
+		<para>
+			Version 1.4 gives MobilityDB one SQL dialect across its batch and stream SQL bindings, PostgreSQL, DuckDB, Apache Spark, and Apache Flink, which name every function identically. A function name must therefore be free in each of these engines. The ever, always, and temporal comparison functions are named by a one-letter quantifier, <varname>e</varname>, <varname>a</varname>, or <varname>t</varname>, followed by the comparison spelled out: a shorter name such as <varname>eLt</varname> would coincide with the function <varname>elt</varname> of Apache Spark and Apache Flink. The operators keep their symbols. The following table gives the functions behind each operator in both versions.
+		</para>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2 3"?>
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>Operators</entry>
+						<entry>Version 1.3</entry>
+						<entry>Version 1.4</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>?=</varname>, <varname>%=</varname>, <varname>#=</varname></entry>
+						<entry><varname>ever_eq</varname>, <varname>always_eq</varname>, <varname>temporal_teq</varname>, <varname>tgeo_teq</varname></entry>
+						<entry><varname>eEqual</varname>, <varname>aEqual</varname>, <varname>tEqual</varname></entry>
+					</row>
+					<row>
+						<entry><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname>, <varname>#&lt;&gt;</varname></entry>
+						<entry><varname>ever_ne</varname>, <varname>always_ne</varname>, <varname>temporal_tne</varname>, <varname>tgeo_tne</varname></entry>
+						<entry><varname>eNotEqual</varname>, <varname>aNotEqual</varname>, <varname>tNotEqual</varname></entry>
+					</row>
+					<row>
+						<entry><varname>?&lt;</varname>, <varname>%&lt;</varname>, <varname>#&lt;</varname></entry>
+						<entry><varname>ever_lt</varname>, <varname>always_lt</varname>, <varname>temporal_tlt</varname></entry>
+						<entry><varname>eLessThan</varname>, <varname>aLessThan</varname>, <varname>tLessThan</varname></entry>
+					</row>
+					<row>
+						<entry><varname>?&lt;=</varname>, <varname>%&lt;=</varname>, <varname>#&lt;=</varname></entry>
+						<entry><varname>ever_le</varname>, <varname>always_le</varname>, <varname>temporal_tle</varname></entry>
+						<entry><varname>eLessEqual</varname>, <varname>aLessEqual</varname>, <varname>tLessEqual</varname></entry>
+					</row>
+					<row>
+						<entry><varname>?&gt;</varname>, <varname>%&gt;</varname>, <varname>#&gt;</varname></entry>
+						<entry><varname>ever_gt</varname>, <varname>always_gt</varname>, <varname>temporal_tgt</varname></entry>
+						<entry><varname>eGreaterThan</varname>, <varname>aGreaterThan</varname>, <varname>tGreaterThan</varname></entry>
+					</row>
+					<row>
+						<entry><varname>?&gt;=</varname>, <varname>%&gt;=</varname>, <varname>#&gt;=</varname></entry>
+						<entry><varname>ever_ge</varname>, <varname>always_ge</varname>, <varname>temporal_tge</varname></entry>
+						<entry><varname>eGreaterEqual</varname>, <varname>aGreaterEqual</varname>, <varname>tGreaterEqual</varname></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
 	</sect1>
 </chapter>
 

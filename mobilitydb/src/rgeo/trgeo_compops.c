@@ -58,7 +58,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_geo_trgeometry);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is ever equal to a geometry
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -73,7 +73,7 @@ PG_FUNCTION_INFO_V1(Always_eq_geo_trgeometry);
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always equal to a
  * geometry
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -88,7 +88,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_geo_trgeometry);
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is ever different from a
  * geometry
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -103,7 +103,7 @@ PG_FUNCTION_INFO_V1(Always_ne_geo_trgeometry);
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always different from a
  * geometry
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_trgeometry_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is ever equal to a geometry
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -134,7 +134,7 @@ PG_FUNCTION_INFO_V1(Always_eq_trgeometry_geo);
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always equal to a
  * geometry
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -149,7 +149,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_trgeometry_geo);
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is ever different from a
  * geometry
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -164,7 +164,7 @@ PG_FUNCTION_INFO_V1(Always_ne_trgeometry_geo);
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always different from a
  * geometry
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -180,7 +180,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_trgeometry_trgeometry);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if two temporal poses are ever equal
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -194,7 +194,7 @@ PG_FUNCTION_INFO_V1(Always_eq_trgeometry_trgeometry);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if two temporal poses are always equal
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -208,7 +208,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_trgeometry_trgeometry);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if two temporal poses are ever different
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -222,7 +222,7 @@ PG_FUNCTION_INFO_V1(Always_ne_trgeometry_trgeometry);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if two temporal poses are always different
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -240,7 +240,7 @@ PG_FUNCTION_INFO_V1(Teq_geo_trgeometry);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever equal to a gs
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -255,7 +255,7 @@ PG_FUNCTION_INFO_V1(Tne_geo_trgeometry);
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever different from a
  * geometry
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -271,7 +271,7 @@ PG_FUNCTION_INFO_V1(Teq_trgeometry_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever equal to a gs
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -286,7 +286,7 @@ PG_FUNCTION_INFO_V1(Tne_trgeometry_geo);
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever different from a
  * geometry
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum

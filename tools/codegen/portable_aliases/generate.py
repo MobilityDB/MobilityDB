@@ -31,7 +31,7 @@
 The portable SQL dialect (RFC: doc/rfc/sql-portability) names every operator's
 backing function with the bare portable name directly -- positional
 (left/right/before/after and the over* variants), topological
-(contains/contained/overlaps/adjacent/same) and comparison (tEq/eEq/aEq, ...).
+(contains/contained/overlaps/adjacent/same) and comparison (tEqual/eEqual/aEqual, ...).
 The bare names live in the operator definitions themselves; there is no
 generated SQL.
 
@@ -58,8 +58,8 @@ OP_TO_NAME = {
     "<<|": "below", "|>>": "above", "&<|": "overbelow", "|&>": "overabove",
     "<</": "front", "/>>": "back", "&</": "overfront", "/&>": "overback",
     # The three comparison families -- temp / ever / always -- use one
-    # consistent camelCase shape appended below: <prefix>{Eq,Ne,Lt,Le,Gt,Ge}
-    # with a single-letter prefix (t / e / a).
+    # consistent camelCase shape appended below: <prefix>{Equal,NotEqual,LessThan,
+    # LessEqual,GreaterThan,GreaterEqual} with a single-letter prefix (t / e / a).
 }
 
 # Operators whose backing PROCEDURE is a callable named function that is already
@@ -87,9 +87,11 @@ DIST = {"<->", "|=|", "<#>", "|=|>"}
 JSON_ACCESS = {"->", "->>", "#-", "?", "?&", "?|"}
 
 # The temporal (#), ever (?) and always (%) comparison families map to the
-# canonical camelCase prefix (t/e/a) + {Eq,Ne,Lt,Le,Gt,Ge} suffix (= -> Eq,
-# <> -> Ne, < -> Lt, <= -> Le, > -> Gt, >= -> Ge).
-_CMP_SUFFIX = {"=": "Eq", "<>": "Ne", "<": "Lt", "<=": "Le", ">": "Gt", ">=": "Ge"}
+# camelCase prefix (t/e/a) followed by the operation spelled out (= -> Equal,
+# <> -> NotEqual, < -> LessThan, <= -> LessEqual, > -> GreaterThan,
+# >= -> GreaterEqual).
+_CMP_SUFFIX = {"=": "Equal", "<>": "NotEqual", "<": "LessThan", "<=": "LessEqual",
+               ">": "GreaterThan", ">=": "GreaterEqual"}
 for _ops, _prefix in ((TEMP, "t"), (EVER, "e"), (ALWAYS, "a")):
     for _op in _ops:
         OP_TO_NAME[_op] = _prefix + _CMP_SUFFIX[_op[1:]]

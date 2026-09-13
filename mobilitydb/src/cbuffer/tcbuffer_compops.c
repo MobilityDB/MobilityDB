@@ -99,7 +99,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_cbuffer_tcbuffer);
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is ever equal to a circular
  * buffer
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -114,7 +114,7 @@ PG_FUNCTION_INFO_V1(Always_eq_cbuffer_tcbuffer);
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is always equal to a
  * circular buffer
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -129,7 +129,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_cbuffer_tcbuffer);
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is ever different from a
  * circular buffer
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(Always_ne_cbuffer_tcbuffer);
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is always different from a
  * circular buffer
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -161,7 +161,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tcbuffer_cbuffer);
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is ever equal to a circular
  * buffer
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -176,7 +176,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tcbuffer_cbuffer);
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is always equal to a
  * circular buffer
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -191,7 +191,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tcbuffer_cbuffer);
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is ever different from a
  * circular buffer
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -206,7 +206,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tcbuffer_cbuffer);
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is always different from a
  * circular buffer
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -222,7 +222,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if two temporal circular buffers are ever equal
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -236,7 +236,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if two temporal circular buffers are always equal
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -250,7 +250,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if two temporal circular buffers are ever different
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -264,7 +264,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_ever
  * @brief Return true if two temporal circular buffers are always different
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -323,7 +323,7 @@ PG_FUNCTION_INFO_V1(Teq_cbuffer_tcbuffer);
  * @ingroup mobilitydb_cbuffer_comp_temp
  * @brief Return a temporal Boolean that states whether a circular buffer is
  * equal to a temporal circular buffer
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -338,7 +338,7 @@ PG_FUNCTION_INFO_V1(Tne_cbuffer_tcbuffer);
  * @ingroup mobilitydb_cbuffer_comp_temp
  * @brief Return a temporal Boolean that states whether a circular buffer is
  * different from a temporal circular buffer
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -355,7 +355,7 @@ PG_FUNCTION_INFO_V1(Teq_tcbuffer_cbuffer);
  * @ingroup mobilitydb_cbuffer_comp_temp
  * @brief Return a temporal Boolean that states whether a temporal circular
  * buffer is equal to a circular buffer
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -370,7 +370,7 @@ PG_FUNCTION_INFO_V1(Tne_tcbuffer_cbuffer);
  * @ingroup mobilitydb_cbuffer_comp_temp
  * @brief Return a temporal Boolean that states whether a temporal circular
  * buffer is different from a circular buffer
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum

@@ -8,7 +8,7 @@ Licensed under the PostgreSQL License (see LICENSE.txt).
 Every MobilityDB operator names its backing function with the bare portable
 name directly — positional (`left`/`right`/`before`/`after` and the `over*`
 variants), topological (`contains`/`contained`/`overlaps`/`adjacent`/`same`)
-and comparison (`tEq`/`eEq`/`aEq`, …) — so the same SQL runs unchanged on
+and comparison (`tEqual`/`eEqual`/`aEqual`, …) — so the same SQL runs unchanged on
 MobilityDB, MobilityDuck and MobilitySpark (RFC: `doc/rfc/sql-portability`). The
 bare names live in the operator definitions; there is no generated SQL.
 

@@ -39,7 +39,7 @@
  * Ever/Always Comparison Functions
  *****************************************************************************/
 
-CREATE FUNCTION eEq(pcpoint, tpcpoint)
+CREATE FUNCTION eEqual(pcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_pcpoint_tpcpoint'
   SUPPORT tspatial_supportfn
@@ -47,12 +47,12 @@ CREATE FUNCTION eEq(pcpoint, tpcpoint)
 
 CREATE OPERATOR ?= (
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
-  PROCEDURE = eEq,
+  PROCEDURE = eEqual,
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aEq(pcpoint, tpcpoint)
+CREATE FUNCTION aEqual(pcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_pcpoint_tpcpoint'
   SUPPORT tspatial_supportfn
@@ -60,38 +60,38 @@ CREATE FUNCTION aEq(pcpoint, tpcpoint)
 
 CREATE OPERATOR %= (
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
-  PROCEDURE = aEq,
+  PROCEDURE = aEqual,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION eNe(pcpoint, tpcpoint)
+CREATE FUNCTION eNotEqual(pcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_pcpoint_tpcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
-  PROCEDURE = eNe,
+  PROCEDURE = eNotEqual,
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aNe(pcpoint, tpcpoint)
+CREATE FUNCTION aNotEqual(pcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_ne_pcpoint_tpcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
-  PROCEDURE = aNe,
+  PROCEDURE = aNotEqual,
   NEGATOR = ?=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION eEq(tpcpoint, pcpoint)
+CREATE FUNCTION eEqual(tpcpoint, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_tpcpoint_pcpoint'
   SUPPORT tspatial_supportfn
@@ -99,12 +99,12 @@ CREATE FUNCTION eEq(tpcpoint, pcpoint)
 
 CREATE OPERATOR ?= (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
-  PROCEDURE = eEq,
+  PROCEDURE = eEqual,
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aEq(tpcpoint, pcpoint)
+CREATE FUNCTION aEqual(tpcpoint, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_tpcpoint_pcpoint'
   SUPPORT tspatial_supportfn
@@ -112,38 +112,38 @@ CREATE FUNCTION aEq(tpcpoint, pcpoint)
 
 CREATE OPERATOR %= (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
-  PROCEDURE = aEq,
+  PROCEDURE = aEqual,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION eNe(tpcpoint, pcpoint)
+CREATE FUNCTION eNotEqual(tpcpoint, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tpcpoint_pcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
-  PROCEDURE = eNe,
+  PROCEDURE = eNotEqual,
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aNe(tpcpoint, pcpoint)
+CREATE FUNCTION aNotEqual(tpcpoint, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_ne_tpcpoint_pcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
-  PROCEDURE = aNe,
+  PROCEDURE = aNotEqual,
   NEGATOR = ?=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION eEq(tpcpoint, tpcpoint)
+CREATE FUNCTION eEqual(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_tpcpoint_tpcpoint'
   SUPPORT tspatial_supportfn
@@ -151,12 +151,12 @@ CREATE FUNCTION eEq(tpcpoint, tpcpoint)
 
 CREATE OPERATOR ?= (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
-  PROCEDURE = eEq,
+  PROCEDURE = eEqual,
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aEq(tpcpoint, tpcpoint)
+CREATE FUNCTION aEqual(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_tpcpoint_tpcpoint'
   SUPPORT tspatial_supportfn
@@ -164,31 +164,31 @@ CREATE FUNCTION aEq(tpcpoint, tpcpoint)
 
 CREATE OPERATOR %= (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
-  PROCEDURE = aEq,
+  PROCEDURE = aEqual,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION eNe(tpcpoint, tpcpoint)
+CREATE FUNCTION eNotEqual(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tpcpoint_tpcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
-  PROCEDURE = eNe,
+  PROCEDURE = eNotEqual,
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aNe(tpcpoint, tpcpoint)
+CREATE FUNCTION aNotEqual(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_ne_tpcpoint_tpcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
-  PROCEDURE = aNe,
+  PROCEDURE = aNotEqual,
   NEGATOR = ?=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
@@ -197,31 +197,31 @@ CREATE OPERATOR %<> (
  * Temporal equal
  *****************************************************************************/
 
-CREATE FUNCTION tEq(pcpoint, tpcpoint)
+CREATE FUNCTION tEqual(pcpoint, tpcpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_pcpoint_tpcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tEq(tpcpoint, pcpoint)
+CREATE FUNCTION tEqual(tpcpoint, pcpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_tpcpoint_pcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tEq(tpcpoint, tpcpoint)
+CREATE FUNCTION tEqual(tpcpoint, tpcpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = tEq,
+  PROCEDURE = tEqual,
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tEq,
+  PROCEDURE = tEqual,
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tEq,
+  PROCEDURE = tEqual,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
   COMMUTATOR = #=
 );
@@ -230,31 +230,31 @@ CREATE OPERATOR #= (
  * Temporal not equal
  *****************************************************************************/
 
-CREATE FUNCTION tNe(pcpoint, tpcpoint)
+CREATE FUNCTION tNotEqual(pcpoint, tpcpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_pcpoint_tpcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tNe(tpcpoint, pcpoint)
+CREATE FUNCTION tNotEqual(tpcpoint, pcpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_tpcpoint_pcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tNe(tpcpoint, tpcpoint)
+CREATE FUNCTION tNotEqual(tpcpoint, tpcpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
-  PROCEDURE = tNe,
+  PROCEDURE = tNotEqual,
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = tNe,
+  PROCEDURE = tNotEqual,
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = tNe,
+  PROCEDURE = tNotEqual,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
   COMMUTATOR = #<>
 );

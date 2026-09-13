@@ -97,7 +97,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_posechain_tposechain);
 /**
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if a temporal posechain is ever equal to a posechain
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -112,7 +112,7 @@ PG_FUNCTION_INFO_V1(Always_eq_posechain_tposechain);
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if a temporal posechain is always equal to a
  * posechain
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -127,7 +127,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_posechain_tposechain);
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if a temporal posechain is ever different from a
  * posechain
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -142,7 +142,7 @@ PG_FUNCTION_INFO_V1(Always_ne_posechain_tposechain);
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if a temporal posechain is always different from a
  * posechain
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -158,7 +158,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tposechain_posechain);
 /**
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if a temporal posechain is ever equal to a posechain
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -173,7 +173,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tposechain_posechain);
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if a temporal posechain is always equal to a
  * posechain
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -188,7 +188,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tposechain_posechain);
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if a temporal posechain is ever different from a
  * posechain
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -203,7 +203,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tposechain_posechain);
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if a temporal posechain is always different from a
  * posechain
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -219,7 +219,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tposechain_tposechain);
 /**
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if two temporal posechains are ever equal
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -233,7 +233,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tposechain_tposechain);
 /**
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if two temporal posechains are always equal
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -247,7 +247,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tposechain_tposechain);
 /**
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if two temporal posechains are ever different
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -261,7 +261,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tposechain_tposechain);
 /**
  * @ingroup mobilitydb_posechain_comp_ever
  * @brief Return true if two temporal posechains are always different
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -320,7 +320,7 @@ PG_FUNCTION_INFO_V1(Teq_posechain_tposechain);
  * @ingroup mobilitydb_posechain_comp_temp
  * @brief Return a temporal Boolean that states whether a posechain is equal to a
  * temporal posechain
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Tne_posechain_tposechain);
  * @ingroup mobilitydb_posechain_comp_temp
  * @brief Return a temporal Boolean that states whether a posechain is different
  * from a temporal posechain
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -352,7 +352,7 @@ PG_FUNCTION_INFO_V1(Teq_tposechain_posechain);
  * @ingroup mobilitydb_posechain_comp_temp
  * @brief Return a temporal Boolean that states whether a temporal posechain is
  * equal to a posechain
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -367,7 +367,7 @@ PG_FUNCTION_INFO_V1(Tne_tposechain_posechain);
  * @ingroup mobilitydb_posechain_comp_temp
  * @brief Return a temporal Boolean that states whether a temporal posechain is
  * different from a posechain
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum

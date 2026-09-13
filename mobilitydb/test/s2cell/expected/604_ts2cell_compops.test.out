@@ -1,36 +1,36 @@
-SELECT eEq(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
- eeq 
------
+SELECT eEqual(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
+ eequal 
+--------
  t
 (1 row)
 
-SELECT aEq(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
- aeq 
------
+SELECT aEqual(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
+ aequal 
+--------
  f
 (1 row)
 
-SELECT aEq(ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]', s2cell '47c3c3');
- aeq 
------
+SELECT aEqual(ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]', s2cell '47c3c3');
+ aequal 
+--------
  t
 (1 row)
 
-SELECT eNe(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
- ene 
------
+SELECT eNotEqual(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', s2cell '47c3c3');
+ enotequal 
+-----------
  t
 (1 row)
 
-SELECT eEq(s2cell '54b5c9', ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
- eeq 
------
+SELECT eEqual(s2cell '54b5c9', ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]');
+ eequal 
+--------
  t
 (1 row)
 
-SELECT eEq(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]');
- eeq 
------
+SELECT eEqual(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]');
+ eequal 
+--------
  t
 (1 row)
 

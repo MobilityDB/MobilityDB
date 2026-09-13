@@ -11,9 +11,9 @@
 <chapter xml:id="portable_sql">
 	<title>Portable Named-Function Dialect</title>
 
-	<para>Every MobilityDB operator is also callable as a bare named function. A query written with named functions only, using no operator symbols, is portable: the same SQL runs unchanged across the MobilityDB ecosystem, the database engines MobilityDB (PostgreSQL), MobilityDuck (DuckDB) and MobilitySpark (Apache Spark), and the streaming engines, several of which cannot register PostgreSQL operator symbols. Each named alias reuses the operator's own implementation, so it returns exactly the same result as the operator.</para>
+	<para>Every MobilityDB operator is also callable as a bare named function. A query written with named functions only, using no operator symbols, is portable: the same SQL runs unchanged across the MobilityDB ecosystem, the database engines MobilityDB (PostgreSQL), MobilityDuck (DuckDB) and MobilitySpark (Apache Spark), and the streaming engines, several of which cannot register PostgreSQL operator symbols. The named functions form one SQL dialect across these batch and stream SQL bindings, so each name must also be free in every engine: a quantified comparison therefore spells out its operation, as in <varname>eLessThan</varname>, since <varname>eLt</varname> would coincide with the function <varname>elt</varname> of Apache Spark and Apache Flink. Each named alias reuses the operator's own implementation, so it returns exactly the same result as the operator.</para>
 
-	<para>This chapter is the canonical, ecosystem-wide reference for that mapping. An engine that does not accept a given operator can look it up here and use the function form instead. For example, DuckDB does not accept any operator containing <literal>#</literal> (it reserves <literal>#</literal> for positional column references), so on MobilityDuck the temporal comparisons (<literal>#=</literal>, …) are written <varname>tEq</varname>, … and the time-position tests (<literal>&lt;&lt;#</literal>, <literal>#&gt;&gt;</literal>, <literal>&amp;&lt;#</literal>, <literal>#&amp;&gt;</literal>) are written <varname>before</varname>, <varname>after</varname>, <varname>overbefore</varname>, <varname>overafter</varname>, while the operators it does accept may be used directly.</para>
+	<para>This chapter is the canonical, ecosystem-wide reference for that mapping. An engine that does not accept a given operator can look it up here and use the function form instead. For example, DuckDB does not accept any operator containing <literal>#</literal> (it reserves <literal>#</literal> for positional column references), so on MobilityDuck the temporal comparisons (<literal>#=</literal>, …) are written <varname>tEqual</varname>, … and the time-position tests (<literal>&lt;&lt;#</literal>, <literal>#&gt;&gt;</literal>, <literal>&amp;&lt;#</literal>, <literal>#&amp;&gt;</literal>) are written <varname>before</varname>, <varname>after</varname>, <varname>overbefore</varname>, <varname>overafter</varname>, while the operators it does accept may be used directly.</para>
 
 	<para>The spatial-relationship functions (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …) and the restriction functions (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …) are only ever named functions (they have no operator). The B-tree ordering comparator is likewise the named function <varname>cmp(a, b)</varname>, which returns <literal>-1</literal>, <literal>0</literal> or <literal>1</literal> and has no operator. Every operator maps to a bare name as follows; for the arithmetic and set-theoretic operators the function name carries the operand's type-family prefix (<varname>set</varname>, <varname>span</varname> or <varname>spanset</varname>, and <varname>t</varname> for temporal values).</para>
 
@@ -50,12 +50,12 @@
 				<row><entry></entry><entry>/&gt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>back</varname></primary></indexterm>back(a, b)</entry></row>
 				<row><entry></entry><entry>&amp;&lt;/</entry><entry><indexterm significance="normal"><primary><varname>overfront</varname></primary></indexterm>overfront(a, b)</entry></row>
 				<row><entry></entry><entry>/&amp;&gt;</entry><entry><indexterm significance="normal"><primary><varname>overback</varname></primary></indexterm>overback(a, b)</entry></row>
-				<row><entry>Temporal comparison</entry><entry>#=</entry><entry><indexterm significance="normal"><primary><varname>tEq</varname></primary></indexterm>tEq(a, b)</entry></row>
-				<row><entry></entry><entry>#&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>tNe</varname></primary></indexterm>tNe(a, b)</entry></row>
-				<row><entry></entry><entry>#&lt;</entry><entry><indexterm significance="normal"><primary><varname>tLt</varname></primary></indexterm>tLt(a, b)</entry></row>
-				<row><entry></entry><entry>#&lt;=</entry><entry><indexterm significance="normal"><primary><varname>tLe</varname></primary></indexterm>tLe(a, b)</entry></row>
-				<row><entry></entry><entry>#&gt;</entry><entry><indexterm significance="normal"><primary><varname>tGt</varname></primary></indexterm>tGt(a, b)</entry></row>
-				<row><entry></entry><entry>#&gt;=</entry><entry><indexterm significance="normal"><primary><varname>tGe</varname></primary></indexterm>tGe(a, b)</entry></row>
+				<row><entry>Temporal comparison</entry><entry>#=</entry><entry><indexterm significance="normal"><primary><varname>tEqual</varname></primary></indexterm>tEqual(a, b)</entry></row>
+				<row><entry></entry><entry>#&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>tNotEqual</varname></primary></indexterm>tNotEqual(a, b)</entry></row>
+				<row><entry></entry><entry>#&lt;</entry><entry><indexterm significance="normal"><primary><varname>tLessThan</varname></primary></indexterm>tLessThan(a, b)</entry></row>
+				<row><entry></entry><entry>#&lt;=</entry><entry><indexterm significance="normal"><primary><varname>tLessEqual</varname></primary></indexterm>tLessEqual(a, b)</entry></row>
+				<row><entry></entry><entry>#&gt;</entry><entry><indexterm significance="normal"><primary><varname>tGreaterThan</varname></primary></indexterm>tGreaterThan(a, b)</entry></row>
+				<row><entry></entry><entry>#&gt;=</entry><entry><indexterm significance="normal"><primary><varname>tGreaterEqual</varname></primary></indexterm>tGreaterEqual(a, b)</entry></row>
 				<row><entry>Distance</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>tDistance(a, b)</entry></row>
 				<row><entry></entry><entry>|=|</entry><entry><indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>nearestApproachDistance(a, b)</entry></row>
 				<row><entry>Distance (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry>distance / setDistance (a, b)</entry></row>
@@ -67,18 +67,18 @@
 				<row><entry></entry><entry>&lt;=</entry><entry><indexterm significance="normal"><primary><varname>le</varname></primary></indexterm>le(a, b)</entry></row>
 				<row><entry></entry><entry>&gt;</entry><entry><indexterm significance="normal"><primary><varname>gt</varname></primary></indexterm>gt(a, b)</entry></row>
 				<row><entry></entry><entry>&gt;=</entry><entry><indexterm significance="normal"><primary><varname>ge</varname></primary></indexterm>ge(a, b)</entry></row>
-				<row><entry>Ever comparison</entry><entry>?=</entry><entry><indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>eEq(a, b)</entry></row>
-				<row><entry></entry><entry>?&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>eNe</varname></primary></indexterm>eNe(a, b)</entry></row>
-				<row><entry></entry><entry>?&lt;</entry><entry><indexterm significance="normal"><primary><varname>eLt</varname></primary></indexterm>eLt(a, b)</entry></row>
-				<row><entry></entry><entry>?&lt;=</entry><entry><indexterm significance="normal"><primary><varname>eLe</varname></primary></indexterm>eLe(a, b)</entry></row>
-				<row><entry></entry><entry>?&gt;</entry><entry><indexterm significance="normal"><primary><varname>eGt</varname></primary></indexterm>eGt(a, b)</entry></row>
-				<row><entry></entry><entry>?&gt;=</entry><entry><indexterm significance="normal"><primary><varname>eGe</varname></primary></indexterm>eGe(a, b)</entry></row>
-				<row><entry>Always comparison</entry><entry>%=</entry><entry><indexterm significance="normal"><primary><varname>aEq</varname></primary></indexterm>aEq(a, b)</entry></row>
-				<row><entry></entry><entry>%&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>aNe</varname></primary></indexterm>aNe(a, b)</entry></row>
-				<row><entry></entry><entry>%&lt;</entry><entry><indexterm significance="normal"><primary><varname>aLt</varname></primary></indexterm>aLt(a, b)</entry></row>
-				<row><entry></entry><entry>%&lt;=</entry><entry><indexterm significance="normal"><primary><varname>aLe</varname></primary></indexterm>aLe(a, b)</entry></row>
-				<row><entry></entry><entry>%&gt;</entry><entry><indexterm significance="normal"><primary><varname>aGt</varname></primary></indexterm>aGt(a, b)</entry></row>
-				<row><entry></entry><entry>%&gt;=</entry><entry><indexterm significance="normal"><primary><varname>aGe</varname></primary></indexterm>aGe(a, b)</entry></row>
+				<row><entry>Ever comparison</entry><entry>?=</entry><entry><indexterm significance="normal"><primary><varname>eEqual</varname></primary></indexterm>eEqual(a, b)</entry></row>
+				<row><entry></entry><entry>?&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>eNotEqual</varname></primary></indexterm>eNotEqual(a, b)</entry></row>
+				<row><entry></entry><entry>?&lt;</entry><entry><indexterm significance="normal"><primary><varname>eLessThan</varname></primary></indexterm>eLessThan(a, b)</entry></row>
+				<row><entry></entry><entry>?&lt;=</entry><entry><indexterm significance="normal"><primary><varname>eLessEqual</varname></primary></indexterm>eLessEqual(a, b)</entry></row>
+				<row><entry></entry><entry>?&gt;</entry><entry><indexterm significance="normal"><primary><varname>eGreaterThan</varname></primary></indexterm>eGreaterThan(a, b)</entry></row>
+				<row><entry></entry><entry>?&gt;=</entry><entry><indexterm significance="normal"><primary><varname>eGreaterEqual</varname></primary></indexterm>eGreaterEqual(a, b)</entry></row>
+				<row><entry>Always comparison</entry><entry>%=</entry><entry><indexterm significance="normal"><primary><varname>aEqual</varname></primary></indexterm>aEqual(a, b)</entry></row>
+				<row><entry></entry><entry>%&lt;&gt;</entry><entry><indexterm significance="normal"><primary><varname>aNotEqual</varname></primary></indexterm>aNotEqual(a, b)</entry></row>
+				<row><entry></entry><entry>%&lt;</entry><entry><indexterm significance="normal"><primary><varname>aLessThan</varname></primary></indexterm>aLessThan(a, b)</entry></row>
+				<row><entry></entry><entry>%&lt;=</entry><entry><indexterm significance="normal"><primary><varname>aLessEqual</varname></primary></indexterm>aLessEqual(a, b)</entry></row>
+				<row><entry></entry><entry>%&gt;</entry><entry><indexterm significance="normal"><primary><varname>aGreaterThan</varname></primary></indexterm>aGreaterThan(a, b)</entry></row>
+				<row><entry></entry><entry>%&gt;=</entry><entry><indexterm significance="normal"><primary><varname>aGreaterEqual</varname></primary></indexterm>aGreaterEqual(a, b)</entry></row>
 				<row><entry>Boolean (temporal bolean)</entry><entry>&amp;</entry><entry><indexterm significance="normal"><primary><varname>tAnd</varname></primary></indexterm>tAnd(a, b)</entry></row>
 				<row><entry></entry><entry>|</entry><entry><indexterm significance="normal"><primary><varname>tOr</varname></primary></indexterm>tOr(a, b)</entry></row>
 				<row><entry></entry><entry>~</entry><entry>tNot(a)</entry></row>

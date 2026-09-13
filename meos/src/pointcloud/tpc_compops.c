@@ -42,7 +42,7 @@
  * unequal here; a mismatch is not an error. That is this family's established
  * convention — its restriction functions return NULL rather than raising on a
  * pcid mismatch — and it keeps the behaviour of the already-deployed
- * @c eEq / @c aEq, which bind the generic @c Ever_eq_temporal_base,
+ * @c eEqual / @c aEqual, which bind the generic @c Ever_eq_temporal_base,
  * unchanged. The pcid is enforced where mixing schemas would build an
  * ill-formed value, namely set construction (@c ensure_same_pcid_pcpoint in
  * @c pcset_meos.c).

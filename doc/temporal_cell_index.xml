@@ -945,7 +945,7 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 			</listitem>
 
 			<listitem xml:id="tcell_ever_eq_set">
-				<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eEqual</varname></primary></indexterm>
 				<para>Return whether a temporal cell trajectory ever takes one of the cells in a cell set</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 h3indexset ?= th3index → boolean
