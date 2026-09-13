@@ -87,7 +87,9 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;temporal/meos_catalog.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="type__parser_8h_source.html">temporal/type_parser.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="quadbin_8h_source.html">quadbin/quadbin.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -104,6 +106,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a7cef14526f64645baaaf7fff9ba868f1"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="quadbinset_8c_a7cef14526f64645baaaf7fff9ba868f1.html#a7cef14526f64645baaaf7fff9ba868f1">quadbinset_from_buffer</a> (<a class="el" href="meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a">Quadbin</a> *cells, int count)</td></tr>
 <tr class="memdesc:a7cef14526f64645baaaf7fff9ba868f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a quadbinset from a freshly-allocated Quadbin buffer of size <code>count</code>.  <a href="quadbinset_8c_a7cef14526f64645baaaf7fff9ba868f1.html#a7cef14526f64645baaaf7fff9ba868f1">More...</a><br /></td></tr>
 <tr class="separator:a7cef14526f64645baaaf7fff9ba868f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacd372e893cbb8af72e6ee33e3f7335f1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__quadbin__set__inout_gacd372e893cbb8af72e6ee33e3f7335f1.html#gacd372e893cbb8af72e6ee33e3f7335f1">quadbinset_in</a> (const char *str)</td></tr>
+<tr class="memdesc:gacd372e893cbb8af72e6ee33e3f7335f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a QUADBIN cell set from its Well-Known Text (WKT) representation.  <a href="group__meos__quadbin__set__inout_gacd372e893cbb8af72e6ee33e3f7335f1.html#gacd372e893cbb8af72e6ee33e3f7335f1">More...</a><br /></td></tr>
+<tr class="separator:gacd372e893cbb8af72e6ee33e3f7335f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac2cb54e96525fd415d68a0f237395774"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__quadbin__set__inout_gac2cb54e96525fd415d68a0f237395774.html#gac2cb54e96525fd415d68a0f237395774">quadbinset_out</a> (const <a class="el" href="structSet.html">Set</a> *s)</td></tr>
+<tr class="memdesc:gac2cb54e96525fd415d68a0f237395774"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the string representation of a QUADBIN cell set.  <a href="group__meos__quadbin__set__inout_gac2cb54e96525fd415d68a0f237395774.html#gac2cb54e96525fd415d68a0f237395774">More...</a><br /></td></tr>
+<tr class="separator:gac2cb54e96525fd415d68a0f237395774"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >MEOS implementations of the set-returning quadbin functions, returning <code>quadbinset</code>. </p>
