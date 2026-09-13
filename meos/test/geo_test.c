@@ -732,6 +732,55 @@ int main(void)
   assert(seg_ok == 41);
   meos_errno_reset();
 
+  /* Three pairs relate the same way at every scale, fixed by construction:
+   * the segment from (s/2 s/2) to (s s) crosses the right half of the circle
+   * of radius s about the origin at 45 degrees, away from its vertices; that
+   * circle relates to itself as equal; and the square of half side s/2 about
+   * the origin lies strictly inside it. Whether a segment has no length,
+   * whether a line or a ray is tangent to a circle and whether three points of
+   * an arc lie on one line are questions on input vertices, and each is
+   * decided exactly. Read against an absolute bound, a squared length or the
+   * square of a half-chord drops the segment from s = 2^-20, and the ray from
+   * a witness a step inside the circle from s = 2^-11, which leaves the
+   * interior of the circle empty. Below s = 2^-30 the step the interior
+   * witness takes is itself of fixed size, which the range stops short of */
+  double exs_s = 1.0;
+  int exs_ok = 0;
+  for (int k = 0; k >= -30; k--, exs_s *= 0.5)
+  {
+    char arc_wkt[160], seg_wkt[128], circ_wkt[160], sq_wkt[256];
+    snprintf(arc_wkt, sizeof arc_wkt,
+      "CIRCULARSTRING(0 %.17g,%.17g 0,0 %.17g)", -exs_s, exs_s, exs_s);
+    snprintf(seg_wkt, sizeof seg_wkt, "LINESTRING(%.17g %.17g,%.17g %.17g)",
+      exs_s / 2, exs_s / 2, exs_s, exs_s);
+    snprintf(circ_wkt, sizeof circ_wkt,
+      "CURVEPOLYGON(CIRCULARSTRING(%.17g 0,%.17g 0,%.17g 0))", -exs_s, exs_s,
+      -exs_s);
+    double h = exs_s / 2;
+    snprintf(sq_wkt, sizeof sq_wkt,
+      "POLYGON((%.17g %.17g,%.17g %.17g,%.17g %.17g,%.17g %.17g,%.17g %.17g))",
+      -h, -h, h, -h, h, h, -h, h, -h, -h);
+    GSERIALIZED *arc = geom_in(arc_wkt, -1);
+    GSERIALIZED *seg = geom_in(seg_wkt, -1);
+    GSERIALIZED *circ = geom_in(circ_wkt, -1);
+    GSERIALIZED *sq = geom_in(sq_wkt, -1);
+    assert(arc != NULL); assert(seg != NULL);
+    assert(circ != NULL); assert(sq != NULL);
+    assert(geom_intersects2d(seg, arc));
+    assert(geom_intersects2d(arc, seg));
+    char *self = geom_relate(circ, circ);
+    char *inside = geom_relate(circ, sq);
+    assert(self != NULL); assert(inside != NULL);
+    assert(strcmp(self, "2FFF1FFF2") == 0);
+    assert(strcmp(inside, "212FF1FF2") == 0);
+    exs_ok++;
+    free(self); free(inside); free(arc); free(seg); free(circ); free(sq);
+  }
+  printf("a segment crossing an arc, a circle against itself and a square "
+    "inside it relate alike at %d scales from 1 to 2^-30\n", exs_ok);
+  assert(exs_ok == 31);
+  meos_errno_reset();
+
   /* The distance between curves is checked on the cases PostGIS gives its
    * own unit tests for the distance fixes of its 3.6 line (ticket 5989): a
    * point outside a curve polygon beside its arc, a point beside the arc of a

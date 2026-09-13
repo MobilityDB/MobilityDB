@@ -606,10 +606,13 @@ static inline int
 arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
   double out[2])
 {
-  double aa = rx * rx + ry * ry;
-  /* Degenerate (zero-length) trajectory segment */
-  if (aa < MEOS_GEOM_TOLERANCE)
+  /* A segment of no length is one whose vector is zero. A bound on the square
+   * of its length in length units drops every segment shorter than the square
+   * root of that bound, and which segments those are depends on the scale of
+   * the coordinates */
+  if (rx == 0.0 && ry == 0.0)
     return 0;
+  double aa = rx * rx + ry * ry;
 
   double wx = ax - e->cx, wy = ay - e->cy;
   double bb = 2 * (wx * rx + wy * ry);
@@ -638,8 +641,9 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
   double roots[2];
   int nroots = 0;
   roots[nroots++] = (-bb - sq) / (2 * aa);
-  /* Distinct second root only when the line is not tangent */
-  if (sq > MEOS_GEOM_TOLERANCE)
+  /* Distinct second root only when the line is not tangent, which the
+   * discriminant read against its rounding above already decides */
+  if (disc > 0.0)
     roots[nroots++] = (-bb + sq) / (2 * aa);
 
   int n = 0;
@@ -706,10 +710,10 @@ arc_point_parameter(const Edge *e, double x, double y)
 static inline bool
 arcsegm_cross(double ax, double ay, double rx, double ry, const Edge *e)
 {
-  double aa = rx * rx + ry * ry;
-  /* Degenerate (zero-length) segment */
-  if (aa < MEOS_GEOM_TOLERANCE)
+  /* A segment of no length, read as #arcsegm_intersect reads it */
+  if (rx == 0.0 && ry == 0.0)
     return false;
+  double aa = rx * rx + ry * ry;
 
   double wx = ax - e->cx, wy = ay - e->cy;
   double bb = 2 * (wx * rx + wy * ry);
@@ -724,8 +728,6 @@ arcsegm_cross(double ax, double ay, double rx, double ry, const Edge *e)
     return false;
 
   double sq = sqrt(disc);
-  if (sq <= MEOS_GEOM_TOLERANCE)
-    return false;
   for (int k = 0; k < 2; k++)
   {
     double t = (k == 0 ? -bb - sq : -bb + sq) / (2 * aa);

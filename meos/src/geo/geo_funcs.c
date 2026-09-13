@@ -260,8 +260,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
    * cannot be read from them. The middle point is the one opposite, and the
    * two points split the circle into the two half circles the arcs of an edge
    * hold exactly. This is the shape #lwcircle_make gives a circle */
-  if (fabs(ax - cx) <= MEOS_GEOM_TOLERANCE && fabs(ay - cy) <= MEOS_GEOM_TOLERANCE &&
-      (fabs(ax - bx) > MEOS_GEOM_TOLERANCE || fabs(ay - by) > MEOS_GEOM_TOLERANCE))
+  if (pa->x == pc->x && pa->y == pc->y && (pa->x != pb->x || pa->y != pb->y))
   {
     double mx = (ax + bx) / 2, my = (ay + by) / 2;
     double radius = hypot(ax - mx, ay - my);
@@ -291,8 +290,14 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     return;
   }
 
-  /* Collinear points: emit straight line edges */
-  if (fabs(d) < MEOS_GEOM_TOLERANCE)
+  /* Collinear points: emit straight line edges. The three points are input
+   * vertices, so whether they lie on one line is the exact sign of the cross
+   * product of B -> A and B -> C, read on the doubles the geometry holds, and
+   * it answers the same at every scale. A triangle that is not flat but whose
+   * area above rounds to zero has a centre no double holds, and is emitted as
+   * the segments it approaches */
+  if (cross_product_sign(pb->x, pb->y, pa->x, pa->y, pb->x, pb->y, pc->x,
+        pc->y) == 0 || d == 0.0)
   {
     const double px[3] = {ax + ox, bx + ox, cx + ox};
     const double py[3] = {ay + oy, by + oy, cy + oy};
