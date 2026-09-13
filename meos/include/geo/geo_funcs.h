@@ -581,10 +581,9 @@ point_on_arc(double px, double py, const Edge *e)
    * thousandth of what that coordinate can express, and the point the engine
    * itself places on the arc then reads as lying off it. The edge carries the
    * tolerance its own coordinates call for -- the same quantity
-   * #point_on_segment reads for a straight edge -- and the floor leaves the
-   * band at MEOS_GEOM_TOLERANCE where an edge carries none */
+   * #point_on_segment reads for a straight edge */
   double d = hypot(px - e->cx, py - e->cy);
-  if (fabs(d - e->radius) > fmax(e->tol, MEOS_GEOM_TOLERANCE))
+  if (fabs(d - e->radius) > e->tol)
     return false;
   return arc_contains_angle(e, atan2(py - e->cy, px - e->cx));
 }
@@ -932,32 +931,49 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
  *****************************************************************************/
 
 /**
- * @brief Return the distance within which two coordinates of this size are the
- * same point
+ * @brief Return the distance a point constructed from coordinates of this size
+ * misses by
  * @details The points a native implementation classifies are CONSTRUCTED: the
  * midpoint of an edge, the point at a parameter along it, the intersection of
  * two edges. None of them lands exactly where it should, and the distance it
  * misses by is not a property of the geometry but of the arithmetic -- a few
- * units in the last place of the largest coordinate involved. A tolerance
- * meant to absorb that error is therefore that rounding unit, plus the
- * absolute distance below which the implementation calls two points equal.
+ * units in the last place of the largest coordinate involved -- so it scales
+ * with the coordinates.
+ */
+static inline double
+coordinate_rounding(double c1, double c2)
+{
+  return 4.0 * DBL_EPSILON * fmax(fabs(c1), fabs(c2));
+}
+
+/**
+ * @brief Return the distance within which two coordinates of this size are the
+ * same point
+ * @details The rounding of a point constructed from them (#coordinate_rounding),
+ * plus the absolute distance below which the implementation calls two points
+ * equal.
  */
 static inline double
 coordinate_tolerance(double c1, double c2)
 {
-  return MEOS_GEOM_TOLERANCE + 4.0 * DBL_EPSILON * fmax(fabs(c1), fabs(c2));
+  return MEOS_GEOM_TOLERANCE + coordinate_rounding(c1, c2);
 }
 
 /**
  * @brief Set the tolerance the coordinates of an edge call for
+ * @details The rounding of a point constructed from the edge's own coordinates
+ * and nothing more: an absolute distance added to it decides, for an edge whose
+ * coordinates are small, which points lie on it by a length that does not scale
+ * with the edge, so the same edge scaled by a power of two reads one point off it
+ * at one size and on it at another.
  * @note Read from the bounding box, so an arc is covered by the extent it
  * occupies rather than by its two endpoints. Call once the box is set.
  */
 static inline void
 edge_set_tolerance(Edge *e)
 {
-  e->tol = fmax(coordinate_tolerance(e->xmin, e->xmax),
-    coordinate_tolerance(e->ymin, e->ymax));
+  e->tol = fmax(coordinate_rounding(e->xmin, e->xmax),
+    coordinate_rounding(e->ymin, e->ymax));
 }
 
 /**

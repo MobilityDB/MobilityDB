@@ -742,11 +742,15 @@ int main(void)
    * decided exactly. Read against an absolute bound, a squared length or the
    * square of a half-chord drops the segment from s = 2^-20, and the ray from
    * a witness a step inside the circle from s = 2^-11, which leaves the
-   * interior of the circle empty. Below s = 2^-30 the step the interior
-   * witness takes is itself of fixed size, which the range stops short of */
+   * interior of the circle empty. The step the interior witness takes, the
+   * band within which a point lies on an edge and the band within which an
+   * edge end lies on a ray are each sized from the edge's own coordinates, so
+   * none of them crosses the circle at any scale. At s = 2^-40 the area of
+   * the square falls under the bound ring_encloses_no_area reads it against,
+   * which the range stops short of */
   double exs_s = 1.0;
   int exs_ok = 0;
-  for (int k = 0; k >= -30; k--, exs_s *= 0.5)
+  for (int k = 0; k >= -39; k--, exs_s *= 0.5)
   {
     char arc_wkt[160], seg_wkt[128], circ_wkt[160], sq_wkt[256];
     snprintf(arc_wkt, sizeof arc_wkt,
@@ -777,8 +781,8 @@ int main(void)
     free(self); free(inside); free(arc); free(seg); free(circ); free(sq);
   }
   printf("a segment crossing an arc, a circle against itself and a square "
-    "inside it relate alike at %d scales from 1 to 2^-30\n", exs_ok);
-  assert(exs_ok == 31);
+    "inside it relate alike at %d scales from 1 to 2^-39\n", exs_ok);
+  assert(exs_ok == 40);
   meos_errno_reset();
 
   /* The distance between curves is checked on the cases PostGIS gives its
