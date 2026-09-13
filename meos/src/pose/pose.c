@@ -1788,7 +1788,7 @@ pose_round(const Pose *pose, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
-  if (! ensure_positive(maxdd))
+  if (! ensure_not_negative(maxdd))
     return NULL;
 
   /* Set precision of the values */

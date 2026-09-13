@@ -507,7 +507,7 @@ tspatial_out(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL);
-  if (! ensure_positive(maxdd))
+  if (! ensure_not_negative(maxdd))
     return NULL;
   return temporal_out(temp, maxdd);
 }
