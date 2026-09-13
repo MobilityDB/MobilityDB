@@ -111,6 +111,30 @@ SELECT startValue(t) = latLngToCell(geometry 'SRID=4326;POINT(-73.96 40.78)', 7)
        endValue(t)   = latLngToCell(geometry 'SRID=4326;POINT(-73.90 40.80)', 7) AS end_cell_preserved
 FROM d;
 
+-- The last cell holds to the end of the trajectory, so the temporal cell spans
+-- the period of the trajectory, across several cells and under an exclusive
+-- upper bound alike, for both overloads.
+SELECT getTime(th3index(p, 10)) = getTime(p) FROM (VALUES
+  (tgeompoint 'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]'),
+  (tgeompoint 'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02)'))
+  AS v(p);
+SELECT getTime(th3index(p, 10)) = getTime(p) FROM (VALUES
+  (tgeogpoint '[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]'),
+  (tgeogpoint '[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02)'))
+  AS v(p);
+
+-- A trajectory staying inside one cell holds it over its whole period
+SELECT asText(th3index(tgeompoint
+  'SRID=4326;[Point(4.3000 50.8000)@2001-01-01, Point(4.3001 50.8001)@2001-01-02]', 7));
+SELECT asText(th3index(tgeogpoint
+  '[Point(4.3000 50.8000)@2001-01-01, Point(4.3001 50.8001)@2001-01-02]', 7));
+
+-- Under an exclusive upper bound, the trajectory holds the cell of its final
+-- position from the time it enters it until the end
+SELECT endValue(th3index(tgeompoint
+  'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02)', 10))
+  = latLngToCell(geometry 'SRID=4326;POINT(4.31 50.81)', 10);
+
 -- Mismatched SRID — must error once the adapter validates
 /* Errors */
 SELECT th3index(
@@ -164,13 +188,13 @@ SELECT numInstants(th3index(tgeompoint
 -- is the cells the segment enters rather than a function of any sampling
 -- rate. A cell is entered where the path leaves the previous one, so the
 -- answer counts boundary crossings.
-SELECT numInstants(th3index(tgeompoint
+SELECT numValues(getValues(th3index(tgeompoint
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
-  10));
+  10)));
 
--- The walk enters each cell once, so the instants and the distinct cells of
--- the cover are the same in number.
-SELECT numInstants(t) = numValues(getValues(t)) FROM (SELECT th3index(tgeompoint
+-- The walk enters each cell once, so the instants are the distinct cells of
+-- the cover and the closing instant that holds the last one to the end.
+SELECT numInstants(t) = numValues(getValues(t)) + 1 FROM (SELECT th3index(tgeompoint
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
   10) AS t) AS q;
 

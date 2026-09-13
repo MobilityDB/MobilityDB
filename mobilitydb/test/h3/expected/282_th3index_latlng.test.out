@@ -79,6 +79,48 @@ FROM d;
  t                    | t
 (1 row)
 
+SELECT getTime(th3index(p, 10)) = getTime(p) FROM (VALUES
+  (tgeompoint 'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]'),
+  (tgeompoint 'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02)'))
+  AS v(p);
+ ?column? 
+----------
+ t
+ t
+(2 rows)
+
+SELECT getTime(th3index(p, 10)) = getTime(p) FROM (VALUES
+  (tgeogpoint '[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]'),
+  (tgeogpoint '[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02)'))
+  AS v(p);
+ ?column? 
+----------
+ t
+ t
+(2 rows)
+
+SELECT asText(th3index(tgeompoint
+  'SRID=4326;[Point(4.3000 50.8000)@2001-01-01, Point(4.3001 50.8001)@2001-01-02]', 7));
+                                            astext                                            
+----------------------------------------------------------------------------------------------
+ [871fa44a8ffffff@Mon Jan 01 00:00:00 2001 PST, 871fa44a8ffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(th3index(tgeogpoint
+  '[Point(4.3000 50.8000)@2001-01-01, Point(4.3001 50.8001)@2001-01-02]', 7));
+                                            astext                                            
+----------------------------------------------------------------------------------------------
+ [871fa44a8ffffff@Mon Jan 01 00:00:00 2001 PST, 871fa44a8ffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT endValue(th3index(tgeompoint
+  'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02)', 10))
+  = latLngToCell(geometry 'SRID=4326;POINT(4.31 50.81)', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 SELECT th3index(
   tgeompoint 'SRID=3857;POINT(-73.96 40.78)@2001-01-01', 9);
@@ -156,15 +198,15 @@ SELECT numInstants(th3index(tgeompoint
            2
 (1 row)
 
-SELECT numInstants(th3index(tgeompoint
+SELECT numValues(getValues(th3index(tgeompoint
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
-  10));
- numinstants 
--------------
-          16
+  10)));
+ numvalues 
+-----------
+        16
 (1 row)
 
-SELECT numInstants(t) = numValues(getValues(t)) FROM (SELECT th3index(tgeompoint
+SELECT numInstants(t) = numValues(getValues(t)) + 1 FROM (SELECT th3index(tgeompoint
   'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.31 50.81)@2001-01-02]',
   10) AS t) AS q;
  ?column? 
@@ -176,14 +218,14 @@ SELECT numInstants(th3index(tgeogpoint
   '[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]', 3));
  numinstants 
 -------------
-           3
+           4
 (1 row)
 
 SELECT numInstants(th3index(tgeompoint
   'SRID=4326;[Point(179.5 0)@2001-01-01, Point(-179.5 0)@2001-01-02]', 3));
  numinstants 
 -------------
-         437
+         438
 (1 row)
 
 SELECT count(*) FILTER (WHERE valueAtTimestamp(c, t) IS NOT NULL) AS instants,
@@ -196,6 +238,6 @@ FROM (SELECT p, th3index(p, 3) AS c FROM (VALUES
     '2001-01-02 23:43', interval '37 minutes') AS t;
  instants | other_cell 
 ----------+------------
-      110 |          0
+      116 |          0
 (1 row)
 
