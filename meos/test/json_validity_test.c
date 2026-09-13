@@ -40,11 +40,13 @@
  *
  * The program verifies that #tjsonb_to_ttext, #ttext_to_tjsonb,
  * #tjsonb_pretty, #tjsonb_strip_nulls, #tjson_strip_nulls, #jsonbset_pretty,
- * #jsonbset_strip_nulls and #jsonbset_to_alphanumset report a null argument
- * and an argument of another type by returning NULL and setting #meos_errno,
- * that #jsonbset_to_alphanumset reports a result base type that is not
- * alphanumeric the same way, and that a valid call still answers with no error
- * left behind.
+ * #jsonbset_strip_nulls, #jsonbset_to_alphanumset, #tjsonb_to_tbool,
+ * #tjsonb_to_tint, #tjsonb_to_tfloat and #tjsonb_to_ttext_key report a null
+ * argument and an argument of another type by returning NULL and setting
+ * #meos_errno, that #jsonbset_to_alphanumset reports a result base type that
+ * is not alphanumeric the same way, that #null_handle_type_from_string reports
+ * a null string by answering NULL_INVALID and setting #meos_errno, and that a
+ * valid call still answers with no error left behind.
  *
  * The program can be build as follows
  * @code
@@ -95,9 +97,11 @@ int main(void)
   Temporal *tjsonb = tjsonb_in("\"{\\\"a\\\": 1, \\\"b\\\": null}\"@2001-01-01");
   Temporal *tjson = ttext_in("\"{\\\"a\\\": 1, \\\"b\\\": null}\"@2001-01-01");
   Set *jsonbset = jsonbset_in("{\"{\\\"a\\\": 1, \\\"b\\\": null}\"}");
+  Temporal *tjsonbb = tjsonb_in("\"{\\\"c\\\": true}\"@2001-01-01");
   Temporal *tint = tint_in("1@2001-01-01");
   Set *intset = intset_in("{1, 2}");
-  assert(tjsonb); assert(tjson); assert(jsonbset); assert(tint); assert(intset);
+  assert(tjsonb); assert(tjson); assert(jsonbset); assert(tjsonbb);
+  assert(tint); assert(intset);
   meos_errno_reset();
 
   /* A null argument is reported rather than dereferenced */
@@ -119,6 +123,29 @@ int main(void)
     MEOS_ERR_INVALID_ARG, "jsonbset_to_alphanumset(NULL, a, int4)");
   expect_error(jsonbset_to_alphanumset(jsonbset, NULL, T_INT4, NULL_RETURN),
     MEOS_ERR_INVALID_ARG, "jsonbset_to_alphanumset(jsonbset, NULL, int4)");
+  expect_error(tjsonb_to_tbool(NULL, "c", NULL_RETURN), MEOS_ERR_INVALID_ARG,
+    "tjsonb_to_tbool(NULL, c)");
+  expect_error(tjsonb_to_tint(NULL, "a", NULL_RETURN), MEOS_ERR_INVALID_ARG,
+    "tjsonb_to_tint(NULL, a)");
+  expect_error(tjsonb_to_tfloat(NULL, "a", LINEAR, NULL_RETURN),
+    MEOS_ERR_INVALID_ARG, "tjsonb_to_tfloat(NULL, a)");
+  expect_error(tjsonb_to_ttext_key(NULL, "a", NULL_RETURN),
+    MEOS_ERR_INVALID_ARG, "tjsonb_to_ttext_key(NULL, a)");
+  expect_error(tjsonb_to_tbool(tjsonbb, NULL, NULL_RETURN),
+    MEOS_ERR_INVALID_ARG, "tjsonb_to_tbool(tjsonb, NULL)");
+  expect_error(tjsonb_to_tint(tjsonb, NULL, NULL_RETURN), MEOS_ERR_INVALID_ARG,
+    "tjsonb_to_tint(tjsonb, NULL)");
+  expect_error(tjsonb_to_tfloat(tjsonb, NULL, LINEAR, NULL_RETURN),
+    MEOS_ERR_INVALID_ARG, "tjsonb_to_tfloat(tjsonb, NULL)");
+  expect_error(tjsonb_to_ttext_key(tjsonb, NULL, NULL_RETURN),
+    MEOS_ERR_INVALID_ARG, "tjsonb_to_ttext_key(tjsonb, NULL)");
+  /* A null string is reported rather than compared with the names */
+  nullHandleType nh = null_handle_type_from_string(NULL);
+  printf("null_handle_type_from_string(NULL): %d, errno %d\n", (int) nh,
+    meos_errno());
+  assert(nh == NULL_INVALID);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
 
   /* An argument of another type is reported as a type error: each function
    * reads the values of its argument as JSON or text, so accepting an integer
@@ -139,6 +166,14 @@ int main(void)
     "jsonbset_strip_nulls({1, 2}, true)");
   expect_error(jsonbset_to_alphanumset(intset, "a", T_INT4, NULL_RETURN),
     MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_to_alphanumset({1, 2}, a, int4)");
+  expect_error(tjsonb_to_tbool(tint, "c", NULL_RETURN),
+    MEOS_ERR_INVALID_ARG_TYPE, "tjsonb_to_tbool(1@2001-01-01, c)");
+  expect_error(tjsonb_to_tint(tint, "a", NULL_RETURN),
+    MEOS_ERR_INVALID_ARG_TYPE, "tjsonb_to_tint(1@2001-01-01, a)");
+  expect_error(tjsonb_to_tfloat(tint, "a", LINEAR, NULL_RETURN),
+    MEOS_ERR_INVALID_ARG_TYPE, "tjsonb_to_tfloat(1@2001-01-01, a)");
+  expect_error(tjsonb_to_ttext_key(tint, "a", NULL_RETURN),
+    MEOS_ERR_INVALID_ARG_TYPE, "tjsonb_to_ttext_key(1@2001-01-01, a)");
   /* A result base type that is not alphanumeric is reported alike: the values
    * extracted from the JSON are converted to that type */
   expect_error(jsonbset_to_alphanumset(jsonbset, "a", T_TSTZSPAN, NULL_RETURN),
@@ -156,8 +191,22 @@ int main(void)
     "jsonbset_strip_nulls(jsonbset, true)");
   expect_value(jsonbset_to_alphanumset(jsonbset, "a", T_INT4, NULL_RETURN),
     "jsonbset_to_alphanumset(jsonbset, a, int4)");
+  expect_value(tjsonb_to_tbool(tjsonbb, "c", NULL_RETURN),
+    "tjsonb_to_tbool(tjsonb, c)");
+  expect_value(tjsonb_to_tint(tjsonb, "a", NULL_RETURN),
+    "tjsonb_to_tint(tjsonb, a)");
+  expect_value(tjsonb_to_tfloat(tjsonb, "a", LINEAR, NULL_RETURN),
+    "tjsonb_to_tfloat(tjsonb, a)");
+  expect_value(tjsonb_to_ttext_key(tjsonb, "a", NULL_RETURN),
+    "tjsonb_to_ttext_key(tjsonb, a)");
+  nh = null_handle_type_from_string("return_null");
+  printf("null_handle_type_from_string(return_null): %d, errno %d\n", (int) nh,
+    meos_errno());
+  assert(nh == NULL_RETURN);
+  assert(meos_errno() == 0);
 
-  free(tjsonb); free(tjson); free(jsonbset); free(tint); free(intset);
+  free(tjsonb); free(tjson); free(jsonbset); free(tjsonbb); free(tint);
+  free(intset);
 
   /* Finalize MEOS */
   meos_finalize();

@@ -73,10 +73,14 @@ static const char * MEOS_NULLHANDLETYPE_NAMES[] =
 /**
  * @ingroup meos_json_json
  * @brief Get a nullHandleType value from a string
+ * @param[in] str String
  */
 nullHandleType
 null_handle_type_from_string(const char *str)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL_INVALID);
+
   int n = sizeof(MEOS_NULLHANDLETYPE_NAMES) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
@@ -1205,6 +1209,8 @@ Temporal *
 tjsonb_to_tbool(const Temporal *temp, const char *key,
   nullHandleType null_handle)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
   return tjsonb_to_talphanum(temp, key, T_TBOOL, STEP, null_handle);
 }
 
@@ -1221,6 +1227,8 @@ Temporal *
 tjsonb_to_tint(const Temporal *temp, const char *key,
   nullHandleType null_handle)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
   return tjsonb_to_talphanum(temp, key, T_TINT, STEP, null_handle);
 }
 
@@ -1237,6 +1245,8 @@ Temporal *
 tjsonb_to_tbigint(const Temporal *temp, const char *key,
   nullHandleType null_handle)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
   return tjsonb_to_talphanum(temp, key, T_TBIGINT, STEP, null_handle);
 }
 
@@ -1254,6 +1264,8 @@ Temporal *
 tjsonb_to_tfloat(const Temporal *temp, const char *key, interpType interp,
   nullHandleType null_handle)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
   return tjsonb_to_talphanum(temp, key, T_TFLOAT, interp, null_handle);
 }
 
@@ -1270,6 +1282,8 @@ Temporal *
 tjsonb_to_ttext_key(const Temporal *temp, const char *key,
   nullHandleType null_handle)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
   return tjsonb_to_talphanum(temp, key, T_TTEXT, STEP, null_handle);
 }
 
