@@ -119,7 +119,6 @@ quadbin_in(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, (Quadbin) 0);
-  // return quadbin_parse(&str, true); // TODO
   return quadbin_parse(str);
 }
 
