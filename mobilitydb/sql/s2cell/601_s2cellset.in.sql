@@ -217,12 +217,6 @@ CREATE FUNCTION gt(s2cellset, s2cellset)
 CREATE FUNCTION cmp(s2cellset, s2cellset)
   RETURNS integer AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION hash(s2cellset)
-  RETURNS integer AS 'MODULE_PATHNAME', 'Set_hash'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION hashExtended(s2cellset, bigint)
-  RETURNS bigint AS 'MODULE_PATHNAME', 'Set_hash_extended'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (LEFTARG = s2cellset, RIGHTARG = s2cellset,
   PROCEDURE = eq, COMMUTATOR = =, NEGATOR = <>,
@@ -252,11 +246,20 @@ CREATE OPERATOR CLASS s2cellset_btree_ops
     OPERATOR  5  >,
     FUNCTION  1  cmp(s2cellset, s2cellset);
 
+CREATE FUNCTION hash(s2cellset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hashExtended(s2cellset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS s2cellset_hash_ops
   DEFAULT FOR TYPE s2cellset USING hash AS
-    OPERATOR  1  =,
-    FUNCTION  1  hash(s2cellset),
-    FUNCTION  2  hashExtended(s2cellset, bigint);
+    OPERATOR    1   = ,
+    FUNCTION    1   hash(s2cellset),
+    FUNCTION    2   hashExtended(s2cellset, bigint);
 
 /******************************************************************************
  * unnest — SETOF expansion

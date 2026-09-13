@@ -1885,14 +1885,9 @@ def bootstrap_comparisons(filetext: str, fam: dict, rendered: str) -> str:
 # via the `end` anchor; `begin_exact`/`end_exact` slice exactly at the anchor for
 # the shapes with no divider (the pointcloud sets' hash block follows the B-tree
 # opclass bare), and `whole_file` ends at EOF (001_set's hash section is the file
-# tail). Two families are lit-only irregularities, encoded, never normalized:
-# h3indexset/quadbinset ship only the hash opclass here — their hash() function
-# sits inside the comparison region's compact-form lit — with a narrower opclass
-# spelling (`OPERATOR  1  =,`). h3indexset still has no hashExtended; quadbinset's
-# lit blocks (comparison-region hash()/hashExtended() functions + this opclass)
-# were hand-extended to add hashExtended(quadbinset, bigint) + FUNCTION 2, kept as
-# literal text rather than converted to the templated `funcs`/`opcls` shape
-# because its spacing differs from the canonical _HASH_OPCLASS skeleton.
+# tail). The cell index sets (h3indexset, quadbinset, s2cellset) start their
+# hash region exactly at their first hash function, which follows the B-tree
+# opclass closing their compact-form comparison region.
 def _hash_markers(family: str):
     begin = (f"-- GENERATED-HASH-BEGIN {family} — "
              "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
@@ -1944,7 +1939,7 @@ def _hash_opclasses(types) -> str:
 
 def render_hash(fam: dict) -> str:
     """Render one family's hash block from its `blocks` sequence: verbatim `lit`
-    blocks (banners, dividers, blank lines, the h3/quadbin narrow opclasses),
+    blocks (banners, dividers, blank lines),
     `funcs` type token(s) (the two hash functions from the shared skeleton) and
     `opcls` type token(s) (the canonical opclass). Blocks concatenate with no
     automatic separator, so the rendered text is byte-identical to the committed

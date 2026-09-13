@@ -723,7 +723,10 @@ its last edit:
   and that literal then preserved the section's divergences (`Comparison /
   B-tree / hash` for the canonical banner, `boolean`/`integer` for `bool`/`int4`,
   eq-first ordering, a one-line operator head, wider opclass spacing). Adding the
-  divider gives each behaviour one owner and no transcription.
+  divider gives each behaviour one owner and no transcription. The cell index sets
+  (`h3indexset`, `quadbinset`, `s2cellset`) have no divider there: their hash
+  region starts exactly at their first hash function, after the B-tree opclass,
+  and renders from `funcs`/`opcls` like every other set.
 - `aggregate_families` is **20/20**: `561_tposechain_aggfuncs.in.sql` carries the
   surface its siblings carry, every statement binding a generic transition or final
   function, so the family needs no kernel of its own.

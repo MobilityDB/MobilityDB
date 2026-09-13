@@ -39,3 +39,15 @@ SELECT COUNT(*) FROM tbl_h3indexset t1, tbl_h3indexset t2 WHERE t1.s <> t2.s;
   8010
 (1 row)
 
+SELECT MAX(hash(s)) FROM tbl_h3indexset;
+    max     
+------------
+ 2144141315
+(1 row)
+
+SELECT MAX(hashExtended(s, 1)) FROM tbl_h3indexset;
+         max         
+---------------------
+ 9127083091118093539
+(1 row)
+
