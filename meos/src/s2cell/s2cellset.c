@@ -52,7 +52,9 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/meos_catalog.h"
+#include "temporal/set.h"  /* ensure_set_isof_type */
 #include "temporal/temporal.h"  /* ORDER */
+#include "temporal/type_parser.h"  /* set_parse */
 #include "s2cell/s2cell.h"
 
 /*****************************************************************************
@@ -81,6 +83,39 @@ s2cellset_from_buffer(S2CellId *cells, int count)
     datums[i] = S2CellGetDatum(cells[i]);
   pfree(cells);
   return set_make_free(datums, count, T_S2CELL, ORDER);
+}
+
+/*****************************************************************************
+ * Input/output functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_s2cell_set_inout
+ * @brief Return an S2 cell set from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ * @csqlfn #Set_in()
+ */
+Set *
+s2cellset_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  return set_parse(&str, T_S2CELLSET);
+}
+
+/**
+ * @ingroup meos_s2cell_set_inout
+ * @brief Return the string representation of an S2 cell set
+ * @param[in] s Set
+ * @csqlfn #Set_out(), #Set_as_text()
+ */
+char *
+s2cellset_out(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, NULL);
+  return set_out(s, 0);
 }
 
 /*****************************************************************************
