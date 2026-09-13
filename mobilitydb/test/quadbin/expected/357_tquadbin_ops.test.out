@@ -97,3 +97,120 @@ SELECT asText((tquadbin '{48a6227affffffff@2001-01-01}')::tgeompoint, 6);
  {POINT(4.394531 50.847573)@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 10);
+                   tquadbin                    
+-----------------------------------------------
+ 48a6227affffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT startValue(tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 10))
+  = geoToQuadbinCell(geometry 'SRID=4326;Point(4.35 50.85)', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(4.3500 50.8500)@2001-01-01, Point(4.3501 50.8501)@2001-01-02]', 10);
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [48a6227affffffff@Mon Jan 01 00:00:00 2001 PST, 48a6227affffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tquadbin(tgeompoint
+  'SRID=4326;{Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02}', 4);
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ {4846afffffffffff@Mon Jan 01 00:00:00 2001 PST, 484c6fffffffffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tquadbin(setSRID(tgeompoint
+  'Interp=Step;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4326), 4);
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [4846afffffffffff@Mon Jan 01 00:00:00 2001 PST, 484c6fffffffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT numValues(getValues(t)), numInstants(t),
+  startValue(t) = geoToQuadbinCell(geometry 'SRID=4326;Point(1 1)', 4),
+  endValue(t) = geoToQuadbinCell(geometry 'SRID=4326;Point(60 -40)', 4)
+FROM (SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]', 4) AS t) AS q;
+ numvalues | numinstants | ?column? | ?column? 
+-----------+-------------+----------+----------
+         5 |           6 | t        | t
+(1 row)
+
+SELECT count(*) AS instants,
+  count(*) FILTER (WHERE valueAtTimestamp(c, t) <>
+    geoToQuadbinCell(valueAtTimestamp(p, t), 4)) AS other_cell
+FROM (SELECT p, tquadbin(p, 4) AS c FROM (VALUES
+  (tgeompoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02]'),
+  (tgeompoint 'SRID=4326;[Point(-170 70)@2001-01-01, Point(170 -70)@2001-01-03]'))
+  AS v(p)) AS q,
+  generate_series(timestamptz '2001-01-01 00:17', timestamptz '2001-01-02 23:00',
+    interval '37 minutes') AS t
+WHERE valueAtTimestamp(p, t) IS NOT NULL;
+ instants | other_cell 
+----------+------------
+      115 |          0
+(1 row)
+
+SELECT getTime(tquadbin(p, 10)) = getTime(p) FROM (VALUES
+  (tgeompoint 'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.40 50.90)@2001-01-02]'),
+  (tgeompoint 'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.40 50.90)@2001-01-02)'))
+  AS v(p);
+ ?column? 
+----------
+ t
+ t
+(2 rows)
+
+SELECT endValue(tquadbin(tgeompoint
+  'SRID=4326;[Point(4.30 50.80)@2001-01-01, Point(4.40 50.90)@2001-01-02)', 10))
+  = geoToQuadbinCell(geometry 'SRID=4326;Point(4.40 50.90)', 10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2);
+                                                                                              tquadbin                                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [4828ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4829ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4823ffffffffffff@Tue Jan 02 00:00:00.000001 2001 PST, 4823ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT valueAtTimestamp(tquadbin(tgeompoint
+  'SRID=4326;[Point(-135 -10)@2001-01-01, Point(-45 10)@2001-01-03]', 2),
+  timestamptz '2001-01-02') = geoToQuadbinCell(geometry 'SRID=4326;Point(-90 0)', 2);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin(tgeompoint
+  'SRID=4326;[Point(-45 -10)@2001-01-01, Point(-135 10)@2001-01-03]', 2);
+                                                                   tquadbin                                                                    
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ [4829ffffffffffff@Mon Jan 01 00:00:00 2001 PST, 4822ffffffffffff@Tue Jan 02 00:00:00 2001 PST, 4822ffffffffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT numSequences(tquadbin(tgeompoint
+  'SRID=4326;{[Point(1 1)@2001-01-01, Point(60 -40)@2001-01-02],
+  [Point(4.30 50.80)@2001-01-03, Point(4.40 50.90)@2001-01-04]}', 4));
+ numsequences 
+--------------
+            2
+(1 row)
+
+/* Errors */
+SELECT tquadbin(tgeompoint 'SRID=3857;Point(4.35 50.85)@2001-01-01', 10);
+ERROR:  Only lon/lat coordinate systems are supported in geography
+SELECT tquadbin(tgeompoint
+  'SRID=3857;[Point(4.35 50.85)@2001-01-01, Point(4.36 50.86)@2001-01-02]', 10);
+ERROR:  Only lon/lat coordinate systems are supported in geography
+SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 27);
+ERROR:  The resolution must be between 0 and 26
+SELECT tquadbin(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', -1);
+ERROR:  The resolution must be between 0 and 26

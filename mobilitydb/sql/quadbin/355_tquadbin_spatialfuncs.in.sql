@@ -73,6 +73,20 @@ CREATE FUNCTION cellToParent(tquadbin, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Conversion from a temporal point
+ *
+ * `tquadbin(tgeompoint, integer)` answers the temporal cell of a trajectory in
+ * a lon/lat reference system. Each segment is traversed tile by tile along the
+ * straight line in longitude and latitude, so the result holds every cell the
+ * trajectory crosses.
+ ******************************************************************************/
+
+CREATE FUNCTION tquadbin(tgeompoint, integer)
+  RETURNS tquadbin
+  AS 'MODULE_PATHNAME', 'Tgeompoint_to_tquadbin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Centroid point / boundary (Web-Mercator lon/lat, SRID 4326)
  *
  * `cellToPoint` emits the per-instant cell centroid as a

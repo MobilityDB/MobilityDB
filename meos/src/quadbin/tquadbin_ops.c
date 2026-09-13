@@ -57,6 +57,7 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include <meos_quadbin.h>
 #include <pgtypes.h>
 #include "temporal/meos_catalog.h"
@@ -211,6 +212,203 @@ tquadbin_cell_to_quadkey(const Temporal *temp)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************
+ * tgeompoint -> tquadbin
+ *****************************************************************************/
+
+/**
+ * @brief Append the instant of a cell entered at a timestamp
+ * @details A cell's entry time is interpolated from the parameter at which the
+ * path reaches it, while a timestamp holds whole microseconds, so two
+ * crossings closer together than one microsecond round to the same instant.
+ * The second is placed one microsecond after the first: that is the smallest
+ * separation the type can state, it keeps the order the crossings occur in,
+ * and it keeps the cell.
+ */
+static void
+tquadbin_entry_append(TInstant ***instants, int *count, int *size,
+  Quadbin cell, TimestampTz t)
+{
+  if (*count > 0 && t <= (*instants)[*count - 1]->t)
+    t = (*instants)[*count - 1]->t + 1;
+  if (*count == *size)
+  {
+    *size *= 2;
+    *instants = repalloc(*instants, sizeof(TInstant *) * (size_t) *size);
+  }
+  (*instants)[(*count)++] = tinstant_make(QuadbinGetDatum(cell), T_TQUADBIN,
+    t);
+  return;
+}
+
+/**
+ * @brief Return the position of a temporal point instant
+ */
+static const POINT2D *
+tpointinst_point2d(const TInstant *inst)
+{
+  return GSERIALIZED_POINT2D_P(DatumGetGserializedP(tinstant_value_p(inst)));
+}
+
+/**
+ * @brief Return the temporal quadbin cell of a temporal point sequence at a
+ * resolution, or NULL when its positions are not in a lon/lat reference
+ * system
+ * @details A sequence stating nothing between its instants, discrete or
+ * stepwise, holds the cells of its instants. A linear sequence moves along the
+ * straight line in longitude and latitude between two instants, and each
+ * segment is traversed tile by tile, so the result holds every cell the
+ * trajectory crosses and each of its instants marks the time the trajectory
+ * enters that cell. The last cell holds to the end of the trajectory.
+ */
+static TSequence *
+tpointseq_to_tquadbin(const TSequence *seq, int32 resolution)
+{
+  /* The reference system is the one every instant carries, so the adapter
+   * testing it reads the first instant alone */
+  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+  Quadbin cell = geo_to_quadbin_cell(
+    DatumGetGserializedP(tinstant_value_p(inst)), resolution);
+  if (cell == (Quadbin) 0)
+    return NULL;
+  int size = seq->count + 1, count = 0;
+  TInstant **instants = palloc(sizeof(TInstant *) * (size_t) size);
+  tquadbin_entry_append(&instants, &count, &size, cell, inst->t);
+  Quadbin last = cell;
+
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp != LINEAR)
+  {
+    for (int i = 1; i < seq->count; i++)
+    {
+      inst = TSEQUENCE_INST_N(seq, i);
+      const POINT2D *p = tpointinst_point2d(inst);
+      tquadbin_entry_append(&instants, &count, &size,
+        quadbin_point_to_cell(p->x, p->y, (uint32_t) resolution), inst->t);
+    }
+    return tsequence_make_free(instants, count, seq->period.lower_inc,
+      seq->period.upper_inc, interp, NORMALIZE);
+  }
+
+  /* A segment crosses one tile per column and one per row between the tiles
+   * of its endpoints, so the widest segment sizes the walk of every one */
+  int maxout = 1;
+  for (int i = 0; i + 1 < seq->count; i++)
+  {
+    const POINT2D *pa = tpointinst_point2d(TSEQUENCE_INST_N(seq, i));
+    const POINT2D *pb = tpointinst_point2d(TSEQUENCE_INST_N(seq, i + 1));
+    uint32_t xa, ya, xb, yb, z;
+    quadbin_cell_tile(quadbin_point_to_cell(pa->x, pa->y,
+      (uint32_t) resolution), &xa, &ya, &z);
+    quadbin_cell_tile(quadbin_point_to_cell(pb->x, pb->y,
+      (uint32_t) resolution), &xb, &yb, &z);
+    long span = labs((long) xb - (long) xa) + labs((long) yb - (long) ya) + 1;
+    if (span > maxout)
+      maxout = (int) span;
+  }
+  Quadbin *cells = palloc(sizeof(Quadbin) * (size_t) maxout);
+  double *enter = palloc(sizeof(double) * (size_t) maxout);
+  for (int i = 0; i + 1 < seq->count; i++)
+  {
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    const POINT2D *p1 = tpointinst_point2d(inst1);
+    const POINT2D *p2 = tpointinst_point2d(inst2);
+    int ncells = quadbin_segment_cells(p1->x, p1->y, p2->x, p2->y,
+      (uint32_t) resolution, cells, enter, maxout);
+    /* A segment starts in the cell the previous one ends in */
+    for (int k = 0; k < ncells; k++)
+    {
+      if (cells[k] == last)
+        continue;
+      tquadbin_entry_append(&instants, &count, &size, cells[k], inst1->t +
+        (TimestampTz) ((double) (inst2->t - inst1->t) * enter[k]));
+      last = cells[k];
+    }
+  }
+  pfree(cells); pfree(enter);
+
+  /* The last cell holds to the end of the trajectory, which the closing
+   * instant states, since a sequence reaches no further than its last
+   * instant. Under an exclusive upper bound, a cell the trajectory reaches at
+   * its end is held for no time and is no part of the value */
+  TimestampTz tend = TSEQUENCE_INST_N(seq, seq->count - 1)->t;
+  if (! seq->period.upper_inc)
+    while (count > 1 && instants[count - 1]->t >= tend)
+      pfree(instants[--count]);
+  if (instants[count - 1]->t < tend)
+    tquadbin_entry_append(&instants, &count, &size,
+      DatumGetQuadbin(tinstant_value_p(instants[count - 1])), tend);
+  return tsequence_make_free(instants, count, seq->period.lower_inc,
+    seq->period.upper_inc, STEP, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal quadbin cell of a temporal point sequence set at
+ * a resolution, or NULL when its positions are not in a lon/lat reference
+ * system
+ */
+static TSequenceSet *
+tpointseqset_to_tquadbin(const TSequenceSet *ss, int32 resolution)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * (size_t) ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    sequences[i] = tpointseq_to_tquadbin(TSEQUENCESET_SEQ_N(ss, i),
+      resolution);
+    if (sequences[i] == NULL)
+    {
+      for (int j = 0; j < i; j++)
+        pfree(sequences[j]);
+      pfree(sequences);
+      return NULL;
+    }
+  }
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_quadbin_conversion
+ * @brief Return the temporal quadbin cell of a temporal planar point in a
+ * lon/lat reference system at a resolution, holding every cell the
+ * trajectory crosses
+ * @param[in] temp Temporal point
+ * @param[in] resolution Quadbin resolution
+ * @csqlfn #Tgeompoint_to_tquadbin()
+ */
+Temporal *
+tgeompoint_to_tquadbin(const Temporal *temp, int32 resolution)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL);
+  if (resolution < quadbin_cellops.min_resolution ||
+      resolution > quadbin_cellops.max_resolution)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The resolution must be between %d and %d",
+      quadbin_cellops.min_resolution, quadbin_cellops.max_resolution);
+    return NULL;
+  }
+
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      const TInstant *inst = (const TInstant *) temp;
+      Quadbin cell = geo_to_quadbin_cell(
+        DatumGetGserializedP(tinstant_value_p(inst)), resolution);
+      return (cell == (Quadbin) 0) ? NULL :
+        (Temporal *) tinstant_make(QuadbinGetDatum(cell), T_TQUADBIN, inst->t);
+    }
+    case TSEQUENCE:
+      return (Temporal *) tpointseq_to_tquadbin((const TSequence *) temp,
+        resolution);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tpointseqset_to_tquadbin(
+        (const TSequenceSet *) temp, resolution);
+  }
 }
 
 /*****************************************************************************/

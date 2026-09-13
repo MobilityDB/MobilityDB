@@ -1056,13 +1056,17 @@ SELECT getResolution(cellToParent(ts2cell '47c3c@2001-01-01', 5));
 				<para>Devolver la celda temporal en la resolución dada que contiene cada punto de un punto temporal geodésico o plano</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 th3index(tpoint,integer) → th3index
+tquadbin(tgeompoint,integer) → tquadbin
 </programlisting>
-				<para>El SRID debe ser 4326 para la sobrecarga de <varname>tgeompoint</varname>. El constructor sobre un punto temporal se presenta solo para H3: las formas para QUADBIN y S2 aún no están implementadas, y una trayectoria alcanza esas cuadrículas a través de la celda por instante de sus posiciones.</para>
-				<para>Una trayectoria que no indica nada entre sus instantes produce las celdas que los contienen; una que se desplaza entre ellos produce todas las celdas que atraviesa por el camino, ya que el segmento se recorre celda a celda en lugar de muestrearse. El segmento se recorre a lo largo del camino que sigue su punto: el círculo máximo de un <varname>tgeogpoint</varname>, de modo que una trayectoria que cruza el antimeridiano o pasa cerca de un polo produce las celdas de su ruta más corta, y la recta en longitud y latitud de un <varname>tgeompoint</varname>. Cada instante del resultado marca el momento en que la trayectoria entró en esa celda, y la última celda se mantiene hasta el final de la trayectoria, de modo que el resultado abarca su período. Con un límite superior exclusivo, una celda que la trayectoria alcanza solo en su final, sin mantenerla ningún tiempo, no forma parte del resultado.</para>
+				<para>El SRID debe ser 4326 para las sobrecargas de <varname>tgeompoint</varname>. El constructor sobre un punto temporal se presenta para H3 y QUADBIN: la forma para S2 aún no está implementada, y una trayectoria alcanza esa cuadrícula a través de la celda por instante de sus posiciones.</para>
+				<para>Una trayectoria que no indica nada entre sus instantes produce las celdas que los contienen; una que se desplaza entre ellos produce todas las celdas que atraviesa por el camino, ya que el segmento se recorre celda a celda en lugar de muestrearse. El segmento se recorre a lo largo del camino que sigue su punto: el círculo máximo de un <varname>tgeogpoint</varname>, de modo que una trayectoria que cruza el antimeridiano o pasa cerca de un polo produce las celdas de su ruta más corta, y la recta en longitud y latitud de un <varname>tgeompoint</varname>. Una tesela QUADBIN contiene sus bordes oeste y norte, de modo que un camino que pasa por el punto donde se encuentran cuatro teselas pasa por la tesela al este del meridiano y al sur del paralelo que se cruzan allí. Cada instante del resultado marca el momento en que la trayectoria entró en esa celda, y la última celda se mantiene hasta el final de la trayectoria, de modo que el resultado abarca su período. Con un límite superior exclusivo, una celda que la trayectoria alcanza solo en su final, sin mantenerla ningún tiempo, no forma parte del resultado.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getResolution(th3index(tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
 SELECT getResolution(th3index(tgeompoint
+  'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
+-- 9@2001-01-01
+SELECT getResolution(tquadbin(tgeompoint
   'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
 </programlisting>

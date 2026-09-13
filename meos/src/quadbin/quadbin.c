@@ -529,6 +529,55 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
 #define M_PI 3.14159265358979323846
 #endif
 
+/** Latitude of the Web-Mercator limit, beyond which the first and the last
+ * rows of the grid extend */
+#define QUADBIN_MAX_LATITUDE  85.051128779806604
+
+/**
+ * @brief Set the fractional tile column and row of a lon/lat position in the
+ * grid of `n` tiles a side
+ */
+static void
+quadbin_tile_coords(double longitude, double latitude, double n, double *xf,
+  double *yf)
+{
+  double lat = latitude;
+  if (lat > QUADBIN_MAX_LATITUDE) lat = QUADBIN_MAX_LATITUDE;
+  if (lat < -QUADBIN_MAX_LATITUDE) lat = -QUADBIN_MAX_LATITUDE;
+  double lat_rad = lat * M_PI / 180.0;
+  *xf = n * ((longitude + 180.0) / 360.0);
+  *yf = n * (1.0 - (log(tan(lat_rad) + 1.0 / cos(lat_rad)) / M_PI)) / 2.0;
+  return;
+}
+
+/**
+ * @brief Return the tile holding a fractional tile coordinate, in the grid of
+ * `n` tiles a side
+ */
+static long
+quadbin_tile_index(double f, double n)
+{
+  long t = (long) floor(f);
+  long maxt = (long) n - 1;
+  if (t < 0)
+    t = 0;
+  else if (t > maxt)
+    t = maxt;
+  return t;
+}
+
+/**
+ * @brief Return the latitude of the row boundary `y` of the grid of `n` tiles
+ * a side
+ * @details The boundary is read as #quadbin_cell_bounding_box reads the
+ * latitudes of a cell
+ */
+static double
+quadbin_row_latitude(double y, double n)
+{
+  return 180.0 / M_PI * atan(sinh(M_PI * (1.0 - 2.0 * y / n)));
+}
+
 /**
  * @ingroup meos_quadbin
  * @brief Return the quadbin cell containing a lon/lat point at a resolution
@@ -539,22 +588,108 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 {
   if (resolution == 0)
     return quadbin_tile_to_cell(0, 0, 0);
-  /* Clamp latitude to the Web-Mercator limit */
-  double lat = latitude;
-  if (lat > 85.051128779806604) lat = 85.051128779806604;
-  if (lat < -85.051128779806604) lat = -85.051128779806604;
-
   double n = (double) (UINT64_C(1) << resolution);
-  double lat_rad = lat * M_PI / 180.0;
-  double xf = n * ((longitude + 180.0) / 360.0);
-  double yf = n * (1.0 - (log(tan(lat_rad) + 1.0 / cos(lat_rad)) / M_PI)) / 2.0;
+  double xf, yf;
+  quadbin_tile_coords(longitude, latitude, n, &xf, &yf);
+  return quadbin_tile_to_cell((uint32_t) quadbin_tile_index(xf, n),
+    (uint32_t) quadbin_tile_index(yf, n), resolution);
+}
 
-  long xt = (long) floor(xf);
-  long yt = (long) floor(yf);
-  long maxt = (long) n - 1;
-  if (xt < 0) xt = 0; else if (xt > maxt) xt = maxt;
-  if (yt < 0) yt = 0; else if (yt > maxt) yt = maxt;
-  return quadbin_tile_to_cell((uint32_t) xt, (uint32_t) yt, resolution);
+/**
+ * @brief Fill `cells` with every cell a segment crosses, and `enter` with the
+ * segment parameter at which it reaches each
+ * @details A traversal, not a sampling walk. The segment is the straight line
+ * in longitude and latitude a planar point moves along between two instants.
+ * The tile column is linear in the longitude and the tile row monotonic in
+ * the latitude, so the parameter at which the path leaves its tile through a
+ * column or a row boundary follows in closed form, and the walk steps to the
+ * nearer of the two. Each step moves to an adjacent tile, so no tile the path
+ * crosses is passed over. A tile holds its west and north boundaries, so the
+ * point where four tiles meet belongs to the tile east of the meridian and
+ * south of the parallel meeting there; a path through that point passes
+ * through that tile when it lies beside the corner, and then enters the tile
+ * diagonally across. The walk ends in the tile holding the second endpoint.
+ * @param[in] lon1,lat1,lon2,lat2 Segment endpoints in degrees
+ * @param[in] resolution Quadbin resolution
+ * @param[out] cells,enter Arrays of at least `maxout` entries; `enter[0]` is
+ *   always 0, the parameter of the first endpoint
+ * @param[in] maxout Capacity of both arrays, which the walk needs to be one
+ *   more than the column and the row distances between the endpoint tiles
+ * @return Number of cells written
+ */
+int
+quadbin_segment_cells(double lon1, double lat1, double lon2, double lat2,
+  uint32_t resolution, Quadbin *cells, double *enter, int maxout)
+{
+  assert(cells); assert(enter); assert(resolution <= QUADBIN_MAX_RESOLUTION);
+  if (maxout < 1)
+    return 0;
+  double n = (double) (UINT64_C(1) << resolution);
+  double x0, y0, x1, y1;
+  quadbin_tile_coords(lon1, lat1, n, &x0, &y0);
+  quadbin_tile_coords(lon2, lat2, n, &x1, &y1);
+  long tx = quadbin_tile_index(x0, n), ty = quadbin_tile_index(y0, n);
+  long ex = quadbin_tile_index(x1, n), ey = quadbin_tile_index(y1, n);
+  cells[0] = quadbin_tile_to_cell((uint32_t) tx, (uint32_t) ty, resolution);
+  enter[0] = 0.0;
+  int count = 1;
+
+  /* The row grows southward, as the Mercator ordinate falls */
+  long stepx = (ex > tx) ? 1 : -1, stepy = (ey > ty) ? 1 : -1;
+  double dlon = lon2 - lon1, dlat = lat2 - lat1;
+  double t = 0.0;
+  while ((tx != ex || ty != ey) && count < maxout)
+  {
+    /* The parameters at which the path reaches the next column boundary and
+     * the next row boundary in the direction it travels */
+    double tcol = HUGE_VAL, trow = HUGE_VAL;
+    if (tx != ex && dlon != 0.0)
+    {
+      double bx = (double) ((stepx > 0) ? tx + 1 : tx);
+      tcol = (bx / n * 360.0 - 180.0 - lon1) / dlon;
+    }
+    if (ty != ey && dlat != 0.0)
+    {
+      double by = (double) ((stepy > 0) ? ty + 1 : ty);
+      trow = (quadbin_row_latitude(by, n) - lat1) / dlat;
+    }
+    if (tcol == HUGE_VAL && trow == HUGE_VAL)
+      break;
+    /* The crossings follow one another along the path, an order the
+     * rounding of the two boundary forms does not reverse */
+    double tnext = (tcol < trow) ? tcol : trow;
+    if (tnext < t)
+      tnext = t;
+    if (tnext > 1.0)
+      tnext = 1.0;
+    t = tnext;
+    if (tcol < trow)
+      tx += stepx;
+    else if (trow < tcol)
+      ty += stepy;
+    else
+    {
+      /* The path passes through the point where four tiles meet, which
+       * belongs to the tile east of the meridian and south of the parallel
+       * meeting there. Beside the corner, that tile holds the path at the
+       * crossing before the tile diagonally across does */
+      long ox = (stepx > 0) ? tx + 1 : tx, oy = (stepy > 0) ? ty + 1 : ty;
+      if ((ox != tx || oy != ty) && (ox != tx + stepx || oy != ty + stepy))
+      {
+        cells[count] = quadbin_tile_to_cell((uint32_t) ox, (uint32_t) oy,
+          resolution);
+        enter[count++] = t;
+        if (count >= maxout)
+          break;
+      }
+      tx += stepx;
+      ty += stepy;
+    }
+    cells[count] = quadbin_tile_to_cell((uint32_t) tx, (uint32_t) ty,
+      resolution);
+    enter[count++] = t;
+  }
+  return count;
 }
 
 /**
