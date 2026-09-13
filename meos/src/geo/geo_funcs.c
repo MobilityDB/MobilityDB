@@ -5967,6 +5967,10 @@ relate_area_edge_point(const Edge *e, double t, double *x, double *y)
 
 /**
  * @brief Return the parameter of a point on a polygon boundary edge.
+ * @details The parameter is read along the coordinate the edge advances most
+ * along. The ends of a segment are input vertices, so it has no direction
+ * exactly where they are equal, and any other segment, however short, gives
+ * each point along it a parameter of its own
  */
 static double
 relate_area_edge_parameter(const Edge *e, double x, double y)
@@ -5976,17 +5980,8 @@ relate_area_edge_parameter(const Edge *e, double x, double y)
     double dx = e->x2 - e->x1;
     double dy = e->y2 - e->y1;
     if (fabs(dx) >= fabs(dy))
-    {
-      if (fabs(dx) <= MEOS_GEOM_TOLERANCE)
-        return 0.0;
-      return (x - e->x1) / dx;
-    }
-    else
-    {
-      if (fabs(dy) <= MEOS_GEOM_TOLERANCE)
-        return 0.0;
-      return (y - e->y1) / dy;
-    }
+      return (dx == 0.0) ? 0.0 : (x - e->x1) / dx;
+    return (y - e->y1) / dy;
   }
   return relate_arc_parameter(e, x, y);
 }
