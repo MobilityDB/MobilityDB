@@ -225,11 +225,14 @@ hash_families:
 - family: h3indexset
   file: mobilitydb/sql/h3/251_h3indexset.in.sql
   reference: true
-  begin: "CREATE OPERATOR CLASS h3indexset_hash_ops"
+  begin: "CREATE FUNCTION hash(h3indexset)"
   begin_exact: true
   end: "\n * unnest \u2014 SETOF expansion\n"
   blocks:
-  - lit: "CREATE OPERATOR CLASS h3indexset_hash_ops\n  DEFAULT FOR TYPE h3indexset USING hash AS\n    OPERATOR  1  =,\n    FUNCTION  1  hash(h3indexset);\n\n"
+  - funcs: h3indexset
+  - lit: "\n"
+  - opcls: h3indexset
+  - lit: "\n"
 - family: jsonbset
   file: mobilitydb/sql/json/450_jsonbset.in.sql
   reference: true
@@ -301,17 +304,23 @@ hash_families:
 - family: quadbinset
   file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
   reference: true
-  begin: "CREATE OPERATOR CLASS quadbinset_hash_ops"
+  begin: "CREATE FUNCTION hash(quadbinset)"
   begin_exact: true
   end: "\n * unnest \u2014 SETOF expansion\n"
   blocks:
-  - lit: "CREATE OPERATOR CLASS quadbinset_hash_ops\n  DEFAULT FOR TYPE quadbinset USING hash AS\n    OPERATOR  1  =,\n    FUNCTION  1  hash(quadbinset),\n    FUNCTION  2  hashExtended(quadbinset, bigint);\n\n"
+  - funcs: quadbinset
+  - lit: "\n"
+  - opcls: quadbinset
+  - lit: "\n"
 
 - family: s2cellset
   file: mobilitydb/sql/s2cell/601_s2cellset.in.sql
   reference: true
-  begin: "CREATE OPERATOR CLASS s2cellset_hash_ops"
+  begin: "CREATE FUNCTION hash(s2cellset)"
   begin_exact: true
   end: "\n * unnest \u2014 SETOF expansion\n"
   blocks:
-  - lit: "CREATE OPERATOR CLASS s2cellset_hash_ops\n  DEFAULT FOR TYPE s2cellset USING hash AS\n    OPERATOR  1  =,\n    FUNCTION  1  hash(s2cellset),\n    FUNCTION  2  hashExtended(s2cellset, bigint);\n\n"
+  - funcs: s2cellset
+  - lit: "\n"
+  - opcls: s2cellset
+  - lit: "\n"

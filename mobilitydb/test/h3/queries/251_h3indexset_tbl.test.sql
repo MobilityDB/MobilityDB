@@ -54,4 +54,8 @@ SELECT COUNT(*) FROM tbl_h3indexset WHERE memSize(s) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_h3indexset t1, tbl_h3indexset t2 WHERE t1.s = t2.s;
 SELECT COUNT(*) FROM tbl_h3indexset t1, tbl_h3indexset t2 WHERE t1.s <> t2.s;
 
+SELECT MAX(hash(s)) FROM tbl_h3indexset;
+
+SELECT MAX(hashExtended(s, 1)) FROM tbl_h3indexset;
+
 -------------------------------------------------------------------------------

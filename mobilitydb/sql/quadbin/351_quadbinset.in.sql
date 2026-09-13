@@ -216,12 +216,6 @@ CREATE FUNCTION gt(quadbinset, quadbinset)
 CREATE FUNCTION cmp(quadbinset, quadbinset)
   RETURNS integer AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION hash(quadbinset)
-  RETURNS integer AS 'MODULE_PATHNAME', 'Set_hash'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION hashExtended(quadbinset, bigint)
-  RETURNS bigint AS 'MODULE_PATHNAME', 'Set_hash_extended'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (LEFTARG = quadbinset, RIGHTARG = quadbinset,
   PROCEDURE = eq, COMMUTATOR = =, NEGATOR = <>,
@@ -251,11 +245,20 @@ CREATE OPERATOR CLASS quadbinset_btree_ops
     OPERATOR  5  >,
     FUNCTION  1  cmp(quadbinset, quadbinset);
 
+CREATE FUNCTION hash(quadbinset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hashExtended(quadbinset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS quadbinset_hash_ops
   DEFAULT FOR TYPE quadbinset USING hash AS
-    OPERATOR  1  =,
-    FUNCTION  1  hash(quadbinset),
-    FUNCTION  2  hashExtended(quadbinset, bigint);
+    OPERATOR    1   = ,
+    FUNCTION    1   hash(quadbinset),
+    FUNCTION    2   hashExtended(quadbinset, bigint);
 
 /******************************************************************************
  * unnest — SETOF expansion
