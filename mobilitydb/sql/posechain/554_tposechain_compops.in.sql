@@ -39,7 +39,7 @@
  * Ever/Always Comparison Functions
  *****************************************************************************/
 
-CREATE FUNCTION eEq(posechain, tposechain)
+CREATE FUNCTION eEqual(posechain, tposechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_posechain_tposechain'
   SUPPORT tspatial_supportfn
@@ -47,12 +47,12 @@ CREATE FUNCTION eEq(posechain, tposechain)
 
 CREATE OPERATOR ?= (
   LEFTARG = posechain, RIGHTARG = tposechain,
-  PROCEDURE = eEq,
+  PROCEDURE = eEqual,
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aEq(posechain, tposechain)
+CREATE FUNCTION aEqual(posechain, tposechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_posechain_tposechain'
   SUPPORT tspatial_supportfn
@@ -60,38 +60,38 @@ CREATE FUNCTION aEq(posechain, tposechain)
 
 CREATE OPERATOR %= (
   LEFTARG = posechain, RIGHTARG = tposechain,
-  PROCEDURE = aEq,
+  PROCEDURE = aEqual,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION eNe(posechain, tposechain)
+CREATE FUNCTION eNotEqual(posechain, tposechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_posechain_tposechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = posechain, RIGHTARG = tposechain,
-  PROCEDURE = eNe,
+  PROCEDURE = eNotEqual,
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aNe(posechain, tposechain)
+CREATE FUNCTION aNotEqual(posechain, tposechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_ne_posechain_tposechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (
   LEFTARG = posechain, RIGHTARG = tposechain,
-  PROCEDURE = aNe,
+  PROCEDURE = aNotEqual,
   NEGATOR = ?=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION eEq(tposechain, posechain)
+CREATE FUNCTION eEqual(tposechain, posechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_tposechain_posechain'
   SUPPORT tspatial_supportfn
@@ -99,12 +99,12 @@ CREATE FUNCTION eEq(tposechain, posechain)
 
 CREATE OPERATOR ?= (
   LEFTARG = tposechain, RIGHTARG = posechain,
-  PROCEDURE = eEq,
+  PROCEDURE = eEqual,
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aEq(tposechain, posechain)
+CREATE FUNCTION aEqual(tposechain, posechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_tposechain_posechain'
   SUPPORT tspatial_supportfn
@@ -112,38 +112,38 @@ CREATE FUNCTION aEq(tposechain, posechain)
 
 CREATE OPERATOR %= (
   LEFTARG = tposechain, RIGHTARG = posechain,
-  PROCEDURE = aEq,
+  PROCEDURE = aEqual,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION eNe(tposechain, posechain)
+CREATE FUNCTION eNotEqual(tposechain, posechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tposechain_posechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tposechain, RIGHTARG = posechain,
-  PROCEDURE = eNe,
+  PROCEDURE = eNotEqual,
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aNe(tposechain, posechain)
+CREATE FUNCTION aNotEqual(tposechain, posechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_ne_tposechain_posechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (
   LEFTARG = tposechain, RIGHTARG = posechain,
-  PROCEDURE = aNe,
+  PROCEDURE = aNotEqual,
   NEGATOR = ?=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION eEq(tposechain, tposechain)
+CREATE FUNCTION eEqual(tposechain, tposechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_tposechain_tposechain'
   SUPPORT tspatial_supportfn
@@ -151,12 +151,12 @@ CREATE FUNCTION eEq(tposechain, tposechain)
 
 CREATE OPERATOR ?= (
   LEFTARG = tposechain, RIGHTARG = tposechain,
-  PROCEDURE = eEq,
+  PROCEDURE = eEqual,
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aEq(tposechain, tposechain)
+CREATE FUNCTION aEqual(tposechain, tposechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_tposechain_tposechain'
   SUPPORT tspatial_supportfn
@@ -164,31 +164,31 @@ CREATE FUNCTION aEq(tposechain, tposechain)
 
 CREATE OPERATOR %= (
   LEFTARG = tposechain, RIGHTARG = tposechain,
-  PROCEDURE = aEq,
+  PROCEDURE = aEqual,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION eNe(tposechain, tposechain)
+CREATE FUNCTION eNotEqual(tposechain, tposechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tposechain_tposechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tposechain, RIGHTARG = tposechain,
-  PROCEDURE = eNe,
+  PROCEDURE = eNotEqual,
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-CREATE FUNCTION aNe(tposechain, tposechain)
+CREATE FUNCTION aNotEqual(tposechain, tposechain)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_ne_tposechain_tposechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (
   LEFTARG = tposechain, RIGHTARG = tposechain,
-  PROCEDURE = aNe,
+  PROCEDURE = aNotEqual,
   NEGATOR = ?=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
@@ -197,31 +197,31 @@ CREATE OPERATOR %<> (
  * Temporal equal
  *****************************************************************************/
 
-CREATE FUNCTION tEq(posechain, tposechain)
+CREATE FUNCTION tEqual(posechain, tposechain)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_posechain_tposechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tEq(tposechain, posechain)
+CREATE FUNCTION tEqual(tposechain, posechain)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_tposechain_posechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tEq(tposechain, tposechain)
+CREATE FUNCTION tEqual(tposechain, tposechain)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = tEq,
+  PROCEDURE = tEqual,
   LEFTARG = posechain, RIGHTARG = tposechain,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tEq,
+  PROCEDURE = tEqual,
   LEFTARG = tposechain, RIGHTARG = posechain,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tEq,
+  PROCEDURE = tEqual,
   LEFTARG = tposechain, RIGHTARG = tposechain,
   COMMUTATOR = #=
 );
@@ -230,31 +230,31 @@ CREATE OPERATOR #= (
  * Temporal not equal
  *****************************************************************************/
 
-CREATE FUNCTION tNe(posechain, tposechain)
+CREATE FUNCTION tNotEqual(posechain, tposechain)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_posechain_tposechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tNe(tposechain, posechain)
+CREATE FUNCTION tNotEqual(tposechain, posechain)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_tposechain_posechain'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tNe(tposechain, tposechain)
+CREATE FUNCTION tNotEqual(tposechain, tposechain)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
-  PROCEDURE = tNe,
+  PROCEDURE = tNotEqual,
   LEFTARG = posechain, RIGHTARG = tposechain,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = tNe,
+  PROCEDURE = tNotEqual,
   LEFTARG = tposechain, RIGHTARG = posechain,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = tNe,
+  PROCEDURE = tNotEqual,
   LEFTARG = tposechain, RIGHTARG = tposechain,
   COMMUTATOR = #<>
 );

@@ -3464,8 +3464,8 @@ def bootstrap_tiling(filetext: str, fam: dict, rendered: str) -> str:
 # splice.
 #
 # A "pair" is one (base, temp) SQL-type combination the family compares. Every
-# pair always gets Eq/Ne; a pair whose `orderable: true` additionally gets
-# Lt/Le/Gt/Ge (temporal's int/bigint/float/text — not boolean). The family-level
+# pair always gets the eq/ne predicates; a pair whose `orderable: true` additionally
+# gets lt/le/gt/ge (temporal's int/bigint/float/text — not boolean). The family-level
 # `basesym`/`tempsym` are the tokens the C symbol names use in place of the SQL
 # type names (default: the pair's own base/temp names, i.e. one C function per SQL
 # type — cbuffer's `Ever_eq_cbuffer_tcbuffer`); a family whose C implementation
@@ -3483,7 +3483,7 @@ def bootstrap_tiling(filetext: str, fam: dict, rendered: str) -> str:
 # agree byte-for-byte on it, so it is both the majority AND the mechanism's native
 # shape; 030_temporal_compops was the one outlier, internally inconsistent between
 # its own regions, normalized here to match): DIRECTION outer (base-temp,
-# temp-base, temp-temp), PREDICATE next (Eq, Ne, then Lt, Le, Gt, Ge for the
+# temp-base, temp-temp), PREDICATE next (eq, ne, then lt, le, gt, ge for the
 # orderable pairs), QUANTIFIER innermost for the ever/always region (Ever func(s),
 # Ever op(s), Always func(s), Always op(s)); the temporal-valued region follows
 # every ever/always direction, grouped PREDICATE outer then PAIR (each pair's
@@ -3500,27 +3500,28 @@ def _compops_h2(text: str) -> str:
     return f"{_COMPOPS_TOP}\n * {text}\n{_COMPOPS_BOT}\n\n"
 
 
-# key, SQL-name Cap(italized), orderable-only, ever/always operator + negator,
-# temporal operator + commutator. Fixed across every family (a property of the
-# predicate itself, not a per-family choice) — the (Lt, Gt) and (Le, Ge) pairs
-# share the same shape, just swapped.
+# key (the C symbol token), the operation the SQL name spells out after its e/a/t
+# quantifier (eEqual, aLessThan, tGreaterEqual), orderable-only, ever/always operator +
+# negator, temporal operator + commutator. Fixed across every family (a property of the
+# predicate itself, not a per-family choice) — the (LessThan, GreaterThan) and
+# (LessEqual, GreaterEqual) pairs share the same shape, just swapped.
 _COMPOPS_PREDICATES = [
-    {"key": "eq", "cap": "Eq", "ordered": False,
+    {"key": "eq", "cap": "Equal", "ordered": False,
      "ever_op": "?=", "always_op": "%=", "ever_neg": "%<>", "always_neg": "?<>",
      "t_op": "#=", "t_comm": "#="},
-    {"key": "ne", "cap": "Ne", "ordered": False,
+    {"key": "ne", "cap": "NotEqual", "ordered": False,
      "ever_op": "?<>", "always_op": "%<>", "ever_neg": "%=", "always_neg": "?=",
      "t_op": "#<>", "t_comm": "#<>"},
-    {"key": "lt", "cap": "Lt", "ordered": True,
+    {"key": "lt", "cap": "LessThan", "ordered": True,
      "ever_op": "?<", "always_op": "%<", "ever_neg": "%>=", "always_neg": "?>=",
      "t_op": "#<", "t_comm": "#>"},
-    {"key": "le", "cap": "Le", "ordered": True,
+    {"key": "le", "cap": "LessEqual", "ordered": True,
      "ever_op": "?<=", "always_op": "%<=", "ever_neg": "%>", "always_neg": "?>",
      "t_op": "#<=", "t_comm": "#>="},
-    {"key": "gt", "cap": "Gt", "ordered": True,
+    {"key": "gt", "cap": "GreaterThan", "ordered": True,
      "ever_op": "?>", "always_op": "%>", "ever_neg": "%<=", "always_neg": "?<=",
      "t_op": "#>", "t_comm": "#<"},
-    {"key": "ge", "cap": "Ge", "ordered": True,
+    {"key": "ge", "cap": "GreaterEqual", "ordered": True,
      "ever_op": "?>=", "always_op": "%>=", "ever_neg": "%<", "always_neg": "?<",
      "t_op": "#>=", "t_comm": "#<="},
 ]
@@ -3680,7 +3681,7 @@ def render_compops(fam: dict) -> str:
     A `compops_families:` `pairs:` entry names only its `temp` type; `base` is
     derived here from `catalog_temptype_basetype()` (never hand-paired) so a
     pair can never name a base other than the temporal type's own — a pair
-    naming `temp: tfloat` and `base: integer` would render `tGt(tfloat,
+    naming `temp: tfloat` and `base: integer` would render `tGreaterThan(tfloat,
     integer)` while the C entry point still derives float8 from the temp type
     alone. A pair that still carries a `base:` key (a stale manifest, or an
     attempt to reintroduce a hand-paired base) is rejected rather than

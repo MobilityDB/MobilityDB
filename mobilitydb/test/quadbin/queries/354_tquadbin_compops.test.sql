@@ -33,7 +33,7 @@
 -- B = '48427fffffffffff' (tile 3,5,4), C = '48a6227affffffff' (res 10).
 
 -------------------------------------------------------------------------------
--- eEq / ?=
+-- eEqual / ?=
 -------------------------------------------------------------------------------
 SELECT quadbin '480fffffffffffff' ?= tquadbin '480fffffffffffff@2001-01-01';
 SELECT tquadbin '480fffffffffffff@2001-01-01' ?= quadbin '480fffffffffffff';
@@ -44,7 +44,7 @@ SELECT tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]' ?= 
 SELECT tquadbin '480fffffffffffff@2001-01-01' ?= quadbin '48427fffffffffff';
 
 -------------------------------------------------------------------------------
--- aEq / %=
+-- aEqual / %=
 -------------------------------------------------------------------------------
 SELECT tquadbin '480fffffffffffff@2001-01-01' %= quadbin '480fffffffffffff';
 -- mixed trajectory — not always
@@ -53,7 +53,7 @@ SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}' %= 
 SELECT tquadbin '[480fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-02]' %= tquadbin '[480fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-02]';
 
 -------------------------------------------------------------------------------
--- eNe / ?<> and aNe / %<>
+-- eNotEqual / ?<> and aNotEqual / %<>
 -------------------------------------------------------------------------------
 SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}' ?<> quadbin '480fffffffffffff';
 SELECT tquadbin '480fffffffffffff@2001-01-01' %<> quadbin '48427fffffffffff';
@@ -64,7 +64,7 @@ SELECT NOT (
   (tquadbin '480fffffffffffff@2001-01-01' %<> quadbin '480fffffffffffff'));
 
 -------------------------------------------------------------------------------
--- tEq / #= and tNe / #<> (tbool result)
+-- tEqual / #= and tNotEqual / #<> (tbool result)
 -------------------------------------------------------------------------------
 SELECT asText(quadbin '480fffffffffffff' #= tquadbin '480fffffffffffff@2001-01-01');
 SELECT asText(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]' #= quadbin '480fffffffffffff');

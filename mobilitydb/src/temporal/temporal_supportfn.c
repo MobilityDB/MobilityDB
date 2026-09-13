@@ -280,8 +280,8 @@ static const IndexableFunction SpanIndexableFunctions[] =
 
 static const IndexableFunction TNumberIndexableFunctions[] = {
   /* Ever/always comparison functions */
-  {"eeq", EVER_EQ_IDX, 2, 0},
-  {"aeq", ALWAYS_EQ_IDX, 2, 0},
+  {"eEqual", EVER_EQ_IDX, 2, 0},
+  {"aEqual", ALWAYS_EQ_IDX, 2, 0},
   TIME_PORTABLE_FUNCTIONS,
   AXIS1_PORTABLE_FUNCTIONS,
   {NULL, 0, 0, 0}
@@ -289,22 +289,22 @@ static const IndexableFunction TNumberIndexableFunctions[] = {
 
 static const IndexableFunction TSpatialIndexableFunctions[] = {
   /* Ever/always comparison functions */
-  {"eeq", EVER_EQ_IDX, 2, 0},
-  {"aeq", ALWAYS_EQ_IDX, 2, 0},
+  {"eEqual", EVER_EQ_IDX, 2, 0},
+  {"aEqual", ALWAYS_EQ_IDX, 2, 0},
   /* Ever spatial relationships */
-  {"econtains", ECONTAINS_IDX, 2, 0},
-  {"ecovers", ECOVERS_IDX, 2, 0},
-  {"edisjoint", EDISJOINT_IDX, 2, 0},
-  {"eintersects", EINTERSECTS_IDX, 2, 0},
-  {"etouches", ETOUCHES_IDX, 2, 0},
-  {"edwithin", EDWITHIN_IDX, 3, 3},
+  {"eContains", ECONTAINS_IDX, 2, 0},
+  {"eCovers", ECOVERS_IDX, 2, 0},
+  {"eDisjoint", EDISJOINT_IDX, 2, 0},
+  {"eIntersects", EINTERSECTS_IDX, 2, 0},
+  {"eTouches", ETOUCHES_IDX, 2, 0},
+  {"eDwithin", EDWITHIN_IDX, 3, 3},
   /* Always spatial relationships */
-  {"acontains", ACONTAINS_IDX, 2, 0},
-  {"acovers", ACOVERS_IDX, 2, 0},
-  {"adisjoint", ADISJOINT_IDX, 2, 0},
-  {"aintersects", AINTERSECTS_IDX, 2, 0},
-  {"atouches", ATOUCHES_IDX, 2, 0},
-  {"adwithin", ADWITHIN_IDX, 3, 3},
+  {"aContains", ACONTAINS_IDX, 2, 0},
+  {"aCovers", ACOVERS_IDX, 2, 0},
+  {"aDisjoint", ADISJOINT_IDX, 2, 0},
+  {"aIntersects", AINTERSECTS_IDX, 2, 0},
+  {"aTouches", ATOUCHES_IDX, 2, 0},
+  {"aDwithin", ADWITHIN_IDX, 3, 3},
   /* Portable spellings of the bounding-box operators */
   TIME_PORTABLE_FUNCTIONS,
   AXIS1_PORTABLE_FUNCTIONS,
@@ -361,7 +361,8 @@ func_needs_index(Oid funcid, const IndexableFunction *idxfns,
   const char *fn_name = get_func_name(funcid);
   do
   {
-    if (strcmp(idxfns->fn_name, fn_name) == 0)
+    /* The catalog stores the name folded to lower case */
+    if (pg_strcasecmp(idxfns->fn_name, fn_name) == 0)
     {
       *result = *idxfns;
       return true;
@@ -523,7 +524,7 @@ type_to_bbox(MeosType type)
  * @brief For functions that we want enhanced with spatial index lookups, add
  * this support function to the SQL function definition, for example:
  * @code
- * CREATE OR REPLACE FUNCTION eEq(tfloat, float)
+ * CREATE OR REPLACE FUNCTION eEqual(tfloat, float)
  *   RETURNS boolean
  *   AS 'MODULE_PATHNAME','ever_eq_temporal_base'
  *   SUPPORT temporal_supportfn

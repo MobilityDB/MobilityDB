@@ -1,7 +1,7 @@
-SELECT eEq(590464338553208831::h3index,
+SELECT eEqual(590464338553208831::h3index,
   th3index '831c02fffffffff@2001-01-01');
- eeq 
------
+ eequal 
+--------
  t
 (1 row)
 

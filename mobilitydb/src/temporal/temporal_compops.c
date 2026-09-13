@@ -116,7 +116,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is ever equal to a temporal value
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -130,7 +130,7 @@ PG_FUNCTION_INFO_V1(Always_eq_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is always equal to a temporal value
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is ever different from a temporal value
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -158,7 +158,7 @@ PG_FUNCTION_INFO_V1(Always_ne_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is always different from a temporal value
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -174,7 +174,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever equal to a base value
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -188,7 +188,7 @@ PG_FUNCTION_INFO_V1(Always_eq_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to a base value
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -202,7 +202,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever different from a base value
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -216,7 +216,7 @@ PG_FUNCTION_INFO_V1(Always_ne_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always different from a base value
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -232,7 +232,7 @@ PG_FUNCTION_INFO_V1(Ever_lt_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is ever less than a temporal value
- * @sqlfn eLt()
+ * @sqlfn eLessThan()
  * @sqlop @p ?<
  */
 inline Datum
@@ -246,7 +246,7 @@ PG_FUNCTION_INFO_V1(Always_lt_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is always less than a temporal value
- * @sqlfn aLt()
+ * @sqlfn aLessThan()
  * @sqlop @p %<
  */
 inline Datum
@@ -261,7 +261,7 @@ PG_FUNCTION_INFO_V1(Ever_le_base_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is ever less than or equal to a temporal
  * value
- * @sqlfn eLe()
+ * @sqlfn eLessEqual()
  * @sqlop @p ?<=
  */
 inline Datum
@@ -276,7 +276,7 @@ PG_FUNCTION_INFO_V1(Always_le_base_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is always less than or equal to a
  * temporal value
- * @sqlfn aLe()
+ * @sqlfn aLessEqual()
  * @sqlop @p %<=
  */
 inline Datum
@@ -290,7 +290,7 @@ PG_FUNCTION_INFO_V1(Ever_gt_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is ever greater than a temporal value
- * @sqlfn eGt()
+ * @sqlfn eGreaterThan()
  * @sqlop @p ?>
  */
 inline Datum
@@ -304,7 +304,7 @@ PG_FUNCTION_INFO_V1(Always_gt_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is always greater than a temporal value
- * @sqlfn aGt()
+ * @sqlfn aGreaterThan()
  * @sqlop @p %>
  */
 inline Datum
@@ -319,7 +319,7 @@ PG_FUNCTION_INFO_V1(Ever_ge_base_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is ever greater than or equal to a
  * temporal value
- * @sqlfn eGe()
+ * @sqlfn eGreaterEqual()
  * @sqlop @p ?>=
  */
 inline Datum
@@ -334,7 +334,7 @@ PG_FUNCTION_INFO_V1(Always_ge_base_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a base value is always greater than or equal to a
  * temporal value
- * @sqlfn aGe()
+ * @sqlfn aGreaterEqual()
  * @sqlop @p %>=
  */
 inline Datum
@@ -350,7 +350,7 @@ PG_FUNCTION_INFO_V1(Ever_lt_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than a base value
- * @sqlfn eLt()
+ * @sqlfn eLessThan()
  * @sqlop @p ?<
  */
 inline Datum
@@ -364,7 +364,7 @@ PG_FUNCTION_INFO_V1(Always_lt_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always less than a base value
- * @sqlfn aLt()
+ * @sqlfn aLessThan()
  * @sqlop @p %<
  */
 inline Datum
@@ -379,7 +379,7 @@ PG_FUNCTION_INFO_V1(Ever_le_temporal_base);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than or equal to a base
  * value
- * @sqlfn eLe()
+ * @sqlfn eLessEqual()
  * @sqlop @p ?<=
  */
 inline Datum
@@ -394,7 +394,7 @@ PG_FUNCTION_INFO_V1(Always_le_temporal_base);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always less than or equal to a
  * base value
- * @sqlfn aLe()
+ * @sqlfn aLessEqual()
  * @sqlop @p %<=
  */
 inline Datum
@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(Ever_gt_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than a base value
- * @sqlfn eGt()
+ * @sqlfn eGreaterThan()
  * @sqlop @p ?>
  */
 inline Datum
@@ -422,7 +422,7 @@ PG_FUNCTION_INFO_V1(Always_gt_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than a base value
- * @sqlfn aGt()
+ * @sqlfn aGreaterThan()
  * @sqlop @p %>
  */
 inline Datum
@@ -437,7 +437,7 @@ PG_FUNCTION_INFO_V1(Ever_ge_temporal_base);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than or equal to a
  * base value
- * @sqlfn eGe()
+ * @sqlfn eGreaterEqual()
  * @sqlop @p ?>=
  */
 inline Datum
@@ -452,7 +452,7 @@ PG_FUNCTION_INFO_V1(Always_ge_temporal_base);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than or equal to a
  * base value
- * @sqlfn aGe()
+ * @sqlfn aGreaterEqual()
  * @sqlop @p %>=
  */
 inline Datum
@@ -468,7 +468,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the temporal values are ever equal
- * @sqlfn eEq()
+ * @sqlfn eEqual()
  * @sqlop @p ?=
  */
 inline Datum
@@ -482,7 +482,7 @@ PG_FUNCTION_INFO_V1(Always_eq_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the temporal values are always equal
- * @sqlfn aEq()
+ * @sqlfn aEqual()
  * @sqlop @p %=
  */
 inline Datum
@@ -496,7 +496,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the temporal values are ever different
- * @sqlfn eNe()
+ * @sqlfn eNotEqual()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -510,7 +510,7 @@ PG_FUNCTION_INFO_V1(Always_ne_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the temporal values are always different
- * @sqlfn aNe()
+ * @sqlfn aNotEqual()
  * @sqlop @p %<>
  */
 inline Datum
@@ -525,7 +525,7 @@ PG_FUNCTION_INFO_V1(Ever_lt_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the first temporal value is ever less than the second
  * one
- * @sqlfn eLt()
+ * @sqlfn eLessThan()
  * @sqlop @p ?<
  */
 inline Datum
@@ -540,7 +540,7 @@ PG_FUNCTION_INFO_V1(Always_lt_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the first temporal value is always less than the
  * second one
- * @sqlfn aLt()
+ * @sqlfn aLessThan()
  * @sqlop @p %<
  */
 inline Datum
@@ -555,7 +555,7 @@ PG_FUNCTION_INFO_V1(Ever_le_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the first temporal value is ever less than or equal to
  * the second one
- * @sqlfn eLe()
+ * @sqlfn eLessEqual()
  * @sqlop @p ?<=
  */
 inline Datum
@@ -570,7 +570,7 @@ PG_FUNCTION_INFO_V1(Always_le_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the first temporal value is always less than or equal
  * to the second one
- * @sqlfn aLe()
+ * @sqlfn aLessEqual()
  * @sqlop @p %<=
  */
 inline Datum
@@ -585,7 +585,7 @@ PG_FUNCTION_INFO_V1(Ever_gt_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the first temporal value is ever greater than the
  * second one
- * @sqlfn eGt()
+ * @sqlfn eGreaterThan()
  * @sqlop @p ?>
  */
 inline Datum
@@ -600,7 +600,7 @@ PG_FUNCTION_INFO_V1(Always_gt_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the first temporal value is always greater than the
  * second one
- * @sqlfn aGt()
+ * @sqlfn aGreaterThan()
  * @sqlop @p %>
  */
 inline Datum
@@ -615,7 +615,7 @@ PG_FUNCTION_INFO_V1(Ever_ge_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the first temporal value is ever greater than or equal
  * to the second one
- * @sqlfn eGe()
+ * @sqlfn eGreaterEqual()
  * @sqlop @p ?>=
  */
 inline Datum
@@ -630,7 +630,7 @@ PG_FUNCTION_INFO_V1(Always_ge_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if the first temporal value is always greater than or
  * equal to the second one
- * @sqlfn aGe()
+ * @sqlfn aGreaterEqual()
  * @sqlop @p %>=
  */
 inline Datum
@@ -702,7 +702,7 @@ PG_FUNCTION_INFO_V1(Teq_base_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a base value is equal
  * to a temporal value
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -717,7 +717,7 @@ PG_FUNCTION_INFO_V1(Tne_base_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a base value is
  * different from a temporal value
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -732,7 +732,7 @@ PG_FUNCTION_INFO_V1(Tlt_base_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a base value is less
  * than a temporal value
- * @sqlfn tLt()
+ * @sqlfn tLessThan()
  * @sqlop @p #<
  */
 inline Datum
@@ -747,7 +747,7 @@ PG_FUNCTION_INFO_V1(Tle_base_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a base value is less
  * than or equal to a temporal value
- * @sqlfn tLe()
+ * @sqlfn tLessEqual()
  * @sqlop @p #<=
  */
 inline Datum
@@ -762,7 +762,7 @@ PG_FUNCTION_INFO_V1(Tgt_base_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a base value is greater
  * than a temporal value
- * @sqlfn tGt()
+ * @sqlfn tGreaterThan()
  * @sqlop @p #>
  */
 inline Datum
@@ -777,7 +777,7 @@ PG_FUNCTION_INFO_V1(Tge_base_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a base value is greater
  * than or equal to a temporal value
- * @sqlfn tGe()
+ * @sqlfn tGreaterEqual()
  * @sqlop @p #>=
  */
 inline Datum
@@ -794,7 +794,7 @@ PG_FUNCTION_INFO_V1(Teq_temporal_base);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a temporal value is
  * equal to a base value
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -809,7 +809,7 @@ PG_FUNCTION_INFO_V1(Tne_temporal_base);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a temporal value is
  * different from a base value
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -824,7 +824,7 @@ PG_FUNCTION_INFO_V1(Tlt_temporal_base);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a temporal value is
  * less than a base value
- * @sqlfn tLt()
+ * @sqlfn tLessThan()
  * @sqlop @p #<
  */
 inline Datum
@@ -839,7 +839,7 @@ PG_FUNCTION_INFO_V1(Tle_temporal_base);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a temporal value is
  * less than or equal to a base value
- * @sqlfn tLe()
+ * @sqlfn tLessEqual()
  * @sqlop @p #<=
  */
 inline Datum
@@ -854,7 +854,7 @@ PG_FUNCTION_INFO_V1(Tgt_temporal_base);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a temporal value is
  * greater than a base value
- * @sqlfn tGt()
+ * @sqlfn tGreaterThan()
  * @sqlop @p #>
  */
 inline Datum
@@ -869,7 +869,7 @@ PG_FUNCTION_INFO_V1(Tge_temporal_base);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a temporal value is
  * greater than or equal to a base value
- * @sqlfn tGe()
+ * @sqlfn tGreaterEqual()
  * @sqlop @p #>=
  */
 inline Datum
@@ -886,7 +886,7 @@ PG_FUNCTION_INFO_V1(Teq_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether the first temporal
  * value is equal to the second one
- * @sqlfn tEq()
+ * @sqlfn tEqual()
  * @sqlop @p #=
  */
 inline Datum
@@ -901,7 +901,7 @@ PG_FUNCTION_INFO_V1(Tne_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether the first temporal
  * value is different from the second one
- * @sqlfn tNe()
+ * @sqlfn tNotEqual()
  * @sqlop @p #<>
  */
 inline Datum
@@ -916,7 +916,7 @@ PG_FUNCTION_INFO_V1(Tlt_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether the first temporal
  * value is less than the second one
- * @sqlfn tLt()
+ * @sqlfn tLessThan()
  * @sqlop @p #<
  */
 inline Datum
@@ -931,7 +931,7 @@ PG_FUNCTION_INFO_V1(Tle_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether the first temporal
  * value is less than or equal to second one
- * @sqlfn tLe()
+ * @sqlfn tLessEqual()
  * @sqlop @p #<=
  */
 inline Datum
@@ -946,7 +946,7 @@ PG_FUNCTION_INFO_V1(Tgt_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether a temporal value is
  * greater than the second one
- * @sqlfn tGt()
+ * @sqlfn tGreaterThan()
  * @sqlop @p #>
  */
 inline Datum
@@ -960,7 +960,7 @@ PG_FUNCTION_INFO_V1(Tge_temporal_temporal);
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return a temporal boolean that states whether the first temporal
  * value is greater than or equal to the second one
- * @sqlfn tGe()
+ * @sqlfn tGreaterEqual()
  * @sqlop @p #>=
  */
 inline Datum
