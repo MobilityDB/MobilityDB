@@ -360,6 +360,7 @@ tspatial_as_ewkt(const Temporal *temp, int maxdd)
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
  * @param[in] extended True if the output is in EWKT
+ * @csqlfn #Spatialarr_as_text(), #Spatialarr_as_ewkt()
  */
 char **
 spatialarr_wkt_out(const Datum *spatialarr, MeosType elemtype, int count,

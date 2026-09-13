@@ -61,6 +61,7 @@
  * @ingroup meos_json_inout
  * @brief Return a temporal JSONB from its Well-Known Text (WKT) representation
  * @param[in] str String
+ * @csqlfn #Temporal_in()
  */
 Temporal *
 tjsonb_in(const char *str)
@@ -126,6 +127,7 @@ tjsonbseqset_in(const char *str)
  * @ingroup meos_json_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal JSONB
  * @param[in] temp Temporal JSONB
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
 tjsonb_out(const Temporal *temp)

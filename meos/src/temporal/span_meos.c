@@ -138,7 +138,7 @@ tstzspan_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of an integer span
  * @errval NULL
  * @param[in] s Span
- * @csqlfn #Span_out()
+ * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
 intspan_out(const Span *s)
@@ -153,7 +153,7 @@ intspan_out(const Span *s)
  * @brief Return the Well-Known Text (WKT) representation of a big integer span
  * @param[in] s Span
  * @errval NULL
- * @csqlfn #Span_out()
+ * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
 bigintspan_out(const Span *s)
@@ -169,7 +169,7 @@ bigintspan_out(const Span *s)
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
  * @errval NULL
-  * @csqlfn #Span_out()
+ * @csqlfn #Span_out(), #Span_as_text()
 */
 char *
 floatspan_out(const Span *s, int maxdd)
@@ -184,7 +184,7 @@ floatspan_out(const Span *s, int maxdd)
  * @brief Return the Well-Known Text (WKT) representation of a date span
  * @param[in] s Span
  * @errval NULL
- * @csqlfn #Span_out()
+ * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
 datespan_out(const Span *s)
@@ -199,7 +199,7 @@ datespan_out(const Span *s)
  * @brief Return the Well-Known Text (WKT) representation of a timestamtz span
  * @param[in] s Span
  * @errval NULL
- * @csqlfn #Span_out()
+ * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
 tstzspan_out(const Span *s)

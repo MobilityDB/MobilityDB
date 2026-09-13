@@ -230,6 +230,7 @@ tnpoint_in(const char *str)
  * network point
  * @param[in] temp Temporal network point
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Temporal_out()
  */
 char *
 tnpoint_out(const Temporal *temp, int maxdd)

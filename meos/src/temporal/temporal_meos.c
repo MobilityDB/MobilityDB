@@ -69,6 +69,7 @@
  * @brief Return a temporal boolean from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
+ * @csqlfn #Temporal_in()
  */
 Temporal *
 tbool_in(const char *str)
@@ -83,6 +84,7 @@ tbool_in(const char *str)
  * @brief Return a temporal integer from its Well-Known Text (WKT) 
  * representation
  * @param[in] str String
+ * @csqlfn #Temporal_in()
  */
 Temporal *
 tint_in(const char *str)
@@ -97,6 +99,7 @@ tint_in(const char *str)
  * @brief Return a temporal big integer from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
+ * @csqlfn #Temporal_in()
  */
 Temporal *
 tbigint_in(const char *str)
@@ -110,6 +113,7 @@ tbigint_in(const char *str)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal float from its Well-Known Text (WKT) representation
  * @param[in] str String
+ * @csqlfn #Temporal_in()
  */
 Temporal *
 tfloat_in(const char *str)
@@ -123,6 +127,7 @@ tfloat_in(const char *str)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal text from its Well-Known Text (WKT) representation
  * @param[in] str String
+ * @csqlfn #Temporal_in()
  */
 Temporal *
 ttext_in(const char *str)
@@ -138,6 +143,7 @@ ttext_in(const char *str)
  * @ingroup meos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal boolean
  * @param[in] temp Temporal boolean
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
 tbool_out(const Temporal *temp)
@@ -151,6 +157,7 @@ tbool_out(const Temporal *temp)
  * @ingroup meos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal integer
  * @param[in] temp Temporal integer
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
 tint_out(const Temporal *temp)
@@ -165,6 +172,7 @@ tint_out(const Temporal *temp)
  * @brief Return the Well-Known Text (WKT) representation of a temporal big
  * integer
  * @param[in] temp Temporal big integer
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
 tbigint_out(const Temporal *temp)
@@ -179,6 +187,7 @@ tbigint_out(const Temporal *temp)
  * @brief Return the Well-Known Text (WKT) representation of a temporal float
  * @param[in] temp Temporal float
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
 tfloat_out(const Temporal *temp, int maxdd)
@@ -192,6 +201,7 @@ tfloat_out(const Temporal *temp, int maxdd)
  * @ingroup meos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal text
  * @param[in] temp Temporal text
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
 ttext_out(const Temporal *temp)

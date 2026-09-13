@@ -187,7 +187,7 @@ stbox_in(const char *str)
  * box
  * @param[in] box Spatiotemporal box
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Stbox_out()
+ * @csqlfn #Stbox_out(), #Stbox_as_text()
  */
 char *
 stbox_out(const STBox *box, int maxdd)

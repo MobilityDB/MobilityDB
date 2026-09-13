@@ -382,7 +382,7 @@ unquote(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a span
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Span_out()
+ * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
 span_out(const Span *s, int maxdd)
