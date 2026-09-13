@@ -908,6 +908,43 @@ int main(void)
   assert(ac_ok == 41);
   meos_errno_reset();
 
+  /* A segment has no direction only where its two ends are one vertex, and
+   * any other segment, however short, gives each point along it a parameter
+   * of its own. The square of side s with a fifth vertex 5e-13 s from a
+   * corner, on its top side or on its left side, is a region and relates to
+   * itself as one at every scale. Read against an absolute length, the short
+   * side takes every point to its start, the portions the matrix walks along
+   * it are misplaced, and the square reads as crossing itself. At s = 2^-40
+   * the area of the square falls under the bound ring_encloses_no_area reads
+   * it against, which the range stops short of */
+  double se_s = 1.0;
+  int se_ok = 0;
+  for (int k = 0; k >= -39; k--, se_s *= 0.5)
+  {
+    char top_wkt[256], left_wkt[256];
+    double se_e = 5e-13 * se_s;
+    snprintf(top_wkt, sizeof top_wkt,
+      "POLYGON((0 0,%.17g 0,%.17g %.17g,%.17g %.17g,0 %.17g,0 0))",
+      se_s, se_s, se_s, se_e, se_s, se_s);
+    snprintf(left_wkt, sizeof left_wkt,
+      "POLYGON((0 0,%.17g 0,%.17g %.17g,0 %.17g,0 %.17g,0 0))",
+      se_s, se_s, se_s, se_s, se_e);
+    GSERIALIZED *top = geom_in(top_wkt, -1);
+    GSERIALIZED *left = geom_in(left_wkt, -1);
+    assert(top != NULL); assert(left != NULL);
+    char *m_top = geom_relate(top, top);
+    char *m_left = geom_relate(left, left);
+    assert(m_top != NULL); assert(m_left != NULL);
+    assert(strcmp(m_top, "2FFF1FFF2") == 0);
+    assert(strcmp(m_left, "2FFF1FFF2") == 0);
+    se_ok++;
+    free(m_top); free(m_left); free(top); free(left);
+  }
+  printf("a square with a side 5e-13 s long relates to itself as a region at "
+    "%d scales from 1 to 2^-39\n", se_ok);
+  assert(se_ok == 40);
+  meos_errno_reset();
+
   /* The distance between curves is checked on the cases PostGIS gives its
    * own unit tests for the distance fixes of its 3.6 line (ticket 5989): a
    * point outside a curve polygon beside its arc, a point beside the arc of a
