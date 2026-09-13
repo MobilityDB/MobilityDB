@@ -658,7 +658,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_accessor
+ * @ingroup meos_internal_temporal_comp_trad
  * @brief Return the 32-bit hash of a temporal instant
  * @param[in] inst Temporal instant
  * @errval UINT32_MAX
@@ -683,7 +683,7 @@ tinstant_hash(const TInstant *inst)
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
+ * @ingroup meos_internal_temporal_comp_trad
  * @brief Return the 64-bit hash of a temporal instant using a seed
  * @param[in] inst Temporal instant
  * @param[in] seed Seed

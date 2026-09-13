@@ -3026,7 +3026,7 @@ Temporal_gt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_hash(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_hash);
 /**
- * @ingroup mobilitydb_temporal_accessor
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return the hash value of a temporal value
  * @sqlfn hash()
  */
@@ -3042,7 +3042,7 @@ Temporal_hash(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_hash_extended(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_hash_extended);
 /**
- * @ingroup mobilitydb_temporal_accessor
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return the 64-bit hash value of a temporal value using a seed
  * @sqlfn hashExtended()
  */

@@ -212,7 +212,7 @@ quadbin_cmp(Quadbin a, Quadbin b)
  *****************************************************************************/
 
 /**
- * @ingroup meos_quadbin_base_accessor
+ * @ingroup meos_quadbin_base_comp
  * @brief Return the 32-bit hash value of a quadbin — matches the result
  * `hashint8` would produce on the same bit pattern.
  * @csqlfn #Quadbin_hash()
@@ -224,7 +224,7 @@ quadbin_hash(Quadbin cell)
 }
 
 /**
- * @ingroup meos_quadbin_base_accessor
+ * @ingroup meos_quadbin_base_comp
  * @brief Return the 64-bit hash value of a quadbin using a seed — matches
  * the result `hashint8extended` would produce on the same bit pattern.
  * @param[in] cell Quadbin cell

@@ -217,7 +217,7 @@ S2cell_cmp(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum S2cell_hash(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(S2cell_hash);
 /**
- * @ingroup mobilitydb_s2cell_base_accessor
+ * @ingroup mobilitydb_s2cell_base_comp
  * @brief Return the 32-bit hash of an S2 cell
  * @sqlfn hash()
  */
@@ -230,7 +230,7 @@ S2cell_hash(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum S2cell_hash_extended(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(S2cell_hash_extended);
 /**
- * @ingroup mobilitydb_s2cell_base_accessor
+ * @ingroup mobilitydb_s2cell_base_comp
  * @brief Return the 64-bit hash of an S2 cell using a seed
  * @sqlfn hashExtended()
  */

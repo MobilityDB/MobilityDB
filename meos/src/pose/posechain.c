@@ -1252,7 +1252,7 @@ posechain_ge(const PoseChain *pc1, const PoseChain *pc2)
 void hashlittle2(const void *key, size_t length, uint32_t *pc, uint32_t *pb);
 
 /**
- * @ingroup meos_posechain_base_accessor
+ * @ingroup meos_posechain_base_comp
  * @brief Return the 32-bit hash value of a pose chain
  * @param[in] pc Pose chain
  * @errval UINT32_MAX
@@ -1284,7 +1284,7 @@ posechain_hash(const PoseChain *pc)
 }
 
 /**
- * @ingroup meos_posechain_base_accessor
+ * @ingroup meos_posechain_base_comp
  * @brief Return the 64-bit hash value of a pose chain using a seed
  * @param[in] pc Pose chain
  * @param[in] seed Seed

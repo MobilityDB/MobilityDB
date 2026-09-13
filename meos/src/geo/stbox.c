@@ -3052,7 +3052,7 @@ stbox_gt(const STBox *box1, const STBox *box2)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_box_accessor
+ * @ingroup meos_geo_box_comp
  * @brief Return the 32-bit hash value of a spatiotemporal box
  * @param[in] box Spatiotemporal box
  * @errval UINT32_MAX
@@ -3103,7 +3103,7 @@ stbox_hash(const STBox *box)
 }
 
 /**
- * @ingroup meos_geo_box_accessor
+ * @ingroup meos_geo_box_comp
  * @brief Return the 64-bit hash of a spatiotemporal box using a seed
  * @param[in] box Spatiotemporal box
  * @param[in] seed Seed

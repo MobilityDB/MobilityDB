@@ -1727,7 +1727,7 @@ span_gt(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_setspan_comp
  * @brief Return the 32-bit hash of a span
  * @param[in] s Span
  * @errval UINT32_MAX
@@ -1766,7 +1766,7 @@ span_hash(const Span *s)
 }
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_setspan_comp
  * @brief Return the 64-bit hash of a span using a seed
  * @param[in] s Span
  * @param[in] seed Seed

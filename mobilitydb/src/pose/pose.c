@@ -1064,7 +1064,7 @@ Pose_gt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Pose_hash(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_hash);
 /**
- * @ingroup mobilitydb_pose_base_accessor
+ * @ingroup mobilitydb_pose_base_comp
  * @brief Return the 32-bit hash value of a pose
  * @sqlfn hash()
  */
@@ -1080,7 +1080,7 @@ Pose_hash(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Pose_hash_extended(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_hash_extended);
 /**
- * @ingroup mobilitydb_pose_base_accessor
+ * @ingroup mobilitydb_pose_base_comp
  * @brief Return the 64-bit hash value of a pose using a seed
  * @sqlfn hashExtended()
  */

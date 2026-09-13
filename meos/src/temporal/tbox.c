@@ -2323,7 +2323,7 @@ tbox_gt(const TBox *box1, const TBox *box2)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_box_accessor
+ * @ingroup meos_box_comp
  * @brief Return the 32-bit hash of a temporal box
  * @param[in] box Temporal box
  * @errval UINT32_MAX
@@ -2354,7 +2354,7 @@ tbox_hash(const TBox *box)
 }
 
 /**
- * @ingroup meos_box_accessor
+ * @ingroup meos_box_comp
  * @brief Return the 64-bit hash of a temporal box using a seed
  * @param[in] box Temporal box
  * @param[in] seed Seed

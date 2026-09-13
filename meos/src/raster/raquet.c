@@ -941,7 +941,7 @@ raquet_gt(const Raquet *rq1, const Raquet *rq2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_raster_base_accessor
+ * @ingroup meos_raster_base_comp
  * @brief Return the 32-bit hash of a Raquet tile
  * @param[in] rq Raquet tile
  * @csqlfn #Raquet_hash()
@@ -957,7 +957,7 @@ raquet_hash(const Raquet *rq)
 }
 
 /**
- * @ingroup meos_raster_base_accessor
+ * @ingroup meos_raster_base_comp
  * @brief Return the 64-bit hash of a Raquet tile using a seed
  * @param[in] rq Raquet tile
  * @param[in] seed Seed

@@ -1254,7 +1254,7 @@ set_ge(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_setspan_comp
  * @brief Return the 32-bit hash of a set
  * @param[in] s Set
  * @errval UINT32_MAX
@@ -1275,7 +1275,7 @@ set_hash(const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_setspan_comp
  * @brief Return the 64-bit hash of a set using a seed
  * @param[in] s Set
  * @param[in] seed Seed
