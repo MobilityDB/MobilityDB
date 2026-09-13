@@ -75,8 +75,8 @@ SELECT numValues(set(array_agg(DISTINCT cb ORDER BY cb))) FROM tbl_cbuffer WHERE
        100
 (1 row)
 
-SELECT round(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)", "Cbuffer(Point(3 3),0.5)"}'::stbox, 6);
-            round             
+SELECT stboxRound(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)", "Cbuffer(Point(3 3),0.5)"}'::stbox, 6);
+          stboxround          
 ------------------------------
  STBOX X((0.5,0.5),(3.5,3.5))
 (1 row)
@@ -87,7 +87,7 @@ SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::cbufferset IS NOT NULL;
    100
 (1 row)
 
-SELECT MIN(radius(startValue(round(s, 3)))) FROM tbl_cbufferset;
+SELECT MIN(radius(startValue(setRound(s, 3)))) FROM tbl_cbufferset;
   min  
 -------
  0.025

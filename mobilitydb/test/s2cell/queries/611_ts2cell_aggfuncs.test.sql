@@ -40,7 +40,7 @@
 -- The extent of a set of cells is geodetic, as each cell's own box is.
 -------------------------------------------------------------------------------
 
-SELECT round(extent(temp), 6) FROM (VALUES
+SELECT stboxRound(extent(temp), 6) FROM (VALUES
   (ts2cell '47c3c3@2001-01-01'),
   (ts2cell '47c3c4@2001-01-02')) t(temp);
 

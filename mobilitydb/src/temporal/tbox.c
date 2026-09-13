@@ -778,7 +778,7 @@ PG_FUNCTION_INFO_V1(Tbox_round);
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the precision of the value span set to a
  * number of decimal places
- * @sqlfn round()
+ * @sqlfn tboxRound()
  */
 Datum
 Tbox_round(PG_FUNCTION_ARGS)

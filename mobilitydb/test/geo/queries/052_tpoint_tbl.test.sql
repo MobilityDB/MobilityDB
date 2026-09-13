@@ -159,10 +159,10 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memSize(temp) > 0;
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memSize(temp) > 0;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
 
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint;
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint;
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint3D;
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint3D;
+SELECT MAX(Xmin(stboxRound(stbox(temp), 6))) FROM tbl_tgeompoint;
+SELECT MAX(Xmin(stboxRound(stbox(temp), 6))) FROM tbl_tgeogpoint;
+SELECT MAX(Xmin(stboxRound(stbox(temp), 6))) FROM tbl_tgeompoint3D;
+SELECT MAX(Xmin(stboxRound(stbox(temp), 6))) FROM tbl_tgeogpoint3D;
 
 /* There is no ST_MemSize neither MAX for geography. */
 SELECT MAX(ST_MemSize(getValue(inst))) FROM tbl_tgeompoint_inst;

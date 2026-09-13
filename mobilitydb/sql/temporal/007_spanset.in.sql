@@ -822,25 +822,25 @@ CREATE FUNCTION shiftScale(tstzspanset, interval, interval)
   AS 'MODULE_PATHNAME', 'Tstzspanset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION floor(floatspanset)
+CREATE FUNCTION spansetFloor(floatspanset)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Floatspanset_floor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ceil(floatspanset)
+CREATE FUNCTION spansetCeil(floatspanset)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Floatspanset_ceil'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
+CREATE FUNCTION spansetRound(floatspanset, integer DEFAULT 0)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Floatspanset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION degrees(floatspanset, boolean DEFAULT FALSE)
+CREATE FUNCTION spansetDegrees(floatspanset, boolean DEFAULT FALSE)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Floatspanset_degrees'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION radians(floatspanset)
+CREATE FUNCTION spansetRadians(floatspanset)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Floatspanset_radians'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

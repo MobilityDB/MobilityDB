@@ -48,10 +48,10 @@ SELECT asGeoPose(tposechain 'SRID=4326;PoseChain(GeodPose(Point Z(8 47 100), 1, 
 WITH test(doc) AS (
   SELECT asGeoPose(tposechain 'SRID=4326;PoseChain(GeodPose(Point Z(-122.3 47.7 11), 1, 0, 0, 0),
     Pose(Point Z(2 0 0), 1, 0, 0, 0))@2021-04-28 05:36:10.083+00', 9) )
-SELECT asEWKT(round(tposechainFromGeoPose(doc), 6)) FROM test;
+SELECT asEWKT(tRound(tposechainFromGeoPose(doc), 6)) FROM test;
 
 -- Reading accepts the bare frame identifiers the other classes write as well
-SELECT asEWKT(round(tposechainFromGeoPose(
+SELECT asEWKT(tRound(tposechainFromGeoPose(
   '{"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=-122.3&latitude=47.7&height=11&crs=EPSG:4979"},"frameChain":[{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[2, 0, 0]&rotation=[1, 0, 0, 0]"}]}'), 6));
 
 -------------------------------------------------------------------------------

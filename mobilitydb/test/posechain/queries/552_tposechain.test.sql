@@ -85,7 +85,7 @@ SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChain(Pose(Po
 
 -- A two-link arm whose shoulder turns a quarter turn: halfway through, the
 -- shoulder is at an eighth of a turn and the elbow has not moved
-SELECT asEWKT(round(valueAtTimestamp(
+SELECT asEWKT(posechainRound(valueAtTimestamp(
   appendInstant(
     tposechain(posechain(ARRAY[pose(ST_Point(0,0), 0), pose(ST_Point(10,0), 0)]),
       timestamptz '2001-01-01'),
@@ -98,8 +98,8 @@ SELECT asEWKT(round(valueAtTimestamp(
 -- Composing the chain at every instant answers where its innermost frame sits
 -------------------------------------------------------------------------------
 
-SELECT asEWKT(round(tpose(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01'), 6));
-SELECT asEWKT(round((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01')::tpose, 6));
+SELECT asEWKT(tRound(tpose(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01'), 6));
+SELECT asEWKT(tRound((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01')::tpose, 6));
 
 -------------------------------------------------------------------------------
 -- Accessors
@@ -119,8 +119,8 @@ SELECT timeSpan(tposechain '[PoseChain(Pose(Point(0 0), 0))@2001-01-01, PoseChai
 
 SELECT SRID(tposechain 'SRID=3812;PoseChain(Pose(Point(1 2), 0))@2001-01-01');
 SELECT asEWKT(setSRID(tposechain 'PoseChain(Pose(Point(1 2), 0))@2001-01-01', 3812));
-SELECT asEWKT(round(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2001-01-01', 3812), 6));
-SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
+SELECT asEWKT(tRound(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2001-01-01', 3812), 6));
+SELECT asEWKT(tRound(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2001-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
 
 -------------------------------------------------------------------------------
 -- Restrictions

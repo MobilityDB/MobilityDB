@@ -32,10 +32,10 @@ SELECT tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001
 SELECT tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'::stbox;
 SELECT tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'::stbox;
 
-SELECT round(tgeography 'Point(1 1)@2001-01-01'::stbox, 13);
-SELECT round(tgeography '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'::stbox, 13);
-SELECT round(tgeography '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'::stbox, 13);
-SELECT round(tgeography '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'::stbox, 13);
+SELECT stboxRound(tgeography 'Point(1 1)@2001-01-01'::stbox, 13);
+SELECT stboxRound(tgeography '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'::stbox, 13);
+SELECT stboxRound(tgeography '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'::stbox, 13);
+SELECT stboxRound(tgeography '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'::stbox, 13);
 
 -------------------------------------------------------------------------------
 

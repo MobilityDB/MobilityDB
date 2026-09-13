@@ -296,15 +296,17 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 			<title>Transformaciones</title>
 			<itemizedlist>
 				<listitem xml:id="npoint_round">
-					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>npointRound</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>nsegmentRound</varname></primary></indexterm>
 					<para>Redondea la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-round({npoint,nsegment},integer=0) → {npoint,nsegment}
+npointRound(npoint,integer=0) → npoint
+nsegmentRound(nsegment,integer=0) → nsegment
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(npoint(76, 0.123456789), 6);
+SELECT npointRound(npoint(76, 0.123456789), 6);
 --  NPoint(76,0.123457)
-SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
+SELECT nsegmentRound(nsegment(76, 0.123456789, 0.223456789), 6);
 --  NSegment(76,0.123457,0.223457)
 </programlisting>
 				</listitem>
@@ -679,13 +681,14 @@ SELECT setInterp(tnpoint '{[NPoint(1,0.1)@2001-01-01], [NPoint(1,0.2)@2001-01-02
 			</listitem>
 
 			<listitem xml:id="tnpoint_round">
-				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tRound</varname></primary></indexterm>
 				<para>Redondea la fracción del punto de red temporal en el número de lugares decimales</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-round(tnpoint,integer=0) &#8594; tnpoint
+tRound(tnpoint,integer=0) &#8594; tnpoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}', 6);
+SELECT tRound(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}',
+  6);
 -- {[NPoint(1,0.123457)@2001-01-01, NPoint(1,0.5)@2001-01-02)}
 </programlisting>
 			</listitem>

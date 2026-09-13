@@ -509,7 +509,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_round);
  * @ingroup mobilitydb_pointcloud_box
  * @brief Return a TPCBox with coordinates rounded to a given number
  *   of decimal digits.
- * @sqlfn round()
+ * @sqlfn tpcboxRound()
  */
 Datum
 Tpcbox_round(PG_FUNCTION_ARGS)

@@ -29,23 +29,23 @@
 
 -- extent(th3index): mixed temporal subtypes folded together, NULLs filtered
 -- round to 10 decimal places to suppress platform floating-point ULP differences
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES
   (NULL::th3index),
   (th3index '831c02fffffffff@2001-01-01'),
   (th3index '{831c00fffffffff@2001-01-01, 831c02fffffffff@2001-01-02}')) t(temp);
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES
   (th3index '831c02fffffffff@2001-01-01'),
   (th3index '{831c00fffffffff@2001-01-01, 831c02fffffffff@2001-01-02}'),
   (NULL)) t(temp);
 
 -- extent(th3index): linear sequence + step sequenceset over disjoint footprints
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES
   (th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]'),
   ('{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02], [871fa44a8ffffff@2001-01-03, 880326b885fffff@2001-01-04]}')) t(temp);
 
 -- extent(th3index): single row degenerate cases
-SELECT round(extent(temp), 6) FROM ( VALUES (th3index '831c02fffffffff@2001-01-01')) t(temp);
-SELECT round(extent(temp), 6) FROM ( VALUES (NULL::th3index)) t(temp);
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES (th3index '831c02fffffffff@2001-01-01')) t(temp);
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES (NULL::th3index)) t(temp);
 
 -------------------------------------------------------------------------------
 

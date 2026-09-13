@@ -34,25 +34,25 @@
 
 -- A unit square translating from (0,0) to (2,0) with no rotation.
 -- traversedArea collects the geometry at every pose instant.
-SELECT ST_AsText(round(traversedArea(
+SELECT ST_AsText(geometryRound(traversedArea(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));
 
 -- traversedArea with unary union collapses the collection into one geometry.
-SELECT ST_AsText(round(traversedArea(
+SELECT ST_AsText(geometryRound(traversedArea(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]', TRUE), 6));
 
 -- A body that does not interpolate stands at each of its placements and covers
 -- nothing between them, so the united form answers the placements themselves
 -- and not the corridor between them.
-SELECT ST_AsText(round(traversedArea(
+SELECT ST_AsText(geometryRound(traversedArea(
   trgeometry 'Interp=Step;Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]', TRUE), 6));
 
 -- centroid: trajectory of the polygon centroid under rigid-body motion.
-SELECT asText(round(centroid(
+SELECT asText(tRound(centroid(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));
 
 -- convexHull: convex hull of the traversed area.
-SELECT ST_AsText(round(convexHull(
+SELECT ST_AsText(geometryRound(convexHull(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));
 
 -------------------------------------------------------------------------------
@@ -65,6 +65,6 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Poi
 
 -- The shape of a rigid geometry never changes, so its angular speed is the
 -- angular speed of the pose that carries it
-SELECT asText(round(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'), 9));
+SELECT asText(tRound(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'), 9));
 SELECT asText(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]')) =
   asText(angularSpeed(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'));

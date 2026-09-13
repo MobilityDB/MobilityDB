@@ -383,7 +383,8 @@ stbox(raquet) → stbox
 				<para>Devuelve la huella de la tesela: la envolvente de longitud y latitud de su celda QUADBIN, en SRID 4326 y sin dimensión temporal. La huella se deriva únicamente de la celda, por lo que teselas que difieren en píxeles, dimensiones o tipo de píxel la comparten. La conversión también está disponible como conversión de tipo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The footprint of a tile covering the north-eastern quadrant at zoom 1
-SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')), 6);
+SELECT stboxRound(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8')),
+  6);
 -- SRID=4326;STBOX X((0,0),(180,85.051129))
 -- Keep the tiles whose footprint overlaps a region of interest
 SELECT * FROM elevation_tiles WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;
@@ -1146,22 +1147,22 @@ expandSpace(tcell,float) &#8594; stbox
 </programlisting>
 				<para>El cuadro es la envolvente de las fronteras de las celdas, geodésica para una celda H3 o S2 y plana para una celda QUADBIN, junto con el período de tiempo de la trayectoria, de modo que es la clave que almacenan ambas clases de operadores de índice de la sección de indexación.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(stbox(th3index '871fa44a8ffffff@2001-01-01'), 6);
+SELECT stboxRound(stbox(th3index '871fa44a8ffffff@2001-01-01'), 6);
 /* SRID=4326;GEODSTBOX XT(((4.280027,50.79295),(4.314775,50.815648)),
    [2001-01-01, 2001-01-01]) */
-SELECT round(expandSpace(th3index '871fa44a8ffffff@2001-01-01', 1), 6);
+SELECT stboxRound(expandSpace(th3index '871fa44a8ffffff@2001-01-01', 1), 6);
 /* SRID=4326;GEODSTBOX XT(((3.280027,49.79295),(5.314775,51.815648)),
    [2001-01-01, 2001-01-01]) */
-SELECT round(stbox(tquadbin '48a6227affffffff@2001-01-01'), 6);
+SELECT stboxRound(stbox(tquadbin '48a6227affffffff@2001-01-01'), 6);
 /* SRID=4326;STBOX XT(((4.21875,50.736455),(4.570313,50.958427)),
    [2001-01-01, 2001-01-01]) */
-SELECT round(expandSpace(tquadbin '48a6227affffffff@2001-01-01', 1), 6);
+SELECT stboxRound(expandSpace(tquadbin '48a6227affffffff@2001-01-01', 1), 6);
 /* SRID=4326;STBOX XT(((3.21875,49.736455),(5.570313,51.958427)),
    [2001-01-01, 2001-01-01]) */
-SELECT round(stbox(ts2cell '47c3c@2001-01-01'), 6);
+SELECT stboxRound(stbox(ts2cell '47c3c@2001-01-01'), 6);
 /* SRID=4326;GEODSTBOX XT(((3.780069,50.590023),(4.676786,51.283168)),
    [2001-01-01, 2001-01-01]) */
-SELECT round(expandSpace(ts2cell '47c3c@2001-01-01', 1), 6);
+SELECT stboxRound(expandSpace(ts2cell '47c3c@2001-01-01', 1), 6);
 /* SRID=4326;GEODSTBOX XT(((2.780069,49.590023),(5.676786,52.283168)),
    [2001-01-01, 2001-01-01]) */
 </programlisting>

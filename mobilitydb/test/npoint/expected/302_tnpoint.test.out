@@ -521,25 +521,25 @@ SELECT setInterp(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4
  {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.2)@Tue Jan 02 00:00:00 2001 PST), [NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.4)@Wed Jan 03 00:00:00 2001 PST), [NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 6);
-                                              round                                              
+SELECT tRound(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 6);
+                                             tround                                              
 -------------------------------------------------------------------------------------------------
  {[NPoint(1,0.123457)@Sun Jan 01 00:00:00 2012 PST, NPoint(1,0.5)@Mon Jan 02 00:00:00 2012 PST)}
 (1 row)
 
-SELECT round(ARRAY[tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 'NPoint(2, 0.987654321)@2012-01-03'], 6);
-                                                                         round                                                                         
+SELECT tRound(ARRAY[tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 'NPoint(2, 0.987654321)@2012-01-03'], 6);
+                                                                        tround                                                                         
 -------------------------------------------------------------------------------------------------------------------------------------------------------
  {"{[NPoint(1,0.123457)@Sun Jan 01 00:00:00 2012 PST, NPoint(1,0.5)@Mon Jan 02 00:00:00 2012 PST)}","NPoint(2,0.987654)@Tue Jan 03 00:00:00 2012 PST"}
 (1 row)
 
-SELECT round(ARRAY[]::tnpoint[], 6);
- round 
--------
+SELECT tRound(ARRAY[]::tnpoint[], 6);
+ tround 
+--------
  
 (1 row)
 
-SELECT pg_typeof(round(ARRAY[tnpoint 'NPoint(1, 0.5)@2012-01-01'], 6));
+SELECT pg_typeof(tRound(ARRAY[tnpoint 'NPoint(1, 0.5)@2012-01-01'], 6));
  pg_typeof 
 -----------
  tnpoint[]
@@ -589,50 +589,50 @@ SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-0
 /* Errors */
 SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02]', tnpoint '[Npoint(2, 0.6)@2001-01-03]');
 ERROR:  All network points composing a temporal sequence must have same route identifier
-SELECT asText(round(tnpoint 'Npoint(1, 0.5)@2001-01-01'::tgeompoint, 6));
+SELECT asText(tRound(tnpoint 'Npoint(1, 0.5)@2001-01-01'::tgeompoint, 6));
                          astext                          
 ---------------------------------------------------------
  POINT(48.718663 77.764071)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(round(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'::tgeompoint, 6));
+SELECT asText(tRound(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'::tgeompoint, 6));
                                                                                    astext                                                                                    
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {POINT(62.786633 80.143556)@Mon Jan 01 00:00:00 2001 PST, POINT(48.718663 77.764071)@Tue Jan 02 00:00:00 2001 PST, POINT(48.718663 77.764071)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(round(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'::tgeompoint, 6));
+SELECT asText(tRound(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'::tgeompoint, 6));
                                                                                    astext                                                                                    
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  [POINT(69.790369 81.452098)@Mon Jan 01 00:00:00 2001 PST, POINT(55.752648 78.953813)@Tue Jan 02 00:00:00 2001 PST, POINT(48.718663 77.764071)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(round(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05] }'::tgeompoint, 6));
+SELECT asText(tRound(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05] }'::tgeompoint, 6));
                                                                                                                                               astext                                                                                                                                               
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(69.790369 81.452098)@Mon Jan 01 00:00:00 2001 PST, POINT(55.752648 78.953813)@Tue Jan 02 00:00:00 2001 PST, POINT(48.718663 77.764071)@Wed Jan 03 00:00:00 2001 PST], [POINT(27.252917 77.656661)@Thu Jan 04 00:00:00 2001 PST, POINT(27.252917 77.656661)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT round((tnpoint 'Npoint(1, 0.5)@2001-01-01'::tgeompoint)::tnpoint, 6);
-                   round                    
+SELECT tRound((tnpoint 'Npoint(1, 0.5)@2001-01-01'::tgeompoint)::tnpoint, 6);
+                   tround                   
 --------------------------------------------
  NPoint(1,0.5)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round((tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'::tgeompoint)::tnpoint, 6);
-                                                                round                                                                 
+SELECT tRound((tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'::tgeompoint)::tnpoint, 6);
+                                                                tround                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  {NPoint(1,0.3)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.5)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round((tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'::tgeompoint)::tnpoint, 6);
-                                                                round                                                                 
+SELECT tRound((tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'::tgeompoint)::tnpoint, 6);
+                                                                tround                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  [NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT round((tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05] }'::tgeompoint)::tnpoint, 6);
-                                                                                                              round                                                                                                               
+SELECT tRound((tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05] }'::tgeompoint)::tnpoint, 6);
+                                                                                                              tround                                                                                                              
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[NPoint(1,0.2)@Mon Jan 01 00:00:00 2001 PST, NPoint(1,0.4)@Tue Jan 02 00:00:00 2001 PST, NPoint(1,0.5)@Wed Jan 03 00:00:00 2001 PST], [NPoint(2,0.6)@Thu Jan 04 00:00:00 2001 PST, NPoint(2,0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)

@@ -654,24 +654,24 @@ CREATE FUNCTION shiftScale(tstzset, interval, interval)
   AS 'MODULE_PATHNAME', 'Tstzset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION floor(floatset)
+CREATE FUNCTION setFloor(floatset)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Floatset_floor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ceil(floatset)
+CREATE FUNCTION setCeil(floatset)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Floatset_ceil'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(floatset, integer DEFAULT 0)
+CREATE FUNCTION setRound(floatset, integer DEFAULT 0)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Set_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION degrees(floatset, boolean DEFAULT FALSE)
+CREATE FUNCTION setDegrees(floatset, boolean DEFAULT FALSE)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Floatset_degrees'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION radians(floatset)
+CREATE FUNCTION setRadians(floatset)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Floatset_radians'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

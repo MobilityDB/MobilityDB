@@ -52,11 +52,13 @@ orientedEnvelope(geometry) → geometry
 </programlisting>
 				<para>The rectangle is at the angle that makes it smallest, which is not in general the angle of the axes. It is answered as a line when the geometry is contained in one and as a point when the geometry is one. A geometry carrying a circular arc is answered on the arc itself, the rectangle being placed against the circle the arc lies on rather than against the chain of segments approximating it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(round(orientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
+SELECT ST_AsText(geometryRound(orientedEnvelope(geometry
+  'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
 -- POLYGON((0 0,3 4,-1 7,-4 3,0 0))
-SELECT ST_AsText(round(orientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
+SELECT ST_AsText(geometryRound(orientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
 -- LINESTRING(0 0,10 0)
-SELECT ST_AsText(round(orientedEnvelope(geometry 'Circularstring(0 0,0.5 0.1,1 0)'), 6));
+SELECT ST_AsText(geometryRound(orientedEnvelope(geometry
+  'Circularstring(0 0,0.5 0.1,1 0)'), 6));
 -- POLYGON((1 0.1,0 0.1,0 0,1 0,1 0.1))
 </programlisting>
 			</listitem>
@@ -69,11 +71,13 @@ convexHull(geometry) → geometry
 </programlisting>
 				<para>The result is a polygon whose every corner is a point of the geometry, a line when the geometry is contained in one, and a point when the geometry is one. A geometry carrying a circular arc is answered on the arc itself, so the hull is bounded by the arc and is returned as a curved geometry rather than as a polygon approximating it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
+SELECT ST_AsText(geometryRound(convexHull(geometry
+  'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
 -- POLYGON((0 0,0 10,10 10,10 0,0 0))
-SELECT ST_AsText(round(convexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
+SELECT ST_AsText(geometryRound(convexHull(geometry
+  'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
 -- POLYGON((0 0,0 10,10 10,10 0,0 0))
-SELECT ST_AsText(round(convexHull(geometry 'Circularstring(5 0,0 5,-5 0)'), 6));
+SELECT ST_AsText(geometryRound(convexHull(geometry 'Circularstring(5 0,0 5,-5 0)'), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE((5 0,-5 0),CIRCULARSTRING(-5 0,0 5,5 0)))
 </programlisting>
 			</listitem>
@@ -103,12 +107,13 @@ buffer(geometry,float,options text='') → geometry
 </programlisting>
 				<para>The boundary of the result is made of the two offsets of the geometry at the given distance, of the join filling the outer side of each turn, and of the cap closing each end of an open line. A negative distance shrinks an areal geometry and answers an empty geometry for one of any other dimension. The <varname>options</varname> string carries the styles as space-separated <varname>key=value</varname> pairs: <varname>endcap</varname> is one of <varname>round</varname>, <varname>flat</varname> or <varname>square</varname>, <varname>join</varname> one of <varname>round</varname>, <varname>mitre</varname> or <varname>bevel</varname>, and <varname>mitre_limit</varname> the ratio at which a mitre join falls back to a bevel.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 1), 6));
+SELECT ST_AsText(geometryRound(buffer(geometry 'Point(0 0)', 1), 6));
 -- CURVEPOLYGON(CIRCULARSTRING(-1 0,1 0,-1 0))
-SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
+SELECT ST_AsText(geometryRound(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
   'join=mitre'), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE((1 1,9 1),(9 1,9 9),(9 9,1 9),(1 9,1 1)))
-SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,
+SELECT ST_AsText(geometryRound(buffer(geometry
+  'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,
   0 0))', 1), 6));
 -- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
 </programlisting>
@@ -604,7 +609,7 @@ SELECT length(tgeompoint 'Interp=Step;
 cumulativeLength(tpoint) → tfloatSeq
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
+SELECT tRound(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03], [Point(1 0)@2001-01-04, Point(0 0)@2001-01-05]}'), 6);
 -- {[0@2001-01-01, 1.414214@2001-01-02, 2.414214@2001-01-03],
   [2.414214@2001-01-04, 3.414214@2001-01-05]}
@@ -670,7 +675,7 @@ azimuth(tpoint) → tfloat
 </programlisting>
 				<para>The result is expressed in radians. The azimut is undefined when two succesive locations are equal and in this case a temporal gap is added.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01,
+SELECT tRound(tDegrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01,
   Point(1 1 1)@2001-01-02, Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)')));
 -- Interp=Step;{[45@2001-01-01, 45@2001-01-02], [225@2001-01-03, 225@2001-01-04)}
 </programlisting>
@@ -684,10 +689,10 @@ angularDifference(tpoint) → tfloat
 </programlisting>
 				<para>The result is expressed in degrees.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(angularDifference(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+SELECT tRound(angularDifference(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(1 1)@2001-01-03]'), 3);
 -- {0@2001-01-01, 180@2001-01-02, 0@2001-01-03}
-SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2001-01-01,
+SELECT tRound(tDegrees(angularDifference(tgeompoint '{[Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-02], [Point(2 2)@2001-01-03, Point(1 1)@2001-01-04]}')), 3);
 -- {0@2001-01-01, 0@2001-01-02, 0@2001-01-03, 0@2001-01-04}
 </programlisting>
@@ -701,13 +706,15 @@ bearing({tpoint,point},{tpoint,point}) → tfloat
 </programlisting>
 				<para>Notice that this function does not accept two temporal geographic points.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',
+SELECT tDegrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',
   geometry 'Point(2 2)'));
 -- [45@2001-01-01, 0@2001-01-02, 225@2001-01-03]
-SELECT round(degrees(bearing(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]',
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(0 0)@2001-01-01,
+  Point(2 0)@2001-01-03]',
   tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001-01-03]')), 3);
 --  [63.435@2001-01-01, 0@2001-01-02, 296.565@2001-01-03]
-SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001-01-03]',
+SELECT tRound(tDegrees(bearing(tgeompoint '[Point(2 1)@2001-01-01,
+  Point(0 1)@2001-01-03]',
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]')), 3);
 -- [243.435@2001-01-01, 116.565@2001-01-03]
 </programlisting>
@@ -719,17 +726,17 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001
 		<title>Transformations</title>
 		<itemizedlist>
 			<listitem xml:id="tspatial_round">
-				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tRound</varname></primary></indexterm>
 				<para>Round the coordinate values to a number of decimal places &Z_support; &geography_support;</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-round(tspatial,integer=0) → tspatial
+tRound(tspatial,integer=0) → tspatial
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01,
+SELECT asText(tRound(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));
 /* {POINT Z (1.12 1.12 1.12)@2001-01-01, POINT Z (2 2 2)@2001-01-02,
    POINT Z (1.12 1.12 1.12)@2001-01-03} */
-SELECT asText(round(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001-01-01',
+SELECT asText(tRound(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001-01-01',
   2));
 -- LINESTRING(1.12 1.12,2.12 2.12)@2001-01-01
 </programlisting>
@@ -785,7 +792,7 @@ SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-
 WITH Temp(t) AS (
   SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-05, Point(2 0)@2001-01-08,
     Point(3 1)@2001-01-10, Point(4 0)@2001-01-11]' )
-SELECT ST_AsText(geoMeasure(t, round(speed(t) * 3600 * 24, 2), true)) FROM Temp;
+SELECT ST_AsText(geoMeasure(t, tRound(speed(t) * 3600 * 24, 2), true)) FROM Temp;
 /* MULTILINESTRING M ((0 0 0.35,1 1 0.35),(1 1 0.47,2 0 0.47),(2 0 0.71,3 1 0.71),
    (3 1 1.41,4 0 1.41)) */
 </programlisting>

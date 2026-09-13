@@ -708,11 +708,11 @@ CREATE FUNCTION shiftScale(tstzspan, interval, interval)
   AS 'MODULE_PATHNAME', 'Tstzspan_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION floor(floatspan)
+CREATE FUNCTION spanFloor(floatspan)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Floatspan_floor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ceil(floatspan)
+CREATE FUNCTION spanCeil(floatspan)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Floatspan_ceil'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -722,16 +722,16 @@ CREATE FUNCTION round(float, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Float_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(floatspan, integer DEFAULT 0)
+CREATE FUNCTION spanRound(floatspan, integer DEFAULT 0)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Floatspan_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION degrees(floatspan, boolean DEFAULT FALSE)
+CREATE FUNCTION spanDegrees(floatspan, boolean DEFAULT FALSE)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Floatspan_degrees'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION radians(floatspan)
+CREATE FUNCTION spanRadians(floatspan)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Floatspan_radians'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

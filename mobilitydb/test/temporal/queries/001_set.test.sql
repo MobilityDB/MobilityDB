@@ -211,14 +211,14 @@ SELECT shiftScale(dateset '{2001-01-01, 2001-01-02, 2001-01-03}', 4, 4);
 SELECT shiftScale(tstzset '{2001-01-01}', '1 day', '1 hour');
 SELECT shiftScale(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}', '1 day', '1 hour');
 
-SELECT floor(floatset '{0.5, 1.5, 2.5}');
-SELECT floor(floatset '{0.5, 1.5, 1.6}');
-SELECT ceil(floatset '{0.5, 1.5, 2.5}');
-SELECT ceil(floatset '{0.5, 1.5, 1.6}');
-SELECT round(floatset '{0.12345, 1.12345, 2.12345}', 3);
-SELECT degrees(floatset '{0, 0.5, 1}');
-SELECT degrees(floatset '{0, 0.5, 1}', true);
-SELECT radians(floatset '{0, 45, 90}');
+SELECT setFloor(floatset '{0.5, 1.5, 2.5}');
+SELECT setFloor(floatset '{0.5, 1.5, 1.6}');
+SELECT setCeil(floatset '{0.5, 1.5, 2.5}');
+SELECT setCeil(floatset '{0.5, 1.5, 1.6}');
+SELECT setRound(floatset '{0.12345, 1.12345, 2.12345}', 3);
+SELECT setDegrees(floatset '{0, 0.5, 1}');
+SELECT setDegrees(floatset '{0, 0.5, 1}', true);
+SELECT setRadians(floatset '{0, 45, 90}');
 
 SELECT lower(textset '{"AAA", "BBB", "CCC"}');
 SELECT upper(textset '{"aaa", "bbb", "ccc"}');

@@ -1,38 +1,38 @@
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES
   (NULL::tquadbin),
   (tquadbin '480fffffffffffff@2001-01-01'),
   (tquadbin '{48427fffffffffff@2001-01-01, 480fffffffffffff@2001-01-02}')) t(temp);
-                                                        round                                                         
+                                                      stboxround                                                      
 ----------------------------------------------------------------------------------------------------------------------
  SRID=4326;STBOX XT(((-180,-85.051129),(180,85.051129)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES
   (tquadbin '480fffffffffffff@2001-01-01'),
   (tquadbin '{48427fffffffffff@2001-01-01, 480fffffffffffff@2001-01-02}'),
   (NULL)) t(temp);
-                                                        round                                                         
+                                                      stboxround                                                      
 ----------------------------------------------------------------------------------------------------------------------
  SRID=4326;STBOX XT(((-180,-85.051129),(180,85.051129)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES
   (tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]'),
   ('{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}')) t(temp);
-                                                        round                                                         
+                                                      stboxround                                                      
 ----------------------------------------------------------------------------------------------------------------------
  SRID=4326;STBOX XT(((-180,-85.051129),(180,85.051129)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
 (1 row)
 
-SELECT round(extent(temp), 6) FROM ( VALUES (tquadbin '480fffffffffffff@2001-01-01')) t(temp);
-                                                        round                                                         
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES (tquadbin '480fffffffffffff@2001-01-01')) t(temp);
+                                                      stboxround                                                      
 ----------------------------------------------------------------------------------------------------------------------
  SRID=4326;STBOX XT(((-180,-85.051129),(180,85.051129)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT round(extent(temp), 6) FROM ( VALUES (NULL::tquadbin)) t(temp);
- round 
--------
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES (NULL::tquadbin)) t(temp);
+ stboxround 
+------------
  
 (1 row)
 

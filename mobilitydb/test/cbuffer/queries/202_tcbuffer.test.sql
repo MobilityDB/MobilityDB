@@ -192,7 +192,7 @@ SELECT asText(tcbufferSeqSet(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cb
 SELECT asText(setInterp(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 'linear'));
 SELECT asText(setInterp(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 'linear'));
 
-SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1), 0.123456789)@2012-01-01, Cbuffer(Point(1 1), 0.5)@2012-01-02)}', 6));
+SELECT asText(tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.123456789)@2012-01-01, Cbuffer(Point(1 1), 0.5)@2012-01-02)}', 6));
 
 -------------------------------------------------------------------------------
 -- Append functions
@@ -212,15 +212,15 @@ SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbu
 -- Cast functions
 -------------------------------------------------------------------------------
 
-SELECT asText(round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
-SELECT asText(round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
-SELECT asText(round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
-SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05] }'::tgeompoint, 6));
+SELECT asText(tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
+SELECT asText(tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
+SELECT asText(tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
+SELECT asText(tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05] }'::tgeompoint, 6));
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'::tfloat, 6);
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}'::tfloat, 6);
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]'::tfloat, 6);
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05] }'::tfloat, 6);
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'::tfloat, 6);
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}'::tfloat, 6);
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]'::tfloat, 6);
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05] }'::tfloat, 6);
 
 -- SELECT asText(round((tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'::tgeompoint)::tcbuffer, 6));
 -- SELECT asText(round((tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}'::tgeompoint)::tcbuffer, 6));

@@ -54,52 +54,52 @@ SELECT round(geometry 'Point empty' <-> cbuffer 'Cbuffer(Point(4 0),0.5)', 6);
 -- tDistance
 -------------------------------------------------------------------------------
 
-SELECT round(geometry 'Point(1 1)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-SELECT round(geometry 'Point(1 1)' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-SELECT round(geometry 'Point(1 1)' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-SELECT round(geometry 'Point(1 1)' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+SELECT tRound(geometry 'Point(1 1)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+SELECT tRound(geometry 'Point(1 1)' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+SELECT tRound(geometry 'Point(1 1)' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+SELECT tRound(geometry 'Point(1 1)' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
 
-SELECT round(geometry 'Point empty' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-SELECT round(geometry 'Point empty' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-SELECT round(geometry 'Point empty' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-SELECT round(geometry 'Point empty' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+SELECT tRound(geometry 'Point empty' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+SELECT tRound(geometry 'Point empty' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+SELECT tRound(geometry 'Point empty' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+SELECT tRound(geometry 'Point empty' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
 
-SELECT round(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-SELECT round(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-SELECT round(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-SELECT round(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+SELECT tRound(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+SELECT tRound(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+SELECT tRound(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+SELECT tRound(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point(1 1)', 6);
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point(1 1)', 6);
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point(1 1)', 6);
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point(1 1)', 6);
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point(1 1)', 6);
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point(1 1)', 6);
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point empty', 6);
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point empty', 6);
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point empty', 6);
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point empty', 6);
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point empty', 6);
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point empty', 6);
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point empty', 6);
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point empty', 6);
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
 
 -------------------------------------------------------------------------------
 -- Temporal distance to a non-point geometry: the full geometry is decomposed
@@ -153,9 +153,9 @@ SELECT round(nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 8), 1)@2001-01-01
 
 -- Discrete, step, and sequence-set dispatch against a non-point geometry:
 -- every instant is a stationary disc, so there is no interior turning point
-SELECT round(tcbuffer '{Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(50 20), 1)@2001-01-02}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
-SELECT round(tcbuffer 'Interp=Step;[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(50 20), 1)@2001-01-02]' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
-SELECT round(tcbuffer '{[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(3 10), 0.5)@2001-01-02], [Cbuffer(Point(50 20), 1)@2001-01-03, Cbuffer(Point(51 20), 1)@2001-01-04]}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+SELECT tRound(tcbuffer '{Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(50 20), 1)@2001-01-02}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+SELECT tRound(tcbuffer 'Interp=Step;[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(50 20), 1)@2001-01-02]' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+SELECT tRound(tcbuffer '{[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(3 10), 0.5)@2001-01-02], [Cbuffer(Point(50 20), 1)@2001-01-03, Cbuffer(Point(51 20), 1)@2001-01-04]}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
 
 -------------------------------------------------------------------------------
 -- nearestApproachInstant

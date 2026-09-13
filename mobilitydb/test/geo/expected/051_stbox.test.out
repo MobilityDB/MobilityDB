@@ -810,40 +810,40 @@ SELECT volume(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01, 2001-01-02])');
 ERROR:  The stbox must have Z dimension
 SELECT perimeter(stbox 'STBOX T([2001-01-01, 2001-01-02])');
 ERROR:  The stbox must have X dimension
-SELECT round(stbox 'STBOX X((1.12345,1.12345),(2.12345,2.12345))', 2);
-              round               
+SELECT stboxRound(stbox 'STBOX X((1.12345,1.12345),(2.12345,2.12345))', 2);
+            stboxround            
 ----------------------------------
  STBOX X((1.12,1.12),(2.12,2.12))
 (1 row)
 
-SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
-                                              round                                               
+SELECT stboxRound(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
+                                            stboxround                                            
 --------------------------------------------------------------------------------------------------
  STBOX XT(((1.12,1.12),(2.12,2.12)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT round(stbox 'STBOX Z((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))', 2);
-                   round                    
+SELECT stboxRound(stbox 'STBOX Z((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))', 2);
+                 stboxround                 
 --------------------------------------------
  STBOX Z((1.12,1.12,1.12),(2.12,2.12,2.12))
 (1 row)
 
-SELECT round(stbox 'STBOX ZT(((1.12345,1.12345,1.123451),(2.12345,2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
-                                                   round                                                    
+SELECT stboxRound(stbox 'STBOX ZT(((1.12345,1.12345,1.123451),(2.12345,2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
+                                                 stboxround                                                 
 ------------------------------------------------------------------------------------------------------------
  STBOX ZT(((1.12,1.12,1.12),(2.12,2.12,2.12)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT round(stbox 'GEODSTBOX ZT(((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
-                                                          round                                                           
+SELECT stboxRound(stbox 'GEODSTBOX ZT(((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345)),[2001-01-01,2001-01-02])', 2);
+                                                        stboxround                                                        
 --------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((1.12,1.12,1.12),(2.12,2.12,2.12)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
 /* Errors */
-SELECT round(stbox 'STBOX T([2001-01-01,2001-01-02])', 2);
+SELECT stboxRound(stbox 'STBOX T([2001-01-01,2001-01-02])', 2);
 ERROR:  The stbox must have X dimension
-SELECT round(stbox 'GEODSTBOX T([2001-01-01,2001-01-02])', 2);
+SELECT stboxRound(stbox 'GEODSTBOX T([2001-01-01,2001-01-02])', 2);
 ERROR:  The stbox must have X dimension
 SELECT MIN(xmin(b)) FROM tbl_stbox;
    min    

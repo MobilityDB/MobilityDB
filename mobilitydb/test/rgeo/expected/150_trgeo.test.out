@@ -610,7 +610,7 @@ SELECT asText(setInterp(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pos
  POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.2)@Tue Jan 02 00:00:00 2001 PST), [Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Wed Jan 03 00:00:00 2001 PST), [Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
                                                                   astext                                                                  
 ------------------------------------------------------------------------------------------------------------------------------------------
  POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.123457)@Sun Jan 01 00:00:00 2012 PST, Pose(POINT(1 1),0.5)@Mon Jan 02 00:00:00 2012 PST)}
@@ -652,55 +652,55 @@ SELECT asText(appendSequence(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(
  POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(1 1),0.6)@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01'::tpose, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01'::tpose, 6));
                       astext                       
 ---------------------------------------------------
  Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tpose, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tpose, 6));
                                                                           astext                                                                           
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  {Pose(POINT(1 1),0.3)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tpose, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tpose, 6));
                                                                           astext                                                                           
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
  [Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}'::tpose, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}'::tpose, 6));
                                                                                                                                astext                                                                                                                                
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
                  astext                  
 -----------------------------------------
  POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
                                                            astext                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
                                        astext                                       
 ------------------------------------------------------------------------------------
  [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}'::tgeompoint, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}'::tgeompoint, 6));
                                                                                   astext                                                                                  
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(2 2)@Thu Jan 04 00:00:00 2001 PST, POINT(2 2)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(round(ARRAY[
+SELECT asText(tRound(ARRAY[
   trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.123456789)@2001-01-01',
   trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.223456789)@2001-01-01, Pose(Point(2 2), 0.523456789)@2001-01-02]'
 ]::trgeometry[], 6));

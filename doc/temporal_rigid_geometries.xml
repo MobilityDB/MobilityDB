@@ -463,13 +463,13 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_round">
-				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tRound</varname></primary></indexterm>
 				<para>Round all numeric components to a given number of decimal places</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-round(trgeometry,integer) → trgeometry
+tRound(trgeometry,integer) → trgeometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(round( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+SELECT asText(tRound( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(1.123456789 1.123456789), 0.123456)@2001-01-01', 3));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1.123 1.123),0.123)@...
 </programlisting>

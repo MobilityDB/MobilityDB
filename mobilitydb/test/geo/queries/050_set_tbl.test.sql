@@ -126,8 +126,8 @@ SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
 -------------------------------------------------------------------------------
 -- Transformation functions
 
-SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
-SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
+SELECT MIN(ST_X(startValue(setRound(g, 6)))) FROM tbl_geomset;
+SELECT MIN(ST_X(startValue(setRound(g, 6))::geometry)) FROM tbl_geogset;
 
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions

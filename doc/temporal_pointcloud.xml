@@ -387,13 +387,13 @@ WITH b AS (SELECT tpcboxX(0, 0, 10, 10, 1) AS b)
 			<title>Transformations</title>
 			<itemizedlist>
 				<listitem xml:id="tpcbox_round">
-					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcboxRound</varname></primary></indexterm>
 					<para>Return a tpcbox with coordinates rounded to a given number of decimal digits</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-round(tpcbox,integer=0) → tpcbox
+tpcboxRound(tpcbox,integer=0) → tpcbox
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1), 2);
+SELECT tpcboxRound(tpcboxX(0.123456, 1.234567, 2.345678, 3.456789, 1), 2);
 -- TPCBOX(X((0.12,1.23),(2.35,3.46)), 1)
 </programlisting>
 				</listitem>
@@ -1174,7 +1174,7 @@ SELECT ST_AsText(shortestLine(tpcpointSeq(ARRAY[
 {geometry,tpcpoint} &lt;-&gt; {geometry,tpcpoint} &#8594; tfloat
 </programlisting>
 						<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
+SELECT tRound(tpcpointSeq(ARRAY[ tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
   tpcpoint(pcpoint(1, 4, 4, 4), '2001-01-02'::timestamptz)]) &lt;-&gt;
   geometry 'Point Z(5 5 5)', 4);
 -- [6.9282@2001-01-01, 1.7321@2001-01-02]

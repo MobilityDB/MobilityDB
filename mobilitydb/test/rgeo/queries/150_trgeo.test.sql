@@ -179,7 +179,7 @@ SELECT asText(trgeometrySeqSet(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Poi
 SELECT asText(setInterp(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', 'linear'));
 SELECT asText(setInterp(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}', 'linear'));
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
 
 -------------------------------------------------------------------------------
 -- Append functions
@@ -199,17 +199,17 @@ SELECT asText(appendSequence(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(
 -- Conversion functions
 -------------------------------------------------------------------------------
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01'::tpose, 6));
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tpose, 6));
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tpose, 6));
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}'::tpose, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01'::tpose, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tpose, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tpose, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}'::tpose, 6));
 
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
-SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}'::tgeompoint, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01'::tgeompoint, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}'::tgeompoint, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'::tgeompoint, 6));
+SELECT asText(tRound(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}'::tgeompoint, 6));
 
-SELECT asText(round(ARRAY[
+SELECT asText(tRound(ARRAY[
   trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.123456789)@2001-01-01',
   trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.223456789)@2001-01-01, Pose(Point(2 2), 0.523456789)@2001-01-02]'
 ]::trgeometry[], 6));

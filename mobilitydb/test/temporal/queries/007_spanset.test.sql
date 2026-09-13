@@ -388,9 +388,9 @@ SELECT hashExtended(tstzspanset '{[2001-01-01,2001-01-02]}', 1) <> hashExtended(
 -- Transformation functions
 -------------------------------------------------------------------------------
 
-SELECT floor(floatspanset '{[1.5,2.5),[3.5,4.5),[5.5,6.5)}');
-SELECT ceil(floatspanset '{[1.5,2.5),[3.5,4.5),[5.5,6.5)}');
-SELECT round(floatspanset '{[1.12345,2.12345),[3.12345,4.12345),[5.12345,6.12345)}', 2);
+SELECT spansetFloor(floatspanset '{[1.5,2.5),[3.5,4.5),[5.5,6.5)}');
+SELECT spansetCeil(floatspanset '{[1.5,2.5),[3.5,4.5),[5.5,6.5)}');
+SELECT spansetRound(floatspanset '{[1.12345,2.12345),[3.12345,4.12345),[5.12345,6.12345)}', 2);
 
 SELECT shift(intspanset '{[1,2),[3,4),[5,6)}', 2);
 

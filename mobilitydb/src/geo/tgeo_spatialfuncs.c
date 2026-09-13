@@ -201,7 +201,7 @@ PG_FUNCTION_INFO_V1(Geo_round);
  * @ingroup mobilitydb_geo_transf
  * @brief Return a geometry/geography with the precision of the coordinates set
  * to a number of decimal places
- * @sqlfn round()
+ * @sqlfn geometryRound(), geographyRound()
  */
 Datum
 Geo_round(PG_FUNCTION_ARGS)

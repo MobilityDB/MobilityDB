@@ -75,14 +75,14 @@ SELECT asEWKT(set(ARRAY[posechain 'PoseChain(Pose(Point(0 0), 0))',
   posechain 'PoseChain(Pose(Point(1 0), 0))']));
 
 -- The box of a set spans every joint of every chain it holds
-SELECT round(stbox(posechainset '{"PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))", "PoseChain(Pose(Point(1 5), 0))"}'), 6);
-SELECT round((posechainset '{"PoseChain(Pose(Point(0 0), 0))"}')::stbox, 6);
+SELECT stboxRound(stbox(posechainset '{"PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))", "PoseChain(Pose(Point(1 5), 0))"}'), 6);
+SELECT stboxRound((posechainset '{"PoseChain(Pose(Point(0 0), 0))"}')::stbox, 6);
 
 -------------------------------------------------------------------------------
 -- Transformations
 -------------------------------------------------------------------------------
 
-SELECT asEWKT(round(posechainset '{"PoseChain(Pose(Point(1.123456789 2.123456789), 0.5))"}', 3));
+SELECT asEWKT(setRound(posechainset '{"PoseChain(Pose(Point(1.123456789 2.123456789), 0.5))"}', 3));
 
 -------------------------------------------------------------------------------
 -- Accessors
@@ -106,7 +106,7 @@ SELECT asEWKT(getValues(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseCh
 SELECT SRID(posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2), 0.5))"}');
 SELECT SRID(setSRID(posechainset '{"PoseChain(Pose(Point(1 2), 0.5))"}', 3812));
 -- Transforming and transforming back returns the values it started from
-SELECT asEWKT(round(transform(transform(posechainset '{"SRID=4326;PoseChain(Pose(Point(8 47), 0.5))"}', 3812), 4326), 6));
+SELECT asEWKT(setRound(transform(transform(posechainset '{"SRID=4326;PoseChain(Pose(Point(8 47), 0.5))"}', 3812), 4326), 6));
 
 -------------------------------------------------------------------------------
 -- unnest: SETOF expansion

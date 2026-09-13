@@ -79,7 +79,7 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE atTime(temp, timeSpan(temp)) <> temp;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tposechain WHERE round(temp, 6) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tposechain WHERE tRound(temp, 6) IS NOT NULL;
  count 
 -------
    399

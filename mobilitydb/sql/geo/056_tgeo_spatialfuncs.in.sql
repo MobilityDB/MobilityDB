@@ -109,20 +109,20 @@ CREATE CAST (tgeogpoint AS tgeography) WITH FUNCTION tgeography(tgeogpoint);
 
 /*****************************************************************************/
 
-CREATE FUNCTION round(tgeometry, integer DEFAULT 0)
+CREATE FUNCTION tRound(tgeometry, integer DEFAULT 0)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION round(tgeography, integer DEFAULT 0)
+CREATE FUNCTION tRound(tgeography, integer DEFAULT 0)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(tgeometry[], integer DEFAULT 0)
+CREATE FUNCTION tRound(tgeometry[], integer DEFAULT 0)
   RETURNS tgeometry[]
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION round(tgeography[], integer DEFAULT 0)
+CREATE FUNCTION tRound(tgeography[], integer DEFAULT 0)
   RETURNS tgeography[]
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

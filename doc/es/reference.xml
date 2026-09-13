@@ -308,13 +308,13 @@
 					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Desplaza y escalear con los valores o rangos de tiempo</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="floatsetspan_floor"><varname>floor</varname>, <varname>ceil</varname></link>: Redondea al entero inferior o superior</para>
+					<para><link linkend="floatsetspan_floor"><varname>setFloor</varname>, <varname>spanFloor</varname>, <varname>spansetFloor</varname>, <varname>setCeil</varname>, <varname>spanCeil</varname>, <varname>spansetCeil</varname></link>: Redondea al entero inferior o superior</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="floatsetspan_round"><varname>round</varname></link>: Redondea a un número de decimales</para>
+					<para><link linkend="floatsetspan_round"><varname>setRound</varname>, <varname>spanRound</varname>, <varname>spansetRound</varname></link>: Redondea a un número de decimales</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="floatsetspan_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convierte a grados o radianes</para>
+					<para><link linkend="floatsetspan_degrees"><varname>setDegrees</varname>, <varname>spanDegrees</varname>, <varname>spansetDegrees</varname>, <varname>setRadians</varname>, <varname>spanRadians</varname>, <varname>spansetRadians</varname></link>: Convierte a grados o radianes</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transforma en minúsculas, majúsculas o initcap</para>
@@ -515,7 +515,7 @@
 					<para><link linkend="box_expand"><varname>expandValue</varname>, <varname>expandSpace</varname>, <varname>expandTime</varname></link>: Extiende la dimensión numérica, espacial o temporal del cuadro delimitador con un valor o un intervalo</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="box_round"><varname>round</varname></link>: Redondea el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
+					<para><link linkend="box_round"><varname>tboxRound</varname>, <varname>stboxRound</varname></link>: Redondea el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -886,16 +886,16 @@
 					<para><link linkend="tnumber_tAdd"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Adición, resta, multiplicación y división temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tnumber_abs"><varname>abs</varname></link>: Devuelve el valor absoluto del número temporal</para>
+					<para><link linkend="tnumber_abs"><varname>tAbs</varname></link>: Devuelve el valor absoluto del número temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tnumber_floor"><varname>floor</varname>, <varname>ceil</varname></link>: Redondea al entero inferior o superior</para>
+					<para><link linkend="tnumber_floor"><varname>tFloor</varname>, <varname>tCeil</varname></link>: Redondea al entero inferior o superior</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tnumber_round"><varname>round</varname></link>: Redondea a un número de posiciones decimales</para>
+					<para><link linkend="tnumber_round"><varname>tRound</varname></link>: Redondea a un número de posiciones decimales</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tnumber_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convierte a grados o radianes</para>
+					<para><link linkend="tnumber_degrees"><varname>degrees</varname>, <varname>tDegrees</varname>, <varname>tRadians</varname></link>: Convierte a grados o radianes</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tnumber_deltaValue"><varname>deltaValue</varname></link>: Devuelve la diferencia de valor entre instantes consectivos del número temporal</para>
@@ -913,13 +913,13 @@
 					<para><link linkend="tnumber_twAvg"><varname>twAvg</varname></link>: Devuelve el promedio ponderado en el tiempo</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tnumber_ln"><varname>ln</varname>, <varname>log10</varname></link>: Devuelve el logaritmo natural y el logaritmo base 10 de un número flotante temporal</para>
+					<para><link linkend="tnumber_ln"><varname>tLn</varname>, <varname>tLog10</varname></link>: Devuelve el logaritmo natural y el logaritmo base 10 de un número flotante temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tnumber_exp"><varname>exp</varname></link>: Devuelve el exponencial (e elevado a la potencia dada) de un número flotante temporal</para>
+					<para><link linkend="tnumber_exp"><varname>tExp</varname></link>: Devuelve el exponencial (e elevado a la potencia dada) de un número flotante temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tnumber_sin"><varname>sin</varname>, <varname>cos</varname>, <varname>tan</varname></link>: Devuelve el seno, coseno o tangente de un número flotante temporal (argumento en radianes)</para>
+					<para><link linkend="tnumber_sin"><varname>tSin</varname>, <varname>tCos</varname>, <varname>tTan</varname></link>: Devuelve el seno, coseno o tangente de un número flotante temporal (argumento en radianes)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1049,7 +1049,7 @@
 			<title>Transformaciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tspatial_round"><varname>round</varname></link>: Redondea los valores de las coordenadas a un número de decimales &Z_support; &geography_support;</para>
+					<para><link linkend="tspatial_round"><varname>tRound</varname></link>: Redondea los valores de las coordenadas a un número de decimales &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tpoint_makeSimple"><varname>makeSimple</varname></link>: Devuelve una matriz de fragmentos del punto temporal que son simples &Z_support;</para>
@@ -1380,7 +1380,7 @@
 				<title>Transformaciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pose_round"><varname>round</varname></link>: Redondea el punto y la orientación de la pose al número de posiciones decimales</para>
+						<para><link linkend="pose_round"><varname>poseRound</varname>, <varname>posechainRound</varname></link>: Redondea el punto y la orientación de la pose al número de posiciones decimales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1531,7 +1531,7 @@
 					<para><link linkend="tpose_setInterp"><varname>setInterp</varname></link>: Transforma a otra interpolación</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpose_round"><varname>round</varname></link>: Redondea los puntos y las orientaciones de la pose temporal al número de posiciones decimales</para>
+					<para><link linkend="tpose_round"><varname>tRound</varname></link>: Redondea los puntos y las orientaciones de la pose temporal al número de posiciones decimales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1826,7 +1826,7 @@
 				<title>Transformaciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_round"><varname>round</varname></link>: Redondea la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
+						<para><link linkend="npoint_round"><varname>npointRound</varname>, <varname>nsegmentRound</varname></link>: Redondea la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1913,7 +1913,7 @@
 					<para><link linkend="tnpoint_setInterp"><varname>setInterp</varname></link>: Transforma un punto de red temporal en otra interpolación</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tnpoint_round"><varname>round</varname></link>: Redondea la fracción del punto de red temporal en el número de lugares decimales</para>
+					<para><link linkend="tnpoint_round"><varname>tRound</varname></link>: Redondea la fracción del punto de red temporal en el número de lugares decimales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2087,7 +2087,7 @@
 				<title>Transformaciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="cbuffer_round"><varname>round</varname></link>: Redondea el punto y el radio del búfer circular en el número de lugares decimales</para>
+						<para><link linkend="cbuffer_round"><varname>cbufferRound</varname></link>: Redondea el punto y el radio del búfer circular en el número de lugares decimales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2200,7 +2200,7 @@
 					<para><link linkend="tcbuffer_setInterp"><varname>setInterp</varname></link>: Transforma un búfer circular temporal en otra interpolación</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tcbuffer_round"><varname>round</varname></link>: Redondea los puntos y los radios del búfer circular temporal en el número de lugares decimales</para>
+					<para><link linkend="tcbuffer_round"><varname>tRound</varname></link>: Redondea los puntos y los radios del búfer circular temporal en el número de lugares decimales</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcbuffer_stops"><varname>stops</varname></link>: Extrae las subsecuencias en las que el búfer circular temporal permanece dentro de un área de un tamaño máximo dado durante al menos la duración dada</para>
@@ -2447,7 +2447,7 @@
 			<title>Transformaciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_round"><varname>round</varname></link>: Redondea todos los componentes numéricos a un número dado de posiciones decimales</para>
+					<para><link linkend="trgeometry_round"><varname>tRound</varname></link>: Redondea todos los componentes numéricos a un número dado de posiciones decimales</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_setInterp"><varname>setInterp</varname></link>: Convierte entre interpolaciones lineal y escalonada</para>
@@ -3378,7 +3378,7 @@
 				<title>Transformaciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Devuelve un tpcbox con las coordenadas redondeadas al número de dígitos decimales indicado</para>
+						<para><link linkend="tpcbox_round"><varname>tpcboxRound</varname></link>: Devuelve un tpcbox con las coordenadas redondeadas al número de dígitos decimales indicado</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Devuelve un tpcbox que declara un sistema de referencia que su esquema no declara</para>

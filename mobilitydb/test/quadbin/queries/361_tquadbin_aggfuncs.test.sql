@@ -29,23 +29,23 @@
 
 -- extent(tquadbin): mixed temporal subtypes folded together, NULLs filtered
 -- round to 10 decimal places to suppress platform floating-point ULP differences
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES
   (NULL::tquadbin),
   (tquadbin '480fffffffffffff@2001-01-01'),
   (tquadbin '{48427fffffffffff@2001-01-01, 480fffffffffffff@2001-01-02}')) t(temp);
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES
   (tquadbin '480fffffffffffff@2001-01-01'),
   (tquadbin '{48427fffffffffff@2001-01-01, 480fffffffffffff@2001-01-02}'),
   (NULL)) t(temp);
 
 -- extent(tquadbin): linear sequence + step sequenceset over disjoint footprints
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES
   (tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]'),
   ('{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}')) t(temp);
 
 -- extent(tquadbin): single row degenerate cases
-SELECT round(extent(temp), 6) FROM ( VALUES (tquadbin '480fffffffffffff@2001-01-01')) t(temp);
-SELECT round(extent(temp), 6) FROM ( VALUES (NULL::tquadbin)) t(temp);
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES (tquadbin '480fffffffffffff@2001-01-01')) t(temp);
+SELECT stboxRound(extent(temp), 6) FROM ( VALUES (NULL::tquadbin)) t(temp);
 
 -------------------------------------------------------------------------------
 

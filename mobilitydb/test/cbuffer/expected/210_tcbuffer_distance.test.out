@@ -93,242 +93,242 @@ SELECT round(geometry 'Point empty' <-> cbuffer 'Cbuffer(Point(4 0),0.5)', 6);
       
 (1 row)
 
-SELECT round(geometry 'Point(1 1)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-             round              
+SELECT tRound(geometry 'Point(1 1)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(geometry 'Point(1 1)' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-                                              round                                               
+SELECT tRound(geometry 'Point(1 1)' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+                                              tround                                              
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(geometry 'Point(1 1)' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-                              round                               
+SELECT tRound(geometry 'Point(1 1)' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+                              tround                              
 ------------------------------------------------------------------
  [0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT round(geometry 'Point(1 1)' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
-                                                                       round                                                                        
+SELECT tRound(geometry 'Point(1 1)' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+                                                                       tround                                                                       
 ----------------------------------------------------------------------------------------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0.814214@Thu Jan 04 00:00:00 2001 PST, 0.814214@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT round(geometry 'Point empty' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
- round 
--------
+SELECT tRound(geometry 'Point empty' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+ tround 
+--------
  
 (1 row)
 
-SELECT round(geometry 'Point empty' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
- round 
--------
+SELECT tRound(geometry 'Point empty' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+ tround 
+--------
  
 (1 row)
 
-SELECT round(geometry 'Point empty' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
- round 
--------
+SELECT tRound(geometry 'Point empty' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+ tround 
+--------
  
 (1 row)
 
-SELECT round(geometry 'Point empty' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
- round 
--------
+SELECT tRound(geometry 'Point empty' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+ tround 
+--------
  
 (1 row)
 
-SELECT round(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-             round              
+SELECT tRound(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-                                              round                                               
+SELECT tRound(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+                                              tround                                              
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-                              round                               
+SELECT tRound(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+                              tround                              
 ------------------------------------------------------------------
  [0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT round(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
-                                                                       round                                                                        
+SELECT tRound(cbuffer 'Cbuffer(Point(1 1), 0.2)' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+                                                                       tround                                                                       
 ----------------------------------------------------------------------------------------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0.614214@Thu Jan 04 00:00:00 2001 PST, 0.614214@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
-             round              
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
-                                              round                                               
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
+                                              tround                                              
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
-                              round                               
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
+                              tround                              
 ------------------------------------------------------------------
  [0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
-                                                                       round                                                                        
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> cbuffer 'Cbuffer(Point(1 1), 0.2)', 6);
+                                                                       tround                                                                       
 ----------------------------------------------------------------------------------------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0.614214@Thu Jan 04 00:00:00 2001 PST, 0.614214@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point(1 1)', 6);
-             round              
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point(1 1)', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point(1 1)', 6);
-                                              round                                               
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point(1 1)', 6);
+                                              tround                                              
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
-                              round                               
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
+                              tround                              
 ------------------------------------------------------------------
  [0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point(1 1)', 6);
-                                                                       round                                                                        
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point(1 1)', 6);
+                                                                       tround                                                                       
 ----------------------------------------------------------------------------------------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0.814214@Thu Jan 04 00:00:00 2001 PST, 0.814214@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point empty', 6);
- round 
--------
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> geometry 'Point empty', 6);
+ tround 
+--------
  
 (1 row)
 
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point empty', 6);
- round 
--------
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> geometry 'Point empty', 6);
+ tround 
+--------
  
 (1 row)
 
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point empty', 6);
- round 
--------
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> geometry 'Point empty', 6);
+ tround 
+--------
  
 (1 row)
 
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point empty', 6);
- round 
--------
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> geometry 'Point empty', 6);
+ tround 
+--------
  
 (1 row)
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-             round              
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-             round              
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-             round              
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
-             round              
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-             round              
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-                                              round                                               
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+                                              tround                                              
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-                                              round                                               
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+                                              tround                                              
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
-                                              round                                               
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', 6);
+                                              tround                                              
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-             round              
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-                                              round                                               
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+                                              tround                                              
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-                              round                               
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+                              tround                              
 ------------------------------------------------------------------
  [0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
-                               round                                
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', 6);
+                               tround                               
 --------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
-             round              
+SELECT tRound(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+             tround             
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
-                                              round                                               
+SELECT tRound(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+                                              tround                                              
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
-                               round                                
+SELECT tRound(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+                               tround                               
 --------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
-                                                                round                                                                 
+SELECT tRound(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}', 6);
+                                                                tround                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
@@ -429,20 +429,20 @@ SELECT round(nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 8), 1)@2001-01-01
  2.000000
 (1 row)
 
-SELECT round(tcbuffer '{Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(50 20), 1)@2001-01-02}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
-                                round                                
+SELECT tRound(tcbuffer '{Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(50 20), 1)@2001-01-02}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+                               tround                                
 ---------------------------------------------------------------------
  {8.5@Mon Jan 01 00:00:00 2001 PST, 18@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(tcbuffer 'Interp=Step;[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(50 20), 1)@2001-01-02]' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
-                                      round                                      
+SELECT tRound(tcbuffer 'Interp=Step;[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(50 20), 1)@2001-01-02]' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+                                     tround                                      
 ---------------------------------------------------------------------------------
  Interp=Step;[8.5@Mon Jan 01 00:00:00 2001 PST, 18@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT round(tcbuffer '{[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(3 10), 0.5)@2001-01-02], [Cbuffer(Point(50 20), 1)@2001-01-03, Cbuffer(Point(51 20), 1)@2001-01-04]}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
-                                                                   round                                                                    
+SELECT tRound(tcbuffer '{[Cbuffer(Point(2 10), 0.5)@2001-01-01, Cbuffer(Point(3 10), 0.5)@2001-01-02], [Cbuffer(Point(50 20), 1)@2001-01-03, Cbuffer(Point(51 20), 1)@2001-01-04]}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+                                                                   tround                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------
  {[8.5@Mon Jan 01 00:00:00 2001 PST, 8.5@Tue Jan 02 00:00:00 2001 PST], [18@Wed Jan 03 00:00:00 2001 PST, 18@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)

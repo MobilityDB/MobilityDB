@@ -93,29 +93,29 @@ SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(ss) IS NOT NULL;
 -- Temporal round, degrees, radians, abs, ln, log10
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tint WHERE abs(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat WHERE abs(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat_step_seq WHERE abs(seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint WHERE tAbs(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tAbs(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat_step_seq WHERE tAbs(seq) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE round(temp, 1) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tRound(temp, 1) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_float WHERE degrees(f, true) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat WHERE degrees(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat WHERE radians(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tDegrees(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tRadians(temp) IS NOT NULL;
 SELECT round(MAX(maxValue(derivative(temp))), 6) FROM tbl_tfloat WHERE interp(temp) = 'Linear';
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE exp(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat WHERE ln(abs(temp)) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat WHERE log10(abs(temp)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tExp(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tLn(tAbs(temp)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tLog10(tAbs(temp)) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE sin(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat WHERE cos(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat WHERE tan(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tSin(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tCos(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tTan(temp) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tint WHERE deltaValue(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
 
 
-SELECT round(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT tRound(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS NOT NULL AND k % 20 = 1;
 
 -------------------------------------------------------------------------------
 

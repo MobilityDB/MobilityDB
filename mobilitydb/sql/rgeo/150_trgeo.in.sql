@@ -466,11 +466,11 @@ CREATE FUNCTION setInterp(trgeometry, text)
   AS 'MODULE_PATHNAME', 'Temporal_set_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(trgeometry, integer DEFAULT 0)
+CREATE FUNCTION tRound(trgeometry, integer DEFAULT 0)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION round(trgeometry[], integer DEFAULT 0)
+CREATE FUNCTION tRound(trgeometry[], integer DEFAULT 0)
   RETURNS trgeometry[]
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -160,7 +160,7 @@ SELECT temp::tgeometry FROM tbl_tgeography3D LIMIT 10;
  01020000A0A41E0000020000005CBCE75CDAC956C09694B45A53114CC080473561DD08AB3FBFECD626C24C58C09892D606B0E149C064040301355DF03F@Sat Feb 03 00:16:00 2001 PST
 (10 rows)
 
-SELECT asText(round(temp, 2)) FROM tbl_tgeometry LIMIT 10;
+SELECT asText(tRound(temp, 2)) FROM tbl_tgeometry LIMIT 10;
                                  astext                                  
 -------------------------------------------------------------------------
  MULTIPOINT((-83.86 94.41),(-76.25 86.37))@Mon Oct 15 08:59:00 2001 PDT
@@ -175,7 +175,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeometry LIMIT 10;
  POINT(99.19 53.89)@Tue Mar 27 08:56:00 2001 PST
 (10 rows)
 
-SELECT asText(round(temp, 2)) FROM tbl_tgeography LIMIT 10;
+SELECT asText(tRound(temp, 2)) FROM tbl_tgeography LIMIT 10;
                                  astext                                  
 -------------------------------------------------------------------------
  POINT(-18.8 39.23)@Tue Jan 30 15:19:00 2001 PST
@@ -190,7 +190,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeography LIMIT 10;
  MULTIPOINT((114.27 75.23),(111.2 74.16))@Wed Apr 18 12:49:00 2001 PDT
 (10 rows)
 
-SELECT asText(round(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
+SELECT asText(tRound(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
                                           astext                                          
 ------------------------------------------------------------------------------------------
  LINESTRING Z (36.11 73.82 42.06,32.8 70 44.63)@Fri Mar 23 15:23:00 2001 PST
@@ -205,7 +205,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
  MULTIPOINT Z ((-98.17 49.19 -88.33),(-93.52 43.9 -96.17))@Mon Dec 24 16:25:00 2001 PST
 (10 rows)
 
-SELECT asText(round(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
+SELECT asText(tRound(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
                                        astext                                        
 -------------------------------------------------------------------------------------
  POINT Z (151.97 -48.56 98.83)@Wed Jan 31 00:54:00 2001 PST
@@ -220,13 +220,13 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
  LINESTRING Z (-91.15 -56.14 0.05,-97.2 -51.76 1.02)@Sat Feb 03 00:16:00 2001 PST
 (10 rows)
 
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(tRound(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE inst IS NOT NULL AND k % 20 = 1;
                                                                                                                                                                    astext                                                                                                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"MULTIPOINT((-83.86 94.41),(-76.25 86.37))@Mon Oct 15 08:59:00 2001 PDT","LINESTRING(-75.85 51.12,-77.87 41.62)@Sun Jul 15 09:55:00 2001 PDT","POINT(-51 15.75)@Fri Jul 27 11:56:00 2001 PDT","LINESTRING(62.53 93.43,67.83 95.4)@Wed Dec 26 16:13:00 2001 PST","MULTIPOINT((-52.75 -6.72),(-61.79 -5.89))@Thu Oct 11 02:07:00 2001 PDT"}
 (1 row)
 
-SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(tRound(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE inst IS NOT NULL AND k % 20 = 1;
                                                                                                                                                       astext                                                                                                                                                      
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"POINT(-18.8 39.23)@Tue Jan 30 15:19:00 2001 PST","POINT(-96.64 59.68)@Tue Jul 24 13:56:00 2001 PDT","MULTIPOINT((118.04 -74.92),(122.84 -82.83))@Sun Oct 14 22:50:00 2001 PDT","MULTIPOINT((132.63 -89.27),(126.08 -85.96))@Fri Jan 12 04:46:00 2001 PST","POINT(173.25 -52.98)@Thu Nov 01 13:57:00 2001 PST"}
