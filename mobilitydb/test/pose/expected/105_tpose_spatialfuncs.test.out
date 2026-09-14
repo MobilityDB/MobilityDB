@@ -16,14 +16,14 @@ SELECT asEWKT(setSRID(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 5676));
  SRID=5676;Pose(POINT(1 2),0.5)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asEWKT(tRound(transform(transform(tpose
+SELECT asEWKT(round(transform(transform(tpose
   'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)@2001-01-01', 4978), 4326), 6));
                                 asewkt                                 
 -----------------------------------------------------------------------
  SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asEWKT(tRound(transform(transform(tpose
+SELECT asEWKT(round(transform(transform(tpose
   'SRID=4326;{Pose(Point(8 47 0), 1, 0, 0, 0)@2001-01-01,
     Pose(Point(9 48 0), 1, 0, 0, 0)@2001-01-02}', 4978), 4326), 6));
                                                                 asewkt                                                                
@@ -31,7 +31,7 @@ SELECT asEWKT(tRound(transform(transform(tpose
  SRID=4326;{Pose(POINT Z (8 47 0),1,0,0,0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT Z (9 48 0),1,0,0,0)@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
-SELECT asEWKT(tRound(transform(transform(tpose
+SELECT asEWKT(round(transform(transform(tpose
   'SRID=4326;[Pose(Point(8 47 0), 1, 0, 0, 0)@2001-01-01,
     Pose(Point(9 48 0), 1, 0, 0, 0)@2001-01-02]', 4978), 4326), 6));
                                                                 asewkt                                                                
@@ -39,7 +39,7 @@ SELECT asEWKT(tRound(transform(transform(tpose
  SRID=4326;[Pose(POINT Z (8 47 0),1,0,0,0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT Z (9 48 0),1,0,0,0)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT asEWKT(tRound(transform(tpose
+SELECT asEWKT(round(transform(tpose
   'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', 4978), 6));
                                        asewkt                                       
 ------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ SELECT asEWKT(transform(tpose
  SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asEWKT(tRound(transform(tpose
+SELECT asEWKT(round(transform(tpose
   'SRID=4326;Pose(Point(4.35 50.85), 1)@2001-01-01', 3812), 6));
                                       asewkt                                       
 -----------------------------------------------------------------------------------

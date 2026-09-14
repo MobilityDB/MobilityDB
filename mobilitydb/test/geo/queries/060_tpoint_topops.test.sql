@@ -29,8 +29,8 @@
 
 SELECT geometry 'Point(1 1)'::stbox;
 SELECT geometry 'Point(1 1 1)'::stbox;
-SELECT stboxRound(geography 'Point(1 1)'::stbox, 13);
-SELECT stboxRound(geography 'Point(1 1 1)'::stbox, 13);
+SELECT round(geography 'Point(1 1)'::stbox, 13);
+SELECT round(geography 'Point(1 1 1)'::stbox, 13);
 SELECT timestamptz '2001-01-01'::stbox;
 SELECT tstzset '{2001-01-01, 2001-01-02}'::stbox;
 SELECT tstzspan '[2001-01-01, 2001-01-02]'::stbox;
@@ -39,10 +39,10 @@ SELECT stbox(geometry 'Point(1 1)', timestamptz '2001-01-01');
 SELECT stbox(geometry 'Point(1 1 1)', timestamptz '2001-01-01');
 SELECT stbox(geometry 'Point(1 1)', tstzspan '[2001-01-01, 2001-01-02]');
 SELECT stbox(geometry 'Point(1 1 1)', tstzspan '[2001-01-01, 2001-01-02]');
-SELECT stboxRound(stbox(geography 'Point(1 1)', timestamptz '2001-01-01'), 13);
-SELECT stboxRound(stbox(geography 'Point(1 1 1)', timestamptz '2001-01-01'), 13);
-SELECT stboxRound(stbox(geography 'Point(1 1)', tstzspan '[2001-01-01, 2001-01-02]'), 13);
-SELECT stboxRound(stbox(geography 'Point(1 1 1)', tstzspan '[2001-01-01, 2001-01-02]'), 13);
+SELECT round(stbox(geography 'Point(1 1)', timestamptz '2001-01-01'), 13);
+SELECT round(stbox(geography 'Point(1 1 1)', timestamptz '2001-01-01'), 13);
+SELECT round(stbox(geography 'Point(1 1)', tstzspan '[2001-01-01, 2001-01-02]'), 13);
+SELECT round(stbox(geography 'Point(1 1 1)', tstzspan '[2001-01-01, 2001-01-02]'), 13);
 -- Empty geometry
 SELECT geometry 'Point empty'::stbox;
 SELECT geography 'Point empty'::stbox;
@@ -56,10 +56,10 @@ SELECT tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@200
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'::stbox;
 SELECT tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'::stbox;
 
-SELECT stboxRound(tgeogpoint 'Point(1 1)@2001-01-01'::stbox, 13);
-SELECT stboxRound(tgeogpoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'::stbox, 13);
-SELECT stboxRound(tgeogpoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'::stbox, 13);
-SELECT stboxRound(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'::stbox, 13);
+SELECT round(tgeogpoint 'Point(1 1)@2001-01-01'::stbox, 13);
+SELECT round(tgeogpoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}'::stbox, 13);
+SELECT round(tgeogpoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]'::stbox, 13);
+SELECT round(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}'::stbox, 13);
 
 -------------------------------------------------------------------------------
 

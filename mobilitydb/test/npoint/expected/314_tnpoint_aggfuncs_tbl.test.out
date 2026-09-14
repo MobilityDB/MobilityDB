@@ -1,4 +1,4 @@
-SELECT asText(tRound(tcentroid(temp), 6)) FROM ( VALUES
+SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
   (NULL::tnpoint),
   ('Npoint(1, 0.5)@2001-01-01'),
   ('{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}')) t(temp);
@@ -7,7 +7,7 @@ SELECT asText(tRound(tcentroid(temp), 6)) FROM ( VALUES
  {POINT(55.752648 78.953813)@Mon Jan 01 00:00:00 2001 PST, POINT(48.718663 77.764071)@Tue Jan 02 00:00:00 2001 PST, POINT(48.718663 77.764071)@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT asText(tRound(tcentroid(temp), 6)) FROM ( VALUES
+SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
   (tnpoint 'Npoint(1, 0.5)@2001-01-01'),
   ('{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'),
   (NULL)) t(temp);
@@ -17,42 +17,42 @@ SELECT asText(tRound(tcentroid(temp), 6)) FROM ( VALUES
 (1 row)
 
 /* Errors */
-SELECT asText(tRound(tcentroid(temp), 6)) FROM ( VALUES
+SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
   (tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'),
   ('[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]')) t(temp);
 ERROR:  Cannot aggregate temporal values of different subtype
-SELECT stboxRound(extent(inst), 10) FROM tbl_tnpoint_inst;
-                                                                  stboxround                                                                  
+SELECT round(extent(inst), 10) FROM tbl_tnpoint_inst;
+                                                                    round                                                                     
 ----------------------------------------------------------------------------------------------------------------------------------------------
  SRID=5676;STBOX XT(((5.8975081986,3.5560802125),(98.1759358295,93.0112513183)),[Tue Jan 02 09:46:00 2001 PST, Sun Dec 30 10:06:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(extent(ti), 10) FROM tbl_tnpoint_discseq;
-                                                                 stboxround                                                                  
+SELECT round(extent(ti), 10) FROM tbl_tnpoint_discseq;
+                                                                    round                                                                    
 ---------------------------------------------------------------------------------------------------------------------------------------------
  SRID=5676;STBOX XT(((3.0157245568,1.0080002301),(98.7140839155,97.882635439)),[Mon Jan 15 14:11:00 2001 PST, Wed Dec 26 10:50:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(extent(seq), 10) FROM tbl_tnpoint_seq;
-                                                                 stboxround                                                                  
+SELECT round(extent(seq), 10) FROM tbl_tnpoint_seq;
+                                                                    round                                                                    
 ---------------------------------------------------------------------------------------------------------------------------------------------
  SRID=5676;STBOX XT(((0.0657269731,0.3142304718),(99.287488701,97.0510670257)),[Fri Jan 05 12:25:00 2001 PST, Sun Dec 23 13:57:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(extent(ss), 10) FROM tbl_tnpoint_seqset;
-                                                                  stboxround                                                                  
+SELECT round(extent(ss), 10) FROM tbl_tnpoint_seqset;
+                                                                    round                                                                     
 ----------------------------------------------------------------------------------------------------------------------------------------------
  SRID=5676;STBOX XT(((0.0657269731,0.3142304718),(99.5459326522,99.8792113271)),[Tue Jan 02 14:23:00 2001 PST, Wed Dec 26 14:16:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(extent(temp), 10) FROM tbl_tnpoint;
-                                                                 stboxround                                                                  
+SELECT round(extent(temp), 10) FROM tbl_tnpoint;
+                                                                    round                                                                    
 ---------------------------------------------------------------------------------------------------------------------------------------------
  SRID=5676;STBOX XT(((0.4349576309,0.3142304718),(98.3193939626,98.106956901)),[Wed Jan 10 12:49:00 2001 PST, Wed Dec 26 14:16:00 2001 PST])
 (1 row)
 
-SELECT k%10, stboxRound(extent(inst), 10) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
- ?column? |                                                                   stboxround                                                                   
+SELECT k%10, round(extent(inst), 10) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
+ ?column? |                                                                     round                                                                      
 ----------+------------------------------------------------------------------------------------------------------------------------------------------------
         0 | SRID=5676;STBOX XT(((6.9664640052,14.6720049061),(79.338109987,72.750992653)),[Wed Jan 03 13:44:00 2001 PST, Thu Nov 29 10:48:00 2001 PST])
         1 | SRID=5676;STBOX XT(((12.4227063673,3.5560802125),(75.7936944842,89.040290674)),[Sat Mar 24 21:06:00 2001 PST, Mon Dec 17 03:18:00 2001 PST])
@@ -66,8 +66,8 @@ SELECT k%10, stboxRound(extent(inst), 10) FROM tbl_tnpoint_inst GROUP BY k%10 OR
         9 | SRID=5676;STBOX XT(((20.1141289652,35.8415540597),(94.6228823468,93.0112513183)),[Wed Jan 03 17:14:00 2001 PST, Tue Oct 16 19:54:00 2001 PDT])
 (10 rows)
 
-SELECT k%10, stboxRound(extent(temp), 10) FROM tbl_tnpoint GROUP BY k%10 ORDER BY k%10;
- ?column? |                                                                  stboxround                                                                   
+SELECT k%10, round(extent(temp), 10) FROM tbl_tnpoint GROUP BY k%10 ORDER BY k%10;
+ ?column? |                                                                     round                                                                     
 ----------+-----------------------------------------------------------------------------------------------------------------------------------------------
         0 | SRID=5676;STBOX XT(((2.1561021917,5.5364198051),(93.8603056129,95.3752165231)),(Sat Jan 13 20:14:00 2001 PST, Wed Nov 28 17:55:00 2001 PST])
         1 | SRID=5676;STBOX XT(((3.6774376066,0.3142304718),(97.0146425482,94.549835921)),[Wed Jan 10 12:49:00 2001 PST, Mon Dec 03 10:18:00 2001 PST])

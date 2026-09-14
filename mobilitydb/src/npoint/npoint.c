@@ -670,7 +670,7 @@ PG_FUNCTION_INFO_V1(Npoint_round);
  * @ingroup mobilitydb_npoint_base_transf
  * @brief Return a network point with the precision of the position set to a
  * number of decimal places
- * @sqlfn npointRound()
+ * @sqlfn round()
  */
 Datum
 Npoint_round(PG_FUNCTION_ARGS)
@@ -686,7 +686,7 @@ PG_FUNCTION_INFO_V1(Nsegment_round);
  * @ingroup mobilitydb_npoint_base_transf
  * @brief Return a network segment with the precision of the positions set to a
  * number of decimal places
- * @sqlfn nsegmentRound()
+ * @sqlfn round()
  */
 Datum
 Nsegment_round(PG_FUNCTION_ARGS)

@@ -1,4 +1,4 @@
-SELECT asText(tRound(bodyPointTrajectory(
+SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]',
   'Point(0 0)'), 6));
                                              astext                                              
@@ -12,7 +12,7 @@ SELECT asText((trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0
  [POINT(0 0)@Thu Jan 01 00:00:00 2026 PST, POINT(10 0)@Thu Jan 01 00:01:00 2026 PST]
 (1 row)
 
-SELECT asText(tRound(bodyPointTrajectory(
+SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]',
   'Point(1 0)'), 6));
                                              astext                                              
@@ -20,7 +20,7 @@ SELECT asText(tRound(bodyPointTrajectory(
  Interp=Step;[POINT(1 0)@Thu Jan 01 00:00:00 2026 PST, POINT(10 1)@Thu Jan 01 00:01:00 2026 PST]
 (1 row)
 
-SELECT asText(tRound(bodyPointTrajectory(
+SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]',
   'Point(0 1)'), 6));
                                              astext                                             
@@ -28,7 +28,7 @@ SELECT asText(tRound(bodyPointTrajectory(
  Interp=Step;[POINT(0 1)@Thu Jan 01 00:00:00 2026 PST, POINT(9 0)@Thu Jan 01 00:01:00 2026 PST]
 (1 row)
 
-SELECT asText(tRound(bodyPointTrajectory(
+SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(5 5),0)@2026-01-01, Pose(Point(5 5),0)@2026-01-01 00:01:00]',
   'Point(2 3)'), 6));
                                              astext                                             

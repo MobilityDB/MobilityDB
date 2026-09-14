@@ -96,9 +96,9 @@ SELECT extent(temp::intspan) FROM tbl_tint;
  [1, 100)
 (1 row)
 
-SELECT spanRound(extent(temp::floatspan)) FROM tbl_tfloat;
- spanround 
------------
+SELECT round(extent(temp::floatspan)) FROM tbl_tfloat;
+  round   
+----------
  [1, 100]
 (1 row)
 

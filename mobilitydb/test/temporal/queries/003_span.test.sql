@@ -216,15 +216,15 @@ SELECT shiftScale(tstzspan '(2001-01-01,2001-01-02]', '5 min', '1 hour');
 SELECT shiftScale(tstzspan '[2001-01-01,2001-01-02)', '5 min', '1 hour');
 SELECT shiftScale(tstzspan '(2001-01-01,2001-01-02)', '5 min', '1 hour');
 
-SELECT spanFloor(floatspan '[1.5,2.5]');
-SELECT spanCeil(floatspan '[1.5,2.5]');
-SELECT spanFloor(floatspan '(1.5,1.6)');
-SELECT spanCeil(floatspan '(1.5,1.6)');
-SELECT spanRound(floatspan '[1.123456789,1.123456789]',6);
-SELECT spanRound(floatspan '[1.123456789,2.123456789]',6);
-SELECT spanRound(floatspan '[-inf,2.123456789]',6);
-SELECT spanRound(floatspan '[1.123456789,inf]',6);
-SELECT spanRound(floatspan '[1.5,1.6]');
+SELECT floor(floatspan '[1.5,2.5]');
+SELECT ceil(floatspan '[1.5,2.5]');
+SELECT floor(floatspan '(1.5,1.6)');
+SELECT ceil(floatspan '(1.5,1.6)');
+SELECT round(floatspan '[1.123456789,1.123456789]',6);
+SELECT round(floatspan '[1.123456789,2.123456789]',6);
+SELECT round(floatspan '[-inf,2.123456789]',6);
+SELECT round(floatspan '[1.123456789,inf]',6);
+SELECT round(floatspan '[1.5,1.6]');
 
 -------------------------------------------------------------------------------
 -- Position functions

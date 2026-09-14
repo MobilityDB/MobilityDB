@@ -220,7 +220,7 @@ SELECT round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).yaw)
  90.000000 | 0.000000 | 90.000000
 (1 row)
 
-SELECT asText(poseRound(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
+SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
                  astext                  
 -----------------------------------------
  Pose(POINT(1.123457 1.123457),0.123457)
@@ -256,7 +256,7 @@ SELECT asText(pose(ST_PointZ(1,1,1), 1.0005, 0, 0, 0), 12);
  Pose(POINT Z (1 1 1),1,0,0,0)
 (1 row)
 
-SELECT ST_AsText(geometryRound(pose 'Pose(Point(1 1),0.2)'::geometry, 6));
+SELECT ST_AsText(round(pose 'Pose(Point(1 1),0.2)'::geometry, 6));
  st_astext  
 ------------
  POINT(1 1)
@@ -418,13 +418,13 @@ SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
  f
 (1 row)
 
-SELECT asEWKT(poseRound(transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978), 4326), 6));
+SELECT asEWKT(round(transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978), 4326), 6));
                   asewkt                  
 ------------------------------------------
  SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)
 (1 row)
 
-SELECT asEWKT(poseRound(transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+SELECT asEWKT(round(transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
                         asewkt                         
 -------------------------------------------------------
  SRID=4978;Pose(POINT Z (6378137 0 0),0.5,0.5,0.5,0.5)
@@ -641,44 +641,44 @@ SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1 1),1,0,0,0)'));
  GEODPOSE(0101000080000000000000F03F000000000000F03F000000000000F03F, 1, 0, 0, 0)
 (1 row)
 
-SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
   pose 'Pose(Point(0 0), 0)'), 6));
        asewkt       
 --------------------
  Pose(POINT(1 0),0)
 (1 row)
 
-SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
   pose(ST_Point(0,0), pi()/2)), 6));
           asewkt           
 ---------------------------
  Pose(POINT(0 1),1.570796)
 (1 row)
 
-SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
   pose(ST_Point(10,5), pi()/2)), 6));
            asewkt           
 ----------------------------
  Pose(POINT(10 6),1.570796)
 (1 row)
 
-SELECT asEWKT(poseRound(applyPose(pose(ST_Point(0,0), pi()/4),
+SELECT asEWKT(round(applyPose(pose(ST_Point(0,0), pi()/4),
   pose(ST_Point(0,0), pi()/4)), 6));
           asewkt           
 ---------------------------
  Pose(POINT(0 0),1.570796)
 (1 row)
 
-SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
   pose(ST_Point(10,5), pi()/2)), 6)) =
-  asEWKT(poseRound(pose(posechain(ARRAY[pose(ST_Point(10,5), pi()/2),
+  asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(10,5), pi()/2),
     pose 'Pose(Point(1 0), 0)'])), 6));
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT asEWKT(poseRound(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
   pose 'Pose(Point(0 0 5), 1, 0, 0, 0)'), 6));
             asewkt             
 -------------------------------
@@ -691,52 +691,52 @@ ERROR:  Operation on mixed SRID
 SELECT applyPose(pose 'Pose(Point(1 0), 0)',
   pose 'Pose(Point(0 0 1), 1, 0, 0, 0)');
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT asEWKT(poseRound(poseInverse(pose 'Pose(Point(1 0), 0)'), 6));
+SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0), 0)'), 6));
        asewkt        
 ---------------------
  Pose(POINT(-1 0),0)
 (1 row)
 
-SELECT asEWKT(poseRound(poseInverse(pose(ST_Point(0,0), pi()/2)), 6));
+SELECT asEWKT(round(poseInverse(pose(ST_Point(0,0), pi()/2)), 6));
            asewkt           
 ----------------------------
  Pose(POINT(0 0),-1.570796)
 (1 row)
 
-SELECT asEWKT(poseRound(poseInverse(pose(ST_Point(10,5), pi()/2)), 6));
+SELECT asEWKT(round(poseInverse(pose(ST_Point(10,5), pi()/2)), 6));
             asewkt            
 ------------------------------
  Pose(POINT(-5 10),-1.570796)
 (1 row)
 
-SELECT asEWKT(poseRound(applyPose(poseInverse(pose(ST_Point(10,5), pi()/2)),
+SELECT asEWKT(round(applyPose(poseInverse(pose(ST_Point(10,5), pi()/2)),
   pose(ST_Point(10,5), pi()/2)), 6));
        asewkt       
 --------------------
  Pose(POINT(0 0),0)
 (1 row)
 
-SELECT asEWKT(poseRound(applyPose(pose(ST_Point(10,5), pi()/2),
+SELECT asEWKT(round(applyPose(pose(ST_Point(10,5), pi()/2),
   poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
        asewkt       
 --------------------
  Pose(POINT(0 0),0)
 (1 row)
 
-SELECT asEWKT(poseRound(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
+SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
              asewkt             
 --------------------------------
  Pose(POINT Z (1 0 0),0,0,0,-1)
 (1 row)
 
-SELECT asEWKT(poseRound(applyPose(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'),
+SELECT asEWKT(round(applyPose(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'),
   pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
             asewkt             
 -------------------------------
  Pose(POINT Z (0 0 0),1,0,0,0)
 (1 row)
 
-SELECT asEWKT(poseRound(poseInverse(poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
+SELECT asEWKT(round(poseInverse(poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
            asewkt           
 ----------------------------
  Pose(POINT(10 5),1.570796)
@@ -744,7 +744,7 @@ SELECT asEWKT(poseRound(poseInverse(poseInverse(pose(ST_Point(10,5), pi()/2))), 
 
 SELECT poseInverse(pose 'SRID=4326;GeodPose(Point(8 47), 0.5)');
 ERROR:  The inverse of a pose over a geographic frame is not defined: the frame it would name is not a frame of the ellipsoid
-SELECT asEWKT(tRound(applyPose(pose 'Pose(Point(1 0), 0)',
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
   tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
     tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')])), 6));
                                                    asewkt                                                    
@@ -752,7 +752,7 @@ SELECT asEWKT(tRound(applyPose(pose 'Pose(Point(1 0), 0)',
  [Pose(POINT(1 0),0)@Thu Jan 01 00:00:00 2026 PST, Pose(POINT(10 21),1.570796)@Fri Jan 02 00:00:00 2026 PST]
 (1 row)
 
-SELECT asEWKT(tRound(applyPose(
+SELECT asEWKT(round(applyPose(
   tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
     tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')]),
   pose 'Pose(Point(1 0), 0)'), 6));
@@ -761,7 +761,7 @@ SELECT asEWKT(tRound(applyPose(
  [Pose(POINT(1 0),0)@Thu Jan 01 00:00:00 2026 PST, Pose(POINT(11 20),1.570796)@Fri Jan 02 00:00:00 2026 PST]
 (1 row)
 
-SELECT asEWKT(tRound(applyPose(
+SELECT asEWKT(round(applyPose(
   tpose '[Pose(Point(1 0), 0)@2026-01-01, Pose(Point(1 0), 0)@2026-01-02]',
   tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
     tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')])), 6));
@@ -770,7 +770,7 @@ SELECT asEWKT(tRound(applyPose(
  [Pose(POINT(1 0),0)@Thu Jan 01 00:00:00 2026 PST, Pose(POINT(10 21),1.570796)@Fri Jan 02 00:00:00 2026 PST]
 (1 row)
 
-SELECT asEWKT(tRound(applyPose(
+SELECT asEWKT(round(applyPose(
   tpose '[Pose(Point(1 0), 0)@2026-01-01, Pose(Point(1 0), 0)@2026-01-03]',
   tpose '[Pose(Point(0 0), 0)@2026-01-02, Pose(Point(10 20), 0)@2026-01-04]'), 6));
                                                asewkt                                                
@@ -778,7 +778,7 @@ SELECT asEWKT(tRound(applyPose(
  [Pose(POINT(1 0),0)@Fri Jan 02 00:00:00 2026 PST, Pose(POINT(6 10),0)@Sat Jan 03 00:00:00 2026 PST]
 (1 row)
 
-SELECT asEWKT(tRound(poseInverse(
+SELECT asEWKT(round(poseInverse(
   tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
     tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')])), 6));
                                                     asewkt                                                     
@@ -786,7 +786,7 @@ SELECT asEWKT(tRound(poseInverse(
  [Pose(POINT(0 0),0)@Thu Jan 01 00:00:00 2026 PST, Pose(POINT(-20 10),-1.570796)@Fri Jan 02 00:00:00 2026 PST]
 (1 row)
 
-SELECT asEWKT(tRound(applyPose(
+SELECT asEWKT(round(applyPose(
   poseInverse(tpose '[Pose(Point(3 4), 0.5)@2026-01-01, Pose(Point(10 20), 1.2)@2026-01-02]'),
   tpose '[Pose(Point(3 4), 0.5)@2026-01-01, Pose(Point(10 20), 1.2)@2026-01-02]'), 6));
                                                asewkt                                               

@@ -184,7 +184,7 @@ SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
  01010000A0E610000000003C6599203F400000C874E33051400000FABA46988140@Wed Oct 10 11:35:00 2001 PDT
 (10 rows)
 
-SELECT asText(tRound(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
                      astext                      
 -------------------------------------------------
  POINT(21.49 97.18)@Mon Jun 11 07:33:00 2001 PDT
@@ -199,7 +199,7 @@ SELECT asText(tRound(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
  POINT(35.47 22.96)@Tue Oct 09 10:44:00 2001 PDT
 (10 rows)
 
-SELECT asText(tRound(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
                      astext                      
 -------------------------------------------------
  POINT(27.54 35.3)@Tue Oct 16 08:01:00 2001 PDT
@@ -214,7 +214,7 @@ SELECT asText(tRound(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
  POINT(-7.17 44.32)@Sun Dec 09 01:19:00 2001 PST
 (10 rows)
 
-SELECT asText(tRound(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
                           astext                          
 ----------------------------------------------------------
  POINT Z (59.14 18.26 87.38)@Sun Dec 31 21:13:00 2000 PST
@@ -229,7 +229,7 @@ SELECT asText(tRound(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
  POINT Z (72.48 35.63 62.94)@Wed Apr 25 17:13:00 2001 PDT
 (10 rows)
 
-SELECT asText(tRound(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
                           astext                           
 -----------------------------------------------------------
  POINT Z (23.51 35.36 420.4)@Fri Jun 22 03:37:00 2001 PDT
@@ -244,13 +244,13 @@ SELECT asText(tRound(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
  POINT Z (31.13 68.76 563.03)@Wed Oct 10 11:35:00 2001 PDT
 (10 rows)
 
-SELECT asText(tRound(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
                                                                                                                            astext                                                                                                                           
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"POINT(21.49 97.18)@Mon Jun 11 07:33:00 2001 PDT","POINT(98.06 99.51)@Sun Mar 25 17:31:00 2001 PST","POINT(61.45 41.38)@Sun Apr 01 13:46:00 2001 PDT","POINT(38.6 33.16)@Wed Sep 26 06:26:00 2001 PDT","POINT(95.83 64.98)@Mon Jan 01 14:05:00 2001 PST"}
 (1 row)
 
-SELECT asText(tRound(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
                                                                                                                           astext                                                                                                                          
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"POINT(27.54 35.3)@Tue Oct 16 08:01:00 2001 PDT","POINT(-6.57 52.61)@Sat May 19 18:20:00 2001 PDT","POINT(22.5 68.97)@Fri Jan 12 03:31:00 2001 PST","POINT(26.45 70.34)@Tue Oct 16 07:29:00 2001 PDT","POINT(8.63 69.56)@Sun Jul 22 21:58:00 2001 PDT"}
@@ -434,13 +434,13 @@ AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instant
     37
 (1 row)
 
-SELECT MAX(length(ST_AsText(geometryRound(twcentroid(temp), 6)))) FROM tbl_tgeompoint;
+SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint;
  max 
 -----
   26
 (1 row)
 
-SELECT MAX(length(ST_AsText(geometryRound(twcentroid(temp), 6)))) FROM tbl_tgeompoint3D;
+SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint3D;
  max 
 -----
   39
@@ -512,70 +512,70 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE angularDifference(temp) IS NOT NULL;
     43
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(g, temp)), 6))) FROM tbl_geom_point t1, tbl_tgeompoint t2
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point t1, tbl_tgeompoint t2
 WHERE bearing(g, temp) IS NOT NULL;
     max     
 ------------
  359.996647
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint t1, tbl_geom_point t2
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint t1, tbl_geom_point t2
 WHERE bearing(temp, g) IS NOT NULL;
  max 
 -----
  360
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
     max     
 ------------
  359.944855
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(g, temp)), 6))) FROM tbl_geog_point t1, tbl_tgeogpoint t2
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point t1, tbl_tgeogpoint t2
 WHERE bearing(g, temp) IS NOT NULL;
     max     
 ------------
  359.997863
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint t1, tbl_geog_point t2
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint t1, tbl_geog_point t2
 WHERE bearing(temp, g) IS NOT NULL;
  max 
 -----
  360
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(g, temp)), 6))) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
 WHERE bearing(g, temp) IS NOT NULL;
     max     
 ------------
  359.999319
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint3D t1, tbl_geom_point3D t2
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint3D t1, tbl_geom_point3D t2
 WHERE bearing(temp, g) IS NOT NULL;
  max 
 -----
  360
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
     max     
 ------------
  355.897777
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(g, temp)), 6))) FROM tbl_geog_point3D t1, tbl_tgeogpoint3D t2
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point3D t1, tbl_tgeogpoint3D t2
 WHERE bearing(g, temp) IS NOT NULL;
     max     
 ------------
  359.997568
 (1 row)
 
-SELECT MAX(maxValue(tRound(tDegrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint3D t1, tbl_geog_point3D t2
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint3D t1, tbl_geog_point3D t2
 WHERE bearing(temp, g) IS NOT NULL;
  max 
 -----

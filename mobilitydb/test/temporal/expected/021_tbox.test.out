@@ -663,8 +663,8 @@ SELECT MAX(tmax(b)) FROM tbl_tboxfloat;
  Sat Dec 22 20:22:00 2001 PST
 (1 row)
 
-SELECT tboxRound(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 1);
-                                     tboxround                                     
+SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 1);
+                                       round                                       
 -----------------------------------------------------------------------------------
  TBOXFLOAT XT([1, 2],[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
@@ -857,7 +857,7 @@ SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', interv
 (1 row)
 
 /* Errors */
-SELECT tboxRound(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', -1);
+SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', -1);
 ERROR:  The value cannot be negative: -1
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])', -1.0);
 ERROR:  Invalid value to expand box: -1.000000
@@ -865,13 +865,13 @@ SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-02])', 2);
 ERROR:  The tbox must have X dimension
 SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
 ERROR:  The tbox must have T dimension
-SELECT tboxRound(tbox 'TBOXFLOAT XT([1.123456789,2.123456789],[2001-01-01,2001-01-02])', 2);
-                                        tboxround                                        
+SELECT round(tbox 'TBOXFLOAT XT([1.123456789,2.123456789],[2001-01-01,2001-01-02])', 2);
+                                          round                                          
 -----------------------------------------------------------------------------------------
  TBOXFLOAT XT([1.12, 2.12],[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT tboxRound(tbox 'TBOX T([2001-01-01,2001-01-02])', 2);
+SELECT round(tbox 'TBOX T([2001-01-01,2001-01-02])', 2);
 ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])' && tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])';
  ?column? 

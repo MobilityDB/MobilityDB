@@ -89,16 +89,16 @@ SELECT asEWKT(pose 'Pose(Point(1 2), 0.5)'::posechain);
 -- A two-link arm turned a quarter turn at the shoulder: the hand is North of it.
 -- The turn is written as pi()/2 rather than as a literal, which keeps the
 -- quarter turn exact without spelling seventeen digits into the test.
-SELECT asEWKT(poseRound(pose(posechain(ARRAY[pose(ST_Point(0,0), pi()/2),
+SELECT asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(0,0), pi()/2),
   pose(ST_Point(10,0), 0)])), 6));
 -- Each prefix of a three-link arm, one link turned a quarter turn from its parent
-SELECT asEWKT(poseRound(pose(posechain(ARRAY[pose(ST_Point(0,0), 0),
+SELECT asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(0,0), 0),
   pose(ST_Point(1,0), pi()/2), pose(ST_Point(1,0), 0)]), n), 6))
   FROM generate_series(1, 3) AS n;
-SELECT ST_AsText(geometryRound(point(posechain(ARRAY[pose(ST_Point(0,0), 0),
+SELECT ST_AsText(round(point(posechain(ARRAY[pose(ST_Point(0,0), 0),
   pose(ST_Point(1,0), pi()/2), pose(ST_Point(1,0), 0)]))::geometry, 6));
 -- The box spans every joint, not only the innermost one
-SELECT stboxRound(stbox(posechain(ARRAY[pose(ST_Point(0,0), 0),
+SELECT round(stbox(posechain(ARRAY[pose(ST_Point(0,0), 0),
   pose(ST_Point(1,0), pi()/2), pose(ST_Point(1,0), 0)])), 6);
 
 -------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ SELECT asEWKT(poses(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0
 -- Transformations
 -------------------------------------------------------------------------------
 
-SELECT asEWKT(posechainRound(posechain 'PoseChain(Pose(Point(1.123456789 2.123456789), 0.123456789), Pose(Point(3.123456789 0), 0))', 6));
+SELECT asEWKT(round(posechain 'PoseChain(Pose(Point(1.123456789 2.123456789), 0.123456789), Pose(Point(3.123456789 0), 0))', 6));
 
 -------------------------------------------------------------------------------
 -- SRID
@@ -128,8 +128,8 @@ SELECT asEWKT(posechainRound(posechain 'PoseChain(Pose(Point(1.123456789 2.12345
 
 SELECT SRID(posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))');
 SELECT SRID(setSRID(posechain 'PoseChain(Pose(Point(1 2), 0)) ', 3812));
-SELECT asEWKT(posechainRound(transform(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 4326), 6));
-SELECT asEWKT(posechainRound(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(0 0 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 6));
+SELECT asEWKT(round(transform(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 4326), 6));
+SELECT asEWKT(round(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(0 0 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 6));
 
 -------------------------------------------------------------------------------
 -- Comparisons

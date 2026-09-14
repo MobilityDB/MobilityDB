@@ -37,7 +37,7 @@
 -------------------------------------------------------------------------------
 
 -- Body origin (0,0) trajectory must match the reference cast.
-SELECT asText(tRound(bodyPointTrajectory(
+SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]',
   'Point(0 0)'), 6));
 
@@ -45,13 +45,13 @@ SELECT asText((trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0
 
 -- Body front-right corner (1,0): at t1 (yaw=0) world (1,0); at t2 (yaw=π/2)
 -- the body's +X axis now points +Y, so the corner is at world (10,1).
-SELECT asText(tRound(bodyPointTrajectory(
+SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]',
   'Point(1 0)'), 6));
 
 -- Body back-left corner (0,1): at t1 world (0,1); at t2 world (9,0) (the
 -- corner now extends in the body's -Y direction, which is -X in the world).
-SELECT asText(tRound(bodyPointTrajectory(
+SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),1.5707963267948966)@2026-01-01 00:01:00]',
   'Point(0 1)'), 6));
 
@@ -59,7 +59,7 @@ SELECT asText(tRound(bodyPointTrajectory(
 -- 2D static body (no motion): trajectory is constant.
 -------------------------------------------------------------------------------
 
-SELECT asText(tRound(bodyPointTrajectory(
+SELECT asText(round(bodyPointTrajectory(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(5 5),0)@2026-01-01, Pose(Point(5 5),0)@2026-01-01 00:01:00]',
   'Point(2 3)'), 6));
 

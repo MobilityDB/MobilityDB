@@ -1052,7 +1052,7 @@ SELECT hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
 -- The footprint of a tile is the lon/lat envelope of its QUADBIN cell, so the
 -- cast carries the tile extent without the pixels. The latitude bound is the
 -- Web-Mercator limit, a transcendental value, so the box is rounded.
-SELECT stboxRound(stbox(raquet('\x01020304'::bytea, 2, 2,
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2,
   5193776270265024512::bigint, 'UINT8')), 6);
 
 -- The cast form and the function form agree.
@@ -1095,7 +1095,7 @@ CREATE INDEX test_raquet_tiles_spgist ON test_raquet_tiles
   USING spgist (stbox(tile));
 
 -- The extent of a set of tiles composes the footprint with the stbox extent.
-SELECT stboxRound(extent(stbox(tile)), 6) FROM test_raquet_tiles;
+SELECT round(extent(stbox(tile)), 6) FROM test_raquet_tiles;
 
 -- Tiles are selected by overlap with a region of interest.
 SELECT count(*) FROM test_raquet_tiles

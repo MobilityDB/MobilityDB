@@ -557,7 +557,7 @@ PG_FUNCTION_INFO_V1(Posechain_round);
  * @ingroup mobilitydb_posechain_base_transf
  * @brief Return a pose chain with the values of its links rounded to a number
  * of decimal places
- * @sqlfn posechainRound()
+ * @sqlfn round()
  */
 Datum
 Posechain_round(PG_FUNCTION_ARGS)

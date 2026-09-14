@@ -151,7 +151,7 @@ CREATE CAST (npointset AS stbox) WITH FUNCTION stbox(npointset);
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION setRound(npointset, integer DEFAULT 0)
+CREATE FUNCTION round(npointset, integer DEFAULT 0)
   RETURNS npointset
   AS 'MODULE_PATHNAME', 'Set_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

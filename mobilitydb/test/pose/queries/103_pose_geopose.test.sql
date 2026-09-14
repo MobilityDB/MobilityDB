@@ -178,7 +178,7 @@ SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01
 -- against the outer frame, so a 2D pose comes back three-dimensional.
 SELECT asGeoPose(tpose '[Geodpose(Point(0 0), 0)@2026-01-01, Geodpose(Point(0 0), 0.5)@2026-01-02]', 0, 6);
 -- Round-trip preserves the underlying pose values.
-SELECT asText(tRound(tposeFromGeoPose(asGeoPose(tpose '[Geodpose(Point(0 0), 0)@2026-01-01, Geodpose(Point(0 1), 0)@2026-01-02]', 0, 15)), 6));
+SELECT asText(round(tposeFromGeoPose(asGeoPose(tpose '[Geodpose(Point(0 0), 0)@2026-01-01, Geodpose(Point(0 1), 0)@2026-01-02]', 0, 15)), 6));
 
 -- A 3D yaw-only TSequence. A Series carries a quaternion whichever
 -- orientation encoding is asked for.
@@ -400,17 +400,17 @@ ORDER BY code;
 -------------------------------------------------------------------------------
 
 -- A temporal instant round-trips through its Basic document.
-SELECT asText(tRound(tposeFromGeoPose(asGeoPose(
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
   tpose 'Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01', 0, 15)), 6));
 
 -- A Regular Series round-trips to the same value, to the emitted precision.
-SELECT asText(tRound(tposeFromGeoPose(asGeoPose(
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
   tpose '[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
     Geodpose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02,
     Geodpose(Point(10 47 1700), 1, 0, 0, 0)@2026-01-03]', 0, 15)), 6));
 
 -- An Irregular Series round-trips its uneven spacing too.
-SELECT asText(tRound(tposeFromGeoPose(asGeoPose(
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
   tpose '[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
     Geodpose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 15)), 6));
 
@@ -426,7 +426,7 @@ SELECT interp(tposeFromGeoPose(asGeoPose(
 
 -- A Series has neither gaps nor open bounds, so a sequence set flattens into
 -- one closed sequence.
-SELECT asText(tRound(tposeFromGeoPose(asGeoPose(
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
   tpose '{[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
     Geodpose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02],
    [Geodpose(Point(10 50 1700), 1, 0, 0, 0)@2026-01-04]}', 0, 15)), 6));
@@ -434,7 +434,7 @@ SELECT asText(tRound(tposeFromGeoPose(asGeoPose(
 -- A document written by another implementation reads as well. This is the
 -- Irregular Series example of the standard; its poseCount states the length
 -- of its own inner frame array.
-SELECT asText(tRound(tposeFromGeoPose('{
+SELECT asText(round(tposeFromGeoPose('{
   "header": {"poseCount": 3, "startInstant": 1630560671429,
     "stopInstant": 1630560716429,
     "transitionModel": {"authority": "/geopose/1.0", "id": "none",
@@ -454,7 +454,7 @@ SELECT asText(tRound(tposeFromGeoPose('{
   "trailer": {"poseCount": 3}}'), 4));
 
 -- The Regular Series example reads from its interPoseDuration alone.
-SELECT asText(tRound(tposeFromGeoPose('{
+SELECT asText(round(tposeFromGeoPose('{
   "header": {"poseCount": 3, "startInstant": 1630560671367,
     "stopInstant": 1630560673367,
     "transitionModel": {"authority": "/geopose/1.0", "id": "interpolate",

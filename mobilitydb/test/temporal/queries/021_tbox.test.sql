@@ -211,7 +211,7 @@ SELECT MAX(tmax(b)) FROM tbl_tboxfloat;
 -- Transformation functions
 -------------------------------------------------------------------------------
 
-SELECT tboxRound(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 1);
+SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 1);
 
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', 1.0);
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', -1.0);
@@ -263,13 +263,13 @@ SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02))', interv
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', interval '-1 day');
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', interval '-2 days');
 /* Errors */
-SELECT tboxRound(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', -1);
+SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', -1);
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])', -1.0);
 SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-02])', 2);
 SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
 
-SELECT tboxRound(tbox 'TBOXFLOAT XT([1.123456789,2.123456789],[2001-01-01,2001-01-02])', 2);
-SELECT tboxRound(tbox 'TBOX T([2001-01-01,2001-01-02])', 2);
+SELECT round(tbox 'TBOXFLOAT XT([1.123456789,2.123456789],[2001-01-01,2001-01-02])', 2);
+SELECT round(tbox 'TBOX T([2001-01-01,2001-01-02])', 2);
 
 -------------------------------------------------------------------------------
 -- Topological operators

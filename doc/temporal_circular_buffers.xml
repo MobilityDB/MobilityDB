@@ -226,13 +226,13 @@ SELECT radius(cbuffer 'Cbuffer(Point(1 1), 0.3)');
 			<title>Transformations</title>
 			<itemizedlist>
 				<listitem xml:id="cbuffer_round">
-					<indexterm significance="normal"><primary><varname>cbufferRound</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 					<para>Round the point and the radius of the circular buffer to the number of decimal places</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-cbufferRound(cbuffer,integer=0) → cbuffer
+round(cbuffer,integer=0) → cbuffer
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(cbufferRound(cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
+SELECT asText(round(cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
 -- Cbuffer(POINT(1.123457 1.123457),0.123457)
 </programlisting>
 				</listitem>
@@ -780,13 +780,13 @@ SELECT asText(setInterp(tcbuffer '{[Cbuffer(Point(1 1),0.1)@2001-01-01],
 			</listitem>
 
 			<listitem xml:id="tcbuffer_round">
-				<indexterm significance="normal"><primary><varname>tRound</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 				<para>Round the points and the radii of the temporal circular buffer to the number of decimal places</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tRound(tcbuffer,integer) → tcbuffer
+round(tcbuffer,integer) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(tRound(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-01-01,
+SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-01-01,
   Cbuffer(Point(1 1),0.5)@2001-01-02)}', 3));
 -- {[Cbuffer(POINT(1 1.123),0.123)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-02)}
 </programlisting>

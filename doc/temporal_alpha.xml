@@ -429,67 +429,65 @@ SELECT tfloat '[-1@2001-01-04, 1@2001-01-05]' / tfloat '[-1@2001-01-01, 1@2001-0
 			</listitem>
 
 			<listitem xml:id="tnumber_abs">
-				<indexterm significance="normal"><primary><varname>tAbs</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>abs</varname></primary></indexterm>
 				<para>Return the absolute value of the temporal number</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tAbs(tnumber) → tnumber
+abs(tnumber) → tnumber
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tAbs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
+SELECT abs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 0@2001-01-02, 1@2001-01-03, 0@2001-01-04, 1@2001-01-05]
-SELECT tAbs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
+SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 1@2001-01-05]
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tnumber_floor">
-				<indexterm significance="normal"><primary><varname>tFloor</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tCeil</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floor</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ceil</varname></primary></indexterm>
 				<para>Round up or down to the neareast integer</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tFloor(tfloat) → tfloat
-tCeil(tfloat) → tfloat
+floor(tfloat) → tfloat
+ceil(tfloat) → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tFloor(tfloat '[0.5@2001-01-01, 1.5@2001-01-02]');
+SELECT floor(tfloat '[0.5@2001-01-01, 1.5@2001-01-02]');
 -- [0@2001-01-01, 1@2001-01-02]
-SELECT tCeil(tfloat '[0.5@2001-01-01, 0.6@2001-01-02, 0.7@2001-01-03]');
+SELECT ceil(tfloat '[0.5@2001-01-01, 0.6@2001-01-02, 0.7@2001-01-03]');
 -- [1@2001-01-01, 1@2001-01-03]
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tnumber_round">
-				<indexterm significance="normal"><primary><varname>tRound</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 				<para>Round to a number of decimal places</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tRound(tfloat,integer=0) → tfloat
+round(tfloat,integer=0) → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tRound(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]', 2);
+SELECT round(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]', 2);
 -- [0.79@2001-01-01, 2.36@2001-01-02]
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tnumber_degrees">
 				<indexterm significance="normal"><primary><varname>degrees</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tDegrees</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tRadians</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>radians</varname></primary></indexterm>
 				<para>Convert to degrees or radians</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-degrees(float,normalize boolean=false) → float
-tDegrees(tfloat,normalize boolean=false) → tfloat
-tRadians(tfloat) → tfloat
+degrees({float,tfloat},normalize boolean=false) → tfloat
+radians(tfloat) → tfloat
 </programlisting>
-				<para>The additional parameter of the degrees functions normalizes the values between 0 and 360 degrees.</para>
+				<para>The additional parameter in the <varname>degrees</varname> function can be used to normalize the values between 0 and 360 degrees.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT degrees(pi() * 5);
 -- 900
 SELECT degrees(pi() * 5, true);
 -- 180
-SELECT tRound(tDegrees(tfloat '[0.785398163397448@2001-01-01,
+SELECT round(degrees(tfloat '[0.785398163397448@2001-01-01,
   2.356194490192345@2001-01-02]'));
 -- [45@2001-01-01, 135@2001-01-02]
-SELECT tRadians(tfloat '[45@2001-01-01, 135@2001-01-02]');
+SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 -- [0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]
 </programlisting>
 			</listitem>
@@ -570,55 +568,55 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 			</listitem>
 
 			<listitem xml:id="tnumber_ln">
-				<indexterm significance="normal"><primary><varname>tLn</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tLog10</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ln</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>log10</varname></primary></indexterm>
 				<para>Return the natural logarithm and the base 10 logarithm of a temporal float</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tLn(tfloat) → tfloat
-tLog10(tfloat) → tfloat
+ln(tfloat) → tfloat
+log10(tfloat) → tfloat
 </programlisting>
 				<para>The temporal float cannot be zero or negative</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tLn(tfloat '{[1@2001-01-01, 10@2001-01-02, 5@2001-01-03],
+SELECT ln(tfloat '{[1@2001-01-01, 10@2001-01-02, 5@2001-01-03],
   [1@2001-01-04, 1@2001-01-05]}');
 /* {[0@2001-01-01, 2.302585092994046@2001-01-02, 1.6094379124341@2001-01-03], 
    [0@2001-01-04, 0@2001-01-05]} */
-SELECT tLog10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
+SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
 -- ERROR:  Cannot take logarithm of zero or a negative number
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tnumber_exp">
-				<indexterm significance="normal"><primary><varname>tExp</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>exp</varname></primary></indexterm>
 				<para>Return the exponential (e raised to the given power) of a temporal float</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tExp(tfloat) → tfloat
+exp(tfloat) → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tExp(tfloat '{[1@2001-01-01, 10@2001-01-02], [1@2001-01-04, 1@2001-01-05]}');
+SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02], [1@2001-01-04, 1@2001-01-05]}');
 /* {[2.718281828459045@2001-01-01, 22026.465794806718@2001-01-02],
    [2.718281828459045@2001-01-04, 2.718281828459045@2001-01-05]} */
-SELECT tExp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
+SELECT exp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
 -- {0.000045399929762@2001-01-01, 1@2001-01-02, 22026.465794806718@2001-01-03}
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tnumber_sin">
-				<indexterm significance="normal"><primary><varname>tSin</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tCos</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tTan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>sin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cos</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tan</varname></primary></indexterm>
 				<para>Return the sine, cosine, or tangent of a temporal float (argument in radians)</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tSin(tfloat) → tfloat
-tCos(tfloat) → tfloat
-tTan(tfloat) → tfloat
+sin(tfloat) → tfloat
+cos(tfloat) → tfloat
+tan(tfloat) → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tRound(tSin(tfloat '[0@2001-01-01, 6.283185307@2001-01-02]'), 6);
+SELECT round(sin(tfloat '[0@2001-01-01, 6.283185307@2001-01-02]'), 6);
 -- [0@2001-01-01, -0.000000@2001-01-02]
-SELECT tRound(tCos(tfloat '[0@2001-01-01, 3.141592654@2001-01-02]'), 6);
+SELECT round(cos(tfloat '[0@2001-01-01, 3.141592654@2001-01-02]'), 6);
 -- [1@2001-01-01, -1@2001-01-02]
-SELECT tRound(tTan(tfloat '{0@2001-01-01, 0.785398163@2001-01-02}'), 6);
+SELECT round(tan(tfloat '{0@2001-01-01, 0.785398163@2001-01-02}'), 6);
 -- {0@2001-01-01, 1@2001-01-02}
 </programlisting>
 			</listitem>

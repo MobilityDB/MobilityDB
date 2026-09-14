@@ -29,54 +29,54 @@
 
 -------------------------------------------------------------------------------
 
-SELECT ST_Extent(geometryRound(temp::geometry, 6)) FROM tbl_tgeompoint;
-SELECT ST_Extent(geometryRound(temp::geometry, 6)) FROM tbl_tgeompoint3D;
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(geometryRound(temp::geometry, 6)) FROM tbl_tgeompoint;
-SELECT ST_Extent(geometryRound(temp::geometry, 6)) FROM tbl_tgeompoint3D;
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(geometryRound((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
-SELECT ST_Extent(geometryRound((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
-SELECT ST_Extent(geometryRound((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
-SELECT ST_Extent(geometryRound((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
 --------------------------------------------------------
 
-SELECT ST_Extent(geometryRound(geometry(temp, true), 6)) FROM tbl_tgeompoint;
-SELECT ST_Extent(geometryRound(geometry(temp, true), 6)) FROM tbl_tgeompoint3D;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(geometryRound(geometry(temp, true), 6)) FROM tbl_tgeompoint;
-SELECT ST_Extent(geometryRound(geometry(temp, true), 6)) FROM tbl_tgeompoint3D;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(geometryRound(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
-SELECT ST_Extent(geometryRound(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
-SELECT ST_Extent(geometryRound(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
-SELECT ST_Extent(geometryRound(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
 
-SELECT stboxRound(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint;
-SELECT stboxRound(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint3D;
+SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint;
+SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint3D;
 
 -- The reason for the low counts is that the lower/ upper bounds are lost in the translation
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
 
-SELECT stboxRound(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
-SELECT stboxRound(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
 
-SELECT stboxRound(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
-SELECT stboxRound(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
 
-SELECT ST_Extent(geometryRound(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
-SELECT ST_Extent(geometryRound(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_Extent(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_Extent(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
 
-SELECT ST_Extent(geometryRound(geoMeasure(temp, tRound(speed(temp),2)), 6)) FROM tbl_tgeompoint  WHERE interp(temp) = 'Linear';
-SELECT ST_Extent(geometryRound(geoMeasure(temp, tRound(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
+SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint  WHERE interp(temp) = 'Linear';
+SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
 
 -------------------------------------------------------------------------------
 

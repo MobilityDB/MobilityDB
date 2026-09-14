@@ -98,14 +98,14 @@ SELECT asEWKT(pose 'Pose(Point(1 2), 0.5)'::posechain);
  PoseChain(Pose(POINT(1 2),0.5))
 (1 row)
 
-SELECT asEWKT(poseRound(pose(posechain(ARRAY[pose(ST_Point(0,0), pi()/2),
+SELECT asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(0,0), pi()/2),
   pose(ST_Point(10,0), 0)])), 6));
            asewkt           
 ----------------------------
  Pose(POINT(0 10),1.570796)
 (1 row)
 
-SELECT asEWKT(poseRound(pose(posechain(ARRAY[pose(ST_Point(0,0), 0),
+SELECT asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(0,0), 0),
   pose(ST_Point(1,0), pi()/2), pose(ST_Point(1,0), 0)]), n), 6))
   FROM generate_series(1, 3) AS n;
           asewkt           
@@ -115,16 +115,16 @@ SELECT asEWKT(poseRound(pose(posechain(ARRAY[pose(ST_Point(0,0), 0),
  Pose(POINT(1 1),1.570796)
 (3 rows)
 
-SELECT ST_AsText(geometryRound(point(posechain(ARRAY[pose(ST_Point(0,0), 0),
+SELECT ST_AsText(round(point(posechain(ARRAY[pose(ST_Point(0,0), 0),
   pose(ST_Point(1,0), pi()/2), pose(ST_Point(1,0), 0)]))::geometry, 6));
  st_astext  
 ------------
  POINT(1 1)
 (1 row)
 
-SELECT stboxRound(stbox(posechain(ARRAY[pose(ST_Point(0,0), 0),
+SELECT round(stbox(posechain(ARRAY[pose(ST_Point(0,0), 0),
   pose(ST_Point(1,0), pi()/2), pose(ST_Point(1,0), 0)])), 6);
-      stboxround      
+        round         
 ----------------------
  STBOX X((0,0),(1,1))
 (1 row)
@@ -165,7 +165,7 @@ SELECT asEWKT(poses(posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0
  {"Pose(POINT(0 0),0)","Pose(POINT(1 0),0)"}
 (1 row)
 
-SELECT asEWKT(posechainRound(posechain 'PoseChain(Pose(Point(1.123456789 2.123456789), 0.123456789), Pose(Point(3.123456789 0), 0))', 6));
+SELECT asEWKT(round(posechain 'PoseChain(Pose(Point(1.123456789 2.123456789), 0.123456789), Pose(Point(3.123456789 0), 0))', 6));
                                     asewkt                                    
 ------------------------------------------------------------------------------
  PoseChain(Pose(POINT(1.123457 2.123457),0.123457),Pose(POINT(3.123457 0),0))
@@ -183,13 +183,13 @@ SELECT SRID(setSRID(posechain 'PoseChain(Pose(Point(1 2), 0)) ', 3812));
  3812
 (1 row)
 
-SELECT asEWKT(posechainRound(transform(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 4326), 6));
+SELECT asEWKT(round(transform(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 4326), 6));
                                         asewkt                                         
 ---------------------------------------------------------------------------------------
  SRID=4326;PoseChain(GeodPose(POINT Z (8 47 0),1,0,0,0),Pose(POINT Z (0 0 1),1,0,0,0))
 (1 row)
 
-SELECT asEWKT(posechainRound(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(0 0 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 6));
+SELECT asEWKT(round(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(0 0 0), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))', 4978), 6));
                                                asewkt                                               
 ----------------------------------------------------------------------------------------------------
  SRID=4978;PoseChain(GeodPose(POINT Z (6378137 0 0),0.5,0.5,0.5,0.5),Pose(POINT Z (0 0 1),1,0,0,0))

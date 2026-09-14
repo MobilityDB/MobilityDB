@@ -93,19 +93,19 @@ SELECT asEWKT(set(ARRAY[posechain 'PoseChain(Pose(Point(0 0), 0))',
  {"PoseChain(Pose(POINT(0 0),0))", "PoseChain(Pose(POINT(1 0),0))"}
 (1 row)
 
-SELECT stboxRound(stbox(posechainset '{"PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))", "PoseChain(Pose(Point(1 5), 0))"}'), 6);
-      stboxround       
+SELECT round(stbox(posechainset '{"PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))", "PoseChain(Pose(Point(1 5), 0))"}'), 6);
+         round         
 -----------------------
  STBOX X((0,0),(10,5))
 (1 row)
 
-SELECT stboxRound((posechainset '{"PoseChain(Pose(Point(0 0), 0))"}')::stbox, 6);
-      stboxround      
+SELECT round((posechainset '{"PoseChain(Pose(Point(0 0), 0))"}')::stbox, 6);
+        round         
 ----------------------
  STBOX X((0,0),(0,0))
 (1 row)
 
-SELECT asEWKT(setRound(posechainset '{"PoseChain(Pose(Point(1.123456789 2.123456789), 0.5))"}', 3));
+SELECT asEWKT(round(posechainset '{"PoseChain(Pose(Point(1.123456789 2.123456789), 0.5))"}', 3));
                    asewkt                    
 ---------------------------------------------
  {"PoseChain(Pose(POINT(1.123 2.123),0.5))"}
@@ -165,7 +165,7 @@ SELECT SRID(setSRID(posechainset '{"PoseChain(Pose(Point(1 2), 0.5))"}', 3812));
  3812
 (1 row)
 
-SELECT asEWKT(setRound(transform(transform(posechainset '{"SRID=4326;PoseChain(Pose(Point(8 47), 0.5))"}', 3812), 4326), 6));
+SELECT asEWKT(round(transform(transform(posechainset '{"SRID=4326;PoseChain(Pose(Point(8 47), 0.5))"}', 3812), 4326), 6));
                      asewkt                     
 ------------------------------------------------
  SRID=4326;{"PoseChain(Pose(POINT(8 47),0.5))"}

@@ -83,9 +83,9 @@ mathfunc_families:
     - {sig: "tDiv(tfloat, tfloat)", ret: "tfloat", sym: "Div_tnumber_tnumber"}
   - lit: "\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tfloat, RIGHTARG = float\n);\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tfloat, RIGHTARG = tfloat\n);\n\n/******************************************************************************/\n\n"
   - fns:
-    - {sig: "tAbs(tbigint)", ret: "tbigint", sym: "Tnumber_abs"}
-    - {sig: "tAbs(tint)", ret: "tint", sym: "Tnumber_abs"}
-    - {sig: "tAbs(tfloat)", ret: "tfloat", sym: "Tnumber_abs"}
+    - {sig: "abs(tbigint)", ret: "tbigint", sym: "Tnumber_abs"}
+    - {sig: "abs(tint)", ret: "tint", sym: "Tnumber_abs"}
+    - {sig: "abs(tfloat)", ret: "tfloat", sym: "Tnumber_abs"}
   - lit: "\n"
   - fns:
     - {sig: "deltaValue(tbigint)", ret: "tbigint", sym: "Tnumber_delta_value"}
@@ -93,23 +93,23 @@ mathfunc_families:
     - {sig: "deltaValue(tfloat)", ret: "tfloat", sym: "Tnumber_delta_value"}
   - lit: "\n"
   - fns:
-    - {sig: "tFloor(tfloat)", ret: "tfloat", sym: "Tfloat_floor"}
+    - {sig: "floor(tfloat)", ret: "tfloat", sym: "Tfloat_floor"}
   - lit: "\n"
   - fns:
-    - {sig: "tCeil(tfloat)", ret: "tfloat", sym: "Tfloat_ceil"}
+    - {sig: "ceil(tfloat)", ret: "tfloat", sym: "Tfloat_ceil"}
   - lit: "\n"
   - fns:
-    - {sig: "tRound(tfloat, integer DEFAULT 0)", ret: "tfloat", sym: "Temporal_round"}
-    - {sig: "tRound(tfloat[], integer DEFAULT 0)", ret: "tfloat[]", sym: "Temporalarr_round"}
+    - {sig: "round(tfloat, integer DEFAULT 0)", ret: "tfloat", sym: "Temporal_round"}
+    - {sig: "round(tfloat[], integer DEFAULT 0)", ret: "tfloat[]", sym: "Temporalarr_round"}
   - lit: "\n"
   - fns:
     - {sig: "degrees(float, boolean DEFAULT FALSE)", ret: "float", sym: "Float_degrees"}
   - lit: "\n"
   - fns:
-    - {sig: "tDegrees(tfloat, boolean DEFAULT FALSE)", ret: "tfloat", sym: "Tfloat_degrees"}
+    - {sig: "degrees(tfloat, boolean DEFAULT FALSE)", ret: "tfloat", sym: "Tfloat_degrees"}
   - lit: "\n"
   - fns:
-    - {sig: "tRadians(tfloat)", ret: "tfloat", sym: "Tfloat_radians"}
+    - {sig: "radians(tfloat)", ret: "tfloat", sym: "Tfloat_radians"}
   - lit: "\n"
   - fns:
     - {sig: "angularDifference(float, float)", ret: "float", sym: "Float_angular_difference"}
@@ -123,20 +123,20 @@ mathfunc_families:
     - {sig: "derivative(tfloat)", ret: "tfloat", sym: "Temporal_derivative"}
   - lit: "\n"
   - fns:
-    - {sig: "tExp(tfloat)", ret: "tfloat", sym: "Tfloat_exp"}
+    - {sig: "exp(tfloat)", ret: "tfloat", sym: "Tfloat_exp"}
   - lit: "\n"
   - fns:
-    - {sig: "tLn(tfloat)", ret: "tfloat", sym: "Tfloat_ln"}
+    - {sig: "ln(tfloat)", ret: "tfloat", sym: "Tfloat_ln"}
   - lit: "\n"
   - fns:
-    - {sig: "tLog10(tfloat)", ret: "tfloat", sym: "Tfloat_log10"}
+    - {sig: "log10(tfloat)", ret: "tfloat", sym: "Tfloat_log10"}
   - lit: "\n"
   - fns:
-    - {sig: "tSin(tfloat)", ret: "tfloat", sym: "Tfloat_sin"}
+    - {sig: "sin(tfloat)", ret: "tfloat", sym: "Tfloat_sin"}
   - lit: "\n"
   - fns:
-    - {sig: "tCos(tfloat)", ret: "tfloat", sym: "Tfloat_cos"}
+    - {sig: "cos(tfloat)", ret: "tfloat", sym: "Tfloat_cos"}
   - lit: "\n"
   - fns:
-    - {sig: "tTan(tfloat)", ret: "tfloat", sym: "Tfloat_tan"}
+    - {sig: "tan(tfloat)", ret: "tfloat", sym: "Tfloat_tan"}
   - lit: "\n/******************************************************************************/\n"

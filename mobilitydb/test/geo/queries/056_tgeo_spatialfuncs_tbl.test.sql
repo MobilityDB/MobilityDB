@@ -56,14 +56,14 @@ SELECT temp::tgeometry FROM tbl_tgeography LIMIT 10;
 SELECT setSRID(temp,4326)::tgeography FROM tbl_tgeometry3D LIMIT 10;
 SELECT temp::tgeometry FROM tbl_tgeography3D LIMIT 10;
 
-SELECT asText(tRound(temp, 2)) FROM tbl_tgeometry LIMIT 10;
-SELECT asText(tRound(temp, 2)) FROM tbl_tgeography LIMIT 10;
-SELECT asText(tRound(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
-SELECT asText(tRound(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeometry LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeography LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
 
 -- Round an array of temporal points
-SELECT asText(tRound(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE inst IS NOT NULL AND k % 20 = 1;
-SELECT asText(tRound(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE inst IS NOT NULL AND k % 20 = 1;
 
 SELECT MAX(ST_NPoints(traversedArea(temp))) FROM tbl_tgeometry;
 SELECT MAX(ST_NPoints(traversedArea(temp)::geometry)) FROM tbl_tgeography;

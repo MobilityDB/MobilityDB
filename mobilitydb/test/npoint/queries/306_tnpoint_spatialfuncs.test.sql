@@ -36,29 +36,29 @@ SELECT srid(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npo
 SELECT srid(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]');
 SELECT srid(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}');
 
-SELECT ST_AsText(geometryRound(trajectory(tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
+SELECT ST_AsText(round(trajectory(tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
 -- PostGIS 3.3 changed the output of MULTIPOINT
 -- SELECT ST_AsText(round(trajectory(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
-SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geometryRound(trajectory(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6))) AS t(dp);
-SELECT ST_AsText(geometryRound(trajectory(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(trajectory(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6))) AS t(dp);
+SELECT ST_AsText(round(trajectory(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(trajectory(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
 -- PostGIS 3.3 changed the output of MULTIPOINT
 -- SELECT ST_AsText(round(trajectory(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03]'), 6));
-SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geometryRound(trajectory(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03]'), 6))) AS t(dp);
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03]'), 6))) AS t(dp);
 -- PostGIS 3.3 changed the output of MULTIPOINT
 -- SELECT ST_AsText(round(trajectory(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
-SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geometryRound(trajectory(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6))) AS t(dp);
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.2)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6))) AS t(dp);
 
-SELECT ST_AsText(geometryRound(trajectory(tnpoint '{Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-02}'), 6));
-SELECT ST_AsText(geometryRound(trajectory(tnpoint '{[Npoint(1, 0.0)@2001-01-01, Npoint(1, 1.0)@2001-01-02], [Npoint(2, 0.1)@2001-01-03, Npoint(2, 0.5)@2001-01-04]}'), 6));
-SELECT ST_AsText(geometryRound(trajectory(tnpoint '{[npoint(2, 0.2)@2001-01-01, npoint(2, 0.3)@2001-01-02],[npoint(1, 0.0)@2001-01-03, npoint(1, 1.0)@2001-01-04]}'), 6));
+SELECT ST_AsText(round(trajectory(tnpoint '{Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-02}'), 6));
+SELECT ST_AsText(round(trajectory(tnpoint '{[Npoint(1, 0.0)@2001-01-01, Npoint(1, 1.0)@2001-01-02], [Npoint(2, 0.1)@2001-01-03, Npoint(2, 0.5)@2001-01-04]}'), 6));
+SELECT ST_AsText(round(trajectory(tnpoint '{[npoint(2, 0.2)@2001-01-01, npoint(2, 0.3)@2001-01-02],[npoint(1, 0.0)@2001-01-03, npoint(1, 1.0)@2001-01-04]}'), 6));
 
-SELECT tRound(atGeometry(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(atGeometry(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(atGeometry(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(atGeometry(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(atGeometry(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(atGeometry(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(atGeometry(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(atGeometry(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(atGeometry(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(atGeometry(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(atGeometry(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(atGeometry(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
 
 SELECT atGeometry(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon empty');
 SELECT atGeometry(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon empty');
@@ -67,12 +67,12 @@ SELECT atGeometry(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-0
 SELECT atGeometry(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon empty');
 SELECT atGeometry(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon empty');
 
-SELECT tRound(minusGeometry(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(minusGeometry(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(minusGeometry(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(minusGeometry(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(minusGeometry(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
-SELECT tRound(minusGeometry(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(minusGeometry(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(minusGeometry(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(minusGeometry(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(minusGeometry(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(minusGeometry(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+SELECT round(minusGeometry(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
 
 SELECT minusGeometry(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon empty');
 SELECT minusGeometry(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon empty');
@@ -81,41 +81,41 @@ SELECT minusGeometry(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-0
 SELECT minusGeometry(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon empty');
 SELECT minusGeometry(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon empty');
 
-SELECT tRound(atStbox(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(atStbox(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(atStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(atStbox(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(atStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(atStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(atStbox(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(atStbox(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(atStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(atStbox(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(atStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(atStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
 
-SELECT tRound(atStbox(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(atStbox(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(atStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(atStbox(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(atStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(atStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(atStbox(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(atStbox(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(atStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(atStbox(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(atStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(atStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
 
-SELECT tRound(minusStbox(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(minusStbox(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(minusStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(minusStbox(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(minusStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
-SELECT tRound(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(minusStbox(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(minusStbox(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(minusStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(minusStbox(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(minusStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
+SELECT round(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])'), 6);
 
-SELECT tRound(minusStbox(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(minusStbox(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(minusStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(minusStbox(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(minusStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
-SELECT tRound(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(minusStbox(tnpoint 'Npoint(1, 0.5)@2001-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(minusStbox(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(minusStbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(minusStbox(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(minusStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
+SELECT round(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2001-01-01,2001-01-02])', false), 6);
 
 -------------------------------------------------------------------------------
 -- atStbox/minusStbox for a linear tnpoint whose route (gid 1) bends between
 -- the two instants, so the box boundary is crossed at a point that is NOT on
 -- the straight chord between the instants' route-projected positions
 
-SELECT tRound(atStbox(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.5)@2001-01-02]', 'SRID=5676;STBOX X((55,75),(75,85))'), 6);
-SELECT tRound(minusStbox(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.5)@2001-01-02]', 'SRID=5676;STBOX X((55,75),(75,85))'), 6);
+SELECT round(atStbox(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.5)@2001-01-02]', 'SRID=5676;STBOX X((55,75),(75,85))'), 6);
+SELECT round(minusStbox(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.5)@2001-01-02]', 'SRID=5676;STBOX X((55,75),(75,85))'), 6);
 
 -- Partition property: atStbox and minusStbox partition the original value
 WITH temp(temp, box) AS (
@@ -136,25 +136,25 @@ SELECT round(length(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01
 SELECT round(length(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
 SELECT round(length(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);
 
-SELECT tRound(cumulativeLength(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
-SELECT tRound(cumulativeLength(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);
-SELECT tRound(cumulativeLength(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
-SELECT tRound(cumulativeLength(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);
+SELECT round(cumulativeLength(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
+SELECT round(cumulativeLength(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);
+SELECT round(cumulativeLength(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
+SELECT round(cumulativeLength(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);
 
-SELECT tRound(speed(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
-SELECT tRound(speed(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);
+SELECT round(speed(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
+SELECT round(speed(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);
 /* Errors */
-SELECT tRound(speed(tnpoint 'Npoint(1, 0.2)@2001-01-01'), 6);
-SELECT tRound(speed(tnpoint '{Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6);
-SELECT tRound(speed(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
-SELECT tRound(speed(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);
+SELECT round(speed(tnpoint 'Npoint(1, 0.2)@2001-01-01'), 6);
+SELECT round(speed(tnpoint '{Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6);
+SELECT round(speed(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
+SELECT round(speed(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);
 
-SELECT ST_AsText(geometryRound(twCentroid(tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
-SELECT ST_AsText(geometryRound(twCentroid(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
-SELECT ST_AsText(geometryRound(twCentroid(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(twCentroid(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
-SELECT ST_AsText(geometryRound(twCentroid(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(twCentroid(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]}'), 6));
+SELECT ST_AsText(round(twCentroid(tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
+SELECT ST_AsText(round(twCentroid(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
+SELECT ST_AsText(round(twCentroid(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(twCentroid(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(twCentroid(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(twCentroid(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]}'), 6));
 
 -------------------------------------------------------------------------------
 
@@ -302,74 +302,74 @@ SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoin
 
 -------------------------------------------------------------------------------
 
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
 
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon empty'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon empty'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon empty'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon empty'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon empty'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon empty'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01', geometry 'SRID=5676;Polygon empty'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', geometry 'SRID=5676;Polygon empty'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon empty'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon empty'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', geometry 'SRID=5676;Polygon empty'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', geometry 'SRID=5676;Polygon empty'), 6));
 
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
 
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
 
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01', npoint 'Npoint(2, 0.5)'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', npoint 'Npoint(2, 0.5)'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', npoint 'Npoint(2, 0.5)'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', npoint 'Npoint(2, 0.5)'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', npoint 'Npoint(2, 0.5)'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', npoint 'Npoint(2, 0.5)'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01', npoint 'Npoint(2, 0.5)'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', npoint 'Npoint(2, 0.5)'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', npoint 'Npoint(2, 0.5)'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', npoint 'Npoint(2, 0.5)'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', npoint 'Npoint(2, 0.5)'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', npoint 'Npoint(2, 0.5)'), 6));
 
-SELECT ST_AsText(geometryRound(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
+SELECT ST_AsText(round(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
+SELECT ST_AsText(round(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
 
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint 'Npoint(1, 0.5)@2001-01-01',  tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
 
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}',  tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
 
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]',  tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
 
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
-SELECT ST_AsText(geometryRound(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint 'Npoint(1, 0.5)@2001-01-01'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint 'Interp=Step;[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6));
+SELECT ST_AsText(round(shortestLine(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}',  tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6));
 
 -------------------------------------------------------------------------------

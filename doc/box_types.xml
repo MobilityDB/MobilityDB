@@ -587,20 +587,18 @@ SELECT expandTime(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', interval '-2 da
 			</listitem>
 
 			<listitem xml:id="box_round">
-				<indexterm significance="normal"><primary><varname>tboxRound</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>stboxRound</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 				<para>Round the value or the coordinates of the bounding box to a number of decimal places</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tboxRound(tbox,integer=0) → tbox
-stboxRound(stbox,integer=0) → stbox
+round(box,integer=0) → box
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tboxRound(tbox 'TBOXFLOAT XT((1.12345,2.12345),[2001-01-01,2001-01-02])', 2);
+SELECT round(tbox 'TBOXFLOAT XT((1.12345,2.12345),[2001-01-01,2001-01-02])', 2);
 -- TBOXFLOAT XT((1.12,2.12),[2001-01-01, 2001-01-02])
-SELECT stboxRound(stbox 'STBOX XT(((1.12345, 1.12345),(2.12345, 2.12345)),
+SELECT round(stbox 'STBOX XT(((1.12345, 1.12345),(2.12345, 2.12345)),
   [2001-01-01,2001-01-02])', 2);
 -- STBOX XT(((1.12,1.12),(2.12,2.12)),[2001-01-01, 2001-01-02])
-SELECT tboxRound(tstzspan '[2001-01-01, 2001-01-02]'::tbox);
+SELECT round(tstzspan '[2001-01-01, 2001-01-02]'::tbox);
 -- The tbox must have X dimension
 </programlisting>
 			</listitem>
@@ -647,7 +645,7 @@ transformPipeline(stbox,pipeline text,srid integer,is_forward boolean=true) → 
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
 				<para>The SRID of the input box is ignored, and the SRID of the output box will be set to zero unless a value is provided via the optional <varname>srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT stboxRound(transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
+SELECT round(transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
   (6.575317, 51.553167)),[2001-01-01,2001-01-02])', 3812), 6);
 /* SRID=3812;STBOX XT(((502773.429981,511805.120402),(803028.908265,751590.742629)),
    [2001-01-01, 2001-01-02]) */

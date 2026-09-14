@@ -1,41 +1,41 @@
-SELECT stboxRound(stbox(cbuffer 'Cbuffer(Point(1 1),0.5)'), 6);
-          stboxround          
+SELECT round(stbox(cbuffer 'Cbuffer(Point(1 1),0.5)'), 6);
+            round             
 ------------------------------
  STBOX X((0.5,0.5),(1.5,1.5))
 (1 row)
 
-SELECT stboxRound(stbox(cbuffer 'Cbuffer(Point(1 1),0.5)', timestamptz '2001-01-01'), 6);
-                                          stboxround                                          
+SELECT round(stbox(cbuffer 'Cbuffer(Point(1 1),0.5)', timestamptz '2001-01-01'), 6);
+                                            round                                             
 ----------------------------------------------------------------------------------------------
  STBOX XT(((0.5,0.5),(1.5,1.5)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(stbox(cbuffer 'Cbuffer(Point(1 1),0.5)', tstzspan '[2001-01-01, 2001-01-02]'), 6);
-                                          stboxround                                          
+SELECT round(stbox(cbuffer 'Cbuffer(Point(1 1),0.5)', tstzspan '[2001-01-01, 2001-01-02]'), 6);
+                                            round                                             
 ----------------------------------------------------------------------------------------------
  STBOX XT(((0.5,0.5),(1.5,1.5)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(stbox(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01'), 6);
-                                          stboxround                                          
+SELECT round(stbox(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01'), 6);
+                                            round                                             
 ----------------------------------------------------------------------------------------------
  STBOX XT(((0.5,0.5),(1.5,1.5)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(stbox(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.7)@2001-01-03}'), 6);
-                                          stboxround                                          
+SELECT round(stbox(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.7)@2001-01-03}'), 6);
+                                            round                                             
 ----------------------------------------------------------------------------------------------
  STBOX XT(((0.3,0.3),(2.5,2.5)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(stbox(tcbuffer '[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02, Cbuffer(Point(1 1),0.7)@2001-01-03]'), 6);
-                                          stboxround                                          
+SELECT round(stbox(tcbuffer '[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02, Cbuffer(Point(1 1),0.7)@2001-01-03]'), 6);
+                                            round                                             
 ----------------------------------------------------------------------------------------------
  STBOX XT(((0.3,0.3),(1.7,1.7)),[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
-SELECT stboxRound(stbox(tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02, Cbuffer(Point(1 1),0.7)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}'), 6);
-                                          stboxround                                          
+SELECT round(stbox(tcbuffer '{[Cbuffer(Point(1 1),0.4)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02, Cbuffer(Point(1 1),0.7)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}'), 6);
+                                            round                                             
 ----------------------------------------------------------------------------------------------
  STBOX XT(((0.3,0.3),(3.5,3.5)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)

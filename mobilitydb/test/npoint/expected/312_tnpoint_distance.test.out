@@ -1,239 +1,239 @@
-SELECT tRound(geometry 'SRID=5676;Point(1 1)' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
-                 tround                 
+SELECT round(geometry 'SRID=5676;Point(1 1)' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
+                 round                  
 ----------------------------------------
  90.386909@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(geometry 'SRID=5676;Point(1 1)' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
-                                                          tround                                                          
+SELECT round(geometry 'SRID=5676;Point(1 1)' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
+                                                          round                                                           
 --------------------------------------------------------------------------------------------------------------------------
  {100.40563@Mon Jan 01 00:00:00 2001 PST, 90.386909@Tue Jan 02 00:00:00 2001 PST, 90.386909@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT tRound(geometry 'SRID=5676;Point(1 1)' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
-                                                          tround                                                           
+SELECT round(geometry 'SRID=5676;Point(1 1)' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
+                                                           round                                                           
 ---------------------------------------------------------------------------------------------------------------------------
  [105.852042@Mon Jan 01 00:00:00 2001 PST, 95.260955@Tue Jan 02 00:00:00 2001 PST, 90.386909@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT tRound(geometry 'SRID=5676;Point(1 1)' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
-                                                                                                    tround                                                                                                     
+SELECT round(geometry 'SRID=5676;Point(1 1)' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
+                                                                                                     round                                                                                                     
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[105.852042@Mon Jan 01 00:00:00 2001 PST, 95.260955@Tue Jan 02 00:00:00 2001 PST, 90.386909@Wed Jan 03 00:00:00 2001 PST], [81.027522@Thu Jan 04 00:00:00 2001 PST, 81.027522@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT tRound(geometry 'SRID=5676;Point empty' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
- tround 
---------
+SELECT round(geometry 'SRID=5676;Point empty' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
+ round 
+-------
  
 (1 row)
 
-SELECT tRound(geometry 'SRID=5676;Point empty' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
- tround 
---------
+SELECT round(geometry 'SRID=5676;Point empty' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
+ round 
+-------
  
 (1 row)
 
-SELECT tRound(geometry 'SRID=5676;Point empty' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
- tround 
---------
+SELECT round(geometry 'SRID=5676;Point empty' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
+ round 
+-------
  
 (1 row)
 
-SELECT tRound(geometry 'SRID=5676;Point empty' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
- tround 
---------
+SELECT round(geometry 'SRID=5676;Point empty' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
+ round 
+-------
  
 (1 row)
 
-SELECT tRound(npoint 'NPoint(1, 0.2)' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
-                 tround                 
+SELECT round(npoint 'NPoint(1, 0.2)' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
+                 round                  
 ----------------------------------------
  21.392016@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(npoint 'NPoint(1, 0.2)' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
-                                                         tround                                                          
+SELECT round(npoint 'NPoint(1, 0.2)' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
+                                                          round                                                          
 -------------------------------------------------------------------------------------------------------------------------
  {7.124928@Mon Jan 01 00:00:00 2001 PST, 21.392016@Tue Jan 02 00:00:00 2001 PST, 21.392016@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT tRound(npoint 'NPoint(1, 0.2)' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
-                                                      tround                                                      
+SELECT round(npoint 'NPoint(1, 0.2)' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
+                                                      round                                                       
 ------------------------------------------------------------------------------------------------------------------
  [0@Mon Jan 01 00:00:00 2001 PST, 14.258297@Tue Jan 02 00:00:00 2001 PST, 21.392016@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT tRound(npoint 'NPoint(1, 0.2)' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
-                                                                                                tround                                                                                                
+SELECT round(npoint 'NPoint(1, 0.2)' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
+                                                                                                round                                                                                                 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 14.258297@Tue Jan 02 00:00:00 2001 PST, 21.392016@Wed Jan 03 00:00:00 2001 PST], [42.706442@Thu Jan 04 00:00:00 2001 PST, 42.706442@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT tRound(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> npoint 'NPoint(1, 0.2)', 6);
-                 tround                 
+SELECT round(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> npoint 'NPoint(1, 0.2)', 6);
+                 round                  
 ----------------------------------------
  21.392016@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> npoint 'NPoint(1, 0.2)', 6);
-                                                         tround                                                          
+SELECT round(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> npoint 'NPoint(1, 0.2)', 6);
+                                                          round                                                          
 -------------------------------------------------------------------------------------------------------------------------
  {7.124928@Mon Jan 01 00:00:00 2001 PST, 21.392016@Tue Jan 02 00:00:00 2001 PST, 21.392016@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT tRound(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> npoint 'NPoint(1, 0.2)', 6);
-                                                      tround                                                      
+SELECT round(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> npoint 'NPoint(1, 0.2)', 6);
+                                                      round                                                       
 ------------------------------------------------------------------------------------------------------------------
  [0@Mon Jan 01 00:00:00 2001 PST, 14.258297@Tue Jan 02 00:00:00 2001 PST, 21.392016@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT tRound(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> npoint 'NPoint(1, 0.2)', 6);
-                                                                                                tround                                                                                                
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> npoint 'NPoint(1, 0.2)', 6);
+                                                                                                round                                                                                                 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 14.258297@Tue Jan 02 00:00:00 2001 PST, 21.392016@Wed Jan 03 00:00:00 2001 PST], [42.706442@Thu Jan 04 00:00:00 2001 PST, 42.706442@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT tRound(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> geometry 'SRID=5676;Point(1 1)', 6);
-                 tround                 
+SELECT round(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> geometry 'SRID=5676;Point(1 1)', 6);
+                 round                  
 ----------------------------------------
  90.386909@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> geometry 'SRID=5676;Point(1 1)', 6);
-                                                          tround                                                          
+SELECT round(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> geometry 'SRID=5676;Point(1 1)', 6);
+                                                          round                                                           
 --------------------------------------------------------------------------------------------------------------------------
  {100.40563@Mon Jan 01 00:00:00 2001 PST, 90.386909@Tue Jan 02 00:00:00 2001 PST, 90.386909@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT tRound(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> geometry 'SRID=5676;Point(1 1)', 6);
-                                                          tround                                                           
+SELECT round(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> geometry 'SRID=5676;Point(1 1)', 6);
+                                                           round                                                           
 ---------------------------------------------------------------------------------------------------------------------------
  [105.852042@Mon Jan 01 00:00:00 2001 PST, 95.260955@Tue Jan 02 00:00:00 2001 PST, 90.386909@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT tRound(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> geometry 'SRID=5676;Point(1 1)', 6);
-                                                                                                    tround                                                                                                     
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> geometry 'SRID=5676;Point(1 1)', 6);
+                                                                                                     round                                                                                                     
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[105.852042@Mon Jan 01 00:00:00 2001 PST, 95.260955@Tue Jan 02 00:00:00 2001 PST, 90.386909@Wed Jan 03 00:00:00 2001 PST], [81.027522@Thu Jan 04 00:00:00 2001 PST, 81.027522@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT tRound(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> geometry 'SRID=5676;Point empty', 6);
- tround 
---------
+SELECT round(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> geometry 'SRID=5676;Point empty', 6);
+ round 
+-------
  
 (1 row)
 
-SELECT tRound(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> geometry 'SRID=5676;Point empty', 6);
- tround 
---------
+SELECT round(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> geometry 'SRID=5676;Point empty', 6);
+ round 
+-------
  
 (1 row)
 
-SELECT tRound(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> geometry 'SRID=5676;Point empty', 6);
- tround 
---------
+SELECT round(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> geometry 'SRID=5676;Point empty', 6);
+ round 
+-------
  
 (1 row)
 
-SELECT tRound(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> geometry 'SRID=5676;Point empty', 6);
- tround 
---------
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> geometry 'SRID=5676;Point empty', 6);
+ round 
+-------
  
 (1 row)
 
-SELECT tRound(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
-             tround             
+SELECT round(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
+             round              
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
-                 tround                 
+SELECT round(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
+                 round                  
 ----------------------------------------
  14.267787@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
-                 tround                 
+SELECT round(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
+                 round                  
 ----------------------------------------
  21.392016@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
-                 tround                 
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> tnpoint 'Npoint(1, 0.5)@2001-01-01', 6);
+                 round                  
 ----------------------------------------
  21.392016@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
-                 tround                 
+SELECT round(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
+                 round                  
 ----------------------------------------
  14.267787@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
-                                              tround                                              
+SELECT round(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
+                                              round                                               
 --------------------------------------------------------------------------------------------------
  {0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT tRound(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
-                                                     tround                                                     
+SELECT round(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
+                                                     round                                                      
 ----------------------------------------------------------------------------------------------------------------
  {7.124928@Mon Jan 01 00:00:00 2001 PST, 7.133893@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT tRound(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
-                                                     tround                                                     
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}', 6);
+                                                     round                                                      
 ----------------------------------------------------------------------------------------------------------------
  {7.124928@Mon Jan 01 00:00:00 2001 PST, 7.133893@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT tRound(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
-                 tround                 
+SELECT round(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
+                 round                  
 ----------------------------------------
  21.392016@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
-                                                     tround                                                     
+SELECT round(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
+                                                     round                                                      
 ----------------------------------------------------------------------------------------------------------------
  {7.124928@Mon Jan 01 00:00:00 2001 PST, 7.133893@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT tRound(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
-                              tround                              
+SELECT round(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
+                              round                               
 ------------------------------------------------------------------
  [0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
-SELECT tRound(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
-                               tround                               
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]', 6);
+                               round                                
 --------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT tRound(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
-                 tround                 
+SELECT round(tnpoint 'Npoint(1, 0.5)@2001-01-01' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
+                 round                  
 ----------------------------------------
  21.392016@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT tRound(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
-                                                     tround                                                     
+SELECT round(tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02, Npoint(1, 0.5)@2001-01-03}' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
+                                                     round                                                      
 ----------------------------------------------------------------------------------------------------------------
  {7.124928@Mon Jan 01 00:00:00 2001 PST, 7.133893@Tue Jan 02 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT tRound(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
-                               tround                               
+SELECT round(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
+                               round                                
 --------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT tRound(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
-                                                                tround                                                                
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}' <-> tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}', 6);
+                                                                round                                                                 
 --------------------------------------------------------------------------------------------------------------------------------------
  {[0@Mon Jan 01 00:00:00 2001 PST, 0@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
