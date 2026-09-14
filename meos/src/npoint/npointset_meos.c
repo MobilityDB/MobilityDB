@@ -70,7 +70,7 @@ npointset_in(const char *str)
  * @brief Return the string representation of a network point set
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Set_out(), #Set_as_text()
+ * @csqlfn #Set_out()
  */
 char *
 npointset_out(const Set *s, int maxdd)
