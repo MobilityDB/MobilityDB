@@ -32,4 +32,22 @@ SELECT asText(shiftScaleTime(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   0.0)@2001-01-02]', interval '1 day', interval '2 days'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));
 -- [Pose(POINT(0 0),0)@2001-01-02, Pose(POINT(10 0),0)@2001-01-04]
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s07.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s09.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Métricas de movimiento </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Modificaciones</td></tr></table></div></body></html>
+</pre></li><li class="listitem"><a name="trgeometry_unnest"></a><a class="indexterm" name="id10451"></a><p>Transforma una trgeometry no lineal en un conjunto de filas, una por pose distinta, cada una es una pareja compuesta de la geometría de referencia con la pose aplicada y el conjunto de períodos durante el cual la trgeometry toma esa pose <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
+</p><pre class="programlisting">
+unnest(trgeometry) → {(value,time)}
+</pre><pre class="programlisting">
+SELECT ST_AsText((un).value), (un).time
+FROM (SELECT unnest(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  {Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-02,
+  Pose(Point(0 0), 0.0)@2001-01-03}') AS un) t;
+-- POLYGON((0 0,1 0,1 1,0 1,0 0)) | {[2001-01-01, 2001-01-01], [2001-01-03, 2001-01-03]}
+-- POLYGON((4 0,5 0,5 1,4 1,4 0)) | {[2001-01-02, 2001-01-02]}
+SELECT ST_AsText(ST_SnapToGrid((un).value, 0.000001)), (un).time
+FROM (SELECT unnest(merge(
+  trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+    pose(geometry 'Point(0 0)', 0), timestamptz '2001-01-01'),
+  trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+    pose(geometry 'Point(3 2)', pi() / 2), timestamptz '2001-01-02'))) AS un) t;
+-- POLYGON((0 0,1 0,1 1,0 1,0 0)) | {[2001-01-01, 2001-01-01]}
+-- POLYGON((3 2,3 3,2 3,2 2,3 2)) | {[2001-01-02, 2001-01-02]}
+</pre><p>La pose se aplica a la geometría de referencia en cada fila del resultado: el valor de una fila es la geometría de referencia rotada según la orientación de la pose y luego trasladada a su posición, la geometría que <code class="varname">startValue</code> y <code class="varname">valueAtTimestamp</code> devuelven en esa pose. En el segundo ejemplo la pose rota el cuadrado 90° y lo desplaza a (3, 2). Una geometría de referencia que una rotación lleva sobre sí misma produce filas con geometrías iguales, una por pose.</p></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s07.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s09.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Métricas de movimiento </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Modificaciones</td></tr></table></div></body></html>
