@@ -95,6 +95,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDggsArc.html">DggsArc</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Great-circle path of a geodetic segment, the one a temporal geodetic point moves along between two instants as <code>pointsegm_interpolate</code> places it.  <a href="structDggsArc.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDggsCellOps.html">DggsCellOps</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Table of static-cell operations and catalog identity for one DGGS.  <a href="structDggsCellOps.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -107,6 +110,15 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a2dd8aca8345bcd5999b8b038e719dffd"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8h_a2dd8aca8345bcd5999b8b038e719dffd.html#a2dd8aca8345bcd5999b8b038e719dffd">dggs_arc_exit_param</a> (const <a class="el" href="structDggsArc.html">DggsArc</a> *arc, const double *lons, const double *lats, int count, double tmin, bool convex)</td></tr>
+<tr class="memdesc:a2dd8aca8345bcd5999b8b038e719dffd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return where a geodetic path leaves a cell.  <a href="tcellindex_8h_a2dd8aca8345bcd5999b8b038e719dffd.html#a2dd8aca8345bcd5999b8b038e719dffd">More...</a><br /></td></tr>
+<tr class="separator:a2dd8aca8345bcd5999b8b038e719dffd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43dcb10f74cfeeb1ef478a5736989951"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8h_a43dcb10f74cfeeb1ef478a5736989951.html#a43dcb10f74cfeeb1ef478a5736989951">dggs_arc_init</a> (double lon1, double lat1, double lon2, double lat2, <a class="el" href="structDggsArc.html">DggsArc</a> *arc)</td></tr>
+<tr class="memdesc:a43dcb10f74cfeeb1ef478a5736989951"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument the great-circle path of a geodetic segment.  <a href="tcellindex_8h_a43dcb10f74cfeeb1ef478a5736989951.html#a43dcb10f74cfeeb1ef478a5736989951">More...</a><br /></td></tr>
+<tr class="separator:a43dcb10f74cfeeb1ef478a5736989951"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70e2f25cc0f5094a639c600543a6b54e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8h_a70e2f25cc0f5094a639c600543a6b54e.html#a70e2f25cc0f5094a639c600543a6b54e">dggs_arc_point</a> (const <a class="el" href="structDggsArc.html">DggsArc</a> *arc, double t, double *lon, double *lat)</td></tr>
+<tr class="memdesc:a70e2f25cc0f5094a639c600543a6b54e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last two arguments the position a geodetic path reaches at a parameter.  <a href="tcellindex_8h_a70e2f25cc0f5094a639c600543a6b54e.html#a70e2f25cc0f5094a639c600543a6b54e">More...</a><br /></td></tr>
+<tr class="separator:a70e2f25cc0f5094a639c600543a6b54e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae3db76ef453387d197b78005cd4f4b7"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structDggsCellOps.html">DggsCellOps</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcellindex_8h_aae3db76ef453387d197b78005cd4f4b7.html#aae3db76ef453387d197b78005cd4f4b7">dggs_cellops</a> (<a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> temptype)</td></tr>
 <tr class="memdesc:aae3db76ef453387d197b78005cd4f4b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the operations descriptor for a temporal cell-index type, or raise an error if <code>temptype</code> is not a (compiled-in) DGGS type.  <a href="tcellindex_8h_aae3db76ef453387d197b78005cd4f4b7.html#aae3db76ef453387d197b78005cd4f4b7">More...</a><br /></td></tr>
 <tr class="separator:aae3db76ef453387d197b78005cd4f4b7"><td class="memSeparator" colspan="2">&#160;</td></tr>

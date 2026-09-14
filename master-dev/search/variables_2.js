@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['a_0',['a',['../structSPHEROID_ab7b96d6f64ca6c684ceeeda176a08644.html#ab7b96d6f64ca6c684ceeeda176a08644',1,'SPHEROID::a()'],['../structdouble2_adc4886657df13a2acd15bb38d82aa962.html#adc4886657df13a2acd15bb38d82aa962',1,'double2::a()'],['../structdouble3_a6afa8455362a4cb323ef7991bdbd8fc6.html#a6afa8455362a4cb323ef7991bdbd8fc6',1,'double3::a()'],['../structdouble4_ab23c443e11a6f28a616f2d0fb3f4075e.html#ab23c443e11a6f28a616f2d0fb3f4075e',1,'double4::a()'],['../structsrid__ellipsoid_a8f59dcd3a5df75228998b73319edbbba.html#a8f59dcd3a5df75228998b73319edbbba',1,'srid_ellipsoid::a()'],['../structH3SegmentPath_aa87000eaf54944c43b528ebe29bd1d6b.html#aa87000eaf54944c43b528ebe29bd1d6b',1,'H3SegmentPath::a()'],['../structtrip__t_a576ffe390fbbfadc5f5e02595b201e5f.html#a576ffe390fbbfadc5f5e02595b201e5f',1,'trip_t::a()']]],
+  ['a_0',['a',['../structSPHEROID_ab7b96d6f64ca6c684ceeeda176a08644.html#ab7b96d6f64ca6c684ceeeda176a08644',1,'SPHEROID::a()'],['../structdouble2_adc4886657df13a2acd15bb38d82aa962.html#adc4886657df13a2acd15bb38d82aa962',1,'double2::a()'],['../structdouble3_a6afa8455362a4cb323ef7991bdbd8fc6.html#a6afa8455362a4cb323ef7991bdbd8fc6',1,'double3::a()'],['../structdouble4_ab23c443e11a6f28a616f2d0fb3f4075e.html#ab23c443e11a6f28a616f2d0fb3f4075e',1,'double4::a()'],['../structDggsArc_a4267e623f6a77585a3f8a95997bd20b1.html#a4267e623f6a77585a3f8a95997bd20b1',1,'DggsArc::a()'],['../structsrid__ellipsoid_a8f59dcd3a5df75228998b73319edbbba.html#a8f59dcd3a5df75228998b73319edbbba',1,'srid_ellipsoid::a()'],['../structtrip__t_a576ffe390fbbfadc5f5e02595b201e5f.html#a576ffe390fbbfadc5f5e02595b201e5f',1,'trip_t::a()']]],
   ['a1x_1',['a1x',['../structM1Ctx_a822e1cadfd142d7929867786a007c3f4.html#a822e1cadfd142d7929867786a007c3f4',1,'M1Ctx']]],
   ['a1y_2',['a1y',['../structM1Ctx_af3001fcb6bd320895d4d31844edc4232.html#af3001fcb6bd320895d4d31844edc4232',1,'M1Ctx']]],
   ['abes_3',['abes',['../projection__gk_8c_a7339441268ea03299de6234ea453eacd.html#a7339441268ea03299de6234ea453eacd',1,'projection_gk.c']]],
@@ -11,15 +11,16 @@ var searchData=
   ['afac_8',['afac',['../structAFFINE_a8c5795e1c3efdd3baa8b8698c245b229.html#a8c5795e1c3efdd3baa8b8698c245b229',1,'AFFINE']]],
   ['answer_5fleft_9',['answer_left',['../structBufferPiece_a7e1eba57d0cb5e576291c37a1696adec.html#a7e1eba57d0cb5e576291c37a1696adec',1,'BufferPiece']]],
   ['arad_10',['arad',['../structDistEdge_af9b657fb5d71f3b0724988b4f4e8e4fc.html#af9b657fb5d71f3b0724988b4f4e8e4fc',1,'DistEdge']]],
-  ['argtype_11',['argtype',['../structLiftedFunctionInfo_ab12b24200762a4bec3b00c72bee67883.html#ab12b24200762a4bec3b00c72bee67883',1,'LiftedFunctionInfo']]],
-  ['arr_12',['arr',['../structtdist__array_a5e3d1dd568198b36fdca416745e426bd.html#a5e3d1dd568198b36fdca416745e426bd',1,'tdist_array::arr()'],['../structBufferLocator_a7272246bcaa80a8b2975529a4659ef91.html#a7272246bcaa80a8b2975529a4659ef91',1,'BufferLocator::arr()'],['../structRelateOperand_a286e206f9767d0bd5f46ecadf878e1eb.html#a286e206f9767d0bd5f46ecadf878e1eb',1,'RelateOperand::arr()'],['../structRelateComp_a9eb7a38c5709472f946690405a29105f.html#a9eb7a38c5709472f946690405a29105f',1,'RelateComp::arr()'],['../structcfp__array_a67ea7ce4f16361cb53bf6854d8162b66.html#a67ea7ce4f16361cb53bf6854d8162b66',1,'cfp_array::arr()']]],
-  ['at0_13',['at0',['../structDistEdge_ad5ca6b2b29f10d5046c86491aa05ab2e.html#ad5ca6b2b29f10d5046c86491aa05ab2e',1,'DistEdge']]],
-  ['at1_14',['at1',['../structDistEdge_ab192e12c14869b13a4ce99753b8d83e7.html#ab192e12c14869b13a4ce99753b8d83e7',1,'DistEdge']]],
-  ['auth_5fname_15',['auth_name',['../structspatial__ref__sys__record_afcfa1280ade0ad7deabe6e07c40ade53.html#afcfa1280ade0ad7deabe6e07c40ade53',1,'spatial_ref_sys_record']]],
-  ['auth_5fsrid_16',['auth_srid',['../structspatial__ref__sys__record_ae6d292653d8650ea73773ea6af11ddde.html#ae6d292653d8650ea73773ea6af11ddde',1,'spatial_ref_sys_record']]],
-  ['authority_17',['authority',['../structGeoPoseFrame_a95f46868917d2a1a7359ce81453dcdf7.html#a95f46868917d2a1a7359ce81453dcdf7',1,'GeoPoseFrame']]],
-  ['authtext_18',['authtext',['../structPjStrs_a48986b8e4b0149dd8090156e6906273f.html#a48986b8e4b0149dd8090156e6906273f',1,'PjStrs']]],
-  ['awgs_19',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]],
-  ['axis_20',['axis',['../structSTRCtx_acdb54c217152bd214a9f969ec1b51530.html#acdb54c217152bd214a9f969ec1b51530',1,'STRCtx']]],
-  ['azimuth_21',['azimuth',['../structH3SegmentPath_aa70684fce193e65ff582779296ef80d2.html#aa70684fce193e65ff582779296ef80d2',1,'H3SegmentPath']]]
+  ['arc_11',['arc',['../structH3SegmentPath_a7ac44f44ec65edd71b6b9f57eb1005f5.html#a7ac44f44ec65edd71b6b9f57eb1005f5',1,'H3SegmentPath']]],
+  ['argtype_12',['argtype',['../structLiftedFunctionInfo_ab12b24200762a4bec3b00c72bee67883.html#ab12b24200762a4bec3b00c72bee67883',1,'LiftedFunctionInfo']]],
+  ['arr_13',['arr',['../structcfp__array_a67ea7ce4f16361cb53bf6854d8162b66.html#a67ea7ce4f16361cb53bf6854d8162b66',1,'cfp_array::arr()'],['../structtdist__array_a5e3d1dd568198b36fdca416745e426bd.html#a5e3d1dd568198b36fdca416745e426bd',1,'tdist_array::arr()'],['../structBufferLocator_a7272246bcaa80a8b2975529a4659ef91.html#a7272246bcaa80a8b2975529a4659ef91',1,'BufferLocator::arr()'],['../structRelateOperand_a286e206f9767d0bd5f46ecadf878e1eb.html#a286e206f9767d0bd5f46ecadf878e1eb',1,'RelateOperand::arr()'],['../structRelateComp_a9eb7a38c5709472f946690405a29105f.html#a9eb7a38c5709472f946690405a29105f',1,'RelateComp::arr()']]],
+  ['at0_14',['at0',['../structDistEdge_ad5ca6b2b29f10d5046c86491aa05ab2e.html#ad5ca6b2b29f10d5046c86491aa05ab2e',1,'DistEdge']]],
+  ['at1_15',['at1',['../structDistEdge_ab192e12c14869b13a4ce99753b8d83e7.html#ab192e12c14869b13a4ce99753b8d83e7',1,'DistEdge']]],
+  ['auth_5fname_16',['auth_name',['../structspatial__ref__sys__record_afcfa1280ade0ad7deabe6e07c40ade53.html#afcfa1280ade0ad7deabe6e07c40ade53',1,'spatial_ref_sys_record']]],
+  ['auth_5fsrid_17',['auth_srid',['../structspatial__ref__sys__record_ae6d292653d8650ea73773ea6af11ddde.html#ae6d292653d8650ea73773ea6af11ddde',1,'spatial_ref_sys_record']]],
+  ['authority_18',['authority',['../structGeoPoseFrame_a95f46868917d2a1a7359ce81453dcdf7.html#a95f46868917d2a1a7359ce81453dcdf7',1,'GeoPoseFrame']]],
+  ['authtext_19',['authtext',['../structPjStrs_a48986b8e4b0149dd8090156e6906273f.html#a48986b8e4b0149dd8090156e6906273f',1,'PjStrs']]],
+  ['awgs_20',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]],
+  ['axis_21',['axis',['../structSTRCtx_acdb54c217152bd214a9f969ec1b51530.html#acdb54c217152bd214a9f969ec1b51530',1,'STRCtx']]],
+  ['azimuth_22',['azimuth',['../structDggsArc_a53213b4be27a9fd74b6881d905d78be5.html#a53213b4be27a9fd74b6881d905d78be5',1,'DggsArc']]]
 ];

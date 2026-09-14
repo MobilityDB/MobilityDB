@@ -92,6 +92,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos__h3_8h_source.html">meos_h3.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__quadbin_8h_source.html">meos_quadbin.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__raster_8h_source.html">meos_raster.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__s2cell_8h_source.html">meos_s2cell.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
@@ -134,6 +135,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a43d72c60ac22ffb81f7c4020caa8975a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellcover__test_8c_a43d72c60ac22ffb81f7c4020caa8975a.html#a43d72c60ac22ffb81f7c4020caa8975a">tquadbin_check</a> (double lon0, double lat0, double lon1, double lat1, int32 resolution, long *wrong, long *offpath, long *none)</td></tr>
 <tr class="memdesc:a43d72c60ac22ffb81f7c4020caa8975a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Count the timestamps at which the temporal quadbin cell of a linear segment holds a cell other than the one holding the position of the segment then, and the cells it holds that no such position reaches nor borders.  <a href="cellcover__test_8c_a43d72c60ac22ffb81f7c4020caa8975a.html#a43d72c60ac22ffb81f7c4020caa8975a">More...</a><br /></td></tr>
 <tr class="separator:a43d72c60ac22ffb81f7c4020caa8975a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30b23cda643753a3b28fb899666225fc"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellcover__test_8c_a30b23cda643753a3b28fb899666225fc.html#a30b23cda643753a3b28fb899666225fc">ts2cell_check</a> (double lon0, double lat0, double lon1, double lat1, int32 level, long *wrong, long *offpath, long *none)</td></tr>
+<tr class="memdesc:a30b23cda643753a3b28fb899666225fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Count the timestamps at which the temporal S2 cell of a linear geodetic segment holds a cell other than the one holding the position of the segment then, and the cells it holds that no such position reaches nor borders.  <a href="cellcover__test_8c_a30b23cda643753a3b28fb899666225fc.html#a30b23cda643753a3b28fb899666225fc">More...</a><br /></td></tr>
+<tr class="separator:a30b23cda643753a3b28fb899666225fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a09a282b61b398ac169bf2bdb5d29ca52"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cellcover__test_8c_a09a282b61b398ac169bf2bdb5d29ca52.html#a09a282b61b398ac169bf2bdb5d29ca52">unit_vector</a> (double lon, double lat, double p[3])</td></tr>
 <tr class="memdesc:a09a282b61b398ac169bf2bdb5d29ca52"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the last argument to the unit vector of a longitude and latitude in degrees.  <a href="cellcover__test_8c_a09a282b61b398ac169bf2bdb5d29ca52.html#a09a282b61b398ac169bf2bdb5d29ca52">More...</a><br /></td></tr>
 <tr class="separator:a09a282b61b398ac169bf2bdb5d29ca52"><td class="memSeparator" colspan="2">&#160;</td></tr>
