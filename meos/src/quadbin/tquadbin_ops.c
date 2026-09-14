@@ -383,14 +383,8 @@ tgeompoint_to_tquadbin(const Temporal *temp, int32 resolution)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL);
-  if (resolution < quadbin_cellops.min_resolution ||
-      resolution > quadbin_cellops.max_resolution)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The resolution must be between %d and %d",
-      quadbin_cellops.min_resolution, quadbin_cellops.max_resolution);
+  if (! ensure_valid_cell_resolution(T_TQUADBIN, resolution))
     return NULL;
-  }
 
   switch (temp->subtype)
   {
