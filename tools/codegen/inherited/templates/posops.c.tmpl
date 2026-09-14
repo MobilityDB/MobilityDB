@@ -10,7 +10,7 @@ PG_FUNCTION_INFO_V1({OP}_{BOX}_{TSIDE});
 /**
  * @ingroup {POSGROUP}
  * @brief Return true if a {BOXDESC} {REL} a {VALDESC}
- * @sqlfn {SQLCLASS}{OP}()
+ * @sqlfn {SQLFN}
  * @sqlop @p {SQLOP}
  */
 inline Datum
@@ -27,7 +27,7 @@ PG_FUNCTION_INFO_V1({OP}_{TSIDE}_{BOX});
 /**
  * @ingroup {POSGROUP}
  * @brief Return true if a {VALDESC} {REL} a {BOXDESC}
- * @sqlfn {SQLCLASS}{OP}()
+ * @sqlfn {SQLFN}
  * @sqlop @p {SQLOP}
  */
 inline Datum
@@ -44,7 +44,7 @@ PG_FUNCTION_INFO_V1({OP}_{TSIDE}_{TSIDE});
 /**
  * @ingroup {POSGROUP}
  * @brief Return true if the first {VALDESC} {REL} the second one
- * @sqlfn {SQLCLASS}{OP}()
+ * @sqlfn {SQLFN}
  * @sqlop @p {SQLOP}
  */
 inline Datum
