@@ -19,6 +19,11 @@ boxtypes:
     valdesc:   spatiotemporal value
     file:      mobilitydb/src/geo/tgeo_boxops.c
     reference: true
+    # position wrappers (templates/posops.c.tmpl, operations in boxposops.yaml)
+    posaxes:   [x, y, z, t]
+    posgroup:  mobilitydb_geo_bbox_pos
+    posfile:   mobilitydb/src/geo/tspatial_posops.c
+    posreference: true
 
   - box:       tpcbox
     tside:     tpointcloud

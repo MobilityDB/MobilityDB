@@ -428,19 +428,99 @@ def extract_posops_c(filetext: str, box: str) -> str:
     return filetext[b:e]
 
 
+def _posops_c_block(text: str, name: str):
+    """(start, stop) of wrapper `name` in `text`: from its PGDLLEXPORT declaration,
+    which must occur once, through the closing brace of its definition."""
+    decl = f"PGDLLEXPORT Datum {name}(PG_FUNCTION_ARGS);\n"
+    if text.count(decl) != 1:
+        return None
+    start = text.index(decl)
+    body = text.index(f"\n{name}(PG_FUNCTION_ARGS)\n{{\n", start)
+    return start, text.index("\n}\n", body) + 3
+
+
+def _posops_c_unbriefed(block: str) -> str:
+    """A wrapper block without its @brief lines, the one part the region words anew."""
+    out, brief = [], False
+    for line in block.split("\n"):
+        if line.startswith(" * @"):
+            brief = line.startswith(" * @brief")
+        elif not line.startswith(" * "):
+            brief = False
+        if not brief:
+            out.append(line)
+    return "\n".join(out)
+
+
+def _posops_c_filler(line: str) -> bool:
+    """A line allowed between hand-written wrappers: blank, a row of asterisks, or a
+    one-line banner comment."""
+    return (not line.strip() or re.fullmatch(r"/\*+/", line) is not None
+            or (line.startswith("/* ") and line.endswith(" */")))
+
+
+def _bootstrap_posops_c_spelled(filetext: str, bt: dict, rendered: str) -> str:
+    """The spelled-out form of bootstrap_posops_c: each wrapper the region renders
+    appears once in the file and equals its rendered block but for the @brief
+    wording; the wrappers and the blank lines and banners around and between them are
+    removed as one span.
+    # BINDING-HEADER-PARSE-OK: edits the MobilityDB C file the region lives in, as
+    # splice_boxops does; no header is parsed and no binding consumes this."""
+    box = bt["box"]
+    names = re.findall(r"^PG_FUNCTION_INFO_V1\((\w+)\);", rendered, re.M)
+    spans = []
+    for name in names:
+        hand = _posops_c_block(filetext, name)
+        if hand is None:
+            raise SystemExit(f"bootstrap posops {box}: {posfile(bt)} does not hold "
+                             f"exactly one {name}")
+        gen = _posops_c_block(rendered, name)
+        if _posops_c_unbriefed(filetext[hand[0]:hand[1]]) != \
+                _posops_c_unbriefed(rendered[gen[0]:gen[1]]):
+            raise SystemExit(f"bootstrap posops {box}: {name} in {posfile(bt)} differs "
+                             "from its rendered block beyond the @brief")
+        spans.append(hand)
+    spans.sort()
+    for (_s, stop), (nxt, _e) in zip(spans, spans[1:]):
+        if not all(_posops_c_filler(l) for l in filetext[stop:nxt].split("\n")):
+            raise SystemExit(f"bootstrap posops {box}: {posfile(bt)} holds more than "
+                             "blank lines and banners between its position wrappers")
+    head = filetext[:spans[0][0]].split("\n")[:-1]
+    lead = 0
+    while lead < len(head) and _posops_c_filler(head[-1 - lead]):
+        lead += 1
+    while lead and not head[-lead].strip():
+        lead -= 1
+    start = len("\n".join(head[:len(head) - lead])) + 1 if lead else spans[0][0]
+    tail = filetext[spans[-1][1]:].split("\n")
+    trail = 0
+    while trail < len(tail) - 1 and _posops_c_filler(tail[trail]):
+        trail += 1
+    while trail and not tail[trail - 1].strip():
+        trail -= 1
+    stop = spans[-1][1] + len("\n".join(tail[:trail])) + (1 if trail else 0)
+    begin, end = _posops_c_markers(box)
+    rest = filetext[stop:].lstrip("\n")
+    return filetext[:start] + begin + rendered + end + ("\n" + rest if rest else "")
+
+
 def bootstrap_posops_c(filetext: str, bt: dict, rendered: str) -> str:
     """Create the GENERATED-POSOPS region of a box type whose position wrappers are
     still hand-written, and remove the hand-written form so the region is their single
-    source. The form is a token-pasting macro: a `#define` whose body declares
-    `<name>##_<box>_<tside>`, the invocations naming each operation and its kernel, and
-    the `#undef`, removed as one span with the comments between them. The operations
-    the macro invokes must be exactly those the region renders, each on its
-    <op>_<prim>_<prim> kernel, so nothing hand-written is dropped unrendered.
+    source. The form is either the wrappers spelled out one by one
+    (_bootstrap_posops_c_spelled) or a token-pasting macro: a `#define` whose body
+    declares `<name>##_<box>_<tside>`, the invocations naming each operation and its
+    kernel, and the `#undef`, removed as one span with the comments between them. The
+    operations the macro invokes must be exactly those the region renders, each on
+    its <op>_<prim>_<prim> kernel, so nothing hand-written is dropped unrendered.
     Idempotent afterward: the markers exist, so the splice path takes over.
     # BINDING-HEADER-PARSE-OK: edits the MobilityDB C file the region lives in, as
     # splice_boxops does; no header is parsed and no binding consumes this."""
     box, tside = bt["box"], bt["tside"]
     prim = bt.get("prim", box)
+    first = re.search(r"^PG_FUNCTION_INFO_V1\((\w+)\);", rendered, re.M).group(1)
+    if f"PGDLLEXPORT Datum {first}(PG_FUNCTION_ARGS);\n" in filetext:
+        return _bootstrap_posops_c_spelled(filetext, bt, rendered)
     start = macro = None
     for dm in re.finditer(r"^#define (\w+)\(", filetext, re.M):
         k = dm.start()
