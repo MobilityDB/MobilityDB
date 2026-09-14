@@ -1,0 +1,16 @@
+# @sqlop tags that tools/scripts/check_sqlop_tags.py finds naming an
+# operator the SQL does not bind to their wrapper. Grandfathered in, keyed
+# by wrapper and tag so that an edit above a finding does not read as a new
+# one. The list only shrinks: a new finding fails the check. Regenerate
+# with --rebaseline after a fix.
+Jsonbset_array_element @p ->
+Jsonbset_object_field @p ->
+Jsonbset_object_field @p ->, @p ->>
+Jsonbset_object_field_text @p ->>
+Tjson_array_element @p ->
+Tjson_object_field @p ->
+Tjson_object_field @p ->, @p ->>
+Tjsonb_array_element @p ->
+Tjsonb_object_field @p ->
+Tjsonb_object_field @p ->, @p ->>
+Tjsonb_object_field_text @p ->>

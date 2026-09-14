@@ -772,7 +772,6 @@ PG_FUNCTION_INFO_V1(Npoint_timestamptz_to_stbox);
  * @ingroup mobilitydb_npoint_base_conversion
  * @brief Return a network point and a timestamptz to a spatiotemporal box
  * @sqlfn stbox()
- * @sqlop @p
  */
 Datum
 Npoint_timestamptz_to_stbox(PG_FUNCTION_ARGS)
@@ -789,7 +788,6 @@ PG_FUNCTION_INFO_V1(Npoint_tstzspan_to_stbox);
  * @brief Return a network point and a timestamptz span to a spatiotemporal
  * box
  * @sqlfn stbox()
- * @sqlop @p
  */
 Datum
 Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS)

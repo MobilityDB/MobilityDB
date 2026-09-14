@@ -308,7 +308,7 @@ PG_FUNCTION_INFO_V1(Adjacent_value_spanset);
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a value and a span set are adjacent
  * @sqlfn adjacent()
- * @sqlop @p span_adjacent
+ * @sqlop @p -|-
  */
 inline Datum
 Adjacent_value_spanset(PG_FUNCTION_ARGS)
