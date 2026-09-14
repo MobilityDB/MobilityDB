@@ -10,5 +10,6 @@ var searchData=
   ['oracle_7',['oracle',['../structOpCase_a0395aabbdafdb0438ebce6a4fc49f2e1.html#a0395aabbdafdb0438ebce6a4fc49f2e1',1,'OpCase']]],
   ['ordered_8',['ordered',['../structmeos__wkb__parse__state_a4e0802bf3fbed7387f0fb2adbaf371bc.html#a4e0802bf3fbed7387f0fb2adbaf371bc',1,'meos_wkb_parse_state']]],
   ['origin_9',['origin',['../structSpanBinState_ad11bc7b35c0d5f5e0b179bcd3b55359e.html#ad11bc7b35c0d5f5e0b179bcd3b55359e',1,'SpanBinState']]],
-  ['overlap_10',['overlap',['../structConsiderSplitContext_ac642bba235103527c730cc244dcbef89.html#ac642bba235103527c730cc244dcbef89',1,'ConsiderSplitContext']]]
+  ['overlap_10',['overlap',['../structConsiderSplitContext_ac642bba235103527c730cc244dcbef89.html#ac642bba235103527c730cc244dcbef89',1,'ConsiderSplitContext']]],
+  ['own_11',['own',['../structRelateOperand_abe7cf00a84244424c725d7dcbaf617ce.html#abe7cf00a84244424c725d7dcbaf617ce',1,'RelateOperand']]]
 ];
