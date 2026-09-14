@@ -75,151 +75,28 @@ jobs:
         run: |
           cd meos/test
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-          # SIBLING-FROM bool_test (same compile+run idiom)
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o allocator_test allocator_test.c -L/usr/local/lib -lmeos
-          ./allocator_test
-          # lifecycle_test drives meos_initialize/meos_finalize twice over
-          # populated caches, which is what a host running the lifecycle per
-          # unit of work does. SIBLING-FROM allocator_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o lifecycle_test lifecycle_test.c -L/usr/local/lib -lmeos
-          ./lifecycle_test
-          # timezone_switch_test reads one abbreviation under one timezone
-          # after another. SIBLING-FROM lifecycle_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o timezone_switch_test timezone_switch_test.c -L/usr/local/lib -lmeos
-          ./timezone_switch_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o bool_test bool_test.c -L/usr/local/lib -lmeos
-          ./bool_test
-          # int_test is what reads <meos.h> and <pg_int.h> in one translation
-          # unit, which is the pair the installed base-type header exists to keep
-          # consistent. Compiling it here is what keeps that pair honest.
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o int_test int_test.c -L/usr/local/lib -lmeos
-          ./int_test
-          # SIBLING-FROM bool_test. The *_load_test name also puts it in the set
-          # meos-smoke.yml discovers and runs under valgrind, which is where its
-          # schema ownership is actually checked; this run only asserts
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o pcschema_dims_load_test pcschema_dims_load_test.c -L/usr/local/lib -lmeos
-          ./pcschema_dims_load_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o json_test json_test.c -L/usr/local/lib -lmeos
-          ./json_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o error_test error_test.c -L/usr/local/lib -lmeos
-          ./error_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o merge_test merge_test.c -L/usr/local/lib -lmeos
-          ./merge_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o restrict_tstzset_validity_test restrict_tstzset_validity_test.c -L/usr/local/lib -lmeos
-          ./restrict_tstzset_validity_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o json_validity_test json_validity_test.c -L/usr/local/lib -lmeos
-          ./json_validity_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o temporal_validity_test temporal_validity_test.c -L/usr/local/lib -lmeos
-          ./temporal_validity_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o srid_validity_test srid_validity_test.c -L/usr/local/lib -lmeos
-          ./srid_validity_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
-          ./geo_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geo_validity_test geo_validity_test.c -L/usr/local/lib -lmeos
-          ./geo_validity_test
-          # Every program under meos/test is a check of the installed library, and
-          # one that is compiled nowhere is a check nobody makes: it keeps calling
-          # whatever it called when it was written while the surface moves under it.
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o date_test date_test.c -L/usr/local/lib -lmeos
-          ./date_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o float_test float_test.c -L/usr/local/lib -lmeos
-          ./float_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o interval_test interval_test.c -L/usr/local/lib -lmeos
-          ./interval_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o timestamp_test timestamp_test.c -L/usr/local/lib -lmeos
-          ./timestamp_test
-          # SIBLING-FROM timestamp_test. The zones come from the time zone
-          # database compiled into libmeos.
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tzdata_test tzdata_test.c -L/usr/local/lib -lmeos
-          ./tzdata_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
-          ./npoint_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o npoint_validity_test npoint_validity_test.c -L/usr/local/lib -lmeos
-          ./npoint_validity_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o trajclip_test trajclip_test.c -L/usr/local/lib -lmeos
-          ./trajclip_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o threaded_geos_test threaded_geos_test.c -L/usr/local/lib -lmeos
-          ./threaded_geos_test
-          # The raster input and output functions are the only way a caller
-          # outside PostgreSQL reaches a Raster, so they are exercised here
-          # rather than through the PostgreSQL suite. The RASTER family is
-          # built and installed above.
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o raster_test raster_test.c -L/usr/local/lib -lmeos
-          ./raster_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o raster_validity_test raster_validity_test.c -L/usr/local/lib -lmeos
-          ./raster_validity_test
-          # What a program with no pgPointCloud catalog can do with a point
-          # cloud value, and what it cannot, is a property only a program
-          # outside PostgreSQL can check: the PostgreSQL suite always has the
-          # catalog. The POINTCLOUD family is built and installed above.
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tpointcloud_test tpointcloud_test.c -L/usr/local/lib -lmeos
-          ./tpointcloud_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o decimal_digits_test decimal_digits_test.c -L/usr/local/lib -lmeos
-          ./decimal_digits_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o box_validity_test box_validity_test.c -L/usr/local/lib -lmeos
-          ./box_validity_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geopose_test geopose_test.c -L/usr/local/lib -lmeos
-          ./geopose_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o numeric_test numeric_test.c -L/usr/local/lib -lmeos
-          ./numeric_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o setspan_test setspan_test.c -L/usr/local/lib -lmeos
-          ./setspan_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbox_test tbox_test.c -L/usr/local/lib -lmeos
-          ./tbox_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o temporal_test temporal_test.c -L/usr/local/lib -lmeos
-          ./temporal_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o text_test text_test.c -L/usr/local/lib -lmeos
-          ./text_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o time_test time_test.c -L/usr/local/lib -lmeos
-          ./time_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o typeof_test typeof_test.c -L/usr/local/lib -lmeos
-          ./typeof_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o parse_test parse_test.c -L/usr/local/lib -lmeos
-          ./parse_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o trgeo_test trgeo_test.c -L/usr/local/lib -lmeos -lm
-          ./trgeo_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o trgeo_validity_test trgeo_validity_test.c -L/usr/local/lib -lmeos
-          ./trgeo_validity_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_mest_test rtree_mest_test.c -L/usr/local/lib -lmeos -lm
-          ./rtree_mest_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_knn_test rtree_knn_test.c -L/usr/local/lib -lmeos -lm
-          ./rtree_knn_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_load_test rtree_load_test.c -L/usr/local/lib -lmeos -lm
-          ./rtree_load_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o sptree_load_test sptree_load_test.c -L/usr/local/lib -lmeos -lm
-          ./sptree_load_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o index_position_test index_position_test.c -L/usr/local/lib -lmeos -lm
-          ./index_position_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellcover_test cellcover_test.c -L/usr/local/lib -lmeos -lm
-          ./cellcover_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o temporal_text_io_test temporal_text_io_test.c -L/usr/local/lib -lmeos
-          ./temporal_text_io_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o h3_validity_test h3_validity_test.c -L/usr/local/lib -lmeos
-          ./h3_validity_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellpoint_validity_test cellpoint_validity_test.c -L/usr/local/lib -lmeos
-          ./cellpoint_validity_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellset_text_io_test cellset_text_io_test.c -L/usr/local/lib -lmeos
-          ./cellset_text_io_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellset_values_test cellset_values_test.c -L/usr/local/lib -lmeos
-          ./cellset_values_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellset_make_test cellset_make_test.c -L/usr/local/lib -lmeos
-          ./cellset_make_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o temporal_unnest_test temporal_unnest_test.c -L/usr/local/lib -lmeos
-          ./temporal_unnest_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rasterwalk_test rasterwalk_test.c -L/usr/local/lib -lmeos -lm
-          ./rasterwalk_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rasterread_test rasterread_test.c -L/usr/local/lib -lmeos
-          ./rasterread_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_join_test rtree_join_test.c -L/usr/local/lib -lmeos -lm
-          ./rtree_join_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o sptree_join_test sptree_join_test.c -L/usr/local/lib -lmeos -lm
-          ./sptree_join_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o setset_pairs_test setset_pairs_test.c -L/usr/local/lib -lmeos -lm
-          ./setset_pairs_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_span_test rtree_span_test.c -L/usr/local/lib -lmeos -lm
-          ./rtree_span_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o sptree_test sptree_test.c -L/usr/local/lib -lmeos -lm
-          ./sptree_test
+          # Every *_test.c program under meos/test is a check of the installed
+          # library, and one that is compiled nowhere is a check nobody makes: it
+          # keeps calling whatever it called when it was written while the
+          # surface moves under it. The programs are the ones git tracks here,
+          # so a test runs the day it lands with no edit to this step, and a
+          # generated smoke suite that shares the suffix is never picked up.
+          # Each program is named before it runs, so a failure names it, and
+          # the count carries a floor, so a deleted test reddens the step
+          # instead of shrinking it in silence.
+          found=0
+          for f in $(git ls-files -- '*_test.c'); do
+            t="${f%.c}"
+            echo "./$t"
+            gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o "$t" "$f" -L/usr/local/lib -lmeos -lm
+            "./$t"
+            found=$((found + 1))
+          done
+          echo "$found meos/test program(s) ran"
+          if [ "$found" -lt "${MEOS_TEST_FLOOR:-61}" ]; then
+            echo "::error::$found meos/test program(s), below the floor of ${MEOS_TEST_FLOOR:-61}"
+            exit 1
+          fi
           # The programs below read the tables the PostgreSQL suite loads, in
           # the CSV form tools/gen_test_csv.py writes from the same archives,
           # so the two suites answer their queries over one set of fixtures
