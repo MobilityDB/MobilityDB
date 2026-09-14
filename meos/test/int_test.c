@@ -32,6 +32,10 @@
  * @brief A simple program that tests the integer functions exposed by the
  * PostgreSQL types embedded in MEOS.
  *
+ * It reads <meos.h> and <pg_int.h> in one translation unit, which is the pair
+ * the installed base-type header exists to keep consistent, so compiling it
+ * against the installed headers is what keeps that pair honest.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o int_test int_test.c -L/usr/local/lib -lmeos
