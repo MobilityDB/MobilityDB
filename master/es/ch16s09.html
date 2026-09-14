@@ -2,7 +2,7 @@
 latLngToCell(geometry,resolution integer) → h3index
 geoToQuadbinCell(geometry,integer) → quadbin
 geoToS2Cell(geography,integer) → s2cell
-</pre><p>La geometría debe ser un <code class="varname">POINT</code>, y su longitud y su latitud se interpretan en el SRID 4326. La forma H3 toma el nombre de la función <code class="varname">h3_latlng_to_cell</code> de h3-pg; QUADBIN y S2 no tienen extensión anfitriona, y sus formas conservan los nombres que les da MobilityDB.</p><pre class="programlisting">
+</pre><p>La geometría debe ser un <code class="varname">POINT</code> no vacío, su longitud y su latitud se interpretan en el SRID 4326, y la resolución está entre 0 y 15 para H3, entre 0 y 26 para QUADBIN y entre 0 y 30 para S2; cualquier otro argumento provoca un error. La forma H3 toma el nombre de la función <code class="varname">h3_latlng_to_cell</code> de h3-pg; QUADBIN y S2 no tienen extensión anfitriona, y sus formas conservan los nombres que les da MobilityDB.</p><pre class="programlisting">
 SELECT latLngToCell(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 -- 871fa4418ffffff
 SELECT geoToQuadbinCell(geometry 'SRID=4326;Point(4.35 50.85)', 10);
