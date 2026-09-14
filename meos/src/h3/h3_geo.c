@@ -67,6 +67,7 @@
 #include <meos_internal_geo.h>
 #include "h3/h3index.h"
 #include "geo/tgeo_spatialfuncs.h"  /* ensure_srid_is_latlong */
+#include "temporal/tcellindex.h"
 #include "temporal/temporal.h"  /* ORDER macro for set_make_free */
 #include "temporal/tcellindex.h"
 
@@ -289,32 +290,8 @@ typedef struct
   bool geodetic;          /**< True when the path is a great circle */
   double lon1, lat1;      /**< First endpoint, in degrees */
   double dlon, dlat;      /**< Planar path: the step to the second endpoint */
-  GEOGRAPHIC_POINT g1;    /**< Geodetic path: the first endpoint */
-  double dist;            /**< Geodetic path: its angle, in radians */
-  double azimuth;         /**< Geodetic path: its azimuth at the first endpoint */
-  POINT3D a;              /**< Geodetic path: the first endpoint, a unit vector */
-  POINT3D normal;         /**< Geodetic path: the unit normal of its circle */
+  DggsArc arc;            /**< Geodetic path: its great circle */
 } H3SegmentPath;
-
-/**
- * @brief Return the dot product of two vectors
- */
-static double
-h3_vec_dot(const POINT3D *p, const POINT3D *q)
-{
-  return p->x * q->x + p->y * q->y + p->z * q->z;
-}
-
-/**
- * @brief Set the last argument to the cross product of the first two
- */
-static void
-h3_vec_cross(const POINT3D *p, const POINT3D *q, POINT3D *r)
-{
-  r->x = p->y * q->z - p->z * q->y;
-  r->y = p->z * q->x - p->x * q->z;
-  r->z = p->x * q->y - p->y * q->x;
-}
 
 /**
  * @brief Return the length in degrees of the path between two positions: of
@@ -352,27 +329,7 @@ h3_segment_path_init(double lon1, double lat1, double lon2, double lat2,
   path->dlon = lon2 - lon1; path->dlat = lat2 - lat1;
   if (! geodetic)
     return path->dlon != 0.0 || path->dlat != 0.0;
-  GEOGRAPHIC_POINT g2, gm;
-  geographic_point_init(lon1, lat1, &path->g1);
-  geographic_point_init(lon2, lat2, &g2);
-  path->dist = sphere_distance(&path->g1, &g2);
-  if (path->dist <= 0.0)
-    return false;
-  path->azimuth = sphere_direction(&path->g1, &g2, path->dist);
-  geog2cart(&path->g1, &path->a);
-  /* The circle is the one the path follows: through its first endpoint and
-   * the point it reaches halfway, which also fixes it where the endpoints are
-   * antipodal and every great circle joins them */
-  if (sphere_project(&path->g1, path->dist / 2.0, path->azimuth, &gm) !=
-      LW_SUCCESS)
-    return false;
-  /* Read from the angles of the two points: the Cartesian cross product of
-   * two close unit vectors loses its precision to cancellation */
-  robust_cross_product(&path->g1, &gm, &path->normal);
-  if (path->normal.x == 0.0 && path->normal.y == 0.0 && path->normal.z == 0.0)
-    return false;
-  normalize(&path->normal);
-  return true;
+  return dggs_arc_init(lon1, lat1, lon2, lat2, &path->arc);
 }
 
 /**
@@ -387,11 +344,10 @@ h3_segment_path_cell(const H3SegmentPath *path, double t, int32 resolution)
   if (! path->geodetic)
     return h3_latlng_deg_to_cell(path->lat1 + t * path->dlat,
       path->lon1 + t * path->dlon, resolution);
-  GEOGRAPHIC_POINT g;
-  if (sphere_project(&path->g1, path->dist * t, path->azimuth, &g) !=
-      LW_SUCCESS)
+  double lon, lat;
+  if (! dggs_arc_point(&path->arc, t, &lon, &lat))
     return (H3Index) 0;
-  LatLng ll = { .lat = g.lat, .lng = longitude_radians_normalize(g.lon) };
+  LatLng ll = { .lat = lat, .lng = lon };
   H3Index cell;
   if (latLngToCell(&ll, resolution, &cell) != E_SUCCESS)
     return (H3Index) 0;
@@ -415,51 +371,14 @@ h3_cell_exit_param_geodetic(H3Index cell, const H3SegmentPath *path,
   CellBoundary bnd;
   if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts < 3)
     return 2.0;
-  GEOGRAPHIC_POINT g[MAX_CELL_BNDRY_VERTS];
-  POINT3D v[MAX_CELL_BNDRY_VERTS];
+  double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
   for (int i = 0; i < bnd.numVerts; i++)
   {
-    g[i].lat = bnd.verts[i].lat;
-    g[i].lon = bnd.verts[i].lng;
-    geog2cart(&g[i], &v[i]);
+    lons[i] = bnd.verts[i].lng;
+    lats[i] = bnd.verts[i].lat;
   }
-  double best = 2.0;
-  for (int i = 0; i < bnd.numVerts; i++)
-  {
-    int j = (i + 1) % bnd.numVerts;
-    POINT3D m, d, c;
-    /* The normal of the circle of the edge, read from the angles of its
-     * vertices: their Cartesian cross product loses to cancellation all but
-     * the rounding of a unit vector, which on the edge of a fine cell places
-     * the circle millimetres off the vertices */
-    robust_cross_product(&g[i], &g[j], &m);
-    h3_vec_cross(&path->normal, &m, &d);
-    if (d.x == 0.0 && d.y == 0.0 && d.z == 0.0)
-      continue;              /* the edge lies on the circle of the path */
-    for (int s = 0; s < 2; s++)
-    {
-      POINT3D p = d;
-      if (s)
-      {
-        p.x = -d.x; p.y = -d.y; p.z = -d.z;
-      }
-      /* On the edge: between its two vertices along the circle of the edge */
-      h3_vec_cross(&v[i], &p, &c);
-      if (h3_vec_dot(&c, &m) < 0.0)
-        continue;
-      h3_vec_cross(&p, &v[j], &c);
-      if (h3_vec_dot(&c, &m) < 0.0)
-        continue;
-      /* Ahead on the path: the angle from its first endpoint, measured in the
-       * direction the path travels */
-      h3_vec_cross(&path->a, &p, &c);
-      double t = atan2(h3_vec_dot(&c, &path->normal),
-        h3_vec_dot(&path->a, &p)) / path->dist;
-      if (t > tmin && t <= 1.0 && t < best)
-        best = t;
-    }
-  }
-  return best;
+  return dggs_arc_exit_param(&path->arc, lons, lats, bnd.numVerts, tmin,
+    false);
 }
 
 /**
@@ -501,7 +420,7 @@ h3_segment_cells(double lon1, double lat1, double lon2, double lat2,
   if (! h3_segment_path_init(lon1, lat1, lon2, lat2, geodetic, &path))
     return n;
   /* The length of the path in degrees */
-  double seg = geodetic ? rad2deg(path.dist) :
+  double seg = geodetic ? rad2deg(path.arc.dist) :
     sqrt(path.dlon * path.dlon + path.dlat * path.dlat);
   /* A nudge past the crossing lands inside the next cell without reaching
    * the one after it: a ten-thousandth of a cell edge is far below the

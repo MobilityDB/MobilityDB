@@ -43,6 +43,11 @@
 #include <assert.h>
 #include <math.h>
 #include <string.h>
+/* PostgreSQL */
+#include <postgres.h>
+/* PostGIS */
+#include <liblwgeom.h>
+#include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
 #include "temporal/temporal.h"
@@ -435,6 +440,173 @@ dggs_lonlat_boundary_set_box(const double *lons, const double *lats,
     *xmax = 180.0;
   }
   return;
+}
+
+/*****************************************************************************
+ * Geodetic path of a segment
+ *****************************************************************************/
+
+/**
+ * @brief Return the dot product of two vectors
+ */
+static double
+dggs_vec_dot(const POINT3D *p, const POINT3D *q)
+{
+  return p->x * q->x + p->y * q->y + p->z * q->z;
+}
+
+/**
+ * @brief Set the last argument to the cross product of the first two
+ */
+static void
+dggs_vec_cross(const POINT3D *p, const POINT3D *q, POINT3D *r)
+{
+  r->x = p->y * q->z - p->z * q->y;
+  r->y = p->z * q->x - p->x * q->z;
+  r->z = p->x * q->y - p->y * q->x;
+  return;
+}
+
+/**
+ * @brief Return in the last argument the great-circle path of a geodetic
+ * segment
+ * @param[in] lon1,lat1,lon2,lat2 Endpoints in degrees
+ * @param[out] arc Path
+ * @return False when the path has no length, since it then leaves no cell
+ */
+bool
+dggs_arc_init(double lon1, double lat1, double lon2, double lat2,
+  DggsArc *arc)
+{
+  assert(arc);
+  memset(arc, 0, sizeof(DggsArc));
+  GEOGRAPHIC_POINT g1, g2, gm;
+  geographic_point_init(lon1, lat1, &g1);
+  geographic_point_init(lon2, lat2, &g2);
+  arc->lon = g1.lon;
+  arc->lat = g1.lat;
+  arc->dist = sphere_distance(&g1, &g2);
+  if (arc->dist <= 0.0)
+    return false;
+  arc->azimuth = sphere_direction(&g1, &g2, arc->dist);
+  POINT3D a, normal;
+  geog2cart(&g1, &a);
+  /* The circle is the one the path follows: through its first endpoint and
+   * the point it reaches halfway, which also fixes it where the endpoints are
+   * antipodal and every great circle joins them */
+  if (sphere_project(&g1, arc->dist / 2.0, arc->azimuth, &gm) != LW_SUCCESS)
+    return false;
+  /* Read from the angles of the two points: the Cartesian cross product of
+   * two close unit vectors loses its precision to cancellation */
+  robust_cross_product(&g1, &gm, &normal);
+  if (normal.x == 0.0 && normal.y == 0.0 && normal.z == 0.0)
+    return false;
+  normalize(&normal);
+  arc->a[0] = a.x; arc->a[1] = a.y; arc->a[2] = a.z;
+  arc->normal[0] = normal.x;
+  arc->normal[1] = normal.y;
+  arc->normal[2] = normal.z;
+  return true;
+}
+
+/**
+ * @brief Return in the last two arguments the position a geodetic path
+ * reaches at a parameter
+ * @details The position is the point `sphere_project` reaches along the great
+ * circle at that fraction of the path's angle, the one `pointsegm_interpolate`
+ * answers for a temporal geodetic point.
+ * @param[in] arc Path
+ * @param[in] t Parameter, the fraction of the path's angle
+ * @param[out] lon,lat Position in radians, the longitude normalized
+ * @return False when the position cannot be projected
+ */
+bool
+dggs_arc_point(const DggsArc *arc, double t, double *lon, double *lat)
+{
+  assert(arc); assert(lon); assert(lat);
+  GEOGRAPHIC_POINT g1 = { .lat = arc->lat, .lon = arc->lon }, g;
+  if (sphere_project(&g1, arc->dist * t, arc->azimuth, &g) != LW_SUCCESS)
+    return false;
+  *lon = longitude_radians_normalize(g.lon);
+  *lat = g.lat;
+  return true;
+}
+
+/**
+ * @brief Return where a geodetic path leaves a cell
+ * @details A cell edge is an arc of a great circle, as the path is, so the
+ * circle of each edge meets the circle of the path at two antipodal points,
+ * along the intersection of their planes. The exit is the nearest of those
+ * points that lies on its edge and strictly ahead of `tmin` on the path; its
+ * parameter is the fraction of the path's angle reached there.
+ *
+ * A convex cell is the intersection of the hemispheres its edge circles bound,
+ * so a path inside it leaves it where it first crosses any of those circles,
+ * and that crossing lies on its edge by construction. The test of lying on the
+ * edge reads the sign of a rounded product, which a crossing at a vertex can
+ * fail, as for a path running along one cell edge and meeting the next edge
+ * at its vertex; a convex cell does without it.
+ * @param[in] arc Path
+ * @param[in] lons,lats Vertices of the cell boundary in radians, in the
+ * order they join
+ * @param[in] count Number of vertices
+ * @param[in] tmin Parameter the exit lies strictly ahead of
+ * @param[in] convex True when the cell is convex
+ * @return The path parameter of the exit, or a value above 1 when the path
+ * ends inside the cell
+ */
+double
+dggs_arc_exit_param(const DggsArc *arc, const double *lons,
+  const double *lats, int count, double tmin, bool convex)
+{
+  assert(arc); assert(lons); assert(lats);
+  POINT3D a = { .x = arc->a[0], .y = arc->a[1], .z = arc->a[2] };
+  POINT3D normal = { .x = arc->normal[0], .y = arc->normal[1],
+    .z = arc->normal[2] };
+  double best = 2.0;
+  for (int i = 0; i < count; i++)
+  {
+    int j = (i + 1) % count;
+    GEOGRAPHIC_POINT gi = { .lat = lats[i], .lon = lons[i] };
+    GEOGRAPHIC_POINT gj = { .lat = lats[j], .lon = lons[j] };
+    POINT3D vi, vj, m, d, c;
+    geog2cart(&gi, &vi);
+    geog2cart(&gj, &vj);
+    /* The normal of the circle of the edge, read from the angles of its
+     * vertices: their Cartesian cross product loses to cancellation all but
+     * the rounding of a unit vector, which on the edge of a fine cell places
+     * the circle millimetres off the vertices */
+    robust_cross_product(&gi, &gj, &m);
+    dggs_vec_cross(&normal, &m, &d);
+    if (d.x == 0.0 && d.y == 0.0 && d.z == 0.0)
+      continue;              /* the edge lies on the circle of the path */
+    for (int s = 0; s < 2; s++)
+    {
+      POINT3D p = d;
+      if (s)
+      {
+        p.x = -d.x; p.y = -d.y; p.z = -d.z;
+      }
+      /* On the edge: between its two vertices along the circle of the edge */
+      if (! convex)
+      {
+        dggs_vec_cross(&vi, &p, &c);
+        if (dggs_vec_dot(&c, &m) < 0.0)
+          continue;
+        dggs_vec_cross(&p, &vj, &c);
+        if (dggs_vec_dot(&c, &m) < 0.0)
+          continue;
+      }
+      /* Ahead on the path: the angle from its first endpoint, measured in the
+       * direction the path travels */
+      dggs_vec_cross(&a, &p, &c);
+      double t = atan2(dggs_vec_dot(&c, &normal), dggs_vec_dot(&a, &p)) /
+        arc->dist;
+      if (t > tmin && t <= 1.0 && t < best)
+        best = t;
+    }
+  }
+  return best;
 }
 
 /*****************************************************************************/

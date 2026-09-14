@@ -167,4 +167,30 @@ extern void dggs_lonlat_boundary_set_box(const double *lons,
   const double *lats, int count, bool north_pole, bool south_pole,
   double *xmin, double *ymin, double *xmax, double *ymax);
 
+/*****************************************************************************
+ * Geodetic path of a segment — shared by every DGGS whose cells are defined
+ * on the sphere.
+ *****************************************************************************/
+
+/**
+ * @brief Great-circle path of a geodetic segment, the one a temporal geodetic
+ * point moves along between two instants as `pointsegm_interpolate` places it
+ */
+typedef struct
+{
+  double lon;             /**< Longitude of the first endpoint, in radians */
+  double lat;             /**< Latitude of the first endpoint, in radians */
+  double dist;            /**< Angle of the path, in radians */
+  double azimuth;         /**< Azimuth of the path at its first endpoint */
+  double a[3];            /**< First endpoint, a unit vector */
+  double normal[3];       /**< Unit normal of the circle of the path */
+} DggsArc;
+
+extern bool dggs_arc_init(double lon1, double lat1, double lon2, double lat2,
+  DggsArc *arc);
+extern bool dggs_arc_point(const DggsArc *arc, double t, double *lon,
+  double *lat);
+extern double dggs_arc_exit_param(const DggsArc *arc, const double *lons,
+  const double *lats, int count, double tmin, bool convex);
+
 #endif /* __TCELLINDEX_H__ */
