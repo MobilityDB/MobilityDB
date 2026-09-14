@@ -1266,10 +1266,12 @@ int sphere_project(const GEOGRAPHIC_POINT *r, double distance, double azimuth, G
 	lat2 = asin(sin(lat1)*cos(d) + cos(lat1)*sin(d)*cos(azimuth));
 
 	/* If we're going straight up or straight down, we don't need to calculate the longitude */
-	/* TODO: this isn't quite true, what if we're going over the pole? */
+	/* MEOS: such a path keeps the meridian of its start until it passes over
+	 * a pole and runs down the opposite meridian from there on; past the pole
+	 * the second component the general case reads is negative */
 	if ( FP_EQUALS(azimuth, M_PI) || FP_EQUALS(azimuth, 0.0) )
 	{
-		lon2 = r->lon;
+		lon2 = ( cos(d) - sin(lat1) * sin(lat2) < 0.0 ) ? lon1 + M_PI : lon1;
 	}
 	else
 	{
