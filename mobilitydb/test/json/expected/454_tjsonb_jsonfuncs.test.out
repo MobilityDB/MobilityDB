@@ -386,6 +386,24 @@ SELECT tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-0
  {["10"@Mon Jan 01 00:00:00 2001 PST, "20"@Tue Jan 02 00:00:00 2001 PST, "10"@Wed Jan 03 00:00:00 2001 PST], ["null"@Thu Jan 04 00:00:00 2001 PST, "30"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT pg_typeof(tjsonb '"[\"Grand Place\", \"La Bourse\"]"@2001-01-01' ->> 1);
+ pg_typeof 
+-----------
+ ttext
+(1 row)
+
+SELECT pg_typeof(tjsonbArrayElementText(tjsonb '"[\"Grand Place\", \"La Bourse\"]"@2001-01-01', 1));
+ pg_typeof 
+-----------
+ ttext
+(1 row)
+
+SELECT startValue(tjsonbArrayElementText(tjsonb '"[\"Grand Place\", \"La Bourse\"]"@2001-01-01', 1));
+ startvalue 
+------------
+ La Bourse
+(1 row)
+
 SELECT tint(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
               tint              
 --------------------------------

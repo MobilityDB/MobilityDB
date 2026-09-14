@@ -143,7 +143,7 @@ CREATE FUNCTION tjsonbArrayElement(tjsonb, integer,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tjsonbArrayElementText(tjsonb, integer,
     null_handle text DEFAULT 'use_json_null')
-  RETURNS tjsonb
+  RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjsonb_array_element_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

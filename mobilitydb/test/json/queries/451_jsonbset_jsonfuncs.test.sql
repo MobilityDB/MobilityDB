@@ -106,6 +106,14 @@ SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"uni
 
 SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' ->> 'speed';
 SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' ->> 'speed';
+-- A field read as text is a text set, whether the operator or the function reads it
+SELECT pg_typeof(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' ->> 'speed');
+SELECT pg_typeof(jsonbsetObjectFieldText(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', 'speed'));
+SELECT pg_typeof(jsonbset '{"[\"Grand Place\", \"La Bourse\"]"}' ->> 1);
+SELECT pg_typeof(jsonbsetArrayElementText(jsonbset '{"[\"Grand Place\", \"La Bourse\"]"}', 1));
+SELECT startValue(jsonbset '{"{\"units\": \"km/h\"}"}' ->> 'units');
+SELECT (jsonbset '{"{\"units\": \"km/h\"}"}' ->> 'units') = textset '{"km/h"}';
+SELECT startValue(jsonbset '{"[\"Grand Place\", \"La Bourse\"]"}' ->> 1);
 
 -------------------------------------------------------------------------------
 
