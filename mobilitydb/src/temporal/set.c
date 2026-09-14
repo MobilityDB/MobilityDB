@@ -734,6 +734,7 @@ PG_FUNCTION_INFO_V1(Set_unnest);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return the list of values of a set
+ * @sqlfn unnest()
  */
 Datum
 Set_unnest(PG_FUNCTION_ARGS)

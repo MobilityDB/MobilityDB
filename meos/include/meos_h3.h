@@ -270,6 +270,10 @@ extern Set    *h3index_to_set(H3Index cell);
 extern Set    *h3indexset_in(const char *str);
 extern char   *h3indexset_out(const Set *s);
 
+/* Accessor functions of `h3indexset` */
+
+extern H3Index *h3indexset_values(const Set *s, int *count);
+
 /* Static geometry → H3 cell / cell set.  See meos/src/h3/h3_geo.c. */
 extern H3Index geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution);
 extern Set    *geo_to_h3index_set(const GSERIALIZED *gs,    int32 resolution);

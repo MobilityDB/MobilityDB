@@ -185,7 +185,7 @@ npointset_value_n(const Set *s, int n, Npoint **result)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 Npoint **
 npointset_values(const Set *s, int *count)

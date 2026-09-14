@@ -755,7 +755,7 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 int *
 intset_values(const Set *s, int *count)
@@ -775,7 +775,7 @@ intset_values(const Set *s, int *count)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 int64 *
 bigintset_values(const Set *s, int *count)
@@ -795,7 +795,7 @@ bigintset_values(const Set *s, int *count)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 double *
 floatset_values(const Set *s, int *count)
@@ -815,7 +815,7 @@ floatset_values(const Set *s, int *count)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 text **
 textset_values(const Set *s, int *count)
@@ -835,7 +835,7 @@ textset_values(const Set *s, int *count)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 DateADT *
 dateset_values(const Set *s, int *count)
@@ -855,7 +855,7 @@ dateset_values(const Set *s, int *count)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 TimestampTz *
 tstzset_values(const Set *s, int *count)

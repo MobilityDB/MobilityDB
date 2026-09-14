@@ -245,7 +245,7 @@ pcpointset_value_n(const Set *s, int n, Pcpoint **result)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 Pcpoint **
 pcpointset_values(const Set *s, int *count)
@@ -529,7 +529,7 @@ pcpatchset_value_n(const Set *s, int n, Pcpatch **result)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 Pcpatch **
 pcpatchset_values(const Set *s, int *count)

@@ -135,6 +135,30 @@ h3indexset_out(const Set *s)
 }
 
 /*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_set_accessor
+ * @brief Return the array of values of an H3 cell set
+ * @param[in] s Set
+ * @param[out] count Number of elements in the output array
+ * @errval NULL
+ * @csqlfn #Set_values(), #Set_unnest()
+ */
+H3Index *
+h3indexset_values(const Set *s, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEXSET(s, NULL);
+  H3Index *result = palloc(sizeof(H3Index) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetH3Index(SET_VAL_N(s, i));
+  *count = s->count;
+  return result;
+}
+
+/*****************************************************************************
  * Grid traversal
  *****************************************************************************/
 

@@ -149,6 +149,10 @@
  * @defgroup meos_h3_set_conversion Conversion functions
  * @ingroup meos_h3_set
  * @brief Conversion functions for H3 cell index sets
+ *
+ * @defgroup meos_h3_set_accessor Accessor functions
+ * @ingroup meos_h3_set
+ * @brief Accessor functions for H3 cell index sets
  */
 
 /*****************************************************************************/
