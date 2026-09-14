@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: temporal_unnest_state_make</title>
+<title>MobilityDB: Temporal_unnest_ext</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -187,8 +187,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2temporal_8c_ad0987daeff5cd49b832cdfba26fefccc.html#ad0987daeff5cd49b832cdfba26fefccc">Temporal_typmod_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2temporal_8c_a98706e2e6ff49bcba35e4c05941df84e.html#a98706e2e6ff49bcba35e4c05941df84e">Temporal_typmod_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__transf_ga3f4cd65753af0ffe602fbd39bd01dd96.html#ga3f4cd65753af0ffe602fbd39bd01dd96">Temporal_unnest</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2temporal_2temporal_8c_a97478f586f03cb7eb42ce67182664ce3.html#a97478f586f03cb7eb42ce67182664ce3">temporal_unnest_state_make</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2temporal_8c_a3306fe60f937da6956a6511943ee4d0b.html#a3306fe60f937da6956a6511943ee4d0b">temporal_unnest_state_next</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2temporal_2temporal_8c_a7c58cff60f2bc4bbd8cba924e80458f4.html#a7c58cff60f2bc4bbd8cba924e80458f4">Temporal_unnest_ext</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__modif_ga62fcce35931f9bebb6abf35021458097.html#ga62fcce35931f9bebb6abf35021458097">Temporal_update</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__accessor_ga133d8588dc2e16b1cfb72175217c0512.html#ga133d8588dc2e16b1cfb72175217c0512">Temporal_upper_inc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2temporal_8c_aea7781fd1a2cde00090beb1870bd8495.html#aea7781fd1a2cde00090beb1870bd8495">temporal_valid_typmod</a></td></tr>
@@ -236,26 +235,37 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a97478f586f03cb7eb42ce67182664ce3" name="a97478f586f03cb7eb42ce67182664ce3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a97478f586f03cb7eb42ce67182664ce3">&#9670;&#160;</a></span>temporal_unnest_state_make()</h2>
+<a id="a7c58cff60f2bc4bbd8cba924e80458f4" name="a7c58cff60f2bc4bbd8cba924e80458f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c58cff60f2bc4bbd8cba924e80458f4">&#9670;&#160;</a></span>Temporal_unnest_ext()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTempUnnestState.html">TempUnnestState</a> * temporal_unnest_state_make </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Temporal_unnest_ext </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em></td><td>)</td>
+          <td class="paramtype">FunctionCallInfo&#160;</td>
+          <td class="paramname"><em>fcinfo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_af6c740a063bad7f87b89010a222d4c30.html#af6c740a063bad7f87b89010a222d4c30">temporal_unnest_fn</a>&#160;</td>
+          <td class="paramname"><em>unnest</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Create the initial state that persists across multiple calls of the function. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the rows of a temporal value, each pairing one of its distinct values with the span set on which it is taken. </p>
+<p >The function computing the values and their span sets is called once, on the first call, and every later call returns the next row </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fcinfo</td><td>Function call information </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">unnest</td><td>Function answering the values and their span sets </td></tr>
   </table>
   </dd>
 </dl>
