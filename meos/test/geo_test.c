@@ -425,12 +425,17 @@ int main(void)
   meos_errno_reset();
 
   /* Two input points are one point exactly where their coordinates are
-   * equal. Points 1e-13 apart are two points: the two are disjoint, as
-   * geom_intersects answers, and a line 1e-13 long has both of its ends in
-   * its boundary, one of them the point and the other outside it */
-  struct { const char *a, *b, *matrix; } tinypts[] = {
-    { "POINT(0 0)", "POINT(1e-13 0)", "FF0FFF0F2" },
-    { "LINESTRING(0 0,1e-13 0)", "POINT(1e-13 0)", "FF10F0FF2" },
+   * equal, and an input point lies on a segment exactly where it lies on its
+   * line within its span. Points 1e-13 apart are two points: the two are
+   * disjoint, a point 1e-13 off a segment is off it, and a line 1e-13 long has
+   * both of its ends in its boundary, one of them the point and the other
+   * outside it. The matrix and the intersects predicate, which reads the
+   * points of one geometry against the other without the matrix, answer
+   * alike */
+  struct { const char *a, *b, *matrix; bool intersects; } tinypts[] = {
+    { "POINT(0 0)", "POINT(1e-13 0)", "FF0FFF0F2", false },
+    { "LINESTRING(0 0,1e-13 0)", "POINT(1e-13 0)", "FF10F0FF2", true },
+    { "POINT(0.5 1e-13)", "LINESTRING(0 0,1 0)", "FF0FFF102", false },
   };
   for (size_t i = 0; i < sizeof(tinypts) / sizeof(tinypts[0]); i++)
   {
@@ -440,10 +445,12 @@ int main(void)
     assert(gb != NULL);
     meos_errno_reset();
     char *gm = geom_relate(ga, gb);
-    printf("geom_relate(%s, %s): %s, errno %d\n", tinypts[i].a, tinypts[i].b,
-      gm ? gm : "(NULL)", meos_errno());
+    bool gi = geom_intersects2d(ga, gb);
+    printf("geom_relate(%s, %s): %s, intersects %d, errno %d\n", tinypts[i].a,
+      tinypts[i].b, gm ? gm : "(NULL)", gi, meos_errno());
     assert(gm != NULL);
     assert(strcmp(gm, tinypts[i].matrix) == 0);
+    assert(gi == tinypts[i].intersects);
     assert(meos_errno() == 0);
     free(gm); free(ga); free(gb);
   }
@@ -773,12 +780,12 @@ int main(void)
    * interior of the circle empty. The step the interior witness takes, the
    * band within which a point lies on an edge and the band within which an
    * edge end lies on a ray are each sized from the edge's own coordinates, so
-   * none of them crosses the circle at any scale. At s = 2^-40 the area of
-   * the square falls under the bound ring_encloses_no_area reads it against,
-   * which the range stops short of */
+   * none of them crosses the circle at any scale, and whether the square
+   * encloses area is the exact sign of its shoelace sum, which no scale
+   * turns to zero */
   double exs_s = 1.0;
   int exs_ok = 0;
-  for (int k = 0; k >= -39; k--, exs_s *= 0.5)
+  for (int k = 0; k >= -40; k--, exs_s *= 0.5)
   {
     char arc_wkt[160], seg_wkt[128], circ_wkt[160], sq_wkt[256];
     snprintf(arc_wkt, sizeof arc_wkt,
@@ -809,8 +816,157 @@ int main(void)
     free(self); free(inside); free(arc); free(seg); free(circ); free(sq);
   }
   printf("a segment crossing an arc, a circle against itself and a square "
-    "inside it relate alike at %d scales from 1 to 2^-39\n", exs_ok);
-  assert(exs_ok == 40);
+    "inside it relate alike at %d scales from 1 to 2^-40\n", exs_ok);
+  assert(exs_ok == 41);
+  meos_errno_reset();
+
+  /* Two members of a multi-surface bound one region where they share a stretch
+   * of boundary and two regions where they do not. The square of side s and
+   * the rectangle whose left side stands 5e-13 s to the right of the square's
+   * right side share none: the gap is hundreds of times the rounding of their
+   * coordinates at every scale, so the centre of the square lies in the
+   * interior of their union. Read against an absolute distance, the two facing
+   * sides are one stretch the union keeps once, the square loses its right
+   * side and its centre falls outside. Two squares sharing a side exactly are
+   * one region, and the middle of that side lies in its interior */
+  double sp_s = 1.0;
+  int sp_ok = 0;
+  for (int k = 0; k >= -40; k--, sp_s *= 0.5)
+  {
+    char gap_wkt[512], shared_wkt[512], centre_wkt[96], side_wkt[96];
+    double g = sp_s + 5e-13 * sp_s, s2 = 2 * sp_s;
+    snprintf(gap_wkt, sizeof gap_wkt,
+      "MULTIPOLYGON(((0 0,%.17g 0,%.17g %.17g,0 %.17g,0 0)),"
+      "((%.17g 0,%.17g 0,%.17g %.17g,%.17g %.17g,%.17g 0)))",
+      sp_s, sp_s, sp_s, sp_s, g, s2, s2, sp_s, g, sp_s, g);
+    snprintf(shared_wkt, sizeof shared_wkt,
+      "MULTIPOLYGON(((0 0,%.17g 0,%.17g %.17g,0 %.17g,0 0)),"
+      "((%.17g 0,%.17g 0,%.17g %.17g,%.17g %.17g,%.17g 0)))",
+      sp_s, sp_s, sp_s, sp_s, sp_s, s2, s2, sp_s, sp_s, sp_s, sp_s);
+    snprintf(centre_wkt, sizeof centre_wkt, "POINT(%.17g %.17g)", sp_s / 2,
+      sp_s / 2);
+    snprintf(side_wkt, sizeof side_wkt, "POINT(%.17g %.17g)", sp_s, sp_s / 2);
+    GSERIALIZED *gap = geom_in(gap_wkt, -1);
+    GSERIALIZED *shared = geom_in(shared_wkt, -1);
+    GSERIALIZED *centre = geom_in(centre_wkt, -1);
+    GSERIALIZED *side = geom_in(side_wkt, -1);
+    assert(gap != NULL); assert(shared != NULL);
+    assert(centre != NULL); assert(side != NULL);
+    char *apart = geom_relate(centre, gap);
+    char *joined = geom_relate(side, shared);
+    assert(apart != NULL); assert(joined != NULL);
+    assert(strcmp(apart, "0FFFFF212") == 0);
+    assert(strcmp(joined, "0FFFFF212") == 0);
+    sp_ok++;
+    free(apart); free(joined); free(gap); free(shared); free(centre);
+    free(side);
+  }
+  printf("a point relates alike to two members apart by 5e-13 s and to two "
+    "sharing a side at %d scales from 1 to 2^-40\n", sp_ok);
+  assert(sp_ok == 41);
+  meos_errno_reset();
+
+  /* Two circles cross where the distance between their centres lies between
+   * the difference and the sum of their radii, and touch where it equals one
+   * of them, which the input points fixing the circles decide exactly rather
+   * than centres and radii constructed from them. Two semicircles of radius s
+   * whose centres stand 1e-6 s apart cross, and two facing each other 1e-6 s
+   * short of touching meet nowhere, at every scale: read against an absolute
+   * distance on constructed centres and radii, the first pair reads as
+   * disjoint and the second as touching once 1e-6 s falls under 1e-12. The
+   * coordinates are scaled by ldexp, which is exact */
+  double ac_s = 1.0;
+  int ac_ok = 0;
+  for (int k = 0; k >= -40; k--, ac_s *= 0.5)
+  {
+    char cross_a[256], cross_b[256], near_a[256], near_b[256];
+    snprintf(cross_a, sizeof cross_a,
+      "CIRCULARSTRING(%.17g 0,0 %.17g,%.17g 0)", -ac_s, ac_s, ac_s);
+    snprintf(cross_b, sizeof cross_b,
+      "CIRCULARSTRING(%.17g 0,%.17g %.17g,%.17g 0)",
+      ldexp(-0.99999899999999997, k), ldexp(9.9999999999999995e-07, k),
+      ac_s, ldexp(1.0000009999999999, k));
+    snprintf(near_a, sizeof near_a,
+      "CIRCULARSTRING(0 %.17g,%.17g 0,0 %.17g)", -ac_s, ac_s, ac_s);
+    snprintf(near_b, sizeof near_b,
+      "CIRCULARSTRING(%.17g %.17g,%.17g 0,%.17g %.17g)",
+      ldexp(2.0000010000000001, k), ac_s, ldexp(1.0000009999999999, k),
+      ldexp(2.0000010000000001, k), -ac_s);
+    GSERIALIZED *ca = geom_in(cross_a, -1), *cb = geom_in(cross_b, -1);
+    GSERIALIZED *na = geom_in(near_a, -1), *nb = geom_in(near_b, -1);
+    assert(ca != NULL); assert(cb != NULL);
+    assert(na != NULL); assert(nb != NULL);
+    assert(geom_intersects2d(ca, cb) == true);
+    assert(geom_intersects2d(na, nb) == false);
+    ac_ok++;
+    free(ca); free(cb); free(na); free(nb);
+  }
+  printf("two semicircles 1e-6 s apart cross and two 1e-6 s short of touching "
+    "meet nowhere, at %d scales from 1 to 2^-40\n", ac_ok);
+  assert(ac_ok == 41);
+  meos_errno_reset();
+
+  /* A segment has no direction only where its two ends are one vertex, and
+   * any other segment, however short, gives each point along it a parameter
+   * of its own. The square of side s with a fifth vertex 5e-13 s from a
+   * corner, on its top side or on its left side, is a region and relates to
+   * itself as one at every scale. Read against an absolute length, the short
+   * side takes every point to its start, the portions the matrix walks along
+   * it are misplaced, and the square reads as crossing itself */
+  double se_s = 1.0;
+  int se_ok = 0;
+  for (int k = 0; k >= -40; k--, se_s *= 0.5)
+  {
+    char top_wkt[256], left_wkt[256];
+    double se_e = 5e-13 * se_s;
+    snprintf(top_wkt, sizeof top_wkt,
+      "POLYGON((0 0,%.17g 0,%.17g %.17g,%.17g %.17g,0 %.17g,0 0))",
+      se_s, se_s, se_s, se_e, se_s, se_s);
+    snprintf(left_wkt, sizeof left_wkt,
+      "POLYGON((0 0,%.17g 0,%.17g %.17g,0 %.17g,0 %.17g,0 0))",
+      se_s, se_s, se_s, se_s, se_e);
+    GSERIALIZED *top = geom_in(top_wkt, -1);
+    GSERIALIZED *left = geom_in(left_wkt, -1);
+    assert(top != NULL); assert(left != NULL);
+    char *m_top = geom_relate(top, top);
+    char *m_left = geom_relate(left, left);
+    assert(m_top != NULL); assert(m_left != NULL);
+    assert(strcmp(m_top, "2FFF1FFF2") == 0);
+    assert(strcmp(m_left, "2FFF1FFF2") == 0);
+    se_ok++;
+    free(m_top); free(m_left); free(top); free(left);
+  }
+  printf("a square with a side 5e-13 s long relates to itself as a region at "
+    "%d scales from 1 to 2^-40\n", se_ok);
+  assert(se_ok == 41);
+  meos_errno_reset();
+
+  /* A ring encloses area exactly where the shoelace sum of its vertices is
+   * not zero. The triangle (0 0), (s 0), (s/2 1e-13 s) encloses 5e-14 s^2, so
+   * at every scale it is a region holding the point (s/2 2.5e-14 s) in its
+   * interior. Read against a band that area is none, and the triangle is
+   * taken for the linework it traces, on which the point does not lie */
+  double sl_s = 1.0;
+  int sl_ok = 0;
+  for (int k = 0; k >= -40; k--, sl_s *= 0.5)
+  {
+    char tri_wkt[256], pt_wkt[96];
+    snprintf(tri_wkt, sizeof tri_wkt,
+      "POLYGON((0 0,%.17g 0,%.17g %.17g,0 0))", sl_s, sl_s / 2, 1e-13 * sl_s);
+    snprintf(pt_wkt, sizeof pt_wkt, "POINT(%.17g %.17g)", sl_s / 2,
+      2.5e-14 * sl_s);
+    GSERIALIZED *tri = geom_in(tri_wkt, -1);
+    GSERIALIZED *pt = geom_in(pt_wkt, -1);
+    assert(tri != NULL); assert(pt != NULL);
+    char *m = geom_relate(tri, pt);
+    assert(m != NULL);
+    assert(strcmp(m, "0F2FF1FF2") == 0);
+    sl_ok++;
+    free(m); free(tri); free(pt);
+  }
+  printf("a triangle enclosing 5e-14 s^2 holds its point at %d scales from 1 "
+    "to 2^-40\n", sl_ok);
+  assert(sl_ok == 41);
   meos_errno_reset();
 
   /* The distance between curves is checked on the cases PostGIS gives its
@@ -1231,34 +1387,37 @@ int main(void)
     meos_errno_reset();
   }
 
-  /* What a radial distance misses its arc by is a property of the coordinates
-   * it is read from, so the band it is judged against is theirs. At projected
-   * coordinates the point this states lies 1.6e-11 off the circle it is placed
-   * on, which is under a tenth of what those coordinates express and far over
-   * an absolute 1e-12, so a band that does not scale reads the boundary of a
-   * disc as its exterior. The same disc at the origin answers the same way,
-   * which is what makes the case about the scale rather than the geometry */
-  const char *disc_wkt[2] = {
-    "CURVEPOLYGON(CIRCULARSTRING(-1000 0,1000 0,-1000 0))",
-    "CURVEPOLYGON(CIRCULARSTRING(6399000 4600000,6401000 4600000,"
-      "6399000 4600000))" };
-  const char *edge_wkt[2] = {
-    "POINT(707.10678118654755 707.10678118654755)",
-    "POINT(6400707.1067811865 4600707.1067811865)" };
-  for (int i = 0; i < 2; i++)
+  /* An input point lies on the circle of a disc, inside it or outside it
+   * exactly where its coordinates say so, at every scale. The disc has a
+   * radius of 1000, at the origin and at projected coordinates. The point
+   * (600, 800) from the centre lies on the circle. The nearest doubles to the
+   * point of the circle on the diagonal, 707.10678118654755 from the centre in
+   * both coordinates, lie outside it at the origin and inside it at the
+   * projected coordinates, each within a few units in the last place of the
+   * circle, where a band on the radial distance reads both as on it */
+  struct { const char *disc, *pt, *matrix; } discpts[] = {
+    { "CURVEPOLYGON(CIRCULARSTRING(-1000 0,1000 0,-1000 0))",
+      "POINT(600 800)", "FF20F1FF2" },
+    { "CURVEPOLYGON(CIRCULARSTRING(6399000 4600000,6401000 4600000,"
+      "6399000 4600000))", "POINT(6400600 4600800)", "FF20F1FF2" },
+    { "CURVEPOLYGON(CIRCULARSTRING(-1000 0,1000 0,-1000 0))",
+      "POINT(707.10678118654755 707.10678118654755)", "FF2FF10F2" },
+    { "CURVEPOLYGON(CIRCULARSTRING(6399000 4600000,6401000 4600000,"
+      "6399000 4600000))", "POINT(6400707.1067811865 4600707.1067811865)",
+      "0F2FF1FF2" },
+  };
+  for (size_t i = 0; i < sizeof(discpts) / sizeof(discpts[0]); i++)
   {
-    GSERIALIZED *disc = geom_in(disc_wkt[i], -1);
-    GSERIALIZED *edge_pt = geom_in(edge_wkt[i], -1);
-    assert(disc != NULL); assert(edge_pt != NULL);
+    GSERIALIZED *disc = geom_in(discpts[i].disc, -1);
+    GSERIALIZED *pt = geom_in(discpts[i].pt, -1);
+    assert(disc != NULL); assert(pt != NULL);
     meos_errno_reset();
-    char *disc_matrix = geom_relate(disc, edge_pt);
-    printf("a disc %s its own boundary point: %s\n",
-      i ? "at projected coordinates against" : "at the origin against",
-      disc_matrix);
+    char *disc_matrix = geom_relate(disc, pt);
+    printf("a disc against %s: %s\n", discpts[i].pt, disc_matrix);
     assert(disc_matrix != NULL);
-    assert(strcmp(disc_matrix, "FF20F1FF2") == 0);
+    assert(strcmp(disc_matrix, discpts[i].matrix) == 0);
     assert(meos_errno() == 0);
-    free(disc); free(edge_pt); free(disc_matrix);
+    free(disc); free(pt); free(disc_matrix);
     meos_errno_reset();
   }
 
