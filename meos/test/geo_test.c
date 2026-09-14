@@ -196,6 +196,34 @@ int main(void)
   free(coll); free(away); free(through); free(tin); free(phs);
   meos_errno_reset();
 
+  /* A geometry shares a point with a collection wherever it shares one with a
+   * member, whether or not the members overlap. Each line below has a vertex
+   * lying exactly on an edge of one member of an overlapping multipolygon and
+   * inside no member, so the two meet there and nowhere else */
+  const char *touch[3][2] = {
+    {"MultiPolygon(((6 0,2 3,2 0,6 0)),((6 0,2 6,1 4,6 0)),"
+       "((5 5,6 4,2 6,5 5)),((0 5,6 5,6 6,0 6,0 5)))",
+     "Linestring(6 0.5,3 4.5,6 3.5)"},
+    {"MultiPolygon(((5 5,2 5,2 4,5 5)),((0 0,4 5,1 0,0 0)),"
+       "((3 4,4 4,4 6,3 6,3 4)))",
+     "Linestring(5.5 4.5,4.5 0.5,2.5 2.5)"},
+    {"MultiPolygon(((4 5,0 4,6 5,4 5)),((3 0,2 2,5 1,3 0)),"
+       "((5 5,4 5,1 2,5 5)))",
+     "Linestring(3.5 4.5,0 3.5,1.5 2.5)"}};
+  for (int i = 0; i < 3; i++)
+  {
+    GSERIALIZED *members = geom_in(touch[i][0], -1);
+    GSERIALIZED *line = geom_in(touch[i][1], -1);
+    assert(members != NULL); assert(line != NULL);
+    bool meet = geom_intersects2d(members, line);
+    printf("geom_intersects2d(overlapping members, %s): %d, errno %d\n",
+      touch[i][1], meet, meos_errno());
+    assert(meet);
+    assert(geom_intersects2d(line, members));
+    free(members); free(line);
+  }
+  meos_errno_reset();
+
   /* A geometry covers itself, whatever its coordinates are and however short
    * its edges. Both records below answered otherwise: the first is a five
    * metre feature in a projected CRS, where the engine split its own edges at
