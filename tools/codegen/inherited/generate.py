@@ -343,6 +343,132 @@ def extract_boxops(filetext: str, box: str) -> str:
     return filetext[b:e]
 
 
+# --- C posops (box-type axis) --------------------------------------------
+# The bounding-box position operator wrappers (<<, &<, ..., #&>) are generated per
+# BOX TYPE into the region between these markers, over the three directions of the
+# boxops region and through its Boxop_* dispatchers. A box type carries the
+# operations of the axes it lists in `posaxes` (manifest.d/boxposops.yaml gives each
+# operation its axis), so a box without Z has no front/back wrappers. The region
+# lives in `posfile`, the box type's boxops file unless it names another.
+def _posops_c_markers(box: str):
+    """BEGIN/END markers of a box type's position wrappers."""
+    begin = (f"/* GENERATED-POSOPS-BEGIN {box} — tools/codegen/inherited/generate.py "
+             "from templates/posops.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxtypes.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-POSOPS-END {box} */\n"
+
+
+def _posops_c_blocks():
+    """posops.c.tmpl split on blank lines: [header], then per direction kind 0/1/2 a
+    [banner, wrapper] pair, then [trailer]. Roundtrips exactly.
+    # BINDING-HEADER-PARSE-OK: reads the generator's own posops.c.tmpl template, as
+    # _boxops_blocks reads boxops.c.tmpl; this is the inherited generator emitting
+    # MobilityDB C regions, not a catalog-consuming binding."""
+    blocks = (TEMPLATES / "posops.c.tmpl").read_text().split("\n\n")
+    return blocks[0], [(blocks[1 + 2 * k], blocks[2 + 2 * k]) for k in range(3)], blocks[-1]
+
+
+def _wrap_doc(text: str, width: int = 80) -> str:
+    """Rewrap every doc-comment line longer than `width` at a word boundary, the
+    continuation opening with ' * ' as the hand-written blocks do."""
+    out = []
+    for line in text.split("\n"):
+        while len(line) > width and line.startswith(" * "):
+            cut = line.rfind(" ", 3, width + 1)
+            if cut <= 3:
+                break
+            out.append(line[:cut])
+            line = " * " + line[cut + 1:]
+        out.append(line)
+    return "\n".join(out)
+
+
+def posfile(bt: dict) -> str:
+    """The file holding a box type's position wrappers."""
+    return bt.get("posfile", bt["file"])
+
+
+def render_posops_c(bt: dict, ops: list) -> str:
+    """The position wrappers of a box type: per direction, its banner and one wrapper
+    per operation of the axes the box type lists."""
+    header, kinds, trailer = _posops_c_blocks()
+    axes = set(bt["posaxes"])
+    vals = {"BOX": bt["box"], "TSIDE": bt["tside"], "PRIM": bt.get("prim", bt["box"]),
+            "BOXDESC": bt["boxdesc"], "VALDESC": bt["valdesc"],
+            "POSGROUP": bt["posgroup"], "SQLCLASS": bt.get("sqlclass", bt["box"])}
+
+    def sub(fragment: str, extra: dict) -> str:
+        for k, v in {**vals, **extra}.items():
+            fragment = fragment.replace("{" + k + "}", v)
+        return fragment
+
+    out = [header]
+    for banner, wrapper in kinds:
+        out.append(sub(banner, {}))
+        out += [_wrap_doc(sub(wrapper, {"OP": o["op"], "OPLC": o["op"].lower(),
+                                         "REL": o["rel"], "SQLOP": o["sqlop"]}))
+                for o in ops if o["axis"] in axes]
+    out.append(trailer)
+    return "\n\n".join(out)
+
+
+def splice_posops_c(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's position markers with `rendered`."""
+    begin, end = _posops_c_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def extract_posops_c(filetext: str, box: str) -> str:
+    """Return the current text between the box's position markers (for --validate)."""
+    begin, end = _posops_c_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[b:e]
+
+
+def bootstrap_posops_c(filetext: str, bt: dict, rendered: str) -> str:
+    """Create the GENERATED-POSOPS region of a box type whose position wrappers are
+    still hand-written, and remove the hand-written form so the region is their single
+    source. The form is a token-pasting macro: a `#define` whose body declares
+    `<name>##_<box>_<tside>`, the invocations naming each operation and its kernel, and
+    the `#undef`, removed as one span with the comments between them. The operations
+    the macro invokes must be exactly those the region renders, each on its
+    <op>_<prim>_<prim> kernel, so nothing hand-written is dropped unrendered.
+    Idempotent afterward: the markers exist, so the splice path takes over.
+    # BINDING-HEADER-PARSE-OK: edits the MobilityDB C file the region lives in, as
+    # splice_boxops does; no header is parsed and no binding consumes this."""
+    box, tside = bt["box"], bt["tside"]
+    prim = bt.get("prim", box)
+    start = macro = None
+    for dm in re.finditer(r"^#define (\w+)\(", filetext, re.M):
+        k = dm.start()
+        while True:
+            nl = filetext.index("\n", k)
+            if not filetext[k:nl].rstrip().endswith("\\"):
+                break
+            k = nl + 1
+        if f"##_{box}_{tside}(PG_FUNCTION_ARGS)" in filetext[dm.start():nl]:
+            start, macro = dm.start(), dm.group(1)
+            break
+    if macro is None:
+        raise SystemExit(f"bootstrap posops {box}: no hand-written position wrappers "
+                         f"found in {posfile(bt)}")
+    undef = f"#undef {macro}\n"
+    stop = filetext.index(undef, start) + len(undef)
+    invoked = re.findall(rf"^{macro}\((\w+),\s*(\w+)\)$", filetext[start:stop], re.M)
+    rendered_ops = re.findall(rf"^PG_FUNCTION_INFO_V1\((\w+)_{box}_{tside}\);",
+                              rendered, re.M)
+    if sorted(op for op, _k in invoked) != sorted(rendered_ops) or \
+            any(k != f"{op.lower()}_{prim}_{prim}" for op, k in invoked):
+        raise SystemExit(f"bootstrap posops {box}: the macro {macro} invokes "
+                         f"{invoked}, the region renders {rendered_ops}")
+    begin, end = _posops_c_markers(box)
+    return (filetext[:start] + begin + rendered + end + "\n"
+            + filetext[stop:].lstrip("\n"))
+
+
 # --- C spatialrels (predicate axis) --------------------------------------
 # The ever/always PG wrapper surface (E<Rel>/A<Rel>_<dir> + @sqlfn) is generated
 # per FAMILY into the region between the GENERATED-SPATIALRELS markers of a
@@ -4184,6 +4310,22 @@ def main() -> int:
                     if len(g) != len(c):
                         print(f"     line count gen={len(g)} cur={len(c)}")
         for bt in mf.get("boxtypes", []):
+            if not (bt.get("posaxes") and bt.get("posreference")):
+                continue
+            p = ROOT / posfile(bt)
+            gen = render_posops_c(bt, mf.get("boxposops", []))
+            cur = extract_posops_c(p.read_text(), bt["box"]) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen posops {bt['box']} "
+                  f"-> {pathlib.Path(posfile(bt))}")
+            if not same:
+                for n, (a, b) in enumerate(zip(gen.splitlines(), cur.splitlines()), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+        for bt in mf.get("boxtypes", []):
             if not bt.get("reference"):
                 continue
             p = ROOT / bt["file"]
@@ -4626,6 +4768,22 @@ def main() -> int:
             continue
         p.write_text(splice_boxops(p.read_text(), bt["box"], render_boxops(bt)))
         print(f"spliced boxops {bt['box']} -> {bt['file']}")
+
+    for bt in mf.get("boxtypes", []):
+        if not bt.get("posaxes") or bt.get("posreference"):
+            continue
+        p = ROOT / posfile(bt)
+        if args.check:
+            print(f"would splice posops {bt['box']} -> {posfile(bt)}")
+            continue
+        rendered = render_posops_c(bt, mf.get("boxposops", []))
+        text = p.read_text()
+        if _posops_c_markers(bt["box"])[0] in text:
+            p.write_text(splice_posops_c(text, bt["box"], rendered))
+            print(f"spliced posops {bt['box']} -> {posfile(bt)}")
+        else:
+            p.write_text(bootstrap_posops_c(text, bt, rendered))
+            print(f"bootstrapped posops {bt['box']} -> {posfile(bt)}")
 
     for fam in mf.get("spatialrel_families", []):
         if fam.get("reference"):
