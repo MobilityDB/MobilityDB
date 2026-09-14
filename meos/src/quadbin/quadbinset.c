@@ -113,6 +113,30 @@ quadbinset_out(const Set *s)
 }
 
 /*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_quadbin_set_accessor
+ * @brief Return the array of values of a QUADBIN cell set
+ * @param[in] s Set
+ * @param[out] count Number of elements in the output array
+ * @errval NULL
+ * @csqlfn #Set_values(), #Set_unnest()
+ */
+Quadbin *
+quadbinset_values(const Set *s, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, NULL);
+  Quadbin *result = palloc(sizeof(Quadbin) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetQuadbin(SET_VAL_N(s, i));
+  *count = s->count;
+  return result;
+}
+
+/*****************************************************************************
  * Grid traversal
  *****************************************************************************/
 

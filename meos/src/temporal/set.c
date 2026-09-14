@@ -753,7 +753,7 @@ set_vals(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the array of (copies of) values of a set
  * @param[in] s Set
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 Datum *
 set_values(const Set *s, int *count)

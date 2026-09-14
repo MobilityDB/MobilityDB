@@ -198,7 +198,7 @@ poseset_value_n(const Set *s, int n, Pose **result)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 Pose **
 poseset_values(const Set *s, int *count)

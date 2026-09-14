@@ -213,6 +213,10 @@ extern Set *s2cell_cell_to_children_set(S2CellId cell, int children_level);
 extern Set *s2cellset_in(const char *str);
 extern char *s2cellset_out(const Set *s);
 
+/* Accessor functions of `s2cellset` */
+
+extern S2CellId *s2cellset_values(const Set *s, int *count);
+
 /*****************************************************************************
  * Temporal `ts2cell` inheritance
  *****************************************************************************/

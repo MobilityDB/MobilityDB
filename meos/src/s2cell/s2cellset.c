@@ -119,6 +119,30 @@ s2cellset_out(const Set *s)
 }
 
 /*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_s2cell_set_accessor
+ * @brief Return the array of values of an S2 cell set
+ * @param[in] s Set
+ * @param[out] count Number of elements in the output array
+ * @errval NULL
+ * @csqlfn #Set_values(), #Set_unnest()
+ */
+S2CellId *
+s2cellset_values(const Set *s, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, NULL);
+  S2CellId *result = palloc(sizeof(S2CellId) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetS2Cell(SET_VAL_N(s, i));
+  *count = s->count;
+  return result;
+}
+
+/*****************************************************************************
  * Traversal
  *****************************************************************************/
 

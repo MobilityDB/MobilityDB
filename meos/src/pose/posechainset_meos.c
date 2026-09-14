@@ -187,7 +187,7 @@ posechainset_value_n(const Set *s, int n, PoseChain **result)
  * @param[in] s Set
  * @param[out] count Number of elements in the output array
  * @errval NULL
- * @csqlfn #Set_values()
+ * @csqlfn #Set_values(), #Set_unnest()
  */
 PoseChain **
 posechainset_values(const Set *s, int *count)

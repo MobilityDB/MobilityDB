@@ -101,6 +101,10 @@
  * @defgroup meos_quadbin_set_conversion Conversion functions
  * @ingroup meos_quadbin_set
  * @brief Conversion functions for QUADBIN cell index sets
+ *
+ * @defgroup meos_quadbin_set_accessor Accessor functions
+ * @ingroup meos_quadbin_set
+ * @brief Accessor functions for QUADBIN cell index sets
  */
 
 /*****************************************************************************/
