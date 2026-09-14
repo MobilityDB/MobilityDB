@@ -142,7 +142,7 @@ RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minDistSimplify(tgeography, float)
-RETURNS tgeometry
+RETURNS tgeography
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -151,7 +151,7 @@ RETURNS tgeometry
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minTimeDeltaSimplify(tgeography, interval)
-RETURNS tgeometry
+RETURNS tgeography
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
