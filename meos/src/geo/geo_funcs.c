@@ -3910,6 +3910,8 @@ de9im_init(MeosDE9IM *m)
 static POINT2D *relate_linear_boundary_points(Edge **edges, int nedges,
   int *count);
 static MeosArray *relate_extract_edges(const LWGEOM *geom);
+static bool relate_reads_union(const LWGEOM *geom);
+static MeosArray *relate_union_edges(const LWGEOM *geom, MeosArray *all);
 static bool relate_area_boundary_edge(const Edge *e);
 static void relate_area_edge_point(const Edge *e, double t, double *x,
   double *y);
@@ -3927,7 +3929,10 @@ static bool relate_point_on_edge(double x, double y, const Edge *e);
 typedef struct
 {
   const LWGEOM *geom;  /**< Geometry the edges are those of */
-  MeosArray *arr;      /**< Edges of that geometry */
+  MeosArray *arr;      /**< Edges its interior and boundary are read from */
+  MeosArray *own;      /**< Its own edges, ending at the input vertices: the
+                            array #arr is cut from for a value
+                            #relate_reads_union names, #arr itself otherwise */
 } RelateOperand;
 
 /**
@@ -3949,10 +3954,16 @@ typedef struct
 static void
 relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
 {
-  ops->op[0].geom = g1;
-  ops->op[0].arr = relate_extract_edges(g1);
-  ops->op[1].geom = g2;
-  ops->op[1].arr = relate_extract_edges(g2);
+  const LWGEOM *g[2] = {g1, g2};
+  for (int k = 0; k < 2; k++)
+  {
+    /* The union is cut from the geometry's own edges, which are kept for the
+     * questions they answer exactly (#meos_intersects) */
+    ops->op[k].geom = g[k];
+    ops->op[k].own = geom_extract_edges(g[k]);
+    ops->op[k].arr = relate_reads_union(g[k]) ?
+      relate_union_edges(g[k], ops->op[k].own) : ops->op[k].own;
+  }
   return;
 }
 
@@ -3962,8 +3973,12 @@ relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
 static void
 relate_operands_free(RelateOperands *ops)
 {
-  meos_array_destroy(ops->op[0].arr);
-  meos_array_destroy(ops->op[1].arr);
+  for (int k = 0; k < 2; k++)
+  {
+    if (ops->op[k].own != ops->op[k].arr)
+      meos_array_destroy(ops->op[k].own);
+    meos_array_destroy(ops->op[k].arr);
+  }
   return;
 }
 
@@ -7039,9 +7054,8 @@ relate_same_portion(const Edge *a, const Edge *b)
  * a multi-geometry
  */
 static MeosArray *
-relate_union_edges(const LWGEOM *geom)
+relate_union_edges(const LWGEOM *geom, MeosArray *all)
 {
-  MeosArray *all = geom_extract_edges(geom);
   int nall = (int) all->count;
   /* Every edge is located against every component, so a component is read
    * once for each edge and the two indexes below are worth what the same
@@ -7166,20 +7180,20 @@ relate_union_edges(const LWGEOM *geom)
   pfree(edges);
 
   relate_comps_free(comps, ncomp);
-  meos_array_destroy(all);
   return result;
 }
 
 /**
- * @brief Return the edges a DE-9IM cell is computed on
+ * @brief Return true if the interior and boundary of a geometry are those of
+ * the union of its members rather than of the members themselves
  * @details Every geometry answers with its own edges, except a value holding
  * several components, whose topology is that of their union. Two members of a
  * multipolygon may share a boundary edge -- edge-adjacent polygons are a valid
  * multipolygon -- and that edge lies in the interior of what they cover
  * together, so reading the members' own edges reports it as boundary
  */
-static MeosArray *
-relate_extract_edges(const LWGEOM *geom)
+static bool
+relate_reads_union(const LWGEOM *geom)
 {
   switch (geom->type)
   {
@@ -7188,10 +7202,26 @@ relate_extract_edges(const LWGEOM *geom)
     case TINTYPE:
     case POLYHEDRALSURFACETYPE:
     case COLLECTIONTYPE:
-      return relate_union_edges(geom);
+      return true;
     default:
-      return geom_extract_edges(geom);
+      return false;
   }
+}
+
+/**
+ * @brief Return the edges a DE-9IM cell is computed on: those of the union of
+ * the members where #relate_reads_union says so, and a geometry's own otherwise
+ */
+static MeosArray *
+relate_extract_edges(const LWGEOM *geom)
+{
+  MeosArray *own = geom_extract_edges(geom);
+  if (! relate_reads_union(geom))
+    return own;
+  MeosArray *result = relate_union_edges(geom, own);
+  if (result != own)
+    meos_array_destroy(own);
+  return result;
 }
 
 /*****************************************************************************
@@ -7950,7 +7980,8 @@ relate_point_on_any_edge(double x, double y, const RelateEdges *other)
 }
 
 /**
- * @brief Return true if two geometries share a point, read from their edges
+ * @brief Answer the first two of the three questions of whether two
+ * geometries share a point, read from their edges
  * @details Sharing a point is the pattern `FF*FF****` failing, and the matrix
  * is not needed to decide it. Three questions answer it, each stopping at the
  * first witness it finds: a point of one geometry standing on a curve or a
@@ -7961,10 +7992,21 @@ relate_point_on_any_edge(double x, double y, const RelateEdges *other)
  * witness is what makes a pair that DOES meet cheap, but a pair that does not
  * holds no witness to stop at, so every question runs to the end and costs the
  * product of the two arrays. That is the case the index removes, and it is the
- * common one, a pair whose boxes overlap while the geometries keep apart
+ * common one, a pair whose boxes overlap while the geometries keep apart.
+ *
+ * The first two questions read each geometry's OWN edges: a point of the union
+ * of a collection's members is a point of one of them, so where the geometries
+ * meet does not depend on the union, and the own edges end at the input
+ * vertices where the union's are cut at constructed points. The third reads
+ * the edges of the union, which bound each stretch of a surface once, as the
+ * parity locating a point needs
+ * @param[in] re1,re2 The geometries' own edges
+ * @return 1 where they share a point, -1 where their bounding boxes stand
+ * apart so that they share none, and 0 where no curve of either meets the
+ * other, which leaves the third question to #relate_edges_within
  */
-static bool
-relate_edges_intersect(const RelateEdges *re1, const RelateEdges *re2)
+static int
+relate_edges_share_point(const RelateEdges *re1, const RelateEdges *re2)
 {
   Edge **e1 = re1->edges, **e2 = re2->edges;
   int n1 = re1->nedges, n2 = re2->nedges;
@@ -7973,7 +8015,7 @@ relate_edges_intersect(const RelateEdges *re1, const RelateEdges *re2)
    * that first is what keeps a pair that does not meet from costing a pass
    * over every edge of one against every edge of the other */
   if (! relate_edges_boxes_overlap(e1, n1, e2, n2))
-    return false;
+    return -1;
 
   /* A point of one geometry standing on the other, a segment of no length
    * being the point it draws */
@@ -7982,14 +8024,14 @@ relate_edges_intersect(const RelateEdges *re1, const RelateEdges *re2)
     if (! relate_edge_is_point(e1[i]))
       continue;
     if (relate_point_on_any_edge(e1[i]->x1, e1[i]->y1, re2))
-      return true;
+      return 1;
   }
   for (int j = 0; j < n2; j++)
   {
     if (! relate_edge_is_point(e2[j]))
       continue;
     if (relate_point_on_any_edge(e2[j]->x1, e2[j]->y1, re1))
-      return true;
+      return 1;
   }
 
   /* Two curves meeting, the bounding boxes deciding which pairs are worth
@@ -7999,16 +8041,29 @@ relate_edges_intersect(const RelateEdges *re1, const RelateEdges *re2)
     if (relate_edge_is_point(e1[i]))
       continue;
     if (relate_edges_meet_any(e1[i], re2))
-      return true;
+      return 1;
   }
+  return 0;
+}
 
-  /* No curve of either geometry meets the other, so each edge lies wholly
-   * inside or wholly outside the surfaces of the other geometry */
-  for (int i = 0; i < n1; i++)
-    if (relate_edge_inside_area(e1[i], re2))
+/**
+ * @brief Return true if an edge of one geometry lies within a surface of the
+ * other, for two geometries no curve of which meets the other
+ * @details Each edge then lies wholly inside or wholly outside the surfaces of
+ * the other geometry, so one point of it answers for the whole
+ * @param[in] re1,re2 The geometries' own edges
+ * @param[in] area1,area2 The edges their surfaces are read from, those of
+ * #relate_extract_edges
+ */
+static bool
+relate_edges_within(const RelateEdges *re1, const RelateEdges *re2,
+  const RelateEdges *area1, const RelateEdges *area2)
+{
+  for (int i = 0; i < re1->nedges; i++)
+    if (relate_edge_inside_area(re1->edges[i], area2))
       return true;
-  for (int j = 0; j < n2; j++)
-    if (relate_edge_inside_area(e2[j], re1))
+  for (int j = 0; j < re2->nedges; j++)
+    if (relate_edge_inside_area(re2->edges[j], area1))
       return true;
   return false;
 }
@@ -8106,6 +8161,24 @@ relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
 }
 
 /**
+ * @brief Return the pointers into an edge array that #relate_edges_init reads
+ * @details The edges lie one after another in the array's own storage, so
+ * they are read in place rather than through #meos_array_get, which checks
+ * every index against the count
+ */
+static Edge **
+relate_edge_pointers(const MeosArray *arr)
+{
+  assert(arr->elem_size == sizeof(Edge) && ! arr->varlength);
+  int n = (int) arr->count;
+  Edge **result = palloc(sizeof(Edge *) * (n ? n : 1));
+  Edge *edges = (Edge *) arr->elems;
+  for (int i = 0; i < n; i++)
+    result[i] = &edges[i];
+  return result;
+}
+
+/**
  * @brief Return whether two geometries share a point
  * @details This is the `INTERSECTS` relationship, which #meos_spatialrel
  * reads from the DE-9IM matrix as the pattern `FF*FF****` failing. Answering
@@ -8118,28 +8191,63 @@ static void
 meos_intersects(const RelateOperands *ops, bool *result)
 {
   assert(ops); assert(result);
-  MeosArray *a1 = ops->op[0].arr, *a2 = ops->op[1].arr;
-  int n1 = (int) a1->count, n2 = (int) a2->count;
-  Edge **e1 = palloc(sizeof(Edge *) * (n1 ? n1 : 1));
-  Edge **e2 = palloc(sizeof(Edge *) * (n2 ? n2 : 1));
-  for (int i = 0; i < n1; i++)
-    e1[i] = (Edge *) meos_array_get(a1, i);
-  for (int j = 0; j < n2; j++)
-    e2[j] = (Edge *) meos_array_get(a2, j);
+  /* Where the geometries meet is read from each one's own edges
+   * (#relate_edges_share_point), and whether an edge lies within a surface from the
+   * edges of the union, which only a pair no curve of which meets the other
+   * asks (#relate_edges_within). The two are one array except for a
+   * collection #relate_reads_union names */
+  MeosArray *own[2] = {ops->op[0].own, ops->op[1].own};
+  Edge **eo[2] = {relate_edge_pointers(own[0]), relate_edge_pointers(own[1])};
 
   /* Every question this kernel asks reads one of the two arrays once per edge
    * of the other, so an unindexed walk costs their PRODUCT wherever no witness
    * ends it early. The gate is the one the matrix uses, and below it the walk
    * is the cheaper of the two and the index is not built */
-  RelateEdges re1, re2;
-  bool index = ((int64) n1 * (int64) n2 >= RELATE_INDEX_MIN_PAIRS);
-  relate_edges_init(&re1, e1, n1, index);
-  relate_edges_init(&re2, e2, n2, index);
+  RelateEdges ro[2];
+  bool index = (double) own[0]->count * (double) own[1]->count >=
+    RELATE_INDEX_MIN_PAIRS;
+  for (int k = 0; k < 2; k++)
+    relate_edges_init(&ro[k], eo[k], (int) own[k]->count, index);
 
-  *result = relate_edges_intersect(&re1, &re2);
+  int meet = relate_edges_share_point(&ro[0], &ro[1]);
+  if (meet != 0)
+    *result = (meet > 0);
+  else
+  {
+    MeosArray *area[2] = {ops->op[0].arr, ops->op[1].arr};
+    bool aindex = (double) area[0]->count * (double) area[1]->count >=
+      RELATE_INDEX_MIN_PAIRS;
+    RelateEdges ra[2];
+    Edge **ea[2];
+    for (int k = 0; k < 2; k++)
+    {
+      /* An operand whose two roles are one array, read with the same index,
+       * is read once for both */
+      if (area[k] == own[k] && aindex == index)
+      {
+        ea[k] = NULL;
+        ra[k] = ro[k];
+      }
+      else
+      {
+        ea[k] = relate_edge_pointers(area[k]);
+        relate_edges_init(&ra[k], ea[k], (int) area[k]->count, aindex);
+      }
+    }
+    *result = relate_edges_within(&ro[0], &ro[1], &ra[0], &ra[1]);
+    for (int k = 0; k < 2; k++)
+      if (ea[k])
+      {
+        relate_edges_clear(&ra[k]);
+        pfree(ea[k]);
+      }
+  }
 
-  relate_edges_clear(&re1); relate_edges_clear(&re2);
-  pfree(e1); pfree(e2);
+  for (int k = 0; k < 2; k++)
+  {
+    relate_edges_clear(&ro[k]);
+    pfree(eo[k]);
+  }
   return;
 }
 
@@ -8278,7 +8386,9 @@ relate_ctx_make(const LWGEOM *geom)
     return NULL;
   struct RelateCtx *ctx = palloc(sizeof(struct RelateCtx));
   ctx->op.geom = geom;
-  ctx->op.arr = relate_extract_edges(geom);
+  ctx->op.own = geom_extract_edges(geom);
+  ctx->op.arr = relate_reads_union(geom) ?
+    relate_union_edges(geom, ctx->op.own) : ctx->op.own;
   return ctx;
 }
 
@@ -8291,6 +8401,8 @@ relate_ctx_free(void *ctxv)
   struct RelateCtx *ctx = (struct RelateCtx *) ctxv;
   if (! ctx)
     return;
+  if (ctx->op.own != ctx->op.arr)
+    meos_array_destroy(ctx->op.own);
   meos_array_destroy(ctx->op.arr);
   pfree(ctx);
   return;
