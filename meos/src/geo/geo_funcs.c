@@ -59,12 +59,41 @@
  *****************************************************************************/
 
 /**
+ * @brief Make room in an edge array for @p n more edges at once
+ * @details The array doubles as it fills, each doubling copying every edge
+ * already read, while a ring or a circular string knows how many edges it
+ * yields before it emits any. The room they need is taken in one step, at
+ * least doubling so that many small rings still grow the array geometrically,
+ * and an array holding no edge yet takes fresh room rather than copying slots
+ * nothing was written to
+ */
+static void
+edge_array_reserve(MeosArray *edges, size_t n)
+{
+  size_t need = edges->count + n;
+  if (need <= edges->capacity)
+    return;
+  size_t cap = Max(need, 2 * edges->capacity);
+  if (edges->count == 0)
+  {
+    pfree(edges->elems);
+    edges->elems = palloc(cap * edges->elem_size);
+  }
+  else
+    edges->elems = repalloc(edges->elems, cap * edges->elem_size);
+  edges->capacity = cap;
+  return;
+}
+
+/**
  * @brief Add to the dynamic array in the last argument the edges obtained
  * from a ring
  */
 static void
 emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
 {
+  /* A ring of n points yields n - 1 edges */
+  edge_array_reserve(edges, pa->npoints);
   for (int i = 0; i < (int) pa->npoints - 1; i++)
   {
     const POINT2D *a = getPoint2d_cp(pa, i);
@@ -369,6 +398,9 @@ emit_circstring_edges(const LWCIRCSTRING *circ, MeosArray *edges,
 {
   const POINTARRAY *pa = circ->points;
   int np = (int) pa->npoints;
+  /* Each arc of the string yields at most two edges, so no more than it has
+   * points */
+  edge_array_reserve(edges, pa->npoints);
   for (int i = 0; i + 2 < np; i += 2)
   {
     emit_arc_edge(getPoint2d_cp(pa, i), getPoint2d_cp(pa, i + 1),
