@@ -223,6 +223,8 @@ jobs:
           ./cellset_text_io_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellset_values_test cellset_values_test.c -L/usr/local/lib -lmeos
           ./cellset_values_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cellset_make_test cellset_make_test.c -L/usr/local/lib -lmeos
+          ./cellset_make_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o temporal_unnest_test temporal_unnest_test.c -L/usr/local/lib -lmeos
           ./temporal_unnest_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rasterwalk_test rasterwalk_test.c -L/usr/local/lib -lmeos -lm

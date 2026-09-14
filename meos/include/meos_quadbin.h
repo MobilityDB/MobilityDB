@@ -203,6 +203,10 @@ extern Set *quadbin_cell_to_children_set(Quadbin origin,
 extern Set *quadbinset_in(const char *str);
 extern char *quadbinset_out(const Set *s);
 
+/* Constructor functions of `quadbinset` */
+
+extern Set *quadbinset_make(const Quadbin *values, int count);
+
 /* Accessor functions of `quadbinset` */
 
 extern Quadbin *quadbinset_values(const Set *s, int *count);
